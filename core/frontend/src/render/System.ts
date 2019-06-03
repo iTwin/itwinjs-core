@@ -15,6 +15,7 @@ import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { HiliteSet } from "../SelectionSet";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 import { ViewFrustum, Viewport, ViewRect } from "../Viewport";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -183,7 +184,7 @@ export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
   public readonly viewFrustum: ViewFrustum;
-  public readonly terrainFrustum: ViewFrustum | undefined;
+  public readonly expandedFrustum: ViewFrustum | undefined;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -202,10 +203,10 @@ export class RenderPlan {
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
   public get fraction(): number { return this._curFrustum.frustFraction; }
 
-  public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
+  public selectExpandedFrustum() { if (undefined !== this.expandedFrustum) this._curFrustum = this.expandedFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, terrainFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, expandedFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -217,7 +218,7 @@ export class RenderPlan {
     this.hline = hline;
     this.lights = lights;
     this._curFrustum = this.viewFrustum = viewFrustum;
-    this.terrainFrustum = terrainFrustum;
+    this.expandedFrustum = expandedFrustum;
     this.analysisStyle = analysisStyle;
     this.ao = ao;
     this.isFadeOutActive = isFadeOutActive;
@@ -231,8 +232,8 @@ export class RenderPlan {
     const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, terrainFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
+    const expandedFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, expandedFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -247,7 +248,7 @@ export class RenderPlan {
  * The latter are produced using a [[GraphicBuilder]].
  * @public
  */
-export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
   public abstract dispose(): void;
 
   /** @internal */
@@ -271,7 +272,7 @@ export const enum ClippingType {
  * @see [System.createClipVolume]
  * @beta
  */
-export abstract class RenderClipVolume implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.Consumer */ {
   /** The ClipVector from which this volume was created. It must not be modified. */
   public readonly clipVector: ClipVector;
 
@@ -331,7 +332,7 @@ export class RenderClassifierModel {
  */
 export type GraphicList = RenderGraphic[];
 
-/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations))] that is drawn onto the
+/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations) that is drawn onto the
  * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
  * CanvasDecorations may be pickable by implementing [[pick]].
  * @public
@@ -432,7 +433,7 @@ export class Decorations implements IDisposable {
  * @see [[RenderSystem.createBranch]]
  * @public
  */
-export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
+export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
@@ -484,11 +485,21 @@ export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    public constructor(public readonly feature?: Feature,
-      public readonly distanceFraction: number = -1.0,
-      public readonly type: GeometryType = GeometryType.Unknown,
-      public readonly planarity: Planarity = Planarity.Unknown,
-      public readonly featureTable?: PackedFeatureTable) { }
+    public readonly feature?: Feature;
+    public readonly distanceFraction: number;
+    public readonly type: GeometryType;
+    public readonly planarity: Planarity;
+    /** @internal */
+    public readonly featureTable?: PackedFeatureTable;
+
+    /** @internal */
+    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable) {
+      this.feature = feature;
+      this.distanceFraction = distanceFraction;
+      this.type = type;
+      this.planarity = planarity;
+      this.featureTable = featureTable;
+    }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
     public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
@@ -668,6 +679,15 @@ export class PackedFeatureTable {
   }
 
   /** @internal */
+  public getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair {
+    const index = 3 * featureIndex;
+    let subCatIndex = this._data[index + 2];
+    subCatIndex = (subCatIndex & 0x00ffffff) >>> 0;
+    subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
+    return { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+  }
+
+  /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
     return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
   }
@@ -760,7 +780,7 @@ export abstract class RenderTarget implements IDisposable {
   public dispose(): void { }
   public reset(): void { }
   public abstract changeScene(scene: GraphicList): void;
-  public abstract changeTerrain(_scene: GraphicList): void;
+  public abstract changeBackgroundMap(_scene: GraphicList): void;
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
@@ -768,7 +788,7 @@ export abstract class RenderTarget implements IDisposable {
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
-  public setHiliteSet(_hilited: Set<string>): void { }
+  public setHiliteSet(_hilited: HiliteSet): void { }
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void { }
@@ -1060,6 +1080,7 @@ export abstract class RenderSystem implements IDisposable {
    * @note If a texture matching the specified gradient already exists, it will be returned.
    * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
    * return the previously-created texture.
+   * @beta
    */
   public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
 
@@ -1106,10 +1127,12 @@ export namespace RenderSystem {
      * @internal
      */
     disabledExtensions?: WebGLExtensionName[];
-    /** If true, back-face culling will be enabled when appropriate, which should improve display performance.
+    /** Specifies whether to use optimized surface shaders when edge display is not important. If set to true, then in 3d views the optimized shaders will be used if:
+     *  - Render mode is wireframe; or
+     *  - Render mode is smooth shade and visible edges are turned off.
      * @internal
      */
-    backfaceCulling?: boolean;
+    enableOptimizedSurfaceShaders?: boolean;
     /** If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
      * @internal
      */

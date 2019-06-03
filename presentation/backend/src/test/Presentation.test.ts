@@ -9,10 +9,10 @@ import * as moq from "typemoq";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
-import Presentation from "../Presentation";
-import PresentationManager from "../PresentationManager";
+import { Presentation } from "../Presentation";
+import { PresentationManager } from "../PresentationManager";
 import "./IModelHostSetup";
-import TemporaryStorage from "../TemporaryStorage";
+import { TemporaryStorage } from "../TemporaryStorage";
 
 describe("Presentation", () => {
 
@@ -48,6 +48,28 @@ describe("Presentation", () => {
         expect(storage.props.valueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
       });
 
+      describe("getRequestTimeout", () => {
+        it("should throw PresentationError if initialize is not called", () => {
+          expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
+        });
+
+        it("creates a requestTimeout property with default value", () => {
+          Presentation.initialize();
+          expect(Presentation.getRequestTimeout()).to.equal(90000);
+        });
+
+        it("should use value from initialize method parameters", () => {
+          const randomRequestTimeout = faker.random.number({ min: 1, max: 90000 });
+          Presentation.initialize({ requestTimeout: randomRequestTimeout });
+          expect(Presentation.getRequestTimeout()).to.equal(randomRequestTimeout);
+        });
+
+        it("should use 0 as requestTimeout if value passed to initialize method is 0", () => {
+          Presentation.initialize({ requestTimeout: 0 });
+          expect(Presentation.getRequestTimeout()).to.equal(0);
+        });
+      });
+
       it("uses client manager factory provided through props", () => {
         const managerMock = moq.Mock.ofType<PresentationManager>();
         Presentation.initialize({ clientManagerFactory: () => managerMock.object });
@@ -65,6 +87,13 @@ describe("Presentation", () => {
       expect(Presentation.getManager()).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
+    });
+
+    it("resets RequestTimeout property", () => {
+      Presentation.initialize();
+      expect(Presentation.getRequestTimeout()).to.be.not.null;
+      Presentation.terminate();
+      expect(() => Presentation.getRequestTimeout()).to.throw(PresentationError);
     });
 
   });

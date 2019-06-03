@@ -37,6 +37,7 @@ import { assert, BentleyStatus, Dictionary, IDisposable, dispose, Id64String } f
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
 import { ViewRect, Viewport } from "../../Viewport";
+import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "../../RenderCompatibility";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
 import { RenderBuffer } from "./RenderBuffer";
@@ -123,6 +124,7 @@ export class Capabilities {
   private _maxFragUniformVectors: number = 0;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
+  private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
@@ -146,7 +148,7 @@ export class Capabilities {
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
-  public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 4; }
+  public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
 
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
   public queryExtensionObject<T>(ext: WebGLExtensionName): T | undefined {
@@ -154,8 +156,60 @@ export class Capabilities {
     return (null !== extObj) ? extObj as T : undefined;
   }
 
+  public static readonly optionalFeatures: WebGLFeature[] = [WebGLFeature.MrtTransparency, WebGLFeature.MrtPick, WebGLFeature.DepthTexture, WebGLFeature.FloatRendering, WebGLFeature.Instancing];
+  public static readonly requiredFeatures: WebGLFeature[] = [WebGLFeature.UintElementIndex, WebGLFeature.MinimalTextureUnits];
+
+  private get _hasRequiredTextureUnits(): boolean { return this.maxFragTextureUnits >= 4 && this.maxVertTextureUnits >= 5; }
+
+  /** Return an array containing any features not supported by the system as compared to the input array. */
+  private _findMissingFeatures(featuresToSeek: WebGLFeature[]): WebGLFeature[] {
+    const missingFeatures: WebGLFeature[] = [];
+    for (const featureName of featuresToSeek) {
+      if (-1 === this._presentFeatures.indexOf(featureName))
+        missingFeatures.push(featureName);
+    }
+    return missingFeatures;
+  }
+
+  /** Populate and return an array containing features that this system supports. */
+  private _gatherFeatures(): WebGLFeature[] {
+    const features: WebGLFeature[] = [];
+
+    // simply check for presence of various extensions if that gives enough information
+    if (this._extensionMap["OES_element_index_uint" as WebGLExtensionName] !== undefined)
+      features.push(WebGLFeature.UintElementIndex);
+    if (this._extensionMap["ANGLE_instanced_arrays" as WebGLExtensionName] !== undefined)
+      features.push(WebGLFeature.Instancing);
+
+    if (this.supportsMRTTransparency)
+      features.push(WebGLFeature.MrtTransparency);
+    if (this.supportsMRTPickShaders)
+      features.push(WebGLFeature.MrtPick);
+    if (this._hasRequiredTextureUnits)
+      features.push(WebGLFeature.MinimalTextureUnits);
+
+    if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
+      features.push(WebGLFeature.DepthTexture);
+
+    // check if full float rendering is available based on maximum discovered renderable target
+    if (RenderType.TextureFloat === this._maxRenderType)
+      features.push(WebGLFeature.FloatRendering);
+
+    return features;
+  }
+
+  /** Retrieve compatibility status based on presence of various features. */
+  private _getCompatibilityStatus(missingRequiredFeatures: WebGLFeature[], missingOptionalFeatures: WebGLFeature[]): WebGLRenderCompatibilityStatus {
+    let status: WebGLRenderCompatibilityStatus = WebGLRenderCompatibilityStatus.AllOkay;
+    if (missingOptionalFeatures.length > 0)
+      status = WebGLRenderCompatibilityStatus.MissingOptionalFeatures;
+    if (missingRequiredFeatures.length > 0)
+      status = WebGLRenderCompatibilityStatus.MissingRequiredFeatures;
+    return status;
+  }
+
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): boolean {
+  public init(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -196,15 +250,25 @@ export class Capabilities {
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
-    this.debugPrint(gl);
+    this._presentFeatures = this._gatherFeatures();
+    const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
+    const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
 
-    // Return based on currently-required features.  This must change if the amount used is increased or decreased.
-    return this._hasRequiredFeatures && this._hasRequiredTextureUnits;
+    this.debugPrint(gl, missingRequiredFeatures, missingOptionalFeatures);
+
+    return {
+      status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
+      missingRequiredFeatures,
+      missingOptionalFeatures,
+    };
   }
 
   public static create(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
-    return caps.init(gl, disabledExtensions) ? caps : undefined;
+    const compatibility = caps.init(gl, disabledExtensions);
+    if (WebGLRenderCompatibilityStatus.CannotCreateContext === compatibility.status || WebGLRenderCompatibilityStatus.MissingRequiredFeatures === compatibility.status)
+      return undefined;
+    return caps;
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
@@ -227,22 +291,13 @@ export class Capabilities {
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
   }
 
-  /** Determines if the required features are supported (list could change).  These are not necessarily extensions (looking toward WebGL2). */
-  private get _hasRequiredFeatures(): boolean {
-    return this.supports32BitElementIndex;
-  }
-
-  /** Determines if the required number of texture units are supported in vertex and fragment shader (could change). */
-  private get _hasRequiredTextureUnits(): boolean {
-    return this.maxFragTextureUnits > 4 && this.maxVertTextureUnits > 5;
-  }
-
-  private debugPrint(gl: WebGLRenderingContext) {
+  private debugPrint(gl: WebGLRenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
     if (!Debug.printEnabled)
       return;
 
     Debug.print(() => "GLES Capabilities Information:");
-    Debug.print(() => "     hasRequiredFeatures : " + this._hasRequiredFeatures);
+    Debug.print(() => "     hasRequiredFeatures : " + (0 === missingRequiredFeatures.length ? "yes" : "no"));
+    Debug.print(() => " missingOptionalFeatures : " + (missingRequiredFeatures.length > 0 ? "yes" : "no"));
     Debug.print(() => " hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
     Debug.print(() => "              GL_VERSION : " + gl.getParameter(gl.VERSION));
     Debug.print(() => "               GL_VENDOR : " + gl.getParameter(gl.VENDOR));
@@ -456,6 +511,7 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
+  public readonly enableOptimizedSurfaceShaders: boolean;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -493,18 +549,56 @@ export class System extends RenderSystem {
       this._drawBuffersExtension.drawBuffersWEBGL(attachments);
   }
 
+  /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
+  public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
+    let context = canvas.getContext("webgl", contextAttributes);
+    if (null === context) {
+      context = canvas.getContext("experimental-webgl", contextAttributes); // IE, Edge...
+      if (null === context) {
+        return undefined;
+      }
+    }
+    return context;
+  }
+
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
+    const canvas = document.createElement("canvas") as HTMLCanvasElement;
+    if (null === canvas)
+      return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [] };
+
+    let errorMessage: string | undefined;
+    canvas.addEventListener("webglcontextcreationerror", (event) => {
+      errorMessage = (event as WebGLContextEvent).statusMessage || "webglcontextcreationerror was triggered with no error provided";
+    }, false);
+
+    let hasMajorPerformanceCaveat = false;
+    let context = System.createContext(canvas, { failIfMajorPerformanceCaveat: true });
+    if (undefined === context) {
+      hasMajorPerformanceCaveat = true;
+      context = System.createContext(canvas); // try to create context without black-listed GPU
+      if (undefined === context)
+        return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [] };
+    }
+
+    const capabilities = new Capabilities();
+    const compatibility = capabilities.init(context);
+    compatibility.contextErrorMessage = errorMessage;
+
+    if (hasMajorPerformanceCaveat && compatibility.status !== WebGLRenderCompatibilityStatus.MissingRequiredFeatures)
+      compatibility.status = WebGLRenderCompatibilityStatus.MajorPerformanceCaveat;
+
+    return compatibility;
+  }
+
   public static create(optionsIn?: RenderSystem.Options): System {
     const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    let context = canvas.getContext("webgl");
-    if (null === context) {
-      context = canvas.getContext("experimental-webgl"); // IE, Edge...
-      if (null === context) {
-        throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
-      }
+    const context = System.createContext(canvas);
+    if (undefined === context) {
+      throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
 
     const capabilities = Capabilities.create(context, options.disabledExtensions);
@@ -682,6 +776,7 @@ export class System extends RenderSystem {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
+    this.enableOptimizedSurfaceShaders = undefined !== options && true === options.enableOptimizedSurfaceShaders;
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));

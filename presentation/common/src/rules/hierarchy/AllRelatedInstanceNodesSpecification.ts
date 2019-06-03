@@ -4,20 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
 import { SchemasSpecification } from "../SchemasSpecification";
 
 /**
- * Returns all related instance nodes for parent ECInstance node.
+ * Creates nodes for all related instances for parent ECInstance node.
  *
  * **Precondition:** can be used only if parent node is ECInstance node. If there is
  * no immediate parent instance node it will go up until it finds one.
+ *
+ * @public
  */
 export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.AllRelatedInstanceNodes;
+  specType: ChildNodeSpecificationTypes.AllRelatedInstanceNodes;
 
   /**
    * Specification of schemas whose instances should be returned.

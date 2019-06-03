@@ -34,23 +34,35 @@ export class PolyfaceData {
   // <li> EXCEPT -- for optional arrays, the return 000.
   // <li>copyX methods move data to caller-supplied result..
   // </ul>
-
+  /** Relative tolerance used in tests for planar facets
+   * @internal
+   */
   public static readonly planarityLocalRelTol = 1.0e-13;
+  /** Coordinate data for points in the facets, packed as numbers in a contiguous array. */
   public point: GrowableXYZArray;
+  /** Indices of points at facet vertices. */
   public pointIndex: number[];
-  // edgeVisible[i] = true if the edge following pointIndex[i] is visible
+  /** booleans indicating visibility of corresponding edges */
   public edgeVisible: boolean[];
-
+  /** Coordinates of normal vectors, packed as numbers in a contguous array */
   public normal: GrowableXYZArray | undefined;
+  /** indices of normals at facet vertices. */
   public normalIndex: number[] | undefined;
+  /** Coordinates of uv parameters, packed as numbers in a contiguous array. */
   public param?: GrowableXYArray;
+  /** Indics of params at facet vertices. */
   public paramIndex: number[] | undefined;
+  /** Color values.  These are carried around as simple numbers, but are probably
+   * required (by display systems) map exactly to 32 bit integers.
+   */
   public color: number[] | undefined;
+  /** Indices of colors at facet vertices. */
   public colorIndex: number[] | undefined;
   /** Face data will remain empty until a face is specified. */
   public face: FacetFaceData[];
+  /** Auxilliary data */
   public auxData: PolyfaceAuxData | undefined;
-
+  /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
@@ -59,7 +71,7 @@ export class PolyfaceData {
     if (needParams) { this.param = new GrowableXYArray(); this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
   }
-
+  /** Return a depp clone. */
   public clone(): PolyfaceData {
     const result = new PolyfaceData();
     result.point = this.point.clone();
@@ -84,7 +96,7 @@ export class PolyfaceData {
       result.auxData = this.auxData.clone();
     return result;
   }
-
+  /** Test for equal indices and nearly equal coordinates */
   public isAlmostEqual(other: PolyfaceData): boolean {
     if (!GrowableXYZArray.isAlmostEqual(this.point, other.point))
       return false;
@@ -104,13 +116,22 @@ export class PolyfaceData {
     if (!PolyfaceAuxData.isAlmostEqual(this.auxData, other.auxData)) return false;
     return true;
   }
+  /** Ask if normals are required in this mesh. */
   public get requireNormals(): boolean { return undefined !== this.normal; }
+  /** Get the point count */
   public get pointCount() { return this.point.length; }
+  /** Get the normal count */
   public get normalCount() { return this.normal ? this.normal.length : 0; }
+  /** Get the param count */
   public get paramCount() { return this.param ? this.param.length : 0; }
+  /** Get the color count */
   public get colorCount() { return this.color ? this.color.length : 0; }
+  /** Get the index count.  Note that there is one count, and all index arrays (point, normal, param, color) must match */
   public get indexCount() { return this.pointIndex.length; }  // ALWAYS INDEXED ... all index vectors must have same length.
-  /** Will return 0 if no faces were specified during construction. */
+  /** Get the number of faces.
+   * * Note that a "face" is not a facet.
+   * * A "face" is a subset of facets grouped for application purposes.
+   */
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
@@ -226,9 +247,9 @@ export class PolyfaceData {
     }
   }
   private static trimArray(data: any[] | undefined, length: number) { if (data && length < data.length) data.length = length; }
-/** Trim all index arrays to stated length.
- * * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
- */
+  /** Trim all index arrays to stated length.
+   * * This is called by PolyfaceBuilder to clean up after an aborted construction sequence.
+   */
   public trimAllIndexArrays(length: number): void {
     PolyfaceData.trimArray(this.pointIndex, length);
     PolyfaceData.trimArray(this.paramIndex, length);
@@ -243,7 +264,7 @@ export class PolyfaceData {
       }
     }
   }
-/** Resize all data arrays to specified length */
+  /** Resize all data arrays to specified length */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {
       while (this.point.length < length) this.point.push(Point3d.create());
@@ -305,23 +326,23 @@ export class PolyfaceData {
     if (this.normal)
       this.normal.scaleInPlace(-1.0);
   }
-  // This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
-  // 1) Caller must reverse normals if semanitically needed.
-  // 2) Caller must reverse indices if semantically needed.
+  /** Apply `transform` to point and normal arrays.
+   * * IMPORTANT This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
+   * * i.e. caller must separately reverse index order and normal direction if needed.
+   */
   public tryTransformInPlace(
     transform: Transform): boolean {
-    const inverseTranspose = transform.matrix.inverse();
     this.point.multiplyTransformInPlace(transform);
 
-    if (inverseTranspose) {
-      // apply simple Matrix3d to normals ...
-      if (this.normal) {
-        this.normal.multiplyMatrix3dInPlace(inverseTranspose);
-      }
-    }
+    if (this.normal && !transform.matrix.isIdentity)
+      this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
     return true;
   }
-
+  /**
+   * * Search for duplication of coordinates within points, normals, and params.
+   * * compress the coordinate arrays.
+   * * revise all indexing for the relocated coordinates
+   */
   public compress() {
     const packedData = ClusterableArray.clusterGrowablePoint3dArray(this.point);
     this.point = packedData.growablePackedPoints!;
@@ -347,6 +368,9 @@ export class PolyfaceData {
         return false;
     return true;
   }
+  /** Reverse data in facet indexing arrays.
+   * * parameterized over type T so non-number data -- e.g. boolean visibility flags -- can be reversed.
+   */
   public static reverseIndices<T>(facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean): boolean {
     if (!indices || indices.length === 0)
       return true;  // empty case

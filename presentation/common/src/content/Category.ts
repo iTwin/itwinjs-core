@@ -6,8 +6,9 @@
 
 /**
  * A data structure that describes a [[Field]] category.
+ * @public
  */
-export default interface CategoryDescription {
+export interface CategoryDescription {
   /** Unique name */
   name: string;
   /** Display label */

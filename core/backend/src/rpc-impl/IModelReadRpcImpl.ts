@@ -4,21 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { ClientRequestContext, assert, Id64, Id64Set, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, assert, Id64, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
-  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModel,
-  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, ModelProps, PageOptions, RpcInterface, RpcManager,
-  SnapRequestProps, SnapResponseProps, ViewStateProps,
+  ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModelProps,
+  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, IModelTokenProps, ModelProps, RpcInterface, RpcManager,
+  SnapRequestProps, SnapResponseProps, ViewStateProps, IModel, IModelVersion, QueryLimit, QueryQuota, QueryResponse, QueryPriority,
 } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { DictionaryModel } from "../Model";
-import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
-import { QueryPageMemoizer } from "./QueryPageMemoizer";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -29,30 +27,32 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
-  public async openForRead(iModelToken: IModelToken): Promise<IModel> {
+  public async openForRead(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return OpenIModelDbMemoizer.openIModelDb(requestContext, iModelToken, OpenParams.fixedVersion());
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const openParams: OpenParams = OpenParams.fixedVersion();
+    openParams.timeout = 1000; // 1 second
+    const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const db = await IModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    return db.toJSON();
   }
 
-  public async close(iModelToken: IModelToken): Promise<boolean> {
+  public async close(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     await IModelDb.find(iModelToken).close(requestContext, iModelToken.openMode === OpenMode.Readonly ? KeepBriefcase.Yes : KeepBriefcase.No);
     return Promise.resolve(true);
   }
 
-  public async queryPage(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    const requestContext = ClientRequestContext.current;
-    return QueryPageMemoizer.perform({ requestContext, iModelToken, ecsql, bindings, options });
-  }
-
-  public async queryRowCount(iModelToken: IModelToken, ecsql: string, bindings?: any[] | object): Promise<number> {
+  public async queryRows(tokenProps: IModelTokenProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    const rowCount: number = await iModelDb.queryRowCount(ecsql, bindings);
-    Logger.logTrace(loggerCategory, "IModelDbRemoting.getRowCount", () => ({ ecsql, count: rowCount }));
-    return rowCount;
+    return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 
-  public async queryModelRanges(iModelToken: IModelToken, modelIds: Id64Set): Promise<Range3dProps[]> {
+  public async queryModelRanges(tokenProps: IModelTokenProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const modelIds = new Set(modelIdsList);
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const ranges: Range3dProps[] = [];
     for (const id of modelIds) {
@@ -74,7 +74,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return ranges;
   }
 
-  public async getModelProps(iModelToken: IModelToken, modelIds: Id64Set): Promise<ModelProps[]> {
+  public async getModelProps(tokenProps: IModelTokenProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const modelIds = new Set(modelIdsList);
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
@@ -91,12 +93,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return modelJsonArray;
   }
 
-  public async queryModelProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ModelProps[]> {
-    const ids = await this.queryEntityIds(iModelToken, params);
-    return this.getModelProps(iModelToken, ids);
+  public async queryModelProps(tokenProps: IModelTokenProps, params: EntityQueryParams): Promise<ModelProps[]> {
+    const ids = await this.queryEntityIds(tokenProps, params);
+    return this.getModelProps(tokenProps, [...ids]);
   }
 
-  public async getElementProps(iModelToken: IModelToken, elementIds: Id64Set): Promise<ElementProps[]> {
+  public async getElementProps(tokenProps: IModelTokenProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const elementIds = new Set(elementIdsList);
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
@@ -110,18 +114,20 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return elementProps;
   }
 
-  public async queryElementProps(iModelToken: IModelToken, params: EntityQueryParams): Promise<ElementProps[]> {
-    const ids = await this.queryEntityIds(iModelToken, params);
-    const res = this.getElementProps(iModelToken, ids);
+  public async queryElementProps(tokenProps: IModelTokenProps, params: EntityQueryParams): Promise<ElementProps[]> {
+    const ids = await this.queryEntityIds(tokenProps, params);
+    const res = this.getElementProps(tokenProps, [...ids]);
     return res;
   }
 
-  public async queryEntityIds(iModelToken: IModelToken, params: EntityQueryParams): Promise<Id64Set> {
+  public async queryEntityIds(tokenProps: IModelTokenProps, params: EntityQueryParams): Promise<Id64String[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const res = IModelDb.find(iModelToken).queryEntityIds(params);
-    return res;
+    return [...res];
   }
 
-  public async getClassHierarchy(iModelToken: IModelToken, classFullName: string): Promise<string[]> {
+  public async getClassHierarchy(tokenProps: IModelTokenProps, classFullName: string): Promise<string[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const iModelDb: IModelDb = IModelDb.find(iModelToken);
     const classArray: string[] = [];
     while (true) {
@@ -135,7 +141,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return classArray;
   }
 
-  public async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
+  public async getAllCodeSpecs(tokenProps: IModelTokenProps): Promise<any[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const codeSpecs: any[] = [];
     IModelDb.find(iModelToken).withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
@@ -145,30 +152,36 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateProps> {
+  public async getViewStateData(tokenProps: IModelTokenProps, viewDefinitionId: string): Promise<ViewStateProps> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
   }
 
-  public async readFontJson(iModelToken: IModelToken): Promise<any> {
+  public async readFontJson(tokenProps: IModelTokenProps): Promise<any> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     return IModelDb.find(iModelToken).readFontJson();
   }
 
-  public async requestSnap(iModelToken: IModelToken, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(tokenProps: IModelTokenProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const requestContext = ClientRequestContext.current;
     return IModelDb.find(iModelToken).requestSnap(requestContext, sessionId, props);
   }
 
-  public async cancelSnap(iModelToken: IModelToken, sessionId: string): Promise<void> {
+  public async cancelSnap(tokenProps: IModelTokenProps, sessionId: string): Promise<void> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     return IModelDb.find(iModelToken).cancelSnap(sessionId);
   }
 
-  public async getToolTipMessage(iModelToken: IModelToken, id: string): Promise<string[]> {
+  public async getToolTipMessage(tokenProps: IModelTokenProps, id: string): Promise<string[]> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const el = IModelDb.find(iModelToken).elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in an 8-byte prefix header. */
-  public async getViewThumbnail(iModelToken: IModelToken, viewId: string): Promise<Uint8Array> {
+  public async getViewThumbnail(tokenProps: IModelTokenProps, viewId: string): Promise<Uint8Array> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       return Promise.reject(new Error("no thumbnail"));
@@ -179,7 +192,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return val;
   }
 
-  public async getDefaultViewId(iModelToken: IModelToken): Promise<Id64String> {
+  public async getDefaultViewId(tokenProps: IModelTokenProps): Promise<Id64String> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const spec = { namespace: "dgn_View", name: "DefaultView" };
     const blob = IModelDb.find(iModelToken).queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
@@ -188,19 +202,22 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const view = new Uint32Array(blob.buffer);
     return Id64.fromUint32Pair(view[0], view[1]);
   }
-  public async getSpatialCategoryId(iModelToken: IModelToken, categoryName: string): Promise<Id64String | undefined> {
+  public async getSpatialCategoryId(tokenProps: IModelTokenProps, categoryName: string): Promise<Id64String | undefined> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const iModelDb = IModelDb.find(iModelToken);
     const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 
-  public async getIModelCoordinatesFromGeoCoordinates(iModelToken: IModelToken, props: string): Promise<IModelCoordinatesResponseProps> {
+  public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelTokenProps, props: string): Promise<IModelCoordinatesResponseProps> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const iModelDb = IModelDb.find(iModelToken);
     const requestContext = ClientRequestContext.current;
     return iModelDb.getIModelCoordinatesFromGeoCoordinates(requestContext, props);
   }
 
-  public async getGeoCoordinatesFromIModelCoordinates(iModelToken: IModelToken, props: string): Promise<GeoCoordinatesResponseProps> {
+  public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelTokenProps, props: string): Promise<GeoCoordinatesResponseProps> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
     const iModelDb = IModelDb.find(iModelToken);
     const requestContext = ClientRequestContext.current;
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(requestContext, props);

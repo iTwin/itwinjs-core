@@ -47,7 +47,7 @@ export class PathFragment {
     this.childCurve = childCurve;
   }
   /**
-   * @returns true if the distance is within the distance limits of this fragment.
+   * Return true if the distance is within the distance limits of this fragment.
    * @param distance
    */
   public containsChainDistance(distance: number): boolean {
@@ -55,7 +55,7 @@ export class PathFragment {
   }
 
   /**
-   * @returns true if this fragment addresses `curve` and brackets `fraction`
+   * Return true if this fragment addresses `curve` and brackets `fraction`
    * @param distance
    */
   public containsChildCurveAndChildFraction(curve: CurvePrimitive, fraction: number): boolean {
@@ -178,8 +178,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   private _path: CurveChain;
   private _fragments: PathFragment[];
   private _totalLength: number; // matches final fragment distance1.
+  /** Test if other is a `CurveChainWithDistanceIndex` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof CurveChainWithDistanceIndex; }
-  // finall assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
+  // final assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
     this._path = path;
@@ -196,6 +197,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return CurveChainWithDistanceIndex.createCapture(c as CurveChain);
     return undefined;
   }
+  /** Return a deep clone */
   public clone(): CurvePrimitive | undefined {
     const c = this._path.clone();
     if (c !== undefined && c instanceof CurveChain)
@@ -220,7 +222,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return c.startPoint(result);
     return Point3d.createZero(result);
   }
-  /** @returns return the end point of the primitive. The default implementation returns fractionToPoint(1.0) */
+  /** Return the end point of the primitive. The default implementation returns fractionToPoint(1.0) */
   public endPoint(result?: Point3d): Point3d {
     const c = this._path.cyclicCurvePrimitive(-1);
     if (c)
@@ -264,9 +266,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     CurvePrimitive.installStrokeCountMap(this, myMap, parentStrokeMap);
   }
-/** Second step of double dispatch:  call `this._path.dispatchToGeometryHandler (handler)`
- * * Note that this exposes the children individually to the handler.
- */
+  /** Second step of double dispatch:  call `this._path.dispatchToGeometryHandler (handler)`
+   * * Note that this exposes the children individually to the handler.
+   */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return this._path.dispatchToGeometryHandler(handler);
   }
@@ -285,7 +287,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return Math.abs(fraction1 - fraction0) * this._totalLength;
   }
   /**
-   *
+   * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
    * @param primitives primitive array to be CAPTURED (not cloned)
    */
   public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
@@ -337,19 +339,21 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
 
   /**
-   * @returns the total length of curves.
+   * Returns the total length of curves.
    */
   public curveLength(): number {
     return this._totalLength;
   }
   /**
-   * @returns the total length of curves.
+   * Returns the total length of the path.
+   * * This is exact (and simple property lookup) because the true lengths were summed at construction time.
    */
   public quickLength(): number {
     return this._totalLength;
   }
 
-  /** Return the point (x,y,z) on the curve at fractional position along the chain.
+  /**
+   * Return the point (x,y,z) on the curve at fractional position along the chain.
    * @param fraction fractional position along the geometry.
    * @returns Returns a point on the curve.
    */
@@ -383,10 +387,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   }
 
   /**
-   *
+   * Returns a ray whose origin is the curve point and direction is the unit tangent.
    * @param fraction fractional position on the curve
    * @param result optional receiver for the result.
-   * @returns Returns a ray whose origin is the curve point and direction is the unit tangent.
+   * Returns a ray whose origin is the curve point and direction is the unit tangent.
    */
   public fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const distanceAlongPath = fraction * this._totalLength;

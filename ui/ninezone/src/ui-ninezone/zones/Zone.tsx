@@ -17,7 +17,7 @@ import "./Zone.scss";
 export interface ZoneProps extends CommonProps {
   /** Zone bounds. */
   bounds: RectangleProps;
-  /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[GhostOutline]] */
+  /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[Outline]] */
   children?: React.ReactNode;
   /** Describes if the zone is in footer mode. */
   isInFooterMode?: boolean;

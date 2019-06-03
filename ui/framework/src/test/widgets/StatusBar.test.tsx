@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
+import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import {
@@ -26,7 +27,11 @@ import {
   ActivityMessageEndReason,
 } from "@bentley/imodeljs-frontend";
 
-import { MessageHyperlink, MessageButton } from "@bentley/ui-ninezone";
+import {
+  MessageHyperlink,
+  MessageButton,
+  Message,
+} from "@bentley/ui-ninezone";
 
 describe("StatusBar", () => {
 
@@ -66,11 +71,20 @@ describe("StatusBar", () => {
     wrapper.unmount();
   });
 
-  it("StatusBar should render a Toast message", () => {
+  it("StatusBar should render a Toast message and animate out", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.", "A detailed message.");
     notifications.outputMessage(details);
+    wrapper.update();
+
+    const toast = wrapper.find(".nz-toast");
+    expect(toast.length).to.eq(1);
+
+    toast.simulate("transitionEnd");
+    wrapper.update();
+
+    expect(wrapper.find(".nz-toast").length).to.eq(0);
 
     wrapper.unmount();
   });
@@ -80,18 +94,23 @@ describe("StatusBar", () => {
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(1);
 
     wrapper.unmount();
   });
 
-  it("Sticky message should closed", () => {
+  it("Sticky message should close on button click", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
-
     wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(1);
+
     wrapper.find(MessageButton).simulate("click");
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
 
     wrapper.unmount();
   });
@@ -111,7 +130,12 @@ describe("StatusBar", () => {
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(1);
+
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
 
     wrapper.unmount();
   });
@@ -122,9 +146,12 @@ describe("StatusBar", () => {
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
-
     wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(1);
+
     wrapper.find(MessageHyperlink).simulate("click");
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
 
     wrapper.unmount();
   });
@@ -135,9 +162,12 @@ describe("StatusBar", () => {
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
-
     wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(1);
+
     wrapper.find(MessageButton).simulate("click");
+    wrapper.update();
+    expect(wrapper.find(Message).length).to.eq(0);
 
     wrapper.unmount();
   });

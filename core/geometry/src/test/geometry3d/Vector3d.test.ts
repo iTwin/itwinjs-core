@@ -67,5 +67,24 @@ describe("Vector3d", () => {
     ck.checkpoint("Point3dArray.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("RotateVectorAroundVector", () => {
+    const ck = new bsiChecker.Checker();
+    const vectorA = Vector3d.create(1, 2, 3);
+    const axis = Vector3d.create(-1, 3, 6);
+    const theta = Angle.createDegrees(20);
+    const vectorA1 = Vector3d.createRotateVectorAroundVector(vectorA, axis, theta);
+    if (ck.testPointer(vectorA1) && vectorA1) {
+      const theta1 = vectorA.planarAngleTo(vectorA1, axis);
+      ck.testAngleNoShift(theta, theta1);
+    }
+
+    const vectorA2 = Vector3d.createRotateVectorAroundVector(vectorA, axis);
+    if (ck.testPointer(vectorA2) && vectorA2) {
+      const theta1 = vectorA.planarAngleTo(vectorA2, axis);
+      ck.testAngleNoShift(theta1, Angle.createDegrees(90));
+    }
+    ck.testUndefined(Vector3d.createRotateVectorAroundVector(vectorA, Vector3d.create(0, 0, 0)));
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });

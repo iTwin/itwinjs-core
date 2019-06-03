@@ -10,7 +10,7 @@ import { BeInspireTreeNode } from "./component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
 import { PropertyUpdatedArgs, EditorContainer } from "../editors/EditorContainer";
 
-/** Properties for a tree that has cell editing enabled
+/** Properties for a [[Tree]] that has cell editing enabled
  * @beta
  */
 export interface EditableTreeProps {
@@ -33,13 +33,19 @@ export interface TreeCellUpdatedArgs {
   newValue: string;
 }
 
-/** @internal */
+/** Prototype for function to set the currently edited tree node
+ * @beta
+ */
 export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
-/** @internal */
+/** Prototype for function to get the currently edited tree node
+ * @beta
+ */
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
-/** @internal */
+/** Tree Cell editing information
+ * @beta
+ */
 export class CellEditingEngine {
   private _getCurrentlyEditedNode?: GetCurrentlyEditedNode;
   private _setCurrentlyEditedNode?: SetCurrentlyEditedNode;

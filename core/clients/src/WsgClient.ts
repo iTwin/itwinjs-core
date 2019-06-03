@@ -16,7 +16,7 @@ import { AccessToken, AuthorizationToken } from "./Token";
 const loggerCategory: string = ClientsLoggerCategory.Clients;
 
 /** Error that was returned by a WSG based service.
- * @internal
+ * @beta
  */
 export class WsgError extends ResponseError {
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
@@ -186,7 +186,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 /**
  * Options for WSG requests sent to the service
- * @internal
+ * @beta
  */
 export interface WsgRequestOptions {
   ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
@@ -196,7 +196,7 @@ export interface WsgRequestOptions {
 
 /**
  * Base class for Client implementations of services that are based on WSG
- * @internal
+ * @beta
  */
 export abstract class WsgClient extends Client {
   public static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
@@ -259,6 +259,7 @@ export abstract class WsgClient extends Client {
    * Gets the (delegation) access token to access the service
    * @param authTokenInfo Access token.
    * @returns Resolves to the (delegation) access token.
+   * @internal
    */
   public async getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken> {
     const imsClient = new ImsDelegationSecureTokenClient();
@@ -394,29 +395,73 @@ export abstract class WsgClient extends Client {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
-    const options: RequestOptions = {
-      method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
-      qs: queryOptions,
-      accept: "application/json",
-    };
-
-    await this.setupOptionDefaults(options);
-    requestContext.enter();
-
-    const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
-    if (!res.body || !res.body.hasOwnProperty("instances")) {
-      return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
-    }
-    // console.log(JSON.stringify(res.body.instances));
-    const typedInstances: T[] = new Array<T>();
-    for (const ecJsonInstance of res.body.instances) {
-      const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
-      if (typedInstance) {
-        typedInstances.push(typedInstance);
+    let useSkipToken: boolean = false;
+    let instancesLeft: number = -1;
+    if (queryOptions) {
+      if (!queryOptions.$top) {
+        // Top was undefined. All instances must be returned by using SkipToken.
+        queryOptions.$top = queryOptions.$pageSize;
+        useSkipToken = true;
+      } else if (queryOptions.$pageSize) {
+        // Top and PageSize are defined. If Top is less or equal to PageSize then single request should be performed.
+        // Otherwise multiple request should be performed by using SkipToken.
+        if (queryOptions.$top > queryOptions.$pageSize) {
+          instancesLeft = queryOptions.$top;
+          queryOptions.$top = queryOptions.$pageSize;
+          useSkipToken = true;
+        }
       }
+      // Clear PageSize so that it won't be included in url.
+      queryOptions.$pageSize = undefined;
     }
+
+    let skipToken: string = "";
+    const typedInstances: T[] = new Array<T>();
+    do {
+      if (useSkipToken && instancesLeft > 0) {
+        // Top was greater than PageSize. Update Top if this is the last page.
+        if (instancesLeft > queryOptions!.$top!) {
+          instancesLeft -= queryOptions!.$top!;
+        } else {
+          queryOptions!.$top = instancesLeft;
+          useSkipToken = false;
+        }
+      }
+
+      const options: RequestOptions = {
+        method: "GET",
+        qs: queryOptions,
+        accept: "application/json",
+      };
+
+      if (skipToken.length === 0) {
+        options.headers = {
+          authorization: requestContext.accessToken.toTokenString(),
+        };
+      } else {
+        options.headers = {
+          authorization: requestContext.accessToken.toTokenString(),
+          skiptoken: skipToken,
+        };
+      }
+
+      await this.setupOptionDefaults(options);
+      requestContext.enter();
+
+      const res: Response = await request(requestContext, url, options);
+      requestContext.enter();
+      if (!res.body || !res.body.hasOwnProperty("instances")) {
+        return Promise.reject(new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`));
+      }
+      // console.log(JSON.stringify(res.body.instances));
+      for (const ecJsonInstance of res.body.instances) {
+        const typedInstance: T | undefined = ECJsonTypeMap.fromJson<T>(typedConstructor, "wsg", ecJsonInstance);
+        if (typedInstance) {
+          typedInstances.push(typedInstance);
+        }
+      }
+      skipToken = res.header.skiptoken;
+    } while (skipToken && useSkipToken);
 
     Logger.logTrace(loggerCategory, "Successful GET request", () => ({ url }));
     return Promise.resolve(typedInstances);

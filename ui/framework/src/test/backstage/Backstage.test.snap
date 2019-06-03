@@ -2,6 +2,7 @@
 
 exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
 <Backstage
+  header={null}
   isOpen={false}
   onClose={[Function]}
   showOverlay={true}
@@ -10,7 +11,38 @@ exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
 
 exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
 <Backstage
+  header={null}
   isOpen={true}
+  onClose={[Function]}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly with AccessToken 1`] = `
+<Backstage
+  header={
+    <UserProfileBackstageItem
+      accessToken={
+        MockAccessToken {
+          "_samlAssertion": "",
+        }
+      }
+    />
+  }
+  isOpen={false}
+  onClose={[Function]}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly with header 1`] = `
+<Backstage
+  header={
+    <div>
+       Hello World! 
+    </div>
+  }
+  isOpen={false}
   onClose={[Function]}
   showOverlay={true}
 />
@@ -18,6 +50,7 @@ exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
 
 exports[`Backstage <Backstage /> with child items 1`] = `
 <Backstage
+  header={null}
   isOpen={true}
   onClose={[Function]}
   showOverlay={true}
@@ -42,92 +75,4 @@ exports[`Backstage <Backstage /> with child items 1`] = `
     workflowId="ExampleWorkflow"
   />
 </Backstage>
-`;
-
-exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem renders correctly 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={false}
-  isDisabled={false}
-  key="my-command-id"
-  onClick={[Function]}
->
-  tests.label
-</BackstageItem>
-`;
-
-exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when active 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={true}
-  isDisabled={false}
-  key="Test1"
-  onClick={[Function]}
-  subtitle=""
->
-  tests.label
-</BackstageItem>
-`;
-
-exports[`Backstage <FrontstageLaunchBackstageItem /> FrontstageLaunchBackstageItem renders correctly when inactive 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={false}
-  isDisabled={false}
-  key="Test1"
-  onClick={[Function]}
-  subtitle=""
->
-  tests.label
-</BackstageItem>
-`;
-
-exports[`Backstage <SeparatorBackstageItem /> SeparatorBackstageItem renders correctly 1`] = `
-<BackstageSeparator
-  key="NaN"
-/>
-`;
-
-exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when active 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={true}
-  isDisabled={false}
-  key="ExampleWorkflow:Task1"
-  onClick={[Function]}
->
-  tests.label
-</BackstageItem>
-`;
-
-exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
-<BackstageItem
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={false}
-  isDisabled={false}
-  key="ExampleWorkflow:Task1"
-  onClick={[Function]}
->
-  tests.label
-</BackstageItem>
 `;

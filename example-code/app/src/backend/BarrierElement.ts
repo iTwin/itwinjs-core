@@ -14,6 +14,7 @@ import { RobotWorld } from "./RobotWorldSchema";
  * In this example, a "barrier" is represented as a line in the X-Y plane.
  */
 export class Barrier extends SpatialLocationElement {
+  /** @internal */
   public static get className(): string { return "Barrier"; }
   //  Define the properties added by this subclass
   public length: number = 1.0;                    // The length of the barrier

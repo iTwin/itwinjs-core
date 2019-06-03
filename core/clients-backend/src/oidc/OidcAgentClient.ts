@@ -3,40 +3,44 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
-import { ClientRequestContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { GrantParams, TokenSet } from "openid-client";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { BentleyStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcBackendClientConfiguration, OidcBackendClient } from "./OidcBackendClient";
-import { OidcDelegationClient } from "./OidcDelegationClient";
 
-/** Client configuration to create OIDC/OAuth tokens for agent applications
- * @beta
+/**
+ * Configuration of clients for agent or service applications.
+ * @internal
  */
-export interface OidcAgentClientConfiguration extends OidcBackendClientConfiguration {
-  serviceUserEmail: string;
-  serviceUserPassword: string;
-}
+export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 
-/** Utility to generate OIDC/OAuth tokens for agent or service applications
- * @beta
+/**
+ * Utility to generate OIDC/OAuth tokens for agent or service applications
+ * @internal
  */
 export class OidcAgentClient extends OidcBackendClient {
-  constructor(private _agentConfiguration: OidcAgentClientConfiguration) {
-    super(_agentConfiguration as OidcBackendClientConfiguration);
+  constructor(agentConfiguration: OidcAgentClientConfiguration) {
+    super(agentConfiguration);
   }
 
+  /** Get the access token */
   public async getToken(requestContext: ClientRequestContext): Promise<AccessToken> {
-    // Note: for now we start with an IMS saml token, and use OIDC delegation to get a JWT token
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, {
-      email: this._agentConfiguration.serviceUserEmail,
-      password: this._agentConfiguration.serviceUserPassword,
-    }, this._configuration.clientId);
-    const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken);
+    const scope = this._configuration.scope;
+    if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
+      throw new BentleyError(BentleyStatus.ERROR, "Scopes for an Agent cannot include 'openid email profile organization'");
 
-    const delegationClient = new OidcDelegationClient(this._configuration);
-    const jwt: AccessToken = await delegationClient.getJwtFromSaml(requestContext, samlToken);
-    return jwt;
+    const grantParams: GrantParams = {
+      grant_type: "client_credentials",
+      scope,
+    };
+
+    const client = await this.getClient(requestContext);
+    const tokenSet: TokenSet = await client.grant(grantParams);
+    const userInfo = OidcBackendClient.parseUserInfo(tokenSet.access_token);
+    return this.createToken(tokenSet, userInfo);
   }
 
+  /** Refresh the access token - simply checks if the token is still valid before re-fetching a new access token */
   public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
     requestContext.enter();
 
@@ -44,7 +48,7 @@ export class OidcAgentClient extends OidcBackendClient {
     const expiresAt = jwt.getExpiresAt();
     if (!expiresAt)
       throw new BentleyError(BentleyStatus.ERROR, "Invalid JWT passed to refresh");
-    if ((expiresAt.getTime() - Date.now()) > 1 * 60 * 1000)
+    if ((expiresAt.getTime() - Date.now()) < 1 * 60 * 1000)
       return jwt;
 
     return this.getToken(requestContext);

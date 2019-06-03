@@ -21,10 +21,10 @@ import { KnotVector } from "./KnotVector";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 /**
- * Base class for CurvePrimitve (necessarily 3D) with _polygon.
- * * This has a Bezier1dNd polygon as a member, and implements dimension-indendent methods
+ * Base class for CurvePrimitive (necessarily 3D) with _polygon.
+ * * This has a Bezier1dNd polygon as a member, and implements dimension-independent methods
  * * This exists to support
- *    * BezeierCurve3d -- 3 coordinates x,y,z per block in the Bezier1dNd poles
+ *    * BezierCurve3d -- 3 coordinates x,y,z per block in the Bezier1dNd poles
  *    * BezierCurve3dH -- 4 coordinates x,y,z,w per block in the Bezier1dNd poles
  * * The implementations of "pure 3d" queries is based on calling `getPolePoint3d`.
  * * This has the subtle failure difference that `getPolePoint3d` call with a valid index on on a 3d curve always succeeds, but on 3dH curve fails when weight is zero.
@@ -117,11 +117,11 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       if (!point)
         return true;
       if (!plane.isPointInPlane(point))
-        break;    // which gets to return false, which isotherwise unreachable . . .
+        break;    // which gets to return false, which is otherwise unreachable . . .
     }
     return false;
   }
-  /** Return the lenght of the control polygon. */
+  /** Return the length of the control polygon. */
   public polygonLength(): number {
     if (!this.getPolePoint3d(0, this._workPoint0))
       return 0.0;

@@ -7,7 +7,7 @@
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import PresentationManager, { Props as PresentationManagerProps } from "./PresentationManager";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
@@ -20,8 +20,10 @@ let i18n: I18N | undefined;
  * Basically what it does is:
  * - Create a singleton [[PresentationManager]] instance
  * - Create a singleton [[SelectionManager]] instance
+ *
+ * @public
  */
-export default class Presentation {
+export class Presentation {
 
   /* istanbul ignore next */
   private constructor() { }
@@ -89,7 +91,7 @@ export default class Presentation {
     return presentationManager;
   }
 
-  /** @hidden */
+  /** @internal */
   public static set presentation(value: PresentationManager) {
     if (presentationManager)
       presentationManager.dispose();
@@ -105,7 +107,7 @@ export default class Presentation {
     return selectionManager;
   }
 
-  /** @hidden */
+  /** @internal */
   public static set selection(value: SelectionManager) {
     selectionManager = value;
   }
@@ -120,7 +122,7 @@ export default class Presentation {
     return i18n;
   }
 
-  /** @hidden */
+  /** @internal */
   public static set i18n(value: I18N) {
     i18n = value;
   }

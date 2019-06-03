@@ -36,7 +36,6 @@ import { RulesetsFactory } from '@bentley/presentation-common';
 import { SelectionHandler } from '@bentley/presentation-frontend';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SortDirection } from '@bentley/ui-core';
-import { Subtract } from '@bentley/presentation-common';
 import { TableDataChangeEvent } from '@bentley/ui-components';
 import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
@@ -44,30 +43,31 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeProps } from '@bentley/ui-components';
 import { ViewportProps } from '@bentley/ui-components';
 
-// Warning: (ae-missing-release-tag) "ContentBuilder" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
+export interface CacheInvalidationProps {
+    content?: boolean;
+    descriptor?: boolean;
+    descriptorConfiguration?: boolean;
+    size?: boolean;
+}
+
+// @internal
 export class ContentBuilder {
     static createPropertyDescription(field: Field): PropertyDescription;
     static createPropertyRecord(field: Field, item: Item, path?: Field[]): PropertyRecord;
 }
 
-// Warning: (ae-forgotten-export) The symbol "IContentDataProvider" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "ContentDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class ContentDataProvider implements IContentDataProvider {
     constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string);
     protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
     readonly displayType: string;
-    // (undocumented)
     dispose(): void;
     getContent(pageOptions?: PageOptions): Promise<Content | undefined>;
     getContentDescriptor: (() => Promise<Descriptor | undefined>) & _.MemoizedFunction;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     imodel: IModelConnection;
-    // Warning: (ae-forgotten-export) The symbol "CacheInvalidationProps" needs to be exported by the entry point presentation-components.d.ts
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
     keys: KeySet;
@@ -79,27 +79,35 @@ export class ContentDataProvider implements IContentDataProvider {
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
-// Warning: (ae-missing-release-tag) "DataProvidersFactory" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class DataProvidersFactory {
     constructor(props?: DataProvidersFactoryProps);
-    // Warning: (ae-forgotten-export) The symbol "PresentationTableDataProviderProps" needs to be exported by the entry point presentation-components.d.ts
     createSimilarInstancesTableDataProvider(propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord, props: Omit<PresentationTableDataProviderProps, "imodel" | "ruleset">): Promise<IPresentationTableDataProvider & {
         description: string;
     }>;
     }
 
-// Warning: (ae-missing-release-tag) "DataProvidersFactoryProps" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface DataProvidersFactoryProps {
-    // (undocumented)
     rulesetsFactory?: RulesetsFactory;
 }
 
-// Warning: (ae-missing-release-tag) "IPresentationLabelsProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
+    readonly displayType: string;
+    getContent: (pageOptions?: PageOptions) => Promise<Content | undefined>;
+    getContentDescriptor: () => Promise<Descriptor | undefined>;
+    getContentSetSize: () => Promise<number>;
+    keys: KeySet;
+    selectionInfo: SelectionInfo | undefined;
+}
+
+// @public
+export interface IPresentationDataProvider {
+    readonly imodel: IModelConnection;
+    readonly rulesetId: string;
+}
+
 // @public
 export interface IPresentationLabelsProvider {
     getLabel(key: InstanceKey): Promise<string>;
@@ -107,29 +115,20 @@ export interface IPresentationLabelsProvider {
     readonly imodel: IModelConnection;
 }
 
-// Warning: (ae-missing-release-tag) "IPresentationPropertyDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
 
-// Warning: (ae-missing-release-tag) "IPresentationTableDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export type IPresentationTableDataProvider = TableDataProvider & IContentDataProvider & {
     getRowKey: (row: RowItem) => InstanceKey;
 };
 
-// Warning: (ae-forgotten-export) The symbol "IPresentationDataProvider" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "IPresentationTreeDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
 }
 
-// Warning: (ae-missing-release-tag) "LabelsProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class LabelsProvider implements IPresentationLabelsProvider {
     constructor(imodel: IModelConnection);
@@ -139,8 +138,6 @@ export class LabelsProvider implements IPresentationLabelsProvider {
     readonly imodel: IModelConnection;
 }
 
-// Warning: (ae-missing-release-tag) "PresentationPropertyDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
     constructor(imodel: IModelConnection, rulesetId: string);
@@ -159,8 +156,6 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     protected sortFields(_category: CategoryDescription, fields: Field[]): void;
 }
 
-// Warning: (ae-missing-release-tag) "PresentationTableDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
@@ -183,8 +178,15 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     readonly sortDirection: SortDirection;
     }
 
-// Warning: (ae-missing-release-tag) "PresentationTreeDataProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
+// @public
+export interface PresentationTableDataProviderProps {
+    cachedPagesCount?: number;
+    displayType?: string;
+    imodel: IModelConnection;
+    pageSize?: number;
+    ruleset: string | Ruleset;
+}
+
 // @public
 export class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
     constructor(imodel: IModelConnection, rulesetId: string);
@@ -197,103 +199,63 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     readonly rulesetId: string;
     }
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "propertyGridWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props>;
+export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps>;
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "tableWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props_2> & Props_2>;
+export interface PropertyGridWithUnifiedSelectionProps {
+    dataProvider: IPresentationPropertyDataProvider;
+    requestedContentInstancesLimit?: number;
+    // @internal (undocumented)
+    selectionHandler?: SelectionHandler;
+}
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "treeWithFilteringSupport" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props_4>;
+export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps>;
 
-// Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
-// Warning: (ae-missing-release-tag) "treeWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & Props_3> & React.RefAttributes<React.Component<P, any, any>>>;
+export interface TableWithUnifiedSelectionProps {
+    dataProvider: IPresentationTableDataProvider;
+    // @internal (undocumented)
+    selectionHandler?: SelectionHandler;
+    selectionLevel?: number;
+}
 
-// @internal
-export class ViewportSelectionHandler implements IDisposable {
-    constructor(imodel: IModelConnection, ruleset: Ruleset | string);
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    imodel: IModelConnection;
-    readonly pendingAsyncs: Set<string>;
-    // (undocumented)
-    ruleset: Ruleset | string;
-    // (undocumented)
-    readonly rulesetId: string;
-    // (undocumented)
-    readonly selectionHandler: SelectionHandler;
-    }
-
-// Warning: (ae-missing-release-tag) "viewWithUnifiedSelection" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-// 
 // @public
-export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): {
-    new (props: Readonly<P & Props_5>): {
-        viewportSelectionHandler?: ViewportSelectionHandler | undefined;
-        readonly selectionHandler: SelectionHandler | undefined;
-        readonly imodel: (P & Props_5)["imodel"];
-        readonly rulesetId: string;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        componentDidUpdate(): void;
-        render(): JSX.Element;
-        context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props_5>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
-        readonly props: Readonly<P & Props_5> & Readonly<{
-            children?: React.ReactNode;
-        }>;
-        state: Readonly<{}>;
-        refs: {
-            [key: string]: React.ReactInstance;
-        };
-    };
-    new (props: P & Props_5, context?: any): {
-        viewportSelectionHandler?: ViewportSelectionHandler | undefined;
-        readonly selectionHandler: SelectionHandler | undefined;
-        readonly imodel: (P & Props_5)["imodel"];
-        readonly rulesetId: string;
-        componentDidMount(): void;
-        componentWillUnmount(): void;
-        componentDidUpdate(): void;
-        render(): JSX.Element;
-        context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<P & Props_5>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
-        readonly props: Readonly<P & Props_5> & Readonly<{
-            children?: React.ReactNode;
-        }>;
-        state: Readonly<{}>;
-        refs: {
-            [key: string]: React.ReactInstance;
-        };
-    };
-    defaultProps: {
-        ruleset: Ruleset;
-    };
-    readonly displayName: string;
-    contextType?: React.Context<any> | undefined;
-};
+export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
 
+// @public
+export interface TreeWithFilteringSupportProps {
+    activeMatchIndex?: number;
+    dataProvider: IPresentationTreeDataProvider;
+    filter?: string;
+    onFilterApplied?: (filter?: string) => void;
+    onMatchesCounted?: (count: number) => void;
+}
 
-// Warnings were encountered during analysis:
-// 
-// src/viewport/WithUnifiedSelection.tsx:36:108 - (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point presentation-components.d.ts
-// src/viewport/WithUnifiedSelection.tsx:47:5 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
-// src/viewport/WithUnifiedSelection.tsx:47:5 - (ae-incompatible-release-tags) The symbol "viewportSelectionHandler" is marked as @public, but its signature references "ViewportSelectionHandler" which is marked as @internal
+// @public
+export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & TreeWithUnifiedSelectionProps> & React.RefAttributes<React.Component<P, any, any>>>;
+
+// @public
+export interface TreeWithUnifiedSelectionProps {
+    dataProvider: IPresentationTreeDataProvider;
+    onNodesDeselected?: (items: TreeNodeItem[]) => boolean;
+    onNodesSelected?: (items: TreeNodeItem[], replace: boolean) => boolean;
+    // @internal (undocumented)
+    selectionHandler?: SelectionHandler;
+}
+
+// @public
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;
+
+// @public
+export interface ViewWithUnifiedSelectionProps {
+    // @alpha
+    ruleset?: Ruleset | string;
+    // @internal (undocumented)
+    selectionHandler?: ViewportSelectionHandler;
+}
+
 
 // (No @packageDocumentation comment for this package)
 

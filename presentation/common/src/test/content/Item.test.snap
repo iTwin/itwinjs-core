@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Item fromJSON creates valid Item from valid JSON 1`] = `
-Item {
+Object {
   "classInfo": Object {
     "id": "0x397c000000f221",
     "label": "XSS Unbranded",
@@ -25,7 +25,7 @@ Item {
 `;
 
 exports[`Item fromJSON creates valid Item from valid JSON without classInfo 1`] = `
-Item {
+Object {
   "classInfo": undefined,
   "displayValues": Object {
     "key1": "Greenland",
@@ -45,7 +45,7 @@ Item {
 `;
 
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
-Item {
+Object {
   "classInfo": Object {
     "id": "0xa3b70000013601",
     "label": "Bulgarian Lev Program Tools",
@@ -69,14 +69,14 @@ Item {
 `;
 
 exports[`Item fromJSON creates valid Item with nested content values 1`] = `
-Item {
+Object {
   "classInfo": Object {
     "id": "0x117d20000006e52",
     "label": "bypassing Buckinghamshire",
     "name": "Fantastic",
   },
   "displayValues": Object {
-    "key1": undefined,
+    "key1": null,
   },
   "imageId": "25d312e8-1f7a-4066-b0a1-de9fba7ba143",
   "label": "system El Salvador",
@@ -100,7 +100,7 @@ Item {
           },
         ],
         "values": Object {
-          "nested": undefined,
+          "nested": null,
         },
       },
     ],
@@ -109,14 +109,14 @@ Item {
 `;
 
 exports[`Item fromJSON creates valid Item with null values 1`] = `
-Item {
+Object {
   "classInfo": Object {
     "id": "0xf76a000000bd4c",
     "label": "Clothing Forge Chips",
     "name": "Intelligent Steel Pants",
   },
   "displayValues": Object {
-    "key1": undefined,
+    "key1": null,
   },
   "imageId": "6da4e9d2-8abe-47b0-8954-da11390a7074",
   "label": "optical Keyboard",
@@ -125,7 +125,7 @@ Item {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": undefined,
+    "key1": null,
   },
 }
 `;

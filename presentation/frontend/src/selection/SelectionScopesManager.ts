@@ -8,7 +8,10 @@ import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, SelectionScope, RpcRequestsHandler } from "@bentley/presentation-common";
 
-/** Properties for creating [[SelectionScopesManager]] */
+/**
+ * Properties for creating [[SelectionScopesManager]].
+ * @public
+ */
 export interface SelectionScopesManagerProps {
   /** RPC handler to use for requesting selection scopes */
   rpcRequestsHandler: RpcRequestsHandler;
@@ -20,6 +23,8 @@ export interface SelectionScopesManagerProps {
 /**
  * A manager that knows available [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope)
  * and can compute logical selection based on element IDs and selection scope.
+ *
+ * @public
  */
 export class SelectionScopesManager {
 
@@ -77,7 +82,7 @@ export class SelectionScopesManager {
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
       batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.iModelToken }, batchIds, scopeId));
     }
-    const batchKeys = await Promise.all(batchKeyPromises);
+    const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));
     return keys;
   }

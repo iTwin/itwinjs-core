@@ -56,11 +56,7 @@ Likewise, a server implements and exposes operations by writing normal TypeScrip
 
 ## Parameter and Return Types
 
-RpcInterface methods can take and return just about any type. Most JavaScript primitive types are supported, such as number, string, bool, and any.
-
-RpcInterfaces can also use TypeScript/JavaScript classes as parameter and return types. The interface definition just has to declare the classes that it uses, so that the configurations can marshall them correctly. That is the purpose of the `types` property.
-
-RpcInterfaces are restricted to using types that are common to both frontends and backends. For example, the [IModelToken]($common) type must be used to specify an iModel. The client that makes a call on the interface must obtain the token from the IModelConnection or IModelDb that it has, and the server that implements the interface must translate the token into an IModelDb when it handles the call.
+RpcInterface methods can take and return only primitive types and objects that are composed of primitive types or other such objects.
 
 ## RpcInterface Performance
 
@@ -72,12 +68,17 @@ Also see [best practices](./backend/BestPractices.md).
 
 To define an interface, write a TypeScript class that extends [RpcInterface]($common).
 
-The interface definition class should define a method for each operation that is to be exposed by the server. Each method signature should include the names and types of the input parameters. Each method must return a `Promise` of the appropriate type. These methods and their signatures define the interface.
+The interface definition class must define a method for each operation that is to be exposed by the server. Each method signature must include the names and types of the input parameters. Each method must return a `Promise` of the appropriate type. These methods and their signatures define the interface.
 
 The definition class must also define two static properties as interface metadata:
+```ts
+public static readonly interfaceName = "theNameOfThisInterface"; // The immutable name of the interface
+public static interfaceVersion = "1.2.3"; // The API version of the interface
+```
 
-* `types`. Specifies any non-primitive types used in the methods of interface.
-* `version`. The interface version number. See [below](#rpcinterface-version) for more on interface versioning.
+The `interfaceName` property specifies the immutable name of the interface. This string, rather than Javascript class name, is used to identify the interface when a request is sent from a frontend to a backend. That makes it safe to apply a tool such as Webpack to the frontend code, which may change the names of Javascript classes.
+
+See [below](#rpcinterface-version) for more on interface versioning.
 
 The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
 
@@ -93,7 +94,11 @@ In a real interface definition class, each method and parameter should be commen
 
 ## Client Stub
 
-The client stub is an implementation of the interface that forwards method calls to the RPC mechanism. Each method in the client stub is exactly the same single line of code: `return this.forward(arguments);` The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. As shown in the previous example, the client stub code is incorporated into the interface definition class.
+The client stub is an implementation of the interface that forwards method calls to the RPC mechanism. Each method in the client stub is exactly the same single line of code:
+```ts
+return this.forward(arguments);
+```
+The forward property is implemented by the base class, and its forward method sends the call and its arguments through the configured RPC mechanism to the server. As shown in the previous example, the client stub code is incorporated into the interface definition class.
 
 ## Server Implementation
 
@@ -107,9 +112,9 @@ Each impl method must return the operation's result as a Promise.
 
 The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
 
-As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
+The methods in the impl may have to transform certain argument types, such as IModelTokenProps, before they can be used by backend code.
 
-A best practice is that an impl should be a thin layer on top of normal classes in the server. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
+A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
 
 *Example:*
 

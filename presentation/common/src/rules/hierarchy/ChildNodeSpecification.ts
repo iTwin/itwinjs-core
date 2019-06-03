@@ -5,7 +5,6 @@
 /** @module PresentationRules */
 
 import { ChildNodeRule } from "./ChildNodeRule";
-import { RuleSpecification } from "../RuleSpecification";
 import { AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
 import { AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
@@ -14,8 +13,37 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
 import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
 import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
 
-/** Base interface for all [[ChildNodeSpecification]] implementations */
-export interface ChildNodeSpecificationBase extends RuleSpecification {
+/**
+ * Used for serializing array of [[ChildNodeSpecification]]
+ * @public
+ */
+export enum ChildNodeSpecificationTypes {
+  // hierarchy specifications
+  AllInstanceNodes = "AllInstanceNodes",
+  AllRelatedInstanceNodes = "AllRelatedInstanceNodes",
+  RelatedInstanceNodes = "RelatedInstanceNodes",
+  InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
+  CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
+  CustomNode = "CustomNode",
+}
+
+/**
+ * Base interface for all [[ChildNodeSpecification]] implementations. Not
+ * meant to be used directly, see `ChildNodeSpecification`.
+ *
+ * @public
+ */
+export interface ChildNodeSpecificationBase {
+  /** Used for serializing to JSON. */
+  specType: ChildNodeSpecificationTypes;
+
+  /**
+   * Defines the order in which specifications are evaluated and executed. Defaults to `1000`.
+   *
+   * @type integer
+   */
+  priority?: number;
+
   /**
    * This tells the rules engine that nodes produced using this
    * specification always or never have children. Defaults to `Unknown`.
@@ -50,7 +78,12 @@ export interface ChildNodeSpecificationBase extends RuleSpecification {
   nestedRules?: ChildNodeRule[];
 }
 
-/** A container of default grouping properties. Used for specifications that support default grouping */
+/**
+ * A container of default grouping properties. Used for specifications that support
+ * default grouping. Not meant to be used directly, see `ChildNodeSpecification`.
+ *
+ * @public
+ */
 export interface DefaultGroupingPropertiesContainer {
   /** Group instances by ECClass. Defaults to `true`. */
   groupByClass?: boolean;
@@ -61,6 +94,7 @@ export interface DefaultGroupingPropertiesContainer {
 
 /**
  * Navigation rule specifications that define what content the rule results in.
+ * @public
  */
 export type ChildNodeSpecification = AllInstanceNodesSpecification |
   AllRelatedInstanceNodesSpecification |

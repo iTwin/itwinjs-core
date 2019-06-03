@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { withTimeout, Button, ButtonType, ButtonProps, Omit, withOnOutsideClick } from "@bentley/ui-core";
+import { withTimeout, Button, ButtonType, ButtonProps, Omit, OmitChildrenProp, withOnOutsideClick } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
 import { BackstageItem } from "@src/backstage/Item";
 import { BackstageSeparator } from "@src/backstage/Separator";
@@ -53,7 +53,6 @@ import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { PointProps, Point } from "@src/utilities/Point";
-import { OmitChildrenProp } from "@src/utilities/Props";
 import { RectangleProps, Rectangle } from "@src/utilities/Rectangle";
 import { Size, SizeProps } from "@src/utilities/Size";
 import { WidgetContent } from "@src/widget/rectangular/Content";
@@ -381,10 +380,10 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
             </div>
             {this.props.isInFooterMode && <FooterSeparator />}
             <FooterPopup
-              target={this._messageCenterTarget}
               isOpen={this.props.openWidget === FooterWidget.Messages}
               onClose={this._handlePopupClose}
               onOutsideClick={this._handleMessageCenterOutsideClick}
+              target={this._messageCenterTarget}
             >
               <MessageCenterDialog
                 buttons={
@@ -2407,9 +2406,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         dropTarget={dropTarget}
         isInFooterMode={zone.props.isInFooterMode}
         key={zone.id}
+        message={this.state.message}
         onTargetChanged={this._handleTargetChanged}
         outlineBounds={outlineBounds}
-        message={this.state.message}
         onHideMessage={this._handleHideMessage}
         onOpenWidgetChange={this._handleOpenWidgetChange}
         openWidget={this.state.openWidget}

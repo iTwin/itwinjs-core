@@ -10,7 +10,8 @@ import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapMode, AccuSnap, OidcClientWrapper, ViewClipByPlaneTool } from "@bentley/imodeljs-frontend";
+
+import { IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -21,7 +22,7 @@ import {
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
-import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstage } from "./appui/AppBackstage";
@@ -37,7 +38,7 @@ import { configure as mobxConfigure } from "mobx";
 
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
-import { LocalFileStage } from "./appui/frontstages/LocalFileStage";
+import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -50,7 +51,7 @@ else
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())
-  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+  RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
 // cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp setisimodellocal
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -142,11 +143,11 @@ export class SampleAppIModelApp {
   public static store: Store<RootState>;
   public static rootReducer: any;
 
-  public static startup() {
-    IModelApp.startup({
-      notifications: new AppNotificationManager(),
-      accuSnap: new SampleAppAccuSnap(),
-    });
+  public static startup(opts?: IModelAppOptions): void {
+    opts = opts ? opts : {};
+    opts.accuSnap = new SampleAppAccuSnap();
+    opts.notifications = new AppNotificationManager();
+    IModelApp.startup(opts);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
@@ -178,7 +179,7 @@ export class SampleAppIModelApp {
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
-    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read";
+    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
     if (ElectronRpcConfiguration.isElectron) {
       const clientId = Config.App.get("imjs_electron_test_client_id");
       const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
@@ -220,6 +221,8 @@ export class SampleAppIModelApp {
   public static async closeCurrentIModel() {
     const currentIModelConnection = this.getIModelConnection();
     if (currentIModelConnection) {
+      SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
+
       if (SampleAppIModelApp.isIModelLocal)
         await currentIModelConnection.closeSnapshot();
       else
@@ -228,12 +231,13 @@ export class SampleAppIModelApp {
   }
 
   public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
-    // store the IModelConnection in the sample app store
-    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
 
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
-    // we create a FrontStage that contains the views that we want.
+    // store the IModelConnection in the sample app store - this may trigger redux connected components
+    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+
+    // we create a Frontstage that contains the views that we want.
     const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
@@ -257,9 +261,10 @@ export class SampleAppIModelApp {
       const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       SampleAppIModelApp.setIsIModelLocal(false, true);
 
+      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+
       // store the IModelConnection in the sample app store
       SampleAppIModelApp.setIModelConnection(iModelConnection, true);
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
     }
 
     await SampleAppIModelApp.showFrontstage("IModelIndex");
@@ -318,8 +323,8 @@ export class SampleAppIModelApp {
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
       }
     } else if (testAppConfiguration.startWithSnapshots) {
-      // open to the Local File modal stage
-      LocalFileStage.open();
+      // open to the Local File frontstage
+      await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
       await SampleAppIModelApp.showIModelOpen(undefined);
@@ -385,7 +390,7 @@ export class SampleAppViewer extends React.Component<any> {
     // tslint:disable-next-line:no-console
     console.log("Versions:", (window as any).iModelJsVersions);
 
-    if (OidcClientWrapper.oidcClient.hasSignedIn) {
+    if (UiFramework.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
     } else {
       SampleAppIModelApp.showSignIn(); // tslint:disable-line:no-floating-promises
@@ -438,7 +443,17 @@ async function main() {
   await retrieveConfiguration(); // (does a fetch)
   console.log("Configuration", JSON.stringify(testAppConfiguration)); // tslint:disable-line:no-console
 
-  SampleAppIModelApp.startup();
+  // initialize logging
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Warning);
+
+  // Set up render option to displaySolarShadows.
+  const renderSystemOptions: RenderSystem.Options = {
+    displaySolarShadows: true,
+  };
+
+  // Start the app.
+  SampleAppIModelApp.startup({ renderSys: renderSystemOptions });
 
   // wait for both our i18n namespaces to be read.
   SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises

@@ -9,12 +9,13 @@ import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 /**
- * Base class for SolidPrimitve variants.
+ * Base class for SolidPrimitive variants.
  *
  * * The base class holds capped flag for all derived classes.
  * @public
  */
 export abstract class SolidPrimitive extends GeometryQuery {
+  /** flag indicating whether cap region is considered closed (i.e. a planar region, rather than just a wire in space) */
   protected _capped: boolean;
   protected constructor(capped: boolean) { super(); this._capped = capped; }
   /** Ask if this is a capped solid */

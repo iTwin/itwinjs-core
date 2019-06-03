@@ -53,7 +53,7 @@ export class Ray3d implements BeJSONFunctions {
   public isAlmostEqual(other: Ray3d): boolean {
     return this.origin.isAlmostEqual(other.origin) && this.direction.isAlmostEqual(other.direction);
   }
-  /** Create a ray from origin and directon. */
+  /** Create a ray from origin and direction. */
   public static create(origin: Point3d, direction: Vector3d, result?: Ray3d): Ray3d {
     if (result) {
       result.set(origin, direction);

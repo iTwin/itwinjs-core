@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
+import { IModelApp } from "../IModelApp";
 import { ClippingType } from "../render/System";
 import {
   ProgramBuilder,
@@ -32,20 +32,26 @@ function createPurpleQuadTechnique(target: Target): TechniqueId {
 }
 
 function createTarget(): Target | undefined {
-  const canvas = WebGLTestContext.createCanvas();
+  let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
+  if (null === canvas) {
+    canvas = document.createElement("canvas") as HTMLCanvasElement;
+    if (null !== canvas) {
+      canvas.id = "WebGLTestCanvas";
+      document.body.appendChild(document.createTextNode("WebGL tests"));
+      document.body.appendChild(canvas);
+    }
+  }
+  canvas.width = 300;
+  canvas.height = 150;
   assert(undefined !== canvas);
   return System.instance!.createTarget(canvas!) as Target;
 }
 
 describe("Technique tests", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it("should produce a simple dynamic rendering technique", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const target = createTarget();
     assert(undefined !== target);
 
@@ -54,10 +60,6 @@ describe("Technique tests", () => {
   });
 
   it("should render a purple quad", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const target = createTarget();
     assert(undefined !== target);
     if (undefined === target) {
@@ -76,15 +78,12 @@ describe("Technique tests", () => {
   });
 
   it("should successfully compile all shader programs", () => {
-    if (WebGLTestContext.isInitialized) {
+    if (IModelApp.initialized) {
       expect(System.instance.techniques.compileShaders()).to.be.true;
     }
   }).timeout("10000");
 
   it("should successfully compile surface shader with clipping planes", () => {
-    if (!WebGLTestContext.isInitialized)
-      return;
-
     const flags = new TechniqueFlags(true);
     flags.clip.type = ClippingType.Planes;
     flags.clip.numberOfPlanes = 6;
@@ -96,9 +95,6 @@ describe("Technique tests", () => {
   });
 
   it("should successfully compile animation shaders", () => {
-    if (!WebGLTestContext.isInitialized)
-      return;
-
     const flags = new TechniqueFlags();
     flags.setAnimated(true);
     let tech = System.instance.techniques.getTechnique(TechniqueId.Edge);

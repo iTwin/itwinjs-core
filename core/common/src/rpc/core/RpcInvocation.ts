@@ -15,7 +15,7 @@ import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
-import { IModelToken } from "../../IModel";
+import { IModelTokenProps } from "../../IModel";
 
 /** Notification callback for an RPC invocation.
  * @public
@@ -116,7 +116,7 @@ export class RpcInvocation {
 
     this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
-    const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
+    const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
     this.applyPolicies(parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
@@ -137,7 +137,7 @@ export class RpcInvocation {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
 
-        if (!RpcInvocation.compareTokens(parameter as IModelToken, inflated)) {
+        if (!RpcInvocation.compareTokens(parameter, inflated)) {
           if (RpcConfiguration.throwOnTokenMismatch) {
             throw new IModelError(BentleyStatus.ERROR, "IModelToken mismatch detected for this request.");
           } else {
@@ -148,7 +148,7 @@ export class RpcInvocation {
     }
   }
 
-  private static compareTokens(a: IModelToken, b: IModelToken): boolean {
+  private static compareTokens(a: IModelTokenProps, b: IModelTokenProps): boolean {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&
@@ -165,7 +165,7 @@ export class RpcInvocation {
   private async fulfillResolved(value: any): Promise<RpcRequestFulfillment> {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-    const result = await RpcMarshaling.serialize(this.operation, this.protocol, value);
+    const result = await RpcMarshaling.serialize(this.protocol, value);
     return this.fulfill(result, value);
   }
 
@@ -174,7 +174,7 @@ export class RpcInvocation {
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    const result = await RpcMarshaling.serialize(this.operation, this.protocol, reason);
+    const result = await RpcMarshaling.serialize(this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
@@ -197,7 +197,7 @@ export class RpcInvocation {
       rawResult,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
-      interfaceName: this.operation.interfaceDefinition.name,
+      interfaceName: this.operation.interfaceDefinition.interfaceName,
     };
 
     return fulfillment;

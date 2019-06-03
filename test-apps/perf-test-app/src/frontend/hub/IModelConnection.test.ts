@@ -25,6 +25,7 @@ describe("IModelConnection (#integration)", () => {
   let testIModelId: string;
 
   before(async () => {
+    await TestRpcInterface.getClient().initializeReporter();
     MockRender.App.startup();
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -38,11 +39,12 @@ describe("IModelConnection (#integration)", () => {
     testProjectId = await TestUtility.getTestProjectId("Bridge866");
     testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
-    await iModel.close();
+    // iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    // await iModel.close();
   });
 
   after(async () => {
+    await TestRpcInterface.getClient().saveReport();
     if (iModel)
       await iModel.close();
     MockRender.App.shutdown();
@@ -52,6 +54,16 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("Bridge866");
     const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
 
+    /* // time to open an imodel with first revision
+    const startTime = new Date().getTime();
+    const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const endTime = new Date().getTime();
+    assert.isNotNull(noVersionsIModel2);
+    assert.exists(noVersionsIModel2);
+    const elapsedTime = (endTime - startTime) / 1000.0;
+    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
+    await noVersionsIModel2.close(); */
+
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
     const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
@@ -60,17 +72,9 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(noVersionsIModel);
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
+    const info = { Description: "latest CS", Operation: "Open" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     await noVersionsIModel.close();
-
-    // time to open an imodel with first revision
-    const startTime = new Date().getTime();
-    const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
-    const endTime = new Date().getTime();
-    assert.isNotNull(noVersionsIModel2);
-    assert.exists(noVersionsIModel2);
-    const elapsedTime = (endTime - startTime) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
-    await noVersionsIModel2.close();
   });
 
   it("Execute a ECSQL Query", async () => {
@@ -83,6 +87,8 @@ describe("IModelConnection (#integration)", () => {
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute a simple ECSQL query", elapsedTime1);
+    const info = { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     assert.equal(rows.length, 7);
   });
 

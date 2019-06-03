@@ -185,6 +185,10 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
+    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
+    iModel = await IModelConnection.open(testProjectId, testIModelId);
+
     const modelProps = await iModel.models.queryProps({ from: "BisCore.PhysicalModel" });
     expect(modelProps.length).to.equal(1);
 
@@ -212,7 +216,8 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it("ECSQL with BLOB", async () => {
+  // This require new build of Addon
+  it.skip("ECSQL with BLOB", async () => {
     assert.exists(iModel);
     let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
@@ -227,8 +232,8 @@ describe("IModelConnection (#integration)", () => {
     rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
-
-  it("Parameterized ECSQL", async () => {
+  // This require new build of Addon
+  it.skip("Parameterized ECSQL", async () => {
     assert.exists(iModel);
     let rows = await executeQuery(iModel, "SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);

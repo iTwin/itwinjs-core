@@ -2,18 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
+import { expect } from "chai";
+import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { Ruleset } from "@bentley/presentation-common";
+import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "@bentley/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
 import { tweakRuleset } from "./Helpers";
 import { initialize, terminate } from "../IntegrationTests";
-import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";
-import { Ruleset } from "@bentley/presentation-common";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
-import RulesetEmbedder, { DuplicateHandlingStrategy } from "@bentley/presentation-backend/lib/RulesetEmbedder";
 
 describe("RulesEmbedding", () => {
   let imodel: IModelDb;
@@ -32,10 +31,17 @@ describe("RulesEmbedding", () => {
     expect(expected).to.not.deep.equal(actual);
   }
 
+  function createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
+    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
+    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
+    seedDb.closeSnapshot();
+    return testDb;
+  }
+
   before(async () => {
     initialize();
     nativePlatform = new (createDefaultNativePlatform())();
-    imodel = IModelDb.createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    imodel = createSnapshotFromSeed(testIModelName, "assets/datasets/Properties_60InstancesWithUrl2.ibim");
     expect(imodel).is.not.null;
   });
 
@@ -140,7 +146,7 @@ describe("RulesEmbedding", () => {
   });
 
   it("skips inserting duplicate ruleset", async () => {
-    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateHandlingStrategy.Skip);
+    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Skip);
     expect(Id64.isValid(insertId1)).true;
 
     const rulesetChanged = require("../../test-rulesets/Rulesets/other");
@@ -148,7 +154,7 @@ describe("RulesEmbedding", () => {
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 
-    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateHandlingStrategy.Skip);
+    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateRulesetHandlingStrategy.Skip);
     expect(insertId1).to.be.equal(insertId2);
 
     const rulesets: Ruleset[] = await embedder.getRulesets();
@@ -159,7 +165,7 @@ describe("RulesEmbedding", () => {
   });
 
   it("replaces when inserting duplicate ruleset", async () => {
-    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateHandlingStrategy.Replace);
+    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Replace);
     expect(Id64.isValid(insertId1)).true;
 
     const rulesetChanged = require("../../test-rulesets/Rulesets/other");
@@ -167,7 +173,7 @@ describe("RulesEmbedding", () => {
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 
-    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateHandlingStrategy.Replace);
+    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateRulesetHandlingStrategy.Replace);
     expect(insertId1).to.be.equal(insertId2);
 
     const rulesets: Ruleset[] = await embedder.getRulesets();

@@ -113,11 +113,12 @@ export interface ToolTipOptions {
 }
 
 /** Describes a message to be displayed to the user.
- * @public
+ * @beta
  */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
   public viewport?: HTMLElement;
+  public inputField?: HTMLElement;
   public displayPoint?: Point2d;
   public relativePosition = RelativePosition.TopRight;
 
@@ -139,6 +140,15 @@ export class NotifyMessageDetails {
     this.viewport = viewport;
     this.displayPoint = Point2d.fromJSON(displayPoint);
     this.relativePosition = relativePosition;
+    this.msgType = OutputMessageType.Pointer;
+  }
+
+  /** Set OutputMessageType.InputField message details.
+   * @param inputField            Input field that message pertains. The message will be shown just below this input field element.
+   */
+  public setInputFieldTypeDetails(inputField: HTMLElement) {
+    this.inputField = inputField;
+    this.msgType = OutputMessageType.InputField;
   }
 }
 
@@ -179,7 +189,9 @@ export class NotificationManager {
    */
   public outputPrompt(_prompt: string) { }
 
-  /** Output a message and/or alert to the user. */
+  /** Output a message and/or alert to the user.
+   * @beta
+   */
   public outputMessage(_message: NotifyMessageDetails) { }
 
   /** Output a MessageBox and wait for response from the user.
@@ -218,14 +230,20 @@ export class NotificationManager {
   /** Return true if the tooltip is currently open. */
   public get isToolTipOpen(): boolean { return false; }
 
-  /** Implement to display a tooltip message at the specified location. */
+  /** Implement to display a tooltip message at the specified location.
+   * @beta
+   */
   protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void { }
 
   /** Show a tooltip window. Saves tooltip location for AccuSnap to test if cursor has moved far enough away to close tooltip.
    * @param htmlElement The HTMLElement that that anchors the toolTip.
-   * @param message What to display inside the ToolTip. String may include HTML.
+   * @param message What to display inside the ToolTip. May be a string or an HTMLElement.
    * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param options Options that supply additional information about how the ToolTip should function.
+   * @note If message is an HTMLElement, the notification manager will display the HTMLElement verbatim. This can represent a security
+   * risk if any part the element is created from user input. Applications should be careful to *sanitize* any such input before
+   * creating an HTMLElement to pass to this method.
+   * @beta
    */
   public openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void {
     this.toolTipLocation.setFrom(location);
@@ -237,4 +255,8 @@ export class NotificationManager {
 
   /** Close message created with [[OutputMessageType.Pointer]]. */
   public closePointerMessage(): void { }
+
+  /** Close message created with [[OutputMessageType.InputField]]. */
+  public closeInputFieldMessage(): void { }
+
 }

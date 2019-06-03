@@ -25,7 +25,7 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { BackgroundMapProvider } from "./tile/WebMapTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -41,9 +41,9 @@ import { calculateSolarDirection } from "./SolarCalculate";
  * @public
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private _backgroundMap: BackgroundMapState;
+  private _backgroundMap: BackgroundMapProvider;
   private _contextRealityModels: ContextRealityModelState[];
   private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
@@ -60,7 +60,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    this._backgroundMap = new BackgroundMapState(mapProps, iModel);
+    this._backgroundMap = new BackgroundMapProvider(mapProps, iModel);
     this._contextRealityModels = [];
 
     if (styles) {
@@ -78,10 +78,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Modify the background map display settings.
    * @param mapProps JSON representation of the new settings.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   * @note Currently the behavior of this method is not ideal.
+   *  - If this display style is associated with a Viewport, you must call Viewport.invalidateScene for the view to display the new map.
+   *  - Any properties omitted from `mapProps` will be reset to their defaults.
+   *  - All loaded tiles will be discarded and new ones will be requested, even if only changing the groundBias.
+   * @alpha
    */
   public setBackgroundMap(mapProps: BackgroundMapProps): void {
     if (!this.backgroundMap.equalsProps(mapProps)) {
-      this._backgroundMap = new BackgroundMapState(mapProps, this.iModel);
+      this._backgroundMap = new BackgroundMapProvider(mapProps, this.iModel);
       this.settings.backgroundMap = mapProps;
     }
   }
@@ -229,7 +234,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @public
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -567,7 +572,7 @@ function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): b
  * @public
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DisplayStyle3d"; }
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;

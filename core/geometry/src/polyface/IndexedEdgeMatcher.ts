@@ -18,12 +18,12 @@
 export class SortableEdge extends Float64Array {
   /** Return the vertex index that appears first in the order stored.  */
   public get vertexIndexA(): number { return this[0]; }
-  /** Return the vertex index that appears seccond in the order stored.  */
+  /** Return the vertex index that appears second in the order stored.  */
   public get vertexIndexB(): number { return this[1]; }
   /** Return the facet index.  */
   public get facetIndex(): number { return this[2]; }
   /** return true if vertexIndexA is less than vertexIndexB */
-  public get islowHigh(): boolean { return this[0] < this[1]; }
+  public get isLowHigh(): boolean { return this[0] < this[1]; }
   /** Return the vertex index with lower numeric value */
   public get lowVertexIndex(): number { return this[0] < this[1] ? this[0] : this[1]; }
   /** Return the vertex index with higher numeric value */
@@ -43,7 +43,7 @@ export class SortableEdge extends Float64Array {
    * @param edgeB second edge
    */
   public static lessThan(edgeA: SortableEdge, edgeB: SortableEdge): number {
-    // primary compare is based on undirect indices
+    // primary compare is based on indirect indices
     const lowA = edgeA.lowVertexIndex;
     const lowB = edgeB.lowVertexIndex;
     if (lowA < lowB)
@@ -83,7 +83,7 @@ export class SortableEdge extends Float64Array {
 
 export type SortableEdgeCluster = SortableEdge | SortableEdge[];
 /**
- * An IndexedEdgeMatcher carres an array (`edges`) of edges start & end indices for sorting and subsequent analyses (such as testing for closed mesh)
+ * An IndexedEdgeMatcher carries an array (`edges`) of edges start & end indices for sorting and subsequent analyses (such as testing for closed mesh)
  */
 export class IndexedEdgeMatcher {
   public edges: SortableEdge[];
@@ -143,11 +143,11 @@ export class IndexedEdgeMatcher {
    * * For instance, to ignore manifold pairs and collect all others (singleton and other) as a single array `allOther`, create `const allOther = []` as an empty array and call
    * `sortAndCollectClusters (undefined, allOther, allOther);`
    * @param manifoldPairs optional array to receive pairs of properly mated SortableEdgePairs, i.e. simple interior edges adjacent to two facets in opposing directions.
-   * @param singletons optional array to receive eges that are simple bounary edges.
+   * @param singletons optional array to receive edges that are simple boundary edges.
    * @param nullEdges clusters with null edges (same start and end vertex)
    * @param allOtherClusters optional array to receive arrays in which all the edges are partners in an undirected sense but not a simple directed pair.
    */
-  public sortAndcollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons: SortableEdgeCluster[] | undefined, nullEdges: SortableEdgeCluster[] | undefined, allOtherClusters: SortableEdgeCluster[] | undefined) {
+  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons: SortableEdgeCluster[] | undefined, nullEdges: SortableEdgeCluster[] | undefined, allOtherClusters: SortableEdgeCluster[] | undefined) {
     this.sort();
     if (manifoldPairs) manifoldPairs.length = 0;
     if (singletons) singletons.length = 0;

@@ -6,6 +6,7 @@
 
 /**
  * Defines direction of a relationship that should be followed
+ * @public
  */
 export enum RelationshipDirection {
   /** Relationship should be followed in both directions. */

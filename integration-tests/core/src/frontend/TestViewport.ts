@@ -14,7 +14,6 @@ import {
   IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
-import { WebGLTestContext } from "./WebGLTestContext";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -99,11 +98,10 @@ export class Color {
 
 export class ColorSet extends SortedArray<Color> {
   public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
-
   public get array(): Color[] { return this._array; }
 }
 
-  // Read depth, geometry type, and feature for each pixel. Return only the unique ones.
+// Read depth, geometry type, and feature for each pixel. Return only the unique ones.
 function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const set = new PixelDataSet();
@@ -119,7 +117,7 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
   return set;
 }
 
-  // Read colors for each pixel; return the unique ones.
+// Read colors for each pixel; return the unique ones.
 function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
   const buffer = vp.readImage(rect)!;
@@ -180,7 +178,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
   public async waitForAllTilesToRender(): Promise<void> {
     this.renderFrame();
 
-    // NB: ToolAdmin loop is not turned on, and this vieport is not tracked by ViewManager - must manually pump tile request scheduler.
+    // NB: ToolAdmin loop is not turned on, and this viewport is not tracked by ViewManager - must manually pump tile request scheduler.
     IModelApp.tileAdmin.process();
 
     if (this.areAllTilesLoaded)
@@ -207,7 +205,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
   }
 }
 
-class ScreenTestViewport extends ScreenViewport implements TestableViewport {
+export class ScreenTestViewport extends ScreenViewport implements TestableViewport {
   private _frameRendered: boolean = false;
 
   public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
@@ -279,13 +277,13 @@ export async function createOffScreenTestViewport(viewId: Id64String, imodel: IM
   return OffScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
-// Create an on-screen viewport for tests. The viewort is added to the ViewManager on construction, and dropped on disposal.
-export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<TestViewport> {
+// Create an on-screen viewport for tests. The viewport is added to the ViewManager on construction, and dropped on disposal.
+export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {
   return ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
-export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
-  if (!WebGLTestContext.isInitialized)
+export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>): Promise<void> {
+  if (!IModelApp.initialized)
     return Promise.resolve();
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
@@ -303,7 +301,7 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
 
 // Execute a test against both an off-screen and on-screen viewport.
 export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
-  if (!WebGLTestContext.isInitialized)
+  if (!IModelApp.initialized)
     return Promise.resolve();
 
   await testOnScreenViewport(viewId, imodel, width, height, test);

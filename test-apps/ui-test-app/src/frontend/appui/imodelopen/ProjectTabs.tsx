@@ -8,7 +8,7 @@ import "./ProjectTabs.scss";
 
 /**
  * Properties for the [[ProjectTab]] component. A temporary tab component.  Do not reuse!
- * @hidden
+ * @internal
  */
 export interface TabProps {
   label?: string;
@@ -21,7 +21,7 @@ export interface TabProps {
 
 /**
  * A temporary tab component.  Do not reuse!
- * @hidden
+ * @internal
  */
 export class ProjectTab extends React.Component<TabProps> {
 
@@ -69,7 +69,7 @@ export class ProjectTab extends React.Component<TabProps> {
 }
 
 /** Properties for the [[ProjectTabs]] component
- * @hidden
+ * @internal
  */
 export interface TabsProps {
   onClick?: (tabIndex: number) => any;
@@ -82,7 +82,7 @@ interface TabsState {
 
 /**
  * List of tabs.  Do not reuse!
- * @hidden
+ * @internal
  */
 export class ProjectTabs extends React.Component<TabsProps, TabsState> {
 

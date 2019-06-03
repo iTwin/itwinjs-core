@@ -35,7 +35,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
  * * Private class for refining bezier-bezier intersections.
- * * The inputs are assumed pre-transoformed so that the target condition is to match x and y coordinates.
+ * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
  * @public
  */
 class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
@@ -67,7 +67,9 @@ class BezierBezierIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
  * @public
  */
 export class CurveLocationDetailArrayPair {
+  /** first array of details ... */
   public dataA: CurveLocationDetail[];
+  /** second array of details ... */
   public dataB: CurveLocationDetail[];
   public constructor() {
     this.dataA = [];
@@ -528,7 +530,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     strokeCountA: number,
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
-    _strokeCOuntB: number,
+    _strokeCountB: number,
     univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
     reversed: boolean) {
     if (!this._xyzwA0) this._xyzwA0 = Point4d.create();
@@ -621,14 +623,14 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     const orderA = bcurveA.order;
     const orderB = bcurveB.order;
     const univariateCoffsA = new UnivariateBezier(orderA);
-    const univairateCoffsB = new UnivariateBezier(orderB);
+    const univariateCoffsB = new UnivariateBezier(orderB);
     for (let a = 0; a < numA; a++) {
       for (let b = 0; b < numB; b++) {
         if (rangeA[a].intersectsRangeXY(rangeB[b])) {
           const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
-            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univairateCoffsB, !_reversed);
+            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, !_reversed);
           else
             this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, _reversed);
         }
@@ -649,7 +651,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     return Point4d.createFromPointAndWeight(xyz, w);
   }
   private mapNPCPlaneToWorld(npcPlane: Point4d, worldPlane: Point4d) {
-    // for NPC pointY, Y^ * H = 0 is "on" plane H.  (Hat is tranpose)
+    // for NPC pointY, Y^ * H = 0 is "on" plane H.  (Hat is transpose)
     // NPC Y is A*X for our transform A and worldPointX.
     // hence (A X)^ * H = 0
     // hence X^ * A^ * H = 0

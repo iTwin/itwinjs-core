@@ -162,6 +162,7 @@ describe("Ids", () => {
       "0xh000000000000001",
       "0x1h00000000000000",
       "0x100000000000000h",
+      "0x112233445566778899aabb",
     ];
 
     for (const goodId of goodIds) {
@@ -182,6 +183,9 @@ describe("Ids", () => {
       expect(uint32Set.size).to.equal(Id64.sizeOf(arg));
       Id64.forEach(arg, (id) => {
         expect(uint32Set.hasId(id)).to.be.true;
+
+        // While we're here, test Id64.has()
+        expect(Id64.has(arg, id)).to.be.true;
       });
     };
 

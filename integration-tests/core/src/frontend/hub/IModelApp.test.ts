@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -67,7 +67,7 @@ describe("IModelApp (#integration)", () => {
     assert.notEqual(actualAuthorizedRequestContext.activityId, activityId, "The activityId setup wasn't used by the RPC operation");
 
     IModelApp.authorizationClient = undefined;
-    const requestContext: ClientRequestContext = await TestRpcInterface.getClient().reportRequestContext();
+    const requestContext: ClientRequestContextProps = await TestRpcInterface.getClient().reportRequestContext();
     assert.equal(requestContext.applicationId, IModelApp.applicationId);
     assert.equal(requestContext.sessionId, IModelApp.sessionId);
     assert.notEqual(requestContext.activityId, activityId, "The activityId was not reset after an RPC operation");

@@ -13,18 +13,18 @@ import { NumberArray } from "../geometry3d/PointHelpers";
  * Enumeration of the possible ways of converting a "periodic" knot vector to an open knot vector.
  * None (0) ==> no wrap possible
  * OpenByAddintControlPoints (1)  ==> wrapped by adding poles
- * OpenByRemovingKnots (2)  ==> wrapped by deleting extrme knots.
+ * OpenByRemovingKnots (2)  ==> wrapped by deleting extreme knots.
  * @public
  */
 export enum BSplineWrapMode {
   /** No conversion to periodic */
   None = 0,
-  /** Covnert to periodic by removing control points.  This is typical for closed bcurve constructed by control points with maximum continuity.
+  /** Convert to periodic by removing control points.  This is typical for closed bcurve constructed by control points with maximum continuity.
    * * Knots stay the same in open and periodic form.
    * * Periodic form omits {degree} control points.
    */
   OpenByAddingControlPoints = 1,
-  /** Covnert to periodc by adding special knots.  This is typical of closed bcurve constructed as exact circular or elliptic arc
+  /** Convert to periodic by adding special knots.  This is typical of closed bcurve constructed as exact circular or elliptic arc
    * * 2 knots on each end are omitted in open form
    * * poles stay the same.
    */
@@ -34,18 +34,19 @@ export enum BSplineWrapMode {
  * Array of non-decreasing numbers acting as a knot array for bsplines.
  *
  * * Essential identity: numKnots = numPoles + order = numPoles + degree - 1
- * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including Microstation)
+ * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including MicroStation)
  *     incorrectly demand "order" knots at each end for clamping.   But only "order - 1" are really needed.
  * * This class uses the "order-1" convention.
  * * This class provides queries to convert among spanIndex and knotIndex
  * * A span is a single interval of the knots.
  * * The left knot of span {k} is knot {k+degree-1}
  * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
- * * core computations (evaluateBasisFucntions) have leftKnotIndex and global knot value as inputs.  Caller's need to
+ * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Caller's need to
  * know their primary values (global knot, spanFraction).
  * @public
  */
 export class KnotVector {
+  /** The simple array of knot values. */
   public knots: Float64Array;
   /** Return the degree of basis functions defined in these knots. */
   public degree: number;
@@ -53,6 +54,7 @@ export class KnotVector {
   private _knot1: number;
 
   private _wrapMode?: BSplineWrapMode;
+  /** tolerance for considering two knots to be the same. */
   public static readonly knotTolerance = 1.0e-9;
   /** Return the leftmost knot value (of the active interval, ignoring unclamped leading knots)*/
   public get leftKnot() { return this._knot0; }
@@ -68,7 +70,7 @@ export class KnotVector {
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
   /** Set the wrappable flag.  This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
-  /** Return the number of bezier spans.  Not that this includes zero-lenght spans if there are repeated knots. */
+  /** Return the number of bezier spans.  Not that this includes zero-length spans if there are repeated knots. */
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }
   /**
    *
@@ -105,7 +107,7 @@ export class KnotVector {
   public get knotLength01(): number { return this._knot1 - this._knot0; }
   /**
    * Returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
-   * @param mdoe optional test mode.  If undefined, use the this.wrappable.
+   * @param mode optional test mode.  If undefined, use the this.wrappable.
    */
   public testClosable(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
@@ -211,7 +213,7 @@ export class KnotVector {
   }
 
   /**
-   * Return the average of degree consecutive knots begining at spanIndex.
+   * Return the average of degree consecutive knots beginning at spanIndex.
    */
   public grevilleKnot(spanIndex: number): number {
     if (spanIndex < 0) return this.leftKnot;
@@ -228,22 +230,22 @@ export class KnotVector {
     const knot0 = this.knots[knotIndex0];
     return knot0 + localFraction * (this.knots[knotIndex0 + 1] - knot0);
   }
-/** Convert localFraction within an indexed bezier span to a knot value. */
+  /** Convert localFraction within an indexed bezier span to a knot value. */
   public spanFractionToKnot(spanIndex: number, localFraction: number): number {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
     return this.knots[k] + localFraction * (this.knots[k + 1] - this.knots[k]);
   }
-/** Convert localFraction within an indexed bezier span to fraction of active knot range. */
+  /** Convert localFraction within an indexed bezier span to fraction of active knot range. */
   public spanFractionToFraction(spanIndex: number, localFraction: number): number {
     const knot = this.spanFractionToKnot(spanIndex, localFraction);
     return (knot - this.leftKnot) / (this.rightKnot - this.leftKnot);
   }
-/** Return fraction of active knot range to knot value. */
+  /** Return fraction of active knot range to knot value. */
   public fractionToKnot(fraction: number): number {
     return Geometry.interpolate(this.knots[this.degree - 1], fraction, this.knots[this.knots.length - this.degree]);
   }
   /**
-   * Evaluate basis fucntions f[] at knot value u.
+   * Evaluate basis functions f[] at knot value u.
    *
    * @param u knot value for evaluation
    * @param f array of basis values.  ASSUMED PROPER LENGTH
@@ -303,7 +305,7 @@ export class KnotVector {
       let gCarry = 0.0;
       let dgCarry = 0.0;
       let ddgCarry = 0.0;
-      // f, df, ddf, are each row vectors with product of `step` ilnear terms.
+      // f, df, ddf, are each row vectors with product of `step` linear terms.
       // f is multiplied on the right by matrix V.  Each row has 2 nonzero entries (which sum to 1)  (0,0,1-fraction, fraction,0,0,0)
       //    Each row of the derivative dV is two entries (0,0, -1/h, 1/h,0,0,0)
       // Hence fnew = f * V
@@ -339,7 +341,7 @@ export class KnotVector {
         ddf[depth + 1] = ddgCarry;
     }
   }
-/** Return the (highest) index of the knot less than or equal to u */
+  /** Return the (highest) index of the knot less than or equal to u */
   public knotToLeftKnotIndex(u: number): number {
     // Anything to left is in the first span . .
     const firstLeftKnot = this.degree - 1;
@@ -367,7 +369,7 @@ export class KnotVector {
     return this.knots[k + 1] - this.knots[k];
   }
   /**
-   * Given a span index, test if it is withn range and has nonzero length.
+   * Given a span index, test if it is within range and has nonzero length.
    * * note that a false return does not imply there are no more spans.  This may be a double knot (zero length span) followed by more real spans
    * @param spanIndex index of span to test.
    */
@@ -376,7 +378,7 @@ export class KnotVector {
       return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
     return false;
   }
-/** Reflect all knots so `leftKnot` and `rightKnot` are maintained but interval lengths reverse. */
+  /** Reflect all knots so `leftKnot` and `rightKnot` are maintained but interval lengths reverse. */
   public reflectKnots() {
     const a = this.leftKnot;
     const b = this.rightKnot;

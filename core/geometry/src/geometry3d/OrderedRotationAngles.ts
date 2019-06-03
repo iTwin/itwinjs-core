@@ -11,10 +11,10 @@ import { Matrix3d } from "./Matrix3d";
 
 /**
  * * OrderedRotationAngles represents a non-trivial rotation using three simple axis rotation angles, and an order in which to apply them.
- * * This class accomodates application-specific interpretation of "Multiplying 3 rotation matrices" with regard to
+ * * This class accommodates application-specific interpretation of "Multiplying 3 rotation matrices" with regard to
  *   * Whether a "vector" is a "row" or a "column"
  *   * The order in which the X,Y, Z rotations are applied.
- * * Within the imodel geometry library, the prefered rotation order is encapsulated in `YawPitchRollAngles`.
+ * * Within the imodel geometry library, the preferred rotation order is encapsulated in `YawPitchRollAngles`.
  * @alpha
  */
 export class OrderedRotationAngles {
@@ -31,18 +31,29 @@ export class OrderedRotationAngles {
     this._order = axisOrder;
   }
 
-  // Getters and setters
+  /** (Property accessor) Return the `AxisOrder` controlling matrix multiplication order. */
   public get order(): AxisOrder { return this._order; }
+  /** (Property accessor) Return the strongly typed angle of rotation around x. */
   public get xAngle(): Angle { return this._x.clone(); }
+  /** (Property accessor) Return the strongly typed angle of rotation around y. */
   public get yAngle(): Angle { return this._y.clone(); }
+  /** (Property accessor) Return the strongly typed angle of rotation around z. */
   public get zAngle(): Angle { return this._z.clone(); }
+  /** (Property accessor) Return the angle of rotation around x, in degrees */
   public get xDegrees(): number { return this._x.degrees; }
+  /** (Property accessor) Return the angle of rotation around y, in degrees */
   public get xRadians(): number { return this._x.radians; }
+  /** (Property accessor) Return the angle of rotation around z, in degrees */
   public get yDegrees(): number { return this._y.degrees; }
+  /** (Property accessor) Return the angle of rotation around x, in radians */
   public get yRadians(): number { return this._y.radians; }
+  /** (Property accessor) Return the angle of rotation around y, in radians */
   public get zDegrees(): number { return this._z.degrees; }
+  /** (Property accessor) Return the angle of rotation around z, in radians */
   public get zRadians(): number { return this._z.radians; }
+  /** (Property accessor) flag controlling whether vectors are treated as rows or as columns */
   public static get treatVectorsAsColumns(): boolean { return OrderedRotationAngles._sTreatVectorsAsColumns; }
+  /** (Property set) flag controlling whether vectors are treated as rows or as columns */
   public static set treatVectorsAsColumns(value: boolean) { OrderedRotationAngles._sTreatVectorsAsColumns = value; }
 
   /** Create an OrderedRotationAngles from three angles and an ordering in which to apply them when rotating.

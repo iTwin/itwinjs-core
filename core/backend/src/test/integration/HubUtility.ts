@@ -5,7 +5,7 @@
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, IModelHubClient,
   HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
-  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery,
+  AuthorizedClientRequestContext, ImsUserCredentials, VersionQuery, BriefcaseQuery,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb, BackendRequestContext } from "../../imodeljs-backend";
@@ -95,6 +95,12 @@ export class HubUtility {
     if (!iModel || !iModel.id)
       return Promise.reject(`IModel ${iModelName} not found`);
     return iModel.id!;
+  }
+
+  /** Query the latest change set (id) of the specified iModel */
+  public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<GuidString> {
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
+    return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
   /** Download all change sets of the specified iModel */
@@ -274,7 +280,7 @@ export class HubUtility {
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, pathname, "", undefined, 10 * 60 * 1000);
     return iModel.id!;
   }
 
@@ -344,7 +350,7 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 

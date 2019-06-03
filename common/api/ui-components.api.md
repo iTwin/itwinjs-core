@@ -5,6 +5,7 @@
 ```ts
 
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { Cartographic } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { CheckBoxState } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
@@ -45,6 +46,7 @@ import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
 import { TimeFormat } from '@bentley/ui-core';
+import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
@@ -52,7 +54,7 @@ import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
-// @internal (undocumented)
+// @beta
 export interface ActiveMatchInfo {
     // (undocumented)
     matchIndex: number;
@@ -129,6 +131,47 @@ export abstract class BasePointTypeConverter extends TypeConverter {
 }
 
 // @alpha
+export class BaseSolarDataProvider implements SolarDataProvider {
+    constructor(viewport?: ScreenViewport, longitude?: number, latitude?: number);
+    // (undocumented)
+    animationFraction: number;
+    // (undocumented)
+    protected _cartographicCenter: Cartographic;
+    // (undocumented)
+    day: Date;
+    // (undocumented)
+    readonly dayStartMs: number;
+    // (undocumented)
+    getCartographicCenter(iModel: IModelConnection): Cartographic;
+    // (undocumented)
+    latitude: number;
+    // (undocumented)
+    longitude: number;
+    // (undocumented)
+    onTimeChanged: (_time: Date) => void;
+    // (undocumented)
+    shadowColor: ColorDef;
+    // (undocumented)
+    protected _shadowColor: ColorDef;
+    // (undocumented)
+    readonly shouldShowTimeline: boolean;
+    // (undocumented)
+    readonly sunrise: Date;
+    // (undocumented)
+    readonly sunset: Date;
+    // (undocumented)
+    supportsTimelineAnimation: boolean;
+    // (undocumented)
+    timeOfDay: Date;
+    // (undocumented)
+    viewId: string;
+    // (undocumented)
+    viewport: ScreenViewport | undefined;
+    // (undocumented)
+    protected _viewport: ScreenViewport | undefined;
+}
+
+// @alpha
 export class BaseTimelineDataProvider implements TimelineDataProvider {
     constructor(viewport?: ScreenViewport);
     // (undocumented)
@@ -165,6 +208,8 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     supportsTimelineAnimation: boolean;
     // (undocumented)
     updateSettings(settings: PlaybackSettings): void;
+    // (undocumented)
+    viewId: string;
     // (undocumented)
     viewport: ScreenViewport | undefined;
     // (undocumented)
@@ -373,8 +418,6 @@ export interface BeInspireTreeProps<TNodePayload> {
 // @public
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
-// Warning: (ae-forgotten-export) The symbol "BooleanEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
     // (undocumented)
@@ -411,8 +454,6 @@ export class BooleanTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BreadcrumbState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
     // @internal
@@ -435,8 +476,6 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     readonly state: Readonly<BreadcrumbState>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "BreadcrumbDetailsState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
     // @internal
@@ -614,6 +653,29 @@ export interface BreadcrumbUpdateEventArgs {
     oldDataProvider: TreeDataProvider;
 }
 
+// @beta
+export class CellEditingEngine {
+    constructor(props: EditableTreeProps);
+    // (undocumented)
+    activateEditor: (node: BeInspireTreeNode<TreeNodeItem>) => void;
+    // (undocumented)
+    checkStatus: (node: BeInspireTreeNode<TreeNodeItem>, isPressedItemSelected: boolean) => void;
+    // (undocumented)
+    static createPropertyRecord(value: string, typename?: string, editor?: string): PropertyRecord;
+    // (undocumented)
+    deactivateEditor: () => void;
+    // (undocumented)
+    readonly hasSubscriptions: boolean;
+    // (undocumented)
+    isEditingEnabled(node: BeInspireTreeNode<TreeNodeItem>): boolean | undefined;
+    // (undocumented)
+    renderEditor(node: BeInspireTreeNode<TreeNodeItem>, style?: React.CSSProperties): JSX.Element;
+    // (undocumented)
+    subscribe(getCurrentNode: GetCurrentlyEditedNode, setCurrentNode: SetCurrentlyEditedNode): void;
+    // (undocumented)
+    unsubscribe(): void;
+}
+
 // @public
 export interface CellItem {
     // (undocumented)
@@ -628,8 +690,18 @@ export interface CellItem {
     style?: ItemStyle;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ColorEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
+// @public
+export interface CellProps {
+    // (undocumented)
+    displayValue: string;
+    // (undocumented)
+    item: CellItem;
+    // (undocumented)
+    render: React.ComponentType<{
+        isSelected: boolean;
+    }>;
+}
+
 // @beta
 export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
@@ -649,8 +721,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     readonly state: Readonly<ColorEditorState>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ColorPickerState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class ColorPickerButton extends React.PureComponent<ColorPickerProps, ColorPickerState> {
     // @internal
@@ -784,8 +854,6 @@ export interface CubeRotationChangeEventArgs {
     rotMatrix: Matrix3d;
 }
 
-// Warning: (ae-forgotten-export) The symbol "CustomNumberEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @alpha
 export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -836,6 +904,37 @@ export class DateTimeTypeConverter extends ShortDateTypeConverter {
     protected getTimeFormat(): TimeFormat;
 }
 
+// @alpha
+export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
+    constructor(props: DayPickerProps);
+    // (undocumented)
+    readonly days: (Date | null)[];
+    // (undocumented)
+    static isSameDay(a: Date, b: Date): boolean;
+    // (undocumented)
+    longDayName(dayOfWeek: number): any;
+    // (undocumented)
+    longMonthName(month: number): any;
+    // (undocumented)
+    nextMonth: () => void;
+    // (undocumented)
+    onDayChange: (day: Date) => () => void;
+    // (undocumented)
+    previousMonth: () => void;
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    renderDay: (day: Date, index: number) => JSX.Element;
+    // (undocumented)
+    renderDayHeader(dayOfWeek: number): JSX.Element;
+    // (undocumented)
+    renderWeek: (days: any, index: number) => JSX.Element;
+    // (undocumented)
+    shortDayName(dayOfWeek: number): any;
+    // (undocumented)
+    readonly weeks: (Date | null)[][];
+}
+
 // @public
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     // (undocumented)
@@ -846,6 +945,16 @@ export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
 export class DoublePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+}
+
+// @internal (undocumented)
+export class DragAction<Item> {
+    constructor(componentSelectionHandler: MultiSelectionHandler<Item>, itemSelectionHandlers: Array<Array<SingleSelectionHandler<Item>>>, firstItem: Item);
+    // (undocumented)
+    updateDragAction(latestItem: Item): {
+        selections: Item[];
+        deselections: Item[];
+    };
 }
 
 // @beta
@@ -979,8 +1088,6 @@ export interface EditorContainerProps extends CommonProps {
     title?: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "EnumEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, EnumEditorState_2> implements TypeEditor {
     // @internal
@@ -1003,8 +1110,6 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     readonly state: Readonly<EnumEditorState_2>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "EnumEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -1050,12 +1155,10 @@ export class EventsMuteContext implements IDisposable {
     dispose(): void;
     }
 
-// Warning: (ae-forgotten-export) The symbol "FilteringInputState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
     constructor(props: FilteringInputProps);
-    // (undocumented)
+    // @internal (undocumented)
     static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState): {
         context: InputContext;
     } | null;
@@ -1080,8 +1183,14 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     convertToString(value?: Primitives.Float): string;
 }
 
+// @beta
+export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
+
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
+
+// @public
+export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
 // @public
 export class HexadecimalTypeConverter extends TypeConverter {
@@ -1093,7 +1202,7 @@ export class HexadecimalTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal): number;
 }
 
-// @internal (undocumented)
+// @beta
 export interface HighlightableTreeNodeProps {
     // (undocumented)
     activeMatchIndex?: number;
@@ -1101,7 +1210,7 @@ export interface HighlightableTreeNodeProps {
     searchText: string;
 }
 
-// @internal (undocumented)
+// @beta
 export interface HighlightableTreeProps {
     // (undocumented)
     activeMatch?: ActiveMatchInfo;
@@ -1109,7 +1218,7 @@ export interface HighlightableTreeProps {
     searchText: string;
 }
 
-// @internal (undocumented)
+// @beta
 export class HighlightingEngine {
     constructor(props: HighlightableTreeProps);
     // (undocumented)
@@ -1164,9 +1273,6 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
     children?: TreeNodeItem[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "InlineEditProps" needs to be exported by the entry point ui-components.d.ts
-// Warning: (ae-forgotten-export) The symbol "InlineEditState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
@@ -1361,6 +1467,14 @@ export interface MilestoneRange {
     start: Date;
 }
 
+// @internal
+export interface MultiSelectionHandler<TItem> {
+    areEqual: (item1: TItem, item2: TItem) => boolean;
+    deselectAll: () => void;
+    selectBetween: (item1: TItem, item2: TItem) => TItem[];
+    updateSelection: (selections: TItem[], deselections: TItem[]) => void;
+}
+
 // @beta
 export interface MutableTableDataProvider extends TableDataProvider {
     // (undocumented)
@@ -1401,18 +1515,12 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TreeNodeProps" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-// Warning: (ae-forgotten-export) The symbol "OnItemsDeselectedCallback" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 
-// Warning: (ae-forgotten-export) The symbol "OnItemsSelectedCallback" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
 
@@ -1432,8 +1540,6 @@ export interface NonPrimitivePropertyLabelRendererProps extends PrimitivePropert
     onExpand: () => void;
 }
 
-// Warning: (ae-forgotten-export) The symbol "NonPrimitivePropertyRendererState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
     constructor(props: NonPrimitivePropertyRendererProps);
@@ -1473,6 +1579,15 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
 }
 
 // @public
+export type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
+
+// @public
+export type OnItemsSelectedCallback<TItem> = (items: TItem[], replace: boolean) => void | boolean;
+
+// @public
+export type OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void;
+
+// @public
 export interface OperatorProcessor {
     // (undocumented)
     isEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
@@ -1502,39 +1617,31 @@ export interface PlaybackSettings {
 // @alpha
 export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void;
 
-// Warning: (ae-forgotten-export) The symbol "PlayButtonState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
-export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState> {
-    constructor(props: PlayButtonProps, context?: any);
+export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
+    constructor(props: PlayerButtonProps, context?: any);
     // (undocumented)
-    componentWillReceiveProps(nextProps: Readonly<PlayButtonProps>): void;
+    componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void;
     // (undocumented)
     render(): JSX.Element;
-}
-
-// @internal
-export interface PlayButtonProps extends CommonProps {
-    // (undocumented)
-    icon?: string;
-    // (undocumented)
-    onClick?: () => void;
-}
-
-// @internal
-export interface PlayButtonProps extends CommonProps {
-    // (undocumented)
-    isPlaying: boolean;
-    // (undocumented)
-    onPause?: () => void;
-    // (undocumented)
-    onPlay?: () => void;
 }
 
 // @internal
 export class PlayerButton extends React.PureComponent<any> {
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @internal
+export interface PlayerButtonProps extends CommonProps {
+    // (undocumented)
+    isPlaying: boolean;
+    // (undocumented)
+    onPause?: () => void;
+    // (undocumented)
+    onPlay?: () => void;
+    // (undocumented)
+    tooltip?: string;
 }
 
 // @public
@@ -1687,8 +1794,6 @@ export interface PropertyEditorProps extends CommonProps {
     setFocus?: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "PropertyGridState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
     // @internal
@@ -1728,6 +1833,7 @@ export interface PropertyGridProps extends CommonProps {
     isPropertyEditingEnabled?: boolean;
     isPropertyHoverEnabled?: boolean;
     isPropertySelectionEnabled?: boolean;
+    isPropertySelectionOnRightClickEnabled?: boolean;
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
@@ -1762,8 +1868,6 @@ export interface PropertyPopupState {
     };
 }
 
-// Warning: (ae-forgotten-export) The symbol "PropertyRendererState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
     constructor(props: PropertyRendererProps);
@@ -1843,8 +1947,12 @@ export interface PropertyViewProps extends SharedRendererProps {
     valueElement?: React.ReactNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ResultSelectorState" needs to be exported by the entry point ui-components.d.ts
-// 
+// @public
+export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
+    // (undocumented)
+    icon?: boolean;
+}
+
 // @public
 export class ResultSelector extends React.PureComponent<ResultSelectorProps, ResultSelectorState> {
     // @internal
@@ -1869,11 +1977,28 @@ export interface RowItem {
     cells: CellItem[];
     // (undocumented)
     colorOverrides?: ItemColorOverrides;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     isDisabled?: boolean;
     key: string;
+}
+
+// @public
+export interface RowProps {
+    // (undocumented)
+    cells: {
+        [key: string]: CellProps;
+    };
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    item: RowItem;
+    // (undocumented)
+    render?: () => React.ReactNode;
+    // (undocumented)
+    style?: React.CSSProperties;
 }
 
 // @beta
@@ -1920,6 +2045,20 @@ export interface ScrubberProps extends CommonProps {
     totalDuration: number;
 }
 
+// @internal (undocumented)
+export class SelectionHandler<Item> {
+    constructor(selectionMode: SelectionMode, onItemsSelectedCallback?: OnItemsSelectedCallback<Item>, onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>);
+    completeDragAction(): void;
+    createDragAction(componentSelectionHandler: MultiSelectionHandler<Item>, items: Array<Array<SingleSelectionHandler<Item>>>, firstItem: Item): void;
+    createSelectionFunction(componentHandler: MultiSelectionHandler<Item>, itemHandler: SingleSelectionHandler<Item>): OnSelectionChanged;
+    // (undocumented)
+    onItemsDeselectedCallback?: OnItemsDeselectedCallback<Item>;
+    // (undocumented)
+    onItemsSelectedCallback?: OnItemsSelectedCallback<Item>;
+    selectionMode: SelectionMode;
+    updateDragAction(latestItem: Item): void;
+}
+
 // @public
 export enum SelectionMode {
     Extended = 12,
@@ -1927,6 +2066,21 @@ export enum SelectionMode {
     Single = 1,
     SingleAllowDeselect = 5
 }
+
+// @public
+export enum SelectionModeFlags {
+    // (undocumented)
+    DragEnabled = 2,
+    // (undocumented)
+    KeysEnabled = 8,
+    // (undocumented)
+    SelectionLimitOne = 1,
+    // (undocumented)
+    ToggleEnabled = 4
+}
+
+// @beta
+export type SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>) => void;
 
 // @public
 export interface SharedRendererProps {
@@ -1937,6 +2091,7 @@ export interface SharedRendererProps {
     onClick?: (property: PropertyRecord, key?: string) => void;
     onColumnRatioChanged?: (ratio: number) => void;
     onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
+    onRightClick?: (property: PropertyRecord, key?: string) => void;
     orientation: Orientation;
     propertyRecord: PropertyRecord;
     uniqueKey?: string;
@@ -1974,8 +2129,6 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
     sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ShowHideDialogState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
     constructor(props: ShowHideDialogProps<T>);
@@ -2005,8 +2158,6 @@ export interface ShowHideItem<T extends ShowHideID> {
     label: string;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ShowHideMenuState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class ShowHideMenu<T extends ShowHideID> extends React.PureComponent<ShowHideMenuProps<T>, ShowHideMenuState<T>> {
     // @internal
@@ -2030,8 +2181,6 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
     y: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "SignInState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     constructor(props: SignInProps);
@@ -2114,6 +2263,44 @@ export class SimpleTreeDataProvider implements ITreeDataProvider {
 
 // @public
 export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeItem[]>;
+
+// @internal
+export interface SingleSelectionHandler<TItem> {
+    deselect: () => void;
+    isSelected: () => boolean;
+    item: () => TItem;
+    preselect: () => void;
+    select: () => void;
+}
+
+// @alpha
+export interface SolarDataProvider {
+    day: Date;
+    readonly dayStartMs: number;
+    onTimeChanged?: SolarPlaybackProgressHandler;
+    shadowColor: ColorDef;
+    // (undocumented)
+    readonly shouldShowTimeline: boolean;
+    readonly sunrise: Date;
+    readonly sunset: Date;
+    supportsTimelineAnimation: boolean;
+    timeOfDay: Date;
+    // (undocumented)
+    viewId: string;
+    viewport?: ScreenViewport;
+}
+
+// @alpha
+export type SolarPlaybackProgressHandler = (time: Date) => void;
+
+// @alpha
+export class SolarTimeline extends React.PureComponent<SolarTimelineComponentProps, SolarTimelineComponentState> {
+    constructor(props: SolarTimelineComponentProps);
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
 
 // @public
 export interface SortComparer {
@@ -2209,8 +2396,6 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TableState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class Table extends React.Component<TableProps, TableState> {
     // @internal
@@ -2229,8 +2414,6 @@ export class Table extends React.Component<TableProps, TableState> {
     shouldComponentUpdate(_props: TableProps): boolean;
     // @internal (undocumented)
     readonly state: TableState;
-    // Warning: (ae-forgotten-export) The symbol "UpdateStatus" needs to be exported by the entry point ui-components.d.ts
-    // 
     // @internal (undocumented)
     update(): Promise<UpdateStatus>;
     // @internal (undocumented)
@@ -2389,8 +2572,6 @@ export class TableStructValueRenderer extends React.PureComponent<TableSpecificV
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TextEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -2409,8 +2590,6 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     readonly state: Readonly<TextEditorState>;
     }
 
-// Warning: (ae-forgotten-export) The symbol "TimelineState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @internal
 export class Timeline extends React.Component<TimelineProps, TimelineState> {
     constructor(props: TimelineProps);
@@ -2418,9 +2597,6 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TimelineComponentProps" needs to be exported by the entry point ui-components.d.ts
-// Warning: (ae-forgotten-export) The symbol "TimelineComponentState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @alpha
 export class TimelineComponent extends React.PureComponent<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
@@ -2447,6 +2623,7 @@ export interface TimelineDataProvider {
     start?: Date;
     supportsTimelineAnimation: boolean;
     updateSettings(settings: PlaybackSettings): void;
+    viewId: string;
     viewport?: ScreenViewport;
 }
 
@@ -2485,8 +2662,6 @@ export enum TimelineScale {
     Years = 0
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToggleEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
     // @internal (undocumented)
@@ -2517,8 +2692,6 @@ export const toNode: <TPayload>(inspireNode: Inspire.TreeNode) => BeInspireTreeN
 // @internal (undocumented)
 export const toNodes: <TPayload>(inspireNodes: Inspire.TreeNodes) => BeInspireTreeNodes<TPayload>;
 
-// Warning: (ae-forgotten-export) The symbol "TreeState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class Tree extends React.Component<TreeProps, TreeState> {
     // @internal
@@ -2587,8 +2760,9 @@ export interface TreeNodeItem {
     checkBoxState?: CheckBoxState;
     // (undocumented)
     description?: string;
-    // (undocumented)
-    extendedData?: any;
+    extendedData?: {
+        [key: string]: any;
+    };
     // (undocumented)
     icon?: string;
     // (undocumented)
@@ -2618,7 +2792,10 @@ export interface TreeProps extends CommonProps {
     imageLoader?: ITreeImageLoader;
     // @internal
     nodeHighlightingProps?: HighlightableTreeProps;
-    onCheckboxClick?: (node: TreeNodeItem, newState: CheckBoxState) => void;
+    onCheckboxClick?: (stateChanges: Array<{
+        node: TreeNodeItem;
+        newState: CheckBoxState;
+    }>) => void;
     onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
     onNodeCollapsed?: (node: TreeNodeItem) => void;
     onNodeExpanded?: (node: TreeNodeItem) => void;
@@ -2645,6 +2822,21 @@ export interface TreeProps extends CommonProps {
     selectionMode?: SelectionMode;
     showDescriptions?: boolean;
     showIcons?: boolean;
+}
+
+// @internal
+export namespace TreeTest {
+    // (undocumented)
+    export enum TestId {
+        // (undocumented)
+        Node = "tree-node",
+        // (undocumented)
+        NodeCheckbox = "tree-node-checkbox",
+        // (undocumented)
+        NodeContents = "tree-node-contents",
+        // (undocumented)
+        NodeExpansionToggle = "tree-node-expansion-toggle"
+    }
 }
 
 // @public
@@ -2689,12 +2881,16 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    // (undocumented)
     static readonly i18n: I18N;
-    // (undocumented)
+    static readonly i18nNamespace: string;
     static initialize(i18n: I18N): Promise<void>;
-    // (undocumented)
+    // @internal (undocumented)
+    static loggerCategory(obj: any): string;
+    // @internal (undocumented)
+    static readonly packageName: string;
     static terminate(): void;
+    // @internal
+    static translate(key: string | string[], options?: TranslationOptions): string;
 }
 
 // @public
@@ -2725,13 +2921,13 @@ export interface ViewIdChangedEventArgs {
     viewport: Viewport;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ViewportState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @public
 export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
     constructor(props: ViewportProps);
     // (undocumented)
     componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -2802,8 +2998,6 @@ export interface ViewRotationChangeEventArgs {
     viewport: Viewport;
 }
 
-// Warning: (ae-forgotten-export) The symbol "WeightEditorState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
     constructor(props: PropertyEditorProps);
@@ -2823,8 +3017,6 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     readonly state: Readonly<WeightEditorState>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "WeightPickerState" needs to be exported by the entry point ui-components.d.ts
-// 
 // @beta
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
     // @internal
@@ -2911,10 +3103,6 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 // @beta
 export function withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>>;
 
-
-// Warnings were encountered during analysis:
-// 
-// src/ui-components/filtering/FilteringInput.tsx:101:14 - (ae-incompatible-release-tags) The symbol "context" is marked as @public, but its signature references "InputContext" which is marked as @internal
 
 // (No @packageDocumentation comment for this package)
 

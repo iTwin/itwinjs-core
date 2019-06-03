@@ -177,10 +177,9 @@ export interface TreeProps extends CommonProps {
    * **Note:** when set, this property overrides checkbox-related TreeNodeItem attributes
    */
   checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
-  /**
-   * A callback that gets fired when checkbox state changes
-   */
-  onCheckboxClick?: (node: TreeNodeItem, newState: CheckBoxState) => void;
+
+  /** Called when nodes change their checkbox state. */
+  onCheckboxClick?: (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => void;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -789,7 +788,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => {
     if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick(node.payload!, newState);
+      this.props.onCheckboxClick([{ node: node.payload!, newState }]);
   }
 
   // tslint:disable-next-line:naming-convention
@@ -877,8 +876,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       return (
         <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
-            UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
-            UiComponents.i18n.translate("UiComponents:general.noData")}
+            UiComponents.translate("tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+            UiComponents.translate("general.noData")}
         </p>
       );
     }
@@ -978,7 +977,7 @@ class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNode
   public render() {
     // note: props get mutated here
     this.props.node.setDirty(false);
-    const level = this.props.node.getParents().length;
+    const level = this.props.node.getParents().length + 1;
     return <TreeNodePlaceholder level={level} />;
   }
 }

@@ -362,14 +362,24 @@ export namespace Id64 {
     return true;
   }
 
+  /** Return the first [[Id64String]] of an [[Id64Arg]]. */
+  export function getFirst(arg: Id64Arg): Id64String {
+    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value);
+  }
+
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */
   export function sizeOf(arg: Id64Arg): number {
+    return typeof arg === "string" ? 1 : (Array.isArray(arg) ? arg.length : arg.size);
+  }
+
+  /** Returns true if the [[Id64Arg]] contains the specified Id. */
+  export function has(arg: Id64Arg, id: Id64String): boolean {
     if (typeof arg === "string")
-      return 1;
-    else if (Array.isArray(arg))
-      return arg.length;
-    else
-      return arg.size;
+      return arg === id;
+    if (Array.isArray(arg))
+      return -1 !== arg.indexOf(id);
+
+    return arg.has(id);
   }
 
   /** The string representation of an invalid Id. */
@@ -403,7 +413,7 @@ export namespace Id64 {
    */
   export function isId64(id: string): boolean {
     const len = id.length;
-    if (0 === len)
+    if (0 === len || 18 < len)
       return false;
 
     if ("0" !== id[0])
@@ -477,13 +487,24 @@ export namespace Id64 {
      */
     public constructor(ids?: Id64Arg) {
       if (undefined !== ids)
-        Id64.forEach(ids, (id) => this.addId(id));
+        this.addIds(ids);
     }
 
     /** Remove all contents of this set. */
-    public clear(): void { this._map.clear(); }
+    public clear(): void {
+      this._map.clear();
+    }
+
     /** Add an Id to the set. */
-    public addId(id: Id64String): void { this.add(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    public addId(id: Id64String): void {
+      this.add(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+    }
+
+    /** Add any number of Ids to the set. */
+    public addIds(ids: Id64Arg): void {
+      Id64.forEach(ids, (id) => this.addId(id));
+    }
+
     /** Returns true if the set contains the specified Id. */
     public hasId(id: Id64String): boolean { return this.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
 
@@ -498,6 +519,23 @@ export namespace Id64 {
       set.add(low);
     }
 
+    /** Remove an Id from the set. */
+    public deleteId(id: Id64String): void {
+      this.delete(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+    }
+
+    /** Remove any number of Ids from the set. */
+    public deleteIds(ids: Id64Arg): void {
+      Id64.forEach(ids, (id) => this.deleteId(id));
+    }
+
+    /** Remove an Id from the set. */
+    public delete(low: number, high: number): void {
+      const set = this._map.get(high);
+      if (undefined !== set)
+        set.delete(low);
+    }
+
     /** Returns true if the set contains the specified Id. */
     public has(low: number, high: number): boolean {
       const set = this._map.get(high);
@@ -506,6 +544,7 @@ export namespace Id64 {
 
     /** Returns true if the set contains no Ids. */
     public get isEmpty(): boolean { return 0 === this._map.size; }
+
     /** Returns the number of Ids contained in the set. */
     public get size(): number {
       let size = 0;
@@ -616,6 +655,9 @@ export class TransientIdSequence {
  */
 export namespace Guid {
   const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+  /** Represents the empty Guid 00000000-0000-0000-0000-000000000000 */
+  export const empty: GuidString = "00000000-0000-0000-0000-000000000000";
 
   /** Determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.

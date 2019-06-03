@@ -8,7 +8,7 @@ import { initialize, terminate } from "../IntegrationTests";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  InstanceKey, Ruleset, RuleTypes, RuleSpecificationTypes,
+  InstanceKey, Ruleset, RuleTypes, ChildNodeSpecificationTypes,
   KeySet, ECInstanceNodeKey, getInstancesCount, RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -83,7 +83,7 @@ describe("Hierarchies", () => {
         rules: [{
           ruleType: RuleTypes.RootNodes,
           specifications: [{
-            specType: RuleSpecificationTypes.InstanceNodesOfSpecificClasses,
+            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
             classes: { schemaName: "BisCore", classNames: ["Model"] },
             arePolymorphic: true,
             groupByClass: true,

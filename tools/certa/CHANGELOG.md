@@ -1,6 +1,14 @@
 # Change Log - @bentley/certa
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Update to puppeteer 1.13.0 (current chrome-stable)
+- Fixed frontend debugging issues.  
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

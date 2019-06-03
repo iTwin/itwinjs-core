@@ -16,8 +16,11 @@ import { Point3d } from "./Point3dVector3d";
  * @public
  */
 export interface YawPitchRollProps {
+  /** yaw field */
   yaw?: AngleProps;
+  /** pitch field */
   pitch?: AngleProps;
+  /** roll field */
   roll?: AngleProps;
 }
 
@@ -25,9 +28,13 @@ export interface YawPitchRollProps {
  * @public
  */
 export class YawPitchRollAngles {
+  /** The yaw angle. */
   public yaw: Angle;
+  /** The pitch angle. */
   public pitch: Angle;
+  /** The roll angle. */
   public roll: Angle;
+
   constructor(yaw: Angle = Angle.zero(), pitch: Angle = Angle.zero(), roll: Angle = Angle.zero()) {
     this.yaw = yaw;
     this.pitch = pitch;
@@ -43,11 +50,12 @@ export class YawPitchRollAngles {
   public static createRadians(yawRadians: number, pitchRadians: number, rollRadians: number): YawPitchRollAngles {
     return new YawPitchRollAngles(Angle.createRadians(yawRadians), Angle.createRadians(pitchRadians), Angle.createRadians(rollRadians));
   }
-  /** constructg a `YawPitchRoll` objecgt from an object with 3 named angles */
+  /** construct a `YawPitchRoll` object from an object with 3 named angles */
   public static fromJSON(json?: YawPitchRollProps): YawPitchRollAngles {
     json = json ? json : {};
     return new YawPitchRollAngles(Angle.fromJSON(json.yaw), Angle.fromJSON(json.pitch), Angle.fromJSON(json.roll));
   }
+  /** populate yaw, pitch and roll fields using `Angle.fromJSON` */
   public setFromJSON(json?: YawPitchRollProps): void {
     json = json ? json : {};
     this.yaw = Angle.fromJSON(json.yaw);
@@ -104,7 +112,7 @@ export class YawPitchRollAngles {
     const s2 = Math.sin(this.roll.radians);
     return Matrix3d.createRowValues(c0 * c1, -(s0 * c2 + c0 * s1 * s2), (s0 * s2 - c0 * s1 * c2), s0 * c1, (c0 * c2 - s0 * s1 * s2), -(c0 * s2 + s0 * s1 * c2), s1, c1 * s2, c1 * c2, result);
   }
-  /** @returns Return the largest angle in radians */
+  /** Return the largest angle in radians */
   public maxAbsRadians(): number {
     return Geometry.maxAbsXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
@@ -112,7 +120,10 @@ export class YawPitchRollAngles {
   public sumSquaredRadians(): number {
     return Geometry.hypotenuseSquaredXYZ(this.yaw.radians, this.pitch.radians, this.roll.radians);
   }
-  /** @returns true if the rotation is 0 */
+  /** Returns true if this rotation does nothing.
+   * * If allowPeriodShift is false, any nonzero angle is considered a non-identity
+   * * If allowPeriodShift is true, all angles are individually allowed to be any multiple of 360 degrees.
+   */
   public isIdentity(allowPeriodShift: boolean = true): boolean {
     if (allowPeriodShift)
       return Angle.isAlmostEqualRadiansAllowPeriodShift(0.0, this.yaw.radians)

@@ -8,7 +8,7 @@ import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext
 import * as https from "https";
 
 /** Handler for file system, and upload / download. TODO: Move this to parent directory -- it is not iModelHub-specific.
- * @internal
+ * @beta
  */
 export interface FileHandler {
   agent: https.Agent;

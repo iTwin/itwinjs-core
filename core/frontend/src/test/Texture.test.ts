@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
 import { IModelApp } from "../IModelApp";
 import {
   imageElementFromImageSource,
@@ -35,8 +34,8 @@ const bitmapData = new Uint8Array([
 ]);
 
 describe("Texture tests", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it("should produce an attachment texture (rgb, unsigned byte)", () => {
     if (!IModelApp.hasRenderSystem) {
@@ -100,9 +99,6 @@ describe("Texture tests", () => {
   });
 
   it("should produce a texture from an html image and resize to power of two", async () => {
-    if (!WebGLTestContext.isInitialized)
-      return;
-
     const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
     const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);

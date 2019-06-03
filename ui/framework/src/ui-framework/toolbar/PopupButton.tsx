@@ -5,8 +5,10 @@
 /** @module Item */
 
 import * as React from "react";
-import { ExpandableItem, Item } from "@bentley/ui-ninezone";
+
+import { ExpandableItem, Item, Size } from "@bentley/ui-ninezone";
 import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
+
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
@@ -24,6 +26,7 @@ const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDiv
  */
 export interface PopupButtonProps extends ItemProps, CommonProps {
   onExpanded?: (expand: boolean) => void;
+  onSizeKnown?: (size: Size) => void;
 }
 
 /**
@@ -130,13 +133,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
           title={this.label}
           onClick={this._toggleIsExpanded}
           icon={icon}
+          onSizeKnown={this.props.onSizeKnown}
         />
       </ExpandableItem>
     );
   }
 
-  /** Returns the list with the items */
-  public getExpandedContent() {
+  /** Returns expanded content panel */
+  private getExpandedContent(): React.ReactNode {
     if (!this.state.isPressed)
       return undefined;
 

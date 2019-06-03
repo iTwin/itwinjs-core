@@ -16,7 +16,6 @@ RpcConfiguration.developmentMode = true;
 
 // Start the backend
 const hostConfig = new IModelHostConfiguration();
-hostConfig.useTileContentThreadPool = true;
 IModelHost.startup(hostConfig);
 
 Logger.initializeToConsole();

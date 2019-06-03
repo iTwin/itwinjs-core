@@ -63,6 +63,8 @@ export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
+export * from "./ui-framework/shared/ConditionalItemDef";
+export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
@@ -101,11 +103,13 @@ export * from "./ui-framework/stagepanels/StagePanelDef";
 
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/GroupItem";
-export * from "./ui-framework/toolbar/ToolButton";
 export * from "./ui-framework/toolbar/PopupButton";
+export * from "./ui-framework/toolbar/Toolbar";
+export * from "./ui-framework/toolbar/ToolButton";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
+export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/BackstageItem";

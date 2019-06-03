@@ -4,33 +4,71 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import * as moq from "typemoq";
-import { createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomECClassInfo, createRandomRelationshipPath } from "../_helpers/random";
+import {
+  createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory,
+  createRandomECClassInfo, createRandomRelationshipPath, createRandomNestedFieldJSON, createRandomPrimitiveFieldJSON
+} from "../_helpers/random";
 import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
-import { DescriptorJSON } from "../../content/Descriptor";
+import { DescriptorJSON, DescriptorSource } from "../../content/Descriptor";
 
 describe("Descriptor", () => {
+
+  describe("constructor", () => {
+
+    it("creates Descriptor from DescriptorSource", () => {
+      const source: DescriptorSource = {
+        contentFlags: 9,
+        displayType: faker.random.word(),
+        fields: [],
+        filterExpression: faker.random.words(),
+        selectClasses: [],
+      };
+      const descriptor = new Descriptor(source);
+      for (const key in source) {
+        if (source.hasOwnProperty(key))
+          expect((descriptor as any)[key]).to.deep.eq((source as any)[key]);
+      }
+    });
+
+  });
 
   describe("fromJSON", () => {
 
     let testDescriptorJSON!: DescriptorJSON;
     beforeEach(() => {
       testDescriptorJSON = createRandomDescriptorJSON();
+      testDescriptorJSON.fields.push(createRandomNestedFieldJSON());
     });
 
+    const validateParentship = (fields: Field[], parent?: Field) => {
+      fields.forEach((field) => {
+        expect(field.parent).to.eq(parent);
+        if (field.isNestedContentField())
+          validateParentship(field.nestedFields, field);
+      });
+    };
+
     it("creates valid Descriptor from valid JSON", () => {
-      const item = Descriptor.fromJSON(testDescriptorJSON);
-      expect(item).to.matchSnapshot();
+      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
     });
 
     it("creates valid Descriptor from valid serialized JSON", () => {
-      const item = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
-      expect(item).to.matchSnapshot();
+      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
+    });
+
+    it("skips fields that fail to deserialize", () => {
+      testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(), undefined as any];
+      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      expect(descriptor!.fields.length).to.eq(1);
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = Descriptor.fromJSON(undefined);
-      expect(item).to.be.undefined;
+      const descriptor = Descriptor.fromJSON(undefined);
+      expect(descriptor).to.be.undefined;
     });
 
   });
@@ -106,32 +144,6 @@ describe("Descriptor", () => {
       const descriptor = createRandomDescriptor();
       descriptor.sortingField = descriptor.fields[0];
       expect(descriptor.createDescriptorOverrides()).to.matchSnapshot();
-    });
-
-  });
-
-  describe("resetParentship", () => {
-
-    it("calls resetParentship for each field", () => {
-      const fieldMock = moq.Mock.ofType<Field>();
-      fieldMock.setup((x) => x.resetParentship()).verifiable();
-      const descriptor = createRandomDescriptor();
-      descriptor.fields.push(fieldMock.object);
-      descriptor.resetParentship();
-      fieldMock.verifyAll();
-    });
-
-  });
-
-  describe("rebuildParentship", () => {
-
-    it("calls rebuildParentship for each field", () => {
-      const fieldMock = moq.Mock.ofType<Field>();
-      fieldMock.setup((x) => x.rebuildParentship()).verifiable();
-      const descriptor = createRandomDescriptor();
-      descriptor.fields.push(fieldMock.object);
-      descriptor.rebuildParentship();
-      fieldMock.verifyAll();
     });
 
   });

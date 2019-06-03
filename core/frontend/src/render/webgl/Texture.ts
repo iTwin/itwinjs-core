@@ -14,10 +14,7 @@ import { TextureUnit, OvrFlags } from "./RenderFlags";
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
 /** @internal */
-export interface TextureMonitor {
-  onTextureCreated: (texture: TextureHandle) => void;
-  onTextureDisposed: (texture: TextureHandle) => void;
-}
+export type Texture2DData = Uint8Array | Float32Array;
 
 function computeBytesUsed(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType): number {
   const bytesPerComponent = GL.Texture.DataType.UnsignedByte === dataType ? 1 : 4;
@@ -35,7 +32,7 @@ function computeBytesUsed(width: number, height: number, format: GL.Texture.Form
 }
 
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
-function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
+function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, element?: CanvasOrImage): void {
   handle.bytesUsed = undefined !== bytes ? bytes.byteLength : computeBytesUsed(params.width, params.height, params.format, params.dataType);
 
   const tex = handle.getHandle()!;
@@ -70,7 +67,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 }
 
-function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array): void { loadTexture2DImageData(handle, params, bytes); }
+function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void { loadTexture2DImageData(handle, params, bytes); }
 
 /** Associate cube texture data with a WebGLTexture from an image. */
 function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: CanvasOrImage[]): void {
@@ -132,6 +129,10 @@ export class Texture extends RenderTexture {
   public get hasTranslucency(): boolean { return GL.Texture.Format.Rgba === this.texture.format; }
 }
 
+function getDataType(data: Texture2DData): GL.Texture.DataType {
+  return data instanceof Float32Array ? GL.Texture.DataType.Float : GL.Texture.DataType.UnsignedByte;
+}
+
 /** Parameters used internally to define how to create a texture for use with WebGL. */
 class Texture2DCreateParams {
   private constructor(
@@ -145,9 +146,10 @@ class Texture2DCreateParams {
     public interpolate?: TextureFlag,
     public dataBytes?: Uint8Array) { }
 
-  public static createForData(width: number, height: number, data: Uint8Array, preserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
-    return new Texture2DCreateParams(width, height, format, GL.Texture.DataType.UnsignedByte, wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, preserveData ? data : undefined);
+  public static createForData(width: number, height: number, data: Texture2DData, preserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+    const bytes = (preserveData && data instanceof Uint8Array) ? data : undefined;
+    return new Texture2DCreateParams(width, height, format, getDataType(data), wrapMode,
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params, data), undefined, undefined, bytes);
   }
 
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
@@ -290,7 +292,7 @@ export abstract class TextureHandle implements IDisposable {
   }
 
   /** Create a 2D texture to hold non-image data */
-  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+  public static createForData(width: number, height: number, data: Texture2DData, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     return Texture2DHandle.createForData(width, height, data, wantPreserveData, wrapMode, format);
   }
 
@@ -365,22 +367,29 @@ export class Texture2DHandle extends TextureHandle {
     if (!updater.modified)
       return false;
 
+    return this.replaceTextureData(this._dataBytes);
+  }
+
+  /** Replace the 2D texture contents. */
+  public replaceTextureData(data: Texture2DData): boolean {
+    assert((GL.Texture.DataType.Float === this._dataType) === (data instanceof Float32Array));
+
     const tex = this.getHandle()!;
     if (undefined === tex)
       return false;
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-    // Go through System to ensure we don't interface with currently-bound textures!
+    // Go through System to ensure we don't interfere with currently-bound textures!
     System.instance.bindTexture2d(TextureUnit.Zero, tex);
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, this._dataBytes);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, data);
     System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 
     return true;
   }
 
-  private static create(params: Texture2DCreateParams): TextureHandle | undefined {
+  private static create(params: Texture2DCreateParams): Texture2DHandle | undefined {
     const glTex = System.instance.context.createTexture();
     return null !== glTex ? new Texture2DHandle(glTex, params) : undefined;
   }
@@ -391,7 +400,7 @@ export class Texture2DHandle extends TextureHandle {
   }
 
   /** Create a texture to hold non-image data */
-  public static createForData(width: number, height: number, data: Uint8Array, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+  public static createForData(width: number, height: number, data: Texture2DData, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     return this.create(Texture2DCreateParams.createForData(width, height, data, wantPreserveData, wrapMode, format));
   }
 

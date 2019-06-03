@@ -36,6 +36,8 @@ export interface PropertyGridProps extends CommonProps {
 
   /** Enables/disables property selection */
   isPropertySelectionEnabled?: boolean;
+  /** Enables/disables property selection with right click */
+  isPropertySelectionOnRightClickEnabled?: boolean;
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
 
@@ -243,43 +245,24 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     return this.props.isPropertySelectionEnabled || this.props.isPropertyEditingEnabled;
   }
 
+  private _isRightClickSupported() {
+    return this.props.isPropertySelectionOnRightClickEnabled;
+  }
+
+  private _onPropertyRightClicked = (property: PropertyRecord, key?: string) => {
+    if (this._isRightClickSupported())
+      this._onEnabledPropertyClicked(property, key, true);
+  }
+
   private _onPropertyClicked = (property: PropertyRecord, key?: string) => {
-    if (!this._isClickSupported())
-      return;
-
-    let selectedPropertyKey = this.state.selectedPropertyKey;
-    let editingPropertyKey = this.state.editingPropertyKey;
-
-    if (this.props.isPropertyEditingEnabled && property.value.valueFormat === PropertyValueFormat.Primitive) {
-      if (this.props.isPropertySelectionEnabled) {
-        if (this.state.selectedPropertyKey === key)
-          editingPropertyKey = key;
-        else
-          editingPropertyKey = undefined;
-      } else {
-        editingPropertyKey = key;
-      }
-    }
-
-    if (this.props.isPropertySelectionEnabled && editingPropertyKey !== key) {
-      if (this.state.selectedPropertyKey === key) {
-        // Deselect
-        selectedPropertyKey = undefined;
-      } else {
-        // Select another one
-        selectedPropertyKey = key;
-      }
-
-      if (this.props.onPropertySelectionChanged)
-        this.props.onPropertySelectionChanged(property);
-    }
-
-    this.setState({ selectedPropertyKey, editingPropertyKey });
+    if (this._isClickSupported())
+      this._onEnabledPropertyClicked(property, key);
   }
 
   private _onPropertyContextMenu = (property: PropertyRecord, e: React.MouseEvent) => {
-    if (this.props.onPropertyContextMenu)
+    if (this.props.onPropertyContextMenu) {
       this.props.onPropertyContextMenu({ propertyRecord: property, event: e });
+    }
   }
 
   private _onEditCommit = async (args: PropertyUpdatedArgs, category: PropertyCategory) => {
@@ -291,6 +274,39 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   private _onEditCancel = () => {
     this.setState({ editingPropertyKey: undefined });
+  }
+
+  private _onEnabledPropertyClicked(property: PropertyRecord, key: string | undefined, rightClick: boolean = false) {
+    let selectedPropertyKey = this.state.selectedPropertyKey;
+    let editingPropertyKey = this.state.editingPropertyKey;
+
+    if (this.props.isPropertyEditingEnabled && property.value.valueFormat === PropertyValueFormat.Primitive && !rightClick) {
+      if (this.props.isPropertySelectionEnabled) {
+        if (selectedPropertyKey === key)
+          editingPropertyKey = key;
+        else
+          editingPropertyKey = undefined;
+      } else {
+        editingPropertyKey = key;
+      }
+    }
+    if (editingPropertyKey !== key || rightClick) {
+      if (rightClick) {
+        editingPropertyKey = undefined;
+        if (selectedPropertyKey !== key)
+          selectedPropertyKey = key;
+      } else
+        if (selectedPropertyKey === key) {
+          // Deselect
+          selectedPropertyKey = undefined;
+        } else {
+          // Select another one
+          selectedPropertyKey = key;
+        }
+      if (this.props.onPropertySelectionChanged)
+        this.props.onPropertySelectionChanged(property);
+    }
+    this.setState({ selectedPropertyKey, editingPropertyKey });
   }
 
   /** @internal */
@@ -316,6 +332,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
                 onPropertyClicked={this._isClickSupported() ? this._onPropertyClicked : undefined}
+                onPropertyRightClicked={this._isRightClickSupported() ? this._onPropertyRightClicked : undefined}
                 onPropertyContextMenu={this._onPropertyContextMenu}
                 propertyValueRendererManager={this.props.propertyValueRendererManager}
                 editingPropertyKey={this.state.editingPropertyKey}
@@ -323,6 +340,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 onEditCancel={this._onEditCancel}
                 isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
                 isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
+                isPropertyRightClickSelectionEnabled={this.props.isPropertySelectionOnRightClickEnabled}
               />
             ))
           }

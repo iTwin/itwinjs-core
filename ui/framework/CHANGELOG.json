@@ -2,6 +2,90 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/ui-framework_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Switched from iModelHub Project API to Context API"
+          },
+          {
+            "comment": "Disable SyncUi test that occasionally fails on CI job."
+          },
+          {
+            "comment": "Added UI Logger & UiError usage & improved i18n calls"
+          },
+          {
+            "comment": "Fix spelling error and rename frontstageKey to iModelId since token was used to inform ui when imodel changed."
+          },
+          {
+            "comment": "Fix setWidgetState(Hidden)"
+          },
+          {
+            "comment": "Support touch move for navigation controls."
+          },
+          {
+            "comment": "Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Added Overflow button support"
+          },
+          {
+            "comment": "InputFieldMessages are now hosted by ConfigurableUiContent control."
+          },
+          {
+            "comment": "Release tag cleanup and ui-framework unit tests"
+          },
+          {
+            "comment": "Updated UI package release tags for 1.0 release."
+          },
+          {
+            "comment": "Fixed release tag warnings in UI packages"
+          },
+          {
+            "comment": "Removed use of OidcClientWrapper. "
+          },
+          {
+            "comment": "Remove console log message output by SyncUiEventDispatcher. Add Logging."
+          },
+          {
+            "comment": "Changed some release tags from @hidden to @internal"
+          },
+          {
+            "comment": "Add alpha level support for solar timeline"
+          },
+          {
+            "comment": "Fix widget content renderer when widget prop changes."
+          },
+          {
+            "comment": "Prevent configurableui wrapper from creating a stacking context."
+          },
+          {
+            "comment": "Use the updated onCheckboxClick API inside ModelSelectorTree and VisibilityTree."
+          },
+          {
+            "comment": "Visibility Tree: Fix reference subjects being hidden even when they have nested subjects"
+          },
+          {
+            "comment": "Visibility Tree: Fix statuses of subjects and elements"
+          },
+          {
+            "comment": "Visibility Tree: Refactor subjects' status checking and elements' category and model ids' retrieval for better performance"
+          },
+          {
+            "comment": "Visibility Tree: Enable all subcategories' display when making category visible"
+          },
+          {
+            "comment": "#124300. Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport."
+          },
+          {
+            "comment": "Added ViewSelectorChangedEvent"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/ui-framework_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

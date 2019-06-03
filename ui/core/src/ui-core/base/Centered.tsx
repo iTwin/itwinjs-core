@@ -8,10 +8,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Centered content div
- * @beta
+/** Centered React functional component
+ * @public
  */
 // tslint:disable-next-line:variable-name
-export const Centered: React.FunctionComponent<CommonDivProps> = (props) => {
+export const Centered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
   return <Div {...props} mainClassName="uicore-centered" />;
 };

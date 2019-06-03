@@ -383,6 +383,7 @@ export abstract class SceneCompositor implements IDisposable {
   public readonly target: Target;
 
   public abstract get currentRenderTargetIndex(): number;
+  public abstract set currentRenderTargetIndex(_index: number);
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
@@ -420,6 +421,7 @@ abstract class Compositor extends SceneCompositor {
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
 
   public abstract get currentRenderTargetIndex(): number;
+  public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
@@ -468,7 +470,6 @@ abstract class Compositor extends SceneCompositor {
     this._geom = geometry;
 
     this._opaqueRenderState.flags.depthTest = true;
-    this._opaqueRenderState.flags.cull = true === System.instance.options.backfaceCulling;
 
     this._translucentRenderState.flags.depthMask = false;
     this._translucentRenderState.flags.blend = this._translucentRenderState.flags.depthTest = true;
@@ -575,9 +576,9 @@ abstract class Compositor extends SceneCompositor {
     this.renderSkyBox(commands, needComposite);
     this.target.recordPerformanceMetric("Render SkyBox");
 
-    // Render the terrain
-    this.renderTerrain(commands, needComposite);
-    this.target.recordPerformanceMetric("Render Terrain");
+    // Render the background map graphics
+    this.renderBackgroundMap(commands, needComposite);
+    this.target.recordPerformanceMetric("Render BackgroundMap (background map)");
 
     // Enable clipping
     this.target.pushActiveVolume();
@@ -710,20 +711,20 @@ abstract class Compositor extends SceneCompositor {
     return false;
   }
 
-  private renderTerrain(commands: RenderCommands, needComposite: boolean) {
-    const cmds = commands.getCommands(RenderPass.Terrain);
+  private renderBackgroundMap(commands: RenderCommands, needComposite: boolean) {
+    const cmds = commands.getCommands(RenderPass.BackgroundMap);
     if (0 === cmds.length) {
       return;
     }
 
-    this.target.plan!.selectTerrainFrustum();
+    this.target.plan!.selectExpandedFrustum();
     this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
-      this.target.techniques.execute(this.target, cmds, RenderPass.Terrain);
+      System.instance.applyRenderState(this.getRenderState(RenderPass.BackgroundMap));
+      this.target.techniques.execute(this.target, cmds, RenderPass.BackgroundMap);
     });
 
     this.target.plan!.selectViewFrustum();
@@ -763,19 +764,21 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private findFlashedClassifier(cmdsByIndex: DrawCommands): number {
-    if (!Id64.isValid(this.target.flashedElemId))
+    if (!Id64.isValid(this.target.flashedId))
       return -1; // nothing flashed
+
     for (let i = 1; i < cmdsByIndex.length; i += 3) {
       const command = cmdsByIndex[i];
       if (command.isPrimitiveCommand) {
         if (command instanceof BatchPrimitiveCommand) {
           const batch = command as BatchPrimitiveCommand;
-          if (batch.computeIsFlashed(this.target.flashedElemId)) {
+          if (batch.computeIsFlashed(this.target.flashedId)) {
             return (i - 1) / 3;
           }
         }
       }
     }
+
     return -1; // couldn't find it
   }
 
@@ -787,6 +790,7 @@ abstract class Compositor extends SceneCompositor {
       this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, index);
       this.target.popBranch();
     });
+
     // Process the stencil for the pick data.
     this.renderIndexedClassifierForReadPixels(cmdsByIndex, index, this._classifyPickDataRenderState, needComposite);
   }
@@ -794,9 +798,8 @@ abstract class Compositor extends SceneCompositor {
   private renderClassification(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean) {
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
-    if (0 === cmds.length || 0 === cmdsByIndex.length) {
+    if (0 === cmds.length || 0 === cmdsByIndex.length)
       return;
-    }
 
     if (this._debugStencil > 0) {
       System.instance.frameBufferStack.execute(this.getBackgroundFbo(needComposite), true, () => {
@@ -810,6 +813,7 @@ abstract class Compositor extends SceneCompositor {
           this.target.popBranch();
         }
       });
+
       return;
     }
 
@@ -828,9 +832,9 @@ abstract class Compositor extends SceneCompositor {
     if (renderForReadPixels) {
       // We need to render the classifier stencil volumes one at a time, so first count them then render them in a loop.
       const numClassifiers = cmdsByIndex.length / 3;
-      for (let i = 0; i < numClassifiers; ++i) {
+      for (let i = 0; i < numClassifiers; ++i)
         this.renderIndexedClassifier(cmdsByIndex, i, needComposite);
-      }
+
       return;
     }
 
@@ -846,6 +850,7 @@ abstract class Compositor extends SceneCompositor {
         this.target.techniques.execute(this.target, cmdsH, RenderPass.Hilite);
         this.target.popBranch();
       });
+
       // Process the stencil volumes, blending into the current color buffer.
       fbStack.execute(fboCopy!, true, () => {
         this.target.pushState(this.target.decorationState);
@@ -867,6 +872,7 @@ abstract class Compositor extends SceneCompositor {
         this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, flashedClassifier);
         this.target.popBranch();
       });
+
       // Process the stencil.
       fbStack.execute(fboCopy!, true, () => {
         this.target.pushState(this.target.decorationState);
@@ -913,6 +919,7 @@ abstract class Compositor extends SceneCompositor {
       // Draw the normal hilite geometry.
       this.drawPass(commands, RenderPass.Hilite);
     });
+
     // Process planar classifiers
     const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
     if (0 !== planarClassifierCmds.length) {
@@ -1079,6 +1086,9 @@ class MRTCompositor extends Compositor {
     assert(false, "MRT is supported");
     return 0;
   }
+  public set currentRenderTargetIndex(_index: number) {
+    assert(false, "MRT is supported");
+  }
 
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
@@ -1226,19 +1236,13 @@ class MPGeometry extends Geometry {
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
   private _drawMultiPassDepth: boolean = true;
-  private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
-  private readonly _opaqueRenderStateWithEqualDepthFuncNoZWt = new RenderState();
+  private readonly _opaqueRenderStateNoZWt = new RenderState();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
 
-    this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
-    this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
-    this._opaqueRenderStateWithEqualDepthFunc.flags.cull = true === System.instance.options.backfaceCulling;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthTest = true;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.depthFunc = GL.DepthFunc.LessOrEqual;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.depthMask = false;
-    this._opaqueRenderStateWithEqualDepthFuncNoZWt.flags.cull = true === System.instance.options.backfaceCulling;
+    this._opaqueRenderStateNoZWt.flags.depthTest = true;
+    this._opaqueRenderStateNoZWt.flags.depthMask = false;
   }
 
   protected getRenderState(pass: RenderPass): RenderState {
@@ -1246,7 +1250,7 @@ class MPCompositor extends Compositor {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
-        return this._drawMultiPassDepth ? this._opaqueRenderStateWithEqualDepthFunc : this._opaqueRenderStateWithEqualDepthFuncNoZWt;
+        return this._drawMultiPassDepth ? this._opaqueRenderState : this._opaqueRenderStateNoZWt;
     }
 
     return super.getRenderState(pass);
@@ -1256,6 +1260,7 @@ class MPCompositor extends Compositor {
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
+  public set currentRenderTargetIndex(index: number) { this._currentRenderTargetIndex = index; }
   public get featureIds(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.featureId!; }
   public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
 
@@ -1317,10 +1322,14 @@ class MPCompositor extends Compositor {
       this._drawMultiPassDepth = false;
     }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
-    this._drawMultiPassDepth = false;
+    if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.Feature)) {
+      stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+      this._drawMultiPassDepth = false;
+    }
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
+    if (!this.target.isReadPixelsInProgress || Pixel.Selector.None !== (this.target.readPixelsSelector & Pixel.Selector.GeometryAndDistance)) {
+      stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, pingPong && this._drawMultiPassDepth));
+    }
     this._currentRenderTargetIndex = 0;
   }
 

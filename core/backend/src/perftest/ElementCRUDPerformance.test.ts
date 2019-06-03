@@ -152,7 +152,7 @@ describe("PerformanceElementsTests", () => {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Insert_" + className + "_" + opCount + ".bim");
-          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           let newModelId: Id64String;
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
@@ -188,7 +188,7 @@ describe("PerformanceElementsTests", () => {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + className + "_" + opCount + ".bim");
-          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1), dbSize);
@@ -221,7 +221,7 @@ describe("PerformanceElementsTests", () => {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + className + "_" + opCount + ".bim");
-          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           assert.equal((stat.maxId - stat.minId + 1), dbSize);
@@ -246,7 +246,7 @@ describe("PerformanceElementsTests", () => {
         const seedFileName = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance", "Performance_seed_" + className + "_" + dbSize + ".bim");
         for (const opCount of opSizes) {
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + className + "_" + opCount + ".bim");
-          const perfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
+          const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
           const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(dbSize / opCount);
           // first construct modified elements

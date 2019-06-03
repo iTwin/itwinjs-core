@@ -20,14 +20,14 @@
 const path = require("path");
 const fs = require("fs-extra");
 const webpack = require("webpack");
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const autoprefixer = require("autoprefixer");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
 module.exports = (env) => { return getConfig(env); };
 
-function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, depth) {
+function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, plugin, depth) {
   // we need the dependents and peer dependents. We care only about those in externalList.
   let dependentsAndPeerDependents = [];
   if (packageContents.dependencies)
@@ -37,8 +37,13 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
   for (dependent of dependentsAndPeerDependents) {
     if (externalList[dependent]) {
       let packageName = dependent;
-      if (dependent.startsWith("@bentley"))
+      if (dependent.startsWith("@bentley")) {
         packageName = dependent.substr(9);
+      } else {
+        // we only want the @bentley externals when gathering them for plugins. We have no way of putting the versions into the others at runtime.
+        if (plugin)
+          continue;
+      }
       // if we don't already have it, get its info.
       if (!externalModuleVersions[packageName]) {
         const subDirectory = path.join(sourceDir, "node_modules", dependent);
@@ -56,20 +61,33 @@ function getExternalModuleVersionsFromPackage(externalModuleVersions, packageCon
       if (dependent.startsWith("@bentley") && externalList[dependent]) {
         const subDirectory = path.join(sourceDir, "node_modules", dependent);
         const dependentPackageContents = getPackageFromJson(subDirectory);
-        getExternalModuleVersionsFromPackage(externalModuleVersions, dependentPackageContents, sourceDir, subDirectory, externalList, depth + 1);
+        getExternalModuleVersionsFromPackage(externalModuleVersions, dependentPackageContents, sourceDir, subDirectory, externalList, plugin, depth + 1);
       }
     }
   }
 }
 
 // gets a Map with the dependent iModel.js modules as the keys and the required version as the values.
-function getExternalModuleVersions(sourceDir, packageContents, externalList) {
+function getExternalModuleVersions(sourceDir, packageContents, externalList, plugin) {
   const externalModuleVersions = new Object();
-  externalModuleVersions["main"] = packageContents.version;
-  getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, 0);
+  if (!plugin)
+    externalModuleVersions["main"] = packageContents.version;
+  getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, undefined, externalList, plugin, 0);
   return externalModuleVersions;
 }
 
+function addExternalCssFiles(externalVersions, styleSheets) {
+  if (externalVersions["ui-core"])
+    externalVersions["ui-core.css"] = externalVersions["ui-core"];
+  if (externalVersions["ui-components"])
+    externalVersions["ui-components.css"] = externalVersions["ui-components"];
+  if (externalVersions["ui-ninezone"])
+    externalVersions["ui-ninezone.css"] = externalVersions["ui-ninezone"];
+  if (externalVersions["ui-framework"])
+    externalVersions["ui-framework.css"] = externalVersions["ui-framework"];
+  if (styleSheets && externalVersions["main"])
+    externalVersions["main.css"] = externalVersions["main"];
+}
 
 // gets the version from this modules package.json file, so it can be injected into the output.
 function getPackageFromJson(sourceDir, alternateDir) {
@@ -82,7 +100,7 @@ function getPackageFromJson(sourceDir, alternateDir) {
         return {};
       }
     } else {
-      console.log ("Cannot find package file in", sourceDir);
+      console.log("Cannot find package file in", sourceDir);
       return {};
     }
   }
@@ -200,6 +218,8 @@ function getConfig(env) {
 
   // set up Uglify.
   if (!devMode) {
+    const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+    const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
     webpackLib.optimization.minimizer = [
       new UglifyJSPlugin({
         uglifyOptions: {
@@ -233,6 +253,7 @@ function getConfig(env) {
         cache: true,
         sourceMap: true,
       }),
+      new OptimizeCSSAssetsPlugin({}),
     ];
   }
 
@@ -240,11 +261,16 @@ function getConfig(env) {
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
   if (env.htmltemplate || env.plugin) {
-    const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals);
+    const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals, env.plugin);
 
     if (env.htmltemplate) {
+      const externalModulesWithCssFiles = Object.assign(externalModuleVersions);
+
+      if (env.prod)
+        addExternalCssFiles(externalModulesWithCssFiles, env.stylesheets);
+
       const HtmlWebpackPlugin = require("html-webpack-plugin");
-      const versionString = JSON.stringify(externalModuleVersions);
+      const versionString = JSON.stringify(externalModulesWithCssFiles);
       const imjsLoaderVersion = externalModuleVersions["imodeljs-frontend"];
       const runtimeVersion = packageContents.version;
       webpackLib.plugins.push(new HtmlWebpackPlugin({
@@ -259,7 +285,6 @@ function getConfig(env) {
     }
 
     if (env.plugin) {
-
       // correct the keys with something like 0.190.0-dev.8 to something like ">=0.190.0.dev-0" otherwise the semver matching is too strict.
       for (const key in externalModuleVersions) {
         if (externalModuleVersions.hasOwnProperty(key)) {
@@ -282,13 +307,35 @@ function getConfig(env) {
 
   // add the DefinePlugin.
   webpackLib.plugins.push(new webpack.DefinePlugin(definePluginDefinitions));
-
+  let finalCssLoader;
+  if (!devMode) {
+    webpackLib.plugins.push(new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFileName: "[name].css",
+    }));
+    finalCssLoader = {
+      loader: MiniCssExtractPlugin.loader,
+      options: {
+        // here is the rationale for this "hack", which works with mini-css-extract-plugin 0.6.0:
+        // The resourcePath argument is where the css file is found during the build, and the context argument is the directory where package.json is found.
+        // If the css is coming from the current directory (resourcePath starts with context), then return undefined (which lets webpack pick the output path)
+        // If the css is coming from elsewhere (for example, bentley-icons-generic.css is coming from deep in node_modules), then we know that a) the css is going
+        // to be put somewhere relative to the webserver root, and b) our css file is going to be put into a directory with the version name, so we need to add "../"
+        // to the output path. I wish there were a better way to do this, but I don't know what it is. BJB 5/24/2019.
+        publicPath: (resourcePath, context) => {
+          return (resourcePath.startsWith(context)) ? undefined : "../";
+        }
+      },
+    }
+  } else {
+    finalCssLoader = require.resolve("style-loader");
+  }
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
     cssRules = [{
       test: /\.scss$/,
       use: {
-        loader: require.resolve("sass-loader"),
+        loader: require.resolve("fast-sass-loader"),
         options: {
           includePaths: [path.resolve(contextDirectory, "node_modules")],
           outputStyle: "compressed",
@@ -308,7 +355,7 @@ function getConfig(env) {
         {
           test: /\.s?css$/,
           use: [
-            require.resolve("style-loader"),
+            finalCssLoader,
             {
               loader: require.resolve("css-loader"),
               options: {

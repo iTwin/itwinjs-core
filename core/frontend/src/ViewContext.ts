@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, assert } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, PlanarClassifierMap, RenderSolarShadowMap } from "./render/System";
-import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
 import { Tile } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -517,19 +517,32 @@ export class SceneContext extends RenderContext {
   public readonly backgroundGraphics: RenderGraphic[] = [];
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
-  public backgroundMap?: BackgroundMapState;
   public modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   public planarClassifiers?: PlanarClassifierMap;               // Classifier model id to planar classifier.
   public solarShadowMap?: RenderSolarShadowMap;
+  public extendedFrustumPlane?: Plane3dByOriginAndUnitNormal;
+  private _tiledGraphicsProviderType?: TiledGraphicsProvider.Type;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
   }
   public get viewFrustum(): ViewFrustum | undefined {
-    return (undefined !== this.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(this.viewport, this.backgroundMap.getPlane()) : this.viewport.viewFrustum;
+    return (undefined !== this.extendedFrustumPlane) ? ViewFrustum.createFromViewportAndPlane(this.viewport, this.extendedFrustumPlane) : this.viewport.viewFrustum;
   }
 
-  public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
+  public outputGraphic(graphic: RenderGraphic): void {
+    if (this._tiledGraphicsProviderType !== undefined) {
+      switch (this._tiledGraphicsProviderType) {
+        case TiledGraphicsProvider.Type.BackgroundMap:
+          this.backgroundGraphics.push(graphic);
+          break;
+        default:
+          assert(false, "currently unsupported graphics provider type");
+      }
+    } else {
+      this.graphics.push(graphic);
+    }
+  }
 
   public insertMissingTile(tile: Tile): void {
     switch (tile.loadStatus) {
@@ -544,6 +557,7 @@ export class SceneContext extends RenderContext {
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
+  public set tiledGraphicsProviderType(providerType: TiledGraphicsProvider.Type | undefined) { this._tiledGraphicsProviderType = providerType; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined { return this.planarClassifiers ? this.planarClassifiers.get(id) : undefined; }
   public setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier) {
     if (!this.planarClassifiers)

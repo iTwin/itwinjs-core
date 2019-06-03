@@ -22,9 +22,7 @@ describe("Agent (#integration)", () => {
     agentConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
-      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization context-registry-service imodelhub",
+      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
   });

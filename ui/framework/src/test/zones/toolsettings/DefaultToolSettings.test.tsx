@@ -2,15 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// import * as React from "react";
-// import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import {
   QuantityType, PropertyDescription, PrimitiveValue, ToolSettingsValue, PropertyEditorParamTypes,
   ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord,
 } from "@bentley/imodeljs-frontend";
-
-// import TestUtils from "../../TestUtils";
 
 // tslint:disable: completed-docs
 

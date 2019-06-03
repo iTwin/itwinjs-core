@@ -1,0 +1,179 @@
+sep=;
+Release Tag;API Item
+internal;AnnularSector
+internal;Annulus
+public;BodyText: React.FunctionComponent
+alpha;BoundsFunctionProp = number | (() => number | undefined)
+public;Button 
+public;ButtonProps 
+public;ButtonSize
+public;ButtonType
+public;Centered: React.FunctionComponent
+public;Checkbox: React.FunctionComponent
+public;CheckBoxInfo
+public;CheckboxProps 
+public;CheckBoxState
+beta;CheckListBox 
+beta;CheckListBoxItem 
+beta;CheckListBoxItemProps 
+beta;CheckListBoxSeparator: React.StatelessComponent
+internal;Circle
+public;ClassNameProps
+public;CommonDivProps 
+public;CommonProps 
+public;ContextMenu 
+public;ContextMenuDirection
+public;ContextMenuDivider 
+public;ContextMenuItem 
+public;ContextMenuItemProps 
+public;ContextMenuProps 
+public;ContextSubMenu 
+public;ContextSubMenuProps 
+beta;Cube 
+internal;CubeFace 
+internal;CubeFaceProps 
+beta;CubeProps 
+public;DateFormat
+public;Dialog 
+public;DialogAlignment
+public;DialogButtonDef
+public;DialogButtonStyle
+public;DialogButtonType
+public;DialogProps 
+internal;Div 
+internal;DivProps 
+public;ElementSeparator 
+public;ElementSeparatorProps 
+public;ExecuteHandler = (this: void) => void
+public;ExpandableBlock 
+public;ExpandableBlockProps 
+public;ExpandableList 
+public;ExpandableListProps 
+public;ExpansionToggle 
+public;ExpansionToggleProps 
+beta;Face
+public;FillCentered: React.FunctionComponent
+internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
+public;FlexWrapContainer: React.FunctionComponent
+internal;getClassName: (obj: any) => string
+internal;getDisplayName: (component: React.ComponentType
+internal;getUserColor(email: string): string
+public;GlobalContextMenu 
+public;GlobalContextMenuProps 
+public;GlobalDialog 
+public;GlobalDialogProps 
+public;Headline: React.FunctionComponent
+public;HorizontalAlignment
+beta;HorizontalTabs 
+beta;HorizontalTabsProps 
+beta;ImageCheckBox 
+beta;ImageCheckBoxProps 
+public;Input 
+public;InputProps 
+public;InputStatus
+internal;isPromiseLike(obj: unknown): obj is PromiseLike
+public;LabeledComponentProps
+public;LabeledInput 
+public;LabeledInputProps 
+public;LabeledSelect 
+public;LabeledSelectProps 
+public;LabeledTextarea 
+public;LabeledTextareaProps 
+public;LeadingText: React.FunctionComponent
+public;LeadingText2: React.FunctionComponent
+internal;Line
+beta;LoadingBar 
+beta;LoadingBarProps 
+beta;LoadingPrompt 
+beta;LoadingPromptProps
+beta;LoadingSpinner 
+beta;LoadingSpinnerProps 
+beta;LoadingStatus 
+beta;LoadingStatusProps 
+beta;LocalUiSettings 
+public;MessageBox 
+public;MessageBoxProps 
+public;MessageContainer 
+public;MessageContainerProps 
+public;MessagedComponentProps
+public;MessageSeverity
+public;MutedText: React.FunctionComponent
+beta;NoChildrenProps
+beta;NodeCheckboxProps
+beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
+beta;NodeCheckboxRenderProps = Omit
+alpha;NumericInput 
+alpha;NumericInputProps 
+public;Omit
+beta;OmitChildrenProp
+public;Orientation
+internal;Point
+beta;Popup 
+beta;PopupProps 
+beta;Position
+beta;RadialButton 
+beta;RadialButtonProps 
+beta;RadialMenu 
+beta;RadialMenuProps 
+public;Radio 
+public;RadioProps 
+public;ScrollView: React.FunctionComponent
+public;SearchBox 
+public;SearchBoxProps 
+public;Select 
+public;SelectProps 
+beta;SessionUiSettings 
+internal;shallowDiffers: (a:
+public;SmallText: React.FunctionComponent
+public;SortDirection
+public;Spinner 
+public;SpinnerProps
+public;SpinnerSize
+beta;SplitButton 
+internal;SplitButtonActionType
+beta;SplitButtonProps 
+alpha;StepFunctionProp = number | ((direction: string) => number | undefined)
+internal;StyledText 
+internal;StyledTextProps 
+public;Subheading: React.FunctionComponent
+public;Subheading2: React.FunctionComponent
+public;SvgPath 
+public;SvgPathProps 
+public;SvgSprite 
+public;SvgSpriteProps 
+public;Textarea 
+public;TextareaProps 
+public;TextProps 
+internal;TildeFinder
+public;TimeFormat
+public;Timer
+public;Title: React.FunctionComponent
+public;Title2: React.FunctionComponent
+public;Toggle 
+public;ToggleButtonType
+public;ToggleProps 
+public;Tree 
+public;TreeBranch 
+public;TreeBranchProps 
+public;TreeNode 
+public;TreeNodePlaceholder 
+public;TreeNodePlaceholderProps 
+public;TreeNodeProps 
+public;TreeProps 
+public;UiCore
+public;UiError 
+public;UiEvent
+beta;UiSettings
+beta;UiSettingsResult
+beta;UiSettingsStatus
+public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
+public;UnderlinedButtonProps
+public;VerticalAlignment
+public;WebFontIcon: React.FunctionComponent
+public;WebFontIconProps 
+public;withIsPressed: 
+public;WithIsPressedProps
+public;withOnOutsideClick: 
+public;WithOnOutsideClickProps
+public;withTimeout: 
+public;WithTimeoutProps

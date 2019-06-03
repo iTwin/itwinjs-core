@@ -2,6 +2,39 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/webpack-tools_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use fast-sass-loader instead of sass-loader"
+          },
+          {
+            "comment": "Fix copying of css files to webresource in prod build."
+          },
+          {
+            "comment": "Update to css-loader 2.1.1"
+          },
+          {
+            "comment": "Fixed problems with not finding package.json for indirect dependencies, webpack error obscuration."
+          },
+          {
+            "comment": "Fix webpack to put the .css files required into the version string of index.html"
+          },
+          {
+            "comment": "Webpack of plugins should not include main in versionsRequired"
+          },
+          {
+            "comment": "For production builds, create separate css files. Use fork of fast-css-loader until outputStyle issue addressed.."
+          },
+          {
+            "comment": "Use optimize-css-assets-webpack-plugin instead of fork of fast-sass-loader."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/webpack-tools_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

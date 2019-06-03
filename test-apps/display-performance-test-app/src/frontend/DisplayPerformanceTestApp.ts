@@ -3,16 +3,16 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
-  SnapshotIModelRpcInterface, ViewDefinitionProps, ViewFlag,
+  SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
-  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -23,6 +23,12 @@ import { IModelApi } from "./IModelApi";
 
 let curRenderOpts: RenderSystem.Options = {}; // Keep track of the current render options (disabled webgl extensions and enableOptimizedSurfaceShaders flag)
 let curTileProps: TileAdmin.Props = {}; // Keep track of whether or not instancing has been enabled
+const testNamesImages = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for images
+const testNamesTimings = new Map<string, number>(); // Keep track of test names and how many duplicate names exist for timings
+
+interface Options {
+  [key: string]: any; // Add index signature
+}
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -30,7 +36,7 @@ async function getDefaultConfigs(): Promise<string> {
 }
 
 async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
-  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, rowData);
+  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]));
 }
 
 const wantConsoleOutput: boolean = false;
@@ -82,87 +88,6 @@ class DisplayPerfTestApp {
   }
 }
 
-function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
-  if (!vfo) vfo = new ViewFlag.Overrides();
-  if (vf) {
-    if (vf.hasOwnProperty("dimensions"))
-      vfo.setShowDimensions(vf.dimensions);
-    if (vf.hasOwnProperty("patterns"))
-      vfo.setShowPatterns(vf.patterns);
-    if (vf.hasOwnProperty("weights"))
-      vfo.setShowWeights(vf.weights);
-    if (vf.hasOwnProperty("styles"))
-      vfo.setShowStyles(vf.styles);
-    if (vf.hasOwnProperty("transparency"))
-      vfo.setShowTransparency(vf.transparency);
-    if (vf.hasOwnProperty("fill"))
-      vfo.setShowFill(vf.fill);
-    if (vf.hasOwnProperty("textures"))
-      vfo.setShowTextures(vf.textures);
-    if (vf.hasOwnProperty("materials"))
-      vfo.setShowMaterials(vf.materials);
-    if (vf.hasOwnProperty("visibleEdges"))
-      vfo.setShowVisibleEdges(vf.visibleEdges);
-    if (vf.hasOwnProperty("hiddenEdges"))
-      vfo.setShowHiddenEdges(vf.hiddenEdges);
-    if (vf.hasOwnProperty("sourceLights"))
-      vfo.setShowSourceLights(vf.sourceLights);
-    if (vf.hasOwnProperty("cameraLights"))
-      vfo.setShowCameraLights(vf.cameraLights);
-    if (vf.hasOwnProperty("solarLights"))
-      vfo.setShowSolarLight(vf.solarLights);
-    if (vf.hasOwnProperty("shadows"))
-      vfo.setShowShadows(vf.shadows);
-    if (vf.hasOwnProperty("clipVolume"))
-      vfo.setShowClipVolume(vf.clipVolume);
-    if (vf.hasOwnProperty("constructions"))
-      vfo.setShowConstructions(vf.constructions);
-    if (vf.hasOwnProperty("monochrome"))
-      vfo.setMonochrome(vf.monochrome);
-    if (vf.hasOwnProperty("noGeometryMap"))
-      vfo.setIgnoreGeometryMap(vf.noGeometryMap);
-    if (vf.hasOwnProperty("backgroundMap"))
-      vfo.setShowBackgroundMap(vf.backgroundMap);
-    if (vf.hasOwnProperty("hLineMaterialColors"))
-      vfo.setUseHlineMaterialColors(vf.hLineMaterialColors);
-    if (vf.hasOwnProperty("edgeMask"))
-      vfo.setEdgeMask(Number(vf.edgeMask));
-    if (vf.hasOwnProperty("forceSurfaceDiscard"))
-      vfo.setForceSurfaceDiscard(vf.forceSurfaceDiscard);
-
-    if (vf.hasOwnProperty("renderMode")) {
-      const rm: string = vf.renderMode.toString();
-      switch (rm.toLowerCase().trim()) {
-        case "wireframe":
-          vfo.setRenderMode(RenderMode.Wireframe);
-          break;
-        case "hiddenline":
-          vfo.setRenderMode(RenderMode.HiddenLine);
-          break;
-        case "solidfill":
-          vfo.setRenderMode(RenderMode.SolidFill);
-          break;
-        case "smoothshade":
-          vfo.setRenderMode(RenderMode.SmoothShade);
-          break;
-        case "0":
-          vfo.setRenderMode(RenderMode.Wireframe);
-          break;
-        case "3":
-          vfo.setRenderMode(RenderMode.HiddenLine);
-          break;
-        case "4":
-          vfo.setRenderMode(RenderMode.SolidFill);
-          break;
-        case "6":
-          vfo.setRenderMode(RenderMode.SmoothShade);
-          break;
-      }
-    }
-  }
-  return vfo;
-}
-
 function getRenderMode(): string {
   switch (activeViewState.viewState!.displayStyle.viewFlags.renderMode) {
     case 0: return "Wireframe";
@@ -175,79 +100,166 @@ function getRenderMode(): string {
 
 function getRenderOpts(): string {
   let optString = "";
-  if (curRenderOpts.disabledExtensions) curRenderOpts.disabledExtensions.forEach((ext) => {
-    switch (ext) {
-      case "WEBGL_draw_buffers":
-        optString += "-drawBuf";
+  for (const [key, value] of Object.entries(curRenderOpts)) {
+    switch (key) {
+      case "disabledExtensions":
+        if (value) value.forEach((ext: string) => {
+          switch (ext) {
+            case "WEBGL_draw_buffers":
+              optString += "-drawBuf";
+              break;
+            case "OES_element_index_uint":
+              optString += "-unsignedInt";
+              break;
+            case "OES_texture_float":
+              optString += "-texFloat";
+              break;
+            case "OES_texture_half_float":
+              optString += "-texHalfFloat";
+              break;
+            case "WEBGL_depth_texture":
+              optString += "-depthTex";
+              break;
+            case "EXT_color_buffer_float":
+              optString += "-floats";
+              break;
+            case "EXT_shader_texture_lod":
+              optString += "-texLod";
+              break;
+            case "ANGLE_instanced_arrays":
+              optString += "-instArrays";
+              break;
+            default:
+              optString += "-" + ext;
+              break;
+          }
+        });
         break;
-      case "OES_element_index_uint":
-        optString += "-unsignedInt";
+      case "enableOptimizedSurfaceShaders":
+        if (value) optString += "+optSurf";
         break;
-      case "OES_texture_float":
-        optString += "-texFloat";
+      case "cullAgainstActiveVolume":
+        if (value) optString += "+cullActVol";
         break;
-      case "OES_texture_half_float":
-        optString += "-texHalfFloat";
+      case "preserveShaderSourceCode":
+        if (value) optString += "+shadeSrc";
         break;
-      case "WEBGL_depth_texture":
-        optString += "-depthTex";
-        break;
-      case "EXT_color_buffer_float":
-        optString += "-floats";
-        break;
-      case "EXT_shader_texture_lod":
-        optString += "-texLod";
-        break;
-      case "ANGLE_instanced_arrays":
-        optString += "-instArrays";
+      case "displaySolarShadows":
+        if (value) optString += "+solShd";
         break;
       default:
-        optString += "-" + ext;
-        break;
+        if (value) optString += "+" + key;
     }
-  });
-  if (curRenderOpts.backfaceCulling) optString += "+bfCull";
-  // if (curRenderOpts.enableOptimizedSurfaceShaders) optString += "+optSurf";
+  }
   return optString;
 }
 
 function getTileProps(): string {
   let tilePropsStr = "";
-  if (curTileProps.disableThrottling) tilePropsStr += "+throt";
-  if (curTileProps.elideEmptyChildContentRequests) tilePropsStr += "+elide";
-  if (curTileProps.enableInstancing) tilePropsStr += "+inst";
-  if (curTileProps.maxActiveRequests && curTileProps.maxActiveRequests !== 10) tilePropsStr += "+max" + curTileProps.maxActiveRequests;
-  if (curTileProps.retryInterval) tilePropsStr += "+retry" + curTileProps.retryInterval;
+  for (const [key, value] of Object.entries(curTileProps)) {
+    switch (key) {
+      case "disableThrottling":
+        if (value) tilePropsStr += "-throt";
+        break;
+      case "elideEmptyChildContentRequests":
+        if (value) tilePropsStr += "+elide";
+        break;
+      case "enableInstancing":
+        if (value) tilePropsStr += "+inst";
+        break;
+      case "maxActiveRequests":
+        if (value !== 10) tilePropsStr += "+max" + value;
+        break;
+      case "retryInterval":
+        if (value) tilePropsStr += "+retry" + value;
+        break;
+      default:
+        if (value) tilePropsStr += "+" + key;
+    }
+  }
   return tilePropsStr;
 }
 
 function getViewFlagsString(): string {
-  const vf = activeViewState.viewState!.displayStyle.viewFlags;
   let vfString = "";
-  if (!vf.dimensions) vfString += "-dim";
-  if (!vf.patterns) vfString += "-pat";
-  if (!vf.weights) vfString += "-wt";
-  if (!vf.styles) vfString += "-sty";
-  if (!vf.transparency) vfString += "-trn";
-  if (!vf.fill) vfString += "-fll";
-  if (!vf.textures) vfString += "-txt";
-  if (!vf.materials) vfString += "-mat";
-  if (vf.visibleEdges) vfString += "+vsE";
-  if (vf.hiddenEdges) vfString += "+hdE";
-  if (vf.sourceLights) vfString += "+scL";
-  if (vf.cameraLights) vfString += "+cmL";
-  if (vf.solarLight) vfString += "+slL";
-  if (vf.shadows) vfString += "+shd";
-  if (!vf.clipVolume) vfString += "-clp";
-  if (vf.constructions) vfString += "+con";
-  if (vf.monochrome) vfString += "+mno";
-  if (vf.noGeometryMap) vfString += "+noG";
-  if (vf.backgroundMap) vfString += "+bkg";
-  if (vf.hLineMaterialColors) vfString += "+hln";
-  if (vf.edgeMask === 1) vfString += "+genM";
-  if (vf.edgeMask === 2) vfString += "+useM";
-  if (vf.ambientOcclusion) vfString += "+ao";
-  if (vf.forceSurfaceDiscard) vfString += "+fsd";
+  if (activeViewState.viewState) for (const [key, value] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
+    switch (key) {
+      case "renderMode":
+        break;
+      case "dimensions":
+        if (!value) vfString += "-dim";
+        break;
+      case "patterns":
+        if (!value) vfString += "-pat";
+        break;
+      case "weights":
+        if (!value) vfString += "-wt";
+        break;
+      case "styles":
+        if (!value) vfString += "-sty";
+        break;
+      case "transparency":
+        if (!value) vfString += "-trn";
+        break;
+      case "fill":
+        if (!value) vfString += "-fll";
+        break;
+      case "textures":
+        if (!value) vfString += "-txt";
+        break;
+      case "materials":
+        if (!value) vfString += "-mat";
+        break;
+      case "visibleEdges":
+        if (value) vfString += "+vsE";
+        break;
+      case "hiddenEdges":
+        if (value) vfString += "+hdE";
+        break;
+      case "sourceLights":
+        if (value) vfString += "+scL";
+        break;
+      case "cameraLights":
+        if (value) vfString += "+cmL";
+        break;
+      case "solarLight":
+        if (value) vfString += "+slL";
+        break;
+      case "shadows":
+        if (value) vfString += "+shd";
+        break;
+      case "clipVolume":
+        if (!value) vfString += "-clp";
+        break;
+      case "constructions":
+        if (value) vfString += "+con";
+        break;
+      case "monochrome":
+        if (value) vfString += "+mno";
+        break;
+      case "noGeometryMap":
+        if (value) vfString += "+noG";
+        break;
+      case "backgroundMap":
+        if (value) vfString += "+bkg";
+        break;
+      case "hLineMaterialColors":
+        if (value) vfString += "+hln";
+        break;
+      case "edgeMask":
+        if (value === 1) vfString += "+genM";
+        if (value === 2) vfString += "+useM";
+        break;
+      case "ambientOcclusion":
+        if (value) vfString += "+ao";
+        break;
+      case "forceSurfaceDiscard":
+        if (value) vfString += "+fsd";
+        break;
+      default:
+        if (value) vfString += "+" + key;
+    }
+  }
   return vfString;
 }
 
@@ -293,6 +305,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("iModel", configs.iModelName!);
   rowData.set("View", configs.viewName!);
   rowData.set("Screen Size", configs.view!.width + "X" + configs.view!.height);
+  rowData.set("Skip & Time Renders", configs.numRendersToSkip + " & " + configs.numRendersToTime);
   rowData.set("Display Style", activeViewState.viewState!.displayStyle.name);
   rowData.set("Render Mode", getRenderMode());
   rowData.set("View Flags", getViewFlagsString() !== "" ? " " + getViewFlagsString() : "");
@@ -332,21 +345,61 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   return rowData;
 }
 
+function removeOptsFromString(input: string, ignore: string[] | string | undefined): string {
+  if (ignore === undefined)
+    return input;
+  let output = input;
+  if (!(ignore instanceof Array))
+    ignore = ignore.split(" ");
+  ignore.forEach((del: string) => {
+    if (del === "+max")
+      output = output.replace(/\+max\d+/, "");
+    else
+      output = output.replace(del, "");
+  });
+  output = output.replace(/__+/, "_");
+  if (output[output.length - 1] === "_")
+    output = output.slice(0, output.length - 1);
+  return output;
+}
+
 function getImageString(configs: DefaultConfigs, prefix = ""): string {
   let output = configs.outputPath ? configs.outputPath : "";
   const lastChar = output[output.length - 1];
   if (lastChar !== "/" && lastChar !== "\\")
     output += "\\";
-  output += prefix;
-  output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  output += configs.viewName ? "_" + configs.viewName : "";
-  output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  output += getRenderMode() !== "" ? "_" + getRenderMode() : "";
-  output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  output += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
-  output += getTileProps() !== "" ? "_" + getTileProps() : "";
+  let filename = "";
+  filename += getTestName(configs, prefix, true);
+  output += filename;
   output += ".png";
   return output;
+}
+
+function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, ignoreDupes = false): string {
+  let testName = "";
+  if (prefix) testName += prefix;
+  testName += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  testName += configs.viewName ? "_" + configs.viewName : "";
+  testName += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  testName += getRenderMode() !== "" ? "_" + getRenderMode() : "";
+  testName += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  testName += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
+  testName += getTileProps() !== "" ? "_" + getTileProps() : "";
+  testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
+  if (!ignoreDupes) {
+    let testNum = isImage ? testNamesImages.get(testName) : testNamesTimings.get(testName);
+    if (testNum === undefined)
+      testNum = 0;
+    testName += (testNum > 1) ? ("---" + testNum) : "";
+  }
+  return testName;
+}
+
+function updateTestNames(configs: DefaultConfigs, prefix?: string, isImage = false) {
+  const testNames = isImage ? testNamesImages : testNamesTimings;
+  let testNameDupes = testNames.get(getTestName(configs, prefix, false, true));
+  if (testNameDupes === undefined) testNameDupes = 0;
+  testNames.set(getTestName(configs, prefix, false, true), testNameDupes + 1);
 }
 
 async function savePng(fileName: string): Promise<void> {
@@ -366,15 +419,18 @@ class ViewSize {
 
 class DefaultConfigs {
   public view?: ViewSize;
+  public numRendersToTime?: number;
+  public numRendersToSkip?: number;
   public outputName?: string;
   public outputPath?: string;
   public iModelLocation?: string;
   public iModelName?: string;
   public iModelHubProject?: string;
+  public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
   public testType?: string;
   public displayStyle?: string;
-  public viewFlags?: ViewFlag.Overrides;
+  public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public renderOptions?: RenderSystem.Options;
   public tileProps?: TileAdmin.Props;
   public aoEnabled = false;
@@ -382,6 +438,8 @@ class DefaultConfigs {
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
       this.view = new ViewSize(1000, 1000);
+      this.numRendersToTime = 100;
+      this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = "D:\\output\\performanceData\\";
       this.iModelName = "Wraith.ibim";
@@ -391,34 +449,42 @@ class DefaultConfigs {
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
+      if (prevConfigs.numRendersToTime) this.numRendersToTime = prevConfigs.numRendersToTime;
+      if (prevConfigs.numRendersToSkip) this.numRendersToSkip = prevConfigs.numRendersToSkip;
       if (prevConfigs.outputName) this.outputName = prevConfigs.outputName;
       if (prevConfigs.outputPath) this.outputPath = prevConfigs.outputPath;
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
+      if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
-      if (prevConfigs.renderOptions) this.renderOptions = prevConfigs.renderOptions;
-      if (prevConfigs.tileProps) this.tileProps = prevConfigs.tileProps;
-      if (prevConfigs.viewFlags) this.viewFlags = prevConfigs.viewFlags;
+      this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
+      this.tileProps = this.updateData(prevConfigs.tileProps, this.tileProps) as TileAdmin.Props || undefined;
+      this.viewFlags = this.updateData(prevConfigs.viewFlags, this.viewFlags);
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
+    if (jsonData.numRendersToTime) this.numRendersToTime = jsonData.numRendersToTime;
+    if (jsonData.numRendersToSkip) this.numRendersToSkip = jsonData.numRendersToSkip;
     if (jsonData.outputName) this.outputName = jsonData.outputName;
     if (jsonData.outputPath) this.outputPath = combineFilePaths(jsonData.outputPath, this.outputPath);
     if (jsonData.iModelLocation) this.iModelLocation = combineFilePaths(jsonData.iModelLocation, this.iModelLocation);
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
+    if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
     if (jsonData.viewName) this.viewName = jsonData.viewName;
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
-    if (jsonData.renderOptions) this.renderOptions = jsonData.renderOptions as RenderSystem.Options;
-    if (jsonData.tileProps) this.tileProps = jsonData.tileProps as TileAdmin.Props;
-    if (jsonData.viewFlags) this.viewFlags = setViewFlagOverrides(jsonData.viewFlags, this.viewFlags);
+    this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
+    this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
+    this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
     this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
-    debugPrint("view: " + this.view ? (this.view!.width + "X" + this.view!.height) : "undefined");
+    debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
+    debugPrint("numRendersToTime: " + this.numRendersToTime);
+    debugPrint("numRendersToSkip: " + this.numRendersToSkip);
     debugPrint("outputFile: " + this.outputFile);
     debugPrint("outputName: " + this.outputName);
     debugPrint("outputPath: " + this.outputPath);
@@ -426,12 +492,53 @@ class DefaultConfigs {
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
     debugPrint("iModelHubProject: " + this.iModelHubProject);
+    debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
     debugPrint("displayStyle: " + this.displayStyle);
     debugPrint("tileProps: " + this.tileProps);
     debugPrint("renderOptions: " + this.renderOptions);
     debugPrint("viewFlags: " + this.viewFlags);
+  }
+
+  private getRenderModeCode(value: any): RenderMode | undefined {
+    if (value === undefined)
+      return undefined;
+    let mode;
+    switch (value.toString().toLowerCase().trim()) {
+      case "0":
+      case "wireframe":
+        mode = RenderMode.Wireframe;
+        break;
+      case "3":
+      case "hiddenline":
+        mode = RenderMode.HiddenLine;
+        break;
+      case "4":
+      case "solidfill":
+        mode = RenderMode.SolidFill;
+        break;
+      case "6":
+      case "smoothshade":
+        mode = RenderMode.SmoothShade;
+        break;
+    }
+    return mode;
+  }
+
+  private updateData(prevData: any, newData: any) {
+
+    if (prevData) {
+      if (newData === undefined)
+        newData = {};
+      for (const [key, value] of Object.entries(prevData)) { // Copy by value
+        if (key === "renderMode" && this.getRenderModeCode(value) !== undefined)
+          (newData as Options)[key] = this.getRenderModeCode(value);
+        else
+          (newData as Options)[key] = value;
+      }
+    }
+    return newData;
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
@@ -460,6 +567,7 @@ class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
+  public oidcClient?: OidcBrowserClient;
   constructor() { }
 }
 
@@ -499,15 +607,18 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 }
 
 async function initializeOidc(requestContext: FrontendRequestContext) {
-  if (OidcClientWrapper.oidcClient)
+  assert(!!activeViewState);
+  if (activeViewState.oidcClient)
     return;
 
   const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
 
-  await OidcClientWrapper.initialize(requestContext, oidcConfig);
-  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+  const oidcClient = new OidcBrowserClient(oidcConfig);
+  await oidcClient.initialize(requestContext);
+  activeViewState.oidcClient = oidcClient;
+  IModelApp.authorizationClient = oidcClient;
 }
 
 // Wraps the signIn process
@@ -519,8 +630,8 @@ async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
   await initializeOidc(requestContext);
 
-  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
-    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+  if (!activeViewState.oidcClient!.hasSignedIn) {
+    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
     return false;
   }
 
@@ -537,7 +648,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
     try {
       activeViewState.iModelConnection = await IModelConnection.openSnapshot(testConfig.iModelFile!);
     } catch (err) {
-      debugPrint("openSnapshot failed: " + err.toString());
+      alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
     }
   }
@@ -578,8 +689,15 @@ async function loadIModel(testConfig: DefaultConfigs) {
   // Set the viewFlags (including the render mode)
   if (undefined !== activeViewState.viewState) {
     activeViewState.viewState.displayStyle.viewFlags.ambientOcclusion = testConfig.aoEnabled;
-    if (testConfig.viewFlags)
-      testConfig.viewFlags.apply(activeViewState.viewState.displayStyle.viewFlags);
+    if (testConfig.viewFlags) {
+      // Use the testConfig.viewFlags data for each property in ViewFlags if it exists; otherwise, keep using the viewState's ViewFlags info
+      for (const [key] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
+        if ((testConfig.viewFlags as Options)[key] !== undefined)
+          (activeViewState.viewState.displayStyle.viewFlags as Options)[key] = (testConfig.viewFlags as Options)[key];
+        else
+          (testConfig.viewFlags as Options)[key] = (activeViewState.viewState.displayStyle.viewFlags as Options)[key];
+      }
+    }
   }
 
   // Load all tiles
@@ -591,9 +709,8 @@ async function closeIModel(isSnapshot: boolean) {
   if (activeViewState.iModelConnection) {
     if (isSnapshot)
       await activeViewState.iModelConnection.closeSnapshot();
-    else {
+    else
       await activeViewState.iModelConnection!.close();
-    }
   }
   debugPrint("end closeIModel");
 }
@@ -603,25 +720,38 @@ function restartIModelApp(testConfig: DefaultConfigs) {
   const newRenderOpts: RenderSystem.Options = testConfig.renderOptions ? testConfig.renderOptions : {};
   const newTileProps: TileAdmin.Props = testConfig.tileProps ? testConfig.tileProps : {};
   if (IModelApp.initialized) {
-    if (curTileProps.disableThrottling !== newTileProps.disableThrottling || curTileProps.elideEmptyChildContentRequests !== newTileProps.elideEmptyChildContentRequests
-      || curTileProps.enableInstancing !== newTileProps.enableInstancing || curTileProps.maxActiveRequests !== newTileProps.maxActiveRequests || curTileProps.retryInterval !== newTileProps.retryInterval
-      /*|| curRenderOpts.enableOptimizedSurfaceShaders !== newRenderOpts.enableOptimizedSurfaceShaders*/ || ((curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0) !== (newRenderOpts.disabledExtensions ? newRenderOpts.disabledExtensions.length : 0))) {
+    let restart = false; // Determine if anything in renderOpts or tileProps changed that requires the IModelApp to be reinitialized
+    if (Object.keys(curTileProps).length !== Object.keys(newTileProps).length || Object.keys(curRenderOpts).length !== Object.keys(newRenderOpts).length)
+      restart = true;
+    for (const [key, value] of Object.entries(curTileProps)) {
+      if (value !== (newTileProps as Options)[key]) {
+        restart = true;
+        break;
+      }
+    }
+    for (const [key, value] of Object.entries(curRenderOpts)) {
+      if (key === "disabledExtensions") {
+        if ((value ? value.length : 0) !== ((newRenderOpts && newRenderOpts.disabledExtensions) ? newRenderOpts.disabledExtensions.length : 0)) {
+          restart = true;
+          break;
+        }
+        for (let i = 0; i < (value ? value.length : 0); i++) {
+          if (value && newRenderOpts.disabledExtensions && value[i] !== newRenderOpts.disabledExtensions[i]) {
+            restart = true;
+            break;
+          }
+        }
+      } else if (value !== (newRenderOpts as Options)[key]) {
+        restart = true;
+        break;
+      }
+    }
+    if (restart) {
       if (theViewport) {
         theViewport.dispose();
         theViewport = undefined;
       }
       IModelApp.shutdown();
-    } else if (curRenderOpts.disabledExtensions !== newRenderOpts.disabledExtensions) {
-      for (let i = 0; i < (curRenderOpts.disabledExtensions ? curRenderOpts.disabledExtensions.length : 0); i++) {
-        if (curRenderOpts.disabledExtensions && newRenderOpts.disabledExtensions && curRenderOpts.disabledExtensions[i] !== newRenderOpts.disabledExtensions[i]) {
-          if (theViewport) {
-            theViewport.dispose();
-            theViewport = undefined;
-          }
-          IModelApp.shutdown();
-          break;
-        }
-      }
     }
   }
   curRenderOpts = newRenderOpts;
@@ -631,8 +761,98 @@ function restartIModelApp(testConfig: DefaultConfigs) {
       renderSys: testConfig.renderOptions,
       tileAdmin: TileAdmin.create(curTileProps),
     });
-
     (IModelApp.renderSystem as System).techniques.compileShaders();
+  }
+}
+
+async function createReadPixelsImages(testConfig: DefaultConfigs, pix: Pixel.Selector, pixStr: string) {
+  const width = testConfig.view!.width;
+  const height = testConfig.view!.height;
+  const viewRect = new ViewRect(0, 0, width, height);
+  if (theViewport && theViewport.canvas) {
+    const ctx = theViewport.canvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
+      const elemIdImgData = (pix & Pixel.Selector.Feature) ? ctx.createImageData(width, height) : undefined;
+      const depthImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+      const typeImgData = (pix & Pixel.Selector.GeometryAndDistance) ? ctx.createImageData(width, height) : undefined;
+
+      theViewport.readPixels(viewRect, pix, (pixels: any) => {
+        if (undefined === pixels)
+          return;
+        for (let y = viewRect.top; y < viewRect.bottom; ++y) {
+          for (let x = viewRect.left; x < viewRect.right; ++x) {
+            const index = (x * 4) + (y * 4 * viewRect.right);
+            const pixel = pixels.getPixel(x, y);
+            // // RGB for element ID
+            if (elemIdImgData !== undefined) {
+              const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
+              elemIdImgData.data[index + 0] = elemId % 256;
+              elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
+              elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
+              elemIdImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+            // RGB for Depth
+            if (depthImgData !== undefined) {
+              const distColor = pixels.getPixel(x, y).distanceFraction * 255;
+              depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
+              depthImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+            // RGB for type
+            if (typeImgData !== undefined) {
+              const type = pixels.getPixel(x, y).type;
+              switch (type) {
+                case Pixel.GeometryType.None: // White
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 255;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Surface: // Red
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+                case Pixel.GeometryType.Linear: // Green
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 255;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+                case Pixel.GeometryType.Edge: // Blue
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Silhouette: // Purple
+                  typeImgData.data[index + 0] = 255;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 255;
+                  break;
+                case Pixel.GeometryType.Unknown: // Black
+                default:
+                  typeImgData.data[index + 0] = 0;
+                  typeImgData.data[index + 1] = 0;
+                  typeImgData.data[index + 2] = 0;
+                  break;
+              }
+              typeImgData.data[index + 3] = 255; // Set alpha to 100% opaque
+            }
+          }
+        }
+        return;
+      });
+      if (elemIdImgData !== undefined) {
+        ctx.putImageData(elemIdImgData, 0, 0);
+        await savePng(getImageString(testConfig, "elemId_" + pixStr + "_"));
+      }
+      if (depthImgData !== undefined) {
+        ctx.putImageData(depthImgData, 0, 0);
+        await savePng(getImageString(testConfig, "depth_" + pixStr + "_"));
+      }
+      if (typeImgData !== undefined) {
+        ctx.putImageData(typeImgData, 0, 0);
+        await savePng(getImageString(testConfig, "type_" + pixStr + "_"));
+      }
+    }
   }
 }
 
@@ -643,12 +863,14 @@ async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   await loadIModel(testConfig);
 
-  if (testConfig.testType === "image" || testConfig.testType === "both")
+  if (testConfig.testType === "image" || testConfig.testType === "both") {
+    updateTestNames(testConfig, undefined, true); // Update the list of image test names
     await savePng(getImageString(testConfig));
+  }
 
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
-    for (let i = 0; i < 15; ++i) {
+    for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
       theViewport!.sync.setRedrawPending();
       theViewport!.renderFrame();
     }
@@ -660,108 +882,40 @@ async function runTest(testConfig: DefaultConfigs) {
     // await resolveAfterXMilSeconds(7000);
 
     const finalFrameTimings: Array<Map<string, number>> = [];
-    const numToRender = 50;
+    testConfig.numRendersToTime = testConfig.numRendersToTime ? testConfig.numRendersToTime : 100;
     if (testConfig.testType === "readPixels") {
       const width = testConfig.view!.width;
       const height = testConfig.view!.height;
       const viewRect = new ViewRect(0, 0, width, height);
       const testReadPix = async (pixSelect: Pixel.Selector, pixSelectStr: string) => {
-        for (let i = 0; i < numToRender; ++i) {
-          theViewport!.readPixels(viewRect, pixSelect, (_pixels) => { return; });
+        for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
+          theViewport!.readPixels(viewRect, pixSelect, (_pixels: any) => { return; });
           finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
           finalFrameTimings[i].delete("Scene Time");
         }
+        updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
+        updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
         const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
         await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+
+        // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
+        await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
       };
       // Test each combo of pixel selectors
       await testReadPix(Pixel.Selector.Feature, "+feature");
       await testReadPix(Pixel.Selector.GeometryAndDistance, "+geom+dist");
       await testReadPix(Pixel.Selector.All, "+feature+geom+dist");
-
-      // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
-      if (theViewport && theViewport.canvas) {
-        const ctx = theViewport.canvas.getContext("2d");
-        if (ctx) {
-          ctx.clearRect(0, 0, theViewport.canvas.width, theViewport.canvas.height);
-          const elemIdImgData = ctx.createImageData(width, height);
-          const depthImgData = ctx.createImageData(width, height);
-          const typeImgData = ctx.createImageData(width, height);
-
-          theViewport.readPixels(viewRect, Pixel.Selector.All, (pixels) => {
-            if (undefined === pixels)
-              return;
-            for (let y = viewRect.top; y < viewRect.bottom; ++y) {
-              for (let x = viewRect.left; x < viewRect.right; ++x) {
-                const index = (x * 4) + (y * 4 * viewRect.right);
-                const pixel = pixels.getPixel(x, y);
-                // // RGB for element ID
-                const elemId = Id64.getLowerUint32(pixel.elementId ? pixel.elementId : "");
-                elemIdImgData.data[index + 0] = elemId % 256;
-                elemIdImgData.data[index + 1] = (Math.floor(elemId / 256)) % 256;
-                elemIdImgData.data[index + 2] = (Math.floor(elemId / (256 ^ 2))) % 256;
-                // RGB for Depth
-                const distColor = pixels.getPixel(x, y).distanceFraction * 255;
-                const type = pixels.getPixel(x, y).type;
-                depthImgData.data[index + 0] = depthImgData.data[index + 1] = depthImgData.data[index + 2] = distColor;
-                // RGB for type
-                switch (type) {
-                  case Pixel.GeometryType.None: // White
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 255;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Surface: // Red
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                  case Pixel.GeometryType.Linear: // Green
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 255;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                  case Pixel.GeometryType.Edge: // Blue
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Silhouette: // Purple
-                    typeImgData.data[index + 0] = 255;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 255;
-                    break;
-                  case Pixel.GeometryType.Unknown: // Black
-                  default:
-                    typeImgData.data[index + 0] = 0;
-                    typeImgData.data[index + 1] = 0;
-                    typeImgData.data[index + 2] = 0;
-                    break;
-                }
-                // Alpha for all - set to 100% opaque
-                elemIdImgData.data[index + 3] = depthImgData.data[index + 3] = typeImgData.data[index + 3] = 255;
-              }
-            }
-            return;
-          });
-          ctx.putImageData(elemIdImgData, 0, 0);
-          await savePng(getImageString(testConfig, "elemId_"));
-          ctx.putImageData(depthImgData, 0, 0);
-          await savePng(getImageString(testConfig, "depth_"));
-          ctx.putImageData(typeImgData, 0, 0);
-          await savePng(getImageString(testConfig, "type_"));
-        }
-      }
     } else {
       const timer = new StopWatch(undefined, true);
-      for (let i = 0; i < numToRender; ++i) {
+      for (let i = 0; i < testConfig.numRendersToTime!; ++i) {
         theViewport!.sync.setRedrawPending();
         theViewport!.renderFrame();
         finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
       }
       timer.stop();
+      updateTestNames(testConfig); // Update the list of timing test names
       if (wantConsoleOutput) {
-        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+        debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / testConfig.numRendersToTime + "ms per frame");
         debugPrint("Tile Loading Time: " + curTileLoadingTime);
         for (const t of finalFrameTimings) {
           let timingsString = "[";
@@ -769,6 +923,9 @@ async function runTest(testConfig: DefaultConfigs) {
             timingsString += val + ", ";
           });
           debugPrint(timingsString + "]");
+          // Save all of the individual runs in the csv file, not just the average
+          // const rowData = getRowData([t], testConfig);
+          // await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
         }
       }
       const rowData = getRowData(finalFrameTimings, testConfig);
@@ -829,8 +986,8 @@ async function main() {
 
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
+  await DisplayPerfRpcInterface.getClient().finishCsv(jsonData.outputPath, jsonData.outputName);
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
-
   IModelApp.shutdown();
 }
 
@@ -838,6 +995,7 @@ window.onload = () => {
   const configuration = {} as SVTConfiguration;
 
   // Choose RpcConfiguration based on whether we are in electron or browser
+  RpcConfiguration.developmentMode = true;
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
@@ -850,7 +1008,7 @@ window.onload = () => {
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
-      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 
   // ###TODO: Raman added one-time initialization logic IModelApp.startup which replaces a couple of RpcRequest-related functions.

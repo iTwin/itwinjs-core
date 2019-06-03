@@ -19,7 +19,6 @@ import {
 import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import { WebGLTestContext } from "../WebGLTestContext";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -33,7 +32,7 @@ describe("PrimitiveBuilder tests", () => {
   document.body.appendChild(viewDiv!);
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    WebGLTestContext.startup();
+    IModelApp.startup();
     imodel = await IModelConnection.openSnapshot(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -41,14 +40,10 @@ describe("PrimitiveBuilder tests", () => {
 
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
 
   it("PrimitiveBuilder should produce proper arc strokes for specific tolerances", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -105,10 +100,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should not produce any strokes for Polyface", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -141,10 +132,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should not produce any strokes for Shape", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -167,10 +154,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should not produce any strokes for Shape2d", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -193,10 +176,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should produce proper LineString strokes; different tolerances should have no effect", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -252,10 +231,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should produce proper PointString strokes; different tolerances should have no effect", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -311,10 +286,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should produce proper PointString2d strokes; different tolerances should have no effect", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
 
@@ -370,10 +341,6 @@ describe("PrimitiveBuilder tests", () => {
   });
 
   it("PrimitiveBuilder should be able to finish graphics", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, GraphicType.Scene, viewport);
     const accum = new GeometryAccumulator(imodel, IModelApp.renderSystem);

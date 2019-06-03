@@ -3,9 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { TestUnitsProvider, Unit } from "./TestUtils/TestHelper";
+import { TestUnitsProvider } from "./TestUtils/TestHelper";
 import { Format, FormatterSpec } from "../src/Formatter/Format";
 import { Formatter } from "../src/Formatter/Formatter";
+import { BasicUnit } from "../src/Unit";
 
 describe("Numeric Formats tests:", () => {
   it("Feet to 4 Decimal places w/trailing zeros ", async () => {
@@ -35,7 +36,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -68,7 +69,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -101,7 +102,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -135,7 +136,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -168,7 +169,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -200,7 +201,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -232,7 +233,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -264,7 +265,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -297,7 +298,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -330,12 +331,12 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
-      //console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
 
@@ -363,7 +364,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -392,12 +393,12 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
       // tslint:disable-next-line:no-console
-      //console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
 
@@ -425,7 +426,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -457,7 +458,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -489,7 +490,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);
@@ -523,7 +524,7 @@ describe("Numeric Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      const unit = new Unit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = await Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue === testEntry.result);

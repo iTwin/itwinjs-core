@@ -156,6 +156,9 @@ export class Handles {
     vbToBoxTrn: Transform;
 }
 
+// @internal
+export function initSvgExt(): void;
+
 // @beta
 export class LineTool extends RedlineTool {
     // (undocumented)
@@ -198,41 +201,42 @@ export class Markup {
 
 // @beta
 export class MarkupApp {
-    // (undocumented)
+    // @internal (undocumented)
     static readonly boxedTextClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly containerClass: string;
     // (undocumented)
     static convertVpToVb(pt: XAndY): Point3d;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly cornerId: string;
     // (undocumented)
     protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData): Markup;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly decorationsClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly dropShadowId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly dynamicsClass: string;
+    // (undocumented)
+    static getActionName(action: string): any;
     // (undocumented)
     static getVpToScreenMtx(): Matrix;
     // (undocumented)
     static getVpToVbMtx(): Matrix;
-    // @internal (undocumented)
-    protected static init(): Promise<void>;
+    static initialize(): Promise<void>;
     static readonly isActive: boolean;
     // (undocumented)
     protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData): void;
     static markup?: Markup;
-    static markupNamespace: I18NNamespace;
-    // (undocumented)
+    // @internal (undocumented)
     static markupPrefix: string;
     // (undocumented)
     static markupSelectToolId: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly markupSvgClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly moveHandleClass: string;
+    static namespace: I18NNamespace;
     static props: {
         handles: {
             size: number;
@@ -348,21 +352,23 @@ export class MarkupApp {
     protected static readMarkup(): Promise<MarkupData>;
     // @internal
     protected static readMarkupSvg(): string | undefined;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly rotateHandleClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly rotateLineClass: string;
     // (undocumented)
     static screenToVbMtx: Matrix;
     static start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void>;
     static stop(): Promise<MarkupData>;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly stretchHandleClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly textClass: string;
+    // @internal (undocumented)
     static readonly textEditorClass: string;
+    // @internal (undocumented)
     static readonly textOutlineClass: string;
-    // (undocumented)
+    // @internal (undocumented)
     static readonly vertexHandleClass: string;
 }
 
@@ -402,7 +408,7 @@ export class MarkupSelected {
     readonly isEmpty: boolean;
     readonly onChanged: BeEvent<(selected: MarkupSelected) => void>;
     replace(oldEl: Element, newEl: Element): void;
-    reposition(undo: UndoManager, fn: (el: Element) => void): void;
+    reposition(cmdName: string, undo: UndoManager, fn: (el: Element) => void): void;
     // (undocumented)
     restart(el?: Element): void;
     // (undocumented)
@@ -469,6 +475,8 @@ export abstract class MarkupTool extends PrimitiveTool {
 // @beta
 export abstract class ModifyHandle {
     constructor(handles: Handles);
+    // (undocumented)
+    addTouchPadding(visible: Element, handles: Handles): Element;
     // (undocumented)
     handles: Handles;
     abstract modify(ev: BeButtonEvent): void;
@@ -650,16 +658,20 @@ export class Title extends Element {
 
 // @beta
 export class UndoManager {
-    doGroup(fn: VoidFunction): void;
     doRedo(): void;
     doUndo(): void;
     onAdded(elem: Element): void;
     onDelete(elem: Element): void;
     onModified(newElem: Element, oldElem: Element): void;
     onRepositioned(elem: Element, oldIndex: number, oldParent: Element): void;
+    performOperation(cmdName: string, fn: VoidFunction): void;
+    readonly redoPossible: boolean;
+    readonly redoString: string | undefined;
     // (undocumented)
     readonly size: number;
-    }
+    readonly undoPossible: boolean;
+    readonly undoString: string | undefined;
+}
 
 // @beta (undocumented)
 export interface WidthAndHeight {

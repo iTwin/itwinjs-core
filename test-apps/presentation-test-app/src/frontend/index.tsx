@@ -11,7 +11,7 @@ import { Config } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams,
   ElectronRpcManager, ElectronRpcConfiguration,
-  RpcOperation, IModelToken,
+  RpcOperation, IModelToken, RpcConfiguration,
 } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
@@ -29,6 +29,7 @@ Logger.setLevelDefault(LogLevel.Warning);
 
 // initialize RPC
 (function initRpc() {
+  RpcConfiguration.developmentMode = true;
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
@@ -37,7 +38,7 @@ Logger.setLevelDefault(LogLevel.Warning);
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
     for (const def of rpcConfiguration.interfaces())
-      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findParameterOfType(IModelToken) || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
+      RpcOperation.forEach(def, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
   }
 })();
 

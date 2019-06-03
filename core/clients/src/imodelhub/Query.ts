@@ -9,7 +9,7 @@ import { ArgumentCheck } from "./Errors";
 import { GuidString } from "@bentley/bentleyjs-core";
 
 /** Base class for iModelHub Query objects. Query objects are used to modify the results when getting instances from iModelHub.
- * @internal
+ * @beta
  */
 export class Query {
   protected _query: RequestQueryOptions = {};
@@ -103,10 +103,20 @@ export class Query {
     this._query.$orderby = orderBy;
     return this;
   }
+
+  /**
+   * Select all entries from the query by pages.
+   * @param n Maximum number of entries in a single response.
+   * @returns This query.
+   */
+  public pageSize(n: number) {
+    this._query.$pageSize = n;
+    return this;
+  }
 }
 
 /** Query for instances with string based instance ids.
- * @internal
+ * @beta
  */
 export class StringIdQuery extends Query {
   /** @internal */
@@ -121,6 +131,7 @@ export class StringIdQuery extends Query {
   public byId(id: string) {
     this.checkValue(id);
     this._byId = id;
+    this._query.$pageSize = undefined;
     return this;
   }
 
@@ -139,7 +150,7 @@ export class StringIdQuery extends Query {
 }
 
 /** Query for instances with Guid based instance ids.
- * @internal
+ * @beta
  */
 export class InstanceIdQuery extends Query {
   /** @internal */
@@ -154,6 +165,7 @@ export class InstanceIdQuery extends Query {
   public byId(id: GuidString) {
     ArgumentCheck.validGuid("id", id);
     this._byId = id;
+    this._query.$pageSize = undefined;
     return this;
   }
 

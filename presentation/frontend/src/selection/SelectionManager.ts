@@ -4,21 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { IDisposable, Id64Set, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectEventType, ElementLocateManager, IModelApp } from "@bentley/imodeljs-frontend";
+import { IDisposable, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
+import { IModelConnection, SelectionSetEvent, SelectionSetEventType, ElementLocateManager, IModelApp } from "@bentley/imodeljs-frontend";
 import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
-import ISelectionProvider from "./ISelectionProvider";
-import SelectionChangeEvent, { SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
+import { ISelectionProvider } from "./ISelectionProvider";
+import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
 import { SelectionScopesManager } from "./SelectionScopesManager";
 
-/** Properties for creating [[SelectionManager]] */
+/**
+ * Properties for creating [[SelectionManager]].
+ * @public
+ */
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
   scopes: SelectionScopesManager;
 }
 
 /**
- * The selection manager which stores the overall selection
+ * The selection manager which stores the overall selection.
+ * @public
  */
 export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
@@ -245,7 +249,7 @@ export class SelectionManager implements ISelectionProvider {
   }
 }
 
-/** @hidden */
+/** @internal */
 class SelectionContainer {
   private readonly _selectedItemsSetMap: Map<number, KeySet>;
 
@@ -282,7 +286,10 @@ class SelectionContainer {
   }
 }
 
-/** @hidden */
+/** @internal */
+export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
+
+/** @internal */
 export class ToolSelectionSyncHandler implements IDisposable {
 
   private _selectionSourceName = "Tool";
@@ -307,8 +314,9 @@ export class ToolSelectionSyncHandler implements IDisposable {
   public get pendingAsyncs() { return this._asyncsInProgress; }
 
   // tslint:disable-next-line:naming-convention
-  private onToolSelectionChanged = async (imodel: IModelConnection, eventType: SelectEventType, ids?: Id64Set): Promise<void> => {
+  private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
     // this component only cares about its own imodel
+    const imodel = ev.set.iModel;
     if (imodel !== this._imodel)
       return;
 
@@ -316,13 +324,24 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
+    let ids: Id64Arg;
+    switch (ev.type) {
+      case SelectionSetEventType.Add:
+        ids = ev.added;
+        break;
+      case SelectionSetEventType.Replace:
+        ids = ev.set.elements;
+        break;
+      default:
+        ids = ev.removed;
+        break;
+    }
+
     // determine the scope id
     // note: _always_ use "element" scope for fence selection
     let scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
-    const isSingleSelectionFromPick = (undefined !== ids
-      && 1 === ids.size
-      && undefined !== this._locateManager.currHit
-      && ids.has(this._locateManager.currHit.sourceId));
+    const currHit = this._locateManager.currHit;
+    const isSingleSelectionFromPick = (undefined !== currHit && 1 === Id64.sizeOf(ids) && Id64.has(ids, currHit.sourceId));
     if (!isSingleSelectionFromPick)
       scopeId = "element";
 
@@ -333,24 +352,24 @@ export class ToolSelectionSyncHandler implements IDisposable {
     const changer = new ScopedSelectionChanger(this._selectionSourceName, this._imodel, this._logicalSelection, scopeId);
 
     // we know what to do immediately on `clear` events
-    if (eventType === SelectEventType.Clear) {
+    if (SelectionSetEventType.Clear === ev.type) {
       await changer.clear(selectionLevel);
       return;
     }
 
-    const persistentElementIds = getPersistentElementIds(ids!);
+    const parsedIds = parseIds(ids);
     const asyncId = Guid.createValue();
     this._asyncsInProgress.add(asyncId);
     try {
-      switch (eventType) {
-        case SelectEventType.Add:
-          await changer.add(persistentElementIds, selectionLevel);
+      switch (ev.type) {
+        case SelectionSetEventType.Add:
+          await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
           break;
-        case SelectEventType.Replace:
-          await changer.replace(persistentElementIds, selectionLevel);
+        case SelectionSetEventType.Replace:
+          await changer.replace(parsedIds.transient, parsedIds.persistent, selectionLevel);
           break;
-        case SelectEventType.Remove:
-          await changer.remove(persistentElementIds, selectionLevel);
+        case SelectionSetEventType.Remove:
+          await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
           break;
       }
     } finally {
@@ -367,31 +386,40 @@ const getScopeId = (scope: SelectionScope | string | undefined): string => {
   return scope.id;
 };
 
-const getPersistentElementIds = (ids: Id64Set): Id64Array | Id64Set => {
-  let hasTransients = false;
-  for (const id of ids) {
-    if (Id64.isTransient(id)) {
-      hasTransients = true;
-      break;
-    }
-  }
-  if (!hasTransients) {
-    // avoid making a copy if there are no transient element ids in
-    // the given set
-    return ids;
+const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
+  let allPersistent = true;
+  let allTransient = true;
+  Id64.iterate(ids, (id) => {
+    if (Id64.isTransient(id))
+      allPersistent = false;
+    else
+      allTransient = false;
+    if (!allPersistent && !allTransient)
+      return false;
+    return true;
+  });
+
+  // avoid making a copy if ids are only persistent or only transient
+  if (allPersistent) {
+    return { persistent: ids, transient: [] };
+  } else if (allTransient) {
+    return { persistent: [], transient: ids };
   }
 
-  // if `ids` contain transient ids, we have to copy.. use Array instead of
+  // if `ids` contain mixed ids, we have to copy.. use Array instead of
   // a Set for performance
   const persistentElementIds: Id64Array = [];
-  ids.forEach((id) => {
-    if (!Id64.isTransient(id))
+  const transientElementIds: Id64Array = [];
+  Id64.forEach(ids, (id) => {
+    if (Id64.isTransient(id))
+      transientElementIds.push(id);
+    else
       persistentElementIds.push(id);
   });
-  return persistentElementIds;
+  return { persistent: persistentElementIds, transient: transientElementIds };
 };
 
-/** @hidden */
+/** @internal */
 class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;
@@ -406,13 +434,19 @@ class ScopedSelectionChanger {
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
   }
-  public async add(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    await this.manager.addToSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
+  public async add(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
+    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
+    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
-  public async remove(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    await this.manager.removeFromSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
+  public async remove(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
+    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
+    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
-  public async replace(ids: Id64Array | Id64Set, level: number): Promise<void> {
-    await this.manager.replaceSelectionWithScope(this.name, this.imodel, ids, this.scope, level);
+  public async replace(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
+    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
+    Id64.forEach(transientIds, (id) => keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id }));
+    this.manager.replaceSelection(this.name, this.imodel, keys, level);
   }
 }

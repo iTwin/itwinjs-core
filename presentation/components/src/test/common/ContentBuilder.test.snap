@@ -372,6 +372,9 @@ PropertyRecord {
 exports[`ContentBuilder createPropertyRecord creates record with primitive value 1`] = `
 PropertyRecord {
   "description": "some display value",
+  "extendedData": Object {
+    "test": "custom value",
+  },
   "isReadonly": true,
   "property": Object {
     "displayLabel": "portals Bond Markets Units European Composite Unit (EURCO) action-items",
@@ -388,6 +391,9 @@ PropertyRecord {
 
 exports[`ContentBuilder createPropertyRecord creates record with single nested content value 1`] = `
 PropertyRecord {
+  "extendedData": Object {
+    "test": "custom value",
+  },
   "isReadonly": true,
   "property": Object {
     "displayLabel": "Branding Cambridgeshire",

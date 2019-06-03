@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { BadUnit, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { BadUnit, Parser, ParserSpec, ParseResult, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider, BasicUnit } from "@bentley/imodeljs-quantity";
+import { IModelApp } from "./IModelApp";
 
 /** Class that implements the minimum UnitConversion interface to provide information needed to convert unit values.
  * @alpha
@@ -11,25 +12,6 @@ import { BadUnit, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, U
 export class ConversionData implements UnitConversion {
   public factor: number = 1.0;
   public offset: number = 0.0;
-}
-
-/** Class that implements the UnitProps interface so that it can be used by the UnitProvider to retrieve unit information.
- * @alpha
- */
-export class Unit implements UnitProps {
-  public name = "";
-  public label = "";
-  public unitFamily = "";
-  public isValid = false;
-
-  constructor(name: string, label: string, unitFamily: string) {
-    if (name && name.length > 0 && label && label.length > 0 && unitFamily && unitFamily.length > 0) {
-      this.name = name;
-      this.label = label;
-      this.unitFamily = unitFamily;
-      this.isValid = true;
-    }
-  }
 }
 
 // interface use to define unit conversions to a base used for a unitFamily
@@ -54,7 +36,7 @@ const unitData: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", unitFamily: "Units.ANGLE", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad", altDisplayLabels: ["radian"] },
   // 1 rad = 180.0/PI °
-  { name: "Units.ARC_DEG", unitFamily: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg"] },
+  { name: "Units.ARC_DEG", unitFamily: "Units.ANGLE", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°", altDisplayLabels: ["deg", "^"] },
   { name: "Units.ARC_MINUTE", unitFamily: "Units.ANGLE", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'", altDisplayLabels: ["min"] },
   { name: "Units.ARC_SECOND", unitFamily: "Units.ANGLE", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"', altDisplayLabels: ["sec"] },
   { name: "Units.GRAD", unitFamily: "Units.ANGLE", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad", altDisplayLabels: ["gd"] },
@@ -95,7 +77,7 @@ const unitData: UnitDefinition[] = [
 export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6 }
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
-// units that are available in schemas within the active iModel.
+// units that are available from the registered units provider.
 const defaultsFormats = {
   metric: [{
     type: 1/*Length*/, format: {
@@ -321,6 +303,8 @@ export class QuantityFormatter implements UnitsProvider {
   protected _metricFormatsByType = new Map<QuantityType, Format>();
   protected _imperialFormatSpecsByType = new Map<QuantityType, FormatterSpec>();
   protected _metricFormatSpecsByType = new Map<QuantityType, FormatterSpec>();
+  protected _imperialParserSpecsByType = new Map<QuantityType, ParserSpec>();
+  protected _metricUnitParserSpecsByType = new Map<QuantityType, ParserSpec>();
 
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, unitFamily?: string): Promise<UnitProps> {
@@ -330,19 +314,30 @@ export class QuantityFormatter implements UnitsProvider {
           continue;
       }
       if (entry.displayLabel === unitLabel || entry.name === unitLabel) {
-        const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitFamily);
+        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels);
         return Promise.resolve(unitProps);
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref === unitLabel) !== -1) {
-          const unitProps = new Unit(entry.name, entry.displayLabel, entry.unitFamily);
+          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels);
           return Promise.resolve(unitProps);
         }
       }
     }
 
     return Promise.resolve(new BadUnit());
+  }
+
+  /** find all units given unitFamily */
+  public async getUnitsByFamily(unitFamily: string): Promise<UnitProps[]> {
+    const units: UnitProps[] = [];
+    for (const entry of unitData) {
+      if (entry.unitFamily !== unitFamily)
+        continue;
+      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.unitFamily, entry.altDisplayLabels));
+    }
+    return Promise.resolve(units);
   }
 
   protected findUnitDefinition(name: string): UnitDefinition | undefined {
@@ -358,7 +353,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return Promise.resolve(new Unit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily));
+      return Promise.resolve(new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.unitFamily, unitDataEntry.altDisplayLabels));
     }
     return Promise.resolve(new BadUnit());
   }
@@ -472,6 +467,22 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
+  /** Asynchronous call to loadParsingSpecsForQuantityTypes. This method caches all the ParserSpecs so they can be quickly accessed. */
+  protected async loadParsingSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
+    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate];
+    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
+    activeMap.clear();
+
+    for (const quantityType of typeArray) {
+      const formatPromise = this.getFormatByQuantityType(quantityType, useImperial);
+      const unitPromise = this.getUnitByQuantityType(quantityType);
+      const [format, outUnit] = await Promise.all([formatPromise, unitPromise]);
+      const parserSpec = await ParserSpec.create(format, this, outUnit);
+      activeMap.set(quantityType, parserSpec);
+    }
+    return Promise.resolve();
+  }
+
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
   protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
     const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate];
@@ -521,7 +532,43 @@ export class QuantityFormatter implements UnitsProvider {
           if (spec)
             return Promise.resolve(spec as FormatterSpec);
         }
-        return Promise.reject(new Error("Unable to load FormatSpecs"));
+        return Promise.reject(new BentleyError(BentleyStatus.ERROR, "Unable to load FormatSpecs"));
+      });
+  }
+
+  /** Synchronous call to get a ParserSpec for a QuantityType. If the ParserSpec is not yet cached an undefined object is returned. The
+   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
+   */
+  public findParserSpecByQuantityType(type: QuantityType, imperial?: boolean): ParserSpec | undefined {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
+    if (activeMap.size === 0) {
+      // trigger a load so it will become available
+      this.loadParsingSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
+      return undefined;
+    }
+    return activeMap.get(type);
+  }
+
+  /** Asynchronous Call to get a ParserSpec for a QuantityType.
+   * @param type        One of the built-in quantity types supported.
+   * @param imperial    Optional parameter to determine if the imperial or metric format should be returned. If undefined then the setting is taken from the formatter.
+   * @return A promise to return a ParserSpec.
+   */
+  public async getParserSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<ParserSpec> {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialParserSpecsByType : this._metricUnitParserSpecsByType;
+    if (activeMap.size > 0)
+      return Promise.resolve(activeMap.get(type) as ParserSpec);
+
+    return this.loadParsingSpecsForQuantityTypes(useImperial)
+      .then(async () => {
+        if (activeMap.size > 0) {
+          const spec = activeMap.get(type);
+          if (spec)
+            return Promise.resolve(spec as ParserSpec);
+        }
+        return Promise.reject(new BentleyError(BentleyStatus.ERROR, "Unable to load ParserSpec"));
       });
   }
 
@@ -534,11 +581,29 @@ export class QuantityFormatter implements UnitsProvider {
     return Formatter.formatQuantity(magnitude, formatSpec);
   }
 
-  /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
-  public set useImperialFormats(useImperial: boolean) {
-    this._activeSystemIsImperial = useImperial;
-    this.loadFormatSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
+  /** Parse input string into quantity given the ParserSpec
+   * @param inString       The magnitude of the quantity.
+   * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
+   * @return ParseResult object containing either the parsed value or an error value if unsuccessful.
+   */
+  public parseIntoQuantityValue(inString: string, parserSpec: ParserSpec): ParseResult {
+    return Parser.parseQuantityString(inString, parserSpec);
   }
 
+  /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
+  public async loadFormatAndParsingMaps(useImperial: boolean): Promise<void> {
+    const formatPromise = this.loadFormatSpecsForQuantityTypes(useImperial);
+    const parsePromise = this.loadParsingSpecsForQuantityTypes(useImperial);
+    await Promise.all([formatPromise, parsePromise]); // tslint:disable-line:no-floating-promises
+  }
+
+  /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
+  public set useImperialFormats(useImperial: boolean) {
+    IModelApp.toolAdmin.startDefaultTool();
+    this._activeSystemIsImperial = useImperial;
+    this.loadFormatAndParsingMaps(useImperial); // tslint:disable-line:no-floating-promises
+  }
+
+  /** Return true if Tool Quantities are to be displayed in Imperial units. If false Metric units are to used. */
   public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }
 }

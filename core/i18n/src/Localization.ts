@@ -14,28 +14,38 @@ export interface I18NOptions {
   urlTemplate?: string;
 }
 
+/** @internal */
+// tslint:disable-next-line: no-empty-interface
+export interface TranslationOptions extends i18next.TranslationOptions { }
+
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
 export class I18N {
-  private _i18n: i18next.i18n;
-  private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
+  private _i18next: i18next.i18n;
+  private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
-  /** @internal */
-  public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback) {
-    this._i18n = i18next.createInstance();
+  /** constructor for I18N.
+   * @param nameSpaces either the name of the default namespace, an array of namespaces, or undefined. If an array, the first entry is the default.
+   * @param options object with I18NOptions (optional)
+   * @param renderFunction optional i18next.Callback function
+   */
+  public constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback) {
+    this._i18next = i18next.createInstance();
 
     const backendOptions: I18NextXhrBackend.BackendOptions = {
       loadPath: options && options.urlTemplate ? options.urlTemplate : "locales/{{lng}}/{{ns}}.json",
       crossDomain: true,
     };
 
+    nameSpaces = nameSpaces ? ("string" === typeof nameSpaces ? [nameSpaces] : nameSpaces) : [""];
+
     const initOptions: i18next.InitOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
       ns: nameSpaces,
-      defaultNS: defaultNameSpace,
+      defaultNS: nameSpaces[0],
       backend: backendOptions,
     };
 
@@ -44,11 +54,11 @@ export class I18N {
     if (isDevelopment) {
       initOptions.debug = true;
     } else {
-      this._i18n = this._i18n.use(i18nextBrowserLanguageDetector);
+      this._i18next = this._i18next.use(i18nextBrowserLanguageDetector);
     }
 
     // call the changeLanguage method right away, before any calls to I18NNamespace.register. Otherwise, the call doesn't happen until the deferred load of the default namespace
-    this._i18n.use(XHR)
+    this._i18next.use(XHR)
       .use(BentleyLogger)
       .init(initOptions, renderFunction)
       .changeLanguage(isDevelopment ? "en-pseudo" : undefined as any, undefined);
@@ -83,13 +93,33 @@ export class I18N {
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
    * @public
    */
-  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18n.t(key, options); }
+  public translate(key: string | string[], options?: i18next.TranslationOptions): any { return this._i18next.t(key, options); }
+
+  /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
+   * @param namespace - the namespace that identifies the particular localization file that contains the property.
+   * @param key - the key that matches a property in the JSON localization file.
+   *
+   * @internal
+   */
+  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any {
+    let fullKey: string | string[] = "";
+
+    if (typeof key === "string") {
+      fullKey = `${namespace}:${key}`;
+    } else {
+      fullKey = key.map((subKey: string) => {
+        return `${namespace}:${subKey}`;
+      });
+    }
+
+    return this.translate(fullKey, options);
+  }
 
   /** @internal */
-  public loadNamespace(name: string, i18nCallback: any) { this._i18n.loadNamespaces(name, i18nCallback); }
+  public loadNamespace(name: string, i18nCallback: any) { this._i18next!.loadNamespaces(name, i18nCallback); }
 
   /** @internal */
-  public languageList(): string[] { return this._i18n.languages; }
+  public languageList(): string[] { return this._i18next.languages; }
 
   /** Register a new Namespace. The Namespace name must be unique in the system.
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.

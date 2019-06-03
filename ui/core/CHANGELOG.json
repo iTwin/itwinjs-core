@@ -2,6 +2,45 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/ui-core_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added UI Logger & UiError usage & improved i18n calls"
+          },
+          {
+            "comment": "Change FrontStage to Frontstage"
+          },
+          {
+            "comment": "Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Release tag cleanup and ui-framework unit tests"
+          },
+          {
+            "comment": "Updated UI package release tags for 1.0 release."
+          },
+          {
+            "comment": "Fixed release tag warnings in UI packages"
+          },
+          {
+            "comment": "Add ability to save property only for current session."
+          },
+          {
+            "comment": "Added NumericInput component to ui-core. Added dependency on react-numeric-input."
+          },
+          {
+            "comment": "Update popup position when component updates."
+          },
+          {
+            "comment": "Remove unused z-index layers and move backstage to the end (since zones no longer create a stacking context)."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/ui-core_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

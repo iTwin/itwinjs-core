@@ -7,14 +7,6 @@ import classnames from "classnames";
 import { CommonProps } from "@bentley/ui-core";
 import "./PlayerButton.scss";
 
-/** Properties for play button
- * @internal
- */
-export interface PlayButtonProps extends CommonProps {
-  onClick?: () => void;
-  icon?: string;
-}
-
 /** Player button used by buttons on timeline control
  * @internal
  */
@@ -38,10 +30,11 @@ export class PlayerButton extends React.PureComponent<any> {
 /** Properties for Play/Pause button used on timeline control
  * @internal
  */
-export interface PlayButtonProps extends CommonProps {
+export interface PlayerButtonProps extends CommonProps {
   isPlaying: boolean;
   onPlay?: () => void;
   onPause?: () => void;
+  tooltip?: string;
 }
 
 interface PlayButtonState {
@@ -51,15 +44,15 @@ interface PlayButtonState {
 /** Play/Pause button used on timeline control
  * @internal
  */
-export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState> {
+export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
 
-  constructor(props: PlayButtonProps, context?: any) {
+  constructor(props: PlayerButtonProps, context?: any) {
     super(props, context);
 
     this.state = { isPlaying: this.props.isPlaying };
   }
 
-  public componentWillReceiveProps(nextProps: Readonly<PlayButtonProps>): void {
+  public componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void {
     if (nextProps.isPlaying !== this.state.isPlaying) {
       this.setState({ isPlaying: nextProps.isPlaying });
     }
@@ -82,9 +75,10 @@ export class PlayButton extends React.Component<PlayButtonProps, PlayButtonState
   }
 
   public render() {
+    const { tooltip } = this.props;
     const iconClassName = this.state.isPlaying ? "icon icon-media-controls-pause" : "icon icon-media-controls-play";
     return (
-      <button data-testid={this.props.className} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
+      <button data-testid={this.props.className} title={tooltip} className={classnames("player-button", this.props.className)} onClick={this._onClick}>
         <span className={iconClassName}></span>
       </button>
     );

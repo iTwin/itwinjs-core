@@ -1,98 +1,99 @@
 {
-    "//loggerConfig": [
-        "Optional.",
-        "This the configuration for logging, specifying which categories we want to see",
-        "and at what level. Note that if you set defaultLevel, then all categories are",
-        "logged at that level by default. Then, you have to turn off the categories that you",
-        "don't want to see. If you leave defaultLevel undefined, then all categories are",
-        "off by default. Then, you have to turn on the categories that you do want to see."
-    ],
-    "loggerConfig": {
-        "defaultLevel": "Error",
-        "categoryLevels": [{
-                "category": "imodeljs-rpc",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-backend.IModelDb",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "ECPresentation",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "ECPresentation.Connections",
-                "logLevel": "Info"
-            },
-            {
-                "category": "ECPresentation.RulesEngine.Threads",
-                "logLevel": "Info"
-            },
-            {
-                "category": "ECPresentation.RulesEngine.Content",
-                "logLevel": "Info"
-            },
-            {
-                "category": "ECPresentation.RulesEngine.Navigation",
-                "logLevel": "Info"
-            },
-            {
-                "category": "ECPresentation.RulesEngine.Navigation.Cache",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "Diagnostics.ECSqlStatement",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "ECObjectsNative",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "UnitsNative",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "BeSQLite",
-                "logLevel": "Warning"
-            },
-            {
-                "category": "Performance",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-clients.Clients",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-clients.imodelhub",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "imodeljs-clients.Url",
-                "logLevel": "Trace"
-            },
-            {
-                "category": "DgnCore",
-                "logLevel": "Error"
-            },
-            {
-                "category": "IModelDb.open",
-                "logLevel": "Trace"
-            }
-        ]
-    },
-    "//seq": [
-        "Optional.",
-        "This is the configuration for logging to the 'seq' logging server.",
-        "The main thing to set is the hostURL",
-        "TESTAPP-SEQ-URL must be a valid URL, starting with http://  Defaults to http://localhost",
-        "TESTAPP-SEQ-PORT must be a valid port number. Defaults to 5341"
-    ],
-    "seq": {
-        "hostURL": "${TESTAPP-SEQ-URL}",
-        "port": "${TESTAPP-SEQ-PORT}",
-        "apiKey": "${TESTAPP-API-KEY}"
-    }
+  "//loggerConfig": [
+    "Optional.",
+    "This the configuration for logging, specifying which categories we want to see",
+    "and at what level. Note that if you set defaultLevel, then all categories are",
+    "logged at that level by default. Then, you have to turn off the categories that you",
+    "don't want to see. If you leave defaultLevel undefined, then all categories are",
+    "off by default. Then, you have to turn on the categories that you do want to see."
+  ],
+  "loggerConfig": {
+    "defaultLevel": "Error",
+    "categoryLevels": [
+      {
+        "category": "imodeljs-rpc",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "imodeljs-backend.IModelDb",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "Presentation",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "Presentation.Connections",
+        "logLevel": "Info"
+      },
+      {
+        "category": "Presentation.RulesEngine.Threads",
+        "logLevel": "Info"
+      },
+      {
+        "category": "Presentation.RulesEngine.Content",
+        "logLevel": "Info"
+      },
+      {
+        "category": "Presentation.RulesEngine.Navigation",
+        "logLevel": "Info"
+      },
+      {
+        "category": "Presentation.RulesEngine.Navigation.Cache",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "Diagnostics.ECSqlStatement",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "ECObjectsNative",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "UnitsNative",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "BeSQLite",
+        "logLevel": "Warning"
+      },
+      {
+        "category": "Performance",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "imodeljs-clients.Clients",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "imodeljs-clients.imodelhub",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "imodeljs-clients.Url",
+        "logLevel": "Trace"
+      },
+      {
+        "category": "DgnCore",
+        "logLevel": "Error"
+      },
+      {
+        "category": "IModelDb.open",
+        "logLevel": "Trace"
+      }
+    ]
+  },
+  "//seq": [
+    "Optional.",
+    "This is the configuration for logging to the 'seq' logging server.",
+    "The main thing to set is the hostURL",
+    "TESTAPP-SEQ-URL must be a valid URL, starting with http://  Defaults to http://localhost",
+    "TESTAPP-SEQ-PORT must be a valid port number. Defaults to 5341"
+  ],
+  "seq": {
+    "hostURL": "${TESTAPP-SEQ-URL}",
+    "port": "${TESTAPP-SEQ-PORT}",
+    "apiKey": "${TESTAPP-API-KEY}"
+  }
 }

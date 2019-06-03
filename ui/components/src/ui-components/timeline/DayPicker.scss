@@ -1,0 +1,104 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.day-picker {
+  border-radius: 3px 3px 0 0;
+
+  abbr {
+    border-bottom: 0;
+    text-decoration: none;
+    color: $buic-foreground-disabled;
+    font-size: 12px;
+    font-weight: normal;
+  }
+
+  table {
+    padding: 0 10px 10px 10px;
+    border-spacing: 0;
+    font-size: 14px;
+  }
+
+  th,
+  td {
+    text-align: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    background: #3296C8;
+    border-radius: 3px 3px 0 0;
+    color: white;
+  }
+
+  .previous-month,
+  .next-month {
+    cursor: pointer;
+    padding: 5px;
+    font-size: 12px;
+    user-select: none;
+    width: 40px;
+  }
+
+  .next-month {
+    text-align: right;
+  }
+
+  .month-year {
+    flex: 2;
+    font-weight: normal;
+    text-align: center;
+  }
+
+  .day {
+    cursor: pointer;
+
+    &:hover:not(.empty):not(.active) {
+      background-color: #eee;
+      border-radius: 4px;
+    }
+
+    &.active {
+      background: $buic-foreground-primary;
+      color: white;
+      border-radius: 4px;
+    }
+
+    &.empty {
+      cursor: default;
+    }
+
+    &.today {
+      font-weight: bold;
+    }
+  }
+
+  .time-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 0;
+    background: rgb(238, 240, 243);
+    border-top: 1px solid #ccc;
+
+    > input {
+      max-width: 125px;
+      border: 1px solid #ccc;
+      color: $buic-foreground-body;
+      vertical-align: middle;
+      outline: 0;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      font-family: sans-serif;
+    }
+  }
+}

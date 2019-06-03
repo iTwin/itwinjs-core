@@ -20,4 +20,22 @@ describe("UiCore", () => {
     expect(() => UiCore.terminate()).to.not.throw(Error);
   });
 
+  it("i18nNamespace should return UiCore", () => {
+    expect(UiCore.i18nNamespace).to.eq("UiCore");
+  });
+
+  it("packageName should return ui-core", () => {
+    expect(UiCore.packageName).to.eq("ui-core");
+  });
+
+  it("translate should return the key (in test environment)", async () => {
+    await TestUtils.initializeUiCore();
+    expect(UiCore.translate("test1.test2")).to.eq("test1.test2");
+    TestUtils.terminateUiCore();
+  });
+
+  it("loggerCategory passed null should return 'ui-core'", () => {
+    expect(UiCore.loggerCategory(null)).to.eq("ui-core");
+  });
+
 });

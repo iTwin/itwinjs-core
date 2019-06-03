@@ -1,0 +1,303 @@
+sep=;
+Release Tag;API Item
+beta;ActiveMatchInfo
+beta;AlphaSlider 
+beta;AlphaSliderProps 
+alpha;AnimationFractionChangeHandler = (animationFraction: number) => void
+public;ArrayPropertyValueRenderer 
+beta;AsyncErrorMessage
+beta;AsyncValueProcessingResult
+public;class BasePointTypeConverter 
+alpha;BaseSolarDataProvider 
+alpha;BaseTimelineDataProvider 
+beta;BasicPropertyEditor 
+beta;BeDragDropContext: typeof BeDragDropContextComponent & ContextComponent
+beta;BeDragDropContextComponent 
+public;BeInspireTree
+public;BeInspireTreeDataProvider
+public;BeInspireTreeDataProviderInterface
+public;BeInspireTreeDataProviderMethod
+public;BeInspireTreeDataProviderPromise
+public;BeInspireTreeDataProviderRaw
+public;BeInspireTreeEvent
+public;BeInspireTreeNode
+public;BeInspireTreeNodeConfig
+public;BeInspireTreeNodeITree
+public;BeInspireTreeNodePayloadConfig
+public;BeInspireTreeNodes
+public;BeInspireTreeProps
+public;BeInspireTreeRenderer
+beta;BooleanEditor 
+beta;BooleanPropertyEditor 
+public;BooleanTypeConverter 
+beta;Breadcrumb 
+beta;BreadcrumbDetails 
+beta;BreadcrumbDetailsDragDropProps
+beta;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
+beta;BreadcrumbDetailsProps 
+beta;BreadcrumbDragDropProps
+internal;BreadcrumbInput 
+internal;BreadcrumbInputProps
+internal;BreadcrumbInputState
+beta;BreadcrumbMode
+beta;BreadcrumbNode 
+beta;BreadcrumbNodeProps
+internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
+beta;BreadcrumbPath
+beta;BreadcrumbProps 
+beta;BreadcrumbTreeUtils
+beta;BreadcrumbUpdateEvent 
+beta;BreadcrumbUpdateEventArgs
+beta;CellEditingEngine
+public;CellItem
+public;CellProps
+beta;ColorEditor 
+beta;ColorPickerButton 
+beta;ColorPickerProps 
+beta;ColorPropertyEditor 
+beta;ColorSwatch: React.FunctionComponent
+beta;ColorSwatchProps 
+public;ColumnDescription
+internal;ContextMenu 
+internal;ContextMenuItem 
+internal;ContextMenuProps 
+public;ConvertedPrimitives
+public;CubeRotationChangeEvent 
+public;CubeRotationChangeEventArgs
+alpha;CustomNumberEditor 
+alpha;CustomNumberPropertyEditor 
+beta;DataController
+beta;class DataControllerBase 
+internal;DataRowItem 
+public;DateTimeTypeConverter 
+alpha;DayPicker 
+public;DelayLoadedTreeNodeItem 
+public;DoublePropertyValueRenderer 
+internal;DragAction
+beta;DragDropArguments
+beta;DragLayerProps
+beta;DragSourceArguments
+beta;DragSourceProps
+public;DrawingViewportChangeEvent 
+public;DrawingViewportChangeEventArgs
+beta;DropEffects
+beta;DropStatus
+beta;DropTargetArguments
+beta;DropTargetProps
+public;EditableTreeDataProvider 
+beta;EditableTreeProps
+beta;EditorContainer 
+beta;EditorContainerProps 
+beta;EnumButtonGroupEditor 
+beta;EnumEditor 
+beta;EnumPropertyButtonGroupEditor 
+beta;EnumPropertyEditor 
+public;EnumTypeConverter 
+public;EventsMuteContext 
+public;FilteringInput 
+public;FilteringInputProps 
+public;FloatTypeConverter 
+beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
+public;hasChildren: (node: TreeNodeItem) => boolean
+public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+public;HexadecimalTypeConverter 
+beta;HighlightableTreeNodeProps
+beta;HighlightableTreeProps
+beta;HighlightingEngine
+public;HorizontalAlignment = "left" | "center" | "right" | "justify"
+beta;HueSlider 
+beta;HueSliderProps 
+public;IImageLoader
+public;Image = LoadedImage | LoadedBinaryImage
+public;ImageFileFormat = "png" | "jpg" | "jpge"
+public;ImageSourceType = "svg" | "url" | "binary" | "core-icon"
+public;ImmediatelyLoadedTreeNodeItem 
+internal;InlineEdit 
+internal;InputContext
+internal;InputSwitchComponent 
+internal;InputSwitchProps
+public;IntTypeConverter 
+public;IPropertyDataProvider
+public;IPropertyValueRenderer
+public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
+public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
+public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is Promise
+public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[]
+public;ItemColorOverrides
+public;ItemStyle
+public;ItemStyleProvider:
+public;ITreeDataProvider
+public;ITreeImageLoader 
+public;LessGreaterOperatorProcessor
+beta;LineWeightSwatch: React.FunctionComponent
+beta;LineWeightSwatchProps 
+public;LoadedBinaryImage 
+public;LoadedImage
+public;MapPayloadToInspireNodeCallback
+internal;MenuItem
+alpha;Milestone
+alpha;MilestoneRange
+internal;MultiSelectionHandler
+beta;MutableTableDataProvider 
+beta;MutableTreeDataProvider 
+public;NavigationPropertyTypeConverter 
+public;NavigationPropertyValueRenderer 
+internal;NodeRenderer = (item: BeInspireTreeNode
+internal;NodesDeselectedCallback = OnItemsDeselectedCallback
+internal;NodesSelectedCallback = OnItemsSelectedCallback
+public;NonPrimitivePropertyLabelRenderer 
+public;NonPrimitivePropertyLabelRendererProps 
+public;NonPrimitivePropertyRenderer 
+public;NonPrimitivePropertyRendererProps 
+public;NullableOperatorProcessor
+public;class NumericTypeConverterBase 
+public;OnItemsDeselectedCallback
+public;OnItemsSelectedCallback
+public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
+public;OperatorProcessor
+public;PageOptions
+alpha;PlaybackSettings
+alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
+internal;PlayButton 
+internal;PlayerButton 
+internal;PlayerButtonProps 
+public;Point2dTypeConverter 
+public;Point3dTypeConverter 
+public;PrimitivePropertyLabelRenderer 
+public;PrimitivePropertyLabelRendererProps 
+public;PrimitivePropertyRenderer 
+public;PrimitivePropertyValueRenderer 
+public;PrimitiveRendererProps 
+public;PropertyCategory
+public;PropertyCategoryBlock 
+public;PropertyCategoryBlockProps 
+public;PropertyContainerType
+public;PropertyData
+public;PropertyDataChangeEvent 
+public;PropertyDataChangesListener = () => void
+public;PropertyDialogState
+public;PropertyEditingArgs
+beta;class PropertyEditorBase 
+beta;PropertyEditorManager
+beta;PropertyEditorProps 
+public;PropertyGrid 
+public;PropertyGridCategory
+public;PropertyGridContextMenuArgs
+public;PropertyGridProps 
+internal;PropertyLabelRenderer 
+public;PropertyLabelRendererProps
+public;PropertyPopupState
+public;PropertyRenderer 
+public;PropertyRendererProps 
+beta;PropertyUpdatedArgs
+public;PropertyValueRendererContext
+public;PropertyValueRendererManager
+public;PropertyView 
+public;PropertyViewProps 
+public;ReactDataGridColumn 
+public;ResultSelector 
+public;ResultSelectorProps 
+public;RowItem
+public;RowProps
+beta;SaturationPicker 
+beta;SaturationPickerProps 
+internal;Scrubber 
+internal;ScrubberProps 
+internal;SelectionHandler
+public;SelectionMode
+public;SelectionModeFlags
+beta;SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode
+public;SharedRendererProps
+public;SharedTableNonPrimitiveValueRendererProps
+public;ShortDateTypeConverter 
+public;ShowHideDialog
+public;ShowHideDialogProps
+public;ShowHideID = string | number | symbol
+public;ShowHideItem
+public;ShowHideMenu
+public;ShowHideMenuProps
+public;SignIn 
+public;SignInProps 
+public;SimplePropertyDataProvider 
+beta;SimpleTableDataProvider 
+public;SimpleTreeDataProvider 
+public;SimpleTreeDataProviderHierarchy = Map
+internal;SingleSelectionHandler
+alpha;SolarDataProvider
+alpha;SolarPlaybackProgressHandler = (time: Date) => void
+alpha;SolarTimeline 
+public;SortComparer
+public;StandardRotationChangeEvent 
+public;StandardRotationChangeEventArgs
+beta;StandardTypeConverterTypeNames
+public;StringOperatorProcessor
+public;StringTypeConverter 
+public;StructPropertyValueRenderer 
+public;Table 
+public;TableArrayValueRenderer 
+public;TableCellEditorState
+public;TableCellUpdatedArgs
+public;TableDataChangeEvent 
+public;TableDataChangesListener = () => void
+public;TableDataProvider
+beta;TableDragDropProps
+beta;TableDragDropType = {} | RowItem | TableDataProvider
+beta;TableDropTargetProps
+public;TableNonPrimitiveValueRenderer 
+public;TableNonPrimitiveValueRendererProps 
+public;TableProps 
+internal;TableRow 
+internal;TableRowProps 
+public;TableRowStyleProvider:
+public;TableSelectionTarget
+public;TableSpecificValueRendererProps 
+public;TableStructValueRenderer 
+beta;TextEditor 
+internal;Timeline 
+alpha;TimelineComponent 
+alpha;TimelineDataProvider
+alpha;TimelineDateDisplay
+internal;TimelineProps 
+alpha;TimelineScale
+beta;ToggleEditor 
+beta;TogglePropertyEditor 
+internal;toNode: 
+internal;toNodes: 
+public;Tree 
+beta;TreeCellUpdatedArgs
+public;TreeDataChangesListener = (nodes: Array
+public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
+public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
+public;TreeDataProviderPromise = Promise
+public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
+beta;TreeDragDropProps
+beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
+public;TreeImageLoader 
+public;TreeNodeItem
+public;TreeProps 
+internal;TreeTest
+public;class TypeConverter 
+public;TypeConverterManager
+beta;TypeEditor
+public;UiComponents
+public;ViewClassFullNameChangedEvent 
+public;ViewClassFullNameChangedEventArgs
+public;ViewIdChangedEvent 
+public;ViewIdChangedEventArgs
+public;ViewportComponent 
+public;ViewportComponentEvents
+public;ViewportProps 
+public;ViewRotationChangeEvent 
+public;ViewRotationChangeEventArgs
+beta;WeightEditor 
+beta;WeightPickerButton 
+beta;WeightPickerProps 
+beta;WeightPropertyEditor 
+beta;withBreadcrumbDetailsDragDrop
+beta;withBreadcrumbDragDrop
+beta;withDragSource: 
+beta;WithDragSourceProps
+beta;withDropTarget: 
+beta;WithDropTargetProps
+beta;withTableDragDrop
+beta;withTreeDragDrop

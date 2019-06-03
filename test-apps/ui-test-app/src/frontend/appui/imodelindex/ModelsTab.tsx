@@ -10,10 +10,10 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
 import { CheckListBox, CheckListBoxItem, CheckBox } from "./CheckListBox";
 import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset, isInstanceNodeKey, ECInstanceNodeKey } from "@bentley/presentation-common";
-import { UiFramework } from "@bentley/ui-framework";
+import { RegisteredRuleset, NodeKey } from "@bentley/presentation-common";
 import { Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { UiFramework } from "@bentley/ui-framework";
 import "./ModelsTab.scss";
 
 interface ModelInfo {
@@ -250,16 +250,17 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   private async readDocCodes() {
     // Query categories and add them to state
     const ecsql = "SELECT c.ecinstanceid FROM meta.ECClassDef c WHERE c.Name='PhysicalPartition'";
-    const rows = await this.props.iModelConnection!.queryPage(ecsql);
+    const rows = [];
+    for await (const row of this.props.iModelConnection!.query(ecsql)) {
+      rows.push(row);
+    }
     if (rows.length !== 1)
       return;
 
     const physicalClassId = rows[0].id as string;
 
     const ecsql2 = "SELECT me.ecinstanceid, me.codevalue as codevalue, me.ecclassid as classid, l.userlabel as userlabel, l.jsonproperties as jsonproperties FROM bis.InformationContentElement me JOIN bis.repositorylink l USING bis.ElementHasLinks";
-    const models = await this.props.iModelConnection!.queryPage(ecsql2);
-
-    for (const model of models) {
+    for await (const model of this.props.iModelConnection!.query(ecsql2)) {
       const name: string = model.codevalue ? model.codevalue as string : "";
       const description: string = model.userlabel ? model.userlabel as string : "";
       const attributes = model.jsonproperties;
@@ -473,27 +474,28 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const ids: string[] = [];
     for (const node of this.state.selectedNodes) {
       const key = this._dataProvider!.getNodeKey(node);
-      if (isInstanceNodeKey(key)) {
-        const instanceNodeKey = key as ECInstanceNodeKey;
-        ids.push(instanceNodeKey.instanceKey.id);
+      if (NodeKey.isInstanceNodeKey(key)) {
+        ids.push(key.instanceKey.id);
       }
     }
 
     return ids;
   }
 
-  private _onCheckboxClick = async (node: TreeNodeItem) => {
-    // toggle the state of the checkbox
-    const check = (node.checkBoxState === CheckBoxState.On) ? CheckBoxState.Off : CheckBoxState.On;
+  private _onCheckboxClick = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    for (const { node } of stateChanges) {
+      // toggle the state of the checkbox
+      const check = (node.checkBoxState === CheckBoxState.On) ? CheckBoxState.Off : CheckBoxState.On;
 
-    // get the selected nodes
-    const _selectedNodes = this.state.selectedNodes.slice();
+      // get the selected nodes
+      const _selectedNodes = this.state.selectedNodes.slice();
 
-    // change the state of the selected node (which will recursively change any children)
-    await this._onNodesSelected(_selectedNodes, node, check);
+      // change the state of the selected node (which will recursively change any children)
+      await this._onNodesSelected(_selectedNodes, node, check);
 
-    // finally set the state
-    this.setState({ selectedNodes: _selectedNodes });
+      // finally set the state
+      this.setState({ selectedNodes: _selectedNodes });
+    }
   }
 
   /** Set item state for selected node and recursive change children if needed */
@@ -581,8 +583,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   private renderToastMessage() {
-    const toastTitle = UiFramework.i18n.translate("UiFramework:iModelIndex.toastTitle");
-    const toastMessage = UiFramework.i18n.translate("UiFramework:iModelIndex.toastMessage");
+    const toastTitle = UiFramework.translate("iModelIndex.toastTitle");
+    const toastMessage = UiFramework.translate("iModelIndex.toastMessage");
     return (
       <div className="toast slide">
         <div className="toast-image"><span className="icon icon-info-hollow"></span></div>
@@ -590,7 +592,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastTitle}</span>
           <span>{toastMessage}</span>
         </div>
-        <a target="_blank" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.i18n.translate("UiFramework:iModelIndex.learnMore")}</a>
+        <a target="_blank" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{UiFramework.translate("iModelIndex.learnMore")}</a>
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );
@@ -600,7 +602,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <button className="open-button" disabled={!this._isOkButtonEnabled()} type="button" onClick={this._onOpen.bind(this)}>{UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModel")}</button>}
+        {this.state.initialized && <button className="open-button" disabled={!this._isOkButtonEnabled()} type="button" onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

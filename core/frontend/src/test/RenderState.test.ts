@@ -9,8 +9,6 @@ import { RenderState } from "../render/webgl/RenderState";
 import { System, DepthType } from "../render/webgl/System";
 import { IModelApp } from "../IModelApp";
 
-import { WebGLTestContext } from "./utils/WebGLTestContext";
-
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
   const z = x - y;
@@ -18,8 +16,8 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it("should compare as expected", () => {
     // Test equality

@@ -5,7 +5,8 @@
 /** @module Core */
 
 /**
- * @hidden
+ * Position of a page in a container.
+ * @internal
  */
 export interface Position {
   index: number;
@@ -14,7 +15,8 @@ export interface Position {
 }
 
 /**
- * @hidden
+ * A structure to store a page of data
+ * @internal
  */
 export interface Page<TItem> {
   readonly position: Position;
@@ -22,18 +24,22 @@ export interface Page<TItem> {
 }
 
 /**
- * @hidden
+ * Container which helps with paging by manages specified number of pages
+ * and disposing others
+ * @internal
  */
 export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
   private _pageSize: number;
   private _maxPages: number;
   private _pages: TPage[] = [];
 
+  /** Constructor */
   constructor(pageSize: number, maxPages: number) {
     this._pageSize = pageSize;
     this._maxPages = maxPages;
   }
 
+  /** Get page size used by this container */
   public get pageSize() { return this._pageSize; }
   public set pageSize(value: number) {
     if (this._pageSize === value)
@@ -42,8 +48,10 @@ export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
     this.invalidatePages();
   }
 
+  /** Drop all pages */
   public invalidatePages(): void { this._pages = []; }
 
+  /** Get a page containing an item with the specified index. */
   public getPage(itemIndex: number): TPage | undefined {
     for (const page of this._pages) {
       if (page.position.start <= itemIndex && itemIndex <= page.position.end)
@@ -52,6 +60,10 @@ export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
     return undefined;
   }
 
+  /**
+   * Get item at the specified index or undefined if
+   * there's no item with such index loaded.
+   */
   public getItem(index: number): TItem | undefined {
     const page = this.getPage(index);
     if (!page || !page.items)
@@ -59,6 +71,7 @@ export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
     return page.items[index - page.position.start];
   }
 
+  /** Get index of the specified item */
   public getIndex(item: TItem): number {
     for (const page of this._pages) {
       if (!page.items)
@@ -72,6 +85,7 @@ export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
     return -1;
   }
 
+  /** Reserve space for a page */
   public reservePage(index: number): TPage {
     // find the place for the new page to insert
     let pageIndex: number = 0;

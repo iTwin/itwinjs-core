@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
+import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel, ClassRegistry } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementAspectProps, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
@@ -107,8 +107,8 @@ describe("Example Code", () => {
 
     // Make sure somewhere in your startup code you call: IModelHost.startup()
 
-    // Get the JavaScript class for the "Element" Bis Class
-    const elementClass = BisCoreSchema.getClass("Element", iModel)!;
+    // Get the JavaScript class for the "Element" BIS Class
+    const elementClass = ClassRegistry.findRegisteredClass("BisCore:Element")!;
     assert.equal("BisCore", elementClass.schema.schemaName);
     assert.equal("Element", elementClass.className);
     // __PUBLISH_EXTRACT_END__

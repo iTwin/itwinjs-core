@@ -9,7 +9,10 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
 
-/** @hidden */
+/** @internal */
+export const PRESENTATION_TREE_NODE_KEY = "__presentation-components/key";
+
+/** @internal */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
   const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
@@ -17,16 +20,16 @@ export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parent
   return list;
 };
 
-/** @hidden */
+/** @internal */
 export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
     label: node.label,
-    extendedData: { key: node.key },
   };
+  (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
+
   const style: ItemStyle = {};
   const colorOverrides: ItemColorOverrides = {};
-
   if (parentId)
     item.parentId = parentId;
   if (node.description)
@@ -52,16 +55,16 @@ export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): Del
     if (!node.isCheckboxEnabled)
       item.isCheckboxDisabled = true;
   }
-
   if (Object.keys(colorOverrides).length > 0)
     style.colorOverrides = colorOverrides;
   if (Object.keys(style).length > 0)
     item.style = style;
-
+  if (node.extendedData)
+    item.extendedData = node.extendedData;
   return item;
 };
 
-/** @hidden */
+/** @internal */
 export const pageOptionsUiToPresentation = (pageOptions?: UiPageOptions): PresentationPageOptions | undefined => {
   if (pageOptions)
     return { ...pageOptions };

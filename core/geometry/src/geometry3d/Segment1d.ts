@@ -11,10 +11,10 @@ import { Geometry } from "../Geometry";
  * * The interval is defined by two values x0 and x1.
  * * The x0 and x1 values can be in either order.
  *   * if `x0 < x1` fractional coordinates within the segment move from left to right.
- *   * if `x0 > x1` fractional coordinatesw within the segment move from right to left.
+ *   * if `x0 > x1` fractional coordinates within the segment move from right to left.
  * * This differs from a Range1d in that:
  * * For a Range1d the reversed ordering of its limit values means "empty interval".
- * * For a Segment1d the reversed ordering is a real interval but fractional positions mvoe backwards.
+ * * For a Segment1d the reversed ordering is a real interval but fractional positions move backwards.
  * * The segment is parameterized with a fraction
  * * * Fraction 0 is the start (`x0`)
  * * * Fraction 1 is the end (`x1`)
@@ -22,7 +22,9 @@ import { Geometry } from "../Geometry";
  * @public
  */
 export class Segment1d {
+  /** start coordinate */
   public x0: number;
+  /** end coordinate */
   public x1: number;
   private constructor(x0: number, x1: number) {
     this.x0 = x0;
@@ -61,14 +63,14 @@ export class Segment1d {
    */
   public clone(): Segment1d { return new Segment1d(this.x0, this.x1); }
   /**
-   * @returns true if both coordinates (`x0` and `x1`) are in the 0..1 range.
+   * Returns true if both coordinates (`x0` and `x1`) are in the 0..1 range.
    */
   public get isIn01() {
     return Geometry.isIn01(this.x0) && Geometry.isIn01(this.x1);
 
   }
   /**
-   * Evalauate the segment at fractional position
+   * Evaluate the segment at fractional position
    * @returns position within the segment
    * @param fraction fractional position within this segment
    */
@@ -88,4 +90,34 @@ export class Segment1d {
    * Return true if the segment limits are (exactly) 0 and 1
    */
   public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+
+  /** On input, `this` is an interval of a line.  On output, the interval has been clipped to positive parts of a linear function
+   * * f0 and f1 are values at parameter values 0 and 1 (which are in general NOT x0 and x1)
+   * * From that determine where the segment crosses function value 0.
+   * * The segment contains some interval in the same parameter space.
+   * * Clip the segment to the positive part of the space.
+   * * Return true (and modify the segment) if any of the segment remains.
+   * * Return false (but without modifying the segment) if the active part is entirely out.
+   */
+  public clipBy01FunctionValuesPositive(f0: number, f1: number): boolean {
+    const df01 = f1 - f0;
+    const fA = f0 + this.x0 * df01;
+    const fB = f0 + this.x1 * df01;
+    const dfAB = fB - fA;
+    if (fA > 0) {
+      if (fB >= 0) return true; // inside at both ends
+      /** There is an inside to outside crossing. The division is safe ... (and value between 0 and 1) */
+      const u = -fA / dfAB;
+      this.x1 = this.x0 + u * (this.x1 - this.x0);
+      return true;
+    } else if (fA < 0) {
+      if (fB < 0) return false;   // outside at both ends.
+      /** There is an outside to inside crossing crossing. The division is safe ... (and value between 0 and 1) */
+      const u = -fA / dfAB;
+      this.x0 = this.x0 + u * (this.x1 - this.x0);
+      return true;
+    }
+    /** fA is on the cut.   fB determines the entire segment. */
+    return fB > 0;
+  }
 }

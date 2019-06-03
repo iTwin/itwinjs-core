@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Add transient element IDs to selection when syncing from tool selection set
+- Add release tags
+- Cleanup API
+- Refactor RPC interface to use pure JSON objects
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

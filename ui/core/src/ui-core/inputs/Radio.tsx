@@ -10,12 +10,12 @@ import { CommonProps } from "../utils/Props";
 import { LabeledComponentProps } from "./LabeledComponentProps";
 
 /** Properties for [[Radio]] component
- * @beta
+ * @public
  */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps { }
 
 /** Basic radio input component
- * @beta
+ * @public
  */
 export class Radio extends React.PureComponent<RadioProps> {
   public render(): JSX.Element {

@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/perf-tools",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/presentation-backend",
@@ -251,6 +251,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "cssnano",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "csstype",
       "allowedCategories": [ "frontend" ]
     },
@@ -317,6 +321,14 @@
     {
       "name": "faker",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "fast-css-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "fast-sass-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "file-loader",
@@ -523,6 +535,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "optimize-css-assets-webpack-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "popper.js",
       "allowedCategories": [ "internal" ]
     },
@@ -537,6 +553,10 @@
     {
       "name": "promise",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "prop-types",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "puppeteer",
@@ -596,6 +616,10 @@
     },
     {
       "name": "react-markdown",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-numeric-input",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -697,6 +721,10 @@
     {
       "name": "superagent",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "svg-baker-runtime",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "svg-react-loader",

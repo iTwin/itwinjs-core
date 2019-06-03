@@ -6,6 +6,7 @@
 
 /**
  * Specification for a single ECClass
+ * @public
  */
 export interface SingleSchemaClassSpecification {
   /**
@@ -26,6 +27,8 @@ export interface SingleSchemaClassSpecification {
 /**
  * Specification for multiple ECClasses that belong to
  * the same ECSchema.
+ *
+ * @public
  */
 export interface MultiSchemaClassesSpecification {
   /**

@@ -244,7 +244,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private getActivityMessage(): React.ReactNode {
     const messageDetails = this.state.activityMessageInfo!.details;
-    const percentComplete = UiFramework.i18n.translate("UiFramework:activityCenter.percentComplete");
+    const percentComplete = UiFramework.translate("activityCenter.percentComplete");
     return (
       <Message
         status={Status.Information}

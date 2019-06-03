@@ -32,9 +32,9 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   }
 
   /**
-   * * To be directly called only by double displatcher
+   * * To be directly called only by double dispatcher
    * * Assumes this.geometry1 was set by calling context.
-   * * Construct the interpoalted curve between this.geomtry1 and the supplied segment0.
+   * * Construct the interpolated curve between this.geometry1 and the supplied segment0.
    */
   public handleLineSegment3d(segment0: LineSegment3d): any {
     if (this._geometry1 instanceof LineSegment3d) {
@@ -46,9 +46,9 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * * To be directly called only by double displatcher
+   * * To be directly called only by double dispatcher
    * * Assumes this.geometry1 was set by calling context.
-   * * Construct the interpoalted curve between this.geomtry1 and the supplied ls0.
+   * * Construct the interpolated curve between this.geometry1 and the supplied ls0.
    */
   public handleLineString3d(ls0: LineString3d): any {
     if (this._geometry1 instanceof LineString3d) {
@@ -97,9 +97,9 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * * To be directly called only by double displatcher
+   * * To be directly called only by double dispatcher
    * * Assumes this.geometry1 was set by calling context.
-   * * Construct the interpoalted curve between this.geomtry1 and the supplied arc0.
+   * * Construct the interpolated curve between this.geometry1 and the supplied arc0.
    */
   public handleArc3d(arc0: Arc3d): any {
     if (this._geometry1 instanceof Arc3d) {
@@ -114,13 +114,13 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
   }
 
   /**
-   * Construct a geometry item which is fractionally interpolated btween two others.
+   * Construct a geometry item which is fractionally interpolated between two others.
    * * The construction is only supported between certain types:
    * * * LineSegment3d+LineSegment3d -- endpoints are interpolated
    * * * LineString3d+LineString3d with matching counts.  Each point is interpolated.
    * * * Arc3d+Arc3d -- center, vector0, vector90, and limit angles of the sweep are interpolated.
    * @param geometry0 geometry "at fraction 0"
-   * @param fraction  fractional positon
+   * @param fraction  fractional position
    * @param geometry1 geometry "at fraction 1"
    */
   public static interpolateBetween(geometry0: GeometryQuery, fraction: number, geometry1: GeometryQuery): GeometryQuery | undefined {

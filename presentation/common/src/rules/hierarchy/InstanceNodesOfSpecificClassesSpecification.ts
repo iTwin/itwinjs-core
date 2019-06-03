@@ -4,14 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
-/** Returns all instance nodes of specified ECClasses. */
+/**
+ * Creates nodes for all instances of specified ECClasses.
+ * @public
+ */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.InstanceNodesOfSpecificClasses;
+  specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 
   /**
    * Specifications of ECClasses whose instances should be returned.

@@ -91,7 +91,7 @@ async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveRead
 function changePageSize(iModelPath: string, pageSizeInKb: number) {
   const sp = new StopWatch(undefined, true);
   const pageSize = using(new ECDb(), (ecdb: ECDb) => {
-    ecdb.openDb(iModelPath, ECDbOpenMode.Readwrite);
+    ecdb.openDb(iModelPath, ECDbOpenMode.ReadWrite);
     if (!ecdb.isOpen)
       throw new Error(`changePageSize() fail to open file ${iModelPath}`);
     return ecdb.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {

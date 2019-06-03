@@ -8,20 +8,32 @@ import { BentleyError, LogFunction, GetMetaDataFunction } from "@bentley/bentley
 
 /**
  * Status codes used by Presentation APIs.
+ * @public
  */
 export enum PresentationStatus {
+  /** Success result */
   Success = 0,
-  Error = 0x10000,              /** Base error */
-  NotInitialized = Error + 1,   /** Not initialized */
-  UseAfterDisposal = Error + 2, /** Attempting to use something after disposal */
-  InvalidArgument = Error + 3,  /** Argument is invalid */
-  InvalidResponse = Error + 4,  /** Response is invalid */
-  NoContent = Error + 5,        /** Requested content when there is none */
-  BackendOutOfSync = Error + 6, /** Backend needs to be synced with client state */
+  /** Error: Unknown */
+  Error = 0x10000,
+  /** Error: Not initialized */
+  NotInitialized = Error + 1,
+  /** Error: Attempting to use something after disposal */
+  UseAfterDisposal = Error + 2,
+  /** Error: Argument is invalid */
+  InvalidArgument = Error + 3,
+  /** Error: Received invalid response */
+  InvalidResponse = Error + 4,
+  /** Error: Requested content when there is none. */
+  NoContent = Error + 5,
+  /** Error: Backend needs to be synced with client state */
+  BackendOutOfSync = Error + 6,
+  /** Error: The timeout for the request was reached which prevented it from being fulfilled */
+  BackendTimeout = Error + 7,
 }
 
 /**
  * An error type thrown by Presentation APIs.
+ * @public
  */
 export class PresentationError extends BentleyError {
 

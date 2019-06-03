@@ -116,7 +116,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected error with translated message", async () => {
-      const i18n = new I18N([], "");
+      const i18n = new I18N();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));
@@ -132,7 +132,7 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("no message args, should log expected error with translated message", async () => {
-      const i18n = new I18N([], "");
+      const i18n = new I18N();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
       registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));

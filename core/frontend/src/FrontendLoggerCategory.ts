@@ -10,6 +10,8 @@
  * @public
  */
 export enum FrontendLoggerCategory {
+  Package = "imodeljs-frontend",
+
   /** The logger category used by the [[FrontendRequestContext]] class and other related classes. */
   FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
 

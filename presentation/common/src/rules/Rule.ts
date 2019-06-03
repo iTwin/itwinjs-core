@@ -9,7 +9,12 @@ import { NavigationRule } from "./hierarchy/NavigationRule";
 import { ContentRule } from "./content/ContentRule";
 import { ContentModifier } from "./content/modifiers/ContentModifier";
 
-/** Base interface for all [[Rule]] implementations */
+/**
+ * Base interface for all [[Rule]] implementations. Not meant
+ * to be used directly, see `Rule`.
+ *
+ * @public
+ */
 export interface RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes;
@@ -30,10 +35,16 @@ export interface RuleBase {
 
 /**
  * Presentation rules allow configuring the hierarchy and content.
+ * @public
  */
 export declare type Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier;
 
-/** Container of a [[condition]] property. Used for rules that support conditions. */
+/**
+ * Container of a [[condition]] property. Used for rules that support conditions. Not
+ * meant to be used directly, see `Rule`.
+ *
+ * @public
+ */
 export interface ConditionContainer {
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
@@ -43,7 +54,10 @@ export interface ConditionContainer {
   condition?: string;
 }
 
-/** Used for serializing [[Rule]] objects to JSON. */
+/**
+ * Used for serializing [[Rule]] objects to JSON.
+ * @public
+ */
 export enum RuleTypes {
   // hierarchy rules
   RootNodes = "RootNodes",
@@ -62,4 +76,5 @@ export enum RuleTypes {
   CheckBox = "CheckBox",
   ImageIdOverride = "ImageIdOverride",
   StyleOverride = "StyleOverride",
+  ExtendedData = "ExtendedData",
 }

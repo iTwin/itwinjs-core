@@ -7,9 +7,12 @@
 import * as React from "react";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
-import { KeySet, isInstanceNodeKey, Ruleset, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
+import { KeySet, Ruleset, NodeKey, InstanceKey, RegisteredRuleset, ContentFlags, DescriptorOverrides } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider, PresentationTreeDataProvider, treeWithUnifiedSelection, ContentDataProvider } from "@bentley/presentation-components";
+import {
+  IPresentationTreeDataProvider, PresentationTreeDataProvider,
+  treeWithUnifiedSelection, ContentDataProvider,
+} from "@bentley/presentation-components";
 import {
   CheckBoxInfo, CheckBoxState, isPromiseLike, ImageCheckBox, NodeCheckboxRenderProps,
 } from "@bentley/ui-core";
@@ -180,12 +183,14 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   }
 
   // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (node: TreeNodeItem, state: CheckBoxState) => {
+  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
     if (!this._visibilityHandler)
       return;
 
-    // tslint:disable-next-line: no-floating-promises
-    this._visibilityHandler.changeVisibility(node, state === CheckBoxState.On);
+    for (const { node, newState } of stateChanges) {
+      // tslint:disable-next-line: no-floating-promises
+      this._visibilityHandler.changeVisibility(node, newState === CheckBoxState.On);
+    }
   }
 
   // tslint:disable-next-line: naming-convention
@@ -262,13 +267,14 @@ export class VisibilityHandler implements IDisposable {
 
   private _props: VisibilityHandlerProps;
   private _onVisibilityChange: () => void;
-  private _subjectModelIdsCache = new Map<Id64String, Id64String[]>();
+  private _subjectModelIdsCache: SubjectModelIdsCache;
   private _elementDisplayCache = new Map<Id64String, VisibilityStatus | Promise<VisibilityStatus>>();
   private _elementCategoryAndModelLoader: ElementCategoryAndModelRequestor;
 
   constructor(props: VisibilityHandlerProps) {
     this._props = props;
     this._onVisibilityChange = props.onVisibilityChange;
+    this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
     this._elementCategoryAndModelLoader = new ElementCategoryAndModelRequestor(this._props.viewport.iModel);
     this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged);
     this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged);
@@ -290,7 +296,7 @@ export class VisibilityHandler implements IDisposable {
 
   public getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus> {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key)) {
+    if (NodeKey.isInstanceNodeKey(key)) {
       switch (key.instanceKey.className) {
         case "BisCore:Subject":
           return this.getSubjectDisplayStatus(key.instanceKey.id);
@@ -317,7 +323,7 @@ export class VisibilityHandler implements IDisposable {
     }
 
     const parentNodeKey = this._props.dataProvider.getNodeKey(parentNode);
-    if (!isInstanceNodeKey(parentNodeKey)) {
+    if (!NodeKey.isInstanceNodeKey(parentNodeKey)) {
       return undefined;
     }
 
@@ -384,7 +390,7 @@ export class VisibilityHandler implements IDisposable {
 
   public async changeVisibility(node: TreeNodeItem, on: boolean) {
     const key = this._props.dataProvider.getNodeKey(node);
-    if (isInstanceNodeKey(key)) {
+    if (NodeKey.isInstanceNodeKey(key)) {
       switch (key.instanceKey.className) {
         case "BisCore:Subject":
           await this.changeSubjectState(key.instanceKey.id, on);
@@ -424,8 +430,14 @@ export class VisibilityHandler implements IDisposable {
       const ovr = (on === isDisplayedInSelector) ? PerModelCategoryVisibility.Override.None
         : on ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
       this._props.viewport.perModelCategoryVisibility.setOverride(parentModelId, categoryId, ovr);
+      if (ovr === PerModelCategoryVisibility.Override.None && on) {
+        // we took off the override which means the category is displayed in selector, but
+        // doesn't mean all its subcategories are displayed - this call ensures that
+        this._props.viewport.changeCategoryDisplay([categoryId], true, true);
+      }
+      return;
     }
-    this._props.viewport.changeCategoryDisplay([categoryId], on);
+    this._props.viewport.changeCategoryDisplay([categoryId], on, on ? true : false);
   }
 
   private async areElementCategoryAndModelDisplayed(elementId: Id64String): Promise<boolean> {
@@ -478,16 +490,81 @@ export class VisibilityHandler implements IDisposable {
   }
 
   private async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
-    if (!this._subjectModelIdsCache.has(subjectId)) {
-      const modelIdsProvider = new SubjectModelIdsProvider(this._props.viewport.iModel, subjectId);
-      this._subjectModelIdsCache.set(subjectId, await modelIdsProvider.getModelIds());
-    }
-    return this._subjectModelIdsCache.get(subjectId)!;
+    return this._subjectModelIdsCache.getSubjectModelIds(subjectId);
   }
 
   private async getAssemblyElementIds(assemblyId: Id64String): Promise<Id64String[]> {
     const provider = new AssemblyElementIdsProvider(this._props.viewport.iModel, assemblyId);
     return provider.getElementIds();
+  }
+}
+
+class SubjectModelIdsCache {
+  private _imodel: IModelConnection;
+  private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
+  private _subjectModels: Map<Id64String, Id64String[]> | undefined;
+  private _init: Promise<void> | undefined;
+
+  constructor(imodel: IModelConnection) {
+    this._imodel = imodel;
+  }
+
+  private async initSubjectsHierarchy() {
+    if (this._subjectsHierarchy)
+      return;
+
+    this._subjectsHierarchy = new Map();
+    const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
+    const result = this._imodel.query(ecsql, undefined, 1000);
+    for await (const row of result) {
+      let list = this._subjectsHierarchy.get(row.parentId);
+      if (!list) {
+        list = [];
+        this._subjectsHierarchy.set(row.parentId, list);
+      }
+      list.push(row.id);
+    }
+  }
+
+  private async initSubjectModels() {
+    if (this._subjectModels)
+      return;
+
+    this._subjectModels = new Map();
+    const ecsql = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
+    const result = this._imodel.query(ecsql, undefined, 1000);
+    for await (const row of result) {
+      let list = this._subjectModels.get(row.subjectId);
+      if (!list) {
+        list = [];
+        this._subjectModels.set(row.subjectId, list);
+      }
+      list.push(row.id);
+    }
+  }
+
+  private async initCache() {
+    if (!this._init) {
+      this._init = Promise.all([this.initSubjectModels(), this.initSubjectsHierarchy()]).then(() => { });
+    }
+    return this._init;
+  }
+
+  private appendSubjectModelsRecursively(modelIds: Id64String[], subjectId: Id64String) {
+    const subjectModelIds = this._subjectModels!.get(subjectId);
+    if (subjectModelIds)
+      modelIds.push(...subjectModelIds);
+
+    const childSubjectIds = this._subjectsHierarchy!.get(subjectId);
+    if (childSubjectIds)
+      childSubjectIds.forEach((cs) => this.appendSubjectModelsRecursively(modelIds, cs));
+  }
+
+  public async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {
+    await this.initCache();
+    const modelIds = new Array<Id64String>();
+    this.appendSubjectModelsRecursively(modelIds, subjectId);
+    return modelIds;
   }
 }
 
@@ -507,15 +584,6 @@ class RulesetDrivenRecursiveIdsProvider extends ContentDataProvider {
   protected async getChildrenIds() {
     const content = await this.getContent();
     return content ? content.contentSet.map((item) => item.primaryKeys[0].id) : [];
-  }
-}
-
-class SubjectModelIdsProvider extends RulesetDrivenRecursiveIdsProvider {
-  constructor(imodel: IModelConnection, subjectId: Id64String) {
-    super(imodel, "SubjectModelsRequest", { className: "BisCore:Subject", id: subjectId });
-  }
-  public async getModelIds() {
-    return this.getChildrenIds();
   }
 }
 
@@ -573,17 +641,19 @@ interface CategoryAndModelId {
   modelId: Id64String;
 }
 
-// cSpell:ignore printf
-
 class ElementCategoryAndModelRequestor extends DelayedRequestor<Id64String, CategoryAndModelId> {
   protected createResultIterator(elementIds: Id64String[]): AsyncIterableIterator<{ id: Id64String, modelId: Id64String, categoryId: Id64String }> {
     const q = `
-      SELECT e.ECInstanceId id, e.Model.Id modelId, printf('0x%x', COALESCE(ge3d.Category.Id, ge2d.Category.Id)) categoryId
+      SELECT e.ECInstanceId id, e.Model.Id modelId, ge3d.Category.Id categoryId
       FROM [bis].Element e
-      LEFT JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
-      LEFT JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
+      JOIN [bis].[GeometricElement3d] ge3d ON ge3d.ECInstanceId = e.ECInstanceId
+      WHERE e.ECInstanceId IN (${new Array(elementIds.length).fill("?").join(",")})
+      UNION ALL
+      SELECT e.ECInstanceId id, e.Model.Id modelId, ge2d.Category.Id categoryId
+      FROM [bis].Element e
+      JOIN [bis].[GeometricElement2d] ge2d ON ge2d.ECInstanceId = e.ECInstanceId
       WHERE e.ECInstanceId IN (${new Array(elementIds.length).fill("?").join(",")})`;
-    return this._imodel.query(q, elementIds);
+    return this._imodel.query(q, [...elementIds, ...elementIds]);
   }
   public getCategoryAndModelId = async (elementId: Id64String) => this.getResult(elementId);
 }

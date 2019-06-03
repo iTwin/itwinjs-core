@@ -9,10 +9,11 @@ import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
-import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
-import * as textTool from "./TextEdit";
 import { UndoManager } from "./Undo";
+
+import * as textTool from "./TextEdit";
+import * as redlineTool from "./RedlineTool";
 
 /** @beta */
 export interface WidthAndHeight {
@@ -39,7 +40,7 @@ export interface MarkupData extends MarkupSvgData {
 }
 
 /**
- * The main object for the Markup package. It is a singleton that stores the "state" of the Markup application.
+ * The main object for the Markup package. It is a singleton that stores the state of the Markup application.
  * It has only static members and methods. Applications may customize and control the behavior of the Markup by
  * setting members of [[MarkupApp.props]]. When [[MarkupApp.start]] is first called, it registers a set of "Markup.xxx"
  * tools that may be invoked from UI controls.
@@ -49,7 +50,7 @@ export class MarkupApp {
   /** the current Markup being created */
   public static markup?: Markup;
   /** The namespace for the Markup tools */
-  public static markupNamespace: I18NNamespace;
+  public static namespace: I18NNamespace;
   /** By setting members of this object, applications can control the appearance and behavior of various parts of MarkupApp. */
   public static props = {
     /** the UI controls displayed on Elements by the Select Tool to allow users to modify them. */
@@ -65,13 +66,13 @@ export class MarkupApp {
       /** The attributes of box around the element. */
       moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
       /** The attributes of box that provides the move cursor. */
-      move: { "cursor": "move", "opacity": 0, "stroke-width": 6, "stroke": "white" },
+      move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
       /** The attributes of handles on the vertices of lines. */
       vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
     /** properties for providing feedback about selected elements. */
     hilite: {
-      /** the color of a selected element */
+      /** the color of selected elements */
       color: "magenta",
       /** the color of an element as the cursor passes over it */
       flash: "cyan",
@@ -130,14 +131,14 @@ export class MarkupApp {
         textBox: { "fill": "lightGrey", "fill-opacity": .1, "stroke-opacity": .85, "stroke": "lightBlue" },
       },
     },
-    /** Used to draw a border outline around the view while it is being marked up so the user can tell Markup is active */
+    /** Used to draw the border outline around the view while it is being marked up so the user can tell Markup is active */
     borderOutline: {
       "stroke": "gold",
       "stroke-width": 6,
       "stroke-opacity": 0.4,
       "fill": "none",
     },
-    /** Used to draw a border corner symbols the view while it is being marked up so the user can tell Markup is active */
+    /** Used to draw the border corner symbols for the view while it is being marked up so the user can tell Markup is active */
     borderCorners: {
       "stroke": "black",
       "stroke-width": 2,
@@ -183,12 +184,14 @@ export class MarkupApp {
     style.height = height + "px";
   }
 
+  public static getActionName(action: string) { return IModelApp.i18n.translate(this.namespace.name + ":actions." + action); }
+
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
     if (this.markup)
       return; // a markup session is already active.
 
-    await this.init();
+    await this.initialize();
 
     // first, lock the viewport to its current size while the markup session is running
     this.lockViewportSize(view, markupData);
@@ -229,16 +232,25 @@ export class MarkupApp {
     return data;
   }
 
-  /** @internal */
-  protected static async init() {
-    if (this.markupNamespace)
-      return; // only need to do this once
-
-    this.markupNamespace = IModelApp.i18n.registerNamespace("MarkupTools");
-    IModelApp.tools.register(SelectTool, this.markupNamespace);
-    IModelApp.tools.registerModule(redlineTool, this.markupNamespace);
-    IModelApp.tools.registerModule(textTool, this.markupNamespace);
-    return this.markupNamespace.readFinished; // make sure our localized messages are ready.
+  /** Call this method to initialize the Markup system.
+   * It asynchronously loads the MarkupTools namespace for the prompts and tool names for the Markup system, and
+   * also registers all of the Markup tools.
+   * @return a Promise that may be awaited to ensure that the MarkupTools namespace had been loaded.
+   * @note This method is automatically called every time you call [[start]]. Since the Markup tools cannot
+   * start unless there is a Markup active, there's really no need to call this method directly.
+   * The only virtue in doing so is to pre-load the Markup namespace if you have an opportunity to do so earlier in your
+   * startup code.
+   * @note This method may be called multiple times, but only the first time initiates the loading/registering. Subsequent
+   * calls return the same Promise.
+   */
+  public static async initialize(): Promise<void> {
+    if (undefined === this.namespace) {     // only need to do this once
+      this.namespace = IModelApp.i18n.registerNamespace("MarkupTools");
+      IModelApp.tools.register(SelectTool, this.namespace);
+      IModelApp.tools.registerModule(redlineTool, this.namespace);
+      IModelApp.tools.registerModule(textTool, this.namespace);
+    }
+    return this.namespace.readFinished; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics
@@ -280,29 +292,43 @@ export class MarkupApp {
     return { rect: { width: canvas.width, height: canvas.height }, svg, image: !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat) };
   }
 
+  /** @internal */
   public static markupPrefix = "markup-";
+  /** @internal */
   public static get dropShadowId() { return this.markupPrefix + "dropShadow"; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  /** @internal */
   public static get cornerId() { return this.markupPrefix + "photoCorner"; }
+  /** @internal */
   public static get containerClass() { return this.markupPrefix + "container"; }
+  /** @internal */
   public static get dynamicsClass() { return this.markupPrefix + "dynamics"; }
+  /** @internal */
   public static get decorationsClass() { return this.markupPrefix + "decorations"; }
+  /** @internal */
   public static get markupSvgClass() { return this.markupPrefix + "svg"; }
+  /** @internal */
   public static get boxedTextClass() { return this.markupPrefix + "boxedText"; }
+  /** @internal */
   public static get textClass() { return this.markupPrefix + "text"; }
+  /** @internal */
   public static get stretchHandleClass() { return this.markupPrefix + "stretchHandle"; }
+  /** @internal */
   public static get rotateLineClass() { return this.markupPrefix + "rotateLine"; }
+  /** @internal */
   public static get rotateHandleClass() { return this.markupPrefix + "rotateHandle"; }
+  /** @internal */
   public static get vertexHandleClass() { return this.markupPrefix + "vertexHandle"; }
+  /** @internal */
   public static get moveHandleClass() { return this.markupPrefix + "moveHandle"; }
-  /** class for box drawn around text being placed/edited */
+  /** @internal */
   public static get textOutlineClass() { return this.markupPrefix + "textOutline"; }
-  /** class for HTMLTextAreaElement created to edit text */
+  /** @internal */
   public static get textEditorClass() { return this.markupPrefix + "textEditor"; }
-
 }
 
 const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
 const newSvgElement = (name: string) => adopt(create(name));
+
 /**
  * The current markup being created/edited. Holds the SVG elements, plus the active [[MarkupTool]].
  * When starting a Markup, a new Div is added as a child of the ScreenViewport's vpDiv.
@@ -391,9 +417,9 @@ export class Markup {
   /** Delete all the entries in the selection set, then empty it. */
   public deleteSelected() { this.selected.deleteAll(this.undo); }
   /** Bring all the entries in the selection set to the front. */
-  public bringToFront() { this.selected.reposition(this.undo, (el) => el.front()); }
+  public bringToFront() { this.selected.reposition(MarkupApp.getActionName("toFront"), this.undo, (el) => el.front()); }
   /** Send all the entries in the selection set to the back. */
-  public sendToBack() { this.selected.reposition(this.undo, (el) => el.back()); }
+  public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
   /** Group all the entries in the selection set, then select the group. */
   public groupSelected() { if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo); }
   /** Ungroup all the group entries in the selection set. */

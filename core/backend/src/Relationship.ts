@@ -31,6 +31,7 @@ export interface RelationshipProps extends EntityProps, SourceAndTarget {
  * @public
  */
 export class Relationship extends Entity implements RelationshipProps {
+  /** @internal */
   public static get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
@@ -74,6 +75,7 @@ export class Relationship extends Entity implements RelationshipProps {
  * @public
  */
 export class ElementRefersToElements extends Relationship {
+  /** @internal */
   public static get className(): string { return "ElementRefersToElements"; }
   /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
@@ -100,6 +102,7 @@ export class ElementRefersToElements extends Relationship {
  * @public
  */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
+  /** @internal */
   public static get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
@@ -114,6 +117,7 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
  * @public
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
+  /** @internal */
   public static get className(): string { return "ElementGroupsMembers"; }
   public memberPriority: number;
 
@@ -140,6 +144,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * @beta
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
+  /** @internal */
   public static get className(): string { return "ElementDrivesElement"; }
   public status: number;
   public priority: number;

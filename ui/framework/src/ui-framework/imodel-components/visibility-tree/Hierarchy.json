@@ -66,7 +66,7 @@
               "Subject"
             ]
           },
-          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\") AND NOT (ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"References\" AND NOT this.HasRelatedInstance(\"BisCore:SubjectOwnsPartitionElements\", \"Forward\", \"BisCore:InformationPartitionElement\"))",
+          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\") AND NOT (ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"References\" AND NOT this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\"))",
           "hideNodesInHierarchy": false,
           "groupByClass": false,
           "groupByLabel": false
@@ -232,31 +232,6 @@
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Element\", \"BisCore\")",
       "imageIdExpression": "\"icon-item\""
-    },
-    {
-      "ruleType": "Content",
-      "condition": "ContentDisplayType = \"SubjectModelsRequest\"",
-      "specifications": [
-        {
-          "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject",
-              "PhysicalPartition"
-            ]
-          },
-          "isRecursive": true,
-          "instanceFilter": "this.IsOfClass(\"PhysicalPartition\", \"BisCore\") ANDALSO this.HasRelatedInstance(\"BisCore:ModelModelsElement\", \"Backward\", \"BisCore:GeometricModel3d\")"
-        }
-      ]
     },
     {
       "ruleType": "Content",

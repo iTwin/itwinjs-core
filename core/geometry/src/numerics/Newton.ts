@@ -160,6 +160,10 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
   private _func: NewtonEvaluatorRtoR;
   private _currentStep!: number;
   private _currentX!: number;
+  /** Step size for iteration.
+   * * Initialized to 1e-8, which is appropriate for iteration in fraction space.
+   * * Shoulde larger for iteration with real distance as x.
+   */
   public derivativeH: number; // step size for approximate derivative
 
   /**
@@ -171,6 +175,7 @@ export class Newton1dUnboundedApproximateDerivative extends AbstractNewtonIterat
     this._func = func;
     this.derivativeH = 1.0e-8;
   }
+  /** Set the x (independent, iterated) value */
   public setX(x: number): boolean { this._currentX = x; return true; }
   /** Get the independent variable */
   public getX(): number { return this._currentX; }
@@ -218,7 +223,7 @@ export abstract class NewtonEvaluatorRRtoRRD {
 }
 
 /**
- * Implement evaluation steps for newton iteration in 2 dimensions.
+ * Implement evaluation steps for newton iteration in 2 dimensions, using caller supplied NewtonEvaluatorRRtoRRD object.
  * @internal
  */
 export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
@@ -232,11 +237,17 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     this._currentStep = Vector2d.createZero();
     this._currentUV = Point2d.createZero();
   }
+  /** Set the current uv coordinates for current iteration */
   public setUV(x: number, y: number): boolean { this._currentUV.set(x, y); return true; }
+  /** Get the current u coordinate */
   public getU(): number { return this._currentUV.x; }
+  /** Get the current v coordinate */
   public getV(): number { return this._currentUV.y; }
+  /** Move the currentUV coordiante by currentStep. */
   public applyCurrentStep(): boolean { return this.setUV(this._currentUV.x - this._currentStep.x, this._currentUV.y - this._currentStep.y); }
-  /** Univariate newton step : */
+  /** Evaluate the functions and derivatives at this._currentUV
+   * Invert the jacobian and compute the this._currentStep.
+   */
   public computeStep(): boolean {
     if (this._func.evaluate(this._currentUV.x, this._currentUV.y)) {
       const fA = this._func.currentF;
@@ -249,7 +260,7 @@ export class Newton2dUnboundedWithDerivative extends AbstractNewtonIterator {
     return false;
   }
   /**
-   * @returns the largest relative step of the x,y, components of the current step.
+   * Return the largest relative step of the x,y, components of the current step.
    */
   public currentStepSize(): number {
     return Geometry.maxAbsXY(

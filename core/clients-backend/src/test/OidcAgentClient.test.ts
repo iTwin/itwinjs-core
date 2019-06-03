@@ -15,13 +15,6 @@ IModelJsConfig.init(true /* suppress exception */, false /* suppress error messa
 
 chai.should();
 
-// @todo: We are using the V1 version of this API for now.
-// Migrate to V2 after the Connect + IMS team can support -
-// * Setting up a way for the agent client's "user" ({client_id}@apps.imsoidc.bentley.com)
-//   to access Connect projects without the need to accept EULA agreements.
-// * Provide a friendly name for this "user" - it currently shows up in Connect
-//   with the first and last names as the above email instead of the client's name
-
 describe("OidcAgentClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
@@ -35,9 +28,7 @@ describe("OidcAgentClient (#integration)", () => {
     agentConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
-      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-      scope: "openid email profile organization context-registry-service imodelhub",
+      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
   });
@@ -50,14 +41,29 @@ describe("OidcAgentClient (#integration)", () => {
     chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
     chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
     chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
-    chai.expect(issuer.userinfo_endpoint).equals(`${url}/connect/userinfo`);
   });
 
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
+    const now = Date.now();
     const jwt: AccessToken = await agentClient.getToken(requestContext);
+
+    const expiresAt = jwt.getExpiresAt();
+    chai.assert.isDefined(expiresAt);
+    chai.assert.isAbove(expiresAt!.getTime(), now);
+
+    const startsAt = jwt.getStartsAt();
+    chai.assert.isDefined(startsAt);
+    chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts atleast 1 hour before expiry
+
     await validator.validateConnectAccess(jwt);
+    // await validator.validateRbacAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
+
+    const refreshJwt: AccessToken = await agentClient.refreshToken(requestContext, jwt);
+    await validator.validateConnectAccess(refreshJwt);
+    // await validator.validateRbacAccess(jwt);
+    await validator.validateIModelHubAccess(refreshJwt);
   });
 
 });

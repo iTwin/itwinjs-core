@@ -54,28 +54,28 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
     super(props);
     const list: RotationData[] = [
       {
-        label: UiFramework.i18n.translate("UiFramework:rotations.top"),
+        label: UiFramework.translate("rotations.top"),
         iconClassName: "icon-cube-faces-top",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.bottom"),
+        label: UiFramework.translate("rotations.bottom"),
         iconClassName: "icon-cube-faces-bottom",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.left"),
+        label: UiFramework.translate("rotations.left"),
         iconClassName: "icon-cube-faces-left",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.right"),
+        label: UiFramework.translate("rotations.right"),
         iconClassName: "icon-cube-faces-right",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.front"),
+        label: UiFramework.translate("rotations.front"),
         iconClassName: "icon-cube-faces-front",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.rear"),
+        label: UiFramework.translate("rotations.rear"),
         iconClassName: "icon-cube-faces-rear",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.isoLeft"),
+        label: UiFramework.translate("rotations.isoLeft"),
         iconClassName: "icon-cube-faces-iso-left",
       }, {
-        label: UiFramework.i18n.translate("UiFramework:rotations.isoRight"),
+        label: UiFramework.translate("rotations.isoRight"),
         iconClassName: "icon-cube-faces-iso-right",
       },
     ];

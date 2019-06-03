@@ -29,7 +29,7 @@ export class FunctionalSchema extends Schema {
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
-    if (!iModelDb.briefcase.isStandalone) {
+    if (!iModelDb.isStandalone) {
       if (!(requestContext instanceof AuthorizedClientRequestContext))
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
       await iModelDb.concurrencyControl.lockSchema(requestContext);

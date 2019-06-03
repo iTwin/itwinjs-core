@@ -204,7 +204,7 @@ export class Formatter {
       if (i > 0 && unitConversion.offset !== 0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
-      const unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset; // offset should only ever be defined for major unit
+      const unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
       if (i < spec.format.units!.length - 1) {
         const wholePart = Math.floor(unitValue);
         const componentText = Formatter.formatCompositePart(wholePart, false, currentLabel, spec);

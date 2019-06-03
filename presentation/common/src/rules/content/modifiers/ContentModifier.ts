@@ -14,6 +14,8 @@ import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification
 /**
  * Rule that allows supplementing content with additional
  * specifications for certain ECClasses.
+ *
+ * @public
  */
 export interface ContentModifier extends RuleBase {
   /** Used for serializing to JSON. */

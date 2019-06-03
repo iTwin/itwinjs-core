@@ -201,6 +201,18 @@ export class CodeQuery extends Query {
   private _isMultiCodeQuery = true;
 
   /**
+   * Default page size which is used when querying Codes
+   * @internal
+   */
+  public static defaultPageSize: number = 10000;
+
+  /** Constructor that sets default page size. */
+  constructor() {
+    super();
+    this.pageSize(CodeQuery.defaultPageSize);
+  }
+
+  /**
    * Used by the handler to check whether codes in query can be grouped.
    * @internal
    */
@@ -273,16 +285,6 @@ export class CodeQuery extends Query {
 
     this.addFilter(filter);
     return this;
-  }
-
-  /**
-   * Select only top entries from the query. This is applied after [[Query.skip]] parameter.
-   * @param n Number of top entries to select.
-   * @returns This query.
-   */
-  public top(n: number) {
-    this._isMultiCodeQuery = false;
-    return super.top(n);
   }
 
   /**

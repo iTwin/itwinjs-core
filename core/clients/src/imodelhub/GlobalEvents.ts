@@ -12,11 +12,12 @@ import { request, RequestOptions, Response } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
+import { ContextType } from "../ConnectClients";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubGlobalEvent]]. Global Event type is used to define which events you wish to receive from your [[GlobalEventSubscription]]. See [[GlobalEventSubscriptionHandler.create]] and [[GlobalEventSubscriptionHandler.update]].
- * @public
+ * @beta
  */
 export type GlobalEventType =
   /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
@@ -37,13 +38,17 @@ export type GlobalEventType =
   "NamedVersionCreatedEvent";
 
 /** Base type for all iModelHub global events.
- * @public
+ * @beta
  */
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
   public iModelId?: GuidString;
   /** Id of the [[Project]] that this iModel belongs to. */
   public projectId?: string;
+  /** Id of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
+  public contextId?: string;
+  /** Type of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
+  public contextTypeId?: ContextType;
 
   /** Construct this global event from object instance.
    * @param obj Object instance.
@@ -53,6 +58,17 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
+    this.contextId = obj.ContextId;
+
+    const contextTypeId = obj.ContextTypeId as number;
+    switch (contextTypeId) {
+      case ContextType.Asset:
+      case ContextType.Project:
+        this.contextTypeId = contextTypeId;
+        break;
+      default:
+        this.contextTypeId = ContextType.Unknown;
+    }
   }
 }
 
@@ -69,13 +85,13 @@ export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
 /** Sent when an iModel is created. See [[IModelHandler.create]].
- * @public
+ * @beta
  */
 export class IModelCreatedEvent extends IModelHubGlobalEvent {
 }
 
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetHandler.create]]. Sent together with [[ChangeSetPostPushEvent]].
- * @public
+ * @beta
  */
 export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
   public changeSetId?: string;
@@ -94,7 +110,7 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
 }
 
 /** Sent when a named [[Version]] is created. See [[VersionHandler.create]].
- * @public
+ * @beta
  */
 export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
   public versionId?: GuidString;
@@ -142,7 +158,7 @@ export function ParseGlobalEvent(response: Response, handler?: IModelBaseHandler
 }
 
 /** Subscription to receive [[IModelHubGlobalEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Global event subscriptions do not expire and must be deleted by the user. Use wsgId of this instance for the methods that require subscriptionId. See [[GlobalEventSubscriptionHandler]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class GlobalEventSubscription extends WsgInstance {
@@ -154,7 +170,7 @@ export class GlobalEventSubscription extends WsgInstance {
 }
 
 /** Shared access signature token for getting [[IModelHubGlobalEvent]]s. It's used to authenticate for [[GlobalEventHandler.getEvent]]. To receive an instance call [[GlobalEventHandler.getSASToken]].
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "GlobalScope.GlobalEventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class GlobalEventSAS extends BaseEventSAS {
@@ -162,7 +178,7 @@ export class GlobalEventSAS extends BaseEventSAS {
 
 /** Handler for managing [[GlobalEventSubscription]]s.
  * Use [[GlobalEventHandler.Subscriptions]] to get an instance of this class.
- * @public
+ * @beta
  */
 export class GlobalEventSubscriptionHandler {
   private _handler: IModelBaseHandler;
@@ -246,7 +262,7 @@ export class GlobalEventSubscriptionHandler {
 }
 
 /** Type of [[GlobalEventHandler.getEvent]] operations.
- * @public
+ * @beta
  */
 export enum GetEventOperationType {
   /** Event will be immediately removed from queue. */
@@ -257,7 +273,7 @@ export enum GetEventOperationType {
 
 /** Handler for receiving [[IModelHubGlobalEvent]]s.
  * Use [[IModelClient.GlobalEvents]] to get an instance of this class.
- * @public
+ * @beta
  */
 export class GlobalEventHandler extends EventBaseHandler {
   private _subscriptionHandler: GlobalEventSubscriptionHandler | undefined;

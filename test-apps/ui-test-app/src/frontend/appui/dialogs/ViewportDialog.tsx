@@ -5,12 +5,13 @@
 import * as React from "react";
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 
 import { LoadingSpinner, FillCentered } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-components";
-import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
-import { ExternalIModel } from "../widgets/ExternalIModel";
+import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";
+
+import { ExternalIModel } from "../ExternalIModel";
 
 import "./ViewportDialog.scss";
 
@@ -29,6 +30,8 @@ export interface ViewportDialogState {
 
 export class ViewportDialog extends React.Component<ViewportDialogProps, ViewportDialogState> {
   private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _viewport: ScreenViewport | undefined;
+
   public readonly state: Readonly<ViewportDialogState>;
 
   constructor(props: ViewportDialogProps) {
@@ -46,6 +49,21 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
       this.setState({
         viewId: externalIModel.viewId,
         iModelConnection: externalIModel.iModelConnection,
+      });
+    }
+
+    ViewSelector.onViewSelectorChangedEvent.addListener(this._handleViewSelectorChangedEvent);
+  }
+
+  public componentWillUnmount() {
+    ViewSelector.onViewSelectorChangedEvent.removeListener(this._handleViewSelectorChangedEvent);
+  }
+
+  private _handleViewSelectorChangedEvent = (args: ViewSelectorChangedEventArgs) => {
+    if (this._viewport === IModelApp.viewManager.selectedView) {
+      this.setState({
+        viewId: args.viewDefinitionId,
+        iModelConnection: args.iModelConnection,
       });
     }
   }
@@ -84,9 +102,16 @@ export class ViewportDialog extends React.Component<ViewportDialogProps, Viewpor
     let content: React.ReactNode;
 
     if (this.state.viewId === undefined || this.state.iModelConnection === undefined)
-      content = <FillCentered> <LoadingSpinner message={this._loading} /> </FillCentered>;
+      content = (
+        <FillCentered> <LoadingSpinner message={this._loading} /> </FillCentered>
+      );
     else
-      content = <ViewportComponent viewDefinitionId={this.state.viewId} imodel={this.state.iModelConnection} />;
+      content = (
+        <ViewportComponent
+          viewDefinitionId={this.state.viewId}
+          imodel={this.state.iModelConnection}
+          viewportRef={(v: ScreenViewport) => { this._viewport = v; }} />
+      );
 
     return content;
   }

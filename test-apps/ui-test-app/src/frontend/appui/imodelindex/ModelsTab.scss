@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-core/lib/ui-core/classes";
 
 $border-color: #eeeeee;
 
@@ -41,7 +40,7 @@ $border-color: #eeeeee;
     overflow-y: auto;
 
     .showtree-button {
-      @extend .uicore-buttons-blue;
+      @include uicore-buttons-blue;
       padding-top: $uicore-xs;
       padding-bottom: $uicore-xs;
       margin: $uicore-s;
@@ -102,7 +101,7 @@ $border-color: #eeeeee;
   /* enter iModel button */
   .open-button {
     margin: $uicore-l $uicore-m 0 auto !important;
-    @extend .uicore-buttons-blue;
+    @include uicore-buttons-blue;
   }
 
   /* toast displayed for 3d Models */

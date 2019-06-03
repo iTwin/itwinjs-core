@@ -6,14 +6,15 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "./Token";
 import { UserInfo } from "./UserInfo";
-import { Project } from "./ConnectClients";
+import { Project, Asset } from "./ConnectClients";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 
 /** How to discover "contexts". A context corresponds roughly to a "project" in Connect.
  * @internal
  */
 export interface ContextManagerClient {
-  queryContextByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
+  queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
+  queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset>;
 }
 
 /** User-authorization service.

@@ -501,7 +501,7 @@ export class ECJsonTypeMap {
             // e.g., given: relationshipInstances[classA].relatedInstance[classB] , classA and classB together are unique among all relationship instances
             let relationshipCount: number = 0;
             // while the index points to a defined relationship instance, check if classA and classB (from above example) match the expected classes
-            // the exception is if the relationship instance doesnt have a relatedInstance (possibly because the typedValue is the entire instance)
+            // the exception is if the relationship instance doesn't have a relatedInstance (possibly because the typedValue is the entire instance)
             // in that case we only care about the matching the relationship instance class name
             while (untypedInstanceCursor[accessString][relationshipCount]
               && (untypedInstanceCursor[accessString][relationshipCount][className] !== expectedclassName
@@ -567,7 +567,7 @@ export class ECJsonTypeMap {
 }
 
 /** Base class for all typed instances mapped to ECInstance-s in an ECDb
- * @internal
+ * @beta
  */
 export abstract class ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "id")
@@ -576,11 +576,11 @@ export abstract class ECInstance {
   [index: string]: any;
 }
 
-/** @internal */
+/** @beta */
 export type ChangeState = "new" | "modified" | "deleted";
 
 /** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
- * @internal
+ * @beta
  */
 export abstract class WsgInstance extends ECInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")

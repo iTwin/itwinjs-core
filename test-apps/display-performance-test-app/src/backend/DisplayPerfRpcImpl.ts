@@ -5,7 +5,7 @@
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
+import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile, addEndOfTestToCsvFile } from "./CsvWriter";
 import * as fs from "fs";
 import { app } from "electron";
 
@@ -36,7 +36,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return jsonStr;
   }
 
-  public async saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
+  public async saveCsv(outputPath: string, outputName: string, rowDataJson: string): Promise<void> {
+    const rowData = new Map(JSON.parse(rowDataJson)) as Map<string, number | string>;
     if (outputPath !== undefined && outputName !== undefined) {
       let outputFile = this.createFullFilePath(outputPath, outputName);
       outputFile = outputFile ? outputFile : "";
@@ -64,6 +65,14 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
     const buf = Buffer.from(png, "base64");
     fs.writeFileSync(fileName, buf);
+  }
+
+  public async finishCsv(outputPath?: string, outputName?: string) {
+    if (outputPath !== undefined && outputName !== undefined) {
+      let outputFile = this.createFullFilePath(outputPath, outputName);
+      outputFile = outputFile ? outputFile : "";
+      addEndOfTestToCsvFile(outputFile);
+    }
   }
 
   public async finishTest() {

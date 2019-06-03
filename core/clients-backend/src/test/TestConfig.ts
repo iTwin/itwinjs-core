@@ -61,6 +61,7 @@ function isOfflineSet(): boolean {
 export class TestConfig {
   /** Name of project used by most tests */
   public static readonly projectName: string = Config.App.get("imjs_test_project_name", "iModelJsTest");
+  public static readonly assetName: string = Config.App.get("imjs_test_asset_name", "iModelJsAssetTest");
   public static readonly enableMocks: boolean = isOfflineSet();
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank_run_orchestrator");
 

@@ -9,8 +9,11 @@ import * as http from "http";
 
 /** Display Performance RPC interface. */
 export default class DisplayPerfRpcInterface extends RpcInterface {
+  /** The immutable name of the interface. */
+  public static readonly interfaceName = "DisplayPerfRpcInterface";
+
   /** The version of the interface. */
-  public static version = "1.0.0";
+  public static interfaceVersion = "1.0.0";
 
   /** Full path of the json file; will use the default json file instead if this file cannot be found */
   public static jsonFilePath = "";
@@ -22,14 +25,12 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   /** A chrome browser window, when testing with chrome */
   public static chrome?: chromeLauncher.LaunchedChrome;
 
-  /** The types that can be marshaled by the interface. */
-  public static types = () => [];
-
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
   public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }
-  public async saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward(arguments); }
+  public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 
+  public async finishCsv(_outputPath: string | undefined, _outputName: string | undefined): Promise<void> { return this.forward(arguments); }
   public async finishTest(): Promise<void> { return this.forward(arguments); }
 }

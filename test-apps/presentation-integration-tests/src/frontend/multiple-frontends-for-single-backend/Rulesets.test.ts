@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/presentation-common";
+import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
 import { PresentationManager } from "@bentley/presentation-frontend";
 
 describe("Multiple frontends for one backend", async () => {
@@ -38,7 +38,7 @@ describe("Multiple frontends for one backend", async () => {
         rules: [{
           ruleType: RuleTypes.RootNodes,
           specifications: [{
-            specType: RuleSpecificationTypes.CustomNode,
+            specType: ChildNodeSpecificationTypes.CustomNode,
             type: "test",
             label: "label 0",
             description: "description 0",
@@ -51,7 +51,7 @@ describe("Multiple frontends for one backend", async () => {
         rules: [{
           ruleType: RuleTypes.RootNodes,
           specifications: [{
-            specType: RuleSpecificationTypes.CustomNode,
+            specType: ChildNodeSpecificationTypes.CustomNode,
             type: "test",
             label: "label 1",
             description: "description 1",

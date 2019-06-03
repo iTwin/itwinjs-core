@@ -35,12 +35,14 @@ function setupStandaloneConfiguration() {
       configuration.signInForStandalone = true;
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
-    configuration.omitEdges = undefined !== process.env.SVT_OMIT_EDGES;
-    configuration.displaySolarShadows = true;     // default solar shadows on.... undefined !== process.env.SVT_DISPLAY_SOLAR_SHADOWS;
+    configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+    configuration.displaySolarShadows = true;
 
-    configuration.enableBackfaceCulling = undefined !== process.env.SVT_ENABLE_BACKFACE_CULLING;
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
     configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
+
+    if (undefined !== process.env.SVT_OPTIMIZED_SURFACE_SHADERS)
+      configuration.enableOptimizedSurfaceShaders = true;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)
@@ -55,7 +57,8 @@ export function initializeBackend() {
   setupStandaloneConfiguration();
 
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.useTileContentThreadPool = true;
+  hostConfig.logTileLoadTimeThreshold = 3;
+  hostConfig.logTileSizeThreshold = 500000;
   if (MobileRpcConfiguration.isMobileBackend) {
     // Does not seem SVTConfiguraiton is used anymore.
   } else {

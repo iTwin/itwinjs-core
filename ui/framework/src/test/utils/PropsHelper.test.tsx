@@ -26,6 +26,11 @@ describe("PropsHelper", () => {
     expect(iconTest!.props.iconSpec).to.eq("placeholder");
   });
 
+  it("Get undefined Icon", () => {
+    const iconTest = PropsHelper.getIcon(null);
+    expect(iconTest).to.be.undefined;
+  });
+
   let outString: string | undefined;
   const stringGetter = () => "Got String?";
 
@@ -53,8 +58,17 @@ describe("PropsHelper", () => {
     expect(outString).to.eq("Got String?");
   });
 
-  it("Use stringKey", () => {
+  it("Use stringKey for undefined explicitValue", () => {
     const undefinedStringAndKeySpec = PropsHelper.getStringSpec(undefined, "UiFramework:snapModeField.snapMode");
+    expect(undefinedStringAndKeySpec).not.to.be.undefined;
+    outString = undefined;
+    outString = PropsHelper.getStringFromSpec(undefinedStringAndKeySpec);
+    expect(outString).not.to.be.undefined;
+    expect(outString).to.eq("snapModeField.snapMode"); // since test are not setting up localization we get string without namespace.
+  });
+
+  it("Use stringKey for blank explicitValue", () => {
+    const undefinedStringAndKeySpec = PropsHelper.getStringSpec("", "UiFramework:snapModeField.snapMode");
     expect(undefinedStringAndKeySpec).not.to.be.undefined;
     outString = undefined;
     outString = PropsHelper.getStringFromSpec(undefinedStringAndKeySpec);

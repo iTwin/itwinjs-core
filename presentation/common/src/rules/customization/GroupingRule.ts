@@ -25,6 +25,8 @@ import { SingleSchemaClassSpecification } from "../ClassSpecifications";
  *         - ECProperty grouping node n (specified by n-th [[PropertyGroup]])
  *           - Display label grouping node (specified by `groupByLabel` property)
  *             - ECInstance nodes (may be grouped under a single node by [[SameLabelInstanceGroup]])
+ *
+ * @public
  */
 export interface GroupingRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */
@@ -44,23 +46,37 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
   groups: GroupingSpecification[];
 }
 
-/** Grouping rule specifications */
+/**
+ * Grouping rule specifications
+ * @public
+ */
 export declare type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
-/** Available types of [[GroupingSpecification]] */
+/**
+ * Available types of [[GroupingSpecification]]
+ * @public
+ */
 export enum GroupingSpecificationTypes {
   Class = "Class",
   Property = "Property",
   SameLabelInstance = "SameLabelInstance",
 }
 
-/** Base interface for all [[GroupingSpecification]] implementations */
+/**
+ * Base interface for all [[GroupingSpecification]] implementations. Not
+ * meant to be used directly, see `GroupingSpecification`.
+ *
+ * @public
+ */
 export interface GroupingSpecificationBase {
   /** Type of the subclass */
   specType: GroupingSpecificationTypes;
 }
 
-/** Allows grouping ECInstance nodes by their base class. */
+/**
+ * Allows grouping ECInstance nodes by their base class.
+ * @public
+ */
 export interface ClassGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
   specType: GroupingSpecificationTypes.Class;
@@ -79,6 +95,8 @@ export interface ClassGroup extends GroupingSpecificationBase {
  * When multiple instances are grouped, an ECInstance node is created instead of a
  * grouping node and the ECInstance key for the node is assigned to key of one of grouped
  * instances.
+ *
+ * @public
  */
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
@@ -88,6 +106,8 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
 /**
  * Allows grouping by property of the instance
  * by a common value or by range of values.
+ *
+ * @public
  */
 export interface PropertyGroup extends GroupingSpecificationBase {
   /** Used for serializing to JSON. */
@@ -143,6 +163,8 @@ export interface PropertyGroup extends GroupingSpecificationBase {
 /**
  * Used in [[PropertyGroup]] to specify the type of value to use
  * for grouping and sorting
+ *
+ * @public
  */
 export enum PropertyGroupingValue {
   /** By property value */
@@ -152,7 +174,10 @@ export enum PropertyGroupingValue {
   DisplayLabel = "DisplayLabel",
 }
 
-/** Describes a grouping range */
+/**
+ * Describes a grouping range
+ * @public
+ */
 export interface PropertyRangeGroupSpecification {
   /**
    * ID of an image to use for the grouping node. Defaults to [[PropertyGroup.imageId]] specified in [[PropertyGroup]].

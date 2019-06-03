@@ -45,6 +45,8 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Invert", value: "Inverse" },
       { name: "Isolate Selected", value: "Isolate" },
       { name: "Hide Selected", value: "Hide" },
+      { name: "Hilite Enabled", value: "Hilite" },
+      { name: "Un-hilite Enabled", value: "Dehilite" },
     ];
   }
 
@@ -124,6 +126,10 @@ export abstract class IdPicker extends ToolBarDropDown {
       case "Inverse":
         this.invertAll();
         return;
+      case "Hilite":
+      case "Dehilite":
+        this.hiliteEnabled("Hilite" === which);
+        return;
       case "":
         return;
     }
@@ -158,10 +164,12 @@ export abstract class IdPicker extends ToolBarDropDown {
 
     const elemIds = "(" + Array.from(selectedElems).join(",") + ")";
     const ecsql = "SELECT DISTINCT " + elementType + ".Id FROM bis.GeometricElement" + (is2d ? "2d" : "3d") + " WHERE ECInstanceId IN " + elemIds;
-    return this._vp.view.iModel.queryPage(ecsql).then((rows) => {
-      const column = elementType.toLowerCase() + ".id";
-      return rows.map((value) => value[column]);
-    });
+    const rows = [];
+    for await (const row of this._vp.view.iModel.query(ecsql)) {
+      rows.push(row);
+    }
+    const column = elementType.toLowerCase() + ".id";
+    return rows.map((value) => value[column]);
   }
 
   private toggleIds(ids: Id64Arg, enabled: boolean): void {
@@ -173,6 +181,8 @@ export abstract class IdPicker extends ToolBarDropDown {
         boxById.get(id)!.checked = enabled;
     });
   }
+
+  protected abstract hiliteEnabled(hiliteOn: boolean): void;
 }
 
 function getCategoryName(row: any): string {
@@ -202,7 +212,10 @@ export class CategoryPicker extends IdPicker {
     const view = this._vp.view;
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
-    const rows = Array.from(await view.iModel.queryPage(ecsql, bindings, { size: 1000 })); // max rows to return after which result will be truncated.
+    const rows: any[] = [];
+    for await (const row of view.iModel.query(`${ecsql} LIMIT 1000`, bindings)) {
+      rows.push(row);
+    }
     rows.sort((lhs, rhs) => {
       const lhName = getCategoryName(lhs);
       const rhName = getCategoryName(rhs);
@@ -240,6 +253,23 @@ export class CategoryPicker extends IdPicker {
     else
       super.show(which);
   }
+
+  protected hiliteEnabled(hiliteOn: boolean): void {
+    const catIds = this._enabledIds;
+    const cache = this._vp.iModel.subcategories;
+    const set = this._vp.iModel.hilited.subcategories;
+    for (const catId of catIds) {
+      const subcatIds = cache.getSubCategories(catId);
+      if (undefined !== subcatIds) {
+        for (const subcatId of subcatIds) {
+          if (hiliteOn)
+            set.addId(subcatId);
+          else
+            set.deleteId(subcatId);
+        }
+      }
+    }
+  }
 }
 
 export class ModelPicker extends IdPicker {
@@ -249,6 +279,17 @@ export class ModelPicker extends IdPicker {
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
   protected get _showIn2d() { return false; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeModelDisplay(ids, enabled); }
+
+  protected hiliteEnabled(hiliteOn: boolean): void {
+    const modelIds = this._enabledIds;
+    const hilites = this._vp.iModel.hilited;
+    for (const modelId of modelIds) {
+      if (hiliteOn)
+        hilites.models.addId(modelId);
+      else
+        hilites.models.deleteId(modelId);
+    }
+  }
 
   protected async _populate(): Promise<void> {
     const view = this._vp.view as SpatialViewState;

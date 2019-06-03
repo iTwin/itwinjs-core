@@ -7,6 +7,7 @@
 import * as React from "react";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { isPromiseLike, UnderlinedButton } from "@bentley/ui-core";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
 /** Render a single anchor tag */
 function renderTag(text: string, record: PropertyRecord) {
@@ -49,7 +50,7 @@ function renderText(text: string, record: PropertyRecord): React.ReactNode {
   for (const match of matches) {
     // If matches overlap there must be something wrong with the matcher
     if (lastIndex > match.start)
-      throw new Error("renderAnchorTag: matcher returned overlapping matches");
+      throw new BentleyError(BentleyStatus.ERROR, "renderAnchorTag: matcher returned overlapping matches");
 
     if (lastIndex < match.start)
       parts.push(text.substring(lastIndex, match.start));

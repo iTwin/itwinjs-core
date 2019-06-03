@@ -10,7 +10,7 @@ Array [
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "3bbaeeb5df0fbdd911684fcaf3dce295",
+        "7e871d5dbb007a46ddae006c37e7c409",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -24,7 +24,7 @@ Array [
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "2bf13dbc39a40a1611e57470761ee14b",
+        "baeeb31533dc0a34d202b3b4f8d1adb0",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -38,7 +38,7 @@ Array [
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
       "pathFromRoot": Array [
-        "f17f86c0171b4ad94629b1e47326731f",
+        "9046526f702a7945b51247a001838566",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -51,7 +51,7 @@ Array [
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "7a434b3ba061a765bc3b15b53ffd228f",
+        "a0e23096133b47b12e38d95e1371b6dd",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -65,7 +65,7 @@ Array [
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "5c2cc76b3cd286c72fbe50a0e407183b",
+        "9bf3b22719235c19ca2afa49e8078d59",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -79,7 +79,7 @@ Array [
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "4ac438f813655bf7194bc4df105738c8",
+        "d9177c63db76896f547b6759369361fa",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -93,7 +93,7 @@ Array [
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "4c73690da111037c6dbb5471158c75f7",
+        "0794702a69ef4b93c6cbc268db049d02",
       ],
       "type": "ECClassGroupingNode",
     },
@@ -109,8 +109,8 @@ Array [
       Object {
         "children": Array [],
         "filteringData": Object {
-          "childrenOccurances": 0,
-          "occurances": 1,
+          "childMatchesCount": 0,
+          "matchesCount": 1,
         },
         "index": 0,
         "isMarked": false,
@@ -119,8 +119,8 @@ Array [
           "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "d849e52eb605991e839a5e6aa299a4b9",
-              "aa959b85dd4402b50d79c57d8a6f5215",
+              "b581d64c180b7b62dd4168c67eeb87f9",
+              "153c24f36b46626dfee99f1a59453476",
             ],
             "type": "nodeType",
           },
@@ -132,8 +132,8 @@ Array [
           Object {
             "children": Array [],
             "filteringData": Object {
-              "childrenOccurances": 0,
-              "occurances": 1,
+              "childMatchesCount": 0,
+              "matchesCount": 1,
             },
             "index": 0,
             "isMarked": false,
@@ -142,9 +142,9 @@ Array [
               "imageId": "imageId",
               "key": Object {
                 "pathFromRoot": Array [
-                  "d849e52eb605991e839a5e6aa299a4b9",
-                  "79f473dd6d221d37d0928acdc2cb5b3c",
-                  "d7abfd31da4a1dc5cc4d0307f8aa1a8e",
+                  "b581d64c180b7b62dd4168c67eeb87f9",
+                  "9141227a292f6d7d78835f0f60753e19",
+                  "a985f84b8abf379f0ca00423cb861dfc",
                 ],
                 "type": "nodeType",
               },
@@ -153,8 +153,8 @@ Array [
           },
         ],
         "filteringData": Object {
-          "childrenOccurances": 1,
-          "occurances": 0,
+          "childMatchesCount": 1,
+          "matchesCount": 0,
         },
         "index": 1,
         "isMarked": false,
@@ -164,8 +164,8 @@ Array [
           "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "d849e52eb605991e839a5e6aa299a4b9",
-              "79f473dd6d221d37d0928acdc2cb5b3c",
+              "b581d64c180b7b62dd4168c67eeb87f9",
+              "9141227a292f6d7d78835f0f60753e19",
             ],
             "type": "nodeType",
           },
@@ -174,8 +174,8 @@ Array [
       },
     ],
     "filteringData": Object {
-      "childrenOccurances": 2,
-      "occurances": 1,
+      "childMatchesCount": 2,
+      "matchesCount": 1,
     },
     "index": 0,
     "isMarked": false,
@@ -185,7 +185,7 @@ Array [
       "imageId": "imageId",
       "key": Object {
         "pathFromRoot": Array [
-          "d849e52eb605991e839a5e6aa299a4b9",
+          "b581d64c180b7b62dd4168c67eeb87f9",
         ],
         "type": "nodeType",
       },
@@ -197,8 +197,8 @@ Array [
       Object {
         "children": Array [],
         "filteringData": Object {
-          "childrenOccurances": 0,
-          "occurances": 1,
+          "childMatchesCount": 0,
+          "matchesCount": 1,
         },
         "index": 0,
         "isMarked": false,
@@ -207,8 +207,8 @@ Array [
           "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "6da3c696f564a4aa1c913cdfb7774b51",
-              "239b0de6eee1bbd89d6eb4c8affcc76f",
+              "08b81d994eddef0c8c5c82f4158404d7",
+              "eda938fe70505bba8e22574ad271aac9",
             ],
             "type": "nodeType",
           },
@@ -217,8 +217,8 @@ Array [
       },
     ],
     "filteringData": Object {
-      "childrenOccurances": 1,
-      "occurances": 0,
+      "childMatchesCount": 1,
+      "matchesCount": 0,
     },
     "index": 1,
     "isMarked": false,
@@ -228,7 +228,7 @@ Array [
       "imageId": "imageId",
       "key": Object {
         "pathFromRoot": Array [
-          "6da3c696f564a4aa1c913cdfb7774b51",
+          "08b81d994eddef0c8c5c82f4158404d7",
         ],
         "type": "nodeType",
       },
@@ -249,24 +249,24 @@ Array [
               Object {
                 "children": Array [],
                 "filteringData": Object {
-                  "childrenOccurances": 0,
-                  "occurances": 0,
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
                 },
                 "index": 0,
                 "isMarked": false,
                 "node": Object {
-                  "imageId": "ECLiteralImage://ELEMENT",
+                  "imageId": "ECInstanceImage://BisCore:DefinitionPartition",
                   "key": Object {
                     "instanceKey": Object {
                       "className": "BisCore:DefinitionPartition",
                       "id": "0x10",
                     },
                     "pathFromRoot": Array [
-                      "93e6fbdb6109b5bf3d681f2fc9b47383",
-                      "1d76581c875199a8c9f9dbd065549e8d",
-                      "d109d878ba523718bcc184d190936cfe",
-                      "8ceffa84f66407f0eff6642b920539a4",
-                      "8164457fc310b9ca17c1d5036000ea9d",
+                      "a6c58d50d274ae6218b41c87c46294e2",
+                      "b08dc9447846a75e042affefd0bb692a",
+                      "ce35e532ff98cb481a2bc0bbc8af4de2",
+                      "4b395798bea341c09a664cc09ed6386d",
+                      "625e79f7e17237a1bf2edfaec9dcee9e",
                     ],
                     "type": "ECInstanceNode",
                   },
@@ -275,8 +275,8 @@ Array [
               },
             ],
             "filteringData": Object {
-              "childrenOccurances": 0,
-              "occurances": 0,
+              "childMatchesCount": 0,
+              "matchesCount": 0,
             },
             "index": 0,
             "isMarked": false,
@@ -288,10 +288,10 @@ Array [
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "93e6fbdb6109b5bf3d681f2fc9b47383",
-                  "1d76581c875199a8c9f9dbd065549e8d",
-                  "d109d878ba523718bcc184d190936cfe",
-                  "8ceffa84f66407f0eff6642b920539a4",
+                  "a6c58d50d274ae6218b41c87c46294e2",
+                  "b08dc9447846a75e042affefd0bb692a",
+                  "ce35e532ff98cb481a2bc0bbc8af4de2",
+                  "4b395798bea341c09a664cc09ed6386d",
                 ],
                 "type": "ECClassGroupingNode",
               },
@@ -303,24 +303,24 @@ Array [
               Object {
                 "children": Array [],
                 "filteringData": Object {
-                  "childrenOccurances": 0,
-                  "occurances": 0,
+                  "childMatchesCount": 0,
+                  "matchesCount": 0,
                 },
                 "index": 0,
                 "isMarked": true,
                 "node": Object {
-                  "imageId": "ECLiteralImage://ELEMENT",
+                  "imageId": "ECInstanceImage://BisCore:LinkPartition",
                   "key": Object {
                     "instanceKey": Object {
                       "className": "BisCore:LinkPartition",
                       "id": "0xe",
                     },
                     "pathFromRoot": Array [
-                      "93e6fbdb6109b5bf3d681f2fc9b47383",
-                      "1d76581c875199a8c9f9dbd065549e8d",
-                      "d109d878ba523718bcc184d190936cfe",
-                      "ca05d6adfdf2c19a31059933f72e6f3c",
-                      "5aaadfb2b7429c5ffd1871ad162f80a0",
+                      "a6c58d50d274ae6218b41c87c46294e2",
+                      "b08dc9447846a75e042affefd0bb692a",
+                      "ce35e532ff98cb481a2bc0bbc8af4de2",
+                      "c763e2d3816974b3c99607700d9485ff",
+                      "d630854becca7505566f720d4d104f41",
                     ],
                     "type": "ECInstanceNode",
                   },
@@ -329,8 +329,8 @@ Array [
               },
             ],
             "filteringData": Object {
-              "childrenOccurances": 0,
-              "occurances": 0,
+              "childMatchesCount": 0,
+              "matchesCount": 0,
             },
             "index": 1,
             "isMarked": false,
@@ -342,10 +342,10 @@ Array [
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "93e6fbdb6109b5bf3d681f2fc9b47383",
-                  "1d76581c875199a8c9f9dbd065549e8d",
-                  "d109d878ba523718bcc184d190936cfe",
-                  "ca05d6adfdf2c19a31059933f72e6f3c",
+                  "a6c58d50d274ae6218b41c87c46294e2",
+                  "b08dc9447846a75e042affefd0bb692a",
+                  "ce35e532ff98cb481a2bc0bbc8af4de2",
+                  "c763e2d3816974b3c99607700d9485ff",
                 ],
                 "type": "ECClassGroupingNode",
               },
@@ -354,23 +354,23 @@ Array [
           },
         ],
         "filteringData": Object {
-          "childrenOccurances": 0,
-          "occurances": 0,
+          "childMatchesCount": 0,
+          "matchesCount": 0,
         },
         "index": 0,
         "isMarked": false,
         "node": Object {
           "hasChildren": true,
-          "imageId": "ECLiteralImage://ELEMENT",
+          "imageId": "ECInstanceImage://BisCore:Subject",
           "key": Object {
             "instanceKey": Object {
               "className": "BisCore:Subject",
               "id": "0x1",
             },
             "pathFromRoot": Array [
-              "93e6fbdb6109b5bf3d681f2fc9b47383",
-              "1d76581c875199a8c9f9dbd065549e8d",
-              "d109d878ba523718bcc184d190936cfe",
+              "a6c58d50d274ae6218b41c87c46294e2",
+              "b08dc9447846a75e042affefd0bb692a",
+              "ce35e532ff98cb481a2bc0bbc8af4de2",
             ],
             "type": "ECInstanceNode",
           },
@@ -379,8 +379,8 @@ Array [
       },
     ],
     "filteringData": Object {
-      "childrenOccurances": 0,
-      "occurances": 0,
+      "childMatchesCount": 0,
+      "matchesCount": 0,
     },
     "index": 0,
     "isMarked": false,
@@ -393,8 +393,8 @@ Array [
           "id": "0x1",
         },
         "pathFromRoot": Array [
-          "93e6fbdb6109b5bf3d681f2fc9b47383",
-          "1d76581c875199a8c9f9dbd065549e8d",
+          "a6c58d50d274ae6218b41c87c46294e2",
+          "b08dc9447846a75e042affefd0bb692a",
         ],
         "type": "ECInstanceNode",
       },

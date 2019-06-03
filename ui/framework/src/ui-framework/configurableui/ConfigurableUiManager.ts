@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
+import { UiError } from "@bentley/ui-core";
+
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
@@ -14,16 +16,12 @@ import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/W
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-
 import { StandardRotationNavigationAidControl } from "../navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
-
-// -----------------------------------------------------------------------------
-// Configurable Ui Manager
-// -----------------------------------------------------------------------------
+import { UiFramework } from "../UiFramework";
 
 /** Configurable Ui Manager maintains controls, Frontstages, Content Groups,
  * Content Layouts, Tasks and Workflows.
@@ -50,10 +48,6 @@ export class ConfigurableUiManager {
     ToolUiManager.initialize();
   }
 
-  public static clearRegisteredControls() {
-    this._registeredControls = {};
-  }
-
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.
    * These controls can be a
    * [[ContentControl]],
@@ -66,7 +60,7 @@ export class ConfigurableUiManager {
    */
   public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
     if (this._registeredControls.hasOwnProperty(classId)) {
-      throw Error("ConfigurableUiManager.registerControl error: classId '" + classId + "' already registered");
+      throw new UiError(UiFramework.loggerCategory(this), `registerControl: classId '${classId}' already registered`);
     }
 
     this._registeredControls[classId] = constructor;
@@ -100,7 +94,7 @@ export class ConfigurableUiManager {
     const info = new ConfigurableCreateInfo(classId, uniqueId, uniqueId);
     const constructor = this._registeredControls[info.classId];
     if (!constructor) {
-      throw Error("ConfigurableUiManager.createControl error: classId '" + classId + "' not registered");
+      throw new UiError(UiFramework.loggerCategory(this), `createControl: classId '${classId}' not registered`);
     }
 
     const control = new constructor(info, options);

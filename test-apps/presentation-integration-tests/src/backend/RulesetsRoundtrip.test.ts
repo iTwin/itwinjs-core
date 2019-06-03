@@ -7,14 +7,14 @@ import { initialize, terminate } from "../IntegrationTests";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { Ruleset } from "@bentley/presentation-common";
+import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/RulesetManager";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
-import RulesetManager from "@bentley/presentation-backend/lib/RulesetManager";
 import { tweakRuleset } from "./Helpers";
 
 describe("Rulesets roundtrip", () => {
 
   let nativePlatform: NativePlatformDefinition;
-  let rulesets: RulesetManager;
+  let rulesets: RulesetManagerImpl;
 
   before(() => {
     initialize();
@@ -22,7 +22,7 @@ describe("Rulesets roundtrip", () => {
     const TNativePlatform = createDefaultNativePlatform(); // tslint:disable-line: variable-name naming-convention
     nativePlatform = new TNativePlatform();
 
-    rulesets = new RulesetManager(() => nativePlatform);
+    rulesets = new RulesetManagerImpl(() => nativePlatform);
   });
 
   after(() => {

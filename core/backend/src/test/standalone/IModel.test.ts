@@ -85,11 +85,11 @@ describe("iModel", () => {
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
-    imodel1 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
@@ -221,10 +221,12 @@ describe("iModel", () => {
   });
 
   it("should use schema to look up classes by name", () => {
-    const elementClass = BisCoreSchema.getClass(Element.className, imodel1);
-    const categoryClass = BisCoreSchema.getClass(Category.className, imodel1);
+    const elementClass = ClassRegistry.findRegisteredClass(Element.classFullName);
+    const categoryClass = ClassRegistry.findRegisteredClass(Category.classFullName);
     assert.isDefined(elementClass);
     assert.isDefined(categoryClass);
+    assert.equal(elementClass!.schema, BisCoreSchema);
+    assert.equal(categoryClass!.schema, BisCoreSchema);
     assert.equal(elementClass!.className, "Element");
     assert.equal(categoryClass!.className, "Category");
   });
@@ -677,7 +679,7 @@ describe("iModel", () => {
     const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
       let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
-      expectIModelError(IModelStatus.MissingId, error);
+      expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
@@ -686,7 +688,7 @@ describe("iModel", () => {
       expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.MissingId, error);
+      expectIModelError(IModelStatus.InvalidId, error);
 
       error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);
@@ -1629,7 +1631,7 @@ describe("iModel", () => {
 
     const seedFileName = IModelTestUtils.resolveAssetFile("DgnPlatformSeedManager_OneSpatialModel10.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("IModel", "ImodelJsTest_MeasureInsertPerformance.bim");
-    const ifperfimodel = IModelDb.createSnapshotFromSeed(testFileName, seedFileName);
+    const ifperfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
     // tslint:disable-next-line:no-console
     console.time("ImodelJsTest.MeasureInsertPerformance");

@@ -11,22 +11,6 @@ import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 
-/** @public */
-export enum ModifyElementSource {
-  /** The source for the element is unknown - not caused by a modification command. */
-  Unknown = 0,
-  /** The element is selected by the user. */
-  Selected = 1,
-  /** The element is processed because it is in the selection set. */
-  SelectionSet = 2,
-  /** The element is processed because it is passes the fence criteria. */
-  Fence = 3,
-  /** The element is processed because it belongs to the group of the selected element (for _FilterAgendaEntries only) */
-  Group = 4,
-  /** The element is selected by the user by drag selection or multi-selection using ctrl. */
-  DragSelect = 5,
-}
-
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  * @public

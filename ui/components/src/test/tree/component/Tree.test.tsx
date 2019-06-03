@@ -961,11 +961,11 @@ describe("Tree", () => {
 
       fireEvent.click(getNode("0").checkbox!);
       expect(checkboxClickSpy).to.be.calledOnce;
-      expect(checkboxClickSpy.firstCall).to.be.calledWith(sinon.match({ id: "0" }), CheckBoxState.Off);
+      expect(checkboxClickSpy.firstCall).to.be.calledWith(sinon.match([sinon.match({ node: { id: "0" }, newState: CheckBoxState.Off })]));
 
       fireEvent.click(getNode("1").checkbox!);
       expect(checkboxClickSpy).to.be.calledTwice;
-      expect(checkboxClickSpy.secondCall).to.be.calledWith(sinon.match({ id: "1" }), CheckBoxState.On);
+      expect(checkboxClickSpy.secondCall).to.be.calledWith(sinon.match([sinon.match({ node: { id: "1" }, newState: CheckBoxState.On })]));
     });
 
     it("doesn't fire check event if checkbox is disabled", async () => {
@@ -993,7 +993,9 @@ describe("Tree", () => {
 
       const dataProvider = new TestDataProvider();
 
-      const onClick = (node: TreeNodeItem) => {
+      const onClick = (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+        // Assumes that exactly one node will have its checkbox state changed
+        const node = stateChanges[0].node;
         if (node.checkBoxState === CheckBoxState.Off)
           node.checkBoxState = CheckBoxState.On;
         else

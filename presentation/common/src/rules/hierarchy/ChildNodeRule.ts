@@ -10,6 +10,8 @@ import { RuleTypes, ConditionContainer } from "../Rule";
 /**
  * Child node rules define nodes that are displayed at
  * each child hierarchy level.
+ *
+ * @public
  */
 export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

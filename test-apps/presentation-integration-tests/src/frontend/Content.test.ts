@@ -3,10 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import sinon = require("sinon");
 import { initialize, terminate } from "../IntegrationTests";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, Ruleset } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, Ruleset, PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
 describe("Content", () => {
@@ -43,7 +44,33 @@ describe("Content", () => {
         ]);
       });
     });
-
   });
 
+  describe("when request in the backend exceeds the backend timeout time", () => {
+    let raceStub: sinon.SinonStub;
+    beforeEach(() => {
+      terminate();
+      initialize(500);
+      const realRace = Promise.race;
+      raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
+        values.push(new Promise((_resolve, reject) => { reject("something"); }));
+        return realRace.call(Promise, values);
+      });
+    });
+
+    afterEach(() => {
+      raceStub.restore();
+    });
+
+    it("should throw PresentationError", async () => {
+      const ruleset: Ruleset = require("../../test-rulesets/DistinctValues/getRelatedDistinctValues");
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
+        const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
+        const keys = new KeySet([key1, key2]);
+        await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.id }, "Grid", keys, undefined))
+          .to.be.eventually.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+      });
+    });
+  });
 });

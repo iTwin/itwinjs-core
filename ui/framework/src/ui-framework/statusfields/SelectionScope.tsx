@@ -30,8 +30,8 @@ interface SelectionScopeFieldProps extends StatusFieldProps {
  * @public
  */
 class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldProps> {
-  private _label = UiFramework.i18n.translate("UiFramework:selectionScopeField.label");
-  private _toolTip = UiFramework.i18n.translate("UiFramework:selectionScopeField.toolTip");
+  private _label = UiFramework.translate("selectionScopeField.label");
+  private _toolTip = UiFramework.translate("selectionScopeField.toolTip");
 
   constructor(props: SelectionScopeFieldProps) {
     super(props);

@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
 import { IModelApp } from "../IModelApp";
 import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../webgl";
 
 describe("FrameBuffer tests", () => {
-  before(() => WebGLTestContext.startup());
-  after(() => WebGLTestContext.shutdown());
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)

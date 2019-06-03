@@ -7,15 +7,24 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
-import ISelectionProvider from "./ISelectionProvider";
+import { ISelectionProvider } from "./ISelectionProvider";
 
-/** An interface for selection change listeners */
+/**
+ * An interface for selection change listeners.
+ * @public
+ */
 export declare type SelectionChangesListener = (args: SelectionChangeEventArgs, provider: ISelectionProvider) => void;
 
-/** An event broadcasted on selection changes */
-export default class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
+/**
+ * An event broadcasted on selection changes
+ * @public
+ */
+export class SelectionChangeEvent extends BeEvent<SelectionChangesListener> { }
 
-/** The type of selection change */
+/**
+ * The type of selection change
+ * @public
+ */
 export enum SelectionChangeType {
   /** Added to selection. */
   Add,
@@ -30,7 +39,10 @@ export enum SelectionChangeType {
   Clear,
 }
 
-/** The event object that's sent when the selection changes */
+/**
+ * The event object that's sent when the selection changes.
+ * @public
+ */
 export interface SelectionChangeEventArgs {
   /** The name of the selection source which caused the selection change. */
   source: string;

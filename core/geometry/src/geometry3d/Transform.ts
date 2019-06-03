@@ -47,7 +47,7 @@ export class Transform implements BeJSONFunctions {
 
     return this._identity;
   }
-
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this); Object.freeze(this._origin); this._matrix.freeze(); }
   /**
    * Copy contents from other Transform into this Transform
@@ -56,6 +56,10 @@ export class Transform implements BeJSONFunctions {
   public setFrom(other: Transform) { this._origin.setFrom(other._origin), this._matrix.setFrom(other._matrix); }
   /** Set this Transform to be an identity. */
   public setIdentity() { this._origin.setZero(); this._matrix.setIdentity(); }
+  /** Set this Transform instance from flexible inputs:
+   * * Any object (such as another Transform) that has `origin` and `matrix` members accepted by Point3d.setFromJSON and Matrix3d.setFromJSON
+   * * An array of 3 number arrays, each with 4 entries which are rows in a 3x4 matrix.
+   */
   public setFromJSON(json?: TransformProps): void {
     if (json) {
       if (json instanceof Object && (json as any).origin && (json as any).matrix) {
@@ -82,6 +86,9 @@ export class Transform implements BeJSONFunctions {
    * @param other Transform to compare to.
    */
   public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
+  /** Return a 3 by 4 matrix containing the rows of this Transform
+   * * This transform's origin is the [3] entry of the json arrays
+   */
   public toJSON(): TransformProps {
     // return { origin: this._origin.toJSON(), matrix: this._matrix.toJSON() };
     return [
@@ -90,7 +97,7 @@ export class Transform implements BeJSONFunctions {
       [this._matrix.coffs[6], this._matrix.coffs[7], this._matrix.coffs[8], this._origin.z],
     ];
   }
-
+  /** Return a new Transform initialized by `setFromJSON (json)` */
   public static fromJSON(json?: TransformProps): Transform {
     const result = Transform.createIdentity();
     result.setFromJSON(json);
@@ -107,7 +114,10 @@ export class Transform implements BeJSONFunctions {
       Point3d.createFrom(this._origin),
       this._matrix.clone());
   }
-  /** @returns Return a copy of this Transform, modified so that its axes are rigid
+  /** Return a copy of this Transform, modified so that its axes are rigid
+   * * The first axis direction named in axisOrder is preserved
+   * * The plane of the first and second directions is preserved, and its vector in the rigid matrix has positive dot product with the corresponding vector if the instance
+   * * The third named column is the cross product of the first and second.
    */
   public cloneRigid(axisOrder: AxisOrder = AxisOrder.XYZ): Transform | undefined {
     const axes0 = Matrix3d.createRigidFromMatrix3d(this.matrix, axisOrder);
@@ -277,7 +287,7 @@ export class Transform implements BeJSONFunctions {
   public multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array {
     return Matrix3d.xyzPlusMatrixTimesCoordinatesToFloat64Array(this._origin, this._matrix, x, y, z, result);
   }
-  /** Multiply the tranposed transform (as 4x4 with 0001 row) by Point4d given as xyzw..  Return as a new point or in the pre-allocated result (if result is given) */
+  /** Multiply the transposed transform (as 4x4 with 0001 row) by Point4d given as xyzw..  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {
     const coffs = this._matrix.coffs;
     const origin = this._origin;
@@ -304,6 +314,15 @@ export class Transform implements BeJSONFunctions {
       point.z - this._origin.z,
       result);
   }
+  /** Return product of the transform's inverse times a point (point given as x,y,z) */
+  public multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
+    return this._matrix.multiplyInverseXYZAsPoint3d(
+      x - this._origin.x,
+      y - this._origin.y,
+      z - this._origin.z,
+      result);
+  }
+
   /**
    * *  for each point:   multiply    transform * point
    * *  if result is given, resize to match source and replace each corresponding pi
@@ -334,7 +353,7 @@ export class Transform implements BeJSONFunctions {
     return result;
   }
   /**
-   * *  for each point in source:   multiply    transformInverse * point  in place inthe point.
+   * * for each point in source: multiply transformInverse * point in place in the point.
    * * return false if not invertible.
    */
   public multiplyInversePoint3dArrayInPlace(source: Point3d[]): boolean {
@@ -351,6 +370,14 @@ export class Transform implements BeJSONFunctions {
         source[i].z - originZ,
         source[i]);
     return true;
+  }
+  /**
+   * * Compute (if needed) the inverse of the matrix part, thereby ensuring inverse operations can complete.
+   * * Return true if matrix inverse completes.
+   * @param useCached If true, accept prior cached inverse if available.
+   */
+  public computeCachedInverse(useCached: boolean = true): boolean {
+    return this._matrix.computeCachedInverse(useCached);
   }
   /**
    * * If destination has more values than source, remove the extras.

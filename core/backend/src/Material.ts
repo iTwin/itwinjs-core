@@ -13,6 +13,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
+  /** @internal */
   public static get className(): string { return "RenderMaterial"; }
   public paletteName: string;
   public description?: string;

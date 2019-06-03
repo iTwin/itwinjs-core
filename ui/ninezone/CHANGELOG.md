@@ -1,6 +1,20 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Added UI Logger & UiError usage & improved i18n calls
+- Update to css-loader 2.1.1
+- Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone
+- Added Overflow button support
+- Release tag cleanup and ui-framework unit tests
+- Add support for solar timeline.
+- Added NumericInput component to ui-core. Added dependency on react-numeric-input.
+- Prevent zones component from creating a stacking context.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -18,7 +18,7 @@ import { Omit } from "../utils/typeUtils";
 import { CommonProps } from "../utils/Props";
 
 /** Enum for button types. Determines button label, and default button style.
- * @beta
+ * @public
  */
 export enum DialogButtonType {
   None = "",
@@ -31,7 +31,7 @@ export enum DialogButtonType {
 }
 
 /** Enum for button style.
- * @beta
+ * @public
  */
 export enum DialogButtonStyle {
   None = "",
@@ -41,7 +41,7 @@ export enum DialogButtonStyle {
 }
 
 /** Enum for dialog alignment
- * @beta
+ * @public
  */
 export enum DialogAlignment {
   TopLeft = "top-left", Top = "top", TopRight = "top-right",
@@ -50,7 +50,7 @@ export enum DialogAlignment {
 }
 
 /** Interface for a dialog button in a button cluster
- * @beta
+ * @public
  */
 export interface DialogButtonDef {
   /** type of button */
@@ -68,7 +68,7 @@ export interface DialogButtonDef {
 }
 
 /** Properties for the [[Dialog]] component
- * @beta
+ * @public
  */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
   /** whether to show dialog or not */
@@ -145,7 +145,7 @@ interface DialogState {
 
 /**
  * Dialog React component with optional resizing and dragging functionality
- * @beta
+ * @public
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
@@ -292,27 +292,27 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
         switch (button.type) {
           case DialogButtonType.OK:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
+            buttonText = UiCore.translate("dialog.ok");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.Retry:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.retry");
+            buttonText = UiCore.translate("dialog.retry");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.Yes:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.yes");
+            buttonText = UiCore.translate("dialog.yes");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
             break;
           case DialogButtonType.No:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.no");
+            buttonText = UiCore.translate("dialog.no");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
           case DialogButtonType.Cancel:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.cancel");
+            buttonText = UiCore.translate("dialog.cancel");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
           case DialogButtonType.Close:
-            buttonText = UiCore.i18n.translate("UiCore:dialog.close");
+            buttonText = UiCore.translate("dialog.close");
             buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
             break;
         }
@@ -439,14 +439,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 }
 
 /** Properties for the [[GlobalDialog]] component
- * @beta
+ * @public
  */
 export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
 /** GlobalDialog React component used to display a [[Dialog]] on the top of screen
- * @beta
+ * @public
  */
 export class GlobalDialog extends React.Component<GlobalDialogProps> {
   private _container: HTMLDivElement;

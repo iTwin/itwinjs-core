@@ -12,8 +12,10 @@ import { Id64String } from "@bentley/bentleyjs-core";
  * Static class which can be used to convert between
  * [KeySet]($presentation-common) and
  * [PersistentKeysContainer]($presentation-common).
+ *
+ * @beta
  */
-export default class PersistenceHelper {
+export class PersistenceHelper {
 
   /* istanbul ignore next */
   private constructor() { }

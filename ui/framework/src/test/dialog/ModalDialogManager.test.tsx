@@ -52,7 +52,7 @@ describe("ModalDialogManager", () => {
     ModalDialogManager.update();
     expect(spyMethod.calledTwice).to.be.true;
 
-    ModalDialogManager.closeDialog();
+    ModalDialogManager.closeDialog(reactNode);
     expect(spyMethod.calledThrice).to.be.true;
     expect(ModalDialogManager.dialogCount).to.eq(0);
   });

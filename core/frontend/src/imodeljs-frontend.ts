@@ -53,14 +53,15 @@ export * from "./IModelApp";
 export * from "./NoRenderApp";
 export * from "./tile/TileAdmin";
 export * from "./tile/TileTree";
+export * from "./tile/WebMapTileTree";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";
 export * from "./render/webgl/Target";
 export * from "./oidc/OidcBrowserClient";
-export * from "./oidc/OidcClientWrapper";
-
+export * from "./TiledGraphicsProvider";
+export * from "./TerrainProvider";
 export * from "./properties/Description";
 export * from "./properties/EditorParams";
 export * from "./properties/Record";

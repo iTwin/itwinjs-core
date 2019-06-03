@@ -94,7 +94,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
           const sel = () => {
             this._toggleItem(item);
           };
-          const label = item.label || UiComponents.i18n.translate("UiComponents:showhide:noLabel");
+          const label = item.label || UiComponents.translate("showhide.noLabel");
           const id = "show-hide-dialog-input-" + index;
           return (
             <div key={index}>

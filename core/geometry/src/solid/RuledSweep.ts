@@ -34,7 +34,10 @@ export class RuledSweep extends SolidPrimitive {
     super(capped);
     this._contours = contours;
   }
-
+  /**
+   * Create a ruled sweep from an array of contours.
+   *  * the contours are CAPTURED (not cloned)
+   */
   public static create(contours: CurveCollection[], capped: boolean): RuledSweep | undefined {
     const sweepContours = [];
     for (const contour of contours) {
@@ -44,10 +47,10 @@ export class RuledSweep extends SolidPrimitive {
     }
     return new RuledSweep(sweepContours, capped);
   }
-  /** @returns Return a reference to the array of SweepContour. */
+  /** Return a reference to the array of SweepContour. */
   public sweepContoursRef(): SweepContour[] { return this._contours; }
   /** Return clones of all the sweep contours
-   * * See also cloneContours, which returns the spatial contours without their local coordinate system defintions)
+   * * See also cloneContours, which returns the spatial contours without their local coordinate system definitions)
    */
   public cloneSweepContours(): SweepContour[] {
     const result = [];
@@ -66,10 +69,11 @@ export class RuledSweep extends SolidPrimitive {
     }
     return result;
   }
-
+  /** Return a deep clone */
   public clone(): RuledSweep {
     return new RuledSweep(this.cloneSweepContours(), this.capped);
   }
+  /** Transform all contours in place. */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
@@ -78,6 +82,7 @@ export class RuledSweep extends SolidPrimitive {
     }
     return true;
   }
+  /** Return a cloned transform. */
   public cloneTransformed(transform: Transform): RuledSweep {
     const result = this.clone();
     result.tryTransformInPlace(transform);
@@ -86,14 +91,15 @@ export class RuledSweep extends SolidPrimitive {
   /** Return a coordinate frame (right handed unit vectors)
    * * origin on base contour
    * * x, y directions from base contour.
-   * * z direction perpenedicular
+   * * z direction perpendicular
    */
   public getConstructiveFrame(): Transform | undefined {
     if (this._contours.length === 0) return undefined;
     return this._contours[0].localToWorld.cloneRigid();
   }
-
+  /** Test if `other` is an instance of a `RuledSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof RuledSweep; }
+  /** test same contour geometry and capping. */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RuledSweep) {
       if (this.capped !== other.capped) return false;
@@ -106,12 +112,12 @@ export class RuledSweep extends SolidPrimitive {
     }
     return false;
   }
-
+  /** dispatch to strongly typed `handler.handleRuledSweep(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleRuledSweep(this);
   }
   /**
-   * @returns Return the section curves at a fraction of the sweep
+   * Return the section curves at a fraction of the sweep
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -135,7 +141,7 @@ export class RuledSweep extends SolidPrimitive {
         return undefined;
       });
   }
-
+  /** Pass each contour to `extendRange` */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     for (const contour of this._contours)
       contour.curves.extendRange(rangeToExtend, transform);
@@ -190,7 +196,9 @@ export class RuledSweep extends SolidPrimitive {
     return undefined;
   }
   /**
-   * @return true if this is a closed volume.
+   * Return true if this is a closed volume, as observed by
+   * * cap flag
+   * identical first and last contours.
    */
   public get isClosedVolume(): boolean {
     const n = this._contours.length;

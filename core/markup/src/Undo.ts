@@ -12,6 +12,7 @@ abstract class UndoAction {
   public cmdId: number = 0;
   public abstract reverse(): void;
   public abstract reinstate(): void;
+  constructor(public cmdName: string) { }
 }
 
 /** created when a new element is added to the markup
@@ -20,8 +21,8 @@ abstract class UndoAction {
 class AddAction extends UndoAction {
   private _parent: MarkupElement;
   private _index: number;
-  constructor(private _elem: MarkupElement) {
-    super();
+  constructor(cmdName: string, private _elem: MarkupElement) {
+    super(cmdName);
     this._parent = _elem.parent() as MarkupElement;
     assert(this._parent !== undefined);
     this._index = _elem.position();
@@ -36,8 +37,8 @@ class AddAction extends UndoAction {
 class DeleteAction extends UndoAction {
   private _parent: MarkupElement;
   private _index: number;
-  constructor(private _elem: MarkupElement) {
-    super();
+  constructor(cmdName: string, private _elem: MarkupElement) {
+    super(cmdName);
     this._parent = _elem.parent() as MarkupElement;
     assert(this._parent !== undefined);
     this._index = _elem.position();
@@ -53,8 +54,8 @@ class RepositionAction extends UndoAction {
   private _newParent: MarkupElement;
   private _newIndex: number;
 
-  constructor(private _elem: MarkupElement, private _oldIndex: number, private _oldParent: MarkupElement) {
-    super();
+  constructor(cmdName: string, private _elem: MarkupElement, private _oldIndex: number, private _oldParent: MarkupElement) {
+    super(cmdName);
     this._newParent = _elem.parent() as MarkupElement;
     assert(this._newParent !== undefined);
     this._newIndex = _elem.position();
@@ -67,8 +68,8 @@ class RepositionAction extends UndoAction {
  * @internal
  */
 class ModifyAction extends UndoAction {
-  constructor(private _newElem: MarkupElement, private _oldElement: MarkupElement) {
-    super();
+  constructor(cmdName: string, private _newElem: MarkupElement, private _oldElement: MarkupElement) {
+    super(cmdName);
     assert(_newElem !== undefined && _oldElement !== undefined);
     MarkupApp.markup!.selected.replace(_oldElement, _newElem);
   }
@@ -84,6 +85,7 @@ export class UndoManager {
   private _grouped = 0;
   private _stack: UndoAction[] = [];
   private _currentPos = 0;
+  private _cmdName = "";
 
   private addAction(action: UndoAction) {
     this._stack.length = this._currentPos;
@@ -102,16 +104,25 @@ export class UndoManager {
    * the operations in the undo buffer.
    * @note all of the onXXX methods of this class should *only* be called from within the callback function of this method.
    */
-  public doGroup(fn: VoidFunction) { this.startGroup(); fn(); this.endGroup(); }
+  public performOperation(cmdName: string, fn: VoidFunction) { this._cmdName = cmdName; this.startGroup(); fn(); this.endGroup(); }
 
-  /** call this from within a [[doGroup]] function *after* an element has been added to a markup */
-  public onAdded(elem: MarkupElement) { this.addAction(new AddAction(elem)); }
-  /** call this from within a [[doGroup]] function *before* an element is about to be deleted from a markup */
-  public onDelete(elem: MarkupElement) { this.addAction(new DeleteAction(elem)); }
-  /** call this from within a [[doGroup]] function *after* an element has been moved in display order in a markup */
-  public onRepositioned(elem: MarkupElement, oldIndex: number, oldParent: MarkupElement) { this.addAction(new RepositionAction(elem, oldIndex, oldParent)); }
-  /** call this from within a [[doGroup]] function *after* an element has been modified in a markup */
-  public onModified(newElem: MarkupElement, oldElem: MarkupElement) { this.addAction(new ModifyAction(newElem, oldElem)); }
+  /** call this from within a [[performOperation]] function *after* an element has been added to a markup */
+  public onAdded(elem: MarkupElement) { this.addAction(new AddAction(this._cmdName, elem)); }
+  /** call this from within a [[performOperation]] function *before* an element is about to be deleted from a markup */
+  public onDelete(elem: MarkupElement) { this.addAction(new DeleteAction(this._cmdName, elem)); }
+  /** call this from within a [[performOperation]] function *after* an element has been moved in display order in a markup */
+  public onRepositioned(elem: MarkupElement, oldIndex: number, oldParent: MarkupElement) { this.addAction(new RepositionAction(this._cmdName, elem, oldIndex, oldParent)); }
+  /** call this from within a [[performOperation]] function *after* an element has been modified in a markup */
+  public onModified(newElem: MarkupElement, oldElem: MarkupElement) { this.addAction(new ModifyAction(this._cmdName, newElem, oldElem)); }
+
+  /** determine whether there are any un-reversed operations */
+  public get undoPossible() { return this._currentPos > 0; }
+  /** determine whether there are any reversed operations */
+  public get redoPossible() { return this._currentPos < this.size; }
+  /** the name of the operation that can be undone (or undefined) */
+  public get undoString() { return this.undoPossible ? this._stack[this._currentPos - 1].cmdName : undefined; }
+  /** the name of the operation that can be redone (or undefined) */
+  public get redoString() { return this.redoPossible ? this._stack[this._currentPos].cmdName : undefined; }
 
   /** reverse the most recent operation, if any */
   public doUndo() {

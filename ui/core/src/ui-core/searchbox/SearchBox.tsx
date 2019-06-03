@@ -12,7 +12,7 @@ import { UiCore } from "../UiCore";
 import "./SearchBox.scss";
 
 /** Properties for [[SearchBox]] component
- * @beta
+ * @public
  */
 export interface SearchBoxProps extends CommonProps {
   /** value to set SearchBox to initially */
@@ -38,7 +38,7 @@ interface SearchBoxState {
 
 /**
  * Input box with builtin icon right justified bounded by the SearchBox
- * @beta
+ * @public
  */
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   private _inputElement: HTMLInputElement | null = null;
@@ -71,7 +71,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
           onKeyDown={this._handleKeyDown}
           onPaste={this._trackChange}
           onCut={this._trackChange}
-          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
+          placeholder={this.props.placeholder ? this.props.placeholder : UiCore.translate("searchbox.search")}
         ></input>
         <div className="core-searchbox-button" onClick={this._handleIconClick}>
           <span className={iconClassName} />

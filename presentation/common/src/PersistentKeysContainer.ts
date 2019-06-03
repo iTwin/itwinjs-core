@@ -10,9 +10,14 @@ import { NodeKey } from "./hierarchy/Key";
 /**
  * Persistent data structure that holds identity information
  * for models, elements and nodes.
+ *
+ * @public
  */
-export default interface PersistentKeysContainer {
+export interface PersistentKeysContainer {
+  /** Model IDs */
   models: Id64String[];
+  /** Element IDs */
   elements: Id64String[];
+  /** Node keys */
   nodes: NodeKey[];
 }

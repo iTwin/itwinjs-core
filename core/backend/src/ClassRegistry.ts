@@ -4,19 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { EntityMetaData, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 
-/** The mapping between a class name (schema.class) and its constructor function
+/** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
  */
 export class ClassRegistry {
   private static readonly _classMap = new Map<string, typeof Entity>();
-  private static getKey(schemaName: string, className: string) { return (schemaName + ":" + className).toLowerCase(); }
-  private static lookupClass(name: string) { return this._classMap.get(name.toLowerCase()); }
-
   /** @internal */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
   /** @internal */
@@ -24,44 +22,41 @@ export class ClassRegistry {
   /** @internal */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
     entityClass.schema = schema;
-    const key = this.getKey(entityClass.schema.schemaName, entityClass.className);
-    if (this._classMap.has(key))
-      throw new Error("Class " + key + " is already registered. Make sure static className member is correct on JavaScript class " + entityClass.name);
+    const key = (schema.schemaName + ":" + entityClass.className).toLowerCase();
+    if (this._classMap.has(key)) {
+      const errMsg = "Class " + key + " is already registered. Make sure static className member is correct on JavaScript class " + entityClass.name;
+      Logger.logError("imodeljs-frontend.classRegistry", errMsg);
+      throw new Error(errMsg);
+    }
+
     this._classMap.set(key, entityClass);
   }
-  /** @internal */
-  public static registerSchema(schema: typeof Schema) { Schemas.registerSchema(schema); }
-  /** @internal */
-  public static getRegisteredSchema(domainName: string) { return Schemas.getRegisteredSchema(domainName); }
-  /** @internal */
-  public static getSchemaBaseClass() { return Schema; }
 
   private static generateProxySchema(proxySchemaName: string): typeof Schema {
     const schemaClass = class extends Schema { public static get schemaName() { return proxySchemaName; } };
-    this.registerSchema(schemaClass); // register the class before we return it.
+    Schemas.registerSchema(schemaClass); // register the class before we return it.
     return schemaClass;
   }
 
-  /**
-   * Generate a JavaScript class from Entity metadata.
+  /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
   private static generateClassForEntity(entityMetaData: EntityMetaData): typeof Entity {
     const name = entityMetaData.ecclass.split(":");
-    const schemaName = name[0];
+    const bisSchemaName = name[0];
     const bisClassName = name[1];
 
-    if (entityMetaData.baseClasses.length === 0) // metadata must contain a superclass
+    if (0 === entityMetaData.baseClasses.length) // metadata must contain a superclass
       throw new IModelError(IModelStatus.BadArg, "class " + name + " has no superclass");
 
     // make sure schema exists
-    let schema: typeof Schema | undefined = Schemas.getRegisteredSchema(schemaName);
-    if (!schema)
-      schema = this.generateProxySchema(schemaName); // no schema found, create it too
+    let schema = Schemas.getRegisteredSchema(bisSchemaName);
+    if (undefined === schema)
+      schema = this.generateProxySchema(bisSchemaName); // no schema found, create it too
 
     // this method relies on the caller having previously created/registered all superclasses
-    const superclass = this.lookupClass(entityMetaData.baseClasses[0]);
-    if (!superclass)
+    const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
+    if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, "cannot find superclass for class " + name);
 
     const generatedClass = class extends superclass { public static get className() { return bisClassName; } };
@@ -71,19 +66,17 @@ export class ClassRegistry {
     return generatedClass;
   }
 
-  /**
-   * Register all of the classes found in the given module that derive from Entity. See the example in [[Schema]]
+  /** Register all of the classes found in the given module that derive from Entity. See the example in [[Schema]]
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
   public static registerModule(moduleObj: any, schema: typeof Schema) {
     for (const thisMember in moduleObj) {
-      if (!thisMember)
-        continue;
-
-      const thisClass = moduleObj[thisMember];
-      if (thisClass.prototype instanceof Entity)
-        this.register(thisClass, schema);
+      if (undefined !== thisMember) {
+        const thisClass = moduleObj[thisMember];
+        if (thisClass.prototype instanceof Entity)
+          this.register(thisClass, schema);
+      }
     }
   }
 
@@ -97,30 +90,50 @@ export class ClassRegistry {
       throw this.makeMetaDataNotFoundError(classFullName);
 
     // Make sure we have all base classes registered.
-    if (metadata!.baseClasses && metadata.baseClasses.length !== 0)
+    if (metadata!.baseClasses && (0 !== metadata.baseClasses.length))
       this.getClass(metadata.baseClasses[0], iModel);
 
     // Now we can generate the class from the classDef.
     return this.generateClassForEntity(metadata);
   }
 
-  /**
-   * Find a registered class by classFullName (must be all lowercase, caller should ensure that)
+  /** Find a registered class by classFullName.
    * @param classFullName class to find
    * @param iModel The IModel that contains the class definitions
+   * @returns The Entity class or undefined
    */
-  public static findRegisteredClass(classFullName: string): typeof Entity | undefined { return this._classMap.get(classFullName); }
+  public static findRegisteredClass(classFullName: string): typeof Entity | undefined {
+    return this._classMap.get(classFullName.toLowerCase());
+  }
 
-  /**
-   * Get the Entity class for the specified Entity.
-   * @param fullName The name of the Entity
+  /** Get the Entity class for the specified Entity className.
+   * @param classFullName The full BIS class name of the Entity
    * @param iModel The IModel that contains the class definitions
    * @returns The Entity class
    */
-  public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
-    const key = fullName.toLowerCase();
-    const ctor = this.findRegisteredClass(key);
+  public static getClass(classFullName: string, iModel: IModelDb): typeof Entity {
+    const key = classFullName.toLowerCase();
+    const ctor = this._classMap.get(key);
     return ctor ? ctor : this.generateClass(key, iModel);
+  }
+
+  /** Unregister a class, by name, if one is already registered.
+   * This function is not normally needed, but is useful for cases where a generated *proxy* class needs to be replaced by the *real* class.
+   * @param classFullName Name of the class to unregister
+   * @return true if the class was unregistered
+   * @internal
+   */
+  public static unregisterCLass(classFullName: string) { return this._classMap.delete(classFullName.toLowerCase()); }
+  /** Unregister all classes from a schema.
+   * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
+   * @param schema Name of the schema to unregister
+   * @internal
+   */
+  public static unregisterClassesFrom(schema: typeof Schema) {
+    for (const entry of Array.from(this._classMap)) {
+      if (entry[1].schema === schema)
+        this.unregisterCLass(entry[0]);
+    }
   }
 }
 

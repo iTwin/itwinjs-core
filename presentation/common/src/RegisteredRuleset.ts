@@ -9,21 +9,28 @@ import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { Rule } from "./rules/Rule";
 import { VariablesGroup } from "./rules/Variables";
 import { SchemasSpecification } from "./rules/SchemasSpecification";
+
 /**
  * A ruleset that is registered in a ruleset manager.
+ * @public
  */
 export class RegisteredRuleset implements IDisposable, Ruleset {
   private _ruleset: Ruleset;
   private _uniqueIdentifier: string;
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;
+
+  /** Create a registered ruleset */
   public constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void) {
     this._disposeFunc = disposeFunc;
     this._ruleset = ruleset;
     this._uniqueIdentifier = uniqueIdentifier;
   }
+
+  /** Dispose registered ruleset. */
   public dispose() {
     this._disposeFunc(this);
   }
+
   public get uniqueIdentifier() { return this._uniqueIdentifier; }
   public get id(): string { return this._ruleset.id; }
   public get supportedSchemas(): SchemasSpecification | undefined { return this._ruleset.supportedSchemas; }
@@ -33,10 +40,10 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   public toJSON(): Ruleset { return this._ruleset; }
 }
 
-/** @hidden */
+/** @internal */
 export type RulesetManagerState = Ruleset[];
 
-/** @hidden */
+/** @internal */
 export namespace RulesetManagerState {
   export const STATE_ID = "rulesets";
 }

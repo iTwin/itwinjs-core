@@ -34,7 +34,7 @@ import { Id64String, dispose } from "@bentley/bentleyjs-core";
  * Any and all of these types can be extended for the purposes of specific tests.
  * To use this:
  *  (1) If overriding anything in the implementation supplied herein, pass a SystemFactory function to MockRender.App.systemFactory.
- *  (2) Call MockRender.App.startup() instead of IModelApp.startup() or MaybeRenderApp.startup() before tests begin.
+ *  (2) Call MockRender.App.startup() instead of IModelApp.startup() before tests begin.
  *  (3) Likewise call MockRender.App.shutdown() when finished. This resets the SystemFactory to its default.
  * @internal
  */
@@ -49,7 +49,7 @@ export namespace MockRender {
     public get animationFraction() { return 0; }
     public set animationFraction(_fraction: number) { }
     public changeScene(_scene: GraphicList) { }
-    public changeTerrain(_terrain: GraphicList) { }
+    public changeBackgroundMap(_backgroundMap: GraphicList) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }
     public changeRenderPlan(_plan: RenderPlan) { }

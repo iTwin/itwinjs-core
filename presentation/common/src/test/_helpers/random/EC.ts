@@ -40,7 +40,7 @@ export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
   };
 };
 
-export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPathInfo => {
+export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--) {
     path.push({
@@ -54,7 +54,7 @@ export const createRandomRelationshipPath = (length: number = 2): ec.Relationshi
   return path;
 };
 
-export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathInfoJSON => {
+export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathJSON => {
   const path = new Array<ec.RelatedClassInfoJSON>();
   while (length--) {
     path.push({

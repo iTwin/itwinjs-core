@@ -360,7 +360,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Announce point coordinates.  The implemetation is free to either create a new param or (if known) return indxex of a prior param with the same coordinates.
    */
   public findOrAddParamXY(x: number, y: number): number {
-    return this._polyface.addParamXY(x, y);
+    return this._polyface.addParamUV(x, y);
   }
   private static _workPointFindOrAddA = Point3d.create();
   private static _workVectorFindOrAdd = Vector3d.create();
@@ -372,6 +372,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public findOrAddPointInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndex?: number): number | undefined {
     const q = ls.pointAt(index, PolyfaceBuilder._workPointFindOrAddA);
+    if (q) {
+      if (transform)
+        transform.multiplyPoint3d(q, q);
+      return this._polyface.addPoint(q, priorIndex);
+    }
+    return undefined;
+  }
+
+  /**
+   * Announce point coordinates.  The implemetation is free to either create a new point or (if knonw) return indxex of a prior point with the same coordinates.
+   * @returns Returns the point index in the Polyface.
+   * @param index Index of the point in the linestring.
+   */
+  public findOrAddPointInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined {
+    const q = xyz.getPoint3dAtCheckedPointIndex(index, PolyfaceBuilder._workPointFindOrAddA);
     if (q) {
       if (transform)
         transform.multiplyPoint3d(q, q);
@@ -457,7 +472,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addQuadFacet(points: Point3d[] | GrowableXYZArray, params?: Point2d[], normals?: Vector3d[]) {
     if (points instanceof GrowableXYZArray)
-    points = points.getPoint3dArray ();
+      points = points.getPoint3dArray();
     // If params and/or normals are needed, calculate them first
     const needParams = this.options.needParams;
     const needNormals = this.options.needNormals;
@@ -856,9 +871,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /**
-   *
-   * @param cone cone to facet
-   * @param strokeCount number of strokes around the cone.  If present, it overrides size-based stroking.
+   * Add facets from a Cone
    */
   public addCone(cone: Cone) {
     // ensure identical stroke counts at each end . . .
@@ -890,9 +903,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   *
-   * @param surface TorusPipe to facet
-   * @param strokeCount number of strokes around the cone.  If omitted, use the strokeOptions previously supplied to the builder.
+   * Add facets for a TorusPipe.
    */
   public addTorusPipe(surface: TorusPipe, phiStrokeCount?: number, thetaStrokeCount?: number) {
     const thetaFraction = surface.getThetaFraction();
@@ -946,7 +957,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   *
+   * Add point data (no params, normals) for linestrings.
+   * * This recurses through curve chains (loops and paths)
+   * * linestrings are swept
+   * * All other curve types are ignored.
    * @param vector sweep vector
    * @param contour contour which contains only linestrings
    */
@@ -1120,7 +1134,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    *
-   * @param cone cone to facet
+   * Add facets from
+   * * The swept contour
+   * * each cap.
    */
   public addLinearSweep(surface: LinearSweep) {
     const contour = surface.getCurvesRef();
@@ -1142,8 +1158,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   *
-   * @param surface RuledSurface to facet.
+   * Add facets from a ruled sweep.
    */
   public addRuledSweep(surface: RuledSweep): boolean {
     const contours = surface.sweepContoursRef();
@@ -1181,7 +1196,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return true;
   }
   /**
-   * @param sphere Sphere to facet.
+   * Add facets from a Sphere
    */
   public addSphere(sphere: Sphere, strokeCount?: number) {
     const numStrokeTheta = strokeCount ? strokeCount : this._options.defaultCircleStrokes;
@@ -1205,7 +1220,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
   /**
-   * @param box `Box` to facet.
+   * Add facets from a Box
    */
   public addBox(box: Box) {
     const corners = box.getCorners();
@@ -1267,6 +1282,33 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     } else {
       for (let i = numPointsToUse; --i >= 0;) {
         index = this.findOrAddPoint(points[i]);
+        this._polyface.addPointIndex(index);
+      }
+    }
+    this._polyface.terminateFacet();
+  }
+
+  /** Add a polygon to the evolving facets.
+   *
+   * * Add points to the polyface
+   * * indices are added (in reverse order if indicated by the builder state)
+   * @param points array of points.  This may contain extra points not to be used in the polygon
+   * @param numPointsToUse number of points to use.
+   */
+  public addPolygonGrowableXYZArray(points: GrowableXYZArray) {
+    // don't use trailing points that match start point.
+    let numPointsToUse = points.length;
+    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distance(0, numPointsToUse - 1)!))
+      numPointsToUse--;
+    let index = 0;
+    if (!this._reversed) {
+      for (let i = 0; i < numPointsToUse; i++) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        this._polyface.addPointIndex(index);
+      }
+    } else {
+      for (let i = numPointsToUse; --i >= 0;) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
         this._polyface.addPointIndex(index);
       }
     }

@@ -3,9 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ui-core/UiCore";
-export * from "./ui-core/utils/Props";
 
-export * from "./ui-core/base/UiEvent";
 export * from "./ui-core/base/Div";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
@@ -47,6 +45,7 @@ export * from "./ui-core/popup/Popup";
 export * from "./ui-core/radialmenu/RadialMenu";
 export * from "./ui-core/radialmenu/Annulus";
 
+// cSpell:ignore imagecheckbox
 export * from "./ui-core/imagecheckbox/ImageCheckBox";
 
 export * from "./ui-core/searchbox/SearchBox";
@@ -69,8 +68,14 @@ export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Pl
 
 export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
+export * from "./ui-core/uisettings/SessionUiSettings";
 
+export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Timer";
+export * from "./ui-core/utils/UiError";
+export * from "./ui-core/utils/UiEvent";
+export * from "./ui-core/utils/flattenChildren";
+export * from "./ui-core/utils/getClassName";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
@@ -87,6 +92,7 @@ export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledSelect";
 export * from "./ui-core/inputs/LabeledTextarea";
+export * from "./ui-core/inputs/numericinput/NumericInput";
 export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";

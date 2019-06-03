@@ -4,21 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Id64, Id64String, BeTimePoint, IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
+import { Id64, BeTimePoint, IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable, RenderMemory } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList, PackedFeature, PackedFeatureTable, RenderMemory } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams } from "./FeatureDimensions";
-import { Target } from "./Target";
+import { Hilites, Target } from "./Target";
 import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { PlanarClassifier } from "./PlanarClassifier";
+
+function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
+  if (hilites.isEmpty)
+    return false;
+
+  return hilites.elements.has(feature.elementId.lower, feature.elementId.upper) ||
+    hilites.subcategories.has(feature.subCategoryId.lower, feature.subCategoryId.upper);
+}
 
 /** @internal */
 export class FeatureOverrides implements IDisposable {
@@ -45,7 +53,7 @@ export class FeatureOverrides implements IDisposable {
     return 0 !== (flags & OvrFlags.Flashed);
   }
 
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Id64.Uint32Set, flashedElemId: Id64String): TextureHandle | undefined {
+  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -56,27 +64,28 @@ export class FeatureOverrides implements IDisposable {
 
     const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
-    this.buildLookupTable(creator, map, ovrs, flashedElemId, hilite);
+    this.buildLookupTable(creator, map, ovrs, flashed, hilite);
 
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Id64.Uint32Set, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: PackedFeatureTable, lut: TextureHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
-      this.updateFlashedAndHilited(updater, map, flashedElemId, hilites);
+      this.updateFlashedAndHilited(updater, map, flashed, hilites);
     } else {
       assert(undefined !== hilites);
-      this.buildLookupTable(updater, map, ovrs, flashedElemId, hilites!);
+      this.buildLookupTable(updater, map, ovrs, flashed, hilites!);
     }
 
     (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Id64.Uint32Set) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
     const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const flashedIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
+    const isModelHilited = hilites.models.has(modelIdParts.lower, modelIdParts.upper);
+
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -110,7 +119,7 @@ export class FeatureOverrides implements IDisposable {
       }
 
       let flags = OvrFlags.None;
-      if (hilites!.has(feature.elementId.lower, feature.elementId.upper)) {
+      if (isModelHilited || isFeatureHilited(feature, hilites)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -166,15 +175,19 @@ export class FeatureOverrides implements IDisposable {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Id64.Uint32Set) {
-    // NB: If hilites is undefined, it means the hilited set has not changed...
-    this.anyOverridden = false;
-    this.anyHilited = false;
+  // NB: If hilites is undefined, it means that the hilited set has not changed.
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
+    this.anyOverridden = this.anyHilited = false;
 
-    const flashedElemIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
-    const haveFlashed = undefined !== flashedElemIdParts;
-    const haveHilited = undefined !== hilites;
-    const needElemId = haveFlashed || haveHilited;
+    let isModelHilited = false;
+    let needElemId = undefined !== flashed;
+    let needSubCatId = false;
+    if (undefined !== hilites) {
+      const modelId = Id64.getUint32Pair(map.modelId);
+      isModelHilited = hilites.models.has(modelId.lower, modelId.upper);
+      needSubCatId = !isModelHilited && !hilites.subcategories.isEmpty;
+      needElemId = needElemId || (!isModelHilited && !hilites.elements.isEmpty);
+    }
 
     for (let i = 0; i < map.numFeatures; i++) {
       const dataIndex = i * 4 * 2;
@@ -186,15 +199,22 @@ export class FeatureOverrides implements IDisposable {
         continue;
       }
 
-      const elemIdParts = needElemId ? map.getElementIdPair(i) : undefined;
-      const isFlashed = haveFlashed && elemIdParts!.lower === flashedElemIdParts!.lower && elemIdParts!.upper === flashedElemIdParts!.upper;
+      let isFlashed = false;
+      let isHilited = undefined !== hilites ? isModelHilited : (0 !== (oldFlags & OvrFlags.Hilited));
 
-      // NB: If hilited set has not changed, retain previous hilite flag.
-      let isHilited: boolean;
-      if (undefined !== hilites)
-        isHilited = hilites.has(elemIdParts!.lower, elemIdParts!.upper);
-      else
-        isHilited = 0 !== (oldFlags & OvrFlags.Hilited);
+      if (needElemId) {
+        const elemId = map.getElementIdPair(i);
+        if (undefined !== flashed)
+          isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
+
+        if (!isHilited && undefined !== hilites)
+          isHilited = hilites.elements.has(elemId.lower, elemId.upper);
+      }
+
+      if (needSubCatId && !isHilited) {
+        const subcat = map.getSubCategoryIdPair(i);
+        isHilited = hilites!.subcategories.has(subcat.lower, subcat.upper);
+      }
 
       let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
       newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
@@ -227,8 +247,8 @@ export class FeatureOverrides implements IDisposable {
     this.lut = undefined;
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
-    const hilite = this.target.hilite;
-    this.lut = this._initialize(map, ovrs, hilite, this.target.flashedElemId);
+    const hilite = this.target.hilites;
+    this.lut = this._initialize(map, ovrs, hilite, this.target.flashed);
     this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }
 
@@ -240,9 +260,9 @@ export class FeatureOverrides implements IDisposable {
     const hiliteUpdated = this._lastHiliteUpdated.before(hiliteLastUpdated);
 
     const ovrs = ovrsUpdated ? this.target.currentFeatureSymbologyOverrides : undefined;
-    const hilite = this.target.hilite;
+    const hilite = this.target.hilites;
     if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
-      this._update(features, this.lut!, this.target.flashedElemId, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
+      this._update(features, this.lut!, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
 
       this._lastOverridesUpdated = styleLastUpdated;
       this._lastFlashUpdated = flashLastUpdated;

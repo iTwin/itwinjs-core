@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { dispose, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { dispose, Id64, Id64String, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, ServerTimeoutError, TileTreeProps } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -18,7 +18,7 @@ import { TileTree, TileTreeState } from "./tile/TileTree";
  * @public
  */
 export class ModelState extends EntityState implements ModelProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "Model"; }
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
@@ -100,8 +100,8 @@ export interface TileTreeModelState {
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
  */
-export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
-  /** The name of the associated ECClass */
+export abstract class GeometricModelState extends ModelState /* implements TileTreeModelState */ {
+  /** @internal */
   public static get className() { return "GeometricModel"; }
 
   private _modelRange?: Range3d;
@@ -158,11 +158,13 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     let allowInstancing = false;
     let batchType: BatchType;
     let edgesRequired = false;
+    let animationId: Id64String | undefined;
     if (treeId.type === BatchType.Primary) {
       batchType = BatchType.Primary;
       edgesRequired = treeId.edgesRequired;
+      animationId = treeId.animationId;
       state = this._tileTreeState;
-      if (edgesRequired && state.edgesOmitted)
+      if ((edgesRequired && state.edgesOmitted) || animationId !== state.animationId)
         state.clearTileTree();
 
       if (undefined === treeId.animationId)
@@ -190,11 +192,12 @@ export abstract class GeometricModelState extends ModelState implements TileTree
       state.setTileTree(result, loader);
 
       state.edgesOmitted = !edgesRequired;
+      state.animationId = animationId;
 
       IModelApp.viewManager.onNewTilesReady();
     }).catch((err) => {
       // Retry in case of timeout; otherwise fail.
-      if (err instanceof ServerTimeoutError)
+      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout)
         state.loadStatus = TileTree.LoadStatus.NotLoaded;
       else
         state.loadStatus = TileTree.LoadStatus.NotFound;
@@ -207,7 +210,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
 
   /** @internal */
   public onIModelConnectionClose() {
-    dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tiletree level
+    dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tileTree level
     super.onIModelConnectionClose();
   }
 
@@ -225,7 +228,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
  * @public
  */
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "GeometricModel2d"; }
   /** @internal */
   public readonly globalOrigin: Point2d;
@@ -251,7 +254,7 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
  * @public
  */
 export class GeometricModel3dState extends GeometricModelState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "GeometricModel3d"; }
   /** @internal */
   public get is3d(): boolean { return true; }
@@ -263,7 +266,7 @@ export class GeometricModel3dState extends GeometricModelState {
  * @public
  */
 export class SheetModelState extends GeometricModel2dState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SheetModel"; }
 }
 
@@ -271,7 +274,7 @@ export class SheetModelState extends GeometricModel2dState {
  * @public
  */
 export class SpatialModelState extends GeometricModel3dState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SpatialModel"; }
 }
 
@@ -279,7 +282,7 @@ export class SpatialModelState extends GeometricModel3dState {
  * @public
  */
 export class PhysicalModelState extends SpatialModelState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "PhysicalModel"; }
 }
 
@@ -287,7 +290,7 @@ export class PhysicalModelState extends SpatialModelState {
  * @public
  */
 export class SpatialLocationModelState extends SpatialModelState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SpatialLocationModel"; }
 }
 
@@ -295,7 +298,7 @@ export class SpatialLocationModelState extends SpatialModelState {
  * @public
  */
 export class DrawingModelState extends GeometricModel2dState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DrawingModel"; }
 }
 
@@ -303,6 +306,6 @@ export class DrawingModelState extends GeometricModel2dState {
  * @public
  */
 export class SectionDrawingModelState extends DrawingModelState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SectionDrawingModel"; }
 }

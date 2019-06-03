@@ -46,7 +46,7 @@ export async function certa(environment: string, config: CertaConfig): Promise<v
     await runner.initialize(config);
 
   // In debug mode, we should now start listening for debugger connections (if we're not already).
-  if (config.debug && config.backendInitModule)
+  if (config.debug)
     startDebugger(config.ports.debugging);
 
   // Source map any errors in this backend process

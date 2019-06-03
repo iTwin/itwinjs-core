@@ -9,6 +9,8 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 /**
  * Rule to override default node style and dynamically define a foreground/background
  * colors and a font style for a particular nodes.
+ *
+ * @public
  */
 export interface StyleOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

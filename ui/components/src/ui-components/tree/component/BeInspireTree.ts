@@ -7,8 +7,8 @@
 import InspireTree, * as Inspire from "inspire-tree";
 import { isArrayLike } from "lodash";
 import { CallableInstance } from "callable-instance2/import";
-import { IDisposable, using } from "@bentley/bentleyjs-core";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
+import { IDisposable, using, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { CheckBoxInfo, CheckBoxState, isPromiseLike, getClassName } from "@bentley/ui-core";
 import { PageOptions } from "../../common/PageOptions";
 
 /**
@@ -293,7 +293,7 @@ export class BeInspireTree<TNodePayload> {
     // assign `disposeChildrenOnCollapse` handler if needed
     if (props.disposeChildrenOnCollapse) {
       if (!isDeferredDataProvider(props.dataProvider))
-        throw new Error("Property `disposeChildrenOnCollapse` is only available on deferred data providers");
+        throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: Property 'disposeChildrenOnCollapse' is only available on deferred data providers`);
       this.on(BeInspireTreeEvent.NodeCollapsed, (node: BeInspireTreeNode<TNodePayload>) => {
         if (this._deferredLoadingHandler)
           this._deferredLoadingHandler.disposeNodeCaches(node);
@@ -647,7 +647,7 @@ export class BeInspireTree<TNodePayload> {
    */
   public async requestNodeLoad(parent: BeInspireTreeNode<TNodePayload> | undefined, index: number): Promise<void> {
     if (!this._deferredLoadingHandler)
-      throw new Error("requestNodeLoad should only be called when pagination is enabled");
+      throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}.requestNodeLoad should only be called when pagination is enabled`);
     return this._deferredLoadingHandler.requestNodeLoad(parent, index);
   }
 
@@ -846,7 +846,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
   public requestNodeLoad = async (parent: BeInspireTreeNode<TPayload> | undefined, index: number): Promise<void> => {
     if (!this._paginationHelper)
-      throw new Error("requestNodeLoad should only be called when pagination is enabled");
+      throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}.requestNodeLoad should only be called when pagination is enabled`);
     await this._paginationHelper.request(parent ? parent.id : undefined, index);
   }
 
@@ -864,7 +864,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
     const handleCollapsedParent = () => {
       if (this._tree.props.disposeChildrenOnCollapse && parentNode && parentNode.collapsed())
-        throw new Error("Parent node collapsed while children were being loaded");
+        throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: Parent node collapsed while children were being loaded`);
     };
 
     let totalNodesCount: number | undefined;

@@ -6,7 +6,7 @@
 /** @module Bspline */
 
 // import { Point2d } from "../Geometry2d";
-/* tslint:disable:variable-name jsdoc-format no-empty no-console*/
+/* tslint:disable:variable-name jsdoc-format no-empty */
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Geometry } from "../Geometry";
@@ -52,8 +52,9 @@ export class BSpline1dNd {
   /**
    * initialize arrays for given spline dimensions.
    * @param numPoles number of poles
-   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weigthed)
+   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weighted)
    * @param order number of poles in support for a section of the bspline
+   * @param knots KnotVector.  This is captured, not cloned.
    */
   protected constructor(numPoles: number, poleLength: number, order: number, knots: KnotVector) {
     this.knots = knots;
@@ -66,13 +67,18 @@ export class BSpline1dNd {
     this.poleBuffer1 = new Float64Array(poleLength);
     this.poleBuffer2 = new Float64Array(poleLength);
   }
-/** Create a  bspline 1d with given count and knots.
- * * The blocked pole data (`blockedData`) is uninitialized.
-*/
+
+  /**
+   * create a 1Bspline1dNd`
+   * @param numPoles number of poles
+   * @param poleLength number of coordinates per pole (e.g.. 3 for 3D unweighted, 4 for 3d weighted, 2 for 2d unweighted, 3 for 2d weighted)
+   * @param order number of poles in support for a section of the bspline
+   * @param knots KnotVector.  This is captured, not cloned.
+   */
   public static create(numPoles: number, poleLength: number, order: number, knots: KnotVector): BSpline1dNd | undefined {
     return new BSpline1dNd(numPoles, poleLength, order, knots);
   }
-  /** map a fraction within an indexed span to a knot value. */
+  /** Map a span index and local fraction to knot value. */
   public spanFractionToKnot(span: number, localFraction: number): number {
     return this.knots.spanFractionToKnot(span, localFraction);
   }
@@ -153,9 +159,9 @@ export class BSpline1dNd {
       this.sumPoleBuffer2ForSpan(knotIndex0 - this.degree + 1);
     }
   }
-/**
- * Reverse the (blocked) poles (in `this.packedData` in place.
- */
+  /**
+   * Reverse the (blocked) poles (in `this.packedData` in place.
+   */
   public reverseInPlace(): void {
     // reverse poles in blocks ...
     const b = this.poleLength;

@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Added UI Logger & UiError usage & improved i18n calls
+- change arguments to constructor of I18N to make it mockable for testing
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

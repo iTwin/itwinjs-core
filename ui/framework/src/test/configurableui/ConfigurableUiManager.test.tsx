@@ -5,6 +5,7 @@
 
 import * as React from "react";
 import { expect } from "chai";
+
 import TestUtils from "../TestUtils";
 import {
   ConfigurableUiManager,
@@ -23,13 +24,21 @@ import {
   FrontstageProvider,
   FrontstageProps,
   CoreTools,
+  WorkflowProps,
 } from "../../ui-framework";
+import { MockRender } from "@bentley/imodeljs-frontend";
 
 describe("ConfigurableUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+
     ConfigurableUiManager.initialize();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   it("findFrontstageDef passed no argument", () => {
@@ -185,6 +194,23 @@ describe("ConfigurableUiManager", () => {
 
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
     expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
+  });
+
+  it("loadWorkflow", () => {
+    const workflowProps: WorkflowProps = {
+      id: "OneWorkflow",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:Test.my-label",
+      defaultTaskId: "task1",
+      tasks: ["Task1", "Task2"],
+    };
+
+    ConfigurableUiManager.loadWorkflow(workflowProps);
+    const workflow = WorkflowManager.findWorkflow("OneWorkflow");
+    expect(workflow).to.not.be.undefined;
+
+    if (workflow)
+      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
   });
 
 });

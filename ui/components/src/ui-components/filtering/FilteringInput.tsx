@@ -97,6 +97,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     this.setState({ searchText: e.target.value, context: InputContext.ReadyToFilter });
   }
 
+  /** @internal */
   public static getDerivedStateFromProps(props: FilteringInputProps, state: FilteringInputState) {
     if (state.context === InputContext.FilteringInProgress && !props.filteringInProgress) {
       if (state.searchText && props.resultSelectorProps)
@@ -136,11 +137,11 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
         {this.state.context === InputContext.ReadyToFilter ?
           <button className="components-filtering-input-button"
-            onClick={this._onSearchButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.search")}</button> : undefined}
+            onClick={this._onSearchButtonClick}>{UiComponents.translate("button.label.search")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringInProgress ?
           <button className="components-filtering-input-button"
-            onClick={this._onCancelButtonClick}>{UiComponents.i18n.translate("UiComponents:button.label.cancel")}</button> : undefined}
+            onClick={this._onCancelButtonClick}>{UiComponents.translate("button.label.cancel")}</button> : undefined}
 
         {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
           <button className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :

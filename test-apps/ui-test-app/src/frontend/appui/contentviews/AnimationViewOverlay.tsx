@@ -7,6 +7,8 @@ import * as React from "react";
 import {
   TimelineDataProvider,
   TimelineComponent,
+  SolarTimeline,
+  SolarDataProvider,
 } from "@bentley/ui-components";
 import {
   ContentViewManager,
@@ -15,12 +17,13 @@ import {
   SyncUiEventId,
   ScheduleAnimationTimelineDataProvider,
   AnalysisAnimationTimelineDataProvider,
+  SolarTimelineDataProvider,
 } from "@bentley/ui-framework";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 
 import "./AnimationViewOverlay.scss";
 
-/** iModel Viewport Control
+/** Props of Viewport Overlay Control that show timelines
  */
 interface AnimationOverlayProps {
   viewport: ScreenViewport;
@@ -30,11 +33,11 @@ interface AnimationOverlayProps {
 interface AnimationOverlayState {
   showOverlay: boolean;
   dataProvider?: TimelineDataProvider;
+  solarDataProvider?: SolarDataProvider;
 }
 
 /** iModel Viewport React component */
 export class AnimationViewOverlay extends React.Component<AnimationOverlayProps, AnimationOverlayState> {
-  public dataProvider?: TimelineDataProvider;
   private _componentUnmounting = false;
 
   constructor(props: any) {
@@ -48,9 +51,32 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
+  private setShowOverlayState(): void {
+    let showOverlay = this.isInActiveContentControl();
+    if (showOverlay && this.state.solarDataProvider)
+      showOverlay = this.state.solarDataProvider.shouldShowTimeline;
+    if (showOverlay !== this.state.showOverlay)
+      this.setState({ showOverlay });
+  }
+
+  private _onHandleViewChanged = (vp: Viewport) => {
+    const viewId = this.state.dataProvider ? this.state.dataProvider.viewId : this.state.solarDataProvider ? this.state.solarDataProvider.viewId : "";
+    if (vp.view.id !== viewId) {
+      setImmediate(() => {
+        this._setTimelineDataProvider(vp as ScreenViewport);
+      });
+    } else {
+      this.setShowOverlayState();
+    }
+  }
+
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+    if (this.state.solarDataProvider && this.state.solarDataProvider.viewport) {
+      if (this.state.solarDataProvider.viewport.onViewChanged)
+        this.state.solarDataProvider.viewport.onViewChanged.removeListener(this._onHandleViewChanged);
+    }
 
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
@@ -75,9 +101,13 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ActiveContentChanged)) {
-      const showOverlay = this.isInActiveContentControl();
-      if (showOverlay !== this.state.showOverlay)
-        this.setState({ showOverlay });
+      this.setShowOverlayState();
+    }
+    if (args.eventIds.has(SyncUiEventId.ContentControlActivated)) {
+      this.setShowOverlayState();
+    }
+    if (args.eventIds.has(SyncUiEventId.FrontstageReady)) {
+      this.setShowOverlayState();
     }
   }
 
@@ -98,33 +128,67 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     return undefined;
   }
 
+  private _getSolarDataProvider(viewport: ScreenViewport): SolarDataProvider | undefined {
+    if (IModelApp.renderSystem.options.displaySolarShadows) {
+      let solarDataProvider: SolarDataProvider;
+
+      solarDataProvider = new SolarTimelineDataProvider(viewport.view, viewport);
+      if (solarDataProvider.supportsTimelineAnimation) {
+        viewport.onViewChanged.addListener(this._onHandleViewChanged);
+        return solarDataProvider as SolarDataProvider;
+      }
+    }
+
+    return undefined;
+  }
+
   private _setTimelineDataProvider(viewport: ScreenViewport): boolean {
     const dataProvider = this._getTimelineDataProvider(viewport);
     if (dataProvider && dataProvider.supportsTimelineAnimation) {
-      this.setState({ dataProvider, showOverlay: this.isInActiveContentControl() });
+      this.setState({ dataProvider, showOverlay: this.isInActiveContentControl(), solarDataProvider: undefined });
+      return true;
+    }
+    const solarDataProvider = this._getSolarDataProvider(viewport);
+    if (solarDataProvider && solarDataProvider.supportsTimelineAnimation) {
+      let showOverlay = this.isInActiveContentControl();
+      if (showOverlay && solarDataProvider.shouldShowTimeline)
+        showOverlay = false;
+      this.setState({ solarDataProvider, showOverlay, dataProvider: undefined });
       return true;
     }
     return false;
   }
 
   public render(): React.ReactNode {
-    if (!this.state.dataProvider || !this.state.showOverlay)
-      return null;
+    if (this.state.showOverlay) {
+      if (this.state.solarDataProvider) {
+        return (
+          <div className="testapp-view-overlay">
+            <div className="testapp-animation-overlay">
+              <SolarTimeline dataProvider={this.state.solarDataProvider} />
+            </div>
+          </div>
+        );
+      }
 
-    return (
-      <div className="testapp-view-overlay">
-        <div className="testapp-animation-overlay">
-          <TimelineComponent
-            startDate={this.state.dataProvider.start}
-            endDate={this.state.dataProvider.end}
-            initialDuration={this.state.dataProvider.initialDuration}
-            totalDuration={this.state.dataProvider.duration}
-            milestones={this.state.dataProvider.getMilestones()}
-            minimized={true}
-            onChange={this.state.dataProvider.onAnimationFractionChanged}
-            onPlayPause={this.props.onPlayPause} />
-        </div>
-      </div>
-    );
+      if (this.state.dataProvider) {
+        return (
+          <div className="testapp-view-overlay">
+            <div className="testapp-animation-overlay">
+              <TimelineComponent
+                startDate={this.state.dataProvider.start}
+                endDate={this.state.dataProvider.end}
+                initialDuration={this.state.dataProvider.initialDuration}
+                totalDuration={this.state.dataProvider.duration}
+                milestones={this.state.dataProvider.getMilestones()}
+                minimized={true}
+                onChange={this.state.dataProvider.onAnimationFractionChanged}
+                onPlayPause={this.props.onPlayPause} />
+            </div>
+          </div>
+        );
+      }
+    }
+    return null;
   }
 }

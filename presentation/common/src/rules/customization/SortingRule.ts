@@ -8,7 +8,10 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 import { SingleSchemaClassSpecification } from "../ClassSpecifications";
 
 /**
- * Base class for all [[SortingRule]] implementations
+ * Base class for all [[SortingRule]] implementations. Not
+ * meant to be used directly, see `SortingRule`.
+ *
+ * @public
  */
 export interface SortingRuleBase extends RuleBase, ConditionContainer {
   /**
@@ -28,7 +31,11 @@ export interface SortingRuleBase extends RuleBase, ConditionContainer {
   isPolymorphic?: boolean;
 }
 
-/** Sorting rule implementations */
+/**
+ * Sorting rule implementations
+ *
+ * @public
+ */
 export type SortingRule = PropertySortingRule | DisabledSortingRule;
 
 /**
@@ -40,6 +47,8 @@ export type SortingRule = PropertySortingRule | DisabledSortingRule;
  *
  * **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
  * other non ECInstance type of nodes.
+ *
+ * @public
  */
 export interface PropertySortingRule extends SortingRuleBase {
   /** Used for serializing to JSON. */
@@ -63,6 +72,8 @@ export interface PropertySortingRule extends SortingRuleBase {
  *
  * **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
  * other non ECInstance type of nodes.
+ *
+ * @public
  */
 export interface DisabledSortingRule extends SortingRuleBase {
   /** Used for serializing to JSON. */

@@ -6,9 +6,11 @@
 
 import * as React from "react";
 
-import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
+
+import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "../configurableui/ConfigurableUiControl";
 
 /** ControlControl Activated Event Args interface.
  * @public
@@ -22,6 +24,16 @@ export interface ContentControlActivatedEventArgs {
  * @public
  */
 export class ContentControlActivatedEvent extends UiEvent<ContentControlActivatedEventArgs> { }
+
+/** Interface to be implemented when the ContentControl supports ViewSelector changes
+ * @public
+ */
+export interface SupportsViewSelectorChange {
+  /** Returns true if this control supports reacting to ViewSelector changes. */
+  supportsViewSelectorChange: boolean;
+  /** Process a ViewSelector change. */
+  processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void>;
+}
 
 /** The base class for Frontstage content controls.
  * @public
@@ -50,9 +62,9 @@ export class ContentControl extends ConfigurableUiControl {
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return false; }
-
   /** Returns the ScreenViewport if isViewport is true */
   public get viewport(): ScreenViewport | undefined { return undefined; }
+
   /** Gets the React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
   /** Sets the React element associated with this control */
@@ -62,4 +74,5 @@ export class ContentControl extends ConfigurableUiControl {
   public get navigationAidControl(): string {
     return "";
   }
+
 }

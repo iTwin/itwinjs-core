@@ -7,6 +7,10 @@
 import { SelectionHandler } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
 
+/**
+ * An interface for all unified selection components
+ * @public
+ */
 export interface IUnifiedSelectionComponent extends IPresentationDataProvider {
   selectionHandler?: SelectionHandler;
 }

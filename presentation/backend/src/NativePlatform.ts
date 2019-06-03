@@ -9,7 +9,7 @@ import { IModelJsNative, IModelDb, IModelHost } from "@bentley/imodeljs-backend"
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 
-/** @hidden */
+/** @internal */
 export enum NativePlatformRequestTypes {
   GetRootNodes = "GetRootNodes",
   GetRootNodesCount = "GetRootNodesCount",
@@ -24,7 +24,7 @@ export enum NativePlatformRequestTypes {
   GetDisplayLabel = "GetDisplayLabel",
 }
 
-/** @hidden */
+/** @internal */
 export interface NativePlatformDefinition extends IDisposable {
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
@@ -38,8 +38,8 @@ export interface NativePlatformDefinition extends IDisposable {
   setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): void;
 }
 
-/** @hidden */
-export const createDefaultNativePlatform = (id?: string): { new(): NativePlatformDefinition; } => {
+/** @internal */
+export const createDefaultNativePlatform = (id?: string): new () => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {

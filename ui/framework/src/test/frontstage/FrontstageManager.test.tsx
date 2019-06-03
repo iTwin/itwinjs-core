@@ -2,19 +2,34 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import TestUtils from "../TestUtils";
 import { expect } from "chai";
+import sinon = require("sinon");
+import * as moq from "typemoq";
+
+import { Logger } from "@bentley/bentleyjs-core";
+import { MockRender, SpatialViewState, ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+
 import {
   FrontstageManager,
   WidgetState,
+  CoreTools,
 } from "../../ui-framework";
 import { TestFrontstage } from "./FrontstageTestUtils";
+import TestUtils from "../TestUtils";
 
 describe("FrontstageManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    MockRender.App.startup();
+
+    FrontstageManager.initialize();
     FrontstageManager.clearFrontstageDefs();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   it("findWidget should return undefined when no active frontstage", async () => {
@@ -33,8 +48,11 @@ describe("FrontstageManager", () => {
     }
   });
 
-  it("setActiveFrontstage should throw Error on invalid id", () => {
-    expect(FrontstageManager.setActiveFrontstage("xyz")).to.be.rejectedWith(Error);
+  it("setActiveFrontstage should log Error on invalid id", async () => {
+    const spyMethod = sinon.spy(Logger, "logError");
+    await FrontstageManager.setActiveFrontstage("xyz");
+    spyMethod.calledOnce.should.true;
+    (Logger.logError as any).restore();
   });
 
   it("setWidgetState should find and set widget state", async () => {
@@ -58,6 +76,28 @@ describe("FrontstageManager", () => {
 
   it("findWidget returns undefined on invalid id", () => {
     expect(FrontstageManager.findWidget("xyz")).to.be.undefined;
+  });
+
+  describe("Executing a tool should set activeToolId", () => {
+    const viewportMock = moq.Mock.ofType<ScreenViewport>();
+
+    before(() => {
+      const spatialViewStateMock = moq.Mock.ofType<SpatialViewState>();
+      spatialViewStateMock.setup((view) => view.is3d()).returns(() => true);
+      spatialViewStateMock.setup((view) => view.classFullName).returns(() => "BisCore:SpatialViewDefinition");
+      viewportMock.reset();
+      viewportMock.setup((viewport) => viewport.view).returns(() => spatialViewStateMock.object);
+
+      FrontstageManager.initialize();
+      IModelApp.viewManager.setSelectedView(viewportMock.object);
+    });
+
+    it("CoreTools.selectElementCommand", () => {
+      const item = CoreTools.selectElementCommand;
+      item.execute();
+      expect(FrontstageManager.activeToolId).to.eq(item.toolId);
+    });
+
   });
 
 });

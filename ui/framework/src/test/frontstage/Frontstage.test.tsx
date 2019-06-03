@@ -182,12 +182,15 @@ describe("Frontstage", () => {
     wrapper.unmount();
   });
 
-  it("should load widget content when widget is loaded", async () => {
+  it("should update when widget state changes", async () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
     wrapper.update();
+
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const forceUpdateSpy = sinon.spy(contentRenderer.instance(), "forceUpdate");
 
     const widgetDef = FrontstageManager.findWidget("widget3")!;
     const widgetState = WidgetState.Open;
@@ -196,8 +199,7 @@ describe("Frontstage", () => {
       widgetState,
     });
 
-    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
-    expect(contentRenderer.state().isLoaded).true;
+    expect(forceUpdateSpy.calledOnce).true;
 
     wrapper.unmount();
   });

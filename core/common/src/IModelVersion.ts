@@ -14,7 +14,7 @@ import { BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
 export class IModelVersion {
   private _first?: boolean;
   private _latest?: boolean;
-  private _afterChangeSetId?: string;
+  private _afterChangeSetId?: GuidString;
   private _versionName?: string;
 
   private constructor() { }
@@ -40,7 +40,7 @@ export class IModelVersion {
    * If the changeSetId is an empty string, it is assumed to be the first version
    * before any change sets have been applied.
    */
-  public static asOfChangeSet(changeSetId: string): IModelVersion {
+  public static asOfChangeSet(changeSetId: GuidString): IModelVersion {
     const version = new IModelVersion();
 
     if (changeSetId === "") {
@@ -78,7 +78,7 @@ export class IModelVersion {
    * if this describes the first version, last version, named version, etc.
    * @see evaluateChangeSet() for those use cases.
    */
-  public getAsOfChangeSet(): string | undefined { return this._afterChangeSetId; }
+  public getAsOfChangeSet(): GuidString | undefined { return this._afterChangeSetId; }
 
   /** Returns the name of the version if this describes a named version. @see named() */
   public getName(): string | undefined { return this._versionName; }
@@ -89,7 +89,7 @@ export class IModelVersion {
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
    */
-  public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: string, imodelClient: IModelClient): Promise<string> {
+  public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString> {
     if (this._first)
       return Promise.resolve("");
 
@@ -109,20 +109,17 @@ export class IModelVersion {
   }
 
   /** Gets the last change set that was applied to the imodel */
-  private static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<string> {
+  private static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString> {
     const changeSets: ChangeSet[] = await imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
-    // todo: Need a more efficient iModel Hub API to get this information from the Hub.
-
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
   }
 
   /** Get the change set from the specified named version */
-  private static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: string, versionName: string): Promise<string> {
+  private static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString> {
     const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
-    if (!versions[0] || !versions[0].changeSetId) {
+    if (!versions[0] || !versions[0].changeSetId)
       return Promise.reject(new IModelError(BentleyStatus.ERROR, "Problem getting versions"));
-    }
 
     return versions[0].changeSetId!;
   }

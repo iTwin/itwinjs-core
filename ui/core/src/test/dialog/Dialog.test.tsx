@@ -52,8 +52,8 @@ describe("Dialog", () => {
           { type: DialogButtonType.OK, onClick: () => { } },
           { type: DialogButtonType.Cancel, onClick: () => { } },
         ]} />);
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.ok"))).to.exist;
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.cancel"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.ok"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.cancel"))).to.exist;
     });
 
     it("should render with Close button", () => {
@@ -61,7 +61,7 @@ describe("Dialog", () => {
         buttonCluster={[
           { type: DialogButtonType.Close, onClick: () => { } },
         ]} />);
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.close"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.close"))).to.exist;
     });
 
     it("should render with Yes, No & Retry buttons", () => {
@@ -71,9 +71,9 @@ describe("Dialog", () => {
           { type: DialogButtonType.No, onClick: () => { } },
           { type: DialogButtonType.Retry, onClick: () => { } },
         ]} />);
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.yes"))).to.exist;
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.no"))).to.exist;
-      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.retry"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.yes"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.no"))).to.exist;
+      expect(component.getByText(UiCore.translate("dialog.retry"))).to.exist;
     });
 
     it("should render with custom button", () => {

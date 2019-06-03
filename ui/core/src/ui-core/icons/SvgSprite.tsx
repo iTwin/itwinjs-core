@@ -10,7 +10,7 @@ import { CommonProps } from "../utils/Props";
 import "./SvgSprite.scss";
 
 /** Properties of [[SvgSprite]] component.
- * @beta
+ * @public
  */
 export interface SvgSpriteProps extends CommonProps {
   /** Source for the Svg */
@@ -18,7 +18,7 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 /** Svg element wrapper.
- * @beta
+ * @public
  */
 export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
   public render() {

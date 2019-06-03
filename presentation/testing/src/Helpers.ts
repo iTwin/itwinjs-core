@@ -10,10 +10,7 @@ import { Guid } from "@bentley/bentleyjs-core";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
-import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
-import { Props as PresentationBackendProps } from "@bentley/presentation-backend/lib/Presentation";
-// tslint:disable-next-line:no-direct-imports
-import { Props as PresentationFrontendProps } from "@bentley/presentation-frontend/lib/PresentationManager";
+import { Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps } from "@bentley/presentation-backend";
 // frontend includes
 import {
   SnapshotIModelRpcInterface,
@@ -23,7 +20,7 @@ import {
   RpcDefaultConfiguration,
 } from "@bentley/imodeljs-common";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
-import { Presentation as PresentationFrontend } from "@bentley/presentation-frontend";
+import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -45,6 +42,17 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 
 let isInitialized = false;
 
+/**
+ * Initialize the framework for presentation testing. The function sets up backend,
+ * frontend and RPC communication between them.
+ * @param backendProps Properties for backend initialization
+ * @param frontendProps Properties for frontend initialization
+ * @param frontendApp IModelApp implementation
+ *
+ * @see `terminate`
+ *
+ * @public
+ */
 export const initialize = (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp = NoRenderApp) => {
   if (isInitialized)
     return;
@@ -72,7 +80,15 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   isInitialized = true;
 };
 
-export const terminate = () => {
+/**
+ * Undoes the setup made by `initialize`.
+ * @param frontendApp IModelApp implementation
+ *
+ * @see `initialize`
+ *
+ * @public
+ */
+export const terminate = (frontendApp = IModelApp) => {
   if (!isInitialized)
     return;
 
@@ -88,7 +104,7 @@ export const terminate = () => {
 
   // terminate frontend
   PresentationFrontend.terminate();
-  IModelApp.shutdown();
+  frontendApp.shutdown();
 
   isInitialized = false;
 };

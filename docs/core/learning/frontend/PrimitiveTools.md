@@ -46,7 +46,7 @@ Now that a target view has been accepted for the tool operation, [InteractiveToo
 
 ## onPostInstall
 
-After becoming the active tool, [InteractiveTool.onPostInstall]($frontend) is used to establish the initial tool state. This may include enabling [AccuSnap]($frontend), sending [AccuDraw]($frontend) hints, and showing user prompts. Because onPostInstall is paired with [InteractiveTool.onCleanup]($frontend), it's also a good place to register listeners for events.
+After becoming the active tool, [InteractiveTool.onPostInstall]($frontend) is used to establish the initial tool state. This may include enabling [AccuSnap]($frontend), sending AccuDraw hints using [AccuDrawHintBuilder]($frontend), and showing user prompts. Because onPostInstall is paired with [InteractiveTool.onCleanup]($frontend), it's also a good place to register listeners for events.
 
 Refer to [AccuSnap](#accusnap) and [AccuDraw](#accudraw) for examples showing how different types of Primitive tools can leverage these drawing aides.
 
@@ -111,14 +111,14 @@ Example from a simple tool that locates elements and makes them the current sele
 
 ![AccuDraw example](./accudraw.png "Example of AccuDraw using axis lock to constrain snapped point")
 
-[AccuDraw]($frontend) is an aide for entering coordinate data. By using *shortcuts* to position and orient the AccuDraw compass, locking a direction, or entering distance and angle values, the user is able to accurately enter points. AccuDraw isn't strictly controlled by the user however, the tool is also able to provide additional context to AccuDraw in the form of *hints* to make the tool easier to use.
+[AccuDrawHintBuilder]($frontend) is an aide for entering coordinate data. By using *shortcuts* to position and orient the AccuDraw compass, locking a direction, or entering distance and angle values, the user is able to accurately enter points. AccuDraw isn't strictly controlled by the user however, the tool is also able to provide additional context to AccuDraw in the form of *hints* to make the tool easier to use.
 
 Some examples of AccuDraw tool hints:
 
 * Send AccuDraw hint to use polar mode when defining a sweep angle.
 * Send AccuDraw hint to set origin to opposite end point of line segment being modified and orient to segment direction, a new line length can be now easily specified.
 
-Upon installing a new Primitive tool as the active tool, AccuDraw's default state is initialized to [CurrentState.Inactive]($frontend). AccuDraw will upgrade it's internal state to [CurrentState.Active]($frontend) automatically if the tool calls [InteractiveTool.beginDynamics]($frontend). Tools that won't start dynamics (might only use view decorations) but still wish to support AccuDraw can explicitly enable it by calling by calling [AccuDraw.activate]($frontend) or using [AccuDrawHintBuilder]($frontend). Conversely, tools that show dynamics, but do not want AccuDraw, are required to explicitly disable it by calling [AccuDraw.deactivate]($frontend).
+Upon installing a new Primitive tool as the active tool, AccuDraw's default state is initialized to *inactive*. AccuDraw will upgrade it's internal state to *active* automatically if the tool calls [InteractiveTool.beginDynamics]($frontend). Tools that won't start dynamics (might only use view decorations) but still wish to support AccuDraw can explicitly enable it using [AccuDrawHintBuilder.activate]($frontend) or [AccuDrawHintBuilder.sendHints]($frontend). Conversely, tools that show dynamics, but do not want AccuDraw, are required to explicitly disable it by calling [AccuDrawHintBuilder.deactivate]($frontend).
 
 > Using the example of a tool that places a valve on a pipe again, the tool doesn't require the user to orient the valve on the closest pipe end point, it can get this information from the pipe element. As AccuDraw doesn't need to be enabled by the tool in this situation, but the tool does wish to preview the valve placment using dynamics, it should disable AccuDraw's automatic activation.
 

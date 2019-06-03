@@ -3,9 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "chai";
-import { MockRender, IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { assert, expect } from "chai";
+import {
+  ElementAgenda,
+  HiliteSet,
+  IModelConnection,
+  MockRender,
+  ModifyElementSource,
+  SelectionSet,
+  SelectionSetEventType,
+} from "@bentley/imodeljs-frontend";
+import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
 
@@ -40,32 +48,32 @@ describe("Tools", () => {
     assert.isFalse(agenda.has("0x11"), "should not find");
     assert.equal(agenda.getSource(), ModifyElementSource.Group, "setSource group");
     agenda.hilite();
-    assert.equal(imodel.hilited.size, 4, "hilite");
+    assert.equal(imodel.hilited.elements.size, 4, "hilite");
     agenda.remove(ids[0]);
-    assert.equal(imodel.hilited.size, 3, "remove unhilites");
+    assert.equal(imodel.hilited.elements.size, 3, "remove unhilites");
     assert.equal(agenda.length, 3, "remove");
     agenda.popGroup();
-    assert.equal(imodel.hilited.size, 1, "popGroup unhilites");
+    assert.equal(imodel.hilited.elements.size, 1, "popGroup unhilites");
     assert.equal(agenda.length, 1, "popGroup");
     assert.equal(agenda.getSource(), ModifyElementSource.Selected, "popGroup pops source");
     agenda.invert(idsSet);
     assert.equal(agenda.length, 3, "invert");
-    assert.equal(imodel.hilited.size, 3, "invert unhilites");
+    assert.equal(imodel.hilited.elements.size, 3, "invert unhilites");
     assert.isTrue(agenda.find(ids[0]), "agenda find");
     agenda.clear();
     assert.isTrue(agenda.isEmpty, "clear works");
-    assert.equal(imodel.hilited.size, 0, "clear unhilites");
+    assert.equal(imodel.hilited.elements.size, 0, "clear unhilites");
   });
 
   it("SelectionSet tests", () => {
     const ids = [Id64.fromString("0x1"), Id64.fromString("0x2"), Id64.fromString("0x3"), Id64.fromString("0x4")];
     const selSet = imodel.selectionSet;
     let numCalls = 0;
-    let lastType = SelectEventType.Clear;
+    let lastType = SelectionSetEventType.Clear;
     const originalNumListeners = selSet.onChanged.numberOfListeners;
-    const removeMe = selSet.onChanged.addListener((_imodel: IModelConnection, _evType: SelectEventType, _ids?: Set<string>) => {
-      assert.equal(_imodel, imodel);
-      lastType = _evType;
+    const removeMe = selSet.onChanged.addListener((ev) => {
+      assert.equal(ev.set, selSet);
+      lastType = ev.type;
       ++numCalls;
     });
 
@@ -76,13 +84,13 @@ describe("Tools", () => {
     assert.isTrue(selSet.isActive, "is active");
     assert.isFalse(selSet.isSelected(ids[1]), "not selected");
     assert.equal(numCalls, 1, "listener called");
-    assert.equal(lastType, SelectEventType.Add, "add event type1");
+    assert.equal(lastType, SelectionSetEventType.Add, "add event type1");
     // ids in set: [0]
 
     // add a list of ids
     selSet.add([ids[0], ids[1]]);
     assert.equal(numCalls, 2, "listener called again");
-    assert.equal(lastType, SelectEventType.Add, "add event type again");
+    assert.equal(lastType, SelectionSetEventType.Add, "add event type again");
     assert.equal(selSet.size, 2, "add with array");
     // ids in set: [0, 1]
 
@@ -94,7 +102,7 @@ describe("Tools", () => {
 
     // add using a Set
     const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
-    selSet.add(idsSet, false);
+    (selSet as any)._add(idsSet, false);
     assert.equal(numCalls, 2, "no callback (sendEvent = false)");
     assert.equal(selSet.size, 4, "add with IdSet");
     ids.forEach((id) => assert.isTrue(selSet.has(id)));
@@ -102,7 +110,7 @@ describe("Tools", () => {
 
     // remove an id
     selSet.remove(ids[1]);
-    assert.equal(lastType, SelectEventType.Remove, "remove event type");
+    assert.equal(lastType, SelectionSetEventType.Remove, "remove event type");
     assert.equal(numCalls, 3, "remove callback");
     assert.equal(selSet.size, 3, "removed one");
     assert.isFalse(selSet.isSelected(ids[1]), "removed from selected");
@@ -124,7 +132,7 @@ describe("Tools", () => {
     // replace
     selSet.replace(idsSet);
     assert.equal(numCalls, 5, "replace callback");
-    assert.equal(lastType, SelectEventType.Replace, "replace event type");
+    assert.equal(lastType, SelectionSetEventType.Replace, "replace event type");
     assert.equal(selSet.size, 4, "replaced with whole set");
     // ids in set: [0, 1, 2, 3]
 
@@ -137,7 +145,7 @@ describe("Tools", () => {
     // empty all
     selSet.emptyAll();
     assert.equal(numCalls, 6, "emptyAll");
-    assert.equal(lastType, SelectEventType.Clear, "clear event type");
+    assert.equal(lastType, SelectionSetEventType.Clear, "clear event type");
     assert.isFalse(selSet.isActive, "not active after emptyAll");
     // ids in set: []
 
@@ -152,5 +160,97 @@ describe("Tools", () => {
     selSet.add(ids[0]);
     assert.equal(selSet.size, 1, "add with no listener");
     assert.equal(numCalls, 6, "listener was removed");
+  });
+});
+
+describe("HiliteSet", () => {
+  let imodel: IModelConnection;
+  let selected: SelectionSet;
+  let hilited: HiliteSet;
+
+  before(async () => {
+    MockRender.App.startup();
+    imodel = await IModelConnection.openSnapshot(iModelLocation);
+    selected = imodel.selectionSet;
+    hilited = imodel.hilited;
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    MockRender.App.shutdown();
+  });
+
+  function expectHilitedElements(ids: Id64Arg) {
+    Id64.forEach(ids, (id) => expect(hilited.elements.hasId(id)).to.be.true);
+  }
+
+  it("synchronizes with selection set", () => {
+    // Things explicitly added to HiliteSet are unaffected when selection set changes, unless they are also added and later removed from selection set.
+    hilited.clear();
+    expect(hilited.wantSyncWithSelectionSet).to.be.true;
+    expect(hilited.isEmpty).to.be.true;
+
+    hilited.models.addId("0x123");
+    hilited.subcategories.addId("0xabc");
+
+    selected.add(["0x1", "0x2", "0x3"]);
+    expectHilitedElements(["0x1", "0x2", "0x3"]);
+
+    selected.remove("0x2");
+    expect(hilited.elements.size).to.equal(2);
+    expectHilitedElements(["0x1", "0x3"]);
+
+    selected.emptyAll();
+    expect(hilited.elements.size).to.equal(0);
+
+    hilited.elements.addIds(["0xa", "0xb"]);
+    selected.replace(["0x1", "0x2"]);
+    expect(hilited.elements.size).to.equal(4);
+    expectHilitedElements(["0x1", "0x2", "0xa", "0xb"]);
+
+    selected.emptyAll();
+    expect(hilited.elements.size).to.equal(2);
+    expectHilitedElements(["0xa", "0xb"]);
+
+    hilited.elements.clear();
+    expect(hilited.elements.size).to.equal(0);
+
+    expect(hilited.models.size).to.equal(1);
+    expect(hilited.subcategories.size).to.equal(1);
+
+    hilited.clear();
+    expect(hilited.models.size).to.equal(0);
+    expect(hilited.subcategories.size).to.equal(0);
+
+    hilited.elements.addIds(["0x1", "0x2"]);
+    selected.replace(["0x2", "0x3"]);
+    expect(hilited.elements.size).to.equal(3);
+    expectHilitedElements(["0x1", "0x2", "0x3"]);
+
+    selected.remove(["0x2"]);
+    selected.add(["0x1", "0x4"]);
+    expect(hilited.elements.size).to.equal(3);
+    expectHilitedElements(["0x1", "0x3", "0x4"]);
+  });
+
+  it("can be decoupled from selection set", () => {
+    // Disabling sync means changes to selection set have no effect on hilite set.
+    hilited.clear();
+    hilited.wantSyncWithSelectionSet = false;
+    selected.emptyAll();
+    hilited.elements.addId("0xa");
+    selected.add(["0x1", "0x2", "0x3"]);
+    expect(hilited.elements.size).to.equal(1);
+    expectHilitedElements("0xa");
+
+    // Re-enabling sync repopulates HiliteSet from SelectionSet. It does not remove current contents of hilite set.
+    hilited.wantSyncWithSelectionSet = true;
+    expect(hilited.elements.size).to.equal(4);
+    expectHilitedElements(["0x1", "0x2", "0x3", "0xa"]);
+
+    // Disabling sync has no effect on HiliteSet.
+    hilited.wantSyncWithSelectionSet = false;
+    expect(hilited.elements.size).to.equal(4);
+    expectHilitedElements(["0x1", "0x2", "0x3", "0xa"]);
   });
 });

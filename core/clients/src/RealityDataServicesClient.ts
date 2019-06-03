@@ -144,7 +144,7 @@ export class RealityData extends WsgInstance {
   public projectId: undefined | string;
 
   /**
-   * Gets string url to fetch blob data from
+   * Gets string url to fetch blob data from. Access is read-only.
    * @param requestContext The client request context.
    * @param name name or path of tile
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
@@ -178,9 +178,10 @@ export class RealityData extends WsgInstance {
   /**
    * Gets a tile access url URL object
    * @param requestContext The client request context.
+   * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns app URL object for blob url
    */
-  public async getBlobUrl(requestContext: AuthorizedClientRequestContext): Promise<URL> {
+  public async getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess: boolean = false): Promise<URL> {
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
@@ -193,7 +194,7 @@ export class RealityData extends WsgInstance {
       return Promise.reject(new Error("id not set"));
 
     if (undefined === this._blobUrl || this._blobTimeStamp.valueOf() - Date.now() > 3000000) { // 3 million milliseconds or 50 minutes
-      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id);
+      const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId as string, this.id, writeAccess);
       if (fileAccess.length !== 1)
         return Promise.reject(new Error("Could not obtain blob file access key for reality data: " + this.id));
       const urlString = fileAccess[0].url!;
@@ -400,7 +401,7 @@ export class RealityDataServicesClient extends WsgClient {
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
    * @param projectId id of associated connect project
-   * @param range The range to search for given as a range 2d where X repesentents the longitude in radians and Y the latitude in radians
+   * @param range The range to search for given as a range 2d where X represents the longitude in radians and Y the latitude in radians
    * longitude can be in the range -2P to 2PI but the minimum value must be smaller numerically to the maximum.
    * Note that the longitudes are usually by convention in the range of -PI to PI except
    * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
@@ -444,7 +445,7 @@ export class RealityDataServicesClient extends WsgClient {
    * @param realityData The reality data to update. The Id must contain the identifier of the reality data to update.
    * NOTE: As a probable known defect some specific read-only attributes must be undefined prior to passing the reality data.
    * These are: organizationId, sizeUpToDate, ownedBy, ownerId
-   * @returns The newly modifed reality data.
+   * @returns The newly modified reality data.
    */
   public async updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string, realityData: RealityData): Promise<RealityData> {
     const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityData.id}`, realityData);
@@ -468,9 +469,9 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param projectId id of associated connect project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. NThe requested reality data.
    */
@@ -480,9 +481,9 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param projectId id of associated connect project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. NThe requested reality data.
    */
@@ -495,9 +496,9 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets all reality data relationships associated to the given reality id, not only the relatioship for given project.
+   * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
-   * @param projectId id of associated connect project in which to make to call for permisison reason
+   * @param projectId id of associated connect project in which to make to call for permission reason
    * @param realityDataId realityDataInstance id to obtain the relationships for.
    * @returns All relationships associated to reality data. NThe requested reality data.
    */
@@ -509,12 +510,16 @@ export class RealityDataServicesClient extends WsgClient {
    * Gets a tile file access key
    * @param requestContext The client request context.
    * @param projectId id of associated connect project
-   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
+   * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job.
+   * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns a FileAccessKey object containing the Azure blob address.
    */
-  public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string): Promise<FileAccessKey[]> {
+  public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string, tilesId: string, writeAccess: boolean = false): Promise<FileAccessKey[]> {
     const path = encodeURIComponent(tilesId);
-    return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
+    if (writeAccess)
+      return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Write%27`);
+    else
+      return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url

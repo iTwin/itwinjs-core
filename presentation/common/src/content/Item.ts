@@ -5,20 +5,19 @@
 /** @module Content */
 
 import {
-  ClassInfo, ClassInfoJSON, classInfoFromJSON,
-  InstanceKey, InstanceKeyJSON, instanceKeyFromJSON,
+  ClassInfo, ClassInfoJSON,
+  InstanceKey, InstanceKeyJSON,
 } from "../EC";
 import { ValuesDictionary } from "../Utils";
 import {
   Value, DisplayValue,
   DisplayValueJSON, ValueJSON,
-  valuesMapFromJSON, displayValuesMapFromJSON,
+  ValuesMapJSON, DisplayValuesMapJSON,
 } from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
- *
- * @hidden
+ * @internal
  */
 export interface ItemJSON {
   primaryKeys: InstanceKeyJSON[];
@@ -28,26 +27,30 @@ export interface ItemJSON {
   values: ValuesDictionary<ValueJSON>;
   displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
+  extendedData?: { [key: string]: any };
 }
 
 /**
  * A data structure that represents a single content record.
+ * @public
  */
-export default class Item {
+export class Item {
   /** Keys of instances whose data is contained in this item */
-  public primaryKeys: Array<Readonly<InstanceKey>>;
+  public primaryKeys: InstanceKey[];
   /** Display label of the item */
   public label: string;
   /** ID of the image associated with this item */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
-  public classInfo?: Readonly<ClassInfo>;
+  public classInfo?: ClassInfo;
   /** Raw values dictionary */
-  public values: Readonly<ValuesDictionary<Value>>;
+  public values: ValuesDictionary<Value>;
   /** Display values dictionary */
-  public displayValues: Readonly<ValuesDictionary<DisplayValue>>;
+  public displayValues: ValuesDictionary<DisplayValue>;
   /** List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
   public mergedFieldNames: string[];
+  /** Extended data injected into this content item */
+  public extendedData?: { [key: string]: any };
 
   /**
    * Creates an instance of Item.
@@ -58,9 +61,10 @@ export default class Item {
    * @param values Raw values dictionary
    * @param displayValues Display values dictionary
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/content/Terminology#value-merging))
+   * @param extendedData Extended data injected into this content item
    */
   public constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined,
-    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[]) {
+    values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
     this.primaryKeys = primaryKeys;
     this.label = label;
     this.imageId = imageId;
@@ -68,6 +72,7 @@ export default class Item {
     this.values = values;
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
+    this.extendedData = extendedData;
   }
 
   /**
@@ -77,16 +82,21 @@ export default class Item {
     return -1 !== this.mergedFieldNames.indexOf(fieldName);
   }
 
-  /*public toJSON(): ItemJSON {
-    return Object.assign({}, this);
-  }*/
+  /** @internal */
+  public toJSON(): ItemJSON {
+    return Object.assign({}, this, {
+      classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
+      values: Value.toJSON(this.values) as ValuesMapJSON,
+      displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
+    });
+  }
 
   /**
    * Deserialize Item from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized item or undefined if deserialization failed
    *
-   * @hidden
+   * @internal
    */
   public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
     if (!json)
@@ -95,10 +105,10 @@ export default class Item {
       return JSON.parse(json, Item.reviver);
     const item = Object.create(Item.prototype);
     return Object.assign(item, json, {
-      primaryKeys: json.primaryKeys.map((pk) => instanceKeyFromJSON(pk)),
-      classInfo: json.classInfo ? classInfoFromJSON(json.classInfo) : undefined,
-      values: valuesMapFromJSON(json.values),
-      displayValues: displayValuesMapFromJSON(json.displayValues),
+      primaryKeys: json.primaryKeys.map((pk) => InstanceKey.fromJSON(pk)),
+      classInfo: json.classInfo ? ClassInfo.fromJSON(json.classInfo) : undefined,
+      values: Value.fromJSON(json.values),
+      displayValues: DisplayValue.fromJSON(json.displayValues),
     } as Partial<Item>);
   }
 
@@ -106,7 +116,7 @@ export default class Item {
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Item objects.
    *
-   * @hidden
+   * @internal
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Item.fromJSON(value) : value;

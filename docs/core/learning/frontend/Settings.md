@@ -10,14 +10,6 @@ iModel.js provides the [SettingsAdmin]($clients) object, accessed through [IMode
 
 The methods on SettingsAdmin allow saving and retrieving setting that are either user-specific or for all users. Saving a setting that is not user-specific requires administrator privileges, and is stored as specific to the organization of the user. Any user that belongs to that organization can retrieve the setting.
 
-Non-user-specific settings can be:
-
-* Specific to an application (for example, default application preferences)
-* Specific to an application and Project (for example, the default iModel for the project when the application is opened)
-* Specific to an application and iModel (for example, the default views for the iModel when the application is opened)
-* Specific to a Project (for example, a message of the day for all users of that Project)
-* Specific to an iModel (for example, default basic preferences relevant to all applications)
-
 User-specific settings can be:
 
 * Specific to an application (for example, the user's particular application preferences)
@@ -26,6 +18,18 @@ User-specific settings can be:
 * Specific to a Project (for example, the user's list of favorite iModels in that project)
 * Specific to an iModel (for example, the user's list of favorite views in that iModel)
 * Specific only to the user (for example, a list of favorite applications)
+
+Non-user-specific settings can be:
+
+* Specific to an application (for example, default application preferences)
+* Specific to an application and Project (for example, the default iModel for the project when the application is opened)
+* Specific to an application and iModel (for example, the default views for the iModel when the application is opened)
+* Specific to a Project (for example, a message of the day for all users of that Project)
+* Specific to an iModel (for example, default basic preferences relevant to all applications)
+
+To save a non-user-specific setting, administrative privileges are required. That makes such settings ideal for parameters that should be fixed per-iModel or per-Project by an administrator, and used by every user.
+
+Shared settings are similar to Non-user-specific settings, except that they can be written or deleted without administrative privileges. That makes them ideal for settings like Named Clip volumes, where users want to be able to create and share clip volumes, and to see clip volumes that were created by other users. There are no shared settings that are dependent only on Application.
 
 Settings are identified by a namespace, that is specified by the program but should be chosen to be unique, and a name that need only be unique within the namespace.
 

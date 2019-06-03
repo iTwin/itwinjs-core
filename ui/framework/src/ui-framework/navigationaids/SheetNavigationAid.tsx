@@ -69,9 +69,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   constructor(props: SheetNavigationProps) {
     super(props);
 
-    if (IModelApp && IModelApp.viewManager) {
-      this._viewport = IModelApp.viewManager.selectedView;
-    }
+    this._viewport = IModelApp.viewManager.selectedView;
   }
 
   /** Adds listeners when components mounts */
@@ -81,8 +79,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected);
     ViewportComponentEvents.onViewIdChangedEvent.addListener(this._handleViewIdChanged);
 
-    if (IModelApp && IModelApp.viewManager)
-      IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+    IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
 
     const stateData = await this._setupSheets();
 
@@ -97,8 +94,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected);
     ViewportComponentEvents.onViewIdChangedEvent.removeListener(this._handleViewIdChanged);
 
-    if (IModelApp && IModelApp.viewManager)
-      IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._handleSelectedViewportChanged);
+    IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._handleSelectedViewportChanged);
   }
 
   /** Queries for sheet info and sets as sheetData */
@@ -129,8 +125,8 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   /** @internal */
   public render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? this.state.sheetData[this.state.index].name : "";
-    const sheet = UiFramework.i18n.translate("UiFramework:general.sheet");
-    const ofStr = UiFramework.i18n.translate("UiFramework:general.of");
+    const sheet = UiFramework.translate("general.sheet");
+    const ofStr = UiFramework.translate("general.of");
 
     let content: React.ReactNode;
     if (this.state.sheetData.length > 0) {

@@ -32,6 +32,7 @@ function allDefined(valueA: any, valueB: any, valueC: any): boolean {
  * @public
  */
 export abstract class Polyface extends GeometryQuery {
+  /** Underlying polyface data. */
   public data: PolyfaceData;
   protected constructor(data: PolyfaceData) {
     super();
@@ -41,7 +42,9 @@ export abstract class Polyface extends GeometryQuery {
   /** create and return a visitor for this concrete polyface. */
   public abstract createVisitor(_numWrap: number): PolyfaceVisitor;
   private _twoSided: boolean;
+  /** Return the flag indicating if the mesh display must assme both sides are visible. */
   public get twoSided() { return this._twoSided; }
+  /** set the flag indicating if the mesh display must assme both sides are visible. */
   public set twoSided(value: boolean) { this._twoSided = value; }
 
   /**
@@ -69,7 +72,7 @@ export abstract class Polyface extends GeometryQuery {
     return true;
   }
   /**
-   * @returns true if this polyface has no contents.
+   * Returns true if this polyface has no facets.
    */
   public abstract get isEmpty(): boolean;
 }
@@ -78,6 +81,7 @@ export abstract class Polyface extends GeometryQuery {
  * @public
  */
 export class IndexedPolyface extends Polyface {
+  /** Test if other is an instance of `IndexedPolyface` */
   public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
   /** Tests for equivalence between two IndexedPolyfaces. */
   public isAlmostEqual(other: any): boolean {
@@ -88,7 +92,7 @@ export class IndexedPolyface extends Polyface {
     return false;
   }
   /**
-   * @returns true if either the point array or the point index array is empty.
+   * Returns true if either the point array or the point index array is empty.
    */
   public get isEmpty(): boolean { return this.data.pointCount === 0 || this.data.pointIndex.length === 0; }
   /**
@@ -109,32 +113,32 @@ export class IndexedPolyface extends Polyface {
     }
     return false;
   }
-
+  /** Return a deep clone. */
   public clone(): IndexedPolyface {
     return new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
   }
-
+  /** Return a deeep clone with transformed points and normals */
   public cloneTransformed(transform: Transform): IndexedPolyface {
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
   }
-
+  /** Reverse the order of indices around all facets. */
   public reverseIndices() { this.data.reverseIndices(this._facetStart); }
+  /** Reverse the direction of all normal vectors. */
   public reverseNormals() { this.data.reverseNormals(); }
-  //
-  // index to the index array entries for a specific facet.
-  // the facet count is facetStart.length - 1
-  // facet [f] indices run from facetStart[f] to upper limit facetStart[f+1].
-  // Note thet the array is initialized with one entry.
+  /**
+   * * index to the index array entries for a specific facet.
+   * * the facet count is facetStart.length - 1
+   * * facet [f] indices run from facetStart[f] to upper limit facetStart[f+1].
+   * * Note thet the array is initialized with one entry.
+   */
   protected _facetStart: number[];
 
-  //
-  // index to the index array entries for a specific face.
-  // the face count is determined by how many faces were specified
-  // during construction, otherwise, the array won't exist.
-  // We index into this using a facet index, where multiple facets may
-  // be part of a single face.
+/**
+ * * For facet i, _facetToFaceData[i] is the index of the faceData entry for the facet.
+ * * _facetToFaceData has one entry per facet.
+ */
   protected _facetToFaceData: number[];
 
   /** return face data using a facet index. This is the REFERENCE to the FacetFaceData, not a copy. Returns undefined if none found. */
@@ -280,21 +284,25 @@ export class IndexedPolyface extends Polyface {
     }
   }
 
-  /** @returns Return the total number of param indices in zero-terminated style, which includes
+  /** Return the total number of param indices in zero-terminated style, which includes
    * * all the indices in the packed zero-based table
    * * one additional index for the zero-terminator of each facet.
    * @note Note that all index arrays (point, normal, param, color) have the same counts, so there
    * is not a separate query for each of them.
    */
   public get zeroTerminatedIndexCount(): number { return this.data.pointIndex.length + this._facetStart.length - 1; }
-
+  /** Create an empty facet set, with coordinate and index data to be supplied later.
+   * @param needNormals true if normals will be constructed
+   * @param needParams true if uv parameters will be constructed
+   * @param needColors true if colors will e constructed.
+   */
   public static create(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false): IndexedPolyface {
     return new IndexedPolyface(new PolyfaceData(needNormals, needParams, needColors));
   }
   /** add (a clone of ) a point. return its 0 based index.
    * @param point point coordinates
    * @param priorIndex optional index of prior point to check for repeated coordinates
-   * @returns Returns the zero-based index of the added point.
+   * @returns Returns the zero-based index of the added or reused point.
    */
   public addPoint(point: Point3d, priorIndex?: number): number {
     if (priorIndex !== undefined) {
@@ -310,11 +318,19 @@ export class IndexedPolyface extends Polyface {
    * @returns Returns the zero-based index of the added point.
    */
   public addPointXYZ(x: number, y: number, z: number): number { this.data.point.push(Point3d.create(x, y, z)); return this.data.point.length - 1; }
+  /** Add a uv param.
+   * @returns 0-based index of the added param.
+   */
   public addParam(param: Point2d): number {
     if (!this.data.param) this.data.param = new GrowableXYArray();
     this.data.param.push(param);
     return this.data.param.length - 1;
   }
+  /** Add a uv parameter to the parameter array.
+   * @param priorIndexA first index to check for possible duplicate value.
+   * @param priorIndexB second index to check for possible duplicate value.
+   * @returns 0-based index of the nadded or reused param.
+   */
   public addParamUV(u: number, v: number, priorIndexA?: number, priorIndexB?: number): number {
     if (!this.data.param) this.data.param = new GrowableXYArray();
     if (priorIndexA !== undefined && this.data.isAlmostEqualParamIndexUV(priorIndexA, u, v))
@@ -325,12 +341,11 @@ export class IndexedPolyface extends Polyface {
     return this.data.param.length - 1;
   }
 
-  public addParamXY(x: number, y: number): number {
-    if (!this.data.param) this.data.param = new GrowableXYArray();
-    this.data.param.push(Point2d.create(x, y));
-    return this.data.param.length - 1;
-  }
-
+  /** Add a normal vector
+   * @param priorIndexA first index to check for possible duplicate value.
+   * @param priorIndexB second index to check for possible duplicate value.
+   * @returns 0-based index of the nadded or reused normal.
+   */
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     if (this.data.normal !== undefined) {
       let distance;
@@ -354,29 +369,38 @@ export class IndexedPolyface extends Polyface {
     return this.addNormalXYZ(normal.x, normal.y, normal.z);
   }
 
+  /** Add a normal vector given by direct coordinates
+   * @returns 0-based index of the nadded or reused param.
+   */
   public addNormalXYZ(x: number, y: number, z: number): number {
     if (!this.data.normal) this.data.normal = new GrowableXYZArray();
     this.data.normal!.pushXYZ(x, y, z);
     return this.data.normal!.length - 1;
   }
 
+  /** Add a color
+   * @returns 0-based index of the nadded or reused color.
+   */
   public addColor(color: number): number {
     if (!this.data.color) this.data.color = [];
     this.data.color.push(color);
     return this.data.color.length - 1;
   }
-
+  /** Add a point index with edge visibility flag. */
   public addPointIndex(index: number, visible: boolean = true): void { this.data.pointIndex.push(index); this.data.edgeVisible.push(visible); }
+  /** Add a normal index */
   public addNormalIndex(index: number): void {
     if (!this.data.normalIndex)
       this.data.normalIndex = [];
     this.data.normalIndex.push(index);
   }
+  /** Add a param index */
   public addParamIndex(index: number): void {
     if (!this.data.paramIndex)
       this.data.paramIndex = [];
     this.data.paramIndex.push(index);
   }
+  /** Add a color index */
   public addColorIndex(index: number): void {
     if (!this.data.colorIndex)
       this.data.colorIndex = [];
@@ -441,12 +465,13 @@ export class IndexedPolyface extends Polyface {
   public get paramCount(): number { return this.data.paramCount; }
   /** (read-only property) number of normals */
   public get normalCount(): number { return this.data.normalCount; }
-
+  /** Return the number of edges in a particular facet. */
   public numEdgeInFacet(facetIndex: number): number {
     if (this.isValidFacetIndex(facetIndex))
       return this._facetStart[facetIndex + 1] - this._facetStart[facetIndex];
     return 0;
   }
+  /** test if `index` is a valid facet index. */
   public isValidFacetIndex(index: number): boolean { return index >= 0 && index + 1 < this._facetStart.length; }
   /** ASSUME valid facet index . .. return its start index in index arrays. */
   public facetIndex0(index: number): number { return this._facetStart[index]; }
@@ -454,8 +479,9 @@ export class IndexedPolyface extends Polyface {
   public facetIndex1(index: number): number { return this._facetStart[index + 1]; }
   /** create a visitor for this polyface */
   public createVisitor(numWrap: number = 0): PolyfaceVisitor { return IndexedPolyfaceVisitor.create(this, numWrap); }
-
+  /** Return the range of (optionally transformed) points in this mesh. */
   public range(transform?: Transform, result?: Range3d): Range3d { return this.data.range(result, transform); }
+  /** Extend `range` with coordinates from this mesh */
   public extendRange(range: Range3d, transform?: Transform): void { this.data.range(range, transform); }
 
   /** Given the index of a facet, return the data pertaining to the face it is a part of. */
@@ -501,7 +527,7 @@ export class IndexedPolyface extends Polyface {
 
     return true;
   }
-/** Second step of double dispatch:  call `handler.handleIndexedPolyface(this)` */
+  /** Second step of double dispatch:  call `handler.handleIndexedPolyface(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
   }
@@ -561,12 +587,20 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._currentFacetIndex = -1;
 
   }
-
+  /** Retrun the numbe rof edges in the current facet.
+   * * Not that if this visitor has `numWrap` greater than zero, the number of edges is smaller than the number of points.
+   */
   public get numEdgesThisFacet(): number { return this._numEdges; }
-
+  /** Create a visitor for iterating the facets of `polyface`, with indicated number of points to be added to each facet to produce closed point arrays
+   * Typical wrap counts are:
+   * * 0 -- leave the point arrays with "missing final edge"
+   * * 1 -- add point 0 as closure point
+   * * 2 -- add points 0 and 1 as closure and wrap point.  This is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   */
   public static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor {
     return new IndexedPolyfaceVisitor(polyface, numWrap);
   }
+  /** Advance the iterator to a particular facet in the client polyface */
   public moveToReadIndex(facetIndex: number): boolean {
     if (!this._polyface.isValidFacetIndex(facetIndex)) return false;
     this._currentFacetIndex = facetIndex;
@@ -576,12 +610,14 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this.gatherIndexedData(this._polyface.data, this._polyface.facetIndex0(this._currentFacetIndex), this._polyface.facetIndex1(this._currentFacetIndex), this._numWrap);
     return true;
   }
+  /** Advance the iterator to a the 'next' facet in the client polyface */
   public moveToNextFacet(): boolean {
     if (this._nextFacetIndex !== this._currentFacetIndex)
       return this.moveToReadIndex(this._nextFacetIndex);
     this._nextFacetIndex++;
     return true;
   }
+  /** Reset the iterator to start at the first facet of the polyface. */
   public reset(): void {
     this.moveToReadIndex(0);
     this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
@@ -620,11 +656,16 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       return undefined;
     return faceData.convertParamXYToNormalized(this.param.getXAtUncheckedPointIndex(index), this.param.getYAtUncheckedPointIndex(index), result);
   }
-
+  /** Return the index (in the client polyface) of the current facet */
   public currentReadIndex(): number { return this._currentFacetIndex; }
+  /** Return the point index of vertex i within the currently loaded facet */
   public clientPointIndex(i: number): number { return this.pointIndex[i]; }
+  /** Return the param index of vertex i within the currently loaded facet */
   public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }
+  /** Return the normal index of vertex i within the currently loaded facet */
   public clientNormalIndex(i: number): number { return this.normalIndex ? this.normalIndex[i] : -1; }
+  /** Return the color index of vertex i within the currently loaded facet */
   public clientColorIndex(i: number): number { return this.colorIndex ? this.colorIndex[i] : -1; }
+  /** Return the aux data index of vertex i within the currently loaded facet */
   public clientAuxIndex(i: number): number { return this.auxData ? this.auxData.indices[i] : -1; }
 }

@@ -3,20 +3,18 @@
 exports[`TreeDataProvider returns child nodes 1`] = `
 Array [
   Object {
-    "description": "child description",
-    "extendedData": Object {
-      "key": Object {
-        "pathFromRoot": Array [
-          "64e31cdc690e6d628b36f761e4074754",
-          "8ca7a2f0af9eb677d127a4d2d299bc9b",
-        ],
-        "type": "child",
-      },
+    "__presentation-components/key": Object {
+      "pathFromRoot": Array [
+        "3da8ffb01a263e88441398a167bf117c",
+        "2033788ebe3f7658c6897097d06760fe",
+      ],
+      "type": "child",
     },
+    "description": "child description",
     "icon": "child image id",
-    "id": "8ca7a2f0af9eb677d127a4d2d299bc9b/64e31cdc690e6d628b36f761e4074754",
+    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
     "label": "child label",
-    "parentId": "64e31cdc690e6d628b36f761e4074754",
+    "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
 `;
@@ -24,20 +22,18 @@ Array [
 exports[`TreeDataProvider returns child nodes with paging 1`] = `
 Array [
   Object {
-    "description": "child description",
-    "extendedData": Object {
-      "key": Object {
-        "pathFromRoot": Array [
-          "64e31cdc690e6d628b36f761e4074754",
-          "8ca7a2f0af9eb677d127a4d2d299bc9b",
-        ],
-        "type": "child",
-      },
+    "__presentation-components/key": Object {
+      "pathFromRoot": Array [
+        "3da8ffb01a263e88441398a167bf117c",
+        "2033788ebe3f7658c6897097d06760fe",
+      ],
+      "type": "child",
     },
+    "description": "child description",
     "icon": "child image id",
-    "id": "8ca7a2f0af9eb677d127a4d2d299bc9b/64e31cdc690e6d628b36f761e4074754",
+    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
     "label": "child label",
-    "parentId": "64e31cdc690e6d628b36f761e4074754",
+    "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
 `;
@@ -45,19 +41,17 @@ Array [
 exports[`TreeDataProvider returns root nodes 1`] = `
 Array [
   Object {
+    "__presentation-components/key": Object {
+      "pathFromRoot": Array [
+        "3da8ffb01a263e88441398a167bf117c",
+      ],
+      "type": "root",
+    },
     "checkBoxState": 1,
     "description": "root description",
-    "extendedData": Object {
-      "key": Object {
-        "pathFromRoot": Array [
-          "64e31cdc690e6d628b36f761e4074754",
-        ],
-        "type": "root",
-      },
-    },
     "hasChildren": true,
     "icon": "root image id",
-    "id": "64e31cdc690e6d628b36f761e4074754",
+    "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "root label",
@@ -76,19 +70,17 @@ Array [
 exports[`TreeDataProvider returns root nodes with paging 1`] = `
 Array [
   Object {
+    "__presentation-components/key": Object {
+      "pathFromRoot": Array [
+        "3da8ffb01a263e88441398a167bf117c",
+      ],
+      "type": "root",
+    },
     "checkBoxState": 1,
     "description": "root description",
-    "extendedData": Object {
-      "key": Object {
-        "pathFromRoot": Array [
-          "64e31cdc690e6d628b36f761e4074754",
-        ],
-        "type": "root",
-      },
-    },
     "hasChildren": true,
     "icon": "root image id",
-    "id": "64e31cdc690e6d628b36f761e4074754",
+    "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "root label",

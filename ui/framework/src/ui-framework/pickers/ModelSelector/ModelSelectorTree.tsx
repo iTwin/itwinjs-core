@@ -8,10 +8,13 @@ import * as React from "react";
 import classnames from "classnames";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
 import { SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { isInstanceNodeKey } from "@bentley/presentation-common";
+import { NodeKey } from "@bentley/presentation-common";
 import { treeWithFilteringSupport } from "@bentley/presentation-components";
 import { Tree, TreeNodeItem, FilteringInput, SelectionMode } from "@bentley/ui-components";
-import { CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox, LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import {
+  CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox,
+  LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem,
+} from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
 import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
@@ -125,7 +128,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   private _getNodeFromItem = (item: ListItem, nodes: TreeNodeItem[]) => {
     for (const node of nodes) {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      if (isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
+      if (NodeKey.isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
         return node;
       }
     }
@@ -147,7 +150,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   private getNodeCheckBoxInfo(node: TreeNodeItem): CheckBoxInfo | Promise<CheckBoxInfo> {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const item = this._getItem(nodeId);
     if (item && this.props.activeView) {
       const view = this.props.activeView.view as SpatialViewState;
@@ -162,8 +165,24 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (node: TreeNodeItem, state: CheckBoxState) => {
-    state === CheckBoxState.On ? this._onNodesSelected([node]) : this._onNodesDeselected([node]);
+  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    const selectedNodes: TreeNodeItem[] = [];
+    const deselectedNodes: TreeNodeItem[] = [];
+    for (const { node, newState } of stateChanges) {
+      if (newState === CheckBoxState.On) {
+        selectedNodes.push(node);
+      } else {
+        deselectedNodes.push(node);
+      }
+    }
+
+    if (selectedNodes.length > 0) {
+      this._onNodesSelected(selectedNodes);
+    }
+
+    if (deselectedNodes.length > 0) {
+      this._onNodesDeselected(deselectedNodes);
+    }
   }
 
   // tslint:disable-next-line: naming-convention
@@ -293,12 +312,12 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
         }
         <div className="option-group">
           <span className="icon icon-search" onClick={this._onToggleSearchBox} />
-          <span className="options icon icon-more-2" title={UiFramework.i18n.translate("UiFramework:categoriesModels.options")}
+          <span className="options icon icon-more-2" title={UiFramework.translate("categoriesModels.options")}
             onClick={this._onShowOptions.bind(this)} ref={(element) => { this._optionsElement = element; }}></span>
           <GlobalContextMenu opened={this.state.isOptionsOpened} x={this._getOptionsX()} y={this._getOptionsY()}>
-            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.showAll")}</ContextMenuItem>
-            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.i18n.translate("UiFramework:pickerButtons.hideAll")}</ContextMenuItem>
-            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.i18n.translate("UiFramework:pickerButtons.invert")}</ContextMenuItem>
+            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.translate("pickerButtons.showAll")}</ContextMenuItem>
+            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.translate("pickerButtons.hideAll")}</ContextMenuItem>
+            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.translate("pickerButtons.invert")}</ContextMenuItem>
           </GlobalContextMenu>
         </div>
       </div>
@@ -433,7 +452,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
 
   private _getSelectedNodes = (node: TreeNodeItem): boolean => {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const id = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     if (this.state.activeGroup.id === Groups.Models) {
       return this._isModelDisplayed(id);
     }
@@ -471,7 +490,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   private _onNodeExpanded = async (node: TreeNodeItem) => {
     const categories: ListItem[] = this.state.activeGroup.items;
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const nodeId = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+    const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const ecsql = "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" + nodeId;
     const rows = [];
 
@@ -517,7 +536,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     const nodeIds: string[] = [];
     nodes.forEach((node) => {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      const id = isInstanceNodeKey(key) ? key.instanceKey.id : "";
+      const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
       nodeIds.push(id);
     });
     return nodeIds;

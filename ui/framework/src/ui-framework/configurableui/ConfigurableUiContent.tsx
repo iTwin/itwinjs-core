@@ -17,6 +17,7 @@ import { FrontstageComposer } from "../frontstage/FrontstageComposer";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
+import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
 
 import "./configurableui.scss";
@@ -60,7 +61,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
 
   public render(): JSX.Element | undefined {
     return (
-      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style}
+      <div id="uifw-configurableui-wrapper" className={this.props.className} style={this.props.style} data-testid="uifw-configurableui-wrapper"
         onMouseMove={this._handleMouseMove}
       >
         {this.props.appBackstage}
@@ -70,6 +71,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <ElementTooltip />
         <PointerMessage />
         <KeyboardShortcutMenu />
+        <InputFieldMessage />
       </div>
     );
   }

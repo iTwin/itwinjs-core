@@ -5,10 +5,31 @@
 /** @module Picker */
 
 import * as React from "react";
+
+import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { UiEvent } from "@bentley/ui-core";
+
+import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ListPicker, ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, IModelConnection } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
+import { ContentViewManager } from "../content/ContentViewManager";
+import { SupportsViewSelectorChange } from "../content/ContentControl";
+
+/** [[ViewSelectorChangedEvent]] Args interface.
+ * @beta
+ */
+export interface ViewSelectorChangedEventArgs {
+  iModelConnection: IModelConnection;
+  viewDefinitionId: Id64String;
+  viewState: ViewState;
+  name: string;
+}
+
+/** ViewSelector Changed Event class.
+ * @beta
+ */
+export class ViewSelectorChangedEvent extends UiEvent<ViewSelectorChangedEventArgs> { }
 
 /** Properties for the [[ViewSelector]] component
  * @beta
@@ -17,10 +38,10 @@ export interface ViewSelectorProps {
   imodel?: IModelConnection;
 }
 
-/** Properties for the [[ViewSelector]] component
+/** State for the [[ViewSelector]] component
  * @beta
  */
-export interface ViewSelectorState {
+interface ViewSelectorState {
   items: ListItem[];
   selectedViewId: string | null;
   title: string;
@@ -31,6 +52,10 @@ export interface ViewSelectorState {
  * @beta
  */
 export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
+
+  /** Gets the [[ViewSelectorChangedEvent]] */
+  public static readonly onViewSelectorChangedEvent = new ViewSelectorChangedEvent();
+
   /** Creates a ViewSelector */
   constructor(props: ViewSelectorProps) {
     super(props);
@@ -38,7 +63,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.state = {
       items: new Array<ListItem>(),
       selectedViewId: null,
-      title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
+      title: UiFramework.translate("savedViews.views"),
       initialized: false,
     };
   }
@@ -50,7 +75,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
     const views3dContainer: ListItem = {
       key: "views3dContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.spatialViews"),
+      name: UiFramework.translate("savedViews.spatialViews"),
       enabled: false,
       type: ListItemType.Container,
       children: views3d,
@@ -58,7 +83,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const views2dContainer: ListItem = {
       key: "views2dContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.drawings"),
+      name: UiFramework.translate("savedViews.drawings"),
       enabled: false,
       type: ListItemType.Container,
       children: views2d,
@@ -66,7 +91,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const sheetContainer: ListItem = {
       key: "sheetContainer",
-      name: UiFramework.i18n.translate("UiFramework:savedViews.sheets"),
+      name: UiFramework.translate("savedViews.sheets"),
       enabled: false,
       type: ListItemType.Container,
       children: sheets,
@@ -78,7 +103,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       // This should never show, but just in case we missed a type of view state
       const unknownContainer: ListItem = {
         key: "unknownContainer",
-        name: UiFramework.i18n.translate("UiFramework:savedViews.others"),
+        name: UiFramework.translate("savedViews.others"),
         enabled: false,
         type: ListItemType.Container,
         children: unknown,
@@ -91,7 +116,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.setState({
       items: containers,
       selectedViewId: null,
-      title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
+      title: UiFramework.translate("savedViews.views"),
       initialized: true,
     });
   }
@@ -159,6 +184,60 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     this.setStateContainers(views3d.map(updateChildren), views2d.map(updateChildren), sheets.map(updateChildren), unknown.map(updateChildren));
   }
 
+  // enable/disable the models
+  private _setEnabled = async (item: ListItem, _enabled: boolean) => {
+    const activeContentControl = ContentViewManager.getActiveContentControl() as unknown as SupportsViewSelectorChange;
+    if (!activeContentControl || !activeContentControl.supportsViewSelectorChange) {
+      Logger.logError(UiFramework.loggerCategory(this), `No active ContentControl for ViewSelector change`);
+      return;
+    }
+
+    // Enable the item temporarily to let user see that their click was registered
+    // while we query for view state and change the current view which may take a bit
+    if (_enabled && item.type !== ListItemType.Container) {
+      // This itemMapper simply looks through all the list items and their nested children and enables the one
+      // that we have registered to enable
+      // Also disable all other items
+      let itemMapper: (tempItem: ListItem) => ListItem;
+      itemMapper = (tempItem: ListItem) => {
+        if (tempItem.type === ListItemType.Container) {
+          return { ...tempItem, children: tempItem.children!.map(itemMapper) };
+        } else if (tempItem.key === item.key) {
+          return { ...tempItem, enabled: true };
+        } else {
+          return { ...tempItem, enabled: false };
+        }
+      };
+
+      // Create the new array with the current item enabled
+      const itemsWithEnabled = this.state.items.map(itemMapper);
+      // Update the state so that we show the user it was enabled while we work in the background
+      this.setState(Object.assign({}, this.state, { items: itemsWithEnabled }));
+    }
+
+    // Load the view state using the viewSpec's ID
+    const viewState = await this.props.imodel!.views.load(item.key);
+
+    // Let activeContentControl process the ViewSelector change
+    await activeContentControl.processViewSelectorChange(this.props.imodel!, item.key, viewState, item.name!);
+
+    // Emit a change event
+    ViewSelector.onViewSelectorChangedEvent.emit({
+      iModelConnection: this.props.imodel!,
+      viewDefinitionId: item.key,
+      viewState,
+      name: item.name!,
+    });
+
+    // Set state to show enabled the view that got selected
+    this.updateState(item.key); // tslint:disable-line:no-floating-promises
+  }
+
+  // Hook on the category selector being expanded so that we may initialize if needed
+  private _onExpanded = (_expand: boolean) => {
+    this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
+  }
+
   /**
    *  Renders ViewSelector component
    */
@@ -166,57 +245,16 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
     if (!this.state.initialized)
       this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
 
-    // enable/disable the models
-    const setEnabled = async (item: ListItem, _enabled: boolean) => {
-      const vp: Viewport | undefined = IModelApp.viewManager.selectedView;
-      if (!vp)
-        return;
-
-      // Enable the item temporarily to let user see that their click was registered
-      // while we query for view state and change the current view which may take a bit
-      if (_enabled && item.type !== ListItemType.Container) {
-        // This itemMapper simply looks through all the list items and their nested children and enables the one
-        // that we have registered to enable
-        // Also disable all other items
-        let itemMapper: (tempItem: ListItem) => ListItem;
-        itemMapper = (tempItem: ListItem) => {
-          if (tempItem.type === ListItemType.Container) {
-            return { ...tempItem, children: tempItem.children!.map(itemMapper) };
-          } else if (tempItem.key === item.key) {
-            return { ...tempItem, enabled: true };
-          } else {
-            return { ...tempItem, enabled: false };
-          }
-        };
-
-        // Create the new array with the current item enabled
-        const itemsWithEnabled = this.state.items.map(itemMapper);
-        // Update the state so that we show the user it was enabled while we work in the background
-        this.setState(Object.assign({}, this.state, { items: itemsWithEnabled }));
-      }
-
-      // Load the view state using the viewSpec's ID
-      const viewState = await this.props.imodel!.views.load(item.key);
-      vp.changeView(viewState);
-      // Set state to show enabled the view that got selected
-      this.updateState(item.key); // tslint:disable-line:no-floating-promises
-    };
-
-    // Hook on the category selector being expanded so that we may initialize if needed
-    const onExpanded = (_expand: boolean) => {
-      this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
-    };
-
     const { imodel, ...props } = this.props;
 
     return (
       <ListPicker
         {...props}
         title={this.state.title}
-        setEnabled={setEnabled}
+        setEnabled={this._setEnabled}
         items={this.state.items}
         iconSpec={"icon-saved-view"}
-        onExpanded={onExpanded}
+        onExpanded={this._onExpanded}
       />
     );
   }

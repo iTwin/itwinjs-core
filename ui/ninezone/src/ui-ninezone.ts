@@ -72,7 +72,6 @@ export * from "./ui-ninezone/utilities/Cell";
 export * from "./ui-ninezone/utilities/Css";
 export * from "./ui-ninezone/utilities/Direction";
 export * from "./ui-ninezone/utilities/Point";
-export * from "./ui-ninezone/utilities/Props";
 export * from "./ui-ninezone/utilities/Rectangle";
 export * from "./ui-ninezone/utilities/Size";
 

@@ -28,7 +28,7 @@ export interface FooterProps extends CommonProps {
   onMouseLeave?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
-/** Footer component. Used in [[StatusZone]] component.
+/** Footer component. Used in a StatusBar [[Zone]] component.
  * @beta
  */
 export class Footer extends React.PureComponent<FooterProps> {

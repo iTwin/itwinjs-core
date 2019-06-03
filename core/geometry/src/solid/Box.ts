@@ -22,8 +22,8 @@ import { LineString3d } from "../curve/LineString3d";
  *   * (0,0,0) is left lower rear corner of box (considering "left" to reference x, "lower" to reference y, "rear and front" to reference z=0 and z=1)
  *   * (0,0,1) is left lower front corner.
  *   * (baseX,baseY,z) is right upper corner at z
- *   * note that the frame x and y columns are usally unit vectors in local space, but z is full rear to front vector
- * * The separate values for base and top x and y allow the box to be a "view frustum" with paralel back and front planes but independent x and y bellows effects.
+ *   * note that the frame x and y columns are usually unit vectors in local space, but z is full rear to front vector
+ * * The separate values for base and top x and y allow the box to be a "view frustum" with parallel back and front planes but independent x and y bellows effects.
  * @public
  */
 export class Box extends SolidPrimitive {
@@ -51,7 +51,7 @@ export class Box extends SolidPrimitive {
    * * origin lower left of box
    * * x direction on base rectangle x edge
    * * y direction in base rectangle
-   * * z direction perpenedicular
+   * * z direction perpendicular
    */
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
@@ -65,7 +65,7 @@ export class Box extends SolidPrimitive {
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
-/** Clone the box and immediately appy `transform` to the local frame of the clone. */
+  /** Clone the box and immediately apply `transform` to the local frame of the clone. */
   public cloneTransformed(transform: Transform): Box | undefined {
     const result = this.clone();
     transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
@@ -113,6 +113,7 @@ export class Box extends SolidPrimitive {
   }
 
   /**
+   * Create an axis-aligned `Box` primitive for a range.
    * @param range range corners Origin of base rectangle
    * @param capped true to define top and bottom closure caps
    */
@@ -151,7 +152,7 @@ export class Box extends SolidPrimitive {
   public getVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
   /** Test of `other` is also of class `Box` */
   public isSameGeometryClass(other: any): boolean { return other instanceof Box; }
-/** test for near equality */
+  /** test for near equality */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Box) {
       if (this.capped !== other.capped) return false;
@@ -209,7 +210,7 @@ export class Box extends SolidPrimitive {
    * Consider the box sides (not top and bottom) as a (u,v) surface with
    * * v = 0 as the z=0 local plane
    * * v = 1 as the z=1 local plane
-   * Return the (rectanglular) section at fractional v
+   * Return the (rectangular) section at fractional v
    */
   public constantVSection(zFraction: number): CurveCollection {
     const ls = this.strokeConstantVSection(zFraction);

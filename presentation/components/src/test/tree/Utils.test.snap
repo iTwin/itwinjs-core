@@ -2,18 +2,16 @@
 
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
-  "extendedData": Object {
-    "key": Object {
-      "instanceKey": Object {
-        "className": "COM",
-        "id": "0x535d0000015d88",
-      },
-      "pathFromRoot": Array [
-        "b5c02a04-6127-4f62-b128-58488bc1c9d1",
-        "19fb96ab-449d-4f28-a09d-cff691955c55",
-      ],
-      "type": "ECInstanceNode",
+  "__presentation-components/key": Object {
+    "instanceKey": Object {
+      "className": "COM",
+      "id": "0x535d0000015d88",
     },
+    "pathFromRoot": Array [
+      "b5c02a04-6127-4f62-b128-58488bc1c9d1",
+      "19fb96ab-449d-4f28-a09d-cff691955c55",
+    ],
+    "type": "ECInstanceNode",
   },
   "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
   "label": "engage",
@@ -28,20 +26,18 @@ Object {
 
 exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`] = `
 Object {
-  "description": "Voluptate consequuntur eum quaerat.",
-  "extendedData": Object {
-    "key": Object {
-      "instanceKey": Object {
-        "className": "Configuration",
-        "id": "0xa95e0000010601",
-      },
-      "pathFromRoot": Array [
-        "774cdc48-ca2b-4104-8800-7ce7a4f6d779",
-        "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62",
-      ],
-      "type": "ECInstanceNode",
+  "__presentation-components/key": Object {
+    "instanceKey": Object {
+      "className": "Configuration",
+      "id": "0xa95e0000010601",
     },
+    "pathFromRoot": Array [
+      "774cdc48-ca2b-4104-8800-7ce7a4f6d779",
+      "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62",
+    ],
+    "type": "ECInstanceNode",
   },
+  "description": "Voluptate consequuntur eum quaerat.",
   "icon": "Coordinator",
   "id": "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62/774cdc48-ca2b-4104-8800-7ce7a4f6d779",
   "label": "Avon Awesome Plastic Salad",
@@ -58,20 +54,18 @@ Object {
 
 exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
-  "description": "Et velit aperiam sed aut.",
-  "extendedData": Object {
-    "key": Object {
-      "instanceKey": Object {
-        "className": "Small Fresh Shoes",
-        "id": "0x11d2d0000000aba",
-      },
-      "pathFromRoot": Array [
-        "df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-        "0b80175c-270d-4a1a-bba3-14ef8866c2a1",
-      ],
-      "type": "ECInstanceNode",
+  "__presentation-components/key": Object {
+    "instanceKey": Object {
+      "className": "Small Fresh Shoes",
+      "id": "0x11d2d0000000aba",
     },
+    "pathFromRoot": Array [
+      "df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
+      "0b80175c-270d-4a1a-bba3-14ef8866c2a1",
+    ],
+    "type": "ECInstanceNode",
   },
+  "description": "Et velit aperiam sed aut.",
   "hasChildren": true,
   "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
   "label": "Indian Rupee Rufiyaa systems",
@@ -82,20 +76,18 @@ Object {
 exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
 Array [
   Object {
-    "description": "Necessitatibus eum ab.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Data",
-          "id": "0xdbbd0000011f6d",
-        },
-        "pathFromRoot": Array [
-          "4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
-          "e845ce78-d049-4079-8e52-c1852841f2dd",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Data",
+        "id": "0xdbbd0000011f6d",
       },
+      "pathFromRoot": Array [
+        "4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
+        "e845ce78-d049-4079-8e52-c1852841f2dd",
+      ],
+      "type": "ECInstanceNode",
     },
+    "description": "Necessitatibus eum ab.",
     "hasChildren": true,
     "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
     "isCheckboxDisabled": true,
@@ -108,18 +100,16 @@ Array [
     },
   },
   Object {
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Networked",
-          "id": "0xdba500000106ba",
-        },
-        "pathFromRoot": Array [
-          "eba56260-0815-4375-8f3d-aeabb1421892",
-          "b75ef471-908f-4cd9-8af2-5d633b21a813",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Networked",
+        "id": "0xdba500000106ba",
       },
+      "pathFromRoot": Array [
+        "eba56260-0815-4375-8f3d-aeabb1421892",
+        "b75ef471-908f-4cd9-8af2-5d633b21a813",
+      ],
+      "type": "ECInstanceNode",
     },
     "icon": "national",
     "id": "b75ef471-908f-4cd9-8af2-5d633b21a813/eba56260-0815-4375-8f3d-aeabb1421892",
@@ -131,21 +121,19 @@ Array [
 exports[`Utils createTreeNodeItems creates tree nodes with parentId 1`] = `
 Array [
   Object {
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "metrics",
+        "id": "0x63060000003c1a",
+      },
+      "pathFromRoot": Array [
+        "7563a72a-9ca8-4deb-b3f2-90e038b00330",
+        "fde07d2e-c992-4c8d-9f77-66e2d57cff27",
+      ],
+      "type": "ECInstanceNode",
+    },
     "checkBoxState": 1,
     "description": "At enim qui enim quisquam ratione debitis sequi totam aut.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "metrics",
-          "id": "0x63060000003c1a",
-        },
-        "pathFromRoot": Array [
-          "7563a72a-9ca8-4deb-b3f2-90e038b00330",
-          "fde07d2e-c992-4c8d-9f77-66e2d57cff27",
-        ],
-        "type": "ECInstanceNode",
-      },
-    },
     "hasChildren": true,
     "id": "fde07d2e-c992-4c8d-9f77-66e2d57cff27/7563a72a-9ca8-4deb-b3f2-90e038b00330",
     "isCheckboxVisible": true,
@@ -158,18 +146,16 @@ Array [
     },
   },
   Object {
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Accountability",
-          "id": "0xabb40000005556",
-        },
-        "pathFromRoot": Array [
-          "b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
-          "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Accountability",
+        "id": "0xabb40000005556",
       },
+      "pathFromRoot": Array [
+        "b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
+        "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f",
+      ],
+      "type": "ECInstanceNode",
     },
     "icon": "connecting",
     "id": "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f/b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",

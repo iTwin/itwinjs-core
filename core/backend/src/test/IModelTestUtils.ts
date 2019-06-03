@@ -10,7 +10,7 @@ import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
-import { IModelJsNative } from "../IModelJsNative";
+import { IModelJsNative, NativeLoggerCategory } from "../IModelJsNative";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
@@ -173,6 +173,14 @@ export class IModelTestUtils {
     return assetFile;
   }
 
+  /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
+    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
+    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
+    seedDb.closeSnapshot();
+    return testDb;
+  }
+
   public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
@@ -250,7 +258,7 @@ export class IModelTestUtils {
   public static startBackend() {
     IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
-    config.useTileContentThreadPool = true;
+    config.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
     IModelHost.startup(config);
   }
 
@@ -296,8 +304,8 @@ export class IModelTestUtils {
     Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.BeSQLite, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error);
   }
 }
 

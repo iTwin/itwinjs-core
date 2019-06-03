@@ -238,10 +238,19 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
   public get hasChildren(): boolean { return !this.isLeaf; }
-  public get contentRange(): ElementAlignedBox3d { return undefined !== this._contentRange ? this._contentRange : this.range; }
+  public get contentRange(): ElementAlignedBox3d {
+    if (undefined !== this._contentRange)
+      return this._contentRange;
+    else if (undefined === this.parent && undefined !== this.root.contentRange)
+      return this.root.contentRange;
+    else
+      return this.range;
+  }
+
   public get isLeaf(): boolean { return this._isLeaf; }
   public get isDisplayable(): boolean { return this.maximumSize > 0; }
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  public get isUndisplayableRootTile(): boolean { return undefined === this.parent && !this.isDisplayable; }
   public get emptySubRangeMask(): number { return undefined !== this._emptySubRangeMask ? this._emptySubRangeMask : 0; }
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
@@ -414,15 +423,26 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       args.markChildrenLoading();
 
     if (undefined !== children) {
+      // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.
+      // Otherwise, if we want to draw children in our place, we should wait for *all* of them to load, or else we would show missing chunks where not-yet-loaded children belong.
+      const isUndisplayableRootTile = this.isUndisplayableRootTile;
       this._childrenLastUsed = args.now;
-      let allChildrenDrawable = true;
+      let drawChildren = true;
       const initialSize = selected.length;
       for (const child of children) {
-        if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped))
-          allChildrenDrawable = false; // NB: We must continue iterating children so that they can be requested if missing.
+        // NB: We must continue iterating children so that they can be requested if missing.
+        if (Tile.SelectParent.Yes === child.selectTiles(selected, args, numSkipped)) {
+          if (child.loadStatus === Tile.LoadStatus.NotFound) {
+            // At least one child we want to draw failed to load. e.g., we reached max depth of map tile tree. Draw parent instead.
+            drawChildren = canSkipThisTile = false;
+          } else {
+            // At least one child we want to draw is not yet loaded. Wait for it to load before drawing it and its siblings, unless we have nothing to draw in their place.
+            drawChildren = isUndisplayableRootTile;
+          }
+        }
       }
 
-      if (allChildrenDrawable)
+      if (drawChildren)
         return Tile.SelectParent.No;
 
       // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
@@ -464,8 +484,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return;
     }
 
-    if (undefined !== olderThan && this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
-      // this node has been used recently. Keep it, but potentially unload its grandchildren.
+    if (undefined !== olderThan && (this.isUndisplayableRootTile || this._childrenLastUsed.milliseconds > olderThan.milliseconds)) {
+      // this node has been used recently, or should never be unloaded based on expiration time. Keep it, but potentially unload its grandchildren.
       for (const child of children)
         child.unloadChildren(olderThan);
     } else {
@@ -513,7 +533,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           // If this tile is undisplayable, update its content range based on children's content ranges.
           const parentRange = this.hasContentRange ? undefined : new Range3d();
           for (const prop of props) {
-            const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
+            const child = new Tile(Tile.paramsFromJSON(prop, this.root, this));
 
             // stick the corners on the Tile (used only by WebMercator Tiles)
             if ((prop as any).corners)
@@ -675,7 +695,7 @@ export namespace Tile {
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
-      this.viewFrustum = (undefined !== context.backgroundMap) ? ViewFrustum.createFromViewportAndPlane(context.viewport, context.backgroundMap.getPlane()) : context.viewport.viewFrustum;
+      this.viewFrustum = context.viewFrustum;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 
@@ -718,23 +738,33 @@ export namespace Tile {
    * Parameters used to construct a Tile.
    * @internal
    */
-  export class Params {
-    public constructor(
-      public readonly root: TileTree,
-      public readonly contentId: string,
-      public readonly range: ElementAlignedBox3d,
-      public readonly maximumSize: number,
-      public readonly isLeaf?: boolean,
-      public readonly parent?: Tile,
-      public readonly contentRange?: ElementAlignedBox3d,
-      public readonly transformToRoot?: Transform,
-      public readonly sizeMultiplier?: number) { }
+  export interface Params {
+    readonly root: TileTree;
+    readonly contentId: string;
+    readonly range: ElementAlignedBox3d;
+    readonly maximumSize: number;
+    readonly isLeaf?: boolean;
+    readonly parent?: Tile;
+    readonly contentRange?: ElementAlignedBox3d;
+    readonly transformToRoot?: Transform;
+    readonly sizeMultiplier?: number;
+  }
 
-    public static fromJSON(props: TileProps, root: TileTree, parent?: Tile) {
-      const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
-      const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
-      return new Params(root, props.contentId, Range3d.fromJSON(props.range), props.maximumSize, props.isLeaf, parent, contentRange, transformToRoot, props.sizeMultiplier);
-    }
+  /** @internal */
+  export function paramsFromJSON(props: TileProps, root: TileTree, parent?: Tile): Params {
+    const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+    const transformToRoot = undefined !== props.transformToRoot ? Transform.fromJSON(props.transformToRoot) : undefined;
+    return {
+      root,
+      contentId: props.contentId,
+      range: Range3d.fromJSON(props.range),
+      maximumSize: props.maximumSize,
+      isLeaf: props.isLeaf,
+      parent,
+      contentRange,
+      transformToRoot,
+      sizeMultiplier: props.sizeMultiplier,
+    };
   }
 
   /**
@@ -779,6 +809,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
+  // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
+  public readonly contentRange?: ElementAlignedBox3d;
 
   public constructor(props: TileTree.Params) {
     this.iModel = props.iModel;
@@ -786,16 +818,17 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
-    this.expirationTime = BeDuration.fromSeconds(5); // ###TODO tile purging strategy
+    this.expirationTime = IModelApp.tileAdmin.tileExpirationTime;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
 
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
     this.loader = props.loader;
-    this._rootTile = new Tile(Tile.Params.fromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
+    this._rootTile = new Tile(Tile.paramsFromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
+    this.contentRange = props.contentRange;
   }
 
   public get rootTile(): Tile { return this._rootTile; }
@@ -968,23 +1001,39 @@ export namespace TileTree {
    * Parameters used to construct a TileTree
    * @internal
    */
-  export class Params {
-    public constructor(
-      public readonly id: string,
-      public readonly rootTile: TileProps,
-      public readonly iModel: IModelConnection,
-      public readonly is3d: boolean,
-      public readonly loader: TileLoader,
-      public readonly location: Transform,
-      public readonly modelId: Id64String,
-      public readonly maxTilesToSkip?: number,
-      public readonly yAxisUp?: boolean,
-      public readonly isTerrain?: boolean,
-      public readonly clipVector?: ClipVector) { }
+  export interface Params {
+    readonly id: string;
+    readonly rootTile: TileProps;
+    readonly iModel: IModelConnection;
+    readonly is3d: boolean;
+    readonly loader: TileLoader;
+    readonly location: Transform;
+    readonly modelId: Id64String;
+    readonly maxTilesToSkip?: number;
+    readonly yAxisUp?: boolean;
+    readonly isBackgroundMap?: boolean;
+    readonly clipVector?: ClipVector;
+    readonly contentRange?: ElementAlignedBox3d;
+  }
 
-    public static fromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String) {
-      return new Params(props.id, props.rootTile, iModel, is3d, loader, Transform.fromJSON(props.location), modelId, props.maxTilesToSkip, props.yAxisUp, props.isTerrain);
-    }
+  /** Create TileTree.Params from JSON and context.
+   * @internal
+   */
+  export function paramsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): Params {
+    const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
+    return {
+      id: props.id,
+      rootTile: props.rootTile,
+      iModel,
+      is3d,
+      loader,
+      location: Transform.fromJSON(props.location),
+      modelId,
+      maxTilesToSkip: props.maxTilesToSkip,
+      yAxisUp: props.yAxisUp,
+      isBackgroundMap: props.isBackgroundMap,
+      contentRange,
+    };
   }
 
   /** @internal */
@@ -1002,12 +1051,13 @@ export class TileTreeState {
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   public edgesOmitted: boolean = false;
   public classifierExpansion: number = 0;
+  public animationId?: Id64String;
   public get iModel() { return this._iModel; }
   public get modelId() { return this._modelId; }
 
   constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    const tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
+    const tileTree = new TileTree(TileTree.paramsFromJSON(props, this._iModel, this._is3d, loader, this._modelId));
     if (tileTree.rootTile.contentRange.isNull) {
       // No elements within model's range - don't create a TileTree for this model.
       assert(tileTree.rootTile.isLeaf);

@@ -21,8 +21,8 @@ export interface ModelProps extends EntityProps {
   jsonProperties?: any;
 }
 
-/** Interface for querying a set of [Model]($backend)s.
- * @alpha Use ECSQL and IModelConnection.queryRows instead?
+/** Parameters for performing a query on [Model]($backend) classes.
+ * @public
  */
 export interface ModelQueryParams extends EntityQueryParams {
   wantTemplate?: boolean;

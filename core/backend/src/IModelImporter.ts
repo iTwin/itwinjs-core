@@ -32,14 +32,19 @@ export class IModelImporter {
     this._importContext.addElementId(IModel.rootSubjectId, IModel.rootSubjectId);
   }
 
+  /** Dispose any native resources associated with this IModelImporter. */
   public dispose(): void {
     this._importContext.dispose();
   }
 
+  /** Add a mapping of source CodeSpecId to target CodeSpecId to the import context. */
   public addCodeSpecId(sourceId: Id64String, targetId: Id64String): void {
     this._importContext.addCodeSpecId(sourceId, targetId);
   }
 
+  /** Look up a target CodeSpecId from the source CodeSpecId using the import context mapping.
+   * @returns the target CodeSpecId
+   */
   public findCodeSpecId(sourceId: Id64String): Id64String {
     return this._importContext.findCodeSpecId(sourceId);
   }
@@ -85,10 +90,14 @@ export class IModelImporter {
     this._excludedElementClassNames.add(classFullName);
   }
 
+  /** Add a mapping of source ElementId to target ElementId to the import context. */
   public addElementId(sourceId: Id64String, targetId: Id64String): void {
     this._importContext.addElementId(sourceId, targetId);
   }
 
+  /** Look up a target ElementId from the source ElementId using the import context mapping.
+   * @returns the target ElementId
+   */
   public findElementId(sourceId: Id64String): Id64String {
     return this._importContext.findElementId(sourceId);
   }
@@ -172,12 +181,15 @@ export class IModelImporter {
         }
       }
     }
-    this._importChildElements(sourceElementId);
+    this.importChildElements(sourceElementId);
     return targetElementId!;
   }
 
-  private _importChildElements(elementId: Id64String): void {
-    const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(elementId);
+  /** Import child elements into the target IModelDb
+   * @param sourceElementId Import the child elements of this element in the source IModelDb.
+   */
+  public importChildElements(sourceElementId: Id64String): void {
+    const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
     for (const childElementId of childElementIds) {
       this.importElement(childElementId);
     }
@@ -194,6 +206,9 @@ export class IModelImporter {
     });
   }
 
+  /** Import the model (the container only) into the target IModelDb
+   * @param sourceModeledElementId Import this model from the source IModelDb.
+   */
   public importModel(sourceModeledElementId: Id64String): void {
     const targetModeledElementId = this._importContext.findElementId(sourceModeledElementId);
     try {
@@ -210,10 +225,13 @@ export class IModelImporter {
     }
   }
 
-  public importModelContents(modelId: Id64String): void {
+  /** Import the model contents into the target IModelDb
+   * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
+   */
+  public importModelContents(sourceModeledElementId: Id64String): void {
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
+      statement.bindId("modelId", sourceModeledElementId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
         this.importElement(row.id);

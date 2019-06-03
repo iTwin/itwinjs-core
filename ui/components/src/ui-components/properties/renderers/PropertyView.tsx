@@ -38,6 +38,8 @@ export class PropertyView extends React.Component<PropertyViewProps> {
   private _onContextMenu = (e: React.MouseEvent) => {
     if (this.props.onContextMenu)
       this.props.onContextMenu(this.props.propertyRecord, e);
+    if (this.props.onRightClick)
+      this.props.onRightClick(this.props.propertyRecord, this.props.uniqueKey);
     e.preventDefault();
     return false;
   }

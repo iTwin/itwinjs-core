@@ -20,6 +20,12 @@ describe("Utils", () => {
       expect(treeNode).to.matchSnapshot();
     });
 
+    it("creates tree node with extended data", () => {
+      const node = { ...createRandomECInstanceNode(), extendedData: { test: "value" } };
+      const treeNode = createTreeNodeItem(node);
+      expect(treeNode.extendedData!.test).to.eq("value");
+    });
+
     it("creates tree node with parent id", () => {
       const node = createRandomECInstanceNode();
       const parentId = faker.random.word();

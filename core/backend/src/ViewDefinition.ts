@@ -16,6 +16,7 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  /** @internal */
   public static get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
@@ -39,6 +40,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
  * @public
  */
 export class DisplayStyle2d extends DisplayStyle {
+  /** @internal */
   public static get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
@@ -99,6 +101,7 @@ export interface DisplayStyleCreationOptions {
  * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
+  /** @internal */
   public static get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 
@@ -167,6 +170,7 @@ export class DisplayStyle3d extends DisplayStyle {
  * @public
  */
 export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
+  /** @internal */
   public static get className(): string { return "ModelSelector"; }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
@@ -189,7 +193,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
   /**
-   * Create a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * Create a ModelSelector to select which Models are displayed by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the ModelSelector
@@ -208,7 +212,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     return new ModelSelector(modelSelectorProps, iModelDb);
   }
   /**
-   * Insert a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * Insert a ModelSelector to select which Models are displayed by a ViewDefinition.
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new ModelSelector into this DefinitionModel
    * @param name The name/CodeValue of the ModelSelector
@@ -228,6 +232,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
  * @public
  */
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
+  /** @internal */
   public static get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: string[];
@@ -249,7 +254,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
   /**
-   * Create a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
+   * Create a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name of the CategorySelector
@@ -268,7 +273,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     return new CategorySelector(categorySelectorProps, iModelDb);
   }
   /**
-   * Insert a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
+   * Insert a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new CategorySelector into this DefinitionModel
    * @param name The name of the CategorySelector
@@ -297,6 +302,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  * @public
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
+  /** @internal */
   public static get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
   public categorySelectorId: Id64String;
@@ -348,6 +354,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
  * @public
  */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+  /** @internal */
   public static get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
   public cameraOn: boolean;
@@ -398,8 +405,9 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  * @public
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
+  /** @internal */
   public static get className(): string { return "SpatialViewDefinition"; }
-  /** The element Id of the [[ModelSelector]] for this SpatialViewDefinition. */
+  /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
   /** @internal */
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
@@ -418,6 +426,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
  * @public
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
+  /** @internal */
   public static get className(): string { return "OrthographicViewDefinition"; }
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
   /**
@@ -484,6 +493,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
  * @public
  */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+  /** @internal */
   public static get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
   public baseModelId: Id64String;
@@ -520,6 +530,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
  * @public
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
+  /** @internal */
   public static get className(): string { return "DrawingViewDefinition"; }
   /** @internal */
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
@@ -571,6 +582,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  * @public
  */
 export class SheetViewDefinition extends ViewDefinition2d {
+  /** @internal */
   public static get className(): string { return "SheetViewDefinition"; }
 }
 
@@ -578,6 +590,7 @@ export class SheetViewDefinition extends ViewDefinition2d {
  * @internal
  */
 export class TemplateViewDefinition2d extends ViewDefinition2d {
+  /** @internal */
   public static get className(): string { return "TemplateViewDefinition2d"; }
 }
 
@@ -585,6 +598,7 @@ export class TemplateViewDefinition2d extends ViewDefinition2d {
  * @internal
  */
 export class TemplateViewDefinition3d extends ViewDefinition3d {
+  /** @internal */
   public static get className(): string { return "TemplateViewDefinition3d"; }
 }
 
@@ -593,6 +607,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  * @public
  */
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
+  /** @internal */
   public static get className(): string { return "AuxCoordSystem"; }
   public type!: number;
   public description?: string;
@@ -603,6 +618,7 @@ export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoo
  * @public
  */
 export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
+  /** @internal */
   public static get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
   public angle!: number;
@@ -623,6 +639,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
  * @public
  */
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
+  /** @internal */
   public static get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
   public yaw!: number;
@@ -645,6 +662,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
  * @public
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+  /** @internal */
   public static get className(): string { return "AuxCoordSystemSpatial"; }
   /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -661,6 +679,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
  * @public
  */
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
+  /** @internal */
   public static get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
   public constructor(props: ViewAttachmentProps, iModel: IModelDb) {
@@ -671,9 +690,10 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 }
 
 /** The position in space of a Light.
- * @public
+ * @internal
  */
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
+  /** @internal */
   public static get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */
   public enabled!: boolean;

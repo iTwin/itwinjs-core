@@ -1,6 +1,19 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Add transient element IDs from selection into hilite list when syncing
+- Disable default hilite list syncing with tool selection set when using unified selection
+- Set extended data when creating UI objects
+- Change the way `TreeNodeItem` key is stored inside the object. Instead of using `extendedData`, now we use an undefined property on the `TreeNodeItem` itself. This should help us avoid the key being overwritten in the `extendedData` and makes `extendedData` usable for other purposes, e.g. storing some user's data.
+- Add release tags
+- Mark `ViewWithUnifiedSelectionProps.ruleset` as @alpha
+- Improve warnings about unset `pagingSize` property
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

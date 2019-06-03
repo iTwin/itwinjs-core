@@ -67,6 +67,12 @@ const computePickBufferOutputs = `
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
+const computeAltPickBufferOutputs = `
+  vec4 output0 = baseColor;
+  vec4 output1 = vec4(0.0);
+  vec4 output2 = vec4(0.0);
+`;
+
 const assignPickBufferOutputsMRT = `
   FragColor0 = output0;
   FragColor1 = output1;
@@ -96,6 +102,20 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
     prelude.addline(reassignFeatureId);
   } else
     prelude.add(computePickBufferOutputs);
+
+  if (System.instance.capabilities.supportsMRTPickShaders) {
+    frag.addDrawBuffersExtension();
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
+  } else {
+    addRenderTargetIndex(frag);
+    frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMP);
+  }
+}
+
+/** @internal */
+export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
+  const prelude = new SourceBuilder();
+  prelude.add(computeAltPickBufferOutputs);
 
   if (System.instance.capabilities.supportsMRTPickShaders) {
     frag.addDrawBuffersExtension();

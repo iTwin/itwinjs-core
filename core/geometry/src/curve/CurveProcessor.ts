@@ -39,13 +39,13 @@ export abstract class RecursiveCurveProcessor {
       this.announceCurvePrimitive(curve, i++);
   }
 
-  /** annouce beginning or end of loops in a parity region */
+  /** announce beginning or end of loops in a parity region */
   public announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const loop of data.children)
       this.announceLoop(loop, i++);
   }
-  /** annouce beginning or end of a parity region */
+  /** announce beginning or end of a parity region */
   public announceUnionRegion(data: UnionRegion, _indexInParent: number = -1): void {
     let i = 0;
     for (const child of data.children) {
@@ -53,6 +53,11 @@ export abstract class RecursiveCurveProcessor {
     }
   }
 
+  /** announce a bag of curves.
+   * * The default implementation visits each child and calls the appropriate dispatch to
+   * * `this.announceCurvePrimitive(child)`
+   * * `child.announceToCurveProcessor(this)`
+   */
   public announceBagOfCurves(data: BagOfCurves, _indexInParent: number = -1): void {
     for (const child of data.children) {
       if (child instanceof CurvePrimitive)
@@ -69,13 +74,19 @@ export abstract class RecursiveCurveProcessor {
  * @public
  */
 export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurveProcessor {
-  // NOTE: parameter names begin with underbar to suppress "unused var" errors
+  /** Stack of curve collections that are "up the tree" from the current point of the traversal. */
   protected _stack: CurveCollection[];
   protected constructor() {
     super();
     this._stack = [];
   }
+  /** Push `data` onto the stack so its status is available during processing of children.
+   * * Called when `data` is coming into scope.
+   */
   public enter(data: CurveCollection) { this._stack.push(data); }
+  /** Pop the stack
+   * * called when the top of the stack goes out of scope
+   */
   public leave(): CurveCollection | undefined { return this._stack.pop(); }
 
   /** process error content */
@@ -96,7 +107,7 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
     this.leave();
   }
 
-  /** annouce beginning or end of loops in a parity region */
+  /** announce beginning or end of loops in a parity region */
   public announceParityRegion(data: ParityRegion, _indexInParent: number = -1): void {
     this.enter(data);
     let i = 0;
@@ -104,13 +115,20 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
       this.announceLoop(loop, i++);
     this.leave();
   }
-  /** annouce beginning or end of a parity region */
+  /** announce beginning or end of a parity region */
   public announceUnionRegion(data: UnionRegion, indexInParent: number = -1): void {
     this.enter(data);
     super.announceUnionRegion(data, indexInParent);
     this.leave();
   }
-
+  /**
+   * Announce members of an unstructured collection.
+   * * push the collection reference on the stack
+   * * announce children
+   * * pop the stack
+   * @param data the collection
+   * @param _indexInParent index where the collection appears in its parent.
+   */
   public announceBagOfCurves(data: BagOfCurves, _indexInParent: number = -1): void {
     this.enter(data);
     let i = 0;

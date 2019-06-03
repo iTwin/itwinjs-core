@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { flattenChildren } from "@bentley/ui-core";
 import { Direction, OrthogonalDirection, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
-import { FlattenChildren } from "../utilities/Props";
 import { ScrollIndicator } from "./scroll/Indicator";
 import { ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider, Toolbar } from "./Toolbar";
 import { Items } from "./Items";
@@ -30,7 +30,7 @@ interface ScrollableState {
 }
 
 const getItemCount = (props: ToolbarProps) => {
-  const items = FlattenChildren(props.items);
+  const items = flattenChildren(props.items);
   return React.Children.count(items);
 };
 

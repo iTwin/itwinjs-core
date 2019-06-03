@@ -7,11 +7,10 @@
 import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
- * Configuration properties for [[TemporaryStorage]]
- *
- * @hidden
+ * Configuration properties for [[TemporaryStorage]].
+ * @internal
  */
-export interface Props<T> {
+export interface TemporaryStorageProps<T> {
   /** A factory method that creates a stored value given it's identifier */
   factory: (id: string) => T;
 
@@ -46,18 +45,18 @@ interface TemporaryValue<T> {
  * Storage for values that get removed from it after being unused (not-requested
  * for a specified amount of time).
  *
- * @hidden
+ * @internal
  */
-export default class TemporaryStorage<T> implements IDisposable {
+export class TemporaryStorage<T> implements IDisposable {
 
   private _values: Map<string, TemporaryValue<T>>;
   private _timer?: NodeJS.Timer;
-  public readonly props: Readonly<Props<T>>;
+  public readonly props: TemporaryStorageProps<T>;
 
   /**
    * Constructor. Creates the storage using supplied params.
    */
-  constructor(props: Props<T>) {
+  constructor(props: TemporaryStorageProps<T>) {
     this.props = props;
     this._values = new Map<string, TemporaryValue<T>>();
     if (this.props.cleanupInterval)

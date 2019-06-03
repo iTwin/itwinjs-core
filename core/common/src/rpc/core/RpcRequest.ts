@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol } from "./RpcProtocol";
@@ -12,9 +12,10 @@ import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 import { RpcNotFoundResponse } from "./RpcControl";
-import { IModelToken } from "../../IModel";
-import { IModelError } from "../../IModelError";
+import { IModelTokenProps } from "../../IModel";
+import { IModelError, BackendError } from "../../IModelError";
 import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 
 const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
@@ -43,10 +44,10 @@ export class ResponseLike implements Response {
   }
 }
 
-/** Supplies an IModelToken for an RPC request.
+/** Supplies an IModelTokenProps for an RPC request.
  * @public
  */
-export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
+export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined;
 
 /** Supplies the initial retry interval for an RPC request.
  * @public
@@ -179,14 +180,27 @@ export abstract class RpcRequest<TResponse = any> {
   /** A protocol-specific method identifier for this request. */
   public method: string;
 
-  /** Finds the first parameter of a given type if present. */
-  public findParameterOfType<T>(requestConstructor: { new(...args: any[]): T }): T | undefined {
+  /** Finds the first parameter of a given structural type if present. */
+  public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
-      if (param instanceof requestConstructor)
-        return param;
+      for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
+        if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+          return param;
+        }
+      }
     }
 
     return undefined;
+  }
+
+  /** Finds the first IModelTokenProps parameter if present. */
+  public findTokenPropsParameter(): IModelTokenProps | undefined {
+    if (RpcConfiguration.developmentMode) {
+      return this.findParameterOfType({ iModelId: "string" });
+    } else {
+      return this.findParameterOfType({ iModelId: "string", contextId: "string" });
+    }
+
   }
 
   /** The raw implementation response for this request. */
@@ -299,7 +313,7 @@ export abstract class RpcRequest<TResponse = any> {
   private handleResolved(value: RpcSerializedValue) {
     try {
       this._raw = value.objects;
-      const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+      const result: TResponse = RpcMarshaling.deserialize(this.protocol, value);
 
       if (ArrayBuffer.isView(result)) {
         this._raw = result.buffer;
@@ -315,23 +329,19 @@ export abstract class RpcRequest<TResponse = any> {
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
 
     try {
-      const localError = new Error();
-      const backendError = RpcMarshaling.deserialize(this.operation, this.protocol, value);
-      localError.name = backendError.name;
-      localError.message = backendError.message;
-
-      const localStack = localError.stack;
-      const remoteStack = backendError.stack;
-      backendError.stack = `${localStack}\n${remoteStack}`;
-
-      return this.reject(backendError);
+      const error = RpcMarshaling.deserialize(this.protocol, value);
+      const hasInfo = error && typeof (error) === "object" && error.hasOwnProperty("name") && error.hasOwnProperty("message");
+      const name = hasInfo ? error.name : "";
+      const message = hasInfo ? error.message : "";
+      const errorNumber = (hasInfo && error.hasOwnProperty("errorNumber")) ? error.errorNumber : BentleyStatus.ERROR;
+      return this.reject(new BackendError(errorNumber, name, message, Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend, () => error));
     } catch (err) {
       return this.reject(err);
     }
   }
 
   private handleNotFound(status: RpcRequestStatus, value: RpcSerializedValue) {
-    const response = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+    const response = RpcMarshaling.deserialize(this.protocol, value);
     this.setStatus(status);
 
     let resubmitted = false;

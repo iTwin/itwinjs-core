@@ -26,8 +26,16 @@ export class ServerError extends IModelError {
 
 /** @public */
 export class ServerTimeoutError extends ServerError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction) {
-    super(errorNumber, message, log);
-    this.name = "Server timeout error (" + errorNumber + ")";
+  public constructor(message: string, log?: LogFunction) {
+    super(IModelStatus.ServerTimeout, message, log);
+    this.name = "Server timeout error";
+  }
+}
+
+/** @public */
+export class BackendError extends IModelError {
+  public constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = name;
   }
 }

@@ -24,16 +24,26 @@ import {
   Widget,
   FrontstageComposer,
 } from "../../ui-framework";
-import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, ViewState3d, MockRender } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-components";
 import sinon = require("sinon");
 import { NavigationWidget } from "../../ui-framework/widgets/NavigationWidget";
 import { mount } from "enzyme";
+import { SupportsViewSelectorChange } from "../../ui-framework/content/ContentControl";
 
 describe("ViewportContentControl", () => {
 
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
   const viewMock = moq.Mock.ofType<ViewState3d>();
+
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
+  });
 
   class TestViewportContentControl extends ViewportContentControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -113,6 +123,9 @@ describe("ViewportContentControl", () => {
         expect(contentControl.isViewport).to.be.true;
         expect(contentControl.viewport).to.not.be.undefined;
         expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
+
+        const supportsContentControl = contentControl as unknown as SupportsViewSelectorChange;
+        expect(supportsContentControl.supportsViewSelectorChange).to.be.true;
       }
     }
   });

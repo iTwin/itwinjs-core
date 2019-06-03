@@ -12,7 +12,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
-import { treeWithFilteringSupport, Props } from "../../tree/WithFilteringSupport";
+import { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../tree/WithFilteringSupport";
 import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 
@@ -29,8 +29,8 @@ const defaultState: State = {
 describe("Tree withFilteringSupport", () => {
 
   let testRulesetId: string;
-  let tree: ShallowWrapper<Props, State, any>;
-  let treeInstance: React.Component<Props, State, any>;
+  let tree: ShallowWrapper<TreeWithFilteringSupportProps, State, any>;
+  let treeInstance: React.Component<TreeWithFilteringSupportProps, State, any>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const filter = "filter";
@@ -190,7 +190,7 @@ describe("Tree withFilteringSupport", () => {
   });
 
   describe("getDerivedStateFromProps", () => {
-    const getDerivedStateFromProps: (nextProps: Props, state: State) => State = (PresentationTree as any).getDerivedStateFromProps;
+    const getDerivedStateFromProps: (nextProps: TreeWithFilteringSupportProps, state: State) => State = (PresentationTree as any).getDerivedStateFromProps;
     const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
 
     before(() => {

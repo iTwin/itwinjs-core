@@ -9,6 +9,7 @@ import {
   AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType, AuthorizedClientRequestContext,
+  ContextType,
 } from "@bentley/imodeljs-clients";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
@@ -174,12 +175,14 @@ describe("iModelHub GlobalEventHandler", () => {
   it("should receive Global Event iModelCreatedEvent", async () => {
     await utils.createIModel(requestContext, imodelName, projectId);
 
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","ContextId":"${projectId}","ContextTypeId":${ContextType.Project},"iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
+    chai.expect(event!.contextId).to.be.eq(projectId);
+    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Project);
   });
 
   it("should update Global Event subscription", async () => {
@@ -292,5 +295,19 @@ describe("iModelHub GlobalEventHandler", () => {
   it("should delete Global Event subscription by InstanceId", async () => {
     mockDeleteGlobalEventsSubscription(globalEventSubscription.wsgId);
     await imodelHubClient.globalEvents.subscriptions.delete(serviceAccountRequestContext, globalEventSubscription.wsgId);
+  });
+
+  it("should receive Global Event iModelCreatedEvent from Asset", async () => {
+    const assetId = await utils.getAssetId(requestContext, undefined);
+    await utils.createIModel(requestContext, imodelName, assetId);
+
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","ContextId":"${assetId}","ContextTypeId":${ContextType.Asset},"iModelId":"${Guid.createValue()}"}`;
+    mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
+    const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
+
+    chai.expect(event).to.be.instanceof(IModelCreatedEvent);
+    chai.assert(!!event!.iModelId);
+    chai.expect(event!.contextId).to.be.eq(assetId);
+    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Asset);
   });
 });

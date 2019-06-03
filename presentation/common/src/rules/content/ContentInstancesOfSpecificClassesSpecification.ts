@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ContentSpecificationBase } from "./ContentSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 
 /**
- * Returns ECInstance(s) of specified classes.
+ * Creates content for ECInstance(s) of specified classes.
  *
  * **Note**: this specification doesn't rely on selection. It always returns instances no matter
  * what the selection is, so pre-filtering should be done in [[ContentRule]] condition and [[instanceFilter]].
+ *
+ * @public
  */
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.ContentInstancesOfSpecificClasses;
+  specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 
   /**
    * List of ECClass specifications whose ECInstances should be selected.

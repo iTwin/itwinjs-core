@@ -10,11 +10,12 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
-import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
+import { PRESENTATION_TREE_NODE_KEY, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 /**
  * Presentation Rules-driven tree data provider.
+ * @public
  */
 export class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _rulesetId: string;
@@ -37,7 +38,25 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   /** [[IModelConnection]] used by this data provider */
   public get imodel(): IModelConnection { return this._imodel; }
 
-  /** Paging options for obtaining nodes */
+  /**
+   * Paging options for obtaining nodes.
+   *
+   * Presentation data providers, when used with paging, have ability to save one backend request for size / count. That
+   * can only be achieved when `pagingSize` property is set on the data provider and it's value matches size which is used when
+   * requesting nodes. To help developers notice this problem, data provider emits a warning similar to this:
+   * ```
+   * PresentationTreeDataProvider.pagingSize doesn't match pageOptions in PresentationTreeDataProvider.getNodes call. Make sure you set PresentationTreeDataProvider.pagingSize to avoid excessive backend requests.
+   * ```
+   * To fix the issue, developers should make sure the page size used for requesting data is also set for the data provider:
+   * ```TS
+   * const pageSize = 10;
+   * const provider = new TreeDataProvider(imodel, rulesetId);
+   * provider.pagingSize = pageSize;
+   * // only one backend request is made for the two following requests:
+   * provider.getNodesCount();
+   * provider.getNodes({ start: 0, size: pageSize });
+   * ```
+   */
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
@@ -54,7 +73,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * **Warning:** the `node` must be created by this data provider.
    */
   public getNodeKey(node: TreeNodeItem): NodeKey {
-    return node.extendedData.key as NodeKey;
+    return (node as any)[PRESENTATION_TREE_NODE_KEY];
   }
 
   /**
@@ -63,8 +82,11 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * @param pageOptions Information about the requested page of data.
    */
   public async getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> {
-    if ((undefined !== pageOptions && pageOptions.size !== this.pagingSize) || (undefined === this.pagingSize))
-      Logger.logWarning("Presentation.Components", "Paging size in provider does not match Provider's Paging Size.");
+    if (undefined !== pageOptions && pageOptions.size !== this.pagingSize) {
+      const msg = `PresentationTreeDataProvider.pagingSize doesn't match pageOptions in PresentationTreeDataProvider.getNodes call.
+        Make sure you set PresentationTreeDataProvider.pagingSize to avoid excessive backend requests.`;
+      Logger.logWarning("Presentation.Components", msg);
+    }
 
     if (parentNode)
       return (await this._getNodesAndCount(parentNode, pageOptions)).nodes;
@@ -86,8 +108,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 
     if (!requestCount) {
       const allNodes = await Presentation.presentation.getNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
-      const nodesCount = undefined === pageOptions || undefined === pageOptions.size ? allNodes.length : undefined;
-      return { nodes: parentNode ? createTreeNodeItems(allNodes, parentNode.id) : createTreeNodeItems(allNodes), count: nodesCount };
+      return { nodes: parentNode ? createTreeNodeItems(allNodes, parentNode.id) : createTreeNodeItems(allNodes), count: allNodes.length };
     }
 
     const nodesResponse = await Presentation.presentation.getNodesAndCount({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);

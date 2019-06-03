@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl, TokenValues } from "../common/TestRpcInterface";
-import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelToken } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelTokenProps } from "@bentley/imodeljs-common";
 import { BentleyError, BentleyStatus, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 export async function testInterfaceResource() {
@@ -27,8 +27,7 @@ export class TestZeroMajorRpcImpl extends RpcInterface implements ZeroMajorRpcIn
   }
 
   public async op1(params: TestOp1Params): Promise<number> {
-    const sum = params.sum();
-    return sum;
+    return params.a + params.b;
   }
 }
 
@@ -46,27 +45,11 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op1(params: TestOp1Params): Promise<number> {
-    const sum = params.sum();
-    return sum;
+    return params.a + params.b;
   }
 
   public async op2(id: Id64String): Promise<Id64String> {
     const val = id;
-    return val;
-  }
-
-  public async op3(date: Date): Promise<Date> {
-    const val = date;
-    return val;
-  }
-
-  public async op4(map: Map<any, any>): Promise<Map<any, any>> {
-    const val = map;
-    return val;
-  }
-
-  public async op5(set: Set<any>): Promise<Set<any>> {
-    const val = set;
     return val;
   }
 
@@ -143,7 +126,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return;
   }
 
-  public async op16(token: IModelToken, values: TokenValues): Promise<boolean> {
+  public async op16(token: IModelTokenProps, values: TokenValues): Promise<boolean> {
     return token.key === values.key &&
       token.contextId === values.contextId &&
       token.iModelId === values.iModelId &&

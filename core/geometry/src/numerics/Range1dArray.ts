@@ -72,7 +72,7 @@ export class Range1dArray {
       return false;
     }
   }
-
+  /** Boolean intersection among the (presorted) input ranges */
   public static intersectSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[] {
     let iA = 0;
     let iB = 0;
@@ -99,7 +99,7 @@ export class Range1dArray {
   }
 
   /** Internal step: Read an interval from the array.
-   *  If it overlaps the work interval, advance the work interval, and return true to notify caller to increment readindex.
+   *  If it overlaps the work interval, advance the work interval, and return true to notify caller to increment read index.
    */
   private static advanceIntervalUnion(workRange: Range1d, source: Range1d[], readIndex: number): boolean {
     if (readIndex >= source.length)
@@ -112,6 +112,7 @@ export class Range1dArray {
     return true;
   }
 
+  /** Boolean union among the (presorted) input ranges */
   public static unionSorted(dataA: Range1d[], dataB: Range1d[]): Range1d[] {
     const nA = dataA.length;
     const nB = dataB.length;
@@ -154,6 +155,7 @@ export class Range1dArray {
     return retVal;
   }
 
+  /** Boolean parity among the (presorted) input ranges */
   public static paritySorted(dataA: Range1d[], dataB: Range1d[]): Range1d[] {
     // Combine the two arrays, and then perform a simplification using simplifySortParity function
     const retVal: Range1d[] = [];
@@ -169,7 +171,7 @@ export class Range1dArray {
     return retVal;
   }
 
-  /** Uses the Range1d specific compare function for sorting the array of ranges */
+  /** Uses the Range1d specific compare function `compareRange1dLexicalLowHigh` for sorting the array of ranges */
   public static sort(data: Range1d[]) {
     data.sort(compareRange1dLexicalLowHigh);
   }
@@ -206,6 +208,7 @@ export class Range1dArray {
     data.length = currIdx;
   }
 
+  /** Apply parity logic among ranges which are not pre-sorted. */
   public static simplifySortParity(data: Range1d[], removeZeroLengthRanges: boolean = false) {
     const numData: number[] = [];
     for (const range of data) {
@@ -287,7 +290,7 @@ export class Range1dArray {
     if (sort)
       result.sort();
     if (compress)
-      result.compressAdjcentDuplicates();
+      result.compressAdjacentDuplicates();
 
     return result;
   }

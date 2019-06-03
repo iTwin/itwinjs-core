@@ -6,11 +6,17 @@ import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { FrontstageProvider, Frontstage, FrontstageManager, ContentLayoutDef, FrontstageProps, CoreTools } from "../../ui-framework";
+import { MockRender } from "@bentley/imodeljs-frontend";
 
 describe("FrontstageDef", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    MockRender.App.startup();
+  });
+
+  after(() => {
+    MockRender.App.shutdown();
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {

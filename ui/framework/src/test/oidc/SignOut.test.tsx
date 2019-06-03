@@ -5,23 +5,11 @@
 import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
-import TestUtils from "../TestUtils";
+
+import TestUtils, { MockAccessToken } from "../TestUtils";
 import { SignOutModalFrontstage } from "../../ui-framework/oidc/SignOut";
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
+import sinon = require("sinon");
 
-class MockAccessToken extends AccessToken {
-  public constructor() { super(); this._samlAssertion = ""; }
-  public getUserInfo(): UserInfo | undefined {
-    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-    const email = { id: "testuser001@mailinator.com" };
-    const profile = { firstName: "test", lastName: "user" };
-    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-    return new UserInfo(id, email, profile, organization, featureTracking);
-  }
-
-  public toTokenString() { return ""; }
-}
 describe("SignOutModalFrontstage", () => {
 
   before(async () => {
@@ -35,6 +23,18 @@ describe("SignOutModalFrontstage", () => {
 
     const wrapper = mount(stage.content as React.ReactElement<any>);
     expect(wrapper).not.to.be.undefined;
+    wrapper.unmount();
+  });
+
+  it("should call onSignOut handler", () => {
+    const spyMethod = sinon.spy();
+
+    const stage = new SignOutModalFrontstage(new MockAccessToken(), spyMethod);
+
+    const wrapper = mount(stage.content as React.ReactElement<any>);
+    wrapper.find("button").simulate("click");
+
+    spyMethod.calledOnce.should.true;
     wrapper.unmount();
   });
 

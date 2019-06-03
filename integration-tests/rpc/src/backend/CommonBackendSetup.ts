@@ -34,13 +34,13 @@ registerBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class, () => 
 });
 
 registerBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion, () => {
-  IModelReadRpcInterface.version = "0.0.0";
+  IModelReadRpcInterface.interfaceVersion = "0.0.0";
   return true;
 });
 
-const compatibleVersion = IModelReadRpcInterface.version;
+const compatibleVersion = IModelReadRpcInterface.interfaceVersion;
 registerBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion, () => {
-  IModelReadRpcInterface.version = compatibleVersion;
+  IModelReadRpcInterface.interfaceVersion = compatibleVersion;
   return true;
 });
 

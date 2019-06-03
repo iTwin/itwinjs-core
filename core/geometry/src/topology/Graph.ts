@@ -10,15 +10,25 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
-/** @internal */
+/** function signature for function of one node with no return type restrictions
+ * @internal
+ */
 export type NodeFunction = (node: HalfEdge) => any;
-/** @internal */
+/** function signature for function of one node, returning a number
+ * @internal
+ */
 export type NodeToNumberFunction = (node: HalfEdge) => number;
-/** @internal */
+/** function signature for function of one node, returning a boolean
+ * @internal
+ */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
-/** @internal */
+/** function signature for function of a node and a mask, returning a number
+ * @internal
+ */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
-/** @internal */
+/** function signature for function of a graph and a node, returning a boolean
+ * @internal
+ */
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 /**
  *
@@ -50,7 +60,7 @@ export class HalfEdge {
   /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
 
-  private _id: any;   // immutable id useful for debuggging.
+  private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
 
@@ -172,14 +182,6 @@ export class HalfEdge {
     }
     return newA;
   }
-  // These members are specific to the z-sweep trapezoidal decomposition and earlobe triangulation.
-  // previous and next nodes in z-order
-  //   public prevZ?: HalfEdge;
-  // public nextZ?: HalfEdge;
-  // indicates whether this is a steiner point
-  public steiner: boolean;
-  // z-order curve value
-  public zOrder!: number;
 
   private static _totalNodesCreated = 0;
   public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
@@ -189,7 +191,6 @@ export class HalfEdge {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.steiner = false;
     // Other variables are by default undefined
   }
 
@@ -218,7 +219,7 @@ export class HalfEdge {
    */
   public clearMask(mask: HalfEdgeMask) { this.maskBits &= ~mask; }
   /**
-   *
+   * Set a mask at all nodes around a vertex.
    * @param mask mask to apply to the half edges around this HalfEdge's vertex loop
    */
   public setMaskAroundVertex(mask: HalfEdgeMask) {
@@ -230,7 +231,7 @@ export class HalfEdge {
   }
 
   /**
-   *
+   * Apply a mask to all edges around a face.
    * @param mask mask to apply to the half edges around this HalfEdge's face loop
    */
   public setMaskAroundFace(mask: HalfEdgeMask) {
@@ -329,6 +330,7 @@ export class HalfEdge {
   }
 
   /**
+   * Create an edge with initial id,x,y at each end.
    * @param id0 id for first node
    * @param x0  x coordinate for first node
    * @param y0  y coordinate for first node
@@ -349,7 +351,7 @@ export class HalfEdge {
   /** "pinch" ...
    *
    * * is the universal manipulator for manipulating a node's next and prev pointers
-   * * swaps face precessors of nodeA and nodeB.
+   * * swaps face predecessors of nodeA and nodeB.
    * *  is its own inverse.
    * *  if nodeA, nodeB are in different face loops, the loops join to one loop.
    * *  if nodeA, nodeB are in the same face loop, the loop splits into two loops.
@@ -366,48 +368,51 @@ export class HalfEdge {
   }
 
   /** Turn all pointers to undefined so garbage collector can reuse the object.
-   *  This is to be called only by a Graph object that is being decomissioned.
+   *  This is to be called only by a Graph object that is being decommissioned.
    */
-  public decomission() {
+  public decommission() {
     (this._facePredecessor as any) = undefined;
     (this._faceSuccessor as any) = undefined;
     (this._edgeMate as any) = undefined;
   }
 
-  /** @returns Return the node. This identity function is useful as the NodeFunction in collector methods. */
+  /** Return the node. This identity function is useful as the NodeFunction in collector methods. */
   public static nodeToSelf(node: HalfEdge): any { return node; }
-  /** @returns Return the id of a node.  Useful for collector methods. */
+  /** Return the id of a node.  Useful for collector methods. */
   public static nodeToId(node: HalfEdge): any { return node.id; }
-  /** @returns Return the id of a node.Useful for collector methods. */
+  /** Return the id of a node.Useful for collector methods. */
   public static nodeToIdString(node: HalfEdge): any { return node.id.toString(); }
 
-  /** @returns Return the [id, [x,y]] of a node.  Useful for collector methods. */
+  /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
   public static nodeToIdMaskXY(node: HalfEdge): { id: any, mask: any, xy: number[] } {
     return { id: node.id, mask: HalfEdge.nodeToMaskString(node), xy: [node.x, node.y] };
   }
 
-  /** @returns Return the [id, [x,y]] of a node.  Useful for collector methods. */
+  /** Return the [id, [x,y]] of a node.  Useful for collector methods. */
   public static nodeToIdXYString(node: HalfEdge): string {
     const s = node.id.toString() + " " +
       HalfEdge.nodeToMaskString(node) + " [" + node.x + "," + node.y + "]";
     return s;
   }
 
-  /**  */
+  /** Create a string representation of the mask
+   * * Null mask is empty string.
+   * * Appended characters B,P,X for Boundary, Primary, Exterior mask bits.
+   */
   public static nodeToMaskString(node: HalfEdge): string {
     let s = "";
-    if (node.isMaskSet(HalfEdgeMask.BOUNDARY)) s += "B";
+    if (node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) s += "B";
     if (node.isMaskSet(HalfEdgeMask.PRIMARY_EDGE)) s += "P";
     if (node.isMaskSet(HalfEdgeMask.EXTERIOR)) s += "X";
     return s;
   }
-  /** @returns Return [x,y] with coordinates of node */
+  /** Return [x,y] with coordinates of node */
   public static nodeToXY(node: HalfEdge): number[] { return [node.x, node.y]; }
-  /** @returns Return Vector2d to face successor, with only xy coordinates */
+  /** Return Vector2d to face successor, with only xy coordinates */
   public vectorToFaceSuccessorXY(result?: Vector2d): Vector2d {
     return Vector2d.create(this.faceSuccessor.x - this.x, this.faceSuccessor.y - this.y, result);
   }
-  /** @returns Return Vector3d to face successor */
+  /** Return Vector3d to face successor */
   public vectorToFaceSuccessor(result?: Vector3d): Vector3d {
     return Vector3d.create(
       this.faceSuccessor.x - this.x,
@@ -416,15 +421,15 @@ export class HalfEdge {
       result);
   }
 
-  /** @returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  /** Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
-  /** @return Return true if x and y coordinates of this and other are exactly equal */
+  /** Return true if x and y coordinates of this and other are exactly equal */
   public isEqualXY(other: HalfEdge): boolean {
     return this.x === other.x && this.y === other.y;
   }
 
-  /** @return Return true if x and y coordinates of this and other are exactly equal */
+  /** Return true if x and y coordinates of this and other are exactly equal */
   public distanceXY(other: HalfEdge): number {
     return Geometry.distanceXYXY(this.x, this.y, other.x, other.y);
   }
@@ -509,7 +514,7 @@ export class HalfEdge {
       node = node.vertexSuccessor;
     } while (node !== this);
   }
-  /** Returns the signed sum of xy areas of triangls from first node to edges.
+  /** Returns the signed sum of xy areas of triangles from first node to edges.
    *
    * * A positive area is counterclockwise.
    * * A negative area is clockwise.
@@ -519,7 +524,7 @@ export class HalfEdge {
     // sum area of trapezoids.
     // * the formula in the loop gives twice the area (because it does nto average the y values).
     // * this is fixed up at the end by a single multiply by 0.5
-    // * indidual trapezoid heights are measured from y at the start node to keep area values numericall smaller.
+    // * individual trapezoid heights are measured from y at the start node to keep area values numerical smaller.
     const y0 = this.y;
     let dy0 = 0.0;
     let dy1 = 0.0;
@@ -568,7 +573,7 @@ export class HalfEdge {
   }
 
   /**
-   * @returns interpolated x coordinate between this node and its face successor.
+   * Return the interpolated x coordinate between this node and its face successor.
    * @param fraction fractional position along this edge.
    */
   public fractionToX(fraction: number): number {
@@ -576,7 +581,7 @@ export class HalfEdge {
     return this.x + (node1.x - this.x) * fraction;
   }
   /**
-   * @returns interpolated x coordinate between this node and its face successor.
+   * Return the interpolated x coordinate between this node and its face successor.
    * @param fraction fractional position along this edge.
    */
   public fractionToY(fraction: number): number {
@@ -585,7 +590,7 @@ export class HalfEdge {
   }
 
   /**
-   * * Compute fractional coordintes of the intersection of edges from given base nodes
+   * * Compute fractional coordinates of the intersection of edges from given base nodes
    * * If parallel or colinear, return undefined.
    * * If (possibly extended) lines intersect, return the fractions of intersection as x,y in the result.
    * @param nodeA0 Base node of edge A
@@ -606,7 +611,7 @@ export class HalfEdge {
     return undefined;
   }
   /**
-   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * Compute fractional coordinates of the intersection of a horizontal line with an edge.
    * * If the edge is horizontal with (approximate) identical y, return the node.
    * * If the edge is horizontal with different y, return undefined.
    * * If the edge is not horizontal, return the fractional position (possibly outside 0..1) of the intersection.
@@ -624,7 +629,7 @@ export class HalfEdge {
   }
 
   /**
-   * * Compute fractional coordintes of the intersection of a horizontal line with an edge.
+   * * Compute fractional coordinates of the intersection of a horizontal line with an edge.
    * * If the edge is horizontal return undefined (no test for horizontal at y!!!)
    * * If the edge is not horizontal and y is between its end y's, return the fraction
    * @param nodeA Base node of edge
@@ -649,6 +654,7 @@ export class HalfEdge {
  * @internal
  */
 export class HalfEdgeGraph {
+  /** Simple array with pointers to all the half edges in the graph. */
   public allHalfEdges: HalfEdge[];
   private _numNodesCreated = 0;
   public constructor() {
@@ -675,7 +681,7 @@ export class HalfEdgeGraph {
   }
 
   /**
-   * * Insert a vertex in the edge begining at base.
+   * * Insert a vertex in the edge beginning at base.
    * * this creates two half edges.
    * * The base of the new edge is 'after' the (possibly undefined) start node in its face loop.
    * * The existing mate retains its base xyzi properties but is no longer the mate of base.
@@ -687,11 +693,11 @@ export class HalfEdgeGraph {
     const he = HalfEdge.splitEdge(base, xA, yA, zA, iA, this.allHalfEdges);
     return he;
   }
-  /** This is a destructor-like action that elminates all interconnection among the graph's nodes.
+  /** This is a destructor-like action that eliminates all interconnection among the graph's nodes.
    * After this is called the graph is unusable.
    */
   public decommission() {
-    for (const node of this.allHalfEdges) { node.decomission(); }
+    for (const node of this.allHalfEdges) { node.decommission(); }
     this.allHalfEdges.length = 0;
     (this.allHalfEdges as any) = undefined;
   }
@@ -723,7 +729,7 @@ export class HalfEdgeGraph {
     }
   }
   /**
-   * @returns Return the number of nodes that have a specified mask bit set.
+   * Return the number of nodes that have a specified mask bit set.
    * @param mask mask to count
    */
   public countMask(mask: HalfEdgeMask): number {
@@ -755,7 +761,7 @@ export class HalfEdgeGraph {
     return count;
   }
 
-  /** @returns Returns the number of face loops */
+  /** Returns the number of face loops */
   public countFaceLoops(): number {
     this.clearMask(HalfEdgeMask.VISITED);
     let count = 0;
@@ -763,7 +769,7 @@ export class HalfEdgeGraph {
     return count;
   }
   /**
-   * @returns Returns the number of face loops satisfying a filter function with mask argument.
+   * Returns the number of face loops satisfying a filter function with mask argument.
    *
    */
   public countFaceLoopsWithMaskFilter(filter: HalfEdgeAndMaskToBooleanFunction, mask: HalfEdgeMask): number {
@@ -777,7 +783,7 @@ export class HalfEdgeGraph {
     return count;
   }
 
-  /** @returns Returns an array of nodes, where each node represents a starting point of a face loop.
+  /** Returns an array of nodes, where each node represents a starting point of a face loop.
    */
   public collectFaceLoops(): HalfEdge[] {
     const returnArray: HalfEdge[] = [];
@@ -786,7 +792,7 @@ export class HalfEdgeGraph {
     return returnArray;
   }
 
-  /** @returns Returns an array of nodes, where each node represents a starting point of a vertex loop.
+  /** Returns an array of nodes, where each node represents a starting point of a vertex loop.
    */
   public collectVertexLoops(): HalfEdge[] {
     this.clearMask(HalfEdgeMask.VISITED);
@@ -805,7 +811,7 @@ export class HalfEdgeGraph {
    * * Visit each facet of the graph once.
    * * Call the announceFace function
    * * continue search if announceFace(graph, node) returns true
-   * * terminate search if announceface (graph, node) returns false
+   * * terminate search if announce face (graph, node) returns false
    * @param  announceFace function to apply at one node of each face.
    */
   public announceFaceLoops(announceFace: GraphNodeFunction) {
@@ -823,8 +829,8 @@ export class HalfEdgeGraph {
    * * Visit each vertex loop of the graph once.
    * * Call the announceVertex function
    * * continue search if announceFace(graph, node) returns true
-   * * terminate search if announceface (graph, node) returns false
-   * @param  annonceFace function to apply at one node of each face.
+   * * terminate search if announce face (graph, node) returns false
+   * @param  announceVertex function to apply at one node of each face.
    */
   public announceVertexLoops(announceVertex: GraphNodeFunction) {
     this.clearMask(HalfEdgeMask.VISITED);
@@ -836,28 +842,57 @@ export class HalfEdgeGraph {
         break;
     }
   }
-  /** @returns Return the number of nodes in the graph */
+  /** Return the number of nodes in the graph */
   public countNodes(): number { return this.allHalfEdges.length; }
 }
-/** @internal */
-export const enum HalfEdgeMask { // tslint:disable-line:no-const-enum
-EXTERIOR = 0x00000001,
-  BOUNDARY = 0x00000002,
-  CONSTU_MASK = 0x00000004,
-  CONSTV_MASK = 0x00000008,
-  USEAM_MASK = 0x00000010,
-  VSEAM_MASK = 0x00000020,
-  BOUNDARY_VERTEX_MASK = 0x00000040,
-  PRIMARY_VERTEX_MASK = 0x00000080,
-  DIRECTED_EDGE_MASK = 0x00000100,
+/**
+ * * Each node of the graph has a mask member.
+ * * The mask member is a number which is used as set of single bit boolean values.
+ * * Particular meanings of the various bits are HIGHLY application dependent.
+ *   * The EXTERIOR mask bit is widely used to mark nodes that are "outside" the active areas
+ *   * The PRIMARY_EDGE bit is widely used to indicate linework created directly from input data, hence protected from triangle edge flipping.
+ *   * The BOUNDARY bit is widely used to indicate that crossing this edge is a transition from outside to inside.
+ *   * VISITED is used locally in many searches.
+ *      * Never use VISITED unless the search logic is highy self contained.
+ * @internal
+ */
+export enum HalfEdgeMask {
+  /**  Mask commonly set consistently around exterior faces.
+   * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
+   * * An an edge inserted "within a purely exterior face" can yaver EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
+   * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
+   */
+  EXTERIOR = 0x00000001,
+  /** Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
+   * * At the moment of creating an edge from primary user boundary loop coordinates, the fact that an edge is BOUNDARY is often clear even though
+   *  there is uncertainty about which side should be EXTERIOR.
+   */
+  BOUNDARY_EDGE = 0x00000002,
+  // REMARK: Various mask names are COMMENTED here for reference to native legacy code.
+  // CONSTU_MASK = 0x00000004,
+  // CONSTV_MASK = 0x00000008,
+  // USEAM_MASK = 0x00000010,
+  // VSEAM_MASK = 0x00000020,
+  // BOUNDARY_VERTEX_MASK = 0x00000040,
+  // PRIMARY_VERTEX_MASK = 0x00000080,
+  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
+  WORK_MASK0 = 0x00000040,
+  /** Mask for use by algorithms.  Only use this mask if the graph life cycle is under your control. */
+  WORK_MASK1 = 0x00000080,
+  // DIRECTED_EDGE_MASK = 0x00000100,
+  /** Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a boundary between outside and inside.
+   * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUNDARY_EDGE nor EXTERIOR_EDGE
+   */
   PRIMARY_EDGE = 0x00000200,
-  HULL_MASK = 0x00000400,
-  SECTION_EDGE_MASK = 0x00000800,
-  POLAR_LOOP_MASK = 0x00001000,
-
+  // HULL_MASK = 0x00000400,
+  // SECTION_EDGE_MASK = 0x00000800,
+  // POLAR_LOOP_MASK = 0x00001000,
+  /** Mask used for low level searches to identify previously-visited nodes */
   VISITED = 0x00002000,
-  TRIANGULATED_NODE_MASK = 0x00004000,
-
+  /** Mask applied to triangles by earcut triangulator */
+  TRIANGULATED_FACE = 0x00004000,
+  /** no mask bits */
   NULL_MASK = 0x00000000,
+  /** all mask bits */
   ALL_MASK = 0xFFFFFFFF,
 }

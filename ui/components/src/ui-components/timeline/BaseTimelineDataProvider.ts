@@ -5,6 +5,7 @@
 /** @module Timeline */
 
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+
 import {
   TimelineDataProvider,
   Milestone, PlaybackSettings,
@@ -17,6 +18,8 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
   public readonly id = "TestTimelineDataProvider";
   public start: Date | undefined;
   public end: Date | undefined;
+  public viewId = "";
+
   public supportsTimelineAnimation = false; // set to true when provider determines animation data is available.
   public animationFraction: number = 0; // value from 0.0 to 1.0 that specifies the percentage complete for the animation.
   protected _milestones: Milestone[] = [];
@@ -24,6 +27,8 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   constructor(viewport?: ScreenViewport) {
     this._viewport = viewport;
+    if (viewport)
+      this.viewId = viewport.view.id;
   }
 
   protected _settings: PlaybackSettings = {
@@ -48,6 +53,10 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 
   public set viewport(viewport: ScreenViewport | undefined) {
     this._viewport = viewport;
+    if (viewport)
+      this.viewId = viewport.view.id;
+    else
+      this.viewId = "";
   }
 
   public get viewport(): ScreenViewport | undefined {

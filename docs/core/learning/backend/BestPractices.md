@@ -12,6 +12,8 @@ Log all Errors that you throw. Be sure to define the logging-related arguments t
 
 Maintain the ClientRequestContext so that logging emitted by backend and common code is correlated with frontend requests. See [the learning article](./ManagingClientRequestContext.md).
 
+The backend product should be configured to [report crashes and other fatal errors](./CrashReporting.md).
+
 ## Do not Block Too Long
 
 Use async functions when an operation is inherently asynchronous. Example: requesting a resource from the Internet or reading a huge image file from disk.

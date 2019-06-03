@@ -3,56 +3,51 @@
 exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
-    "checkBoxState": 1,
-    "description": "Sint libero laudantium voluptatem magni et voluptas quis.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "internet solution",
-          "id": "0x2ab5000001822d",
-        },
-        "pathFromRoot": Array [
-          "b6862502-1e0e-41c3-9b08-a0214f594314",
-          "2b23f95f-0db3-4473-9fde-2c0a107d9c97",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "sticky",
+        "id": "0x1d01000000f5fb",
       },
+      "pathFromRoot": Array [
+        "8a0214f5-9431-442b-a3f9-5f0db34739fd",
+        "e2c0a107-d9c9-4758-b192-6883bea7421c",
+      ],
+      "type": "ECInstanceNode",
     },
+    "description": "Ex quaerat explicabo.",
     "hasChildren": false,
-    "icon": "deposit",
-    "id": "2b23f95f-0db3-4473-9fde-2c0a107d9c97/b6862502-1e0e-41c3-9b08-a0214f594314",
+    "id": "e2c0a107-d9c9-4758-b192-6883bea7421c/8a0214f5-9431-442b-a3f9-5f0db34739fd",
     "isCheckboxVisible": true,
     "label": "A-2-1",
-    "parentId": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
+    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -836488705,
-        "color": 471946495,
+        "color": 1051299327,
       },
     },
   },
   Object {
-    "autoExpand": true,
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Fresh",
-          "id": "0xd0bd0000013c35",
-        },
-        "pathFromRoot": Array [
-          "1bb8cbe2-ea06-43b9-8f6f-e83e0ae64729",
-          "087ece56-9f02-4521-ab80-07ffd5072158",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "Vermont",
+        "id": "0x5e54000001574b",
       },
+      "pathFromRoot": Array [
+        "ea063b9c-f6fe-483e-8ae6-4729087ece56",
+        "9f025212-b800-47ff-9507-21582ec854f5",
+      ],
+      "type": "ECInstanceNode",
     },
+    "autoExpand": true,
+    "description": "In quis consequuntur quos hic animi ipsam perferendis tenetur.",
     "hasChildren": true,
-    "id": "087ece56-9f02-4521-ab80-07ffd5072158/1bb8cbe2-ea06-43b9-8f6f-e83e0ae64729",
+    "id": "9f025212-b800-47ff-9507-21582ec854f5/ea063b9c-f6fe-483e-8ae6-4729087ece56",
+    "isCheckboxVisible": true,
     "label": "A-2-2",
-    "parentId": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
+    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "style": Object {
       "colorOverrides": Object {
-        "color": -789612801,
+        "color": 1674400767,
       },
     },
   },
@@ -62,21 +57,19 @@ Array [
 exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
 Array [
   Object {
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "bandwidth",
+        "id": "0xa0da000001762c",
+      },
+      "pathFromRoot": Array [
+        "6fbe024f-2316-4265-a6e8-d65a837e308a",
+        "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+      ],
+      "type": "ECInstanceNode",
+    },
     "autoExpand": true,
     "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "bandwidth",
-          "id": "0xa0da000001762c",
-        },
-        "pathFromRoot": Array [
-          "6fbe024f-2316-4265-a6e8-d65a837e308a",
-          "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
-        ],
-        "type": "ECInstanceNode",
-      },
-    },
     "hasChildren": true,
     "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
     "isCheckboxDisabled": true,
@@ -89,28 +82,25 @@ Array [
     },
   },
   Object {
-    "autoExpand": true,
-    "extendedData": Object {
-      "key": Object {
-        "instanceKey": Object {
-          "className": "panel",
-          "id": "0x10d9c000001590a",
-        },
-        "pathFromRoot": Array [
-          "412801ae-3e44-4790-9992-f94b3186fb76",
-          "80c80a28-cf09-4ee8-a72e-c6682ae559ca",
-        ],
-        "type": "ECInstanceNode",
+    "__presentation-components/key": Object {
+      "instanceKey": Object {
+        "className": "SMS",
+        "id": "0xfd06000000f39f",
       },
+      "pathFromRoot": Array [
+        "2801ae3e-4479-4099-92f9-4b3186fb7680",
+        "c80a28cf-09ee-4827-aec6-682ae559cab2",
+      ],
+      "type": "ECInstanceNode",
     },
+    "autoExpand": true,
     "hasChildren": true,
-    "icon": "customized",
-    "id": "80c80a28-cf09-4ee8-a72e-c6682ae559ca/412801ae-3e44-4790-9992-f94b3186fb76",
-    "isCheckboxVisible": true,
+    "icon": "XSS",
+    "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "label": "A-2",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -503971073,
+        "color": -1483662081,
       },
     },
   },

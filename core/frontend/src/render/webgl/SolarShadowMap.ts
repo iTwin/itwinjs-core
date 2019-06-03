@@ -60,6 +60,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get depthTexture(): Texture | undefined { return this._depthTexture; }
   public get settings(): SolarShadows.Settings { return this._settings; }
+  public get direction(): Vector3d | undefined { return this._direction; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
   private static _scratchRange = Range3d.createNull();
   private static _scratchTransform = Transform.createIdentity();
@@ -79,7 +80,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     this.clearGraphics();
   }
   public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
-    const minimumHorizonDirection = -.1;
+    const minimumHorizonDirection = -.01;
     this._settings = settings.clone();
     if (direction.z > minimumHorizonDirection) {
       this._status = Status.BelowHorizon;

@@ -21,6 +21,6 @@ export class MergedPropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(_record: PropertyRecord, context?: PropertyValueRendererContext) {
-    return withContextStyle(UiComponents.i18n.translate("UiComponents:property.varies"), context);
+    return withContextStyle(UiComponents.translate("property.varies"), context);
   }
 }

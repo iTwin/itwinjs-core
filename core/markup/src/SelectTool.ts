@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module MarkupTools */
 
-import { Point2d, Point3d, Transform, XAndY } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
-import { ArrayXY, Box, Circle, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
+import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
@@ -45,14 +45,24 @@ export abstract class ModifyHandle {
   }
   public setMouseHandler(target: MarkupElement) {
     const node = target.node;
-    node.onmousedown = (ev: MouseEvent) => {
-      if (ev.button === 0 && undefined === this.handles.active)
+    node.addEventListener("mousedown", (event) => {
+      const ev = event as MouseEvent;
+      if (0 === ev.button && undefined === this.handles.active)
         this.handles.active = this;
-    };
-    node.ontouchstart = (_ev: TouchEvent) => {
+    });
+    node.addEventListener("touchstart", () => {
       if (undefined === this.handles.active)
         this.handles.active = this;
-    };
+    });
+  }
+  public addTouchPadding(visible: MarkupElement, handles: Handles): MarkupElement {
+    if (InputSource.Touch !== IModelApp.toolAdmin.currentInputState.inputSource)
+      return visible;
+    const padding = visible.cloneMarkup().scale(3).attr("opacity", 0);
+    const g = handles.group!.group();
+    padding.addTo(g);
+    visible.addTo(g);
+    return g;
   }
 }
 
@@ -60,7 +70,7 @@ export abstract class ModifyHandle {
  * @beta
  */
 class StretchHandle extends ModifyHandle {
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   public posNpc: Point2d;
   public startPos!: Point2d;
   public opposite!: Point2d;
@@ -70,8 +80,8 @@ class StretchHandle extends ModifyHandle {
     super(handles);
     this.posNpc = new Point2d(xy[0], xy[1]);
     const props = MarkupApp.props.handles;
-    this._circle = handles.group!.circle(props.size).addClass(MarkupApp.stretchHandleClass) // the visible "circle" for this handle
-      .attr(props.stretch).attr("cursor", cursor + "-resize");
+    this._circle = handles.group!.circle(props.size).addClass(MarkupApp.stretchHandleClass).attr(props.stretch).attr("cursor", cursor + "-resize"); // the visible "circle" for this handle
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public setPosition() {
@@ -93,9 +103,12 @@ class StretchHandle extends ModifyHandle {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint); // get cursor location in viewbox coords
     const diff = this.startPos.vectorTo(this.vbToStartTrn.multiplyPoint2d(evPt)); // movement of cursor from start, in viewbox coords
     const diag = this.startPos.vectorTo(this.opposite).normalize()!; // vector from opposite corner to this handle
-    const diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
+    let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
+    if (diagVec === undefined)
+      diagVec = Vector2d.createZero();
 
     // if the shift key is down, don't preserve aspect ratio
+
     const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;
     if (this.posNpc.x === 0) {
@@ -122,7 +135,7 @@ class StretchHandle extends ModifyHandle {
  */
 class RotateHandle extends ModifyHandle {
   private readonly _line: Line;
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   public location!: Point2d;
 
   constructor(public handles: Handles) {
@@ -131,6 +144,7 @@ class RotateHandle extends ModifyHandle {
 
     this._line = handles.group!.line(0, 0, 1, 1).attr(props.rotateLine).addClass(MarkupApp.rotateLineClass);
     this._circle = handles.group!.circle(props.size * 1.25).attr(props.rotate).addClass(MarkupApp.rotateHandleClass);
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public get centerVb() { return this.handles.npcToVb({ x: .5, y: .5 }); }
@@ -154,7 +168,7 @@ class RotateHandle extends ModifyHandle {
  * @beta
  */
 class VertexHandle extends ModifyHandle {
-  private readonly _circle: Circle;
+  private readonly _circle: MarkupElement;
   private readonly _x: string;
   private readonly _y: string;
 
@@ -164,6 +178,7 @@ class VertexHandle extends ModifyHandle {
     this._circle = handles.group!.circle(props.size).attr(props.vertex).addClass(MarkupApp.vertexHandleClass);
     this._x = "x" + (index + 1);
     this._y = "y" + (index + 1);
+    this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
   public setPosition(): void {
@@ -267,9 +282,10 @@ export class Handles {
     // then add all the stretch handles
     const pts = [[0, 0], [0, .5], [0, 1], [.5, 1], [1, 1], [1, .5], [1, 0], [.5, 0]];
     const cursors = ["nw", "w", "sw", "s", "se", "e", "ne", "n"];
+    const order = [7, 3, 1, 5, 2, 6, 0, 4];
     const angle = el.screenCTM().decompose().rotate || 0;
     const start = Math.round(-angle / 45); // so that we rotate the cursors for rotated elements
-    pts.forEach((h, i) => this.handles.push(new StretchHandle(this, h as ArrayXY, cursors[(i + start + 8) % 8])));
+    order.forEach((index) => this.handles.push(new StretchHandle(this, pts[index] as ArrayXY, cursors[(index + start + 8) % 8])));
     this.draw(); // show starting state
   }
 
@@ -310,7 +326,7 @@ export class Handles {
   }
   /** complete the modification for the active handle. */
   public endDrag(undo: UndoManager): EventHandled {
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("modify"), () => {
       const el = this.el;
       const original = el.originalEl!; // save original element
       if (original === undefined) {
@@ -397,7 +413,7 @@ export class MarkupSelected {
   public replace(oldEl: MarkupElement, newEl: MarkupElement) { if (this.drop(oldEl)) this.add(newEl); }
 
   public deleteAll(undo: UndoManager) {
-    undo.doGroup(() => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
+    undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
     this.emptyAll();
   }
 
@@ -412,7 +428,7 @@ export class MarkupSelected {
     this.elements.forEach((el) => { ordered.push(el); });
     ordered.sort((lhs, rhs) => parent.index(lhs) - parent.index(rhs)); // Preserve relative z ordering
 
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("group"), () => {
       ordered.forEach((el) => {
         const oldParent = el.parent() as MarkupElement;
         const oldPos = el.position();
@@ -427,7 +443,7 @@ export class MarkupSelected {
     this.elements.forEach((el) => { if (el instanceof G) groups.add(el); });
     if (0 === groups.size)
       return;
-    undo.doGroup(() => {
+    undo.performOperation(MarkupApp.getActionName("ungroup"), () => {
       groups.forEach((g) => {
         g.unHilite(); this.elements.delete(g); undo.onDelete(g);
         g.each((index, children) => { const child = children[index]; const oldPos = child.position(); child.toParent(g.parent()); undo.onRepositioned(child, oldPos, g); }, false);
@@ -439,8 +455,8 @@ export class MarkupSelected {
   }
 
   /** Move all of the entries to a new position in the DOM via a callback. */
-  public reposition(undo: UndoManager, fn: (el: MarkupElement) => void) {
-    undo.doGroup(() => this.elements.forEach((el) => {
+  public reposition(cmdName: string, undo: UndoManager, fn: (el: MarkupElement) => void) {
+    undo.performOperation(cmdName, () => this.elements.forEach((el) => {
       const oldParent = el.parent() as MarkupElement;
       const oldPos = el.position();
       fn(el);
@@ -599,7 +615,7 @@ export class SelectTool extends MarkupTool {
       selected.emptyAll();
 
     // move or copy all of the elements in dragged set
-    undo.doGroup(() => this._dragging.forEach((el) => {
+    undo.performOperation(MarkupApp.getActionName("copy"), () => this._dragging.forEach((el) => {
       el.translate(delta.x, delta.y); // move to final location
       const original = el.originalEl!; // save original element
       el.originalEl = undefined; // clear original element

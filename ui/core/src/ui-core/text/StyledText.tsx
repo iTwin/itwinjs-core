@@ -11,7 +11,7 @@ import { TextProps } from "./TextProps";
 /** Properties for [[StyledText]] component
  * @internal
  */
-export interface StyleTextProps extends TextProps {
+export interface StyledTextProps extends TextProps {
   /** Main CSS class name */
   mainClassName: string;
 }
@@ -19,7 +19,7 @@ export interface StyleTextProps extends TextProps {
 /** Styled text
  * @internal
  */
-export class StyledText extends React.PureComponent<StyleTextProps> {
+export class StyledText extends React.PureComponent<StyledTextProps> {
   public render(): JSX.Element {
     const { mainClassName, className, style, children, ...props } = this.props;
 

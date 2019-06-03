@@ -254,7 +254,7 @@ describe("ViewState", () => {
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
 
-    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
+    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 1");
 
@@ -268,7 +268,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(1000, -10, 6, -5, 0, 0);
     testParams.margin = new MarginPercent(.01, .02, .03, .04);
     testParams.aspectRatio = 1.2;
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 3");
 
@@ -282,7 +282,7 @@ describe("ViewState", () => {
     testParams.volume = Range3d.createXYZXYZ(10, 20, 0.5, 35, 21, 2);
     testParams.aspectRatio = 1.0;
     testParams.margin = new MarginPercent(0, 0, 0, 0);
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtVolume", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtVolume", testParams);
     viewState.lookAtVolume(testParams.volume, testParams.aspectRatio, testParams.margin);
     compareView(viewState, cppView, "LookAtVolume 2");
   });
@@ -301,7 +301,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "rotateCameraLocal", testParams);
+    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 1");
 
@@ -314,7 +314,7 @@ describe("ViewState", () => {
     testParams.angle = 1.6788888;
     testParams.axis = Vector3d.create(-1, 6, 3);
     testParams.about = Point3d.create(1, 2, 3);
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken, "rotateCameraLocal", testParams);
+    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
     compareView(viewState, cppView, "RotateCameraLocal 2");
   });
@@ -336,7 +336,7 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(11));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken, "lookAtUsingLensAngle", testParams);
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
   });

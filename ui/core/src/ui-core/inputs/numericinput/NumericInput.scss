@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../../index.scss";
+
+.core-numeric-input {
+
+  .react-numeric-input {
+
+    input {
+      display:                block !important;
+      width:                  100% !important;
+      padding:                $uicore-inputs-padding-bordered $uicore-bordered-padding !important;
+      margin:                 0 0 !important;
+      font-family:            $uicore-font-family !important;
+      font-size:              $uicore-font-size !important;
+      line-height:            $uicore-line-height !important;
+      color:                  $buic-text-color !important;
+      background-color:       $buic-background-control !important;
+      background-image:       none !important;
+      border:                 1px solid $buic-inputs-border !important;
+      border-radius:          $uicore-border-radius !important;
+      box-shadow:             $buic-inputs-boxshadow 0px 1px 1px inset !important;
+      box-sizing:             border-box;
+      transition:             border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+
+      &:focus {
+        border-color:       $buic-inputs-border !important;
+        outline:            0px !important;
+        box-shadow:         $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, $buic-inputs-focus-boxshadow-gradient2 0px 0px 0px 2px !important;
+      }
+
+    }
+
+    b:nth-of-type(1) {
+      i {
+        border-color: transparent transparent $buic-foreground-muted !important;
+      }
+    }
+
+    b:nth-of-type(2) {
+      i {
+        border-color: $buic-foreground-muted transparent transparent !important;
+      }
+    }
+
+  }
+
+}

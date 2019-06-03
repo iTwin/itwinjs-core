@@ -118,7 +118,7 @@ describe("PropertyValueRendererManager", () => {
 
       const valueMount = mount(<div>{value}</div>);
 
-      expect(valueMount.text()).to.be.equal(UiComponents.i18n.translate("UiComponents:property.varies"));
+      expect(valueMount.text()).to.be.equal(UiComponents.translate("property.varies"));
     });
   });
 });

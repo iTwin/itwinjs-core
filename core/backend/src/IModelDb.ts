@@ -3,14 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import {
+  ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
+  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration,
+} from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, PageOptions, kPagingDefaultOptions, PageableECSql,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority, QueryLimit, QueryQuota, RpcPendingResponse,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -31,10 +34,14 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-
-export type TxnIdString = string;
+import { PollStatus, PostStatus } from "./ConcurrentQuery";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+/** A string that identifies a Txn.
+ * @public
+ */
+export type TxnIdString = string;
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
  * @public
@@ -44,23 +51,7 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
-
-/** Mode to access the IModelDb
- * @public
- */
-export enum AccessMode { Shared = 1, Exclusive = 2 }
-
-/** Additional options for exclusive access to IModelDb
- * @public
- */
-export enum ExclusiveAccessOption {
-  /** Create or acquire a new briefcase every time the open call is made */
-  CreateNewBriefcase = 1,
-
-  /** Try and reuse an previously open briefcase every time the open call is made */
-  TryReuseOpenBriefcase = 2,
-}
+export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
 
 /** Parameters to open an IModelDb
  * @public
@@ -71,56 +62,42 @@ export class OpenParams {
     /** Mode to Open the IModelDb */
     public readonly openMode: OpenMode,
 
-    /** Mode to access the IModelDb */
-    public readonly accessMode?: AccessMode,
-
     /** Operations allowed when synchronizing changes between the IModelDb and IModelHub */
     public readonly syncMode?: SyncMode,
 
-    /** Additional hint for exclusive access to either create a new briefcase or try and reuse a previously opened briefcase */
-    public readonly exclusiveAccessOption?: ExclusiveAccessOption,
-
+    /** Timeout (in milliseconds) before the open operations throws a RpcPendingResponse exception
+     * after queuing up the open. If undefined, waits for the open to complete.
+     */
+    public timeout?: number,
   ) {
     this.validate();
   }
 
-  /** Returns true if the open params open a standalone Db */
-  public get isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
+  /** Returns true if the open params open a snapshot Db */
+  public get isStandalone(): boolean { return this.syncMode === undefined; }
 
   private validate() {
-    if (this.isStandalone && !(this.accessMode === undefined && this.syncMode === undefined))
+    if (this.isStandalone && this.syncMode !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
-    if (this.openMode === OpenMode.Readonly && this.syncMode && this.syncMode !== SyncMode.FixedVersion) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot pull changes into a ReadOnly IModel");
-    }
-
-    if (this.syncMode === SyncMode.PullAndPush && this.accessMode === AccessMode.Shared) {
-      throw new IModelError(BentleyStatus.ERROR, "Pushing changes from a shared IModelDb is not supported");
-    }
-
-    if (this.accessMode === AccessMode.Shared && this.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase) {
-      throw new IModelError(BentleyStatus.ERROR, "Accessing a shared IModelDb (i.e., setting AccessMode.Shared) implies that the briefcase would be reused if possible (i.e., need to pass BriefcaseOption.TryReuse)");
+    if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush) {
+      throw new IModelError(BentleyStatus.ERROR, "Cannot pull or push changes into/from a ReadOnly IModel");
     }
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
-  public static fixedVersion(accessMode: AccessMode = AccessMode.Shared, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.Readonly, accessMode, SyncMode.FixedVersion, exclusiveAccessOption); }
-
-  /** Create parameters to open the Db to allow only pulls from the Hub */
-  public static pullOnly(accessMode: AccessMode = AccessMode.Exclusive, exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, accessMode, SyncMode.PullOnly, exclusiveAccessOption); }
+  public static fixedVersion(): OpenParams { return new OpenParams(OpenMode.Readonly, SyncMode.FixedVersion); }
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
-  public static pullAndPush(exclusiveAccessOption: ExclusiveAccessOption = ExclusiveAccessOption.TryReuseOpenBriefcase): OpenParams { return new OpenParams(OpenMode.ReadWrite, AccessMode.Exclusive, SyncMode.PullAndPush, exclusiveAccessOption); }
+  public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
    * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
-
   /** Returns true if equal and false otherwise */
   public equals(other: OpenParams) {
-    return other.accessMode === this.accessMode && other.openMode === this.openMode && other.syncMode === this.syncMode && other.exclusiveAccessOption === this.exclusiveAccessOption;
+    return other.openMode === this.openMode && other.syncMode === this.syncMode;
   }
 }
 
@@ -130,7 +107,7 @@ export class OpenParams {
  * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
  */
-export class IModelDb extends IModel implements PageableECSql {
+export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   /** Event called after a changeset is applied to this IModelDb. */
@@ -142,6 +119,7 @@ export class IModelDb extends IModel implements PageableECSql {
   /** @beta */
   public readonly txns = new TxnManager(this);
   private _relationships?: Relationships;
+  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -167,7 +145,7 @@ export class IModelDb extends IModel implements PageableECSql {
   public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
 
   /** Event raised just after an IModelDb is opened.
-   * @note This event is *not* raised for standalone IModelDbs.
+   * @note This event is *not* raised for snapshot IModelDbs.
    *
    * **Example:**
    * ``` ts
@@ -175,9 +153,9 @@ export class IModelDb extends IModel implements PageableECSql {
    * ```
    */
   public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>();
-  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
   public static readonly onCreate = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>();
-  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for standalone IModelDbs. */
+  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
   public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   private _briefcase?: BriefcaseEntry;
@@ -208,31 +186,41 @@ export class IModelDb extends IModel implements PageableECSql {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** Create a local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create an *empty* local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
-   * @param filePath The file that will contain the new iModel *snapshot*
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param args The parameters that define the new iModel *snapshot*
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
-  public static createSnapshot(filePath: string, args: CreateIModelProps): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(filePath, args);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams!.openMode!));
+  public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
+    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
   }
 
-  /** Create a local iModel *snapshot* file using an existing iModel file as a *seed* or starting point.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+  /** Create a local iModel *snapshot* file using this iModel as a *seed* or starting point.
+   * Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
+   * @returns A writeable IModelDb
+   * @beta
    */
-  public static createSnapshotFromSeed(snapshotFile: string, seedFile: string): IModelDb {
-    IModelJsFs.copySync(seedFile, snapshotFile);
+  public createSnapshot(snapshotFile: string): IModelDb {
+    IModelJsFs.copySync(this.briefcase.pathname, snapshotFile);
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
-    briefcaseEntry.iModelId = Guid.createValue();
-    briefcaseEntry.briefcaseId = BriefcaseId.Standalone;
-    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite));
-    // WIP: clean up copied file if error on open?
-    snapshotDb.setGuid(briefcaseEntry.iModelId);
-    if (snapshotDb.nativeDb.getBriefcaseId() !== briefcaseEntry.briefcaseId) {
-      snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId);
+    const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
+    const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
+    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
+    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
+      briefcaseEntry.iModelId = Guid.createValue();
     }
+    briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
+    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
+    if (isSeedFileMaster) {
+      snapshotDb.setGuid(briefcaseEntry.iModelId);
+    } else {
+      snapshotDb.setAsMaster(briefcaseEntry.iModelId);
+    }
+    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId);
     return snapshotDb;
   }
 
@@ -252,6 +240,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
    * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
+   * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
@@ -260,10 +249,16 @@ export class IModelDb extends IModel implements PageableECSql {
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
    * @see [[open]]
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
+   * @beta
    */
   public static openSnapshot(filePath: string): IModelDb {
-    return this.openStandalone(filePath, OpenMode.Readonly, false);
+    const iModelDb: IModelDb = this.openStandalone(filePath, OpenMode.Readonly, false);
+    const briefcaseId: number = iModelDb.getBriefcaseId().value;
+    if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
+      return iModelDb;
+    }
+    throw new IModelError(IModelStatus.BadRequest, "IModelDb.openSnapshot cannot be used to open a briefcase", Logger.logError, loggerCategory);
   }
 
   /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
@@ -282,60 +277,75 @@ export class IModelDb extends IModel implements PageableECSql {
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
     let briefcaseEntry: BriefcaseEntry;
+    let timedOut = false;
     try {
       briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
+
+      if (briefcaseEntry.isPending) {
+        if (typeof openParams.timeout === "undefined")
+          await briefcaseEntry.isPending;
+        else {
+          const waitPromise = BeDuration.wait(openParams.timeout).then(() => {
+            timedOut = true;
+          });
+          await Promise.race([briefcaseEntry.isPending, waitPromise]);
+        }
+      }
     } catch (error) {
       requestContext.enter();
       Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
       throw error;
     }
+
+    if (timedOut) {
+      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw new RpcPendingResponse();
+    }
+
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     try {
       const client = new UlasClient();
-      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
+      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
       await client.logUsage(requestContext, ulasEntry);
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => imodelDb.iModelToken);
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.Message, iModelToken: imodelDb.iModelToken }));
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
-    // TODO: Included for temporary debugging using SEQ. To be removed!!
-    if (!IModelDb.find(imodelDb.iModelToken))
-      Logger.logError(loggerCategory, "Error with IModelDb.open. Cannot find briefcase!", () => ({ ...imodelDb.iModelToken, ...openParams }));
-    else
-      Logger.logTrace(loggerCategory, "Finished IModelDb.open", () => ({ ...imodelDb.iModelToken, ...openParams }));
-
     perfLogger.dispose();
     return imodelDb;
+  }
+
+  /**
+   * Returns true if this is a standalone iModel
+   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   */
+  public get isStandalone(): boolean {
+    return this.briefcase.openParams.isStandalone;
   }
 
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
    * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
+   * @internal
    */
   public closeStandalone(): void {
     if (!this.briefcase)
       throw this.newNotOpenError();
-    if (!this.briefcase.isStandalone)
+    if (!this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
-
-    try {
-      BriefcaseManager.closeStandalone(this.briefcase);
-    } catch (error) {
-      throw error;
-    } finally {
-      this.clearBriefcaseEntry();
-    }
+    BriefcaseManager.closeStandalone(this.briefcase);
+    this.clearBriefcaseEntry();
   }
 
   /** Close this local read-only iModel *snapshot*, if it is currently open.
    * > Note: A *snapshot* cannot be modified after this function is called.
    * @throws IModelError if the iModel is not open, or is not a *snapshot*.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public closeSnapshot(): void {
     this.closeStandalone();
@@ -344,14 +354,14 @@ export class IModelDb extends IModel implements PageableECSql {
   /** Close this iModel, if it is currently open.
    * @param requestContext The client request context.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
-   * @throws IModelError if the iModel is not open, or is really a standalone iModel
+   * @throws IModelError if the iModel is not open, or is really a snapshot iModel
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
     if (!this.briefcase)
       throw this.newNotOpenError();
-    if (this.briefcase.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
+    if (this.isStandalone)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
@@ -388,7 +398,7 @@ export class IModelDb extends IModel implements PageableECSql {
     this.clearSqliteStatementCache();
   }
 
-  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.changeSetId; }
+  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
 
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -482,18 +492,13 @@ export class IModelDb extends IModel implements PageableECSql {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    return this.withPreparedStatement(`select count(*) from (${ecsql})`, async (stmt: ECSqlStatement) => {
-      if (bindings)
-        stmt.bindValues(bindings);
-      const ret = stmt.step();
-      if (ret === DbResult.BE_SQLITE_ROW) {
-        return stmt.getValue(0).getInteger();
-      }
-      throw new IModelError(ret, "Fail to compute row count");
-    });
+    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
+      return row.nRows;
+    }
+    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query agaisnt this ECDb
+  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -507,66 +512,65 @@ export class IModelDb extends IModel implements PageableECSql {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @internal
    */
-  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    if (!options) {
-      options = kPagingDefaultOptions;
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+    if (!this._concurrentQueryInitialized) {
+      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
     }
+    if (!bindings) bindings = [];
+    if (!limit) limit = {};
+    if (!quota) quota = {};
+    if (!priority) priority = QueryPriority.Normal;
+    const base64Header = "encoding=base64;";
+    // handle binary type
+    const reviver = (_name: string, value: any) => {
+      if (typeof value === "string") {
+        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
+          const out = value.substr(base64Header.length);
+          const buffer = Buffer.from(out, "base64");
+          return new Uint8Array(buffer);
+        }
+      }
+      return value;
+    };
+    // handle binary type
+    const replacer = (_name: string, value: any) => {
+      if (value && value.constructor === Uint8Array) {
+        const buffer = Buffer.from(value);
+        return base64Header + buffer.toString("base64");
+      }
+      return value;
+    };
+    return new Promise<QueryResponse>((resolve) => {
+      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
+      if (postrc.status !== PostStatus.Done)
+        resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
-    const pageNo = options.start || kPagingDefaultOptions.start;
-    const pageSize = options.size || kPagingDefaultOptions.size;
-    const stepsPerTick = options.stepsPerTick || kPagingDefaultOptions.stepsPerTick;
-    // verify if correct options was provided.
-    if (pageNo! < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
-
-    if (pageSize! < 1)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
-
-    if (stepsPerTick! < 1)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.stepsPerTick must be positive integer starting from 1");
-
-    const pageParams = { sys_page_size: pageSize!, sys_page_offset: pageNo! * pageSize! };
-    return this.withPreparedStatement(`select * from (${ecsql}) limit :sys_page_size offset :sys_page_offset`, async (stmt: ECSqlStatement) => {
-      if (bindings)
-        stmt.bindValues(bindings);
-
-      stmt.bindValues(pageParams);
-      const rows: any[] = [];
-      const result = await new Promise<DbResult>((resolve: any) => {
-        const nextStep = () => {
-          setTimeout(() => {
-            let status = DbResult.BE_SQLITE_DONE;
-            for (let i = 0; i < stepsPerTick!; ++i) {
-              status = stmt.step();
-              if (DbResult.BE_SQLITE_ROW === status) {
-                rows.push(stmt.getRow());
-                if (pageSize === rows.length) {
-                  return resolve(DbResult.BE_SQLITE_DONE);
-                }
-              } else {
-                return resolve(status);
-              }
-            }
-            if (status === DbResult.BE_SQLITE_ROW) {
-              nextStep();
-            }
-          }, 1);
-        };
-        nextStep();
-      });
-      if (result !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(result, "Sqlite error");
-
-      return rows;
+      const poll = () => {
+        const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
+        if (pollrc.status === PollStatus.Done)
+          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
+        else if (pollrc.status === PollStatus.Partial)
+          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
+        else if (pollrc.status === PollStatus.Timeout)
+          resolve({ status: QueryResponseStatus.Timeout, rows: [] });
+        else if (pollrc.status === PollStatus.Pending)
+          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+        else
+          resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+      };
+      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
     });
   }
-
-  /** Execute a pageable query.
+  /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -580,41 +584,39 @@ export class IModelDb extends IModel implements PageableECSql {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
-    if (!options) {
-      options = kPagingDefaultOptions;
-    }
-
-    let pageNo = options.start || kPagingDefaultOptions.start!;
-    const pageSize = options.size || kPagingDefaultOptions.size!;
-
-    // verify if correct options was provided.
-    if (pageNo < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
-
-    if (pageSize < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
-
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    let result: QueryResponse;
+    let offset: number = 0;
+    let rowsToGet = limitRows ? limitRows : -1;
     do {
-      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
-      if (page.length > 0) {
-        for (const row of page) {
-          yield row;
-        }
-        pageNo = pageNo + 1;
-      } else {
-        pageNo = -1;
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      while (result.status === QueryResponseStatus.Timeout) {
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
       }
-    } while (pageNo >= 0);
-  }
 
+      if (result.status === QueryResponseStatus.Error)
+        throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows.length > 0 ? result.rows[0] : "Failed to execute ECSQL");
+
+      if (rowsToGet > 0) {
+        rowsToGet -= result.rows.length;
+      }
+      offset += result.rows.length;
+
+      for (const row of result.rows)
+        yield row;
+
+    } while (result.status !== QueryResponseStatus.Done);
+  }
   /** Execute a query against this IModelDb.
-   * @deprecated use withPreparedStatement or query or queryPage instead
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -630,7 +632,8 @@ export class IModelDb extends IModel implements PageableECSql {
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
+   * @deprecated use withPreparedStatement or query or queryPage instead
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -639,8 +642,9 @@ export class IModelDb extends IModel implements PageableECSql {
       const rows: any[] = [];
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         rows.push(stmt.getRow());
-        if (rows.length >= IModelDb.maxLimit)
-          break; // don't let a "rogue" query consume too many resources
+        if (rows.length > IModelDb.maxLimit) {
+          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
+        }
       }
       return rows;
     });
@@ -709,10 +713,10 @@ export class IModelDb extends IModel implements PageableECSql {
     return stmt;
   }
 
-  /**
-   * Query for a set of entity ids, given an EntityQueryParams
-   * @param params the EntityQueryParams for query
+  /** Query for a set of entity ids, given an EntityQueryParams
+   * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @returns an Id64Set with results of query
+   * @throws [IModelError]($common) if the generated statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
    *
    * *Example:*
    * ``` ts
@@ -732,8 +736,12 @@ export class IModelDb extends IModel implements PageableECSql {
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
       for (const row of stmt) {
-        if (row.id !== undefined)
+        if (row.id !== undefined) {
           ids.add(row.id);
+          if (ids.size > IModelDb.maxLimit) {
+            throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
+          }
+        }
       }
     });
     return ids;
@@ -801,7 +809,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -809,7 +817,7 @@ export class IModelDb extends IModel implements PageableECSql {
     await BriefcaseManager.pullAndMergeChanges(requestContext, this.briefcase, version);
     requestContext.enter();
     this.concurrencyControl.onMergedChanges();
-    this._token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -817,14 +825,14 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
-    this._token.changeSetId = this.briefcase.changeSetId;
+    this._token.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
   }
 
@@ -832,7 +840,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -845,7 +853,7 @@ export class IModelDb extends IModel implements PageableECSql {
    * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
-   * @beta Need to consider the impact of *channels*
+   * @beta
    */
   public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
@@ -881,7 +889,7 @@ export class IModelDb extends IModel implements PageableECSql {
     if (!this.briefcase)
       throw this.newNotOpenError();
 
-    if (this.briefcase.isStandalone) {
+    if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchema(schemaFileName);
       if (DbResult.BE_SQLITE_OK !== status)
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
@@ -1672,9 +1680,24 @@ export namespace IModelDb {
       const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-      } else if (ret.result instanceof Uint8Array) {
-        resolve(ret.result);
-      } else {
+      } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
+        const res = ret.result as IModelJsNative.TileContent;
+        const iModelGuid = this._iModel.getGuid();
+
+        const tileSizeThreshold = IModelHost.logTileSizeThreshold;
+        const tileSize = res.content.length;
+        if (tileSize > tileSizeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile size (in bytes) larger than specified threshold", () => ({ tileSize, tileSizeThreshold, treeId, tileId, iModelGuid }));
+        }
+
+        const loadTimeThreshold = IModelHost.logTileLoadTimeThreshold;
+        const loadTime = res.elapsedSeconds;
+        if (loadTime > loadTimeThreshold) {
+          Logger.logWarning(loggerCategory, "Tile load time (in seconds) greater than specified threshold", () => ({ loadTime, loadTimeThreshold, treeId, tileId, iModelGuid }));
+        }
+
+        resolve(res.content);
+      } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
         setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
       }
@@ -1686,21 +1709,9 @@ export namespace IModelDb {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      if (IModelHost.useTileContentThreadPool) {
-        return new Promise<Uint8Array>((resolve, reject) => {
-          this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
-        });
-      } else {
-        return new Promise<Uint8Array>((resolve, reject) => {
-          requestContext.enter();
-          this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
-            if (undefined !== ret.error)
-              reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
-            else
-              resolve(ret.result!);
-          });
-        });
-      }
+      return new Promise<Uint8Array>((resolve, reject) => {
+        this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
+      });
     }
   }
 }

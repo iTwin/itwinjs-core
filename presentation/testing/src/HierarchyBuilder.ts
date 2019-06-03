@@ -7,34 +7,54 @@ import { Ruleset, Omit, RegisteredRuleset } from "@bentley/presentation-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PRESENTATION_TREE_NODE_KEY } from "@bentley/presentation-components/lib/tree/Utils"; // tslint:disable-line: no-direct-imports
 import { TreeNodeItem } from "@bentley/ui-components";
 
-/** A derivative of Node. Cannot have **children** property */
+/**
+ * Structure that describes a Node with any indexed properties
+ * except `children`.
+ *
+ * @public
+ */
 export interface MappedNode {
+  /** Indexer for all properties in this data structure */
   [index: string]: any;
+  /** Prohibited property */
   children?: never;
 }
 
-/** Node in a Hierarchy */
+/**
+ * Node in a hierarchy.
+ * @public
+ */
 export interface HierarchyNode extends Omit<MappedNode, "children"> {
+  /** Children of this node */
   children?: HierarchyNode[];
 }
 
-/** A function that converts `TreeNodeItem` into a new custom object */
+/**
+ * A function that converts `TreeNodeItem` into a new custom object.
+ * @public
+ */
 export type NodeMappingFunc = (node: TreeNodeItem) => MappedNode;
 
-/** Default [[NodeMappingFunc]] implementation that outputs the whole `TreeNodeItem` object */
+/**
+ * Default [[NodeMappingFunc]] implementation that outputs the whole `TreeNodeItem` object.
+ * @public
+ */
 export const defaultNodeMappingFunc: NodeMappingFunc = (node: TreeNodeItem) => {
-  // Skip properties 'id', 'parentId', 'extendedData' as they contain  internal stuff
+  // Skip properties 'id', 'parentId' as they contain  internal stuff
   // that callers are most likely not interested in. Otherwise they can supply
   // a custom `NodeMappingFunc` that does return those properties as well.
-  const { id, parentId, extendedData, ...resultNode } = node;
+  const { id, parentId, ...resultNode } = node;
   return resultNode;
 };
 
 /**
  * A class that constructs simple node hierarchy from specified
  * imodel and ruleset.
+ *
+ * @public
  */
 export class HierarchyBuilder {
   private readonly _iModel: IModelConnection;
@@ -55,7 +75,9 @@ export class HierarchyBuilder {
   private async createSubHierarchy(nodes: TreeNodeItem[], dataProvider: PresentationTreeDataProvider) {
     const hierarchy: HierarchyNode[] = [];
     for (const node of nodes) {
-      const nodeIndex = hierarchy.push(this._nodeMappingFunc(node)) - 1;
+      // istanbul ignore next: for some reason coverage tool thinks the below statement is conditional and one of branches is not covered...
+      const { [PRESENTATION_TREE_NODE_KEY]: key, ...nodeNoKey } = (node as TreeNodeItem & { [PRESENTATION_TREE_NODE_KEY]: any });
+      const nodeIndex = hierarchy.push(this._nodeMappingFunc(nodeNoKey)) - 1;
       const childNodes = await dataProvider.getNodes(node);
       if (childNodes.length > 0)
         hierarchy[nodeIndex].children = await this.createSubHierarchy(childNodes, dataProvider);

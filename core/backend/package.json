@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "0.191.0",
+  "version": "1.0.0",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -21,8 +21,9 @@
     "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
-    "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance --invert",
+    "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep \"ImodelChangesetPerformance|ElementAspectPerfomance\" --invert",
     "cs-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
+    "eleAspect-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
     "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {
@@ -39,25 +40,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^0.191.0",
-    "@bentley/geometry-core": "^0.191.0",
-    "@bentley/imodeljs-clients": "^0.191.0",
-    "@bentley/imodeljs-clients-backend": "^0.191.0",
-    "@bentley/imodeljs-common": "^0.191.0"
+    "@bentley/bentleyjs-core": "^1.0.0",
+    "@bentley/geometry-core": "^1.0.0",
+    "@bentley/imodeljs-clients": "^1.0.0",
+    "@bentley/imodeljs-clients-backend": "^1.0.0",
+    "@bentley/imodeljs-common": "^1.0.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.191.0",
-    "@bentley/bentleyjs-core": "0.191.0",
-    "@bentley/build-tools": "0.191.0",
-    "@bentley/geometry-core": "0.191.0",
-    "@bentley/imodeljs-clients": "0.191.0",
-    "@bentley/imodeljs-clients-backend": "0.191.0",
-    "@bentley/imodeljs-common": "0.191.0",
-    "@bentley/perf-tools": "0.191.0",
+    "@bentley/config-loader": "1.0.0",
+    "@bentley/bentleyjs-core": "1.0.0",
+    "@bentley/build-tools": "1.0.0",
+    "@bentley/geometry-core": "1.0.0",
+    "@bentley/imodeljs-clients": "1.0.0",
+    "@bentley/imodeljs-clients-backend": "1.0.0",
+    "@bentley/imodeljs-common": "1.0.0",
+    "@bentley/perf-tools": "1.0.0",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
@@ -79,21 +80,19 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typedoc": "^0.14.2",
     "typemoq": "^2.1.0",
     "typescript": "~3.2.2",
     "webpack": "^4.20.2",
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.124.0",
+    "@bentley/imodeljs-native": "~0.129.0",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",
     "semver": "^5.5.0",
     "form-data": "2.3.2",
     "multiparty": "^4.2.1",
-    "node-report": "^2.2.6",
     "azure-storage": "^2.10.2"
   },
   "nyc": {

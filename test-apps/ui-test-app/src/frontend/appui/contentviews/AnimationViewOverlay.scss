@@ -26,6 +26,7 @@ $widget-transparency: 0.90;
   justify-content: center;
   align-items: center;
   width: 80%;
+  max-width: 1000px;
   height: auto;
   background: $buic-background-dialog;
   border: 1px solid $buic-background-dialog-stroke;

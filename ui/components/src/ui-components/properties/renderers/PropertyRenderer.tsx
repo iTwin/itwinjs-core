@@ -20,7 +20,7 @@ import { UiComponents } from "../../UiComponents";
 export interface SharedRendererProps {
   /** PropertyRecord to render */
   propertyRecord: PropertyRecord;
-  /** Unique string, that identifies this property component. Should be used if onClick is provided */
+  /** Unique string, that identifies this property component. Should be used if onClick or onRightClick are provided */
   uniqueKey?: string;
   /** Orientation to use for displaying the property */
   orientation: Orientation;
@@ -28,6 +28,8 @@ export interface SharedRendererProps {
   isSelected?: boolean;
   /** Called when property gets clicked. If undefined, clicking is disabled */
   onClick?: (property: PropertyRecord, key?: string) => void;
+  /** Called when property gets right clicked. If undefined, right clicking is not working */
+  onRightClick?: (property: PropertyRecord, key?: string) => void;
   /** Called to show a context menu for properties */
   onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
   /** Ratio between label and value cells */
@@ -75,7 +77,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public readonly state: Readonly<PropertyRendererState> = {
-    displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
+    displayValue: UiComponents.translate("general.loading"),
   };
 
   constructor(props: PropertyRendererProps) {

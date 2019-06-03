@@ -5,6 +5,14 @@
 import { assert } from "chai";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelDb } from "../../IModelDb";
+import { Id64 } from "@bentley/bentleyjs-core";
+async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
+  const rows: any[] = [];
+  for await (const row of iModel.query(ecsql, bindings)) {
+    rows.push(row);
+  }
+  return rows;
+}
 
 describe("ECSql Query", () => {
   let imodel1: IModelDb;
@@ -27,6 +35,22 @@ describe("ECSql Query", () => {
     imodel3.closeSnapshot();
     imodel4.closeSnapshot();
     imodel5.closeSnapshot();
+  });
+
+  // new new addon build
+  it.skip("ECSQL with BLOB", async () => {
+    let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    assert.equal(rows.length, 1);
+    const row: any = rows[0];
+
+    assert.isTrue(Id64.isValidId64(row.id));
+
+    assert.isDefined(row.geometryStream);
+    const geomStream: Uint8Array = row.geometryStream;
+    assert.isAtLeast(geomStream.byteLength, 1);
+
+    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    assert.equal(rows.length, 1);
   });
 
   it("Paging Results", async () => {
@@ -60,15 +84,15 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const row = await db.queryPage(query, undefined, { size: pageSize, start: k });
-        assert.equal(row.length, rowPerPage[k]);
+        const rs = await db.queryRows(query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        assert.equal(rs.rows.length, rowPerPage[k]);
       }
     }
 
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, { size: pageSize })) {
+      for await (const row of db.query(query)) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {

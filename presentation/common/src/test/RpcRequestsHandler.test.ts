@@ -7,28 +7,32 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
 import {
-  createRandomECInstanceNodeKey, createRandomECInstanceKey,
-  createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomContent, createRandomDescriptor,
+  createRandomECInstanceNodeKeyJSON, createRandomECInstanceKeyJSON,
+  createRandomECInstanceNodeJSON, createRandomNodePathElementJSON,
+  createRandomContentJSON, createRandomDescriptorJSON,
   createRandomSelectionScope,
 } from "./_helpers/random";
 import { BeEvent, using, Id64String } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, IModelTokenProps } from "@bentley/imodeljs-common";
 import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo, PresentationStatus,
   HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
 } from "../presentation-common";
-import { RpcRequestOptions, ClientStateSyncRequestOptions, RpcResponse, PresentationRpcResponse } from "../PresentationRpcInterface";
+import { PresentationRpcRequestOptions, ClientStateSyncRequestOptions, PresentationRpcResponse } from "../PresentationRpcInterface";
 import { IClientStateHolder } from "../RpcRequestsHandler";
+
+interface IModelTokenPropsForTest extends IModelTokenProps {
+  toJSON: () => any;
+}
 
 describe("RpcRequestsHandler", () => {
 
   let clientId: string;
-  let defaultRpcOptions: RpcRequestOptions & { imodel: IModelToken };
-  const token = new IModelToken();
-  const successResponse = (result?: any): RpcResponse => ({ statusCode: PresentationStatus.Success, result });
-  const errorResponse = (statusCode: PresentationStatus, errorMessage?: string): RpcResponse => ({ statusCode, errorMessage, result: undefined });
+  let defaultRpcOptions: PresentationRpcRequestOptions & { imodel: IModelToken };
+  const token: IModelTokenPropsForTest = { iModelId: "test", contextId: "test", toJSON() { return this; } };
+  const successResponse = async <TResult>(result: TResult): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -178,7 +182,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse()).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse(undefined)).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -200,7 +204,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse()).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse(undefined)).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -233,7 +237,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
 
-      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse()).verifiable();
+      rpcInterfaceMock.setup(async (x) => x.syncClientState(token, expectedSyncOptions)).returns(async () => successResponse(undefined)).verifiable();
       await handler.sync(token);
       rpcInterfaceMock.verifyAll();
     });
@@ -292,10 +296,28 @@ describe("RpcRequestsHandler", () => {
         requestHandlerStub.onThirdCall().returns(Promise.resolve(successResponse(faker.random.number())));
         const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
 
-        const result = await handler.request<number, RpcRequestOptions & { imodel: IModelToken }, []>(undefined, requestHandlerSpy, defaultRpcOptions);
+        const result = await handler.request<number, PresentationRpcRequestOptions & { imodel: IModelToken }, []>(undefined, requestHandlerSpy, defaultRpcOptions);
         expect(result).to.not.be.undefined;
         expect(syncStub).to.be.calledTwice;
         expect(requestHandlerSpy).to.be.calledThrice;
+      });
+
+    });
+
+    describe("when request returns a status of BackendTimeout", () => {
+
+      it("returns PresentationError", async () => {
+        const func = async () => Promise.resolve(errorResponse(PresentationStatus.BackendTimeout));
+        await expect(handler.request(undefined, func, defaultRpcOptions)).to.eventually.be.rejectedWith(PresentationError).and.has.property("errorNumber", 65543);
+      });
+
+      it("calls request handler 10 times", async () => {
+        const requestHandlerStub = sinon.stub();
+        requestHandlerStub.returns(Promise.resolve(errorResponse(PresentationStatus.BackendTimeout)));
+        const requestHandlerSpy = sinon.spy(() => requestHandlerStub());
+
+        await expect(handler.request(undefined, requestHandlerSpy, defaultRpcOptions)).to.eventually.be.rejectedWith(PresentationError);
+        expect(requestHandlerSpy.callCount).to.be.equal(10);
       });
 
     });
@@ -320,7 +342,7 @@ describe("RpcRequestsHandler", () => {
 
     beforeEach(() => {
       handler = new RpcRequestsHandler({ clientId });
-      handler.request = async <TResult, TOptions extends RpcRequestOptions>(context: any, func: (token: IModelToken, options: TOptions, ...args: any[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: any[]): Promise<TResult> => {
+      handler.request = async <TResult, TOptions extends PresentationRpcRequestOptions>(context: any, func: (token: IModelToken, options: TOptions, ...args: any[]) => PresentationRpcResponse<TResult>, options: TOptions, ...args: any[]): Promise<TResult> => {
         expect(context).to.eq(rpcInterfaceMock.object);
         const result = await func.apply(context, [token, options, ...args]);
         return result.result!;
@@ -338,7 +360,7 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const result = { nodes: [createRandomECInstanceNode()], count: 1 };
+      const result = { nodes: [createRandomECInstanceNodeJSON()], count: 1 };
       rpcInterfaceMock.setup(async (x) => x.getNodesAndCount(token, rpcOptions, undefined)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getNodesAndCount(options)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -350,20 +372,20 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const result = [createRandomECInstanceNode()];
+      const result = [createRandomECInstanceNodeJSON()];
       rpcInterfaceMock.setup(async (x) => x.getNodes(token, rpcOptions, undefined)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getNodes(options)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
     it("forwards getNodes call for child nodes", async () => {
-      const parentKey = createRandomECInstanceNodeKey();
+      const parentKey = createRandomECInstanceNodeKeyJSON();
       const options: Paged<HierarchyRequestOptions<IModelToken>> = {
         imodel: token,
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const result = [createRandomECInstanceNode()];
+      const result = [createRandomECInstanceNodeJSON()];
       rpcInterfaceMock.setup(async (x) => x.getNodes(token, rpcOptions, parentKey)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getNodes(options, parentKey)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -382,7 +404,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getNodesCount call for child nodes", async () => {
-      const parentKey = createRandomECInstanceNodeKey();
+      const parentKey = createRandomECInstanceNodeKeyJSON();
       const options: HierarchyRequestOptions<IModelToken> = {
         imodel: token,
         rulesetId: faker.random.word(),
@@ -401,7 +423,7 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const filter = faker.random.word();
-      const result = [createRandomNodePathElement()];
+      const result = [createRandomNodePathElementJSON()];
       rpcInterfaceMock.setup(async (x) => x.getFilteredNodePaths(token, rpcOptions, filter)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getFilteredNodePaths(options, filter)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -413,9 +435,9 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const paths = [[createRandomECInstanceKey()]];
+      const paths = [[createRandomECInstanceKeyJSON()]];
       const markedIndex = faker.random.number();
-      const result = [createRandomNodePathElement()];
+      const result = [createRandomNodePathElementJSON()];
       rpcInterfaceMock.setup(async (x) => x.getNodePaths(token, rpcOptions, paths, markedIndex)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getNodePaths(options, paths, markedIndex)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -428,9 +450,9 @@ describe("RpcRequestsHandler", () => {
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const displayType = faker.random.word();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       const selectionInfo: SelectionInfo = { providerName: faker.random.word() };
-      const result = createRandomDescriptor();
+      const result = createRandomDescriptorJSON();
       rpcInterfaceMock.setup(async (x) => x.getContentDescriptor(token, rpcOptions, displayType, keys, selectionInfo)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getContentDescriptor(options, displayType, keys, selectionInfo)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -442,8 +464,8 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const descriptor = createRandomDescriptorJSON();
+      const keys = new KeySet().toJSON();
       const result = faker.random.number();
       rpcInterfaceMock.setup(async (x) => x.getContentSetSize(token, rpcOptions, descriptor, keys)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getContentSetSize(options, descriptor, keys)).to.eq(result);
@@ -456,9 +478,9 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
-      const result = createRandomContent();
+      const descriptor = createRandomDescriptorJSON();
+      const keys = new KeySet().toJSON();
+      const result = createRandomContentJSON();
       rpcInterfaceMock.setup(async (x) => x.getContent(token, rpcOptions, descriptor, keys)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getContent(options, descriptor, keys)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -470,9 +492,9 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
-      const result = { content: createRandomContent(), size: 1 };
+      const descriptor = createRandomDescriptorJSON();
+      const keys = new KeySet().toJSON();
+      const result = { content: createRandomContentJSON(), size: 1 };
       rpcInterfaceMock.setup(async (x) => x.getContentAndSize(token, rpcOptions, descriptor, keys)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getContentAndSize(options, descriptor, keys)).to.eq(result);
       rpcInterfaceMock.verifyAll();
@@ -484,8 +506,8 @@ describe("RpcRequestsHandler", () => {
         rulesetId: faker.random.word(),
       };
       const rpcOptions = { ...defaultRpcOptions, ...options };
-      const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const descriptor = createRandomDescriptorJSON();
+      const keys = new KeySet().toJSON();
       const fieldName = faker.random.word();
       const maxItems = faker.random.number();
       const result = [faker.random.word()];
@@ -495,7 +517,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getDisplayLabel call", async () => {
-      const key = createRandomECInstanceKey();
+      const key = createRandomECInstanceKeyJSON();
       const options: LabelRequestOptions<IModelToken> = {
         imodel: token,
       };
@@ -507,7 +529,7 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards getDisplayLabels call", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const keys = [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()];
       const options: LabelRequestOptions<IModelToken> = {
         imodel: token,
       };
@@ -536,7 +558,7 @@ describe("RpcRequestsHandler", () => {
       const rpcOptions = { ...defaultRpcOptions, ...options };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
-      const result = new KeySet();
+      const result = new KeySet().toJSON();
       rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.computeSelection(options, ids, scopeId)).to.eq(result);
       rpcInterfaceMock.verifyAll();

@@ -6,6 +6,8 @@
 
 import { UiEvent } from "@bentley/ui-core";
 import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { Logger } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../../UiFramework";
 
 // -----------------------------------------------------------------------------
 // Events
@@ -41,8 +43,7 @@ export class ToolUiManager {
   private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
     // istanbul ignore if
     if (toolId !== ToolUiManager._toolIdForCachedProperties) {
-      // tslint:disable-next-line:no-console
-      console.log(`Error = Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForCachedProperties}}`);
+      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForCachedProperties}}`);
       return;
     }
 

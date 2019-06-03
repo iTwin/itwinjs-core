@@ -5,20 +5,21 @@
 /** @module Frontstage */
 
 import { UiEvent } from "@bentley/ui-core";
+import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { Logger } from "@bentley/bentleyjs-core";
 
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ContentViewManager } from "../content/ContentViewManager";
-
-import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { UiFramework } from "../UiFramework";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -228,7 +229,8 @@ export class FrontstageManager {
   public static async setActiveFrontstage(frontstageId: string): Promise<void> {
     const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
     if (!frontstageDef) {
-      throw Error("setActiveFrontstage: Could not find Frontstage with id of '" + frontstageId + "'");
+      Logger.logError(UiFramework.loggerCategory(this), `setActiveFrontstage: Could not find Frontstage with id of '${frontstageId}'`);
+      return;
     }
 
     return FrontstageManager.setActiveFrontstageDef(frontstageDef);
@@ -298,7 +300,7 @@ export class FrontstageManager {
    */
   public static get activeToolSettingsNode(): React.ReactNode | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
       return toolUiProvider.toolSettingsNode;
@@ -311,7 +313,7 @@ export class FrontstageManager {
    */
   public static get activeToolAssistanceNode(): React.ReactNode | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : undefined;
+    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
 
     if (toolUiProvider && toolUiProvider.toolAssistanceNode)
       return toolUiProvider.toolAssistanceNode;
@@ -389,6 +391,8 @@ export class FrontstageManager {
     if (widgetDef) {
       widgetDef.setWidgetState(state);
       return true;
+    } else {
+      Logger.logError(UiFramework.loggerCategory(this), `setWidgetState: Could not find Widget with id of '${widgetId}'`);
     }
 
     return false;
@@ -408,7 +412,7 @@ export class FrontstageManager {
     return undefined;
   }
 
-  /** Opens a nested Frontstage. Modal Frontstages can be stacked.
+  /** Opens a nested Frontstage. Nested Frontstages can be stacked.
    * @param nestedFrontstage  Information about the nested Frontstage
    */
   public static async openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void> {

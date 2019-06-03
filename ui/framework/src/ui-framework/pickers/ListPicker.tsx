@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
+import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally, Size } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
@@ -44,6 +44,7 @@ export interface ListPickerProps {
   iconSpec?: string | React.ReactNode;
   setEnabled: (item: ListItem, enabled: boolean) => any;
   onExpanded?: (expand: boolean) => void;
+  onSizeKnown?: (size: Size) => void;
 }
 
 /** State for the [[ListPickerBase]] component
@@ -209,13 +210,14 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
           title={this.props.title}
           onClick={this._toggleIsExpanded}
           icon={icon}
+          onSizeKnown={this.props.onSizeKnown}
         />
       </ExpandableItem>
     );
   }
 
   /** Returns the list with the items */
-  public getExpandedContent() {
+  public getExpandedContent(): React.ReactNode {
     if (!this.state.expanded)
       return undefined;
 
@@ -307,18 +309,18 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
     if (this.props.enableAllFunc) {
       let allEnabled = true;
       items.map((item: ListItem) => { allEnabled = allEnabled && item.enabled; });
-      newItems.push({ key: ListPicker.Key_All, name: UiFramework.i18n.translate("UiFramework:pickerButtons.all"), enabled: allEnabled, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_All, name: UiFramework.translate("pickerButtons.all"), enabled: allEnabled, type: ListItemType.Item });
     }
     if (this.props.disableAllFunc) {
       let allDisabled = false;
       items.map((item: ListItem) => { allDisabled = allDisabled || item.enabled; });
-      newItems.push({ key: ListPicker.Key_None, name: UiFramework.i18n.translate("UiFramework:pickerButtons.none"), enabled: !allDisabled, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_None, name: UiFramework.translate("pickerButtons.none"), enabled: !allDisabled, type: ListItemType.Item });
     }
     if (this.props.invertFunc) {
-      newItems.push({ key: ListPicker.Key_Invert, name: UiFramework.i18n.translate("UiFramework:pickerButtons.invert"), enabled: false, type: ListItemType.Item });
+      newItems.push({ key: ListPicker.Key_Invert, name: UiFramework.translate("pickerButtons.invert"), enabled: false, type: ListItemType.Item });
     }
     if (this.props.enableAllFunc || this.props.disableAllFunc || this.props.invertFunc) {
-      newItems.push({ key: ListPicker.Key_Separator, name: UiFramework.i18n.translate("UiFramework:pickerButtons.separator"), enabled: false, type: ListItemType.Separator });
+      newItems.push({ key: ListPicker.Key_Separator, name: UiFramework.translate("pickerButtons.separator"), enabled: false, type: ListItemType.Separator });
     }
 
     // Push items

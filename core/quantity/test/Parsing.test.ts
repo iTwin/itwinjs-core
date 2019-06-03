@@ -3,15 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Parser } from "../src/Parser";
-import { UnitProps, BadUnit } from "../src/Interfaces";
-import { Format } from "../src/Formatter/Format";
+import { Parser, ParserSpec } from "../src/Parser";
+import { BadUnit } from "../src/Unit";
+import { QuantityStatus } from "../src/Exception";
+import { UnitProps } from "../src/Interfaces";
+import { Format, FormatterSpec } from "../src/Formatter/Format";
 import { Quantity } from "../src/Quantity";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
+import { Formatter } from "../src/Formatter/Formatter";
+
+const logTestOutput = false;
 
 describe("Parsing tests:", () => {
   it("Bad unit", async () => {
-    let testUnit: UnitProps = new BadUnit();
+    const testUnit: UnitProps = new BadUnit();
     assert.isTrue(testUnit.name.length === 0);
     assert.isTrue(testUnit.label.length === 0);
     assert.isTrue(testUnit.unitFamily.length === 0);
@@ -19,7 +24,7 @@ describe("Parsing tests:", () => {
   });
 
   it("Quantity constructor", async () => {
-    let noUnitQty = new Quantity();
+    const noUnitQty = new Quantity();
     assert.isTrue(noUnitQty.magnitude === 0);
     assert.isTrue(noUnitQty.isValid === false);
   });
@@ -30,7 +35,7 @@ describe("Parsing tests:", () => {
     const meterUnit = await unitsProvider.findUnit("m", "Units.LENGTH");
     const meterQty = new Quantity(meterUnit, 1.0);
     const conversion = await unitsProvider.getConversion(meterUnit, inchUnit);
-    let inchesQty = meterQty.convertTo(inchUnit, conversion);
+    const inchesQty = meterQty.convertTo(inchUnit, conversion);
 
     assert.isTrue(meterQty.magnitude === 1.0);
     assert.isTrue(inchesQty!.magnitude === meterQty.magnitude * conversion.factor);
@@ -58,7 +63,6 @@ describe("Parsing tests:", () => {
       }
     }
   });
-
 
   it("Generate Parse Tokens", async () => {
 
@@ -228,33 +232,31 @@ describe("Parsing tests:", () => {
     }
   });
 
-
   it("Parse into Station Quantities", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const formatData = {
-      "composite": {
-        "includeZero": true,
-        "spacer": " ",
-        "units": [
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [
           {
-            "label": "ft",
-            "name": "Units.FT"
-          }
-        ]
+            label: "ft",
+            name: "Units.FT",
+          },
+        ],
       },
-      "formatTraits": ["trailZeroes", "keepSingleZero", "keepDecimalPoint"],
-      "minWidth": 2,
-      "precision": 2,
-      "stationOffsetSize": 2,
-      "type": "Station"
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint"],
+      minWidth: 2,
+      precision: 2,
+      stationOffsetSize: 2,
+      type: "Station",
     };
 
     const testData = [
       { value: "7563+45.345", quantity: { magnitude: 756345.345, unitName: "Units.FT" } },
       { value: "-7563+45.345", quantity: { magnitude: -756345.345, unitName: "Units.FT" } },
     ];
-
 
     const format = new Format("test");
     await format.fromJson(unitsProvider, formatData).catch(() => { });
@@ -269,28 +271,28 @@ describe("Parsing tests:", () => {
 
   it("Parse into Angle Quantities", async () => {
     const formatData = {
-      "composite": {
-        "includeZero": true,
-        "spacer": "",
-        "units": [
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
           {
-            "label": "°",
-            "name": "Units.ARC_DEG"
+            label: "°",
+            name: "Units.ARC_DEG",
           },
           {
-            "label": "'",
-            "name": "Units.ARC_MINUTE"
+            label: "'",
+            name: "Units.ARC_MINUTE",
           },
           {
-            "label": "\"",
-            "name": "Units.ARC_SECOND"
+            label: "\"",
+            name: "Units.ARC_SECOND",
           }
         ]
       },
-      "formatTraits": ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
-      "precision": 4,
-      "type": "Decimal",
-      "uomSeparator": ""
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: ""
     };
 
     const testData = [
@@ -335,4 +337,193 @@ describe("Parsing tests:", () => {
       assert.isTrue(quantityProps.unit.name === testEntry.quantity!.unitName);
     }
   });
+});
+
+describe("Synchronous Parsing tests:", async () => {
+  const unitsProvider = new TestUnitsProvider();
+  const outUnit = await unitsProvider.findUnitByName("Units.M");
+  // specs to convert parsed unit in an output unit of meter
+  const meterConversionSpecs = await Parser.createUnitConversionSpecs(unitsProvider, "Units.M", [
+    { unitName: "Units.M" },
+    { unitName: "Units.MM" },
+    { unitName: "Units.CM" },
+    { unitName: "Units.IN" },
+    { unitName: "Units.FT", altLabels: ["foot", "feet"] },
+    { unitName: "Units.YRD", altLabels: ["yd", "yds"] },
+  ]);
+
+  const formatData = {
+    composite: {
+      includeZero: true,
+      spacer: "-",
+      units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+    },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 8,
+    type: "Fractional",
+    uomSeparator: "",
+  };
+
+  const format = new Format("test");
+  await format.fromJson(unitsProvider, formatData).catch(() => { });
+
+  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
+  const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
+
+  const angleFormatData = {
+    composite: {
+      includeZero: true,
+      spacer: "",
+      units: [
+        {
+          label: "°",
+          name: "Units.ARC_DEG",
+        },
+        {
+          label: "'",
+          name: "Units.ARC_MINUTE",
+        },
+        {
+          label: "\"",
+          name: "Units.ARC_SECOND",
+        },
+      ],
+    },
+    formatTraits: ["keepSingleZero", "showUnitLabel"],
+    precision: 2,
+    type: "Decimal",
+    uomSeparator: "",
+  };
+
+  const angleFormat = new Format("testAngle");
+  await angleFormat.fromJson(unitsProvider, angleFormatData).catch(() => { });
+  const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
+  const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit);
+  const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
+
+  it("Parse into length values using custom parse labels", () => {
+    const testData = [
+      // if no quantity is provided then the format unit is used to determine unit
+      { value: "12,345.345", magnitude: 3762.861156 },
+      { value: "1", magnitude: 0.3048 },
+      { value: "1 '", magnitude: 0.3048 },
+      { value: "1 FT", magnitude: 0.3048 },
+      { value: "1 F", magnitude: 0.3048 },
+      { value: "-2FT 6IN", magnitude: -0.762 },
+      { value: "1 1/2FT", magnitude: 0.45720000000000005 },
+      { value: "2' 6\"", magnitude: 0.762 },
+      { value: "1 yd", magnitude: 0.9144 },
+      { value: "1yd", magnitude: 0.9144 },
+      { value: "1 yds", magnitude: 0.9144 },
+      { value: "1yrd", magnitude: 0.9144 },
+      { value: "1 m", magnitude: 1 },
+      { value: "1m", magnitude: 1 },
+      { value: "1 MM", magnitude: 0.001 },
+      { value: "1MM", magnitude: 0.001 },
+      { value: "1000MM", magnitude: 1 },
+      { value: "1CM", magnitude: 0.01 },
+      { value: "1 CM", magnitude: 0.01 },
+      { value: "100cm", magnitude: 1 },
+      { value: "-100cm", magnitude: -1 },
+    ];
+
+    if (logTestOutput) {
+      for (const spec of meterConversionSpecs) {
+        // tslint:disable-next-line:no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseIntoQuantityValue(testEntry.value, format, meterConversionSpecs);
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`input=${testEntry.value} output=${parseResult.value}`);
+      }
+      assert.isTrue(QuantityStatus.Success === parseResult.status);
+      assert.isTrue(Math.abs(parseResult.value! - testEntry.magnitude) < 0.0001);
+    }
+  });
+
+  it("Parse into length values using default parse labels", () => {
+    const testData = [
+      // if no quantity is provided then the format unit is used to determine unit
+      { value: "12,345.345", magnitude: 3762.861156 },
+      { value: "1", magnitude: 0.3048 },
+      { value: "1 '", magnitude: 0.3048 },
+      { value: "1 FT", magnitude: 0.3048 },
+      { value: "1 F", magnitude: 0.3048 },
+      { value: "-2 FT 6 IN", magnitude: -0.762 },
+      { value: "1 1/2FT", magnitude: 0.45720000000000005 },
+      { value: "2FT 6IN", magnitude: 0.762 },
+      { value: "1 yd", magnitude: 0.9144 },
+      { value: "1yd", magnitude: 0.9144 },
+      { value: "1 yrd", magnitude: 0.9144 },
+      { value: "1 m", magnitude: 1 },
+      { value: "1m", magnitude: 1 },
+      { value: "1 MM", magnitude: 0.001 },
+      { value: "1MM", magnitude: 0.001 },
+      { value: "1000MM", magnitude: 1 },
+      { value: "1CM", magnitude: 0.01 },
+      { value: "1 CM", magnitude: 0.01 },
+      { value: "100cm", magnitude: 1 },
+      { value: "-100cm", magnitude: -1 },
+      { value: "27'", magnitude: 8.2296 },
+    ];
+
+    if (logTestOutput) {
+      for (const spec of parserSpec.unitConversions) {
+        // tslint:disable-next-line:no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry.value, parserSpec);
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`input=${testEntry.value} output=${parseResult.value!}`);
+      }
+      assert.isTrue(QuantityStatus.Success === parseResult.status);
+      assert.isTrue(Math.abs(parseResult.value! - testEntry.magnitude) < 0.0001);
+      const formattedValue = Formatter.formatQuantity(parseResult.value!, formatSpec);
+
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`    formatted value=${formattedValue}`);
+      }
+    }
+  });
+
+  it("Parse into angle values using default parse labels", () => {
+    const testData = [
+      // if no quantity is provided then the format unit is used to determine unit
+      { value: "15^30'", magnitude: 15.5 },
+      { value: "15.5", magnitude: 15.5 },
+    ];
+
+    if (logTestOutput) {
+      for (const spec of angleParserSpec.unitConversions) {
+        // tslint:disable-next-line:no-console
+        console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
+      }
+    }
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry.value, angleParserSpec);
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`input=${testEntry.value} output=${parseResult.value!}`);
+      }
+      assert.isTrue(QuantityStatus.Success === parseResult.status);
+      assert.isTrue(Math.abs(parseResult.value! - testEntry.magnitude) < 0.0001);
+      const formattedValue = Formatter.formatQuantity(parseResult.value!, angleFormatSpec);
+
+      if (logTestOutput) {
+        // tslint:disable-next-line:no-console
+        console.log(`    formatted value=${formattedValue}`);
+      }
+    }
+  });
+
 });

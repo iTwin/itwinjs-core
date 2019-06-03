@@ -11,7 +11,6 @@ import { RotateViewTool, PanViewTool } from "../tools/ViewTool";
 import { MockRender } from "../render/MockRender";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -129,10 +128,19 @@ describe("IModelApp", () => {
     assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
   });
 
-  // Still failing to acquire WebGLRenderingContext on CI server.
   it("Should support WebGL", () => {
     expect(IModelApp.hasRenderSystem).to.be.true;
-    const canvas = WebGLTestContext.createCanvas();
+    let canvas = document.getElementById("WebGLTestCanvas") as HTMLCanvasElement;
+    if (null === canvas) {
+      canvas = document.createElement("canvas") as HTMLCanvasElement;
+      if (null !== canvas) {
+        canvas.id = "WebGLTestCanvas";
+        document.body.appendChild(document.createTextNode("WebGL tests"));
+        document.body.appendChild(canvas);
+      }
+    }
+    canvas.width = 300;
+    canvas.height = 150;
     expect(canvas).not.to.be.undefined;
     if (undefined !== canvas) {
       const context = canvas.getContext("webgl");

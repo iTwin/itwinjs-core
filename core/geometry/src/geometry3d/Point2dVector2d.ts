@@ -34,6 +34,7 @@ export class XY implements XAndY {
       this.x = 0; this.y = 0;
     }
   }
+  /** Freeze this instance (and its deep content) so it can be considered read-only */
   public freeze() { Object.freeze(this); }
 
   /** Returns true if this and other have equal x,y parts within Geometry.smallMetricDistance. */
@@ -252,10 +253,10 @@ export class Point2d extends XY implements BeJSONFunctions {
     const y2 = target2.y - this.y;
     return x1 * y2 - y1 * x2;
   }
-  /** Return the fractional coordinate of the projection of this instance x,y onto th eline from startPoint to endPoint.
+  /** Return the fractional coordinate of the projection of this instance x,y onto the line from startPoint to endPoint.
    * @param startPoint start point of line
    * @param endPoint end point of line
-   * @param defaultFraction fraction to return if startPoint and endPOint are equal.
+   * @param defaultFraction fraction to return if startPoint and endPoint are equal.
    */
   public fractionOfProjectionToLine(startPoint: Point2d, endPoint: Point2d, defaultFraction?: number): number {
     const denominator = startPoint.distanceSquared(endPoint);
@@ -281,7 +282,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return new Vector2d(x, y);
   }
 
-  /** Return a (new) Vector2d with componentss 1,0 */
+  /** Return a (new) Vector2d with components 1,0 */
   public static unitX(scale: number = 1): Vector2d { return new Vector2d(scale, 0); }
 
   /** Return a (new) Vector2d with components 0,1 */
@@ -303,7 +304,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /** Return a new Vector2d from json structured as `[1,2]` or `{x:1,y:2}` */
   public static fromJSON(json?: XYProps): Vector2d { const val = new Vector2d(); val.setFromJSON(json); return val; }
-  /** Return a new Vector2d from poloar coordinates for radius and Angle from x axis */
+  /** Return a new Vector2d from polar coordinates for radius and Angle from x axis */
   public static createPolar(r: number, theta: Angle): Vector2d {
     return Vector2d.create(r * theta.cos(), r * theta.sin());
   }
@@ -473,10 +474,10 @@ export class Vector2d extends XY implements BeJSONFunctions {
     return result;
   }
   /** return a vector parallel to this but with specified length */
-  public scaleToLength(length: number, result?: Vector2d): Vector2d {
+  public scaleToLength(length: number, result?: Vector2d): Vector2d | undefined {
     const mag = Geometry.correctSmallMetricDistance(this.magnitude());
     if (mag === 0)
-      return new Vector2d();
+      return undefined;
     return this.scale(length / mag, result);
   }
   /** return the dot product of this with vectorB */
@@ -503,7 +504,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     isInCCWSector(vectorA: Vector2d, vectorB: Vector2d, upVector: Vector2d): boolean { }
     */
   /**
-   * Test if `thsi` and `other` area parallel, with angle tolerance `Geoemtry.smallAngleRadiansSquared`.
+   * Test if `this` and `other` area parallel, with angle tolerance `Geometry.smallAngleRadiansSquared`.
    * @param other second vector for comparison.
    * @param oppositeIsParallel if true, treat vectors 180 opposite as parallel.  If false, treat those as non-parallel.
    */

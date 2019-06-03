@@ -7,16 +7,15 @@ import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using, Id64String } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
+import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelTokenProps } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
 } from "../presentation-common";
 import {
-  RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  ClientStateSyncRequestOptions,
-  SelectionScopeRpcRequestOptions,
-  LabelRpcRequestOptions,
+  PresentationRpcRequestOptions, LabelRpcRequestOptions,
+  HierarchyRpcRequestOptions, ContentRpcRequestOptions,
+  ClientStateSyncRequestOptions, SelectionScopeRpcRequestOptions,
 } from "../PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
@@ -27,7 +26,7 @@ describe("PresentationRpcInterface", () => {
   }
 
   it("finds imodel tokens in RPC requests", () => {
-    const token = new IModelToken();
+    const token: IModelTokenProps = { iModelId: "test", contextId: "test" };
     const parameters = [
       token,
       { rulesetId: faker.random.word() },
@@ -55,8 +54,8 @@ describe("PresentationRpcInterface", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let mock: moq.IMock<(<T>(parameters: IArguments) => Promise<T>)>;
-    const token = new IModelToken();
-    const defaultRpcOptions: RpcRequestOptions = {};
+    const token: IModelTokenProps = { iModelId: "test", contextId: "test" };
+    const defaultRpcOptions: PresentationRpcRequestOptions = {};
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
@@ -135,7 +134,7 @@ describe("PresentationRpcInterface", () => {
         ...defaultRpcOptions,
         rulesetId: faker.random.word(),
       };
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined);
       mock.verify(async (x) => x(toArguments(token, options, "test", keys, undefined)), moq.Times.once());
     });
@@ -146,7 +145,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentSetSize(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -157,7 +156,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContent(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -168,7 +167,7 @@ describe("PresentationRpcInterface", () => {
         rulesetId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getContentAndSize(token, options, descriptor, keys);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys)), moq.Times.once());
     });
@@ -181,7 +180,7 @@ describe("PresentationRpcInterface", () => {
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
       const maximumValueCount = faker.random.number();
-      const keys = new KeySet();
+      const keys = new KeySet().toJSON();
       await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
     });

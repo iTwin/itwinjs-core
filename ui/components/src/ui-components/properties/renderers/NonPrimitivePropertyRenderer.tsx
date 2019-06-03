@@ -88,7 +88,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
           displayValue: items.length.toString(),
         },
         {
-          displayLabel: UiComponents.i18n.translate("UiComponents:general.length"),
+          displayLabel: UiComponents.translate("general.length"),
           name: "array_length",
           typename: "int",
         }),

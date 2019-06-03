@@ -54,18 +54,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "BriefcaseStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "RepositoryStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "ChangeSetStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "HttpStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "WSStatus" which is marked as @beta
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "IModelHubStatus" which is marked as @beta
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    // (undocumented)
     getMetaData(): any;
-    // (undocumented)
     readonly hasMetaData: boolean;
     protected _initName(): string;
 }
@@ -162,19 +154,29 @@ export enum ChangeSetStatus {
 }
 
 // @public
-export class ClientRequestContext {
-    constructor(activityId?: string, applicationId?: string, applicationVersion?: string, sessionId?: string);
-    readonly activityId: string;
+export class ClientRequestContext implements ClientRequestContextProps {
+    constructor(activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
+    readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
     static readonly current: ClientRequestContext;
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
-    readonly sessionId: string;
+    readonly sessionId: GuidString;
+    // @internal (undocumented)
+    toJSON(): ClientRequestContextProps;
     // (undocumented)
     useContextForRpc: boolean;
     }
+
+// @public
+export interface ClientRequestContextProps {
+    readonly activityId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
+}
 
 // @public
 export type CloneFunction<T> = (value: T) => T;
@@ -449,6 +451,7 @@ export type GetMetaDataFunction = () => any;
 
 // @public
 export namespace Guid {
+    const empty: GuidString;
     export function createValue(): GuidString;
     export function isGuid(value: string): boolean;
     export function isV4Guid(value: string): boolean;
@@ -474,10 +477,12 @@ export namespace Id64 {
     export function fromString(val: string): Id64String;
     export function fromUint32Pair(lowBytes: number, highBytes: number): Id64String;
     export function getBriefcaseId(id: Id64String): number;
+    export function getFirst(arg: Id64Arg): Id64String;
     export function getLocalId(id: Id64String): number;
     export function getLowerUint32(id: Id64String): number;
     export function getUint32Pair(id: Id64String): Uint32Pair;
     export function getUpperUint32(id: Id64String): number;
+    export function has(arg: Id64Arg, id: Id64String): boolean;
     export function isId64(id: string): boolean;
     export function isInvalid(id: Id64String): boolean;
     export function isTransient(id: Id64String): boolean;
@@ -510,7 +515,11 @@ export namespace Id64 {
         constructor(ids?: Id64Arg);
         add(low: number, high: number): void;
         addId(id: Id64String): void;
+        addIds(ids: Id64Arg): void;
         clear(): void;
+        delete(low: number, high: number): void;
+        deleteId(id: Id64String): void;
+        deleteIds(ids: Id64Arg): void;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
@@ -577,6 +586,10 @@ export enum IModelHubStatus {
     // (undocumented)
     EventTypeDoesNotExist = 102432,
     // (undocumented)
+    FailedToGetAssetMembers = 102446,
+    // (undocumented)
+    FailedToGetAssetPermissions = 102445,
+    // (undocumented)
     FailedToGetProjectById = 102442,
     // (undocumented)
     FailedToGetProjectMembers = 102437,
@@ -604,6 +617,8 @@ export enum IModelHubStatus {
     iModelIsLocked = 102420,
     // (undocumented)
     iModelIsNotInitialized = 102413,
+    // (undocumented)
+    InitializationTimeout = 102663,
     // (undocumented)
     InvalidArgumentError = 102658,
     // (undocumented)
@@ -754,6 +769,8 @@ export enum IModelStatus {
     ReadOnlyDomain = 65583,
     // (undocumented)
     RepositoryManagerError = 65584,
+    // (undocumented)
+    ServerTimeout = 65603,
     // (undocumented)
     SQLiteError = 65585,
     // (undocumented)

@@ -20,10 +20,10 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";
 /**
- * A LinearSweep is
- *
- * * A planar contour (any Loop, Path, or parityRegion)
+ * A LinearSweep is a `SolidPrimitive` defined by
+ * * A set of curves (any Loop, Path, or parityRegion)
  * * A sweep vector
+ * If the object is "capped", the curves must be planar.
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
@@ -69,15 +69,19 @@ export class LinearSweep extends SolidPrimitive {
     const contour: CurveCollection = capped ? Loop.create(xyz) : Path.create(xyz);
     return LinearSweep.create(contour, Vector3d.create(0, 0, zSweep), capped);
   }
-
+  /** get a reference to the swept curves */
   public getCurvesRef(): CurveCollection { return this._contour.curves; }
+  /** Get a reference to the `SweepContour` carrying the plane of the curves */
   public getSweepContourRef(): SweepContour { return this._contour; }
+  /** return a clone of the sweep vector */
   public cloneSweepVector(): Vector3d { return this._direction.clone(); }
-
+  /** Test if `other` is also an instance of `LinearSweep` */
   public isSameGeometryClass(other: any): boolean { return other instanceof LinearSweep; }
+  /** Return a deep clone */
   public clone(): LinearSweep {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
+  /** apply a transform to the curves and sweep vector */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
@@ -91,16 +95,18 @@ export class LinearSweep extends SolidPrimitive {
   /** Return a coordinate frame (right handed unit vectors)
    * * origin on base contour
    * * x, y directions from base contour.
-   * * z direction perpenedicular
+   * * z direction perpendicular
    */
   public getConstructiveFrame(): Transform | undefined {
     return this._contour.localToWorld.cloneRigid();
   }
+  /** Return a transformed clone */
   public cloneTransformed(transform: Transform): LinearSweep {
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
   }
+  /** Test for near-equality of coordinates in `other` */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof LinearSweep) {
       return this._contour.isAlmostEqual(other._contour)
@@ -109,11 +115,12 @@ export class LinearSweep extends SolidPrimitive {
     }
     return false;
   }
+  /** Invoke strongly typed `handler.handleLinearSweep(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleLinearSweep(this);
   }
   /**
-   * @returns Return the curves of a constant-v section of the solid.
+   * Return the curves at a fraction along the sweep direction.
    * @param vFraction fractional position along the sweep direction
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
@@ -122,10 +129,10 @@ export class LinearSweep extends SolidPrimitive {
       section.tryTransformInPlace(Transform.createTranslation(this._direction.scale(vFraction)));
     return section;
   }
-
-  public extendRange(range: Range3d, transform?: Transform) {
+  /** Extend `rangeToExtend` to include this geometry. */
+  public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const contourRange = this._contour.curves.range(transform);
-    range.extendRange(contourRange);
+    rangeToExtend.extendRange(contourRange);
     if (transform) {
       const transformedDirection = transform.multiplyVector(this._direction);
       contourRange.low.addInPlace(transformedDirection);
@@ -134,7 +141,7 @@ export class LinearSweep extends SolidPrimitive {
       contourRange.low.addInPlace(this._direction);
       contourRange.high.addInPlace(this._direction);
     }
-    range.extendRange(contourRange);
+    rangeToExtend.extendRange(contourRange);
   }
   /**
    * @return true if this is a closed volume.

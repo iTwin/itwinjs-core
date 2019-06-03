@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Migrated agent applications to the newer client 
+- Updated release tags. 
+- Added an error for seed file initialization timeout
+- Switched from iModelHub Project API to Context API
+- Updated tests to use new ownedByMe option when quering briefcases
+- Fixed Date fields in OIDC AccessTokens.
+- Refactored and simplified implementation of IModelDb.open
+- Use paging for Locks, Codes and ChangeSets
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

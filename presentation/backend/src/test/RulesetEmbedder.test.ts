@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import RulesetEmbedder, { DuplicateHandlingStrategy } from "../RulesetEmbedder";
+import { RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "../RulesetEmbedder";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelDb, CodeSpecs, Subject, DefinitionPartition, Model, DefinitionModel, ECSqlStatement } from "@bentley/imodeljs-backend";
 import faker from "faker";
@@ -282,7 +282,7 @@ describe("RulesetEmbedder", () => {
 
       // Act
       const insertId = await embedder.insertRuleset(ruleset);
-      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateHandlingStrategy.Skip);
+      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateRulesetHandlingStrategy.Skip);
 
       // Assert
       expect(insertId).to.be.equal(repeatedInsertId);
@@ -302,7 +302,7 @@ describe("RulesetEmbedder", () => {
 
       // Act
       await embedder.insertRuleset(ruleset);
-      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateHandlingStrategy.Replace);
+      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateRulesetHandlingStrategy.Replace);
 
       // Assert
       expect(Id64.isValid(repeatedInsertId)).false;
@@ -322,7 +322,7 @@ describe("RulesetEmbedder", () => {
 
       // Act
       const insertId = await embedder.insertRuleset(ruleset);
-      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateHandlingStrategy.Replace);
+      const repeatedInsertId = await embedder.insertRuleset(ruleset2, DuplicateRulesetHandlingStrategy.Replace);
 
       // Assert
       expect(insertId).to.be.equal(repeatedInsertId);

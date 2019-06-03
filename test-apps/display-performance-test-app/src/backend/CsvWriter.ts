@@ -135,3 +135,16 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
       fs.closeSync(fd);
   }
 }
+
+export function addEndOfTestToCsvFile(file: string) {
+  let fd;
+  try {
+    fd = fs.openSync(file, "a");
+    fs.appendFileSync(fd, "End of Tests-----------\r\n", "utf8");
+  } catch (err) {
+    /* Handle the error */
+  } finally {
+    if (fd !== undefined)
+      fs.closeSync(fd);
+  }
+}

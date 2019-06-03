@@ -38,7 +38,7 @@ export enum Edge {
 }
 
 /** Describes and provides methods to work with 2d bounds.
- * @internal
+ * @alpha
  */
 export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[RectangleProps]]. */

@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { FrustumUniforms, FrustumUniformType, ClipPlanesVolume, Clips } from "../webgl";
 import { ClipVector, ClipShape, Point3d } from "@bentley/geometry-core";
-import { WebGLTestContext } from "./utils/WebGLTestContext";
+import { IModelApp } from "../IModelApp";
 
 describe("FrustumUniforms", () => {
   it("should create, store, and retrieve FrustumUniforms", () => {
@@ -35,18 +35,14 @@ describe("FrustumUniforms", () => {
   });
 });
 
-// ###TODO: Re-write clips tests to test the TEXTURE provided from ClipPlanesVolume, and not what was previously a Float32Array
-describe.skip("Clips", () => {
+describe("Clips", () => {
   before(() => {
-    WebGLTestContext.startup();
+    IModelApp.startup();
   });
   after(() => {
-    WebGLTestContext.shutdown();
+    IModelApp.shutdown();
   });
   it("should create, store, and retrieve Clips", () => {
-    if (!WebGLTestContext.isInitialized)
-      return;
-
     const points: Point3d[] = [];
     points[0] = Point3d.create(1.0, 1.0, 0.0);
     points[1] = Point3d.create(2.0, 1.0, 0.0);
@@ -65,60 +61,15 @@ describe.skip("Clips", () => {
       expect(clips.count).to.equal(0);
       const clipVolume = ClipPlanesVolume.create(clipVector);
       expect(clipVolume).to.not.be.undefined;
-      expect(clipVolume!.texture !== undefined);
-      clips.set(clipVolume!.texture!.height, clipVolume!.texture!);
 
-      // Test texture data of ClipPlanesVolume
-      const clipVolumeTextureBytes: Float32Array = new Float32Array(clips.texture!.dataBytes!);
-      const expectedValues1: Uint8Array = new Uint8Array([0, 1, 0, 1, -1, 0, 0, -2, 0, -1, 0, -2, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, -1, -2]);
-      for (let i = 0; i < 24; ++i) {
-        assert.isTrue(clipVolumeTextureBytes[i] === expectedValues1[i], "clipVal[" + i + "] should be " + expectedValues1[i] + " but was " + clipVolumeTextureBytes[i]);
-      }
+      const data = clipVolume!.getTextureData() as Float32Array;
+      expect(data).not.to.be.undefined;
+      expect(data instanceof Float32Array).to.be.true;
 
-      // Try another clip.
-      /*
-      let transform = Transform.createScaleAboutPoint(Point3d.create(1.0, 1.0, 1.0), 3.0);
-      clipVector.transformInPlace(transform);
-      clipVolume!.apply(clips, transform);
-      expect(clips.isValid).to.be.true;
-      for (let i = 0; i < 24; ++i) {
-        assert.isTrue(clipVals[i].valueOf() === expectedValues1[i], "clipVal[" + i + "] should still be " + expectedValues1[i] + " but is now " + clipVals[i].toString());
-      }
-      */
-
-      // Try clearing the clips.
-      /*
-      clips.clear();
-      expect(clips.count).to.equal(6);
-      expect(clips.isValid).to.be.true;
-      clips.clear();
-      expect(clips.count).to.equal(0);
-      expect(clips.isValid).to.be.false;
-      */
-
-      // Use a new clip with a scaled transform.
-      /*
-      transform = Transform.createScaleAboutPoint(Point3d.create(0.0, 0.0, 0.0), 2.0);
-      clipVolume!.apply(clips, transform);
-      clipVals = clips.clips;
-      const expectedValues2: number[] = [0, 1, 0, -2, -1, 0, 0, 4, 0, -1, 0, 4, 1, 0, 0, -2, 0, 0, 1, -2, 0, 0, -1, 4];
-      for (let i = 0; i < 24; ++i) {
-        assert.isTrue(clipVals[i].valueOf() === expectedValues2[i], "clipVal[" + i + "] should be " + expectedValues2[i] + " but was " + clipVals[i].toString());
-      }
-      */
-
-      // Use a new clip with a rotated transform.
-      /*
-      clips.clear();
-      const rotMat = Matrix3d.createRowValues(0.0, 1.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-      transform = Transform.createOriginAndMatrix(Point3d.create(0.0, 0.0, 0.0), rotMat);
-      clipVolume!.apply(clips, transform);
-      clipVals = clips.clips;
-      const expectedValues3: number[] = [1, 0, 0, -1, 0, 1, 0, 2, -1, 0, 0, 2, 0, -1, 0, -1, 0, 0, -1, -1, 0, 0, 1, 2];
-      for (let i = 0; i < 24; ++i) {
-        assert.isTrue(clipVals[i].valueOf() === expectedValues3[i], "clipVal[" + i + "] should be " + expectedValues3[i] + " but was " + clipVals[i].toString());
-      }
-      */
+      const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2];
+      expect(data.length).to.equal(expectedData.length);
+      for (let i = 0; i < data.length; i++)
+        expect(data[i]).to.equal(expectedData[i]);
     }
   });
 });

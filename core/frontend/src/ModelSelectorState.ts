@@ -15,7 +15,7 @@ import { SpatialClassification } from "./SpatialClassification";
  * @public
  */
 export class ModelSelectorState extends ElementState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "ModelSelector"; }
 
   /** The set of ModelIds of this ModelSelectorState */
@@ -57,10 +57,14 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** Add one or more models to this ModelSelectorState */
-  public addModels(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.models.add(id)); }
+  public addModels(arg: Id64Arg): void {
+    Id64.forEach(arg, (id) => this.models.add(id));
+  }
 
   /** Drop one or more models from this ModelSelectorState */
-  public dropModels(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.models.delete(id)); }
+  public dropModels(arg: Id64Arg): void {
+    Id64.forEach(arg, (id) => this.models.delete(id));
+  }
 
   /** Determine whether this ModelSelectorState includes the specified modelId value */
   public has(id: string): boolean { return this.models.has(id); }

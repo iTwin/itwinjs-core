@@ -11,6 +11,7 @@ import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 
 /** @public */
 export abstract class DetailingSymbol extends GraphicalElement2d {
+  /** @internal */
   public static get className(): string { return "DetailingSymbol"; }
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -19,6 +20,7 @@ export abstract class DetailingSymbol extends GraphicalElement2d {
 
 /** @public */
 export class TitleText extends DetailingSymbol {
+  /** @internal */
   public static get className(): string { return "TitleText"; }
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -27,6 +29,7 @@ export class TitleText extends DetailingSymbol {
 
 /** @public */
 export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
+  /** @internal */
   public static get className(): string { return "ViewAttachmentLabel"; }
   public constructor(props: ViewAttachmentLabelProps, iModel: IModelDb) {
     super(props, iModel);
@@ -35,6 +38,7 @@ export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachme
 
 /** @public */
 export abstract class Callout extends DetailingSymbol implements CalloutProps {
+  /** @internal */
   public static get className(): string { return "Callout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
@@ -43,6 +47,7 @@ export abstract class Callout extends DetailingSymbol implements CalloutProps {
 
 /** @public */
 export class SectionCallout extends Callout {
+  /** @internal */
   public static get className(): string { return "SectionCallout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
@@ -51,6 +56,7 @@ export class SectionCallout extends Callout {
 
 /** @public */
 export class ElevationCallout extends Callout {
+  /** @internal */
   public static get className(): string { return "ElevationCallout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
@@ -59,6 +65,7 @@ export class ElevationCallout extends Callout {
 
 /** @public */
 export class PlanCallout extends Callout {
+  /** @internal */
   public static get className(): string { return "PlanCallout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
@@ -67,6 +74,7 @@ export class PlanCallout extends Callout {
 
 /** @public */
 export class DetailCallout extends Callout {
+  /** @internal */
   public static get className(): string { return "DetailCallout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
@@ -75,6 +83,7 @@ export class DetailCallout extends Callout {
 
 /** @public */
 export class Graphic3d extends GraphicalElement3d {
+  /** @internal */
   public static get className(): string { return "Graphic3d"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -83,6 +92,7 @@ export class Graphic3d extends GraphicalElement3d {
 
 /** @public */
 export class PhysicalObject extends PhysicalElement {
+  /** @internal */
   public static get className(): string { return "PhysicalObject"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -91,6 +101,7 @@ export class PhysicalObject extends PhysicalElement {
 
 /** @public */
 export class SpatialLocation extends SpatialLocationElement {
+  /** @internal */
   public static get className(): string { return "SpatialLocation"; }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -99,6 +110,7 @@ export class SpatialLocation extends SpatialLocationElement {
 
 /** @public */
 export class GroupModel extends GroupInformationModel {
+  /** @internal */
   public static get className(): string { return "GroupModel"; }
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
@@ -127,6 +139,7 @@ export class GroupModel extends GroupInformationModel {
 
 /** @public */
 export class Group extends GroupInformationElement {
+  /** @internal */
   public static get className(): string { return "Group"; }
   public constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);

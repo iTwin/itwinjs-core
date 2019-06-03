@@ -47,13 +47,13 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @public */
+/** @internal */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
 }
 
-/** @public */
+/** @alpha */
 export enum RotationMode {
   Top = 1,
   Front = 2,
@@ -167,6 +167,7 @@ export class SavedState {
   public ignoreFlags: AccuDrawFlags = 0;
 }
 
+/** @internal */
 class SavedCoords {
   public nSaveValues = 0;
   public readonly savedValues: number[] = [];
@@ -199,14 +200,16 @@ export class ThreeAxes {
 }
 
 /** Accudraw is an aide for entering coordinate data.
- * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
- * @public
+ * @internal
  */
 export class AccuDraw {
   /** @internal */
   public currentState = CurrentState.NotEnabled; // Compass state
+  /** @internal */
   public compassMode = CompassMode.Rectangular; // Compass mode
+  /** @internal */
   public rotationMode = RotationMode.View; // Compass rotation
+  /** @internal */
   public currentView?: ScreenViewport; // will be nullptr if view not yet defined
   /** @internal */
   public readonly published = new AccudrawData(); // Staging area for hints
@@ -332,14 +335,14 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
-  /** @public */
+  /** @internal */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode) return;
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
-  /** @public */
+  /** @internal */
   public setRotationMode(mode: RotationMode): void {
     if (mode === this.rotationMode) return;
     this.rotationMode = mode;
@@ -802,24 +805,22 @@ export class AccuDraw {
 
   /** @internal */
   public setLastPoint(pt: Point3d): void {
-    const vp = this.currentView;
-    if (!vp)
+    const viewport = this.currentView;
+    if (!viewport)
       return;
 
-    const ev = new BeButtonEvent();
-    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
+    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, coordsFrom: CoordSource.User });
     IModelApp.toolAdmin.setAdjustedDataPoint(ev);
   }
 
   /** @internal */
-  public sendDataPoint(pt: Point3d, vp: ScreenViewport): void {
-    const ev = new BeButtonEvent();
-    ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
+  public async sendDataPoint(pt: Point3d, viewport: ScreenViewport): Promise<void> {
+    const ev = new BeButtonEvent({ point: pt, rawPoint: pt, viewPoint: viewport.worldToView(pt), viewport, coordsFrom: CoordSource.User });
 
     // Send both down and up events...
-    IModelApp.toolAdmin.sendButtonEvent(ev); // tslint:disable-line:no-floating-promises
+    await IModelApp.toolAdmin.sendButtonEvent(ev);
     ev.isDown = false;
-    IModelApp.toolAdmin.sendButtonEvent(ev); // tslint:disable-line:no-floating-promises
+    return IModelApp.toolAdmin.sendButtonEvent(ev);
   }
 
   /** @internal */
@@ -833,7 +834,7 @@ export class AccuDraw {
   }
 
   /** @internal */
-  public doAutoPoint(index: ItemField, mode: CompassMode): void {
+  public async doAutoPoint(index: ItemField, mode: CompassMode): Promise<void> {
     const vp = this.currentView;
     if (!vp)
       return;
@@ -844,7 +845,7 @@ export class AccuDraw {
 
       if (this._fieldLocked[ItemField.DIST_Item] && (this._fieldLocked[ItemField.ANGLE_Item] || this.indexed & LockedStates.ANGLE_BM) && KeyinStatus.Dynamic === this._keyinStatus[index]) {
         this.fixPointPolar(vp);
-        this.sendDataPoint(this.point, vp);
+        return this.sendDataPoint(this.point, vp);
       }
 
       return;
@@ -858,7 +859,7 @@ export class AccuDraw {
           if (vp.view.isSpatialView())
             globalOrigin.setFrom(vp.view.iModel.globalOrigin);
 
-          this.sendDataPoint(globalOrigin.plus(this.delta), vp);
+          return this.sendDataPoint(globalOrigin.plus(this.delta), vp);
         }
 
         return;
@@ -868,8 +869,7 @@ export class AccuDraw {
         return;
 
       this.origin.plus3Scaled(this.axes.x, this.delta.x, this.axes.y, this.delta.y, this.axes.z, this.delta.z, this.point);
-      this.sendDataPoint(this.point, vp);
-      return;
+      return this.sendDataPoint(this.point, vp);
     }
 
     if (!this.autoPointPlacement || KeyinStatus.Dynamic !== this._keyinStatus[index])
@@ -877,7 +877,7 @@ export class AccuDraw {
 
     if ((ItemField.X_Item === index && this._fieldLocked[ItemField.X_Item] && (this.indexed & LockedStates.Y_BM)) || (ItemField.Y_Item === index && this._fieldLocked[ItemField.Y_Item] && (this.indexed & LockedStates.X_BM))) {
       this.origin.plus3Scaled(this.axes.x, this.delta.x, this.axes.y, this.delta.y, this.axes.z, this.delta.z, this.point);
-      this.sendDataPoint(this.point, vp);
+      return this.sendDataPoint(this.point, vp);
     }
   }
 
@@ -1199,7 +1199,7 @@ export class AccuDraw {
   }
 
   /** @internal */
-  public processFieldInput(index: ItemField, input: string, synchText: boolean): void {
+  public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
     const isBearing = false;
 
     if (BentleyStatus.SUCCESS !== this.updateFieldValue(index, input, { isBearing })) {
@@ -1212,7 +1212,7 @@ export class AccuDraw {
     switch (index) {
       case ItemField.DIST_Item:
         this.distanceLock(synchText, true);
-        this.doAutoPoint(index, CompassMode.Polar);
+        await this.doAutoPoint(index, CompassMode.Polar);
         break;
 
       case ItemField.ANGLE_Item:
@@ -1229,7 +1229,7 @@ export class AccuDraw {
           this.vector.set(Math.cos(this._angle), Math.sin(this._angle), 0.0);
 
         this.locked |= LockedStates.VEC_BM;
-        this.doAutoPoint(index, CompassMode.Polar);
+        await this.doAutoPoint(index, CompassMode.Polar);
         break;
 
       case ItemField.X_Item:
@@ -1244,7 +1244,7 @@ export class AccuDraw {
           this.setKeyinStatus(index, KeyinStatus.Dynamic);
         }
 
-        this.doAutoPoint(index, this.compassMode);
+        await this.doAutoPoint(index, this.compassMode);
         break;
     }
 
@@ -3156,11 +3156,13 @@ export class AccuDraw {
 }
 
 /** AccuDrawHintBuilder is a Tool helper class that facilitates AccuDraw interaction.
+ * Accudraw is an aide for entering coordinate data.
  * The tool does not directly change the current AccuDraw state; the tool's job is merely
  * to supply "hints" to AccuDraw regarding its preferred AccuDraw configuration for the
  * current tool state. User settings such as "Context Sensitivity" and "Floating Origin"
  * affect how/which hints get applied.
- * @internal
+ * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
+ * @beta
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;
@@ -3195,6 +3197,11 @@ export class AccuDrawHintBuilder {
   public setModeRectangular() { this._flagModeRectangular = true; this._flagModePolar = false; }
   public setDistance(distance: number) { this._distance = distance; this._flagDistance = true; }
   public setAngle(angle: number) { this._angle = angle; this._flagAngle = true; }
+
+  /* Enable AccuDraw for the current tool without sending any hints */
+  public static activate() { IModelApp.accuDraw.activate; }
+  /* Disable AccuDraw for the current tool */
+  public static deactivate() { IModelApp.accuDraw.deactivate; }
 
   /**
    * Calls AccuDraw.setContext using the current builder state.

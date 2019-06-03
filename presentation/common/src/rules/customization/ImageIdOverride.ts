@@ -9,6 +9,8 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
 /**
  * Rule that allows overriding default icon and dynamically define an icon
  * for a particular node based on the context.
+ *
+ * @public
  */
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

@@ -13,7 +13,7 @@ import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
 import { SelectionScopesManager } from "../selection/SelectionScopesManager";
-import PresentationManager from "../PresentationManager";
+import { PresentationManager } from "../PresentationManager";
 
 describe("Presentation", () => {
 
@@ -167,14 +167,14 @@ describe("Presentation", () => {
   describe("[set] i18n", () => {
 
     it("overwrites i18n instance before initialization", () => {
-      const i18n = new I18N([], "");
+      const i18n = new I18N();
       Presentation.i18n = i18n;
       Presentation.initialize();
       expect(Presentation.i18n).to.eq(i18n);
     });
 
     it("overwrites i18n instance after initialization", () => {
-      const i18n = new I18N([], "");
+      const i18n = new I18N();
       Presentation.initialize();
       expect(Presentation.i18n).to.be.not.null;
       expect(Presentation.i18n).to.not.eq(i18n);

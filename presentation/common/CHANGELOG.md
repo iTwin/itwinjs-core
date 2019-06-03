@@ -1,6 +1,21 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Add optional predicate parameter to `KeySet.add` to filter added keys
+- Add a new presentation rule `ExtendedDataRule` for injecting custom data into presentation objects.
+- Refactor InstanceLabelOverride rule for more flexibility
+- Added handling for timeouted backend responses with request repeating
+- Add release tags
+- Cleanup API
+- Refactor RPC interface to use pure JSON objects
+- Fix content descriptor deserialization
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -26,7 +26,7 @@ import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage } from "./CloudStorageBackend";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-
+import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -39,16 +39,27 @@ export interface CrashReportingConfigNameValuePair {
  * @alpha
  */
 export interface CrashReportingConfig {
-  /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
+  /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. This directory will be created if it does not already exist. */
   crashDir: string;
   /** max # .dmp files that may exist in crashDir. The default is 50. */
   maxDumpsInDir?: number;
-  /** Write .dmp files to crashDir? The default is false. */
-  writeDumpsToCrashDir?: boolean;
-  /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
-  wantFullMemory?: boolean;
+  /** Enable crash-dumps? If so, .dmp and .properties.txt files will be generated and written to crashDir in the event of an unhandled native-code exception. If not, only .properties.txt files will be written. The default is false. */
+  enableCrashDumps?: boolean;
+  /** If enableCrashDumps is true, do you want a full-memory dump? Defaults to false. */
+  wantFullMemoryDumps?: boolean;
+  /** Enable node-report? If so, node-report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
+  enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
+  /** Run this .js file to process .dmp and node-report files in the event of a crash.
+   * This script will be executed with a single command-line parameter: the name of the dump or node-report file.
+   * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
+   * Since it runs in a separate process, this script will have no access to the Javascript
+   * context of the exiting backend. No default.
+   */
+  dumpProcessorScriptFileName?: string;
+  /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
+  uploadToBentley?: boolean;
 }
 
 /** Configuration of imodeljs-backend.
@@ -75,19 +86,55 @@ export class IModelHostConfiguration {
    */
   public tileCacheCredentials?: CloudStorageServiceCredentials;
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
-  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties. */
+  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties.
+   * @internal
+   */
   public static defaultTileRequestTimeout = 20 * 1000;
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
-  public useTileContentThreadPool = false;
+
+  /** The default time, in seconds, used for [[logTileLoadTimeThreshold]]. To change this, override that property.
+   * @internal
+   */
+  public static defaultLogTileLoadTimeThreshold = 40;
+  /** The backend will log when a tile took longer to load than this threshold in seconds.
+   * @internal
+   */
+  public logTileLoadTimeThreshold: number = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+
+  /** The default size, in bytes, used for [[logTileSizeThreshold]]. To change this, override that property.
+   * @internal
+   */
+  public static defaultLogTileSizeThreshold = 20 * 1000000;
+  /** The backend will log when a tile is loaded with a size in bytes above this threshold.
+   * @internal
+   */
+  public logTileSizeThreshold: number = IModelHostConfiguration.defaultLogTileSizeThreshold;
 
   /** Crash-reporting configuration
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
+
+  public concurrentQuery: ConcurrentQueryConfig = {
+    concurrent: os.cpus().length,
+    autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
+    minMonitorInterval: 1, // 1 seconds
+    idleCleanupTime: 30 * 60, // 30 minutes
+    cachedStatementsPerThread: 40,
+    maxQueueSize: os.cpus().length * 500,
+    pollInterval: 50,
+    quota: {
+      maxTimeAllowed: 60, // 1 Minute
+      maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
+    },
+  };
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -102,7 +149,7 @@ export class IModelHost {
   public static get platform(): typeof IModelJsNative { return this._platform!; }
 
   public static configuration?: IModelHostConfiguration;
-  /** Event raised just after the backend IModelHost was started up */
+  /** Event raised just after the backend IModelHost was started */
   public static readonly onAfterStartup = new BeEvent<() => void>();
 
   /** Event raised just before the backend IModelHost is to be shut down */
@@ -118,12 +165,8 @@ export class IModelHost {
   public static applicationVersion: string;
 
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
-  public static get authorizationClient(): IAuthorizationClient | undefined {
-    return IModelHost._authorizationClient;
-  }
-  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) {
-    IModelHost._authorizationClient = authorizationClient;
-  }
+  public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
+  public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
   /** Get the active authorization/access token for use with various services
    * @throws [[BentleyError]] if the access token cannot be obtained
@@ -141,7 +184,7 @@ export class IModelHost {
 
   private static registerPlatform(platform: typeof IModelJsNative, region: number): void {
     this._platform = platform;
-    if (!platform)
+    if (undefined === platform)
       return;
 
     if (!Platform.isMobile)
@@ -166,15 +209,11 @@ export class IModelHost {
 
   private static validateNodeJsVersion(): void {
     const requiredVersion = require("../package.json").engines.node;
-    if (!semver.satisfies(process.version, requiredVersion)) {
+    if (!semver.satisfies(process.version, requiredVersion))
       throw new IModelError(IModelStatus.BadRequest, `Node.js version ${process.version} is not within the range acceptable to imodeljs-backend: (${requiredVersion})`);
-    }
-    return;
   }
 
-  private static getApplicationVersion(): string {
-    return require("../package.json").version;
-  }
+  private static getApplicationVersion(): string { return require("../package.json").version; }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
@@ -234,18 +273,24 @@ export class IModelHost {
     // if (configuration.crashReportingConfig === undefined) {
     //   configuration.crashReportingConfig = {
     //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     writeDumpsToCrashDir: false,
+    //     enableCrashDumps: false,
     //   };
     // }
 
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
-      // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-      const nodereport = require("node-report/api");
-      nodereport.setEvents("exception+fatalerror+apicall");
-      nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
-      nodereport.setVerbose("yes");
+      if (configuration.crashReportingConfig.enableNodeReport) {
+        try {
+          // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
+          const nodereport = require("node-report/api");
+          nodereport.setEvents("exception+fatalerror+apicall");
+          nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
+          nodereport.setVerbose("yes");
+        } catch (err) {
+          Logger.logWarning(loggerCategory, "node-report is not installed.");
+        }
+      }
     }
 
     if (configuration.imodelClient)
@@ -269,8 +314,9 @@ export class IModelHost {
     if (!IModelHost.applicationId) IModelHost.applicationId = "2686"; // Default to product id of iModel.js
     if (!IModelHost.applicationVersion) IModelHost.applicationVersion = this.getApplicationVersion(); // Default to version of this package
 
-    if (undefined !== this._platform)
+    if (undefined !== this._platform) {
       this._platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
+    }
 
     IModelHost.onAfterStartup.raiseEvent();
   }
@@ -283,33 +329,37 @@ export class IModelHost {
     IModelHost.configuration = undefined;
   }
 
-  /** The directory where the app's assets may be found */
-  public static get appAssetsDir(): string | undefined {
-    return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
-  }
+  /** The directory where application assets may be found */
+  public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public static get tileTreeRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileTreeRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status. */
+  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+   * @internal
+   */
   public static get tileContentRequestTimeout(): number {
     return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
   }
 
-  /** If true, requests for tile content will execute on a separate thread pool in order to avoid blocking other, less expensive asynchronous requests such as ECSql queries. */
-  public static get useTileContentThreadPool(): boolean { return undefined !== IModelHost.configuration && IModelHost.configuration.useTileContentThreadPool; }
+  /** The backend will log when a tile took longer to load than this threshold in seconds. */
+  public static get logTileLoadTimeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileLoadTimeThreshold : IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
+  /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
+  public static get logTileSizeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileSizeThreshold : IModelHostConfiguration.defaultLogTileSizeThreshold; }
 
-  /** Whether external tile caching is active. */
-  public static get usingExternalTileCache(): boolean { return (undefined !== IModelHost.configuration && IModelHost.configuration.tileCacheCredentials) ? true : false; }
+  /** Whether external tile caching is active.
+   * @internal
+   */
+  public static get usingExternalTileCache(): boolean { return undefined !== IModelHost.configuration && undefined !== IModelHost.configuration.tileCacheCredentials; }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
-
     const credentials = config.tileCacheCredentials;
-    if (!credentials) {
+    if (undefined === credentials)
       return;
-    }
 
     if (credentials.service === "azure") {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
@@ -360,7 +410,7 @@ export class Platform {
   }
 }
 
-/** Well known directories that may be used by the app. Also see [[Platform]]
+/** Well known directories that may be used by the application. Also see [[Platform]]
  * @public
  */
 export class KnownLocations {
@@ -379,14 +429,9 @@ export class KnownLocations {
     return path.join(__dirname, "assets");
   }
 
-  /** The temp directory. */
+  /** The temporary directory. */
   public static get tmpdir(): string {
     const imodeljsMobile = Platform.imodeljsMobile;
-    if (imodeljsMobile !== undefined) {
-      return imodeljsMobile.knownLocations.tempDir;
-    }
-
-    // Assume that we are running in nodejs
-    return os.tmpdir();
+    return imodeljsMobile !== undefined ? imodeljsMobile.knownLocations.tempDir : os.tmpdir();
   }
 }

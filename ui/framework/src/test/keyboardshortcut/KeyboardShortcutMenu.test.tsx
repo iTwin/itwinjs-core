@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as enzyme from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { KeyboardShortcutMenu, KeyboardShortcutManager, CommandItemDef, KeyboardShortcutProps } from "../../ui-framework";
+import { KeyboardShortcutMenu, KeyboardShortcutManager, CommandItemDef, KeyboardShortcutProps, FunctionKey } from "../../ui-framework";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();
@@ -40,6 +40,10 @@ describe("KeyboardShortcutMenu", () => {
             item: testCommand,
           },
         ],
+      },
+      {
+        key: FunctionKey.F7,
+        item: testCommand,
       },
     ];
   });

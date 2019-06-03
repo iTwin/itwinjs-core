@@ -1,0 +1,15 @@
+sep=;
+Release Tag;API Item
+internal;AzureFileHandler 
+internal;BufferedStream 
+public;ClientsBackendLoggerCategory
+internal;IOSAzureFileHandler 
+internal;OidcAgentClient 
+internal;OidcAgentClientConfiguration = OidcBackendClientConfiguration
+beta;class OidcBackendClient 
+beta;OidcBackendClientConfiguration
+beta;OidcDelegationClient 
+beta;OidcDelegationClientConfiguration = OidcBackendClientConfiguration
+alpha;OidcDeviceClient 
+internal;RequestHost
+internal;UrlFileHandler 

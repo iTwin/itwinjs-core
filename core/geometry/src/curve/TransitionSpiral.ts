@@ -37,10 +37,15 @@ import { LineString3d } from "./LineString3d";
  * @alpha
  */
 export class TransitionConditionalProperties {
+  /** radius (or 0 at start) */
   public radius0: number | undefined;
+  /** radius (or 0) at end */
   public radius1: number | undefined;
+  /** bearing at start, measured from x towards y */
   public bearing0: Angle | undefined;
+  /** bearing at end, measured from x towards y */
   public bearing1: Angle | undefined;
+  /** curve length */
   public curveLength: number | undefined;
   /**
    * capture numeric or undefined values
@@ -148,20 +153,22 @@ export class TransitionConditionalProperties {
   }
 }
 /**
+ * A transition spiral is a curve defined by its curvature, with the curvature function symmetric about midpoint.
+ * * `TransitionConditionalProperties` implements the computations of the interrelationship of radii, bearing, and length.
  * @alpha
  */
 export class TransitionSpiral3d extends CurvePrimitive {
-  // return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line)
+  /** Return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line) */
   public static radiusToCurvature(radius: number): number { return (radius === 0.0) ? 0.0 : 1.0 / radius; }
 
-  // return 1/k with convention that if near-zero is given as curvature, its infinite radius is returned as 0
+  /** Return 1/k with convention that if near-zero is given as curvature, its infinite radius is returned as 0 */
   public static curvatureToRadius(curvature: number): number {
     if (Math.abs(curvature) < Geometry.smallAngleRadians)
       return 0.0;
     return 1.0 / curvature;
   }
 
-  // return the average curvature for two limit values.
+  /** Return the average of the start and end curvatures. */
   public static averageCurvature(radiusLimits: Segment1d): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(radiusLimits.x0) + TransitionSpiral3d.radiusToCurvature(radiusLimits.x1));
   }
@@ -173,31 +180,43 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public static averageCurvatureR0R1(r0: number, r1: number): number {
     return 0.5 * (TransitionSpiral3d.radiusToCurvature(r0) + TransitionSpiral3d.radiusToCurvature(r1));
   }
-/** Return the arclength of a transition spiral with given sweep and radius pair. */
+  /** Return the arc length of a transition spiral with given sweep and radius pair. */
   public static radiusRadiusSweepRadiansToArcLength(radius0: number, radius1: number, sweepRadians: number): number {
     return Math.abs(sweepRadians / TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1));
   }
 
+  /** Return the turn angle for spiral of given length between two radii */
   public static radiusRadiusLengthToSweepRadians(radius0: number, radius1: number, arcLength: number): number {
     return TransitionSpiral3d.averageCurvatureR0R1(radius0, radius1) * arcLength;
   }
 
+  /** Return the end radius for spiral of given start radius, length, and turn angle. */
   public static radius0LengthSweepRadiansToRadius1(radius0: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius((2.0 * sweepRadians / arcLength) - TransitionSpiral3d.radiusToCurvature(radius0));
   }
-
+  /** Return the start radius for spiral of given end radius, length, and turn angle. */
   public static radius1LengthSweepRadiansToRadius0(radius1: number, arcLength: number, sweepRadians: number) {
     return TransitionSpiral3d.curvatureToRadius((2.0 * sweepRadians / arcLength) - TransitionSpiral3d.radiusToCurvature(radius1));
   }
-
+  /** Fractional interval for the "active" part of a containing spiral.
+   * (The radius, angle, and length conditions define a complete spiral, and some portion of it is "active")
+   */
   public activeFractionInterval: Segment1d;
+  /** start and end radii as a Segment1d */
   public radius01: Segment1d;
+  /** start and end bearings as an AngleSweep */
   public bearing01: AngleSweep;
+  /** Placement transform */
   public localToWorld: Transform;
+  /** stroked approximation */
   private _strokes: LineString3d;
+  /** Total curve arc length (computed) */
   private _arcLength01: number;
+  /** Curvatures (inverse radii) at start and end */
   private _curvature01: Segment1d;
+  /** string name of spiral type */
   private _spiralType: string | undefined;
+  /** Original defining properties. */
   private _properties: TransitionConditionalProperties | undefined;
   // constructor demands all bearing, radius, and length data -- caller determines usual dependency of "any 4 determine the 5th"
   constructor(spiralType: string | undefined,
@@ -221,8 +240,9 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this.refreshComputedProperties();
     this._properties = properties;
   }
-  /** Return the origial defining properties (if any) saved by the constructor. */
+  /** Return the original defining properties (if any) saved by the constructor. */
   public get originalProperties(): TransitionConditionalProperties | undefined { return this._properties; }
+  /** default spiral type name. (clothoid) */
   public static readonly defaultSpiralType = "clothoid";
   /** return the spiral type as a string (undefined resolves to default type "clothoid") */
   public getSpiralType(): string { if (this._spiralType === undefined) return TransitionSpiral3d.defaultSpiralType; return this._spiralType; }
@@ -241,6 +261,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
   private static _gaussFraction: Float64Array;
   private static _gaussWeight: Float64Array;
   private static _gaussMapper: (xA: number, xB: number, arrayX: Float64Array, arrayW: Float64Array) => number;
+  /** Initialize class level work arrays. */
   public static initWorkSpace() {
     TransitionSpiral3d._gaussFraction = new Float64Array(5);
     TransitionSpiral3d._gaussWeight = new Float64Array(5);
@@ -269,6 +290,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     }
 
   }
+  /** Recompute strokes */
   public refreshComputedProperties() {
     this._curvature01 = Segment1d.create(
       TransitionSpiral3d.radiusToCurvature(this.radius01.x0),
@@ -336,7 +358,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
       localToWorld, data.curveLength!, data1);
   }
-
+  /** Copy all defining data from another spiral. */
   public setFrom(other: TransitionSpiral3d): TransitionSpiral3d {
     this.localToWorld.setFrom(other.localToWorld);
     this.radius01.setFrom(other.radius01);
@@ -347,22 +369,26 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this._arcLength01 = other._arcLength01;
     return this;
   }
+  /** Deep clone of this spiral */
   public clone(): TransitionSpiral3d {
     return TransitionSpiral3d.createRadiusRadiusBearingBearing(this.radius01, this.bearing01, this.activeFractionInterval, this.localToWorld);
   }
-
+  /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transform: Transform): boolean {
     transform.multiplyTransformTransform(this.localToWorld, this.localToWorld);
     return true;
   }
+  /** Clone with a transform applied  */
   public cloneTransformed(transform: Transform): TransitionSpiral3d {
     const result = this.clone();
     result.tryTransformInPlace(transform);  // ok, we're confident it will always work.
     return result;
   }
-
+  /** Return the spiral start point. */
   public startPoint(): Point3d { return this._strokes.startPoint(); }
+  /** return the spiral end point. */
   public endPoint(): Point3d { return this._strokes.endPoint(); }
+  /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnX(plane.getNormalRef()))
@@ -372,8 +398,11 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public quickLength() { return this._arcLength01; }
   /** Return length of the spiral.  Because TransitionSpiral is parameterized directly in terms of distance along, this is a simple return value. */
   public curveLength() { return this._arcLength01; }
+  /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TransitionSpiral3d; }
+  /** Add strokes from this spiral to `dest` */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void { this._strokes.emitStrokes(dest, options); }
+  /** emit srokeable fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
     dest.startParentCurvePrimitive(this);
     this._strokes.emitStrokableParts(dest, options);
@@ -397,11 +426,12 @@ export class TransitionSpiral3d extends CurvePrimitive {
     return numStroke;
   }
 
-  // hm.. nothing to do but reverse the interval . . . maybe that's cheesy . . .
+  /** Reverse the active interval and strokes. */
   public reverseInPlace(): void {
     this.activeFractionInterval.reverseInPlace();
     this._strokes.reverseInPlace();
   }
+  /** Evaluate curve point with respect to fraction. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     fraction = Geometry.clampToStartEnd(fraction, 0, 1);
     const numStrokes = this._strokes.points.length - 1;
@@ -415,6 +445,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     this.localToWorld.multiplyPoint3d(result, result);
     return result;
   }
+  /** Evaluate curve point and derivative with respect to fraction. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     result = result ? result : Ray3d.createZero();
     this.fractionToPoint(fraction, result.origin);
@@ -452,13 +483,15 @@ export class TransitionSpiral3d extends CurvePrimitive {
     vectorY.scaleInPlace(this.fractionToCurvature(fraction));
     return Plane3dByOriginAndVectors.createCapture(origin, vectorX, vectorY, result);
   }
-/** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
+  /** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }
+  /** extend the range by the strokes of the spiral */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     this._strokes.extendRange(rangeToExtend, transform);
   }
+  /** compare various coordinate quantities */
   public isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof TransitionSpiral3d) {
       return this.radius01.isAlmostEqual(other.radius01)

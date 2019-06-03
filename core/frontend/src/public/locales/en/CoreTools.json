@@ -58,7 +58,7 @@
       "WindowArea": {
         "keyin": "Window Area",
         "description": "Select viewing area",
-        "flyover": " Window Area",
+        "flyover": "Window Area",
         "Prompts": {
           "FirstPoint": "Define first corner point.",
           "NextPoint": "Define opposite corner point."

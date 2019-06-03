@@ -4,14 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import KeySet from "./KeySet";
-import { NodeKey, isGroupingNodeKey, isInstanceNodeKey } from "./hierarchy/Key";
+import { KeySet } from "./KeySet";
+import { NodeKey } from "./hierarchy/Key";
 
+/**
+ * Create a type with `T` properties excluding properties listed in `K`.
+ *
+ * Usage example: `Omit<SomeType, "exclude_prop1" | "exclude_prop2">`
+ *
+ * @public
+ */
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+
+/**
+ * Create a type with `T` properties excluding all properties in type `K`.
+ *
+ * Usage example: `Subtract<SomeType, ExcludePropertiesInThisType>`
+ *
+ * @public
+ */
 export type Subtract<T, K> = Omit<T, keyof K>;
 
 /**
  * A dictionary data structure.
+ * @public
  */
 export interface ValuesDictionary<T> {
   [key: string]: T;
@@ -24,15 +40,17 @@ export interface ValuesDictionary<T> {
  * - number of `keys.nodeKeys` which are *ECInstance* keys
  * - for every grouping node key in `keys.nodeKeys`, number of grouped instances
  *
- * E.g. is `keys` contains one instance key, one *ECInstance* node key
+ * E.g. if `keys` contains one instance key, one *ECInstance* node key
  * and one grouping node key which groups 3 instances, the result is 5.
+ *
+ * @public
  */
 export const getInstancesCount = (keys: Readonly<KeySet>): number => {
   let count = keys.instanceKeysCount;
   keys.nodeKeys.forEach((key: NodeKey) => {
-    if (isInstanceNodeKey(key)) {
+    if (NodeKey.isInstanceNodeKey(key)) {
       count++;
-    } else if (isGroupingNodeKey(key)) {
+    } else if (NodeKey.isGroupingNodeKey(key)) {
       count += key.groupedInstancesCount;
     }
   });

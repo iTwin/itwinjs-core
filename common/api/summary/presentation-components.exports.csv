@@ -1,0 +1,28 @@
+sep=;
+Release Tag;API Item
+public;CacheInvalidationProps
+internal;ContentBuilder
+public;ContentDataProvider 
+public;DataProvidersFactory
+public;DataProvidersFactoryProps
+public;IContentDataProvider 
+public;IPresentationDataProvider
+public;IPresentationLabelsProvider
+public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
+public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
+public;IPresentationTreeDataProvider 
+public;LabelsProvider 
+public;PresentationPropertyDataProvider 
+public;PresentationTableDataProvider 
+public;PresentationTableDataProviderProps
+public;PresentationTreeDataProvider 
+public;propertyGridWithUnifiedSelection
+public;PropertyGridWithUnifiedSelectionProps
+public;tableWithUnifiedSelection
+public;TableWithUnifiedSelectionProps
+public;treeWithFilteringSupport
+public;TreeWithFilteringSupportProps
+public;treeWithUnifiedSelection
+public;TreeWithUnifiedSelectionProps
+public;viewWithUnifiedSelection
+public;ViewWithUnifiedSelectionProps

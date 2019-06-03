@@ -4,7 +4,7 @@
   "definitions": {
     "AllInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Returns all available instance nodes filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
+      "description": "Creates nodes for all available instances filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
@@ -43,7 +43,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "relatedInstances": {
@@ -72,7 +72,7 @@
     },
     "AllRelatedInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Returns all related instance nodes for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
+      "description": "Creates nodes for all related instances for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
@@ -111,7 +111,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "relatedInstances": {
@@ -259,6 +259,9 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               }
             ]
           },
@@ -349,7 +352,7 @@
     },
     "ContentInstancesOfSpecificClassesSpecification": {
       "additionalProperties": false,
-      "description": "Returns ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
+      "description": "Creates content for ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
       "properties": {
         "arePolymorphic": {
           "description": "Should all `classes` be treated polymorphically.",
@@ -381,7 +384,7 @@
           "type": "string"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "propertiesDisplay": {
@@ -489,7 +492,7 @@
     },
     "ContentRelatedInstancesSpecification": {
       "additionalProperties": false,
-      "description": "Returns ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
+      "description": "Creates content for ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
       "properties": {
         "calculatedProperties": {
           "description": "Specifications for including calculated properties",
@@ -507,7 +510,7 @@
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "propertiesDisplay": {
@@ -646,7 +649,7 @@
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
-      "description": "Returns a custom-defined node.",
+      "description": "Creates a custom-defined node.",
       "properties": {
         "description": {
           "description": "Description of the node. May be localized.",
@@ -689,7 +692,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "relatedInstances": {
@@ -720,7 +723,7 @@
     },
     "CustomQueryInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Returns nodes for instances which are returned by an ECSQL query.\n\nNote: this specification is formerly known as `SearchResultInstanceNodesSpecification`.",
+      "description": "Creates nodes for instances which are returned by an ECSQL query.\n\nNote: this specification is formerly known as `SearchResultInstanceNodesSpecification`.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
@@ -759,7 +762,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "queries": {
@@ -857,6 +860,43 @@
         "class",
         "parentPropertyName",
         "specType"
+      ],
+      "type": "object"
+    },
+    "ExtendedDataRule": {
+      "additionalProperties": false,
+      "description": "Rule used to inject some extended data into presentation data\nobjects (nodes, records).\n\nA couple of typical use cases:\n- Table is showing models and elements polymorphically and application\n   wants to handle all models and all elements differently. The rule can be used\n   to inject some flag that tells whether table row represents a model or an element.\n- Tree shows a hierarchy of models and elements. Then element node is clicked,\n   application needs to additionally know element model's ID. The rule can be used\n   to inject that ID into element's node.",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order for it to be used. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "items": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of items that define the values stored in the extended data structure.\n\nThe key part of the pair should be unique within all keys which are used for specific\npresentation object, even if they are applied using different `ExtendedData` definitions.\n\nThe value part of the pair is an ECExpression, which can use\na limited set of symbols and whose\nevaluated result is used as the value of the extended data item.",
+          "type": "object"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ExtendedData"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "items",
+        "ruleType"
       ],
       "type": "object"
     },
@@ -963,31 +1003,205 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertyNames": {
-          "description": "Names of properties which should be used as instance label. The\nfirst property that has a value is used as the actual label.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
             "InstanceLabelOverride"
           ],
           "type": "string"
+        },
+        "values": {
+          "description": "Specifications for the label value. The first non-empty value\nis used as the actual label.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+              }
+            ]
+          },
+          "type": "array"
         }
       },
       "required": [
         "class",
-        "propertyNames",
-        "ruleType"
+        "ruleType",
+        "values"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideBriefcaseIdSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that returns ECInstance's briefcase ID in base36 format.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "BriefcaseId"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideClassLabelSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses ECClass display label as the label content.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "ClassLabel"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideClassNameSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses ECClass name as the label content.",
+      "properties": {
+        "full": {
+          "description": "Should full (`{schemaName}.{className}`) class name be used",
+          "type": "boolean"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "ClassName"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideCompositeValueSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that allows creating a label value composited using\nmultiple other specifications.",
+      "properties": {
+        "parts": {
+          "description": "Parts of the value.\n\nIf any of the parts with `isRequired` flag evaluate to an empty string, the\nresult of this specification is also an empty string.",
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "isRequired": {
+                "type": "boolean"
+              },
+              "spec": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideCompositeValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverridePropertyValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideClassNameSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideClassLabelSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideBriefcaseIdSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+                  }
+                ],
+                "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
+              }
+            },
+            "required": [
+              "spec"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "separator": {
+          "description": "Separator to use when joining the parts. Defaults to a space character.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "Composite"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "parts",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideLocalIdSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that returns ECInstance's local ID in base36 format.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "LocalId"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverridePropertyValueSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses property value as the label content.",
+      "properties": {
+        "propertyName": {
+          "description": "Name of the property whose value should be used.",
+          "type": "string"
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "Property"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "propertyName",
+        "specType"
       ],
       "type": "object"
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
-      "description": "Returns all instance nodes of specified ECClasses.",
+      "description": "Creates nodes for all instances of specified ECClasses.",
       "properties": {
         "arePolymorphic": {
           "description": "Should all `classes` be handled polymorphically.",
@@ -1048,7 +1262,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "relatedInstances": {
@@ -1442,7 +1656,7 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
-      "description": "Returns related instance nodes of specified related ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
+      "description": "Creates nodes for related instances of specified ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
@@ -1485,7 +1699,7 @@
           "type": "array"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "relatedClasses": {
@@ -1710,6 +1924,9 @@
               },
               {
                 "$ref": "#/definitions/StyleOverride"
+              },
+              {
+                "$ref": "#/definitions/ExtendedDataRule"
               }
             ]
           },
@@ -1813,7 +2030,7 @@
     },
     "SelectedNodeInstancesSpecification": {
       "additionalProperties": false,
-      "description": "Returns content for current selection.\n\nNote: No data is returned for selected custom nodes.",
+      "description": "Creates content for current selection.\n\nNote: No data is returned for selected custom nodes.",
       "properties": {
         "acceptableClassNames": {
           "description": "Filter selected nodes by specified class names. All classes are\naccepted if not specified.",
@@ -1843,7 +2060,7 @@
           "type": "boolean"
         },
         "priority": {
-          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
         "propertiesDisplay": {
@@ -2135,6 +2352,9 @@
           },
           {
             "$ref": "#/definitions/StyleOverride"
+          },
+          {
+            "$ref": "#/definitions/ExtendedDataRule"
           },
           {
             "$ref": "#/definitions/ChildNodeRule"

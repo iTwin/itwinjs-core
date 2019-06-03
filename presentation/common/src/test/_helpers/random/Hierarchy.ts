@@ -112,9 +112,17 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
   const el: NodePathElement = {
     node: createRandomECInstanceNode(),
     index: faker.random.number(999),
-    isMarked: faker.random.boolean(),
     children: [],
   };
+  if (faker.random.boolean()) {
+    el.isMarked = faker.random.boolean();
+  }
+  if (faker.random.boolean()) {
+    el.filteringData = {
+      matchesCount: faker.random.number(),
+      childMatchesCount: faker.random.number(),
+    }
+  }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
     while (childrenCount--)
@@ -127,10 +135,17 @@ export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElem
   const el: NodePathElementJSON = {
     node: createRandomECInstanceNodeJSON(),
     index: faker.random.number(999),
-    isMarked: faker.random.boolean(),
     children: [],
-    filteringData: { occurances: 0, childrenOccurances: 0 },
   };
+  if (faker.random.boolean()) {
+    el.isMarked = faker.random.boolean();
+  }
+  if (faker.random.boolean()) {
+    el.filteringData = {
+      occurances: faker.random.number(),
+      childrenOccurances: faker.random.number(),
+    }
+  }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
     while (childrenCount--)

@@ -35,7 +35,7 @@ export class ParityRegion extends CurveCollection {
     }
     return result;
   }
-  /** Return the boundary type (4) of a corresponding  Microstation CurveVector */
+  /** Return the boundary type (4) of a corresponding  MicroStation CurveVector */
   public dgnBoundaryType(): number { return 4; }
   /** invoke `processor.announceParityRegion(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {

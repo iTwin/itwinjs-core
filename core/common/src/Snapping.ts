@@ -12,8 +12,9 @@ import { GeometryClass } from "./Render";
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
  * @beta
  */
-export class DecorationGeometryProps {
-  public constructor(public readonly id: Id64String, public readonly geometryStream: GeometryStreamProps) { }
+export interface DecorationGeometryProps {
+  readonly id: Id64String;
+  readonly geometryStream: GeometryStreamProps;
 }
 
 /** Information required to request a *snap* to an element from the front end to the back end.

@@ -4,7 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { Guid } from "./Id";
+import { Guid, GuidString } from "./Id";
+
+/** The data properties of ClientRequestContext.
+ * @public
+ */
+export interface ClientRequestContextProps {
+  /** Used for logging to correlate all service requests that originated from this client request */
+  readonly activityId: GuidString;
+
+  /** Used for logging and usage tracking to identify the application that created this client request */
+  readonly applicationId: string;
+
+  /** Used for logging and usage tracking to identify the application version that created this client request */
+  readonly applicationVersion: string;
+
+  /** Used for logging to identify the session that created this client request */
+  readonly sessionId: GuidString;
+}
 
 /** Provides generic context for a server application to get details of a particular
  * request that originated at the client. This context is used to pass information for various
@@ -15,10 +32,9 @@ import { Guid } from "./Id";
  * @see [[AuthorizedClientRequestContext]]
  * @public
  */
-export class ClientRequestContext {
-
+export class ClientRequestContext implements ClientRequestContextProps {
   /** Used for logging to correlate all service requests that originated from this client request */
-  public readonly activityId: string;
+  public readonly activityId: GuidString;
 
   /** Used for logging and usage tracking to identify the application that created this client request */
   public readonly applicationId: string;
@@ -26,11 +42,11 @@ export class ClientRequestContext {
   /** Used for logging and usage tracking to identify the application version that created this client request */
   public readonly applicationVersion: string;
 
-  /** Used for logging to to identify the session that created this client request */
-  public readonly sessionId: string;
+  /** Used for logging to identify the session that created this client request */
+  public readonly sessionId: GuidString;
 
   /** Create a new ClientRequestContext */
-  public constructor(activityId: string = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: string = "") {
+  public constructor(activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     this.activityId = activityId;
     this.applicationId = applicationId;
     this.applicationVersion = applicationVersion;
@@ -55,11 +71,16 @@ export class ClientRequestContext {
    * @internal
    */
   private _useContextForRpc: boolean;
-  public get useContextForRpc(): boolean {
-    return this._useContextForRpc;
-  }
-  public set useContextForRpc(value: boolean) {
-    this._useContextForRpc = value;
+  public get useContextForRpc(): boolean { return this._useContextForRpc; }
+  public set useContextForRpc(value: boolean) { this._useContextForRpc = value; }
+  /** @internal */
+  public toJSON(): ClientRequestContextProps {
+    return {
+      activityId: this.activityId,
+      applicationId: this.applicationId,
+      applicationVersion: this.applicationVersion,
+      sessionId: this.sessionId,
+    };
   }
 }
 

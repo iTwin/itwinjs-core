@@ -4,17 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-import { ContentSpecificationBase } from "./ContentSpecification";
-import { RuleSpecificationTypes } from "../RuleSpecification";
+import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 
 /**
- * Returns content for current selection.
+ * Creates content for current selection.
  *
  * **Note:** No data is returned for selected custom nodes.
+ *
+ * @public
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
   /** Used for serializing to JSON. */
-  specType: RuleSpecificationTypes.SelectedNodeInstances;
+  specType: ContentSpecificationTypes.SelectedNodeInstances;
 
   /**
    * Filter selected nodes by specified schema name. All schemas are

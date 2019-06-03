@@ -41,17 +41,17 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     this._xyzInUse = 0;
     this._xyzCapacity = numPoints;
   }
-  /** @returns Return the number of points in use. */
+  /** Return the number of points in use. */
   public get length() { return this._xyzInUse; }
 
-  /** @returns Return the number of float64 in use. */
+  /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
   /** Return the raw packed data.
-   * * Note that the length of the returned FLoat64Array is a count of doubles, and includes the excess capacity
+   * * Note that the length of the returned Float64Array is a count of doubles, and includes the excess capacity
    */
   public float64Data(): Float64Array { return this._data; }
 
-  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchnaged. */
+  /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number) {
     if (pointCapacity > this._xyzCapacity) {
       const newData = new Float64Array(pointCapacity * 3);
@@ -96,16 +96,26 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     result._xyzInUse = this.length;
     return result;
   }
-  /** Copy point coordinates from data to a growable array.
+  /** Create an array from various point data formats.
+   * Valid inputs are:
+   * * Point2d
+   * * point3d
+   * * An array of 2 doubles
+   * * An array of 3 doubles
+   * * A GrowableXYZArray
+   * * Any json object satisfying Point3d.isXYAndZ
+   * * Any json object satisfying Point3d.isXAndY
+   * * A Float64Array of doubles, interpreted as xyzxyz
+   * * An array of any of the above
    * @param data source points.
    * @param result optional pre-allocated GrowableXYZArray to clear and fill.
    */
-  public static create(data: XYAndZ[], result?: GrowableXYZArray): GrowableXYZArray {
+  public static create(data: any, result?: GrowableXYZArray): GrowableXYZArray {
     if (result)
       result.clear();
     else
       result = new GrowableXYZArray(data.length);
-    for (const p of data) result.push(p);
+    result.pushFrom(data);
     return result;
   }
 
@@ -127,6 +137,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * * A GrowableXYZArray
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
+   * * A Float64Array of doubles, interpreted as xyzxyz
    * * An array of any of the above
    * @returns the number of points added.
    */
@@ -137,20 +148,28 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       this.pushFromGrowableXYZArray(p);
     else if (p instanceof Point2d)
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (Geometry.isNumberArray(p, 3))
+    else if (Geometry.isNumberArray(p, 4)) {
+      const n = p.length;
+      for (let i = 0; i + 2 < n; i += 3)
+        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    } else if (Geometry.isNumberArray(p, 3))
       this.pushXYZ(p[0], p[1], p[2]);
     else if (Geometry.isNumberArray(p, 2))
       this.pushXYZ(p[0], p[1], 0.0);
     else if (Array.isArray(p)) {
-      // diret recursion re-wraps p and goes infinite.  unroll here .
+      // direct recursion re-wraps p and goes infinite.  unroll here .
       for (const q of p)
         this.pushFrom(q);
     } else if (Point3d.isXYAndZ(p))
       this.pushXYZ(p.x, p.y, p.z);
     else if (Point3d.isXAndY(p))
       this.pushXYZ(p.x, p.y, 0.0);
+    else if (p instanceof Float64Array) {
+      const n = p.length;
+      for (let i = 0; i + 2 < n; i += 3)
+        this.pushXYZ(p[i], p[i + 1], p[i + 2]);
+    }
   }
-
   /**
    * Replicate numWrap xyz values from the front of the array as new values at the end.
    * @param numWrap number of xyz values to replicate
@@ -164,24 +183,27 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       }
     }
   }
-
+  /** append a new point with given x,y,z */
   public pushXYZ(x: number, y: number, z: number) {
     const index = this._xyzInUse * 3;
     if (index >= this._data.length)
-      this.ensureCapacity(this.length * 2);
+      this.ensureCapacity(this.length === 0 ? 4 : this.length * 2);
     this._data[index] = x;
     this._data[index + 1] = y;
     this._data[index + 2] = z;
     this._xyzInUse++;
   }
 
-  /** Remove one point from the back. */
+  /** Remove one point from the back.
+   * * NOTE that (in the manner of std::vector native) this is "just" removing the point -- no point is NOT returned.
+   * * Use `back ()` to get the last x,y,z assembled into a `Point3d `
+   */
   public pop() {
     if (this._xyzInUse > 0)
       this._xyzInUse--;
   }
   /**
-   * Test if index is valid for an xyz (point or vector) withibn this array
+   * Test if index is valid for an xyz (point or vector) within this array
    * @param index xyz index to test.
    */
   public isIndexValid(index: number): boolean {
@@ -253,8 +275,8 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * Read coordinates from source array, place them at indexe within this array.
-   * @param destIndex point index where coordinats are to be placed in this array
+   * Read coordinates from source array, place them at index within this array.
+   * @param destIndex point index where coordinates are to be placed in this array
    * @param source source array
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
@@ -299,14 +321,14 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * @returns Return the first point, or undefined if the array is empty.
+   * Return the first point, or undefined if the array is empty.
    */
   public front(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse === 0) return undefined;
     return this.getPoint3dAtUncheckedPointIndex(0, result);
   }
   /**
-   * @returns Return the last point, or undefined if the array is empty.
+   * Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point3d): Point3d | undefined {
     if (this._xyzInUse < 1) return undefined;
@@ -327,7 +349,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return true;
   }
   /**
-   * Set the coordinates of a single point given as coordintes
+   * Set the coordinates of a single point given as coordinates
    * @param pointIndex index of point to set
    * @param x x coordinate
    * @param y y coordinate
@@ -344,7 +366,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /**
-   * @returns Copy all points into a simple array of Point3d
+   * Copy all points into a simple array of Point3d
    */
   public getPoint3dArray(): Point3d[] {
     const result = [];
@@ -395,7 +417,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
   }
 
-  /** multiply each xyz (as a vector) by matrix inverse transpse, renormalize the vector, replace values.
+  /** multiply each xyz (as a vector) by matrix inverse transpose, renormalize the vector, replace values.
    * * This is the way to apply a matrix (possibly with skew and scale) to a surface normal, and
    *      have it end up perpendicular to the transformed in-surface vectors.
    * * Return false if matrix is not invertible or if any normalization fails.
@@ -467,6 +489,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return true;
   }
+  /** Extend `range` to extend by all points. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const numDouble = this.float64Length;
     const data = this._data;
@@ -479,6 +502,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
 
     }
   }
+  /** Sum the lengths of segments between points. */
   public sumLengths(): number {
     let sum = 0.0;
     const n = 3 * (this._xyzInUse - 1);  // Length already takes into account what specifically is in use
@@ -500,6 +524,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
         this._data[i] = this._data[i] * factor;
     }
   }
+  /** test if all points are within tolerance of a plane. */
   public isCloseToPlane(plane: Plane3dByOriginAndUnitNormal, tolerance: number = Geometry.smallMetricDistance): boolean {
     const numCoordinate = 3 * this._xyzInUse;
     const data = this._data;
@@ -675,7 +700,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return undefined;
   }
-
+  /** test for near equality between two `GrowableXYZArray`. */
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -759,5 +784,34 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return range;
   }
-
+  /**
+   * * Triangle for (unchecked!) for three points identified by index
+   * * z direction of frame is 001.
+   * * Transform axes from origin to targetX and targetY
+   * * in local coordinates (u,v,w) the xy interior of the triangle is `u>=0, v>= 0, w>= 0, u+v+w<1`
+   * * Return undefined if transform is invertible (i.e. points are not in a vertical plane.)
+   */
+  public fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined {
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
+      let i0 = originIndex * 3;
+      const data = this._data;
+      const ax = data[i0++];
+      const ay = data[i0++];
+      const az = data[i0++];
+      i0 = targetAIndex * 3;
+      const ux = data[i0++] - ax;
+      const uy = data[i0++] - ay;
+      const uz = data[i0++] - az;
+      i0 = targetBIndex * 3;
+      const vx = data[i0++] - ax;
+      const vy = data[i0++] - ay;
+      const vz = data[i0++] - az;
+      result = Transform.createRowValues(
+        ux, vx, 0, ax,
+        uy, vy, 0, ay,
+        uz, vz, 1, az, result);
+      return result.computeCachedInverse() ? result : undefined;
+    }
+    return undefined;
+  }
 }

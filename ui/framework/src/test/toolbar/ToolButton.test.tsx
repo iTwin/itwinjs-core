@@ -13,6 +13,7 @@ import {
   KeyboardShortcutManager,
   SyncUiEventDispatcher,
   BaseItemState,
+  SyncUiEventId,
 } from "../../ui-framework";
 import { SelectionTool } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
@@ -75,7 +76,7 @@ describe("ToolButton", () => {
   });
 
   it("sync event should trigger stateFunc", () => {
-    const testEventId = "test-buttonstate";
+    const testEventId = "test-button-state";
     let stateFunctionCalled = false;
     const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
       stateFunctionCalled = true;
@@ -87,6 +88,23 @@ describe("ToolButton", () => {
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape", keyCode: 27 });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+
+    expect(stateFunctionCalled).to.eq(false);
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
+    expect(stateFunctionCalled).to.eq(true);
+
+    wrapper.unmount();
+  });
+
+  it("ToolActivated sync event should trigger stateFunc", () => {
+    const testEventId = SyncUiEventId.ToolActivated;
+    let stateFunctionCalled = false;
+    const testStateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+      stateFunctionCalled = true;
+      return { ...state, isVisible: true, isActive: true, isEnabled: true };
+    };
+
+    const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" stateSyncIds={[testEventId]} stateFunc={testStateFunc} />);
 
     expect(stateFunctionCalled).to.eq(false);
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);

@@ -12,7 +12,7 @@ import { RpcInvocation } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRequest } from "./RpcRequest";
-import { IModelToken } from "../../IModel";
+import { IModelTokenProps } from "../../IModel";
 
 /** A serialized RPC operation descriptor.
  * @public
@@ -58,7 +58,7 @@ export interface RpcRequestFulfillment {
 /** @public */
 export namespace RpcRequestFulfillment {
   export async function forUnknownError(request: SerializedRpcRequest, error: any): Promise<RpcRequestFulfillment> {
-    const result = await RpcMarshaling.serialize(request.operation.interfaceDefinition, undefined, error);
+    const result = await RpcMarshaling.serialize(undefined, error);
 
     return {
       interfaceName: request.operation.interfaceDefinition,
@@ -124,7 +124,7 @@ export abstract class RpcProtocol {
   public checkToken: boolean = false;
 
   /** If checkToken is true, will be called on the backend to inflate the IModelToken for each request. */
-  public inflateToken(tokenFromBody: IModelToken, _request: SerializedRpcRequest): IModelToken { return tokenFromBody; }
+  public inflateToken(tokenFromBody: IModelTokenProps, _request: SerializedRpcRequest): IModelTokenProps { return tokenFromBody; }
 
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
@@ -157,13 +157,13 @@ export abstract class RpcProtocol {
     return {
       ...serializedContext,
       operation: {
-        interfaceDefinition: request.operation.interfaceDefinition.name,
+        interfaceDefinition: request.operation.interfaceDefinition.interfaceName,
         operationName: request.operation.operationName,
         interfaceVersion: request.operation.interfaceVersion,
       },
       method: request.method,
       path: request.path,
-      parameters: await RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      parameters: await RpcMarshaling.serialize(request.protocol, request.parameters),
       caching: RpcResponseCacheControl.None,
     };
   }

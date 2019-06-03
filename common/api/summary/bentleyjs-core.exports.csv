@@ -1,0 +1,80 @@
+sep=;
+Release Tag;API Item
+beta;assert(condition: boolean, msg?: string): void
+beta;AuthStatus
+public;base64StringToUint8Array(base64: string): Uint8Array
+public;BeDuration
+public;BeEvent
+beta;BeEventList
+public;BentleyError 
+public;BentleyLoggerCategory
+public;BentleyStatus
+public;BeTimePoint
+beta;BeUiEvent
+beta;BriefcaseStatus
+public;ChangeSetApplyOption
+beta;ChangeSetStatus
+public;ClientRequestContext 
+public;ClientRequestContextProps
+public;CloneFunction
+public;compareBooleans(a: boolean, b: boolean): number
+public;compareNumbers(a: number, b: number): number
+public;compareNumbersOrUndefined(lhs?: number, rhs?: number): number
+public;comparePossiblyUndefined
+public;compareStrings(a: string, b: string): number
+public;compareStringsOrUndefined(lhs?: string, rhs?: string): number
+public;compareWithTolerance(a: number, b: number, tolerance?: number): number
+public;ComputePriorityFunction
+public;DbOpcode
+public;DbResult
+public;Dictionary
+public;DictionaryEntry
+public;DisposableList 
+public;dispose(disposable?: IDisposable): undefined
+public;disposeArray(list?: IDisposable[]): undefined
+public;DisposeFunc = () => void
+public;Entry
+public;EntryContainer
+alpha;EnvMacroSubst
+public;GetMetaDataFunction = () => any
+public;Guid
+public;GuidString = string
+beta;HttpStatus
+public;Id64
+internal;isValidUint32Pair(lowBytes: number, highBytes: number): boolean
+public;Id64Arg = Id64String | Id64Set | Id64Array
+public;Id64Array = Id64String[]
+public;Id64Set = Set
+public;Id64String = string
+public;IDisposable
+beta;IModelHubStatus
+public;IModelStatus
+public;IndexedValue
+public;IndexMap
+public;JsonUtils
+public;Listener = (...arg: any[]) => void
+public;LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void
+public;Logger
+public;LoggerCategoryAndLevel
+public;LoggerLevelsConfig
+public;LogLevel
+public;lowerBound
+public;LRUCache
+public;LRUDictionary
+public;LRUMap
+public;OpenMode
+public;OrderedComparator
+public;PerfLogger 
+public;PriorityQueue
+beta;RepositoryStatus
+beta;RpcInterfaceStatus
+public;SerializedClientRequestContext
+public;shallowClone
+public;SortedArray
+beta;StatusCodeWithMessage
+public;StopWatch
+public;TransientIdSequence
+public;using
+public;utf8ToString(utf8: Uint8Array): string | undefined
+internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
+beta;WSStatus

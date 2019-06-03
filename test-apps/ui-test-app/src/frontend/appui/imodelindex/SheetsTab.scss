@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-core/lib/ui-core/classes";
 
 /* 3D Models tab */
 .viewstab-container {
@@ -55,7 +54,7 @@
   /* enter iModel button */
   .open-button {
     margin: $uicore-l $uicore-m 0 auto !important;
-    @extend .uicore-buttons-blue;
+    @include uicore-buttons-blue;
   }
 }
 

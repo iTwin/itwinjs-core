@@ -38,7 +38,6 @@ describe("CoreToolDefinitions", () => {
           </>
         }
       />;
-
   });
 
   it("ToolWidget should render with Core Tool Definitions", () => {

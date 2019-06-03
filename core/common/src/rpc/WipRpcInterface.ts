@@ -5,7 +5,7 @@
 /** @module RpcInterface */
 
 import { ChangedElements } from "../ChangedElements";
-import { IModelToken } from "../IModel";
+import { IModelTokenProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 
@@ -18,25 +18,25 @@ import { RpcManager } from "../RpcManager";
  * @internal
  */
 export abstract class WipRpcInterface extends RpcInterface {
-  /** The types that can be marshaled by the interface. */
-  public static types = () => [
-    IModelToken,
-  ]
-
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); }
 
-  /** The semantic version of the interface. */
-  public static version = "0.2.1";
+  /** The immutable name of the interface. */
+  public static readonly interfaceName = "WipRpcInterface";
+
+  /** The semantic version of the interface.
+   * @note The WipRpcInterface will never progress to 1.0 since it is never intended to be public.
+   */
+  public static interfaceVersion = "0.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ==========================================================================================*/
-  public async placeholder(_iModelToken: IModelToken): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
-  public async isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
-  public async attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
-  public async detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
-  public async getChangedElements(_iModelToken: IModelToken, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined> { return this.forward(arguments); }
-  public async isChangesetProcessed(_iModelToken: IModelToken, _changesetId: string): Promise<boolean> { return this.forward(arguments); }
+  public async placeholder(_iModelToken: IModelTokenProps): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
+  public async isChangeCacheAttached(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
+  public async attachChangeCache(_iModelToken: IModelTokenProps): Promise<void> { return this.forward(arguments); }
+  public async detachChangeCache(_iModelToken: IModelTokenProps): Promise<void> { return this.forward(arguments); }
+  public async getChangedElements(_iModelToken: IModelTokenProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined> { return this.forward(arguments); }
+  public async isChangesetProcessed(_iModelToken: IModelTokenProps, _changesetId: string): Promise<boolean> { return this.forward(arguments); }
 }

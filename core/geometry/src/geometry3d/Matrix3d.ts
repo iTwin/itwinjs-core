@@ -124,8 +124,17 @@ class PackedMatrix3dOps {
  * @public
  */
 export enum InverseMatrixState {
+  /**
+   * * The invertibility of the  `coffs` array has not been determined.
+   * * Any `inverseCoffs` contents are random.
+   */
   unknown,
+  /** An inverse was computed and stored as the `inverseCoffs` */
   inverseStored,
+  /**
+   * * The `coffs` array is known to be singular.
+   * * Any `inverseCoffs` contents are random.
+   */
   singular,
 }
 /** A Matrix3d is a 3x3 matrix.
@@ -149,14 +158,14 @@ export class Matrix3d implements BeJSONFunctions {
   public static useCachedInverse = true;  // cached inverse can be suppressed for testing.
   /** total number of times a cached inverse was used to avoid recompute */
   public static numUseCache = 0;
-  /** total number of times a cached invese was computed. */
+  /** total number of times a cached inverse was computed. */
   public static numComputeCache = 0;
   /** Matrix contents as a flat array of numbers in row-major order.
-   * * DO NOT direclty modify this array.  It will destroy safety of the cached inverse state.
+   * * DO NOT directly modify this array.  It will destroy safety of the cached inverse state.
    */
   public coffs: Float64Array;
   /** matrix inverse contents.
-   * * DO NOT direclty modify this array.  It will destroy integrity of the cached inverse state.
+   * * DO NOT directly modify this array.  It will destroy integrity of the cached inverse state.
    *
    */
   public inverseCoffs: Float64Array | undefined;
@@ -201,7 +210,11 @@ export class Matrix3d implements BeJSONFunctions {
     [this.coffs[3], this.coffs[4], this.coffs[5]],
     [this.coffs[6], this.coffs[7], this.coffs[8]]];
   }
-
+  /** copy data from various input forms to this matrix:
+   * * Another `Matrix3d`
+   * * An array of 3 arrays, each of which has the 3 numbers for a row of the matrix.
+   * * An array of 9 numbers in row major order.
+   */
   public setFromJSON(json?: Matrix3dProps): void {
     this.inverseCoffs = undefined;
     if (!json) {
@@ -237,7 +250,7 @@ export class Matrix3d implements BeJSONFunctions {
         0, 0, 1);
     }
   }
-  /** Return a new Matrix3d constructed from contents of the json value. */
+  /** Return a new Matrix3d constructed from contents of the json value. Se `setFromJSON` for layout rules */
   public static fromJSON(json?: Matrix3dProps): Matrix3d { const result = Matrix3d.createIdentity(); result.setFromJSON(json); return result; }
   /** Test if this Matrix3d and other are within tolerance in all numeric entries.
    * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
@@ -309,7 +322,7 @@ export class Matrix3d implements BeJSONFunctions {
    * @param axisOrder identifies where the columns are placed.
    * @param columnA vector to place in the first column named by the axis order.
    * @param columnB vector to place in the second column named by the axis order.
-   * @param columnC vector to place in the thirde column named by the axis order.
+   * @param columnC vector to place in the third column named by the axis order.
    * @param result
    */
   public static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d) {
@@ -520,7 +533,7 @@ export class Matrix3d implements BeJSONFunctions {
    * * ColumnX points in the rightVector direction
    * * ColumnY points in in the upVectorDirection
    * * ColumnZ is a unit cross product.
-   * Optinoally rotate the standard cube by 45 to bring its left or right vertical edge to center
+   * Optionally rotate the standard cube by 45 to bring its left or right vertical edge to center
    * * leftNoneRight = [-1,0,1] respectively for left edge, no rotation, or right edge
    * * bottomNoneTop = [-1,0,1] respectively for isometric rotation to view the bottom, no isometric rotation, and isometric rotation to view the top
    * This is expected to be used with various principal unit vectors that are perpendicular to each other.
@@ -531,7 +544,7 @@ export class Matrix3d implements BeJSONFunctions {
    *  * STANDARD LEFT VIEW: (Vector3d.UnitY (-1), Vector3d.UnitZ (), 0, 0)
    *  * STANDARD BOTTOM VIEW: (Vector3d.UnitX (1), Vector3d.UnitY (-1), 0, 0)
    * @param leftNoneRight Normally one of {-1,0,1}, where (-1) indicates the left vertical is rotated to center and (1) for right.  Other numbers are used as multiplier for this 45 degree rotation
-   * @returns undefined if columNX, columnY are coplanar.
+   * @returns undefined if columnX, columnY are coplanar.
    */
   public static createViewedAxes(rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number = 0, topNoneBottom: number = 0): Matrix3d | undefined {
     const columnZ = rightVector.crossProduct(upVector);
@@ -560,9 +573,9 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Create a rotation matrix for one of the 8 standard views.
    * * With `invert === false` the return is such that `matrix.multiply(worldVector)` returns the vector as seen in the xy (projected) coordinates of the view.
-   * * With invert === true the matrix is transposed so that `matrix.mutiply(viewVector` maps the "in view" vector to a world vector.
+   * * With invert === true the matrix is transposed so that `matrix.multiply(viewVector` maps the "in view" vector to a world vector.
    *
-   * @param index standard veiw index `StandardViewIndex.Top, Bottom, LEft, Right, Front, Back, Iso, LeftIso`
+   * @param index standard view index `StandardViewIndex.Top, Bottom, LEft, Right, Front, Back, Iso, LeftIso`
    * @param invert if false (default), the returned Matrix3d "projects" world vectors into XY view vectors.  If true, it is inverted to map view vectors to world.
    * @param result optional result.
    */
@@ -828,7 +841,7 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return the Z column magnitude */
   public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
-  /** Return magntiude of columnX cross columnY. */
+  /** Return magnitude of columnX cross columnY. */
   public columnXYCrossProductMagnitude(): number {
     return Geometry.crossProductMagnitude(
       this.coffs[0], this.coffs[3], this.coffs[6],
@@ -1165,15 +1178,20 @@ export class Matrix3d implements BeJSONFunctions {
     this.setColumn(1, vectorY);
     this.setColumn(2, vectorZ);
   }
-  public setRow(columnIndex: number, value: Vector3d) {
-    const index = 3 * Geometry.cyclic3dAxis(columnIndex);
+  /**
+   * set entries in one row of the matrix.
+   * @param rowIndex row index. this is interpreted cyclically.
+   * @param value x,yz, values for row.  If undefined, zeros are installed.
+   */
+  public setRow(rowIndex: number, value: Vector3d) {
+    const index = 3 * Geometry.cyclic3dAxis(rowIndex);
     this.coffs[index] = value.x;
     this.coffs[index + 1] = value.y;
     this.coffs[index + 2] = value.z;
     this.inverseState = InverseMatrixState.unknown;
   }
   /** Return a (copy of) a column of the matrix.
-   * @param i column index.  Thnis is corrected to 012 by Geoemtry.cyclic3dAxis.
+   * @param i column index.  This is corrected to 012 by Geometry.cyclic3dAxis.
    */
   public getColumn(columnIndex: number, result?: Vector3d): Vector3d {
     const index = Geometry.cyclic3dAxis(columnIndex);
@@ -1184,7 +1202,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** Return a (copy of) a row of the matrix.
-   * @param i row index.  Thnis is corrected to 012 by Geoemtry.cyclic3dAxis.
+   * @param i row index.  This is corrected to 012 by Geometry.cyclic3dAxis.
    */
   public getRow(columnIndex: number, result?: Vector3d): Vector3d {
     const index = 3 * Geometry.cyclic3dAxis(columnIndex);
@@ -1273,7 +1291,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-  /** cmopute  `origin + matrix * vector`  using only the xy parts of the inputs. */
+  /** compute  `origin + matrix * vector`  using only the xy parts of the inputs. */
   public static xyPlusMatrixTimesXY(origin: XAndY, matrix: Matrix3d, vector: XAndY, result?: Point2d): Point2d {
     const x = vector.x;
     const y = vector.y;
@@ -1283,7 +1301,7 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-  /** cmopute  `origin + matrix * vector`  using all xyz parts of the inputs. */
+  /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
   public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
     const x = vector.x;
     const y = vector.y;
@@ -1641,7 +1659,7 @@ export class Matrix3d implements BeJSONFunctions {
    * This means that in the final matrix:
    * * column A is strictly parallel to original column A
    * * column B is linear combination of only original A and B
-   * * column C is perpenedicular to A and B of both the original and final.
+   * * column C is perpendicular to A and B of both the original and final.
    * * original column C does not participate in the result.
    */
   public axisOrderCrossProductsInPlace(axisOrder: AxisOrder) {
@@ -1786,6 +1804,7 @@ export class Matrix3d implements BeJSONFunctions {
       return true;
     }
   */
+  /** convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order  */
   public static flatIndexOf(row: number, column: number): number {
     return 3 * Geometry.cyclic3dAxis(row) + Geometry.cyclic3dAxis(column);
   }

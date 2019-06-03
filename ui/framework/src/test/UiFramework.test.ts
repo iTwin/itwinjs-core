@@ -24,6 +24,25 @@ describe("UiFramework", () => {
     expect(() => UiFramework.i18n).to.throw(Error);
   });
 
+  it("i18nNamespace should return UiFramework", () => {
+    expect(UiFramework.i18nNamespace).to.eq("UiFramework");
+  });
+
+  it("packageName should return ui-framework", () => {
+    expect(UiFramework.packageName).to.eq("ui-framework");
+  });
+
+  it("translate should return the key (in test environment)", async () => {
+    await TestUtils.initializeUiFramework(true);
+    expect(UiFramework.translate("test1.test2")).to.eq("test1.test2");
+    TestUtils.terminateUiFramework();
+  });
+
+  it("loggerCategory should correctly handle null or undefined object", () => {
+    expect(UiFramework.loggerCategory(null)).to.eq(UiFramework.packageName);
+    expect(UiFramework.loggerCategory(undefined)).to.eq(UiFramework.packageName);
+  });
+
   it("projectServices should throw Error without initialize", () => {
     expect(() => UiFramework.projectServices).to.throw(Error);
   });
@@ -80,6 +99,14 @@ describe("UiFramework", () => {
     const testValue = 0.50;
     UiFramework.setWidgetOpacity(testValue);
     expect(UiFramework.getWidgetOpacity()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
+  });
+
+  it("ActiveIModelId", async () => {
+    await TestUtils.initializeUiFramework();
+    const testValue = "Test";
+    UiFramework.setActiveIModelId(testValue);
+    expect(UiFramework.getActiveIModelId()).to.eq(testValue);
     TestUtils.terminateUiFramework();
   });
 });

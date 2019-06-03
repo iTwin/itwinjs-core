@@ -12,9 +12,11 @@ import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
 
 /**
- * Props that are injected to the HOC component.
+ * Props that are injected to the TreeWithFilteringSupport HOC component.
+ * @public
  */
-export interface Props {
+export interface TreeWithFilteringSupportProps {
+  /** The text to search for */
   filter?: string;
   /** The data provider used by the tree. */
   dataProvider: IPresentationTreeDataProvider;
@@ -26,39 +28,42 @@ export interface Props {
   activeMatchIndex?: number;
 }
 
-interface State {
-  filteredDataProvider?: FilteredPresentationTreeDataProvider;
-}
-
-const defaultState: State = {
-  filteredDataProvider: undefined,
-};
-
 /**
  * A HOC component that adds filtering functionality to the supplied
  * tree component.
  *
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
+ *
+ * @public
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {
 
-  type CombinedProps = P & Props;
+  type CombinedProps = P & TreeWithFilteringSupportProps;
+
+  interface State {
+    filteredDataProvider?: FilteredPresentationTreeDataProvider;
+  }
+
+  const defaultState: State = {
+    filteredDataProvider: undefined,
+  };
 
   return class WithFilteringSupport extends React.Component<CombinedProps, State> {
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
+
     public constructor(props: CombinedProps, context?: any) {
       super(props, context);
       this.state = defaultState;
     }
 
-    public static getDerivedStateFromProps(nextProps: Props, state: State): State {
+    public static getDerivedStateFromProps(nextProps: CombinedProps, state: State): State {
       if (nextProps.filter === undefined || nextProps.filter === "")
         return defaultState;
       return state;
     }
 
-    public async componentDidUpdate(prevProps: Props, _prevState: State): Promise<void> {
+    public async componentDidUpdate(prevProps: CombinedProps, _prevState: State): Promise<void> {
       const nothingChanged = this.areEqual(prevProps, this.props);
       const filterIsEmpty = !this.hasFilter;
 
@@ -106,7 +111,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
       return (this.props.filter !== "" && this.props.filter !== undefined);
     }
 
-    private areEqual(prop1: Props, prop2: Props): boolean {
+    private areEqual(prop1: TreeWithFilteringSupportProps, prop2: TreeWithFilteringSupportProps): boolean {
       if (prop1.filter !== prop2.filter)
         return false;
 

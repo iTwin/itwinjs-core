@@ -660,7 +660,7 @@ describe("Formatting tests:", () => {
     });
   });
 
-  it("Invalid Composite Unit name", async () => {
+  it("Invalid Composite cUnit name", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const json = {

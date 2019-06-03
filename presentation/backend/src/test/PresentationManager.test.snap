@@ -57,9 +57,9 @@ Array [
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0xf20700000078f6",
         "label": "Connecticut",
@@ -82,11 +82,11 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "contentFlags": 0,
     "displayType": "et odit harum",
     "fields": Array [
-      PropertiesField {
+      Object {
         "category": Object {
           "description": "Nihil earum ut placeat veniam voluptas.",
           "expand": true,
@@ -94,6 +94,7 @@ Content {
           "name": "Multi-tiered",
           "priority": 10826,
         },
+        "editor": undefined,
         "isReadonly": false,
         "label": "National Investment Account",
         "name": "Cambridgeshire",
@@ -135,9 +136,9 @@ Content {
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content and content set size when requesting first page 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0x1078000000b2f3",
         "label": "Self-enabling Berkshire generate",
@@ -160,11 +161,11 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "contentFlags": 0,
     "displayType": "voluptatibus neque dolor",
     "fields": Array [
-      PropertiesField {
+      Object {
         "category": Object {
           "description": "Consequatur atque architecto.",
           "expand": false,
@@ -172,6 +173,7 @@ Content {
           "name": "visualize",
           "priority": 94970,
         },
+        "editor": undefined,
         "isReadonly": false,
         "label": "Toys Product connecting",
         "name": "American Samoa",
@@ -213,13 +215,13 @@ Content {
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content descriptor 1`] = `
-Descriptor {
+Object {
   "connectionId": "019bdefa-36ec-4665-86ff-3d07a05f70a7",
   "contentFlags": 0,
   "contentOptions": "bar",
   "displayType": "Investment Account",
   "fields": Array [
-    PropertiesField {
+    Object {
       "category": Object {
         "description": "Id dolorem fugit commodi recusandae architecto illum ut.",
         "expand": true,
@@ -269,7 +271,7 @@ Descriptor {
         "valueFormat": "Primitive",
       },
     },
-    PropertiesField {
+    Object {
       "category": Object {
         "description": "Molestias facere incidunt quia.",
         "expand": false,
@@ -277,6 +279,7 @@ Descriptor {
         "name": "Direct",
         "priority": 22586,
       },
+      "editor": undefined,
       "isReadonly": true,
       "label": "Savings Account Bedfordshire Computers",
       "name": "Complex array of structs property field",
@@ -332,7 +335,7 @@ Descriptor {
         "valueFormat": "Array",
       },
     },
-    NestedContentField {
+    Object {
       "category": Object {
         "description": "Assumenda accusantium quae saepe blanditiis corrupti.",
         "expand": true,
@@ -345,11 +348,12 @@ Descriptor {
         "label": "override Wooden",
         "name": "Small Frozen Hat",
       },
+      "editor": undefined,
       "isReadonly": false,
       "label": "National",
       "name": "Nested content field",
       "nestedFields": Array [
-        Field {
+        Object {
           "category": Object {
             "description": "Sequi architecto qui dolore maiores voluptatem.",
             "expand": true,
@@ -357,6 +361,7 @@ Descriptor {
             "name": "Avon",
             "priority": 74669,
           },
+          "editor": undefined,
           "isReadonly": true,
           "label": "online",
           "name": "Simple property field",
@@ -464,9 +469,9 @@ Descriptor {
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is found 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0x720200000068e3",
         "label": "firewall Pizza",
@@ -489,11 +494,11 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "contentFlags": 0,
     "displayType": "dolor molestiae nihil",
     "fields": Array [
-      PropertiesField {
+      Object {
         "category": Object {
           "description": "Et aut a deleniti saepe.",
           "expand": true,
@@ -501,6 +506,7 @@ Content {
           "name": "intuitive",
           "priority": 57489,
         },
+        "editor": undefined,
         "isReadonly": true,
         "label": "black back-end",
         "name": "integrated",
@@ -542,9 +548,9 @@ Content {
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content for BisCore:Element instances when concrete key is not found 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0xfb610000011d76",
         "label": "bypass",
@@ -567,11 +573,11 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "contentFlags": 0,
     "displayType": "aut provident quasi",
     "fields": Array [
-      PropertiesField {
+      Object {
         "category": Object {
           "description": "Illum dolores veniam eligendi.",
           "expand": false,
@@ -579,6 +585,7 @@ Content {
           "name": "Arizona",
           "priority": 8726,
         },
+        "editor": undefined,
         "isReadonly": false,
         "label": "Small Soft Keyboard azure",
         "name": "cross-platform",
@@ -620,9 +627,9 @@ Content {
 `;
 
 exports[`PresentationManager addon results conversion to Presentation objects returns content when descriptor overrides are passed instead of descriptor 1`] = `
-Content {
+Object {
   "contentSet": Array [
-    Item {
+    Object {
       "classInfo": Object {
         "id": "0xd449000000c51d",
         "label": "Home Loan Account",
@@ -645,11 +652,11 @@ Content {
       },
     },
   ],
-  "descriptor": Descriptor {
+  "descriptor": Object {
     "contentFlags": 0,
     "displayType": "ea fugit omnis",
     "fields": Array [
-      PropertiesField {
+      Object {
         "category": Object {
           "description": "Reiciendis ut vel provident voluptas.",
           "expand": true,
@@ -657,6 +664,7 @@ Content {
           "name": "Ergonomic",
           "priority": 900,
         },
+        "editor": undefined,
         "isReadonly": true,
         "label": "bandwidth Rustic Central",
         "name": "program",
@@ -701,10 +709,6 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childrenOccurances": 0,
-      "occurances": 0,
-    },
     "index": 789,
     "isMarked": true,
     "node": Object {
@@ -741,12 +745,7 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childrenOccurances": 0,
-      "occurances": 0,
-    },
     "index": 209,
-    "isMarked": false,
     "node": Object {
       "description": "Quis officia et.",
       "foreColor": "#176AD3",

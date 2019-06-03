@@ -6,10 +6,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64String, Id64, DbResult, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
-import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
+import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
-  ECSqlStatement, AccessMode, ChangeSummary, ConcurrencyControl, IModelJsFs,
+  ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
 } from "../../imodeljs-backend";
 import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
@@ -29,17 +29,28 @@ describe("PushRetry", () => {
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
   const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  let backupTimeout: RequestTimeoutOptions;
 
   before(async () => {
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, TestConfig.projectName);
+
+    backupTimeout = RequestGlobalOptions.timeout;
+    RequestGlobalOptions.timeout = {
+      deadline: 100000,
+      response: 100000,
+    };
+  });
+
+  after(async () => {
+    RequestGlobalOptions.timeout = backupTimeout;
   });
 
   /** Extract a summary of information in the change set - who changed it, when it was changed, what was changed, and how it was changed */
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
       await testIModel.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(changeSetId));

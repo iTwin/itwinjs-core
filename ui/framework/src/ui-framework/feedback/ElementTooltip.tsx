@@ -142,6 +142,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), { x: 8, y: 8 });
       const position = adjustedPosition.offset(containerBounds.topLeft());
 
+      // istanbul ignore else
       if (Point.create(position).equals(prevState.position))
         return null;
 

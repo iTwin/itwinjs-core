@@ -15,6 +15,7 @@ import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Rel
  * @public
  */
 export class FunctionalPartition extends InformationPartitionElement {
+  /** @internal */
   public static get className(): string { return "FunctionalPartition"; }
   /** @internal */
   public constructor(props: InformationPartitionElementProps, iModel: IModelDb) {
@@ -26,6 +27,7 @@ export class FunctionalPartition extends InformationPartitionElement {
  * @public
  */
 export class FunctionalModel extends RoleModel {
+  /** @internal */
   public static get className(): string { return "FunctionalModel"; }
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
@@ -56,6 +58,7 @@ export class FunctionalModel extends RoleModel {
  * @public
  */
 export abstract class FunctionalElement extends RoleElement implements FunctionalElementProps {
+  /** @internal */
   public static get className(): string { return "FunctionalElement"; }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
@@ -67,6 +70,7 @@ export abstract class FunctionalElement extends RoleElement implements Functiona
  * @public
  */
 export abstract class FunctionalBreakdownElement extends FunctionalElement {
+  /** @internal */
   public static get className(): string { return "FunctionalBreakdownElement"; }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
@@ -76,6 +80,7 @@ export abstract class FunctionalBreakdownElement extends FunctionalElement {
 
 /** @public */
 export class FunctionalComposite extends FunctionalBreakdownElement {
+  /** @internal */
   public static get className(): string { return "FunctionalComposite"; }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
@@ -87,6 +92,7 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
  * @public
  */
 export abstract class FunctionalComponentElement extends FunctionalElement {
+  /** @internal */
   public static get className(): string { return "FunctionalComponentElement"; }
   /** @internal */
   public constructor(props: FunctionalElementProps, iModel: IModelDb) {
@@ -98,6 +104,7 @@ export abstract class FunctionalComponentElement extends FunctionalElement {
  * @public
  */
 export abstract class FunctionalType extends TypeDefinitionElement {
+  /** @internal */
   public static get className(): string { return "FunctionalType"; }
   /** @internal */
   public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
@@ -109,6 +116,7 @@ export abstract class FunctionalType extends TypeDefinitionElement {
  * @public
  */
 export class FunctionalElementIsOfType extends RelatedElement {
+  /** @internal */
   public static get className(): string { return "FunctionalElementIsOfType"; }
   public static classFullName = "Functional:FunctionalElementIsOfType";
   public constructor(id: Id64String, relClassName: string = FunctionalElementIsOfType.classFullName) {
@@ -120,6 +128,7 @@ export class FunctionalElementIsOfType extends RelatedElement {
  * @public
  */
 export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
+  /** @internal */
   public static get className(): string { return "PhysicalElementFulfillsFunction"; }
 }
 
@@ -127,5 +136,6 @@ export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
  * @public
  */
 export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRepresentsElement {
+  /** @internal */
   public static get className(): string { return "DrawingGraphicRepresentsFunctionalElement"; }
 }

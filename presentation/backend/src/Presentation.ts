@@ -8,22 +8,29 @@ import { DisposeFunc, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import {
-  PresentationRpcInterface,
-  PresentationError, PresentationStatus,
+  PresentationRpcInterface, PresentationError, PresentationStatus,
 } from "@bentley/presentation-common";
-import PresentationRpcImpl from "./PresentationRpcImpl";
-import PresentationManager, { Props as PresentationManagerProps } from "./PresentationManager";
-import TemporaryStorage from "./TemporaryStorage";
+import { PresentationRpcImpl } from "./PresentationRpcImpl";
+import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
+import { TemporaryStorage } from "./TemporaryStorage";
+
+const defaultRequestTimeout: number = 90000;
 
 /**
  * Properties that can be used to configure [[Presentation]] API
+ * @public
  */
-export interface Props extends PresentationManagerProps {
+export interface PresentationProps extends PresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
-   * @hidden
+   * @internal
    */
   clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
+
+  /**
+   * Time in milliseconds after which the request will timeout.
+   */
+  requestTimeout?: number;
 
   /**
    * How much time should an unused client manager be stored in memory
@@ -44,16 +51,20 @@ interface ClientStoreItem {
  * - Create a singleton [[PresentationManager]] instance
  * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
  *   the presentation manager when that happens.
+ *
+ * @public
  */
-export default class Presentation {
+export class Presentation {
 
-  private static _initProps: Props | undefined;
+  private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
+  private static _requestTimeout: number | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
 
   /* istanbul ignore next */
   private constructor() { }
 
+  /** Properties used to initialize the presentation framework */
   public static get initProps() { return this._initProps; }
 
   /**
@@ -68,7 +79,7 @@ export default class Presentation {
    *
    * @param props Optional properties for PresentationManager
    */
-  public static initialize(props?: Props): void {
+  public static initialize(props?: PresentationProps): void {
     try {
       RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
     } catch (_e) {
@@ -78,6 +89,9 @@ export default class Presentation {
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(Presentation.terminate);
+    this._requestTimeout = (props && props.requestTimeout !== undefined)
+      ? props.requestTimeout
+      : defaultRequestTimeout;
     this._clientsStorage = new TemporaryStorage<ClientStoreItem>({
       factory: this.createClientManager,
       cleanupHandler: this.disposeClientManager,
@@ -102,6 +116,8 @@ export default class Presentation {
       this._shutdownListener = undefined;
     }
     this._initProps = undefined;
+    if (this._requestTimeout)
+      this._requestTimeout = undefined;
   }
 
   private static createClientManager(clientId: string): ClientStoreItem {
@@ -129,4 +145,12 @@ export default class Presentation {
     return Presentation._clientsStorage.getValue(clientId || "").manager;
   }
 
+  /**
+   * Get the time in milliseconds that backend should respond in .
+   */
+  public static getRequestTimeout(): number {
+    if (this._requestTimeout === undefined)
+      throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
+    return this._requestTimeout;
+  }
 }

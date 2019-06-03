@@ -20,7 +20,7 @@ export type Matrix4dProps = Point4dProps[];
  * * A Matrix4d is a matrix with 4 rows and 4 columns.
  * * The 4 rows may be described as the x,y,z,w rows.
  * * The 4 columns may be described as the x,y,z,w columns.
- * * The matrix is physically stored as a FLoat64Array with 16 numbers.
+ * * The matrix is physically stored as a Float64Array with 16 numbers.
  * * The layout in the Float64Array is "by row"
  *   * indices 0,1,2,3 are the "x row".   They may be called the xx,xy,xz,xw entries
  *   * indices 4,5,6,7 are the "y row"    They may be called the yx,yy,yz,yw entries
@@ -34,10 +34,12 @@ export type Matrix4dProps = Point4dProps[];
 export class Matrix4d implements BeJSONFunctions {
   private _coffs: Float64Array;
   private constructor() { this._coffs = new Float64Array(16); }
+  /** Copy matrix entries from `other` */
   public setFrom(other: Matrix4d): void {
     for (let i = 0; i < 16; i++)
       this._coffs[i] = other._coffs[i];
   }
+  /** Return a deep clone. */
   public clone(): Matrix4d {
     const result = new Matrix4d();
     for (let i = 0; i < 16; i++)
@@ -211,6 +213,7 @@ export class Matrix4d implements BeJSONFunctions {
       a = Math.max(a, Math.abs(this._coffs[i]));
     return a;
   }
+  /** Test for near-equality with `other` */
   public isAlmostEqual(other: Matrix4d): boolean {
     return Geometry.isSmallMetricDistance(this.maxDiff(other));
   }
@@ -550,7 +553,7 @@ export class Matrix4d implements BeJSONFunctions {
         // console.log(inverse.rowArrays());
       }
     }
-    // divide through by pivots (all have  beeen confirmed nonzero)
+    // divide through by pivots (all have been confirmed nonzero)
     inverse.scaleRowsInPlace(1.0 / work._coffs[0], 1.0 / work._coffs[5], 1.0 / work._coffs[10], 1.0 / work._coffs[15]);
     // console.log("descaled", inverse.rowArrays());
     return inverse;

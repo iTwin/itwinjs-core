@@ -7,15 +7,16 @@
 import { createAction, ActionsUnion } from "./utils/redux-ts";
 import { PresentationSelectionScope } from "./UiFramework";
 
-// cSpell:ignore configurableui snapmode toolprompt sessionstate
+// cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  *  Since these are also used as sync ids they should be in lowercase.
  * @beta
  */
-export  enum SessionStateActionId {
+export enum SessionStateActionId {
   SetNumItemsSelected = "sessionstate:set-num-items-selected",
   SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
   SetSelectionScope = "sessionstate:set-selection-scope",
+  SetActiveIModelId = "sessionstate:set-active-imodelid",
 }
 
 /** The portion of state managed by the SessionStateReducer.
@@ -25,6 +26,7 @@ export interface SessionState {
   numItemsSelected: number;
   availableSelectionScopes: PresentationSelectionScope[];
   activeSelectionScope: string;
+  iModelId: string;
 }
 
 const defaultSelectionScope = { id: "element", label: "Element" } as PresentationSelectionScope;
@@ -37,6 +39,8 @@ const initialState: SessionState = {
   availableSelectionScopes: [defaultSelectionScope],
   /** initialize to active selection scope to "Element", this will be overwritten when iModelConnection is established */
   activeSelectionScope: defaultSelectionScope.id,
+  /** set to iModelId if an iModel is active else it is an empty string, so initialize to empty string */
+  iModelId: "",
 };
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
@@ -46,6 +50,7 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
+  setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
 };
 
 /** Union of SessionState Redux actions
@@ -80,6 +85,13 @@ export function SessionStateReducer(state: SessionState = initialState, _action:
         return { ...state, activeSelectionScope: _action.payload };
       else
         return { ...state, activeSelectionScope: defaultSelectionScope.id };
+    }
+    case SessionStateActionId.SetActiveIModelId: {
+      // istanbul ignore else
+      if (undefined !== _action.payload)
+        return { ...state, iModelId: _action.payload };
+      else
+        return { ...state, iModelId: "" };
     }
   }
 

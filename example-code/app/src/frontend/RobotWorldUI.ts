@@ -2,16 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState, SpatialViewState, ScreenViewport, DrawingViewState } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 export class RobotWorldApp {
 
-  private static _robotIModel: IModelConnection;
+  private static _iModel: IModelConnection;
 
-  // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getViewList
-  /** Get the list of Spatial views from the robot iModel. */
+  // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getSpatialViewList
+  /** Get a list of Spatial views from an iModel. */
   public static async getSpatialViews(): Promise<IModelConnection.ViewSpec[]> {
-    return this._robotIModel.views.getViewList({ from: SpatialViewState.classFullName });
+    return this._iModel.views.getViewList({ from: SpatialViewState.classFullName });
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getDrawingViewList
+  /** Get a list of all Drawing views from an iModel. */
+  public static async getDrawingViews(): Promise<IModelConnection.ViewSpec[]> {
+    return this._iModel.views.getViewList({ from: DrawingViewState.classFullName });
   }
   // __PUBLISH_EXTRACT_END__
 
@@ -34,7 +42,28 @@ export class RobotWorldApp {
     const viewId: string = await this.pickView(views);
 
     // return a promise for the ViewState of the selected view. Note that caller will have to await this method
-    return this._robotIModel.views.load(viewId);
+    return this._iModel.views.load(viewId);
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ ScreenViewport.changeView
+  /** Show a list of spatial views, allow the user to select one, load its ViewState, and then change the selected ScreenViewport to show it. */
+  public static async showOneView(): Promise<void> {
+    const viewstate = await this.loadOneView();
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      vp.changeView(viewstate);
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  // __PUBLISH_EXTRACT_START__ ScreenViewport.changeViewedModel2d
+  /** Change the displayed 2d Model of the selected view, if it is currently showing a 2d Model
+   * @note the categories and displayStyle are unchanged. View is fitted to new model extents.
+   */
+  public static async change2dModel(newModelId: Id64String): Promise<void> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      return vp.changeViewedModel2d(newModelId, { doFit: true });
   }
   // __PUBLISH_EXTRACT_END__
 

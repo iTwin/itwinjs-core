@@ -11,6 +11,8 @@
  * There are [special ECExpression symbols]($docs/learning/ECExpressions.md#ruleset-variables-user-settings)
  * that can be used to access variables by their ID, so rule conditions can check for a value and change
  * the behavior. It allows showing / hiding some nodes in the hierarchy, change the grouping, etc.
+ *
+ * @public
  */
 export interface VariablesGroup {
   /**
@@ -26,7 +28,10 @@ export interface VariablesGroup {
   nestedGroups?: VariablesGroup[];
 }
 
-/** Available value types of user-controllable variables */
+/**
+ * Available value types of user-controllable variables
+ * @public
+ */
 export enum VariableValueType {
   /** Bool value, that uses Yes / No strings in the UI */
   YesNo = "YesNo",
@@ -41,7 +46,10 @@ export enum VariableValueType {
   Int = "IntValue",
 }
 
-/** Definition for single user-controllable variable */
+/**
+ * Definition for single user-controllable variable
+ * @public
+ */
 export interface Variable {
   /** Id of the variable */
   id: string;

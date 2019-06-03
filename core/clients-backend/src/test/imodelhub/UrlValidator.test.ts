@@ -18,7 +18,7 @@ should();
 describe.skip("Validate iModelHub URL Whitelist", () => {
 
   function normalizeUrl(loggedUrl: string, hubBaseUrl: string): string | undefined {
-    const extractRegex = new RegExp(hubBaseUrl + "\\/s?v(\\d+).(\\d+)\\/Repositories\\/(iModel|Project|Global)--(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}|Global)\\/(.*)", "i");
+    const extractRegex = new RegExp(hubBaseUrl + "\\/s?v(\\d+).(\\d+)\\/Repositories\\/(iModel|Context|Global)--(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}|Global)\\/(.*)", "i");
 
     const matches = loggedUrl.match(extractRegex);
     let normalizedUrl: string = "";

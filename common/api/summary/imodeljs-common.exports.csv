@@ -1,0 +1,356 @@
+sep=;
+Release Tag;API Item
+beta;AmbientOcclusion
+alpha;AnalysisStyle 
+alpha;AnalysisStyleProps
+internal;enum AntiAliasPref
+public;AreaFillProps
+public;AreaPattern
+public;AuxCoordSystem2dProps 
+public;AuxCoordSystem3dProps 
+public;AuxCoordSystemProps 
+public;AxisAlignedBox3d = Range3d
+public;AxisAlignedBox3dProps = Range3dProps
+public;BackendError 
+public;BackgroundFill
+public;BackgroundMapProps
+public;BackgroundMapType
+beta;BatchType
+public;class BentleyCloudRpcConfiguration 
+public;BentleyCloudRpcManager 
+public;BentleyCloudRpcParams
+public;class BentleyCloudRpcProtocol 
+public;BisCodeSpec
+internal;BoundingSphere
+beta;BRepEntity
+public;CalloutProps 
+public;Camera 
+public;CameraProps
+public;Cartographic 
+public;CartographicRange
+public;CategoryProps 
+public;CategorySelectorProps 
+beta;ChangedElements
+public;ChangedValueState
+public;ChangeOpCode
+internal;CHANNEL = "@bentley/imodeljs-mobilegateway"
+beta;class CloudStorageCache
+beta;CloudStorageContainerDescriptor
+beta;CloudStorageContainerUrl
+beta;CloudStorageContainerUrl
+beta;CloudStorageProvider
+beta;CloudStorageTileCache 
+public;Code 
+public;CodeProps
+public;CodeScopeProps = Id64String | GuidString
+public;CodeScopeSpec
+public;CodeSpec
+public;ColorByName
+public;ColorDef
+public;ColorDefProps = number | ColorDef
+internal;ColorIndex
+public;CommonLoggerCategory
+public;ContextRealityModelProps
+public;CreateIModelProps 
+internal;CURRENT_INVOCATION: unique symbol
+internal;CURRENT_REQUEST: unique symbol
+beta;CustomAttribute
+beta;DecorationGeometryProps
+public;DefinitionElementProps 
+internal;class DevToolsRpcInterface 
+internal;DevToolsStatsOptions
+public;DisplayStyle3dProps 
+beta;DisplayStyle3dSettings 
+public;DisplayStyle3dSettingsProps 
+public;DisplayStyleProps 
+beta;DisplayStyleSettings
+public;DisplayStyleSettingsProps
+public;DisplayStyleSubCategoryProps 
+beta;DPoint2dProps = number[]
+public;EcefLocation 
+public;EcefLocationProps
+public;ECJsNames
+public;ECSqlSystemProperty
+public;ECSqlValueType
+internal;EdgeArgs
+beta;class ElectronRpcConfiguration 
+beta;ElectronRpcManager 
+beta;ElectronRpcParams
+beta;ElectronRpcProtocol 
+beta;ElectronRpcRequest 
+public;ElementAlignedBox2d = Range2d
+public;ElementAlignedBox3d = Range3d
+public;ElementAspectProps 
+public;ElementLoadProps
+public;ElementProps 
+beta;EntityMetaData 
+beta;EntityMetaDataProps
+public;EntityProps
+public;EntityQueryParams
+public;EnvironmentProps
+public;ExternalSourceAspectProps 
+public;Feature
+internal;FeatureGates
+internal;FeatureIndex
+internal;FeatureIndexType
+beta;FeatureTable 
+public;FilePropertyProps
+public;FillDisplay
+public;FillFlags
+public;FontMap
+public;FontMapProps
+public;FontProps
+public;FontType
+internal;FormDataCommon
+public;Frustum
+internal;FrustumPlanes
+internal;FrustumPlanes
+public;FunctionalElementProps 
+internal;GateValue = number | boolean | string | undefined
+beta;GeoCoordinatesRequestProps
+beta;GeoCoordinatesResponseProps
+public;GeoCoordStatus
+public;GeometricElement2dProps 
+public;GeometricElement3dProps 
+public;GeometricElementProps 
+public;GeometricModel2dProps 
+public;GeometryAppearanceProps
+public;GeometryClass
+public;GeometryParams
+public;GeometryPartInstanceProps
+public;GeometryPartProps 
+public;GeometryStreamBuilder
+public;GeometryStreamEntryProps 
+public;GeometryStreamIterator 
+public;GeometryStreamIteratorEntry
+public;GeometryStreamProps = GeometryStreamEntryProps[]
+beta;Gradient
+internal;ThematicColorScheme
+beta;GraphicParams
+public;GroundPlane 
+public;GroundPlaneProps
+beta;HiddenLine
+public;Hilite
+public;HSLColor
+public;HSVColor
+public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
+public;HttpServerRequest 
+public;HttpServerResponse 
+public;ImageBuffer
+public;ImageBufferFormat
+internal;ImageLight
+public;ImageSource
+public;ImageSourceFormat
+public;class IModel 
+beta;IModelCoordinatesRequestProps
+beta;IModelCoordinatesResponseProps
+public;IModelError 
+public;IModelNotFoundResponse 
+public;IModelProps
+public;class IModelReadRpcInterface 
+public;class IModelTileRpcInterface 
+public;IModelToken 
+public;IModelTokenProps
+public;IModelVersion
+alpha;class IModelWriteRpcInterface 
+public;InformationPartitionElementProps 
+internal;initializeRpcRequest: () => void
+internal;INSTANCE: unique symbol
+internal;interop: any
+public;isPowerOfTwo(num: number): boolean
+internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
+public;LatAndLong
+public;LatLongAndHeight 
+internal;Light
+internal;LightLocationProps 
+internal;LightProps
+internal;LightType
+public;LinePixels
+public;LineStyle
+beta;LineStyleProps 
+public;LocalAlignedBox3d = Range3d
+internal;MarshalingBinaryMarker
+internal;MarshalingBinaryMarker
+public;MaterialProps
+internal;MeshEdge
+internal;MeshEdges
+internal;MeshPolyline
+internal;MeshPolylineList 
+beta;MobileRpcChunks = Array
+beta;class MobileRpcConfiguration 
+beta;MobileRpcManager
+beta;MobileRpcProtocol 
+beta;MobileRpcRequest 
+public;ModelProps 
+public;ModelQueryParams 
+public;ModelSelectorProps 
+public;NavigationBindingValue
+public;NavigationValue
+public;nextHighestPowerOfTwo(num: number): number
+internal;NonUniformColor
+public;Npc
+public;NpcCenter: Point3d
+public;NpcCorners: Point3d[]
+internal;OctEncodedNormal
+internal;OctEncodedNormalPair
+internal;OpenAPIContentMap
+internal;OpenAPIDocument
+internal;OpenAPIEncoding
+public;OpenAPIInfo
+internal;OpenAPIMediaType
+internal;OpenAPIOperation
+internal;OpenAPIParameter
+internal;OpenAPIPathItem
+internal;OpenAPIPaths
+internal;OpenAPIRequestBody
+internal;OpenAPIResponse
+internal;OpenAPIResponses
+internal;OpenAPISchema
+internal;OPERATION: unique symbol
+public;Placement2d 
+public;Placement2dProps
+public;Placement3d 
+public;Placement3dProps
+public;PlacementProps = Placement2dProps | Placement3dProps
+beta;PointWithStatus
+internal;POLICY: unique symbol
+internal;PolylineData
+internal;PolylineEdgeArgs
+internal;PolylineFlags
+internal;PolylineTypeFlags
+beta;PrimitiveTypeCode
+beta;PropertyCallback = (name: string, meta: PropertyMetaData) => void
+beta;PropertyMetaData 
+beta;PropertyMetaDataProps
+internal;QParams2d
+internal;QParams3d
+internal;QPoint2d
+internal;QPoint2dList
+internal;QPoint3d
+internal;QPoint3dList
+internal;Quantization
+public;QueryLimit
+public;QueryPriority
+internal;QueryQuota
+internal;QueryResponse
+internal;QueryResponseStatus
+public;Rank
+internal;ReadableFormData 
+internal;REGISTRY: unique symbol
+public;RelatedElement 
+public;RelatedElementProps
+beta;class RenderMaterial
+beta;RenderMaterial
+beta;RenderMaterialProps 
+public;RenderMode
+beta;RenderSchedule
+beta;class RenderTexture 
+beta;RenderTexture
+public;ResponseLike 
+public;RgbColor
+beta;RgbFactorProps = number[]
+public;RootSubjectProps
+public;class RpcConfiguration
+public;RpcConfigurationSupplier = () =>
+public;RpcContentType
+internal;RpcControlChannel
+public;class RpcControlResponse
+internal;RpcDefaultConfiguration 
+internal;RpcDirectProtocol 
+internal;RpcDirectRequest 
+public;RpcEndpoint
+public;class RpcInterface
+public;RpcInterfaceDefinition
+public;RpcInterfaceEndpoints
+public;RpcInterfaceImplementation
+public;RpcInvocation
+public;RpcInvocationCallback_T = (invocation: RpcInvocation) => void
+public;RpcManager
+internal;RpcMarshaling
+beta;RpcMobilePlatform
+internal;RpcMultipart
+public;RpcNotFoundResponse 
+internal;RpcOpenAPIDescription
+public;RpcOperation
+public;RpcOperation
+public;RpcOperationPolicy
+public;RpcOperationPolicyProps = Partial
+public;RpcOperationsProfile
+internal;RpcPendingQueue
+public;RpcPendingResponse 
+public;class RpcProtocol
+public;RpcProtocolEvent
+public;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation) => void
+internal;RpcRegistry
+public;class RpcRequest
+public;RpcRequestCallback_T = (request: RpcRequest) => void
+public;RpcRequestContext
+public;RpcRequestEvent
+public;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
+public;RpcRequestFulfillment
+public;RpcRequestFulfillment
+public;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
+public;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+public;RpcRequestStatus
+public;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelTokenProps | undefined
+public;RpcResponseCacheControl
+public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+public;RpcSerializedValue
+public;RpcSerializedValue
+internal;SceneLights
+public;SerializedRpcOperation
+public;SerializedRpcRequest 
+public;ServerError 
+public;ServerTimeoutError 
+beta;SheetBorderTemplateProps 
+beta;SheetProps 
+beta;SheetTemplateProps 
+internal;SilhouetteEdgeArgs 
+public;SkyBoxImageProps
+public;SkyBoxImageType
+public;SkyBoxProps
+public;SkyCubeProps
+beta;SnapRequestProps
+beta;SnapResponseProps
+beta;class SnapshotIModelRpcInterface 
+beta;SolarShadowProps
+beta;SolarShadows
+beta;SpatialClassificationProps
+public;SpatialViewDefinitionProps 
+internal;Spot 
+internal;SpotProps 
+public;SubCategoryAppearance
+public;SubCategoryAppearance
+public;SubCategoryOverride
+public;SubCategoryProps 
+public;SubjectProps 
+internal;TestRpcManager
+public;TextString
+public;TextStringProps
+beta;TextureFlags
+beta;TextureMapping
+beta;TextureMapping
+beta;TextureMapProps
+beta;TextureMapUnits
+beta;TextureProps 
+alpha;ThumbnailFormatProps
+alpha;ThumbnailProps 
+beta;TileContentIdentifier
+internal;TileProps
+internal;TileTreeProps
+public;TypeDefinition 
+public;TypeDefinitionElementProps 
+public;ViewAttachmentLabelProps 
+public;ViewAttachmentProps 
+public;ViewDefinition2dProps 
+public;ViewDefinition3dProps 
+public;ViewDefinitionProps 
+alpha;ViewFlag
+public;ViewFlagProps
+public;ViewFlags
+public;ViewQueryParams 
+public;ViewStateProps
+internal;WEB_RPC_CONSTANTS:
+public;class WebAppRpcProtocol 
+public;WebAppRpcRequest 
+internal;class WipRpcInterface 

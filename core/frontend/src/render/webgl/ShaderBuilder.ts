@@ -10,7 +10,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
-import { addInstancedModelMatrix } from "./glsl/Instancing";
+import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 
 // tslint:disable:no-const-enum
@@ -452,9 +452,11 @@ export class ShaderBuilder extends ShaderVariables {
       if (!this.usesInstancedGeometry) {
         src.addline("#define MAT_MV u_mv");
         src.addline("#define MAT_MVP u_mvp");
+        src.addline("#define MAT_MODEL u_modelMatrix");
       } else {
         src.addline("#define MAT_MV g_mv");
         src.addline("#define MAT_MVP g_mvp");
+        src.addline("#define MAT_MODEL g_instancedModelMatrix");
       }
     } else {
       src.addline("#define FragColor gl_FragColor");
@@ -523,7 +525,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
   public constructor(flags: ShaderBuilderFlags) {
     super(VertexShaderComponent.COUNT, flags);
     if (this.usesInstancedGeometry)
-      addInstancedModelMatrix(this);
+      addInstancedModelMatrixRTC(this);
 
     addPosition(this, this.usesVertexTable);
   }
@@ -923,7 +925,8 @@ export class ProgramBuilder {
   }
 
   public setDebugDescription(description: string): void {
-    this.vert.headerComment = this.frag.headerComment = ("//! " + description);
+    this.vert.headerComment = ("//!V! " + description);
+    this.frag.headerComment = ("//!F! " + description);
   }
 
   /** Returns a deep copy of this program builder. */

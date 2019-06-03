@@ -74,7 +74,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     // istanbul ignore else
     if (zoneDef) {
-      const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible);
+      const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible || wd === widgetDef);
       for (let index = 0; index < visibleWidgets.length; index++) {
         const wDef = visibleWidgets[index];
         if (wDef === widgetDef) {

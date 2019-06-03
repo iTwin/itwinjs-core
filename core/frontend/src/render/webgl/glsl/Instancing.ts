@@ -14,8 +14,8 @@ const extractInstanceBit = `
   float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
 `;
 
-const computeInstancedModelMatrix = `
-  g_modelMatrix = mat4(
+const computeInstancedModelMatrixRTC = `
+  g_modelMatrixRTC = mat4(
     a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
     a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
     a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
@@ -39,15 +39,15 @@ function addInstanceMatrixRow(vert: VertexShaderBuilder, row: number) {
 }
 
 /** @internal */
-export function addInstancedModelMatrix(vert: VertexShaderBuilder) {
+export function addInstancedModelMatrixRTC(vert: VertexShaderBuilder) {
   assert(vert.usesInstancedGeometry);
 
   addInstanceMatrixRow(vert, 0);
   addInstanceMatrixRow(vert, 1);
   addInstanceMatrixRow(vert, 2);
 
-  vert.addGlobal("g_modelMatrix", VariableType.Mat4);
-  vert.addInitializer(computeInstancedModelMatrix);
+  vert.addGlobal("g_modelMatrixRTC", VariableType.Mat4);
+  vert.addInitializer(computeInstancedModelMatrixRTC);
 }
 
 /** @internal */

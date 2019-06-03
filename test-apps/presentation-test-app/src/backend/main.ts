@@ -6,7 +6,7 @@ import * as path from "path";
 import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { RpcInterfaceDefinition, RpcConfiguration } from "@bentley/imodeljs-common";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import rpcs from "../common/Rpcs";
@@ -32,6 +32,7 @@ Presentation.initialize({
 
 // invoke platform-specific initialization
 (async () => { // tslint:disable-line:no-floating-promises
+  RpcConfiguration.developmentMode = true;
   // get platform-specific initialization function
   let init: (_rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {

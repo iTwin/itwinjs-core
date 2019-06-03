@@ -6,7 +6,7 @@
 
 import { Node } from "@bentley/presentation-common";
 
-/** @hidden */
+/** @internal */
 export interface ColorMap {
   [name: string]: number;
 }
@@ -155,7 +155,7 @@ const colors: ColorMap = {
   YellowGreen: 0x9ACD32FF,
 };
 
-/** @hidden */
+/** @internal */
 export class StyleHelper {
   public static get availableColors(): ColorMap { return colors; }
 
@@ -168,12 +168,14 @@ export class StyleHelper {
     return StyleHelper.getColorFromColorName(name);
   }
 
+  /** Get color number from a named color. @see `colors` map for available names. */
   private static getColorFromColorName(name: string): number {
     if (colors.hasOwnProperty(name))
       return colors[name];
     throw new Error("Invalid color name");
   }
 
+  /** Get color number from an RGB format: `rgb(r,g,b)` */
   private static getColorFromRGB(name: string): number {
     name = name.substring(name.indexOf("(") + 1, name.indexOf(")"));
     const components = name.split(",");
@@ -183,6 +185,7 @@ export class StyleHelper {
     return r << 24 | g << 16 | b << 8 | 255;
   }
 
+  /** Get color number from HEX format: `#ff3300` */
   private static getColorFromHex(name: string): number {
     name = name.substr(1, 7);
     let color: number = parseInt("0x" + name, 16);

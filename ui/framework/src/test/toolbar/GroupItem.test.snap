@@ -5,43 +5,47 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
   direction={3}
   groupItemDef={
     GroupItemDef {
-      "_itemList": ItemList {
-        "_items": Array [
-          CommandItemDef {
-            "_label": "",
-            "_tooltip": "",
-            "commandId": "tool1",
-            "execute": [Function],
-            "iconSpec": "icon-placeholder",
-            "isActive": false,
-            "isEnabled": true,
-            "isPressed": false,
-            "isVisible": true,
-            "stateSyncIds": Array [],
-          },
-          CommandItemDef {
-            "_label": "",
-            "_tooltip": "",
-            "applicationData": Object {
-              "key": "value",
-            },
-            "commandId": "tool2",
-            "execute": [Function],
-            "iconSpec": "icon-placeholder",
-            "isActive": false,
-            "isEnabled": true,
-            "isPressed": false,
-            "isVisible": true,
-            "stateSyncIds": Array [],
-          },
-        ],
-      },
-      "_itemMap": Map {
-        "tool1" => CommandItemDef {
-          "_label": "",
+      "_itemList": ItemList [
+        CommandItemDef {
+          "_label": "Tool 1",
           "_tooltip": "",
           "commandId": "tool1",
           "execute": [Function],
+          "handleSizeKnown": [Function],
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+        CommandItemDef {
+          "_label": "Tool 2",
+          "_tooltip": "",
+          "applicationData": Object {
+            "key": "value",
+          },
+          "commandId": "tool2",
+          "execute": [Function],
+          "handleSizeKnown": [Function],
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateFunc": [Function],
+          "stateSyncIds": Array [
+            "test-button-state",
+          ],
+        },
+      ],
+      "_itemMap": Map {
+        "tool1" => CommandItemDef {
+          "_label": "Tool 1",
+          "_tooltip": "",
+          "commandId": "tool1",
+          "execute": [Function],
+          "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
@@ -50,26 +54,32 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "stateSyncIds": Array [],
         },
         "tool2" => CommandItemDef {
-          "_label": "",
+          "_label": "Tool 2",
           "_tooltip": "",
           "applicationData": Object {
             "key": "value",
           },
           "commandId": "tool2",
           "execute": [Function],
+          "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "stateSyncIds": Array [],
+          "stateFunc": [Function],
+          "stateSyncIds": Array [
+            "test-button-state",
+          ],
         },
       },
       "_label": "tests.label",
       "_tooltip": "",
       "direction": 3,
+      "directionExplicit": true,
       "execute": [Function],
       "groupId": "",
+      "handleSizeKnown": [Function],
       "iconSpec": "icon-placeholder",
       "isActive": false,
       "isEnabled": true,
@@ -77,10 +87,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "isVisible": true,
       "items": Array [
         CommandItemDef {
-          "_label": "",
+          "_label": "Tool 1",
           "_tooltip": "",
           "commandId": "tool1",
           "execute": [Function],
+          "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
@@ -89,22 +100,27 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "stateSyncIds": Array [],
         },
         CommandItemDef {
-          "_label": "",
+          "_label": "Tool 2",
           "_tooltip": "",
           "applicationData": Object {
             "key": "value",
           },
           "commandId": "tool2",
           "execute": [Function],
+          "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "stateSyncIds": Array [],
+          "stateFunc": [Function],
+          "stateSyncIds": Array [
+            "test-button-state",
+          ],
         },
       ],
       "itemsInColumn": 4,
+      "overflow": false,
       "stateSyncIds": Array [],
     }
   }
@@ -112,10 +128,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
   items={
     Array [
       CommandItemDef {
-        "_label": "",
+        "_label": "Tool 1",
         "_tooltip": "",
         "commandId": "tool1",
         "execute": [Function],
+        "handleSizeKnown": [Function],
         "iconSpec": "icon-placeholder",
         "isActive": false,
         "isEnabled": true,
@@ -124,19 +141,23 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "stateSyncIds": Array [],
       },
       CommandItemDef {
-        "_label": "",
+        "_label": "Tool 2",
         "_tooltip": "",
         "applicationData": Object {
           "key": "value",
         },
         "commandId": "tool2",
         "execute": [Function],
+        "handleSizeKnown": [Function],
         "iconSpec": "icon-placeholder",
         "isActive": false,
         "isEnabled": true,
         "isPressed": false,
         "isVisible": true,
-        "stateSyncIds": Array [],
+        "stateFunc": [Function],
+        "stateSyncIds": Array [
+          "test-button-state",
+        ],
       },
     ]
   }

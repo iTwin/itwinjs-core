@@ -18,7 +18,7 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 /**
  * A `GrowableFloat64Array` is Float64Array accompanied by a count of how many of the array's entries are considered in use.
  * * In C++ terms, this is like an std::vector
- * * As entries are added to the array, the buffer is reallocated as needed to accomodate.
+ * * As entries are added to the array, the buffer is reallocated as needed to accommodate.
  * * The reallocations leave unused space to accept further additional entries without reallocation.
  * * The `length` property returns the number of entries in use.
  * * the `capacity` property returns the (usually larger) length of the (overallocated) Float64Array.
@@ -42,6 +42,12 @@ export class GrowableFloat64Array {
     }
     return result;
   }
+  /** sort-compatible comparison.
+   * * Returns `(a-b)` which is
+   *   * negative if `a<b`
+   *   * zero if `a === b` (with exact equality)
+   *   * positive if `a>b`
+   */
   public static compare(a: any, b: any): number {
     return a - b;
   }
@@ -58,7 +64,8 @@ export class GrowableFloat64Array {
     return out;
   }
   /**
-   * @returns the number of entries in use.
+   * Returns the number of entries in use.
+   * * Note that this is typically smaller than the length of the length of the supporting `Float64Array`
    */
   public get length() {
     return this._inUse;
@@ -101,7 +108,7 @@ export class GrowableFloat64Array {
       this._inUse++;
     } else {
       // Make new array (double size), copy values, then push toPush
-      const newData = new Float64Array(this._inUse * 2);
+      const newData = new Float64Array(4 + this._inUse * 2);
       for (let i = 0; i < this._inUse; i++) {
         newData[i] = this._data[i];
       }
@@ -124,7 +131,8 @@ export class GrowableFloat64Array {
       this.pop();
   }
   /**
-   * @returns the number of entries in the supporting Float64Array buffer.   This number is always at least as large as the `length` property.
+   * Returns the number of entries in the supporting Float64Array buffer.
+   * * This number can be larger than the `length` property.
    */
   public capacity() {
     return this._data.length;
@@ -164,7 +172,7 @@ export class GrowableFloat64Array {
   /**
    * * Reduce the length by one.
    * * Note that there is no method return value -- use `back` to get that value before `pop()`
-   * * (As with std::vector, seprating the `pop` from the value access elmiinates error testing from `pop` call)
+   * * (As with std::vector, separating the `pop` from the value access eliminates error testing from `pop` call)
    */
   public pop() {
     // Could technically access outside of array, if filled and then reduced using pop (similar to C
@@ -173,17 +181,19 @@ export class GrowableFloat64Array {
       this._inUse--;
     }
   }
-
+  /** Access by index, without bounds check */
   public atUncheckedIndex(index: number): number {
     return this._data[index];
   }
-
+  /** Access the 0-index member, without bounds check */
   public front() {
     return this._data[0];
   }
+  /** Access the final member, without bounds check */
   public back() {
     return this._data[this._inUse - 1];
   }
+  /** set a value by index */
   public reassign(index: number, value: number) {
     this._data[index] = value;
   }
@@ -229,7 +239,7 @@ export class GrowableFloat64Array {
    * * compress out multiple copies of values.
    * * this is done in the current order of the array.
    */
-  public compressAdjcentDuplicates(tolerance: number = 0.0) {
+  public compressAdjacentDuplicates(tolerance: number = 0.0) {
     const data = this._data;
     const n = this._inUse;
     if (n === 0)

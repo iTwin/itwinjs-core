@@ -91,6 +91,7 @@ export enum IModelStatus {
   WrongModel = IMODEL_ERROR_BASE + 64,
   ConstraintNotUnique = IMODEL_ERROR_BASE + 65,
   NoGeoLocation = IMODEL_ERROR_BASE + 66,
+  ServerTimeout = IMODEL_ERROR_BASE + 67,
 }
 
 /** Error status from various briefcase operations
@@ -301,6 +302,9 @@ export enum IModelHubStatus {
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
+  FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
+  FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
+
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
   InvalidArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 2,
@@ -308,6 +312,7 @@ export enum IModelHubStatus {
   NotSupportedInBrowser = IMODELHUBERROR_REQUESTERRORBASE + 4,
   FileHandlerNotSet = IMODELHUBERROR_REQUESTERRORBASE + 5,
   FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
+  InitializationTimeout = IMODELHUBERROR_REQUESTERRORBASE + 7,
 }
 
 /** Authentication Errors
@@ -340,7 +345,15 @@ export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
   public errorNumber: number;
 
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | HttpStatus | WSStatus | IModelHubStatus, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  /** Construct a new BentleyError
+   * @param errorNumber The required error number originating from one of the standard status enums.
+   * See [[IModelStatus]], [[DbResult]], [[BentleyStatus]], [[BriefcaseStatus]], [[RepositoryStatus]], [[ChangeSetStatus]], [[HttpStatus]], [[WSStatus]], [[IModelHubStatus]]
+   * @param message The optional error message (should not be localized).
+   * @param log The optional LogFunction that should be used to log this BentleyError.
+   * @param category The optional logger category to use when logging.
+   * @param getMetaData Optional data to be passed to the logger.
+   */
+  public constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
@@ -349,8 +362,10 @@ export class BentleyError extends Error {
       Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
+  /** Returns true if this BentleyError includes (optional) meta data. */
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
 
+  /** Return the meta data associated with this BentleyError. */
   public getMetaData(): any {
     return this.hasMetaData ? this._getMetaData!() : undefined;
   }
@@ -531,7 +546,7 @@ export class BentleyError extends Error {
       case ChangeSetStatus.ApplyError: return "Error applying a change set when reversing or reinstating it";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
-      case ChangeSetStatus.FileNotFound: return "File containing the changes to the change set is not found";
+      case ChangeSetStatus.FileNotFound: return "File containing the changes was not found";
       case ChangeSetStatus.FileWriteError: return "Error writing the contents of the change set to the backing change stream file";
       case ChangeSetStatus.HasLocalChanges: return "Cannot perform the operation since the Db has local changes";
       case ChangeSetStatus.HasUncommittedChanges: return "Cannot perform the operation since current transaction has uncommitted changes";
@@ -630,6 +645,8 @@ export class BentleyError extends Error {
       case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
       case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
       case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
+      case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";

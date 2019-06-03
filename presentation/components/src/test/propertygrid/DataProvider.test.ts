@@ -56,7 +56,7 @@ describe("PropertyDataProvider", () => {
   before(() => {
     rulesetId = faker.random.word();
     Presentation.presentation = presentationManagerMock.object;
-    Presentation.i18n = new I18N([], "", {
+    Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
   });
@@ -225,11 +225,7 @@ describe("PropertyDataProvider", () => {
     });
 
     it("returns empty data object when receives content with no values", async () => {
-      const c: Content = {
-        descriptor: createRandomDescriptor(),
-        contentSet: [],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(createRandomDescriptor(), []);
       expect(await provider.getData()).to.deep.eq({
         label: "",
         categories: [],
@@ -244,11 +240,7 @@ describe("PropertyDataProvider", () => {
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
       expect(await provider.getData()).to.matchSnapshot();
     });
 
@@ -263,11 +255,7 @@ describe("PropertyDataProvider", () => {
       });
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
       expect(await provider.getData()).to.matchSnapshot();
     });
 
@@ -283,11 +271,7 @@ describe("PropertyDataProvider", () => {
       };
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
       expect(await provider.getData()).to.matchSnapshot();
     });
 
@@ -307,11 +291,7 @@ describe("PropertyDataProvider", () => {
       };
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), createRandomECClassInfo(), values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
       expect(await provider.getData()).to.matchSnapshot();
     });
 
@@ -326,10 +306,10 @@ describe("PropertyDataProvider", () => {
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
           [createRandomPrimitiveField(), createRandomPrimitiveField()]);
+        field1.rebuildParentship();
         field2 = createRandomPrimitiveField();
         field1.category = field2.category = createRandomCategory();
         descriptor.fields = [field1, field2];
-        descriptor.rebuildParentship();
       });
 
       it("returns nested content with multiple nested records", async () => {
@@ -361,11 +341,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -399,11 +375,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -427,11 +399,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -454,11 +422,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -481,11 +445,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -500,11 +460,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -518,11 +474,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         expect(await provider.getData()).to.matchSnapshot();
       });
 
@@ -538,10 +490,10 @@ describe("PropertyDataProvider", () => {
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
           [field11, field12]);
+        field1.rebuildParentship();
         field2 = createPrimitiveField();
         field2.category = field1.category;
         descriptor.fields = [field1, field2];
-        descriptor.rebuildParentship();
 
         const values = {
           [field1.name]: [{
@@ -597,11 +549,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()], faker.random.words(),
           faker.random.uuid(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         provider.isFieldFavorite = (field) => (field === field111);
 
         expect(await provider.getData()).to.matchSnapshot();
@@ -621,11 +569,7 @@ describe("PropertyDataProvider", () => {
         const displayValues: ValuesDictionary<any> = { [descriptor.fields[0].name]: faker.random.words() };
         const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         const data = await provider.getData();
         expect(data.categories.length).to.eq(1);
         expect(data.records[data.categories[0].name].length).to.eq(1);
@@ -646,11 +590,7 @@ describe("PropertyDataProvider", () => {
         };
         const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         const data = await provider.getData();
         expect(data.categories.length).to.eq(1);
         expect(data.records[data.categories[0].name].length).to.eq(1);
@@ -670,11 +610,7 @@ describe("PropertyDataProvider", () => {
         });
         const record = new Item([createRandomECInstanceKey()],
           faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-        const c: Content = {
-          descriptor,
-          contentSet: [record],
-        };
-        (provider as any).getContent = async () => c;
+        (provider as any).getContent = async () => new Content(descriptor, [record]);
         const data = await provider.getData();
         expect(data.categories.length).to.eq(1);
         expect(data.records[data.categories[0].name].length).to.eq(1);
@@ -714,11 +650,7 @@ describe("PropertyDataProvider", () => {
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
 
       const data = await provider.getData();
       expect(data.categories[0].label).to.eq("a");
@@ -750,11 +682,7 @@ describe("PropertyDataProvider", () => {
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
 
       const data = await provider.getData();
       const records = new Array<PropertyRecord>();
@@ -774,11 +702,7 @@ describe("PropertyDataProvider", () => {
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
 
       const data = await provider.getData();
       expect(data.categories.length).to.eq(0);
@@ -794,11 +718,7 @@ describe("PropertyDataProvider", () => {
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
-      const c: Content = {
-        descriptor,
-        contentSet: [record],
-      };
-      (provider as any).getContent = async () => c;
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
 
       const data = await provider.getData();
       expect(data.categories.length).to.eq(4);

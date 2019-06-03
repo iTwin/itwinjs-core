@@ -2,15 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Core */
+
 import { DefinitionElement, IModelDb } from "@bentley/imodeljs-backend";
 import { Code } from "@bentley/imodeljs-common";
 import { PresentationRules } from "./PresentationRulesDomain";
 import { Id64String } from "@bentley/bentleyjs-core";
 
-/** @module Core */
-
-/** @hidden */
+/** @internal */
 export class Ruleset extends DefinitionElement {
+  /**
+   * Name of the `Ruleset` element class.
+   */
   public static get className(): string { return "Ruleset"; }
 
   /**

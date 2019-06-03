@@ -23,8 +23,10 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
+import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
 import { TileAdmin } from "./tile/TileAdmin";
 import { EntityState } from "./EntityState";
+import { TerrainProvider } from "./TerrainProvider";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -40,7 +42,6 @@ import * as modelselector from "./ModelSelectorState";
 import * as categorySelectorState from "./CategorySelectorState";
 import * as auxCoordState from "./AuxCoordSys";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-
 declare var BUILD_SEMVER: string;
 
 /** Options that can be supplied to [[IModelApp.startup]] to customize frontend behavior.
@@ -65,7 +66,9 @@ export interface IModelAppOptions {
   notifications?: NotificationManager;
   /** If present, supplies the [[ToolAdmin]] for this session. */
   toolAdmin?: ToolAdmin;
-  /** If present, supplies the [[AccuDraw]] for this session. */
+  /** If present, supplies the [[AccuDraw]] for this session.
+   * @internal
+   */
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
@@ -83,13 +86,15 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
+  /** @internal */
+  terrainProvider?: TerrainProvider;
 }
 
 /**
  * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
- * Before any interactive operations may be performed by the @bentley/imodeljs-frontend package, [[IModelApp.startup]] must be called.
+ * Before any interactive operations may be performed by the `@bentley/imodeljs-frontend package`, [[IModelApp.startup]] must be called.
  * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
  *
  * @public
@@ -110,6 +115,7 @@ export class IModelApp {
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
+  private static _terrainProvider?: TerrainProvider;
   private static _viewManager: ViewManager;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
@@ -137,7 +143,9 @@ export class IModelApp {
   public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
   /** The [[ToolAdmin]] for this session. */
   public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
-  /** The [[AccuDraw]] for this session. */
+  /** The [[AccuDraw]] for this session.
+   * @internal
+   */
   public static get accuDraw(): AccuDraw { return this._accuDraw; }
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }
@@ -159,6 +167,8 @@ export class IModelApp {
   public static get iModelClient(): IModelClient { return this._imodelClient; }
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
+  /** @internal */
+  public static get terrainProvider() { return this._terrainProvider; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -183,9 +193,11 @@ export class IModelApp {
    */
   public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
-    if (this._entityClasses.has(lowerName))
-      throw new IModelError(IModelStatus.DuplicateName, "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name,
-        Logger.logWarning, FrontendLoggerCategory.IModelConnection);
+    if (this._entityClasses.has(lowerName)) {
+      const errMsg = "Class " + classFullName + " is already registered. Make sure static schemaName and className members are correct on class " + classType.name;
+      Logger.logError(FrontendLoggerCategory.IModelConnection, errMsg);
+      throw new Error(errMsg);
+    }
 
     this._entityClasses.set(lowerName, classType);
   }
@@ -194,10 +206,18 @@ export class IModelApp {
   public static lookupEntityClass(classFullName: string) { return this._entityClasses.get(classFullName.toLowerCase()); }
 
   /**
+   * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
+   * minimum rendering capabilities.  It also describes whether the system lacks any optional capabilities that could improve quality
+   * and/or performance.
+   * @beta
+   */
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
+
+  /**
    * This method must be called before any iModel.js frontend services are used.
-   * In your code, somewhere before you use any iModel.js services, call IModelApp.startup. E.g.:
+   * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * IModelApp.startup({applicationId: myAppId, i18n: myi18Opts});
+   * IModelApp.startup( {applicationId: myAppId, i18n: myi18Opts} );
    * ```
    * @param opts The options for configuring IModelApp
    */
@@ -224,7 +244,7 @@ export class IModelApp {
     this._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N(["iModelJs"], "iModelJs", opts.i18n);
+    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
 
     const tools = this.tools; // first register all the core tools. Subclasses may choose to override them.
     const coreNamespace = this.i18n.registerNamespace("CoreTools");
@@ -257,6 +277,7 @@ export class IModelApp {
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
+    this._terrainProvider = opts.terrainProvider;       // TBD... (opts.terrainProvider !== undefined) ? opts.terrainProvider : new WorldTerrainProvider();
 
     this.renderSystem.onInitialized();
     this.viewManager.onInitialized();
@@ -265,6 +286,7 @@ export class IModelApp {
     this.accuSnap.onInitialized();
     this.locateManager.onInitialized();
     this.tentativePoint.onInitialized();
+    if (this._terrainProvider) this._terrainProvider.onInitialized();
   }
 
   /** Must be called before the application exits to release any held resources. */

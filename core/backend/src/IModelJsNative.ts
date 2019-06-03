@@ -6,12 +6,25 @@ import {
   BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbOpcode, DbResult, GuidString, Id64String,
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
-import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
+import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
 import { ExportGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
+import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
+
+/** Logger categories used by the native addon
+ * @internal
+ */
+export enum NativeLoggerCategory {
+  Success = 0,
+  BeSQLite = "BeSQLite",
+  Changeset = "Changeset",
+  DgnCore = "DgnCore",
+  ECDb = "ECDb",
+  ECObjectsNative = "ECObjectsNative",
+  UnitsNative = "UnitsNative",
+}
 
 // tslint:disable:prefer-get
-
 /** Module that declares the IModelJs native code.
  * @internal
  */
@@ -46,17 +59,6 @@ export declare namespace IModelJsNative {
   export function getObjectRefCountFromVault(id: string): number;
   export function clearLogLevelCache(): void;
 
-  /** Logger categories used by the native addon */
-  export const enum BackendLoggerCategory {  // tslint:disable-line:no-const-enum
-    Success = 0,
-    BeSQLite = "BeSQLite",
-    Changeset = "Changeset",
-    DgnCore = "DgnCore",
-    ECDb = "ECDb",
-    ECObjectsNative = "ECObjectsNative",
-    UnitsNative = "UnitsNative",
-  }
-
   /** The return type of synchronous functions that may return an error or a successful result. */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
     /** Error from the operation. This property is defined if and only if the operation failed. */
@@ -64,6 +66,15 @@ export declare namespace IModelJsNative {
 
     /** Result of the operation. This property is defined if the operation completed successfully */
     result?: ResultType;
+  }
+  export interface IConcurrentQueryManager {
+    concurrentQueryInit(config: Config): boolean;
+    postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
+  }
+  export interface TileContent {
+    content: Uint8Array;
+    elapsedSeconds: number;
   }
 
   export class BriefcaseManagerResourcesRequest {
@@ -86,7 +97,7 @@ export declare namespace IModelJsNative {
   }
 
   /** The native object for a Briefcase. */
-  export class DgnDb {
+  export class DgnDb implements IConcurrentQueryManager {
     constructor();
     public static getAssetsDir(): string;
     public abandonChanges(): DbResult;
@@ -140,7 +151,7 @@ export declare namespace IModelJsNative {
     public getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
     public getSchemaItem(schemaName: string, itemName: string): ErrorStatusOrResult<IModelStatus, string>;
     public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
-    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | Uint8Array>;
+    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
     public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public getTxnDescription(txnId: TxnIdString): string;
     public getUndoString(): string;
@@ -160,14 +171,14 @@ export declare namespace IModelJsNative {
     public isTxnIdValid(txnId: TxnIdString): boolean;
     public isUndoPossible(): boolean;
     public logTxnError(fatal: boolean): void;
-    public openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
-    public openIModelFile(dbName: string, mode: OpenMode): DbResult;
+    public openIModel(dbName: string, mode: OpenMode): DbResult;
     public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     public queryFirstTxnId(): TxnIdString;
     public queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;
     public queryNextAvailableFileProperty(props: string): number;
     public queryNextTxnId(txnId: TxnIdString): TxnIdString;
     public queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
+    public queryProjectGuid(): GuidString;
     public readFontMap(): string;
     public reinstateTxn(): IModelStatus;
     public removePendingChangeSet(changeSetId: string): DbResult;
@@ -176,6 +187,7 @@ export declare namespace IModelJsNative {
     public reverseTxns(numOperations: number): IModelStatus;
     public saveChanges(description?: string): DbResult;
     public saveFileProperty(props: string, strValue: string | undefined, blobVal: Uint8Array | undefined): number;
+    public saveProjectGuid(guid: GuidString): DbResult;
     public setAsMaster(guid?: GuidString): DbResult;
     public setBriefcaseId(idValue: number): DbResult;
     public setBriefcaseManagerOptimisticConcurrencyControlPolicy(conflictPolicy: BriefcaseManagerOnConflictPolicy): RepositoryStatus;
@@ -189,10 +201,13 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
+    public concurrentQueryInit(config: Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
   }
 
-  export class ECDb implements IDisposable {
+  export class ECDb implements IDisposable, IConcurrentQueryManager {
     constructor();
     public createDb(dbName: string): DbResult;
     public openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
@@ -202,6 +217,9 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
+    public concurrentQueryInit(config: Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
   }
 
   export class ChangedElementsECDb implements IDisposable {

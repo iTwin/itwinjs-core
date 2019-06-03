@@ -24,7 +24,7 @@ import { ElementTooltip } from "../feedback/ElementTooltip";
 import { PointerMessage } from "./Pointer";
 
 /**
- * The AppNotificationManager class is a subclass of NotificationManager, which is in @bentley/imodeljs-frontend.
+ * The AppNotificationManager class is a subclass of NotificationManager in @bentley/imodeljs-frontend.
  * This implementation uses the iModel.js UI library to display alerts, messages, prompts and tooltips.
  * @public
  */
@@ -42,8 +42,11 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
-    if (message.msgType === OutputMessageType.Pointer)
+    if (message.msgType === OutputMessageType.Pointer) {
       this._showPointerMessage(message);
+    } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
+      MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
+    }
     MessageManager.addMessage(message);
   }
 
@@ -82,13 +85,14 @@ export class AppNotificationManager extends NotificationManager {
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
   public endActivityMessage(reason: ActivityMessageEndReason): boolean {
-    switch (reason) {
-      case (ActivityMessageEndReason.Completed):
-        return MessageManager.endActivityMessage(true);
-      case (ActivityMessageEndReason.Cancelled):
-        return MessageManager.endActivityMessage(false);
-    }
-    return false;
+    let result = false;
+
+    if (ActivityMessageEndReason.Completed === reason)
+      result = MessageManager.endActivityMessage(true);
+    else if (ActivityMessageEndReason.Cancelled === reason)
+      result = MessageManager.endActivityMessage(false);
+
+    return result;
   }
 
   /** Hides the Pointer message. */
@@ -128,4 +132,10 @@ export class AppNotificationManager extends NotificationManager {
   protected _hidePointerMessage(): void {
     PointerMessage.hideMessage();
   }
+
+  /** Hide a InputField message. */
+  public closeInputFieldMessage(): void {
+    MessageManager.hideInputFieldMessage();
+  }
+
 }

@@ -49,19 +49,19 @@ export namespace SpatialClassification {
 
   /** @internal */
   export async function loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise<void> {
-    const modelIds = Id64.toIdSet(modelIdArg);
-    const classifiersToLoad = [];
-    for (const modelId of modelIds) {
+    const classifiersToLoad = new Set<string>();
+    Id64.forEach(modelIdArg, (modelId) => {
       const model = iModel.models.getLoaded(modelId) as GeometricModelState;
       if (undefined !== model) {
         const props = getClassifierProps(model);
-        if (undefined !== props) {
-          classifiersToLoad.push(props.modelId);
-        }
+        if (undefined !== props)
+          classifiersToLoad.add(props.modelId);
       }
-    }
+    });
+
     return loadClassifiers(classifiersToLoad, iModel);
   }
+
   /** @internal */
   export async function loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise<void> {
     const classifierIds = Id64.toIdSet(classifierIdArg);
@@ -70,6 +70,7 @@ export namespace SpatialClassification {
         await SpatialClassification.createClassifier(classifierId, iModel).then((classifier) => { if (classifier) IModelApp.renderSystem.addSpatialClassificationModel(classifierId, classifier, iModel); });
     });
   }
+
   /** @internal */
   export function addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void {
     const classifierProps = getClassifierProps(classifiedModel);
@@ -96,8 +97,9 @@ export namespace SpatialClassification {
       }
     }
   }
-  /**   Get active spatial classifier
-   * @beta
+
+  /** Get active spatial classifier
+   * @alpha
    */
   export function getActiveSpatialClassifier(model: TileTreeModelState): number {
     if (model.jsonProperties !== undefined && model.jsonProperties.classifiers !== undefined) {
@@ -108,8 +110,9 @@ export namespace SpatialClassification {
     }
     return -1;
   }
+
   /** Get spatial classifier at  index
-   * @beta
+   * @alpha
    */
   export function getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined {
     if (index < 0 || undefined === model.jsonProperties.classifiers || index >= model.jsonProperties.classifiers.length)
@@ -117,8 +120,9 @@ export namespace SpatialClassification {
 
     return new SpatialClassificationProps.Properties(model.jsonProperties.classifiers[index]);
   }
+
   /** Set the spatial classifier at index
-   * @beta
+   * @alpha
    */
   export function setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties) {
     if (index < 0 || undefined === model.jsonProperties.classifiers || index >= model.jsonProperties.classifiers.length)
@@ -126,8 +130,9 @@ export namespace SpatialClassification {
 
     model.jsonProperties.classifiers[index] = classifier;
   }
+
   /** Set the active spatial classifier by index
-   * @beta
+   * @alpha
    */
   export async function setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean) {
     const classifiers = model.jsonProperties.classifiers;
@@ -138,7 +143,7 @@ export namespace SpatialClassification {
   }
 
   /** Add a spatial classifier
-   * @beta
+   * @alpha
    */
   export function addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps) {
     if (undefined === model.jsonProperties.classifiers)

@@ -3,36 +3,35 @@
 exports[`NodePathElement fromJSON creates valid NodePathElement from JSON 1`] = `
 Object {
   "children": Array [],
-  "index": 540,
-  "isMarked": true,
+  "filteringData": Object {
+    "childMatchesCount": 53454,
+    "matchesCount": 54078,
+  },
+  "index": 333,
+  "isMarked": false,
   "node": Object {
-    "backColor": "rgb(
-    160,
-    109,
-    224
-  )",
-    "description": undefined,
+    "backColor": undefined,
+    "description": "Alias harum nihil.",
     "foreColor": undefined,
-    "hasChildren": true,
-    "imageId": undefined,
+    "hasChildren": false,
     "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": true,
-    "isExpanded": false,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": true,
     "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "Incredible",
-        "id": "0x90dd000000f738",
+        "className": "Infrastructure",
+        "id": "0x114e90000003608",
       },
       "pathFromRoot": Array [
-        "4f6c4c12-d842-4248-b912-933b9c0d2ae7",
-        "20f05f5f-380c-4dcf-82b2-9bba3e810379",
+        "5420fd61-9e00-4e93-b72c-0df8e5c6cd1a",
+        "1b99c1db-1774-4d7c-a453-fb2306df0849",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Central Profit-focused Administrator",
+    "label": "initiative",
   },
 }
 `;
@@ -41,179 +40,267 @@ exports[`NodePathElement fromJSON creates valid NodePathElement from serialized 
 Object {
   "children": Array [],
   "index": 364,
-  "isMarked": false,
   "node": Object {
-    "backColor": "rgb(
-    235,
-    134,
-    206
-  )",
-    "description": "Id repellendus praesentium alias rerum et omnis aut laborum eveniet.",
+    "foreColor": "#E7920B",
     "hasChildren": false,
-    "imageId": "multi-tasking",
     "isCheckboxEnabled": true,
     "isCheckboxVisible": true,
-    "isChecked": false,
+    "isChecked": true,
     "isEditable": false,
     "isExpanded": false,
     "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "dynamic",
-        "id": "0x387500000138c8",
+        "className": "Chair",
+        "id": "0x101a10000005b91",
       },
       "pathFromRoot": Array [
-        "e7735c5f-e115-46d2-a5f4-fb3fb39817e4",
-        "4bc9ff58-df2e-4369-ac6d-2f9ce2f72521",
+        "5fe7c75a-2781-41e4-9a84-e5a017d93c3d",
+        "35fbe933-627c-4856-9e2e-acbc14ddc316",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "infrastructures",
+    "label": "tan",
   },
 }
 `;
 
-exports[`NodePathElement[] fromJSON creates valid NodePathElement[] from JSON 1`] = `
+exports[`NodePathElement listFromJSON creates valid NodePathElement[] from JSON 1`] = `
 Array [
   Object {
     "children": Array [],
-    "index": 921,
+    "index": 781,
     "isMarked": false,
     "node": Object {
-      "backColor": "rgb(
-    17,
-    84,
-    218
-  )",
-      "description": "Totam maiores nostrum voluptatum ut et culpa quisquam sapiente consequatur.",
+      "backColor": undefined,
+      "description": "Quia est culpa ad voluptates temporibus.",
       "foreColor": undefined,
       "hasChildren": false,
-      "imageId": undefined,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Seychelles Rupee",
+          "id": "0x13368000000d08b",
+        },
+        "pathFromRoot": Array [
+          "04505a69-e21d-4351-a5c7-f920978feb8f",
+          "55981cb4-9872-4dc4-a9bf-aa6788c2a2d7",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Rand Namibia Dollar Convertible Marks",
+    },
+  },
+  Object {
+    "children": Array [],
+    "filteringData": Object {
+      "childMatchesCount": 46966,
+      "matchesCount": 1803,
+    },
+    "index": 632,
+    "isMarked": true,
+    "node": Object {
+      "backColor": undefined,
+      "description": "Quas quia aliquid numquam quibusdam repellat harum.",
+      "foreColor": "#EC8E27",
+      "hasChildren": true,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectionDisabled": false,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Future",
+          "id": "0x111200000008d67",
+        },
+        "pathFromRoot": Array [
+          "2bc066ae-d258-4295-b217-85af6dff8fd9",
+          "8ef6bb87-99c5-4bb3-bbcd-e2e3a8095be3",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Creative B2B Metal",
+    },
+  },
+]
+`;
+
+exports[`NodePathElement listFromJSON creates valid NodePathElement[] from serialized JSON 1`] = `
+Array [
+  Object {
+    "children": Array [],
+    "index": 952,
+    "isMarked": false,
+    "node": Object {
+      "description": "Voluptatibus incidunt doloremque.",
+      "foreColor": "#D20659",
+      "hasChildren": false,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": false,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
+      "key": Object {
+        "instanceKey": Object {
+          "className": "compress",
+          "id": "0xace7000000266a",
+        },
+        "pathFromRoot": Array [
+          "7aacd814-57d2-46c1-a268-44b886bc4b70",
+          "df7f4363-4276-4e71-933f-e9e95dc28f6c",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Handmade interactive",
+    },
+  },
+  Object {
+    "children": Array [],
+    "filteringData": Object {
+      "childMatchesCount": 23633,
+      "matchesCount": 32064,
+    },
+    "index": 887,
+    "node": Object {
+      "description": "Quisquam dolores eum nihil.",
+      "foreColor": "#F33220",
+      "hasChildren": true,
+      "isCheckboxEnabled": false,
+      "isCheckboxVisible": true,
       "isChecked": true,
       "isEditable": true,
       "isExpanded": false,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "Toys",
-          "id": "0x14bd10000010c84",
+          "className": "connecting",
+          "id": "0x15128000000b8d8",
         },
         "pathFromRoot": Array [
-          "cf32b4c5-a308-4dfa-a5ba-3fb6a1a828e7",
-          "60678765-0002-42fa-9e36-e13924e054c9",
+          "fb71c667-cfaa-4f4d-96b1-7d81d24b5b12",
+          "5e76533d-9bbd-46f3-9fb5-d9ef170f7c7e",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Jamaican Dollar multi-byte Personal Loan Account",
-    },
-  },
-  Object {
-    "children": Array [],
-    "index": 157,
-    "isMarked": true,
-    "node": Object {
-      "backColor": "rgb(
-    239,
-    86,
-    223
-  )",
-      "description": undefined,
-      "foreColor": "#1B91A2",
-      "hasChildren": true,
-      "imageId": "Home Loan Account",
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": true,
-      "isChecked": false,
-      "isEditable": true,
-      "isExpanded": true,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Computer",
-          "id": "0xccf300000044e9",
-        },
-        "pathFromRoot": Array [
-          "4dc4f362-52e7-472a-83fc-7a77eaccba7f",
-          "48a6e679-4f2c-436c-bcfe-d6e58f2700ea",
-        ],
-        "type": "ECInstanceNode",
-      },
-      "label": "navigating",
+      "label": "Senegal open-source",
     },
   },
 ]
 `;
 
-exports[`NodePathElement[] fromJSON creates valid NodePathElement[] from serialized JSON 1`] = `
-Array [
-  Object {
-    "children": Array [],
-    "index": 691,
-    "isMarked": false,
-    "node": Object {
-      "backColor": "rgb(
-    251,
-    217,
-    236
-  )",
-      "description": "Ad beatae sunt asperiores labore ipsa et provident voluptatem natus.",
-      "foreColor": "#D7708F",
-      "hasChildren": true,
-      "imageId": "Rustic Fresh Sausages",
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKey": Object {
-          "className": "transform",
-          "id": "0xecf000000d08c",
-        },
-        "pathFromRoot": Array [
-          "227a508c-c2d5-4898-a907-d468035733f4",
-          "777de2b5-07a6-4eb6-b211-a04ad25d5f62",
-        ],
-        "type": "ECInstanceNode",
-      },
-      "label": "Multi-layered JBOD",
-    },
+exports[`NodePathElement toJSON serializes NodePathElement 1`] = `
+Object {
+  "children": Array [],
+  "filteringData": Object {
+    "childrenOccurances": 73591,
+    "occurances": 11060,
   },
-  Object {
-    "children": Array [],
-    "index": 231,
-    "isMarked": false,
-    "node": Object {
-      "backColor": "rgb(
-    204,
-    243,
-    193
+  "index": 187,
+  "isMarked": true,
+  "node": Object {
+    "backColor": "rgb(
+    102,
+    62,
+    97
   )",
-      "description": "Earum a eligendi quos.",
-      "foreColor": "#FB6C15",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": false,
-      "isEditable": true,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
-      "key": Object {
-        "instanceKey": Object {
-          "className": "Music",
-          "id": "0x15f780000013ae0",
-        },
-        "pathFromRoot": Array [
-          "f4949ac5-97af-465b-a063-aaec03833ad6",
-          "5ca9fade-993d-4ce1-857c-a7546114a90d",
-        ],
-        "type": "ECInstanceNode",
+    "description": undefined,
+    "foreColor": "#0BD4D0",
+    "hasChildren": true,
+    "imageId": undefined,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Ergonomic",
+        "id": "0x7f3400000111dd",
       },
-      "label": "bandwidth",
+      "pathFromRoot": Array [
+        "34ffccbe-474a-4f05-9fe9-3f2bbc0fbbd1",
+        "6d4c3d32-d8df-4acc-8337-aad1b7901083",
+      ],
+      "type": "ECInstanceNode",
     },
+    "label": "ability program",
   },
-]
+}
+`;
+
+exports[`NodePathElement toJSON serializes NodePathElement with undefined \`isMarked\` flag 1`] = `
+Object {
+  "children": Array [],
+  "index": 281,
+  "node": Object {
+    "backColor": "rgb(
+    194,
+    176,
+    8
+  )",
+    "description": "Suscipit rerum distinctio eaque aut hic.",
+    "foreColor": undefined,
+    "hasChildren": false,
+    "imageId": undefined,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": true,
+    "isSelectionDisabled": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "one-to-one",
+        "id": "0xe15600000160bc",
+      },
+      "pathFromRoot": Array [
+        "d4ce248b-ceac-4fde-9a91-26435a77370c",
+        "91fc73b8-0ac2-430f-a8b3-364e44126dad",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "Customer",
+  },
+}
+`;
+
+exports[`NodePathElement toJSON serializes NodePathElement with undefined filtering data 1`] = `
+Object {
+  "children": Array [],
+  "index": 276,
+  "node": Object {
+    "backColor": undefined,
+    "description": "Et hic dolorem ratione labore et illo vel consequatur.",
+    "foreColor": undefined,
+    "hasChildren": true,
+    "imageId": "orchestrate",
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": true,
+    "isSelectionDisabled": false,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "superstructure",
+        "id": "0x1163d0000017dbd",
+      },
+      "pathFromRoot": Array [
+        "10fd8457-4f94-4369-a601-2eae22d2e7a0",
+        "64d403a7-ecee-4202-9756-af76faccdd1e",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "productize functionalities gold",
+  },
+}
 `;

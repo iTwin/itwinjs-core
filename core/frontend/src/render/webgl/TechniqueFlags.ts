@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { System } from "./System";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { ClippingType } from "../System";
+import { RenderMode } from "@bentley/imodeljs-common";
 
 // tslint:disable:no-const-enum
 
@@ -41,6 +43,7 @@ export const enum IsAnimated { No, Yes }
 export const enum IsClassified { No, Yes }
 
 /** @internal */
+export const enum IsEdgeTestNeeded { No, Yes }
 export const enum IsShadowable { No, Yes }
 
 /** Flags used to control which shader program is used by a rendering Technique.
@@ -50,6 +53,7 @@ export class TechniqueFlags {
   public clip: ClipDef = new ClipDef();
   public featureMode = FeatureMode.None;
   public isTranslucent: boolean;
+  public isEdgeTestNeeded: IsEdgeTestNeeded = IsEdgeTestNeeded.No;
   public isAnimated: IsAnimated = IsAnimated.No;
   public isInstanced: IsInstanced = IsInstanced.No;
   public isClassified: IsClassified = IsClassified.No;
@@ -80,6 +84,28 @@ export class TechniqueFlags {
         this.featureMode = FeatureMode.Pick;
       else
         this.featureMode = FeatureMode.None;
+
+      // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
+      // These are only useful if the geometry defines feature Ids.
+      // In 3d, if we're only displaying surfaces or edges, not both, don't bother, unless forceSurfaceDiscard is true.
+      this.isEdgeTestNeeded = this.hasFeatures ? (this.isClassified ? IsEdgeTestNeeded.No : IsEdgeTestNeeded.Yes) : IsEdgeTestNeeded.No;
+      if (!target.currentViewFlags.forceSurfaceDiscard && target.is3d && !target.isReadPixelsInProgress && System.instance.enableOptimizedSurfaceShaders && this.isEdgeTestNeeded) {
+        switch (target.currentViewFlags.renderMode) {
+          case RenderMode.Wireframe:
+            // We're only displaying edges (ignoring filled planar regions)
+            this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
+            break;
+          case RenderMode.SmoothShade:
+            if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion) {
+              // We're only display surfaces (ignoring filled planar regions). NB: Filled text with outline is handled by gl.polygonOffset().
+              this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
+            }
+            break;
+          default:
+            // SolidFill and HiddenLine always display edges and surfaces.
+            break;
+        }
+      }
     }
   }
 
@@ -87,6 +113,7 @@ export class TechniqueFlags {
     this._isHilite = false;
     this.featureMode = mode;
     this.isTranslucent = false;
+    this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
     this.isAnimated = IsAnimated.No;
     this.isClassified = IsClassified.No;
     this.isInstanced = instanced;
@@ -108,6 +135,7 @@ export class TechniqueFlags {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
     this.isTranslucent = false;
+    this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
     this.isAnimated = IsAnimated.No;
     this.isInstanced = instanced;
     this.isClassified = classified;
@@ -117,6 +145,7 @@ export class TechniqueFlags {
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
     if (this.isInstanced) parts.push("instanced");
+    if (this.isEdgeTestNeeded) parts.push("edgeTestNeeded");
     if (this.isAnimated) parts.push("animated");
     if (this.isHilite) parts.push("hilite");
     if (this.isClassified) parts.push("classified");

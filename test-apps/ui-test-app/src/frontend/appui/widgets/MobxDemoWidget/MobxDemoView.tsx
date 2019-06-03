@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { Input, Button } from "@bentley/ui-core";
+import { Input, Button, NumericInput } from "@bentley/ui-core";
 import "./MobxDemoView.scss";
 
 interface MobxDemoViewProps {
@@ -33,9 +33,16 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
         <h3>You have {birdCount} birds.</h3>
 
         <form onSubmit={addBird}>
-          <Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" />
-          &nbsp;
-          <Button disabled={shouldDisableSubmit}>Add bird</Button>
+          <table>
+            <tr>
+              <td><Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" /></td>
+              <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
+            </tr>
+            <tr>
+              <td><NumericInput className="numeric-input" min={1} max={100} strict placeholder="Enter numeric value" /></td>
+              <td>&nbsp;</td>
+            </tr>
+          </table>
         </form>
 
         <ul>

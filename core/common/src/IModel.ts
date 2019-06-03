@@ -11,23 +11,59 @@ import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
 
+/** The properties of IModelToken.
+ * @public
+ */
+export interface IModelTokenProps {
+  /** Key used for identifying the iModel on the backend */
+  readonly key?: string;
+  /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
+  readonly contextId?: string;
+  /** Guid of the iModel - must be defined if the iModel exists in the Hub */
+  readonly iModelId?: string;
+  /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
+  changeSetId?: string;
+  /** Mode used to open the iModel */
+  openMode?: OpenMode;
+}
+
 /** A token that identifies a specific instance of an iModel to be operated on
  * @public
  */
-export class IModelToken {
+export class IModelToken implements IModelTokenProps {
+  /** Constructs an IModelToken from a props object. */
+  public static fromJSON(props: IModelTokenProps): IModelToken {
+    return new IModelToken(props.key, props.contextId, props.iModelId, props.changeSetId, props.openMode);
+  }
+  /** Key used for identifying the iModel on the backend */
+  public readonly key?: string;
+  /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
+  public readonly contextId?: string;
+  /** Guid of the iModel - must be defined if the iModel exists in the Hub */
+  public readonly iModelId?: string;
+  /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
+  public changeSetId?: string;
+  /** Mode used to open the iModel */
+  public openMode?: OpenMode;
+
   /** Constructor */
-  public constructor(
-    /** Key used for identifying the iModel on the backend */
-    public readonly key?: string,
-    /** Context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined if the iModel exists in the Hub or in a non-Connect infrastructure. */
-    public readonly contextId?: string,
-    /** Guid of the iModel - must be defined if the iModel exists in the Hub */
-    public readonly iModelId?: string,
-    /** Id of the last ChangeSet that was applied to the iModel - must be defined if the iModel exists in the Hub. An empty string indicates the first version */
-    public changeSetId?: string,
-    /** Mode used to open the iModel */
-    public openMode?: OpenMode,
-  ) {
+  public constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode) {
+    this.key = key;
+    this.contextId = contextId;
+    this.iModelId = iModelid;
+    this.changeSetId = changesetId;
+    this.openMode = openMode;
+  }
+
+  /** Creates a props object for this IModelToken. */
+  public toJSON(): IModelTokenProps {
+    return {
+      key: this.key,
+      contextId: this.contextId,
+      iModelId: this.iModelId,
+      changeSetId: this.changeSetId,
+      openMode: this.openMode,
+    };
   }
 }
 
@@ -91,6 +127,10 @@ export interface IModelProps {
   globalOrigin?: XYZProps;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
   ecefLocation?: EcefLocationProps;
+  /** The name of the iModel. */
+  name?: string;
+  /** The token of the iModel. */
+  iModelToken?: IModelTokenProps;
 }
 
 /** The properties that can be supplied when creating a *new* iModel.

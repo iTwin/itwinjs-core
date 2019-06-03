@@ -8,6 +8,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
+import { ContentLayoutManager } from "./ContentLayout";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -104,6 +105,12 @@ export class ContentViewManager {
         }
       }
     }
+  }
+
+  /** Refreshes the active [[ContentControl]] */
+  public static refreshActiveContent(activeContent: React.ReactNode) {
+    ContentLayoutManager.refreshActiveLayout();
+    this.setActiveContent(activeContent, true);
   }
 
   /**

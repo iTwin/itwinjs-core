@@ -14,7 +14,7 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.
- * @public
+ * @beta
  */
 export class IModelHubError extends WsgError {
   /** Extended data of the error. */
@@ -166,7 +166,7 @@ export class IModelHubError extends WsgError {
 
 /**
  * Errors for incorrect iModelHub requests.
- * @public
+ * @beta
  */
 export class IModelHubClientError extends IModelHubError {
   /** Creates IModelHubClientError from id.
@@ -207,6 +207,14 @@ export class IModelHubClientError extends IModelHubError {
   public static missingDownloadUrl(argumentName: string): IModelHubClientError {
     return this.fromId(IModelHubStatus.MissingDownloadUrlError,
       `Supplied ${argumentName} must include download URL. Use selectDownloadUrl() when getting ${argumentName}.`);
+  }
+
+  /** Create error for seed file initialization timing out.
+   * @returns Created error.
+   * @internal
+   */
+  public static initializationTimeout(): IModelHubClientError {
+    return this.fromId(IModelHubStatus.InitializationTimeout, `Timed out waiting for Seed File initialization.`);
   }
 
   /** Create error for incompatible operation being used in browser.

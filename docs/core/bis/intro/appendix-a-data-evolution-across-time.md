@@ -37,7 +37,7 @@ The JsonProperties property that Stair inherited from Element is used to store w
 <!-- TODO: Future proposal, not yet implemented
 ## Using Form
 
-The Stair class designer will also want to allow users to create custom stairs from parametric geometry. To enable this the Stair class designer will add a StairOwnsForm relationship to allow the Stair to own FormApects:
+The Stair class designer will also want to allow users to create custom stairs from parametric geometry. To enable this the Stair class designer will add a StairOwnsForm relationship to allow the Stair to own FormAspects:
 
 ![StairOwnsForm Relationship](./media/stair-owns-form.png)
 

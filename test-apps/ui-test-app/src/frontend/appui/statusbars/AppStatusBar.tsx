@@ -8,11 +8,12 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, StatusBarWidgetControl, ActivityCenterField,
   MessageCenterField, SnapModeField, PromptField, BooleanSyncUiListener, SelectionInfoField,
-  StatusBarWidgetControlArgs, SelectionScopeField,
+  StatusBarWidgetControlArgs, SelectionScopeField, SyncUiEventId, ContentViewManager,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
+import { ShadowField } from "../statusfields/ShadowField";
 
 import "./AppStatusBar.scss";
 
@@ -51,6 +52,12 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           </BooleanSyncUiListener>
         </div>
         <div className="statusbar-right">
+          <BooleanSyncUiListener defaultValue={false} eventIds={[SyncUiEventId.ActiveContentChanged]} boolFunc={(): boolean => ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl())}>
+            {(isVisible: boolean) => isVisible && <>
+              <ShadowField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+              {isInFooterMode && <FooterSeparator />}
+            </>}
+          </BooleanSyncUiListener>
           <SelectionScopeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           <SelectionInfoField isInFooterMode={isInFooterMode} />
         </div>

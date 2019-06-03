@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
+import { Orientation, UiEvent, CommonProps, UiError } from "@bentley/ui-core";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
@@ -649,6 +649,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
   private static _activeLayout?: ContentLayoutDef;
+  private static _activeGroup?: ContentGroup;
 
   public static loadLayouts(layoutPropsList: ContentLayoutProps[]) {
     layoutPropsList.map((layoutProps, _index) => {
@@ -661,7 +662,7 @@ export class ContentLayoutManager {
     if (layoutProps.id)
       ContentLayoutManager.addLayout(layoutProps.id, layout);
     else
-      throw Error("ContentLayoutProps should contain an 'id'");
+      throw new UiError(UiFramework.loggerCategory(this), `loadLayout: ContentLayoutProps should contain an 'id'`);
   }
 
   public static findLayout(layoutId: string): ContentLayoutDef | undefined {
@@ -676,7 +677,16 @@ export class ContentLayoutManager {
 
   public static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup) {
     this._activeLayout = contentLayout;
+    this._activeGroup = contentGroup;
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout, contentGroup });
+  }
+
+  public static refreshActiveLayout() {
+    // istanbul ignore else
+    if (this._activeLayout && this._activeGroup) {
+      FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._activeLayout, contentGroup: this._activeGroup });
+      this._activeGroup.refreshContentNodes();
+    }
   }
 
   public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {

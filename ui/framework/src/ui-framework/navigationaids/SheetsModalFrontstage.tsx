@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import { ModalFrontstageInfo, FrontstageManager } from "../frontstage/FrontstageManager";
-import { SearchBox, UiEvent, CommonProps, ScrollView, FlexWrapContainer } from "@bentley/ui-core";
+import { SearchBox, UiEvent, CommonProps, ScrollView, FlexWrapContainer, UiCore } from "@bentley/ui-core";
 import "./SheetsModalFrontstage.scss";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
@@ -42,7 +42,7 @@ export class CardSelectedEvent extends UiEvent<CardSelectedEventArgs> { }
  * @alpha
  */
 export class SheetsModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("UiFramework:navigationAid.sheetsModalFrontstage");
+  public title: string = UiFramework.translate("navigationAid.sheetsModalFrontstage");
   private _cards: CardInfo[] = [];
   private _connection: IModelConnection;
   private _currentIndex: number;
@@ -77,7 +77,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   /** Gets components to be placed in the app bar */
   public get appBarRight(): React.ReactNode {
     return (
-      <SearchBox placeholder={UiFramework.i18n.translate("UiCore:general.search")} onValueChanged={this._handleSearchValueChanged} valueChangedDelay={250} />
+      <SearchBox placeholder={UiCore.translate("general.search")} onValueChanged={this._handleSearchValueChanged} valueChangedDelay={250} />
     );
   }
 

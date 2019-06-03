@@ -445,7 +445,7 @@ export class HalfEdgeGraphMerge {
         lineSegments[i].fractionToPoint(1)));
     }
 
-    const arr = HalfEdgeGraphOps.segmentArrayToGraphEdges(segments, graph, HalfEdgeMask.BOUNDARY);
+    const arr = HalfEdgeGraphOps.segmentArrayToGraphEdges(segments, graph, HalfEdgeMask.BOUNDARY_EDGE);
     HalfEdgeGraphOps.setXYSortAnglesInGraph(graph);
 
     // Sort lexically

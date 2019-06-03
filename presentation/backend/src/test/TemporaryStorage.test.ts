@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as lolex from "lolex";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { using } from "@bentley/bentleyjs-core";
-import TemporaryStorage from "../TemporaryStorage";
+import { TemporaryStorage } from "../TemporaryStorage";
 
 describe("TemporaryStorage", () => {
 

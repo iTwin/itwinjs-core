@@ -32,7 +32,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
   before(() => {
     Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
-    Presentation.i18n = new I18N([], "", {
+    Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
   });

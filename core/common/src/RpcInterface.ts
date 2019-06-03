@@ -10,7 +10,7 @@ import * as semver from "semver";
 import { RpcRequest } from "./rpc/core/RpcRequest";
 
 /** @public */
-export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; name: string; version: string; types: () => Function[]; } // tslint:disable-line:ban-types
+export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T; interfaceName: string; interfaceVersion: string; }
 
 /** @public */
 export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;

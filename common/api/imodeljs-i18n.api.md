@@ -8,8 +8,8 @@ import * as i18next from 'i18next';
 
 // @public
 export class I18N {
-    // @internal
-    constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: i18next.Callback);
+    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @public, but its signature references "I18NOptions" which is marked as @internal
+    constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: i18next.Callback);
     // @internal (undocumented)
     languageList(): string[];
     // @internal (undocumented)
@@ -17,6 +17,8 @@ export class I18N {
     registerNamespace(name: string): I18NNamespace;
     translate(key: string | string[], options?: i18next.TranslationOptions): any;
     translateKeys(line: string): string;
+    // @internal
+    translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): any;
     // @internal (undocumented)
     unregisterNamespace(name: string): void;
     // @internal
@@ -36,6 +38,10 @@ export class I18NNamespace {
 export interface I18NOptions {
     // (undocumented)
     urlTemplate?: string;
+}
+
+// @internal (undocumented)
+export interface TranslationOptions extends i18next.TranslationOptions {
 }
 
 

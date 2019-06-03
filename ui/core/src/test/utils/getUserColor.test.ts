@@ -14,4 +14,8 @@ describe("getUserColor", () => {
     const email = "";
     expect(getUserColor(email)).to.eq("#6ab9ec");
   });
+  it("should return color if not passed a string", () => {
+    const email = ["test1", "test2"] as unknown as string;  // Test invalid data
+    expect(getUserColor(email)).to.eq("#6ab9ec");
+  });
 });

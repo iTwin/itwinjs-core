@@ -56,6 +56,8 @@ export interface ActivityMessageEventArgs {
 export interface InputFieldMessageEventArgs {
   target: Element;
   messageText: string;
+  detailedMessage: string;
+  priority: OutputMessagePriority;
 }
 
 /** Message Added Event class.
@@ -210,12 +212,16 @@ export class MessageManager {
    * Displays an input field message near target element.
    * @param target  The currently focused or recently focused element to place the
    *                input field message near.
-   * @param messageText   Text to display in the message.
+   * @param messageText  Text to display in the message.
+   * @param detailedMessage   Optional detailed message text to display.
+   * @param priority   Optional message priority which controls icon to display.
    */
-  public static displayInputFieldMessage(target: Element, messageText: string) {
+  public static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage = "", priority = OutputMessagePriority.Error) {
     this.onInputFieldMessageAddedEvent.emit({
       target,
       messageText,
+      detailedMessage,
+      priority,
     });
   }
 
@@ -291,7 +297,7 @@ export class MessageManager {
    * @return the response from the user.
    */
   public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
-    const title = UiFramework.i18n.translate("UiFramework:general.alert");
+    const title = UiFramework.translate("general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
@@ -301,7 +307,7 @@ export class MessageManager {
   }
 
   private static showAlertMessageBox(messageDetails: NotifyMessageDetails): void {
-    const title = UiFramework.i18n.translate("UiFramework:general.alert");
+    const title = UiFramework.translate("general.alert");
     const iconType = this.getIconType(messageDetails);
     const content = (
       <>

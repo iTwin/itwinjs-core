@@ -10,7 +10,7 @@ import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
-/** @beta */
+/** @internal */
 export enum IncludePrefix {
   Yes = 0,
   No = 1,
@@ -32,6 +32,7 @@ export abstract class Token {
   protected constructor() {
   }
 
+  /** @internal */
   protected getSaml(): string | undefined {
     if (this._saml)
       return this._saml;
@@ -41,6 +42,7 @@ export abstract class Token {
     return this._saml;
   }
 
+  /** @internal */
   public getSamlAssertion(): string | undefined {
     if (this._samlAssertion)
       return this._samlAssertion;
@@ -50,6 +52,7 @@ export abstract class Token {
     return this._samlAssertion;
   }
 
+  /** @internal */
   public getUserInfo(): UserInfo | undefined {
     if (this._userInfo || this._jwt)
       return this._userInfo;
@@ -58,10 +61,12 @@ export abstract class Token {
     return this._userInfo;
   }
 
+  /** @internal */
   public setUserInfo(userInfo: UserInfo) {
     this._userInfo = userInfo;
   }
 
+  /** @internal */
   public getExpiresAt(): Date | undefined {
     if (this._expiresAt || this._jwt)
       return this._expiresAt;
@@ -70,6 +75,7 @@ export abstract class Token {
     return this._expiresAt;
   }
 
+  /** @internal */
   public getStartsAt(): Date | undefined {
     if (this._startsAt || this._jwt)
       return this._startsAt;
@@ -78,6 +84,7 @@ export abstract class Token {
     return this._startsAt;
   }
 
+  /** @internal */
   protected parseSamlAssertion(): boolean {
     this._samlAssertion = this.getSamlAssertion();
     if (!this._samlAssertion)
@@ -127,12 +134,13 @@ export abstract class Token {
 }
 
 /** Token issued by Active Secure Token Service or Federated Authentication Service for user authentication/authorization
- * @beta
+ * @internal
  */
 export class AuthorizationToken extends Token {
 
   /** Sets up a new AuthorizationToken based on the SAML that was passed in.
    * Does NOT validate the resulting token.
+   * @internal
    */
   public static fromSamlAssertion(samlAssertion: string): AuthorizationToken {
     const token = new AuthorizationToken();
@@ -140,7 +148,9 @@ export class AuthorizationToken extends Token {
     return token;
   }
 
-  /** Creates a string representation of the contained token */
+  /** Creates a string representation of the contained token
+   * @internal
+   */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     if (!this.parseSamlAssertion() || !this._x509Certificate)
       throw new BentleyError(BentleyStatus.ERROR, "Invalid access token");
@@ -159,14 +169,16 @@ export class AccessToken extends Token {
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
   private _foreignJwt?: string;
 
-  /** Returns true if it's a Jason Web Token, and false if it's a SAML token */
+  /** Returns true if it's a Jason Web Token, and false if it's a SAML token
+   * @internal
+   */
   public get isJwt(): boolean {
     return !!this._jwt;
   }
 
   /** Sets up a new AccessToken based on the SAML that was passed in.
    * Does NOT validate the resulting token.
-   * @beta
+   * @internal
    */
   public static fromSamlAssertion(samlAssertion: string): AccessToken {
     const token = new AccessToken();
@@ -191,6 +203,7 @@ export class AccessToken extends Token {
 
   /** Create an AccessToken from a SAML string for Windows Federated Authentication workflows.
    * Does NOT validate the token.
+   * @internal
    */
   public static fromSamlTokenString(accessTokenStr: string, includesPrefix: IncludePrefix = IncludePrefix.Yes): AccessToken {
     let saml = accessTokenStr;
@@ -209,6 +222,7 @@ export class AccessToken extends Token {
 
   /** Create an AccessToken from a JWT token for OIDC workflows
    * Does NOT validate the token.
+   * @internal
    */
   public static fromJsonWebTokenString(jwt: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo): AccessToken {
     const token = new AccessToken();
@@ -222,6 +236,7 @@ export class AccessToken extends Token {
   /**
    * Convert this AccessToken to a string
    * @param includePrefix Include the token prefix to identify JWT or SAML tokens
+   * @internal
    */
   public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     if (this._jwt)
@@ -241,6 +256,7 @@ export class AccessToken extends Token {
   /**
    * Create an AccessToken from a string. The token must include the prefix to differentiate between JWT and SAML.
    * @param tokenStr String representation of the token
+   * @internal
    */
   public static fromTokenString(tokenStr: string): AccessToken {
     if (tokenStr.startsWith(AccessToken._jwtTokenPrefix)) {
@@ -266,6 +282,7 @@ export class AccessToken extends Token {
   /**
    * Creates an AccessToken from an untyped JSON object
    * @param jsonObj
+   * @internal
    */
   public static fromJson(jsonObj: any): AccessToken | undefined {
     if (jsonObj._jwt)

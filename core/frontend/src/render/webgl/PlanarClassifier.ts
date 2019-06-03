@@ -15,7 +15,7 @@ import { SceneContext } from "../../ViewContext";
 import { TileTreeModelState } from "../../ModelState";
 import { TileTree, Tile } from "../../tile/TileTree";
 import { Frustum, Npc, FrustumPlanes, RenderTexture, RenderMode, ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { ViewportQuadGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
@@ -51,8 +51,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _colorTexture?: Texture;
   private _featureTexture?: Texture;
   private _hiliteTexture?: Texture;
+  private _combinedTexture?: Texture;
   private _fbo?: FrameBuffer;
+  private _featureFbo?: FrameBuffer;    // For multi-pass case only.
   private _hiliteFbo?: FrameBuffer;
+  private _combinedFbo?: FrameBuffer;
   private _projectionMatrix = new Matrix4();
   private _graphics: RenderGraphic[] = [];
   private _frustum?: Frustum;
@@ -66,9 +69,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private static _scratchFrustum = new Frustum();
 
   private constructor(private _classifierProperties: SpatialClassificationProps.Properties) { super(); }
-  public get colorTexture(): Texture | undefined { return this._colorTexture; }
-  public get featureTexture(): Texture | undefined { return this._featureTexture; }
   public get hiliteTexture(): Texture | undefined { return this._hiliteTexture; }
+  public get combinedTexture(): Texture | undefined { return this._combinedTexture; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
   public get properties(): SpatialClassificationProps.Properties { return this._classifierProperties; }
   public get baseBatchId(): number { return this._baseBatchId; }
@@ -209,7 +211,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._graphics === undefined)
       return;
 
-    const requiredHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);     // TBD - Size to classified area.
+    const requiredHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);
     const requiredWidth = requiredHeight;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
@@ -217,18 +219,32 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     this._width = requiredWidth;
     this._height = requiredHeight;
+    const useMRT = System.instance.capabilities.supportsDrawBuffers;
 
     if (undefined === this._fbo) {
       const colorTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
       const featureTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      const combinedTextureHandle = TextureHandle.createForAttachment(this._width, 2 * this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
       if (undefined === colorTextureHandle ||
         undefined === featureTextureHandle ||
-        undefined === (this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]))) {
+        undefined === combinedTextureHandle) {
         assert(false, "Failed to create planar classifier texture");
         return;
       }
       this._colorTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
       this._featureTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), featureTextureHandle);
+      this._combinedTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), combinedTextureHandle);
+      if (useMRT)
+        this._fbo = FrameBuffer.create([colorTextureHandle, featureTextureHandle]);
+      else {
+        this._fbo = FrameBuffer.create([colorTextureHandle]);
+        this._featureFbo = FrameBuffer.create([featureTextureHandle]);
+      }
+      this._combinedFbo = FrameBuffer.create([combinedTextureHandle]);
+    }
+    if (undefined === this._fbo || (!useMRT && undefined === this._featureFbo)) {
+      assert(false, "unable to create frame buffer objects");
+      return;
     }
 
     const prevState = System.instance.currentRenderState.clone();
@@ -267,11 +283,35 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const renderCommands = new RenderCommands(target, new BranchStack(), batchState);
     renderCommands.addGraphics(this._graphics);
 
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
-      const clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
-      target.techniques.draw(getDrawParams(target, clearPickAndColor!));
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+    const system = System.instance;
+    const gl = system.context;
+    if (undefined !== this._featureFbo) {
+      system.frameBufferStack.execute(this._fbo, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
+        target.compositor.currentRenderTargetIndex = 0;
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+      system.frameBufferStack.execute(this._featureFbo!, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
+        target.compositor.currentRenderTargetIndex = 1;
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+    } else {
+      system.frameBufferStack.execute(this._fbo, true, () => {
+        const clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
+        target.techniques.draw(getDrawParams(target, clearPickAndColor!));
+        target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      });
+    }
+    // Create combined texture with color followed by featureIds.
+    system.frameBufferStack.execute(this._combinedFbo!, true, () => {
+      gl.clearColor(0, 0, 0, 0);
+      const combineTextures = CombineTexturesGeometry.createGeometry(this._colorTexture!.texture.getHandle()!, this._featureTexture!.texture.getHandle()!);
+      target.techniques.draw(getDrawParams(target, combineTextures!));
     });
+
     const hiliteCommands = renderCommands.getCommands(RenderPass.Hilite);
     if (false !== (this._anyHilited = 0 !== hiliteCommands.length)) {
       if (undefined === this._hiliteFbo) {
@@ -283,19 +323,26 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         }
       }
 
-      System.instance.frameBufferStack.execute(this._hiliteFbo, true, () => {
-        System.instance.context.clearColor(0, 0, 0, 0);
-        System.instance.context.clear(GL.BufferBit.Color);
+      system.frameBufferStack.execute(this._hiliteFbo, true, () => {
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(GL.BufferBit.Color);
         target.techniques.execute(target, hiliteCommands, RenderPass.Hilite);
       });
     }
+    // Create combined texture with color followed by featureIds.  We do this to conserve texture units - could use color and feature textures directly otherwise.
+    System.instance.context.viewport(0, 0, this._width, 2 * this._height);
+    system.frameBufferStack.execute(this._combinedFbo!, true, () => {
+      gl.clearColor(0, 0, 0, 0);
+      const combineTextures = CombineTexturesGeometry.createGeometry(this._colorTexture!.texture.getHandle()!, this._featureTexture!.texture.getHandle()!);
+      target.techniques.draw(getDrawParams(target, combineTextures!));
+    });
 
     batchState.reset();   // Reset the batch Ids...
     target.bgColor.setFromFloatRgba(prevBgColor);
     if (prevPlan)
       target.changeRenderPlan(prevPlan);
 
-    System.instance.applyRenderState(prevState);
-    System.instance.context.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
+    system.applyRenderState(prevState);
+    gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport
   }
 }

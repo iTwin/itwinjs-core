@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { assert, BeEvent, BentleyStatus, DbResult, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
-  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, kPagingDefaultOptions,
-  ModelProps, ModelQueryParams, PageOptions, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
+  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
+  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, IModelProps, QueryResponse, QueryPriority, QueryQuota, QueryLimit, QueryResponseStatus,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { ModelState } from "./ModelState";
-import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -39,8 +39,10 @@ export class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
-  /** The set of currently hilited elements for this IModelConnection. */
-  public readonly hilited: HilitedSet;
+  /** The set of currently hilited elements for this IModelConnection.
+   * @alpha
+   */
+  public readonly hilited: HiliteSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection.
@@ -87,7 +89,7 @@ export class IModelConnection extends IModel {
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
    */
   public async loadFontMap(): Promise<FontMap> {
-    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken))));
+    return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON()))));
   }
   /** The set of Context Reality Model tile trees for this IModelConnection.
    * @internal
@@ -119,7 +121,7 @@ export class IModelConnection extends IModel {
     ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
-    const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken, className);
+    const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken.toJSON(), className);
     // walk through the list until we find a registered base class
     baseClasses.some((baseClass: string) => {
       const test = IModelApp.lookupEntityClass(baseClass) as T | undefined;
@@ -133,16 +135,16 @@ export class IModelConnection extends IModel {
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
-  private constructor(iModel: IModel, openMode: OpenMode) {
-    super(iModel.iModelToken);
-    super.initialize(iModel.name, iModel);
+  private constructor(iModel: IModelProps, openMode: OpenMode) {
+    super(IModelToken.fromJSON(iModel.iModelToken!));
+    super.initialize(iModel.name!, iModel);
     this.openMode = openMode;
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
     this.views = new IModelConnection.Views(this);
-    this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
+    this.hilited = new HiliteSet(this);
     this.tiles = new IModelConnection.Tiles(this);
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
@@ -161,7 +163,7 @@ export class IModelConnection extends IModel {
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
 
-    const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
+    const openResponse: IModelProps = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
     requestContext.enter();
 
     const connection = new IModelConnection(openResponse, openMode);
@@ -170,7 +172,7 @@ export class IModelConnection extends IModel {
     return connection;
   }
 
-  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModel> {
+  private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelToken, openMode: OpenMode): Promise<IModelProps> {
     requestContext.enter();
 
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
@@ -219,14 +221,14 @@ export class IModelConnection extends IModel {
       }
     });
 
-    let openPromise: Promise<IModel>;
+    let openPromise: Promise<IModelProps>;
     requestContext.useContextForRpc = true;
     if (openMode === OpenMode.ReadWrite)
-      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken);
+      openPromise = IModelWriteRpcInterface.getClient().openForWrite(iModelToken.toJSON());
     else
-      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken);
+      openPromise = IModelReadRpcInterface.getClient().openForRead(iModelToken.toJSON());
 
-    let openResponse: IModel;
+    let openResponse: IModelProps;
     try {
       openResponse = await openPromise;
     } finally {
@@ -252,8 +254,8 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelToken);
 
     try {
-      const openResponse: IModel = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
-      this._token = openResponse.iModelToken;
+      const openResponse: IModelProps = await IModelConnection.callOpen(requestContext, iModelToken, this.openMode);
+      this._token = IModelToken.fromJSON(openResponse.iModelToken!);
     } catch (error) {
       reject(error.message);
     } finally {
@@ -281,7 +283,7 @@ export class IModelConnection extends IModel {
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
 
     requestContext.useContextForRpc = true;
-    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken); // Ensure the method isn't await-ed right away.
+    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't await-ed right away.
     try {
       await closePromise;
     } finally {
@@ -292,16 +294,16 @@ export class IModelConnection extends IModel {
 
   /** Open an IModelConnection to a read-only iModel *snapshot* (not managed by iModelHub) from a file name that is resolved by the backend.
    * This method is intended for desktop or mobile applications and should not be used for web applications.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public static async openSnapshot(fileName: string): Promise<IModelConnection> {
-    const openResponse: IModel = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
+    const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
     return new IModelConnection(openResponse, OpenMode.Readonly);
   }
 
   /** Close this IModelConnection to a read-only iModel *snapshot*.
-   * @beta The *snapshot* concept is solid, but the concept name might change which would cause a function rename.
+   * @beta
    */
   public async closeSnapshot(): Promise<void> {
     if (!this.iModelToken)
@@ -310,7 +312,7 @@ export class IModelConnection extends IModel {
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
     try {
-      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken);
+      await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
     } finally {
       (this._token as any) = undefined; // prevent closed connection from being reused
       this.subcategories.onIModelConnectionClose();
@@ -333,11 +335,14 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
+    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
+      return row.nRows;
+    }
     Logger.logTrace(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
-    return IModelReadRpcInterface.getClient().queryRowCount(this.iModelToken, ecsql, bindings);
+    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query against this ECDb
+  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
    * The result of the query is returned as an array of JavaScript objects where every array element represents an
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -351,17 +356,21 @@ export class IModelConnection extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. This allow set page size and page number from which to grab rows from.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns structure containing rows and status.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @internal
    */
-  public async queryPage(ecsql: string, bindings?: any[] | object, options?: PageOptions): Promise<any[]> {
-    Logger.logTrace(loggerCategory, "IModelConnection.queryPage", () => ({ ...this.iModelToken, ecsql, options, bindings }));
-    return IModelReadRpcInterface.getClient().queryPage(this.iModelToken, ecsql, bindings, options);
+  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+    Logger.logTrace(loggerCategory, "IModelConnection.queryRows", () => ({ ...this.iModelToken, ecsql, bindings, limit, quota, priority }));
+    return IModelReadRpcInterface.getClient().queryRows(this.iModelToken.toJSON(), ecsql, bindings, limit, quota, priority);
   }
 
-  /** Execute a pageable query.
+  /** Execute a query and stream its results
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -375,41 +384,45 @@ export class IModelConnection extends IModel {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param options Provide paging option. Which allow page to start iterating from and also size of the page to use.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
+   * @param limitRows Specify upper limit for rows that can be returned by the query.
+   * @param quota Specify non binding quota. These values are constrained by global setting
+   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
+   * @param priority Specify non binding priority for the query. It can help user to adjust
+   * priority of query in queue so that small and quicker queries can be prioritized over others.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @alpha
    */
-  public async * query(ecsql: string, bindings?: any[] | object, options?: PageOptions): AsyncIterableIterator<any> {
-    if (!options) {
-      options = kPagingDefaultOptions;
-    }
-
-    let pageNo = options.start || kPagingDefaultOptions.start!;
-    const pageSize = options.size || kPagingDefaultOptions.size!;
-
-    // verify if correct options was provided.
-    if (pageNo < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.start must be positive integer");
-
-    if (pageSize < 0)
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "options.size must be positive integer starting from 1");
-
+  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    let result: QueryResponse;
+    let offset: number = 0;
+    let rowsToGet = limitRows ? limitRows : -1;
     do {
-      const page = await this.queryPage(ecsql, bindings, { start: pageNo, size: pageSize });
-      if (page.length > 0) {
-        for (const row of page) {
-          yield row;
-        }
-        pageNo = pageNo + 1;
-      } else {
-        pageNo = -1;
+      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
+      while (result.status === QueryResponseStatus.Timeout) {
+        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
       }
-    } while (pageNo >= 0);
+
+      if (result.status === QueryResponseStatus.Error)
+        throw new IModelError(QueryResponseStatus.Error, "Failed to execute ECSQL");
+
+      if (rowsToGet > 0) {
+        rowsToGet -= result.rows.length;
+      }
+      offset += result.rows.length;
+
+      for (const row of result.rows)
+        yield row;
+
+    } while (result.status !== QueryResponseStatus.Done);
   }
 
-  /** Query for a set of element ids that satisfy the supplied query params  */
-  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken, params); }
+  /** Query for a set of element ids that satisfy the supplied query params
+   * @param params The query parameters. The `limit` and `offset` members should be used to page results.
+   * @throws [IModelError]($common) If the generated statement is invalid or would return too many rows.
+   */
+  public async queryEntityIds(params: EntityQueryParams): Promise<Id64Set> { return new Set(await IModelReadRpcInterface.getClient().queryEntityIds(this.iModelToken.toJSON(), params)); }
 
   /** Update the project extents of this iModel.
    * @param newExtents The new project extents as an AxisAlignedBox3d
@@ -419,7 +432,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggerCategory, "IModelConnection.updateProjectExtents", () => ({ ...this.iModelToken, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
-    return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken, newExtents);
+    return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken.toJSON(), newExtents.toJSON());
   }
 
   /** Commit pending changes to this iModel
@@ -430,7 +443,7 @@ export class IModelConnection extends IModel {
     Logger.logTrace(loggerCategory, "IModelConnection.saveChanges", () => ({ ...this.iModelToken, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
-    return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken, description);
+    return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken.toJSON(), description);
   }
 
   /** WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
@@ -438,7 +451,7 @@ export class IModelConnection extends IModel {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @internal
    */
-  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken.toJSON()); }
 
   /** WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
@@ -446,7 +459,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
    * @internal
    */
-  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken.toJSON()); }
 
   /** WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
    * > You do not have to check whether a Change Cache file had been attached before. The
@@ -454,13 +467,13 @@ export class IModelConnection extends IModel {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @internal
    */
-  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken.toJSON()); }
 
   /** Request a snap from the backend. */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken, IModelApp.sessionId, props); }
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken.toJSON(), IModelApp.sessionId, props); }
 
   /** Request a tooltip from the backend.  */
-  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken, id); }
+  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken.toJSON(), id); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates
@@ -583,7 +596,7 @@ export namespace IModelConnection {
 
     /** Get a batch of [[ModelProps]] given a list of Model ids. */
     public async getProps(modelIds: Id64Arg): Promise<ModelProps[]> {
-      return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+      return IModelReadRpcInterface.getClient().getModelProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]);
     }
 
     /** Find a ModelState in the set of loaded Models by ModelId. */
@@ -592,10 +605,10 @@ export namespace IModelConnection {
     /** load a set of Models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
     public async load(modelIds: Id64Arg): Promise<void> {
       const notLoaded = new Set<string>();
-      for (const id of Id64.toIdSet(modelIds)) {
+      Id64.forEach(modelIds, (id) => {
         if (undefined === this.getLoaded(id))
           notLoaded.add(id);
-      }
+      });
 
       if (notLoaded.size === 0)
         return; // all requested models are already loaded
@@ -612,10 +625,13 @@ export namespace IModelConnection {
 
     /** Query for a set of model ranges by ModelIds. */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
-      return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken, Id64.toIdSet(modelIds));
+      return IModelReadRpcInterface.getClient().queryModelRanges(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(modelIds)]);
     }
 
-    /** Query for a set of ModelProps of the specified ModelQueryParams. */
+    /** Query for a set of ModelProps of the specified ModelQueryParams.
+     * @param queryParams The query parameters. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
+     */
     public async queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]> {
       const params: ModelQueryParams = Object.assign({}, queryParams); // make a copy
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
@@ -628,7 +644,18 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsTemplate=FALSE ";
       }
-      return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryModelProps(this._iModel.iModelToken.toJSON(), params);
+    }
+
+    /** Asynchronously stream ModelProps using the specified ModelQueryParams.
+     * @alpha This method will replace IModelConnection.Models.queryProps as soon as auto-paging support is added
+     */
+    public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
+      // NOTE: this implementation has the desired API signature, but its implementation must be improved to actually page results
+      const modelPropsArray: ModelProps[] = await this.queryProps(queryParams);
+      for (const modelProps of modelPropsArray) {
+        yield modelProps;
+      }
     }
 
     /** Code to run when the IModelConnection has closed. */
@@ -652,12 +679,15 @@ export namespace IModelConnection {
 
     /** Get an array of [[ElementProps]] given one or more element ids. */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
-      return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken, Id64.toIdSet(arg));
+      return IModelReadRpcInterface.getClient().getElementProps(this._iModel.iModelToken.toJSON(), [...Id64.toIdSet(arg)]);
     }
 
-    /** Get an array  of [[ElementProps]] that satisfy a query */
+    /** Get an array  of [[ElementProps]] that satisfy a query
+     * @param params The query parameters. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
+     */
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
-      return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
+      return IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken.toJSON(), params);
     }
   }
 
@@ -674,7 +704,7 @@ export namespace IModelConnection {
         return;
 
       this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken);
+      const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken.toJSON());
       for (const codeSpec of codeSpecArray) {
         this._loaded.push(new CodeSpec(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
@@ -718,7 +748,8 @@ export namespace IModelConnection {
     constructor(private _iModel: IModelConnection) { }
 
     /** Query for an array of ViewDefinitionProps
-     * @param queryParams Query parameters specifying the views to return
+     * @param queryParams Query parameters specifying the views to return. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]> {
       const params: ViewQueryParams = Object.assign({}, queryParams); // make a copy
@@ -728,7 +759,7 @@ export namespace IModelConnection {
         if (params.where.length > 0) params.where += " AND ";
         params.where += "IsPrivate=FALSE ";
       }
-      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken, params);
+      const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(this._iModel.iModelToken.toJSON(), params);
       assert((viewProps.length === 0) || ("categorySelectorId" in viewProps[0]), "invalid view definition");  // spot check that the first returned element is-a ViewDefinitionProps
       return viewProps as ViewDefinitionProps[];
     }
@@ -741,7 +772,8 @@ export namespace IModelConnection {
      * ```ts
      * [[include:IModelConnection.Views.getViewList]]
      * ```
-     * @param queryParams The parameters for the views to find.
+     * @param queryParams The parameters for the views to find. The `limit` and `offset` members should be used to page results.
+     * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];
@@ -755,12 +787,12 @@ export namespace IModelConnection {
      * @returns the ID of the default view, or an invalid ID if no default view is defined.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
-      return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken);
+      return IModelReadRpcInterface.getClient().getDefaultViewId(this._iModel.iModelToken.toJSON());
     }
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, viewDefinitionId);
+      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken.toJSON(), viewDefinitionId);
       const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
@@ -777,7 +809,7 @@ export namespace IModelConnection {
      * @throws `Error` exception if no thumbnail exists.
      */
     public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
-      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken, viewId.toString());
+      const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken.toJSON(), viewId.toString());
       const intVals = new Uint16Array(val.buffer);
       return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 8, intVals[0]) };
     }
@@ -796,7 +828,7 @@ export namespace IModelConnection {
       const high32 = Id64.getUpperUint32(id);
       new Uint32Array(val.buffer, 8).set([low32, high32]); // viewId is 8 bytes starting at offset 8
       new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
-      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken, val);
+      return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken.toJSON(), val);
     }
   }
 

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { MessageManager } from "../../ui-framework";
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 
 describe("MessageManager", () => {
 
@@ -27,6 +27,20 @@ describe("MessageManager", () => {
     MessageManager.addMessage(details);
     expect(MessageManager.messages.length).to.eq(376);
 
+  });
+
+  it("getIconType should return proper icon type", () => {
+    let details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.");
+    expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Information);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.");
+    expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Warning);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.");
+    expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Critical);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.");
+    expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Critical);
   });
 
 });

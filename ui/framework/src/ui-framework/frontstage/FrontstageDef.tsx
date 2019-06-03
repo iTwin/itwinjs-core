@@ -5,6 +5,11 @@
 /** @module Frontstage */
 
 import * as React from "react";
+
+import { UiError } from "@bentley/ui-core";
+import { NineZoneProps } from "@bentley/ui-ninezone";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDef } from "../zones/ZoneDef";
 import { ContentLayoutManager, ContentLayoutDef } from "../content/ContentLayout";
@@ -14,12 +19,10 @@ import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { Frontstage } from "./Frontstage";
 import { FrontstageProvider } from "./FrontstageProvider";
-
-import { NineZoneProps } from "@bentley/ui-ninezone";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { StagePanelLocation } from "../stagepanels/StagePanel";
+import { UiFramework } from "../UiFramework";
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
@@ -74,12 +77,12 @@ export class FrontstageDef {
     if (!this.defaultLayout) {
       this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
       if (!this.defaultLayout)
-        throw Error("Content Layout '" + this.defaultLayoutId + "' not registered");
+        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this.defaultLayoutId}' not registered`);
     }
     if (!this.contentGroup) {
       this.contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
       if (!this.contentGroup)
-        throw Error("Content Group '" + this.contentGroupId + "' not registered");
+        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
     }
 
     const activeLayout = this.defaultLayout!;

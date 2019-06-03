@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PresentationRules */
 
-/** Sub-specification to hide / display specified ECInstance properties. */
+/**
+ * Sub-specification to hide / display specified ECInstance properties.
+ * @public
+ */
 export interface PropertiesDisplaySpecification {
   /** List of ECProperty names which should be hidden or shown */
   propertyNames: string[];

@@ -10,15 +10,16 @@ import {
   RpcRequestsHandler, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, NodesResponse, ContentResponse, LabelRequestOptions,
+  Paged, KeySet, InstanceKey, LabelRequestOptions,
 } from "@bentley/presentation-common";
-import RulesetVariablesManager from "./RulesetVariablesManager";
-import RulesetManager from "./RulesetManager";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 
 /**
  * Properties used to configure [[PresentationManager]]
+ * @public
  */
-export interface Props {
+export interface PresentationManagerProps {
   /**
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager]].
@@ -34,15 +35,17 @@ export interface Props {
    */
   clientId?: string;
 
-  /** @hidden */
+  /** @internal */
   rpcRequestsHandler?: RpcRequestsHandler;
 }
 
 /**
  * Frontend Presentation manager which basically just forwards all calls to
- * the backend implementation
+ * the backend implementation.
+ *
+ * @public
  */
-export default class PresentationManager implements IDisposable {
+export class PresentationManager implements IDisposable {
 
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
@@ -53,15 +56,19 @@ export default class PresentationManager implements IDisposable {
    */
   public activeLocale: string | undefined;
 
-  private constructor(props?: Props) {
+  private constructor(props?: PresentationManagerProps) {
     if (props)
       this.activeLocale = props.activeLocale;
-    this._rulesets = new RulesetManager();
-    this._rulesetVars = new Map<string, RulesetVariablesManager>();
+
     this._requestsHandler = (props && props.rpcRequestsHandler)
       ? props.rpcRequestsHandler
       : new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
-    this._requestsHandler.registerClientStateHolder(this._rulesets);
+
+    this._rulesetVars = new Map<string, RulesetVariablesManager>();
+
+    const rulesets = new RulesetManagerImpl();
+    this._rulesets = rulesets;
+    this._requestsHandler.registerClientStateHolder(rulesets);
   }
 
   public dispose() {
@@ -72,11 +79,11 @@ export default class PresentationManager implements IDisposable {
    * Create a new PresentationManager instance
    * @param props Optional properties used to configure the manager
    */
-  public static create(props?: Props) {
+  public static create(props?: PresentationManagerProps) {
     return new PresentationManager(props);
   }
 
-  /** @hidden */
+  /** @internal */
   public get rpcRequestsHandler() { return this._requestsHandler; }
 
   /**
@@ -90,7 +97,7 @@ export default class PresentationManager implements IDisposable {
    */
   public vars(rulesetId: string) {
     if (!this._rulesetVars.has(rulesetId)) {
-      const varsManager = new RulesetVariablesManager(rulesetId);
+      const varsManager = new RulesetVariablesManagerImpl(rulesetId);
       this._rulesetVars.set(rulesetId, varsManager);
       this._requestsHandler.registerClientStateHolder(varsManager);
     }
@@ -112,8 +119,10 @@ export default class PresentationManager implements IDisposable {
    * @param parentKey    Key of the parent node.
    * @return A promise object that returns either a nodes response object with nodes and nodes count on success or an error string on error.
    */
-  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<NodesResponse> {
-    return this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(requestOptions), parentKey);
+  public async getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey) {
+    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
+    const result = await this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(requestOptions), parentKeyJson);
+    return { ...result, nodes: result.nodes.map(Node.fromJSON) };
   }
 
   /**
@@ -123,7 +132,9 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
   public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey?: NodeKey): Promise<Node[]> {
-    return this._requestsHandler.getNodes(this.toIModelTokenOptions(requestOptions), parentKey);
+    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
+    const result = await this._requestsHandler.getNodes(this.toIModelTokenOptions(requestOptions), parentKeyJson);
+    return result.map(Node.fromJSON);
   }
 
   /**
@@ -133,7 +144,8 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns the number of nodes.
    */
   public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number> {
-    return this._requestsHandler.getNodesCount(this.toIModelTokenOptions(requestOptions), parentKey);
+    const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
+    return this._requestsHandler.getNodesCount(this.toIModelTokenOptions(requestOptions), parentKeyJson);
   }
 
   /**
@@ -144,7 +156,9 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return this._requestsHandler.getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
+    const pathsJson = paths.map((p) => p.map(InstanceKey.toJSON));
+    const result = await this._requestsHandler.getNodePaths(this.toIModelTokenOptions(requestOptions), pathsJson, markedIndex);
+    return result.map(NodePathElement.fromJSON);
   }
 
   /**
@@ -154,7 +168,8 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]> {
-    return this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
+    const result = await this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
+    return result.map(NodePathElement.fromJSON);
   }
 
   /**
@@ -166,10 +181,8 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either a descriptor on success or an error string on error.
    */
   public async getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined> {
-    const descriptor = await this._requestsHandler.getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys, selection);
-    if (descriptor)
-      descriptor.rebuildParentship();
-    return descriptor;
+    const result = await this._requestsHandler.getContentDescriptor(this.toIModelTokenOptions(requestOptions), displayType, keys.toJSON(), selection);
+    return Descriptor.fromJSON(result);
   }
 
   /**
@@ -182,7 +195,7 @@ export default class PresentationManager implements IDisposable {
    * number of records in the content set.
    */
   public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number> {
-    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
+    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
   }
 
   /**
@@ -193,10 +206,8 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either content on success or an error string on error.
    */
   public async getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined> {
-    const content = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
-    if (content)
-      content.descriptor.rebuildParentship();
-    return content;
+    const result = await this._requestsHandler.getContent(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    return Content.fromJSON(result);
   }
 
   /**
@@ -206,16 +217,14 @@ export default class PresentationManager implements IDisposable {
    * @param keys                    Keys of ECInstances to get the content for.
    * @returns A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<ContentResponse> {
-    const response = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys);
-    if (response.content)
-      response.content.descriptor.rebuildParentship();
-    return response;
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
+    const result = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(requestOptions), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
+    return { ...result, content: Content.fromJSON(result.content) };
   }
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
     if (descriptorOrOverrides instanceof Descriptor)
-      return descriptorOrOverrides.createStrippedDescriptor();
+      return descriptorOrOverrides.createStrippedDescriptor().toJSON();
     return descriptorOrOverrides;
   }
 
@@ -229,7 +238,8 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
   public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
+    return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions),
+      descriptor.createStrippedDescriptor().toJSON(), keys.toJSON(), fieldName, maximumValueCount);
   }
 
   /**
@@ -238,7 +248,7 @@ export default class PresentationManager implements IDisposable {
    * @param key Key of instance to get label for
    */
   public async getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string> {
-    return this._requestsHandler.getDisplayLabel(this.toIModelTokenOptions(requestOptions), key);
+    return this._requestsHandler.getDisplayLabel(this.toIModelTokenOptions(requestOptions), InstanceKey.toJSON(key));
   }
   /**
    * Retrieves display label of specific items
@@ -246,7 +256,7 @@ export default class PresentationManager implements IDisposable {
    * @param keys Keys of instances to get labels for
    */
   public async getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]> {
-    return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys);
+    return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
   }
 
 }

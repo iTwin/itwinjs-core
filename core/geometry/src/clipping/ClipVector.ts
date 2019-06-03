@@ -22,6 +22,10 @@ import { LineSegment3d } from "../curve/LineSegment3d";
  */
 export class ClipVector {
   private _clips: ClipPrimitive[];
+  /** range acting as first filter.
+   * * This is understood as overall range limit, not as precise planes.
+   * * applying any rotation to the whole ClipVector generally expands this range, rather than exactly transforming its planes.
+   */
   public boundingRange: Range3d = Range3d.createNull();
 
   /** Returns a reference to the array of ClipShapes. */
@@ -119,12 +123,12 @@ export class ClipVector {
   /** Create and append a new ClipPrimitive to the array given a shape as an array of points. Returns true if successful. */
   public appendShape(shape: Point3d[], zLow?: number, zHigh?: number,
     transform?: Transform, isMask: boolean = false, invisible: boolean = false): boolean {
-      const clip = ClipShape.createShape(shape, zLow, zHigh, transform, isMask, invisible);
-      if (!clip)
-        return false;
-      this._clips.push(clip);
-      return true;
-    }
+    const clip = ClipShape.createShape(shape, zLow, zHigh, transform, isMask, invisible);
+    if (!clip)
+      return false;
+    this._clips.push(clip);
+    return true;
+  }
 
   /** Returns true if the given point lies inside all of this ClipVector's ClipShapes (by rule of intersection). */
   public pointInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
@@ -138,7 +142,10 @@ export class ClipVector {
     return true;
   }
 
-  /** Transforms this ClipVector to a new coordinate-system. Returns true if successful. */
+  /** Transforms this ClipVector to a new coordinate-system.
+   * Note that if the transform has rotate and scale the boundingRange member expands.
+   * Returns true if successful.
+   */
   public transformInPlace(transform: Transform): boolean {
     for (const clip of this._clips)
       if (clip.transformInPlace(transform) === false)

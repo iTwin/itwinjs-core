@@ -8,6 +8,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /**
  * Interface for a presentation data provider
+ * @public
  */
 export interface IPresentationDataProvider {
   /**

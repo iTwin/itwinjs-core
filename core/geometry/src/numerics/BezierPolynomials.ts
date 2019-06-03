@@ -78,7 +78,7 @@ export abstract class BezierCoffs {
    */
   public abstract sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array;
 
-  /** @returns Return a clone of this bezier. */
+  /** Return a deep clone of this bezier. */
   public abstract clone(): BezierCoffs;
   /**
    * create an object of same order with zero coefficients.
@@ -143,6 +143,7 @@ export abstract class BezierCoffs {
     }
     return undefined;
   }
+  /** zero out all coefficients. */
   public zero(): void { this.coffs.fill(0); }
   /** Subdivide -- write results into caller-supplied bezier coffs (which must be of the same order) */
   public subdivide(u: number, left: BezierCoffs, right: BezierCoffs): boolean {
@@ -332,6 +333,7 @@ export class BezierPolynomialAlgebra {
  */
 export class UnivariateBezier extends BezierCoffs {
   private _order: number;
+  /** Query the order of this bezier. */
   public get order() { return this._order; }
   public constructor(data: number | Float64Array | number[]) {
     super(data);
@@ -661,6 +663,11 @@ export class UnivariateBezier extends BezierCoffs {
   // Each internal ci = (ai - c[i-1] * b1) /b0
   // first c0*b0 = a0
   // last c[orderC-1]*b1 = a[orderA-1]
+  /** Find roots of a bezier polynomial
+   * * Only look for roots in 0..1
+   * * As roots are found, deflate the polynomial.
+   * * bezier coffs are changed (and order reduced) at each step.
+   */
   public static deflateRoots01(bezier: UnivariateBezier): number[] | undefined {
     const roots = [];
     const coffs = bezier.coffs;
@@ -771,7 +778,7 @@ export class Order2Bezier extends BezierCoffs {
   public evaluate(u: number): number {
     return (1.0 - u) * this.coffs[0] + u * this.coffs[1];
   }
-  // "just like" roots() but never creates an array.
+  /** Same as `roots` method but returns single numeric value instead of array. */
   public solve(rightHandSide: number): number | undefined {
     const df = this.coffs[1] - this.coffs[0];
     return Geometry.conditionalDivideFraction(rightHandSide - this.coffs[0], df);
@@ -802,6 +809,7 @@ export class Order3Bezier extends BezierCoffs {
     this.coffs[1] = f1;
     this.coffs[2] = f2;
   }
+  /** Return a deep copy. */
   public clone(): Order3Bezier {
     return new Order3Bezier(this.coffs[0], this.coffs[1], this.coffs[2]);
   }
@@ -867,6 +875,12 @@ export class Order3Bezier extends BezierCoffs {
     this.coffs[1] += a * f0 * f1;
     this.coffs[2] += a * f1 * f1;
   }
+  /**
+   * Concrete implementation of the abstract roots method
+   * @param targetValue target function value.
+   * @param restrictTo01 flag for optional second step to eliminate root outside 0..1.
+   * @returns If no roots, return undefined.  If roots exist, return as numeric array.
+   */
   public roots(targetValue: number, restrictTo01: boolean): number[] | undefined {
     const a0 = this.coffs[0] - targetValue;
     const a1 = this.coffs[1] - targetValue;
@@ -898,10 +912,11 @@ export class Order4Bezier extends BezierCoffs {
     this.coffs[2] = f2;
     this.coffs[3] = f3;
   }
-
+  /** return a deep copy */
   public clone(): Order4Bezier {
     return new Order4Bezier(this.coffs[0], this.coffs[1], this.coffs[2], this.coffs[3]);
   }
+  /** Create a product of a quadratic and a cubic. */
   public static createProductOrder3Order2(factorA: Order3Bezier, factorB: Order2Bezier): Order4Bezier {
     return new Order4Bezier(
       factorA.coffs[0] * factorB.coffs[0],
@@ -994,11 +1009,7 @@ export class Order4Bezier extends BezierCoffs {
 
     return new Order4Bezier(f0, f0 + d0 / a, f1 - d1 / a, f1);
   }
-  // Find solutions (u values) of the bezier-form cubic
-  // y0 (1-u)^3 + 3 y1 u(1-u)^2 + 3 y2 u^2 (1-u) + y3 u^3= e
-  // i.e. y0, y1, y2, y3 are coefficients of bezier-basis polynomial, e is y level whose crossings
-  // are needed.
-  //
+  /** Find real roots, retun in caller-allocated array. */
   public realRoots(e: number, restrictTo01: boolean, roots: GrowableFloat64Array) {
     // Get direct solutions in standard basis
     roots.clear();
@@ -1046,9 +1057,7 @@ export class Order5Bezier extends BezierCoffs {
     this.coffs[3] = f3;
     this.coffs[4] = f4;
   }
-  /**
-   * @returns Return a clone of this bezier.
-   */
+  /** Return a deep copy */
   public clone(): Order5Bezier {
     return new Order5Bezier(this.coffs[0], this.coffs[1], this.coffs[2], this.coffs[3], this.coffs[4]);
   }
@@ -1153,19 +1162,19 @@ export class Order5Bezier extends BezierCoffs {
           + u * (4.0 * this.coffs[3] * v1
             + u * this.coffs[4])));
   }
-  public addProduct(f: Order3Bezier, g: Order3Bezier, a: number) {
+  /** Add the product of a pair of Order3Bezier to this one. */
+  public addProductOrder3BezierOrder3Bezier(f: Order3Bezier, g: Order3Bezier, a: number) {
     this.coffs[0] += a * f.coffs[0] * g.coffs[0];
     this.coffs[1] += a * (f.coffs[0] * g.coffs[1] + f.coffs[1] * g.coffs[0]) * 0.5;
     this.coffs[2] += a * (f.coffs[0] * g.coffs[2] + 4.0 * f.coffs[1] * g.coffs[1] + f.coffs[2] * g.coffs[0]) / 6.0;
     this.coffs[3] += a * (f.coffs[1] * g.coffs[2] + f.coffs[2] * g.coffs[1]) * 0.5;
     this.coffs[4] += a * f.coffs[2] * g.coffs[2];
   }
+  /** Add a constant to all coefficients (thereby adding the constant to the evaluated bezier) */
   public addConstant(a: number): void {
     for (let i = 0; i < 5; i++) this.coffs[i] += a;
   }
-  // Find solutions (u values) of the bezier-form quartic
-  // y0 (1-u)u^4 + etc = e
-  //
+  /** Find real roots, retun in caller-allocated array. */
   public realRoots(e: number, restrictTo01: boolean, roots: GrowableFloat64Array): void {
     roots.clear();
     const y0 = this.coffs[0] - e;

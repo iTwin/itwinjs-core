@@ -49,11 +49,11 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
     this.state = {
       isSigningIn: false,
-      prompt: UiComponents.i18n.translate("UiComponents:signIn.prompt"),
-      signInButton: UiComponents.i18n.translate("UiComponents:signIn.signInButton"),
-      profilePrompt: UiComponents.i18n.translate("UiComponents:signIn.profilePrompt"),
-      registerAnchor: UiComponents.i18n.translate("UiComponents:signIn.register"),
-      offlineButton: UiComponents.i18n.translate("UiComponents:signIn.offlineButton"),
+      prompt: UiComponents.translate("signIn.prompt"),
+      signInButton: UiComponents.translate("signIn.signInButton"),
+      profilePrompt: UiComponents.translate("signIn.profilePrompt"),
+      registerAnchor: UiComponents.translate("signIn.register"),
+      offlineButton: UiComponents.translate("signIn.offlineButton"),
     };
   }
 

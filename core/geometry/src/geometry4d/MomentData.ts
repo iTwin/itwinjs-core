@@ -14,7 +14,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "./Matrix4d";
 import { Point4d } from "./Point4d";
 /**
- * A MomentData structrue carries data used in calculation of moments of inertia.
+ * A MomentData structure carries data used in calculation of moments of inertia.
  * * origin = local origin used as moments are summed.
  * * sums = array of summed moments.
  *   * The [i,j] entry of the sums is a summed or integrated moment for product of axis i and j.
@@ -25,9 +25,14 @@ import { Point4d } from "./Point4d";
  * @public
  */
 export class MomentData {
+  /** Origin used for sums. */
   public origin: Point3d;
+  /** Moment sums.
+   * * Set to zero at initialization and if requested later.
+   * * Accumulated during data entry phase.
+   */
   public sums: Matrix4d;
-  /** the maapping between principal and world system.
+  /** the mapping between principal and world system.
    * * This set up with its inverse already constructed.
    */
   public localToWorldMap: Transform;
@@ -51,17 +56,17 @@ export class MomentData {
     result.addScaledInPlace(products, -1.0);
     return result;
   }
-/** Sort the colomns of the matrix for increasing moments. */
+  /** Sort the columns of the matrix for increasing moments. */
   public static sortColumnsForIncreasingMoments(axes: Matrix3d, moments: Vector3d) {
     const points = [
       axes.indexedColumnWithWeight(0, moments.x),
       axes.indexedColumnWithWeight(1, moments.y),
       axes.indexedColumnWithWeight(2, moments.z)].sort(
-      (dataA: Point4d, dataB: Point4d): number => {
-        if (dataA.w < dataB.w) return -1;
-        if (dataA.w > dataB.w) return 1;
-        return 0;
-      });
+        (dataA: Point4d, dataB: Point4d): number => {
+          if (dataA.w < dataB.w) return -1;
+          if (dataA.w > dataB.w) return 1;
+          return 0;
+        });
     axes.setColumnsPoint4dXYZ(points[0], points[1], points[2]);
     moments.set(points[0].w, points[1].w, points[2].w);
   }
@@ -82,22 +87,22 @@ export class MomentData {
       const axisVectors = Matrix3d.createZero();
       tensor.fastSymmetricEigenvalues(axisVectors, moment2);
       MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
-      moments.localToWorldMap = Transform.createOriginAndMatrix (moments.origin, axisVectors);
+      moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
       moments.radiusOfGyration.set(
         Math.sqrt(moment2.x), Math.sqrt(moment2.y), Math.sqrt(moment2.z));
       moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(moments.sums.weight()));
     }
     return moments;
   }
-/**
- * Compute principal axes from inertial products
- * @param origin The origin used for the inertia products.
- * @param inertiaProducts The inertia products -- sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w]
- */
+  /**
+   * Compute principal axes from inertial products
+   * @param origin The origin used for the inertia products.
+   * @param inertiaProducts The inertia products -- sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w]
+   */
   public static inertiaProductsToPrincipalAxes(origin: XYZ, inertiaProducts: Matrix4d): MomentData | undefined {
     const moments = new MomentData();
     moments.sums.setFrom(inertiaProducts);
-    moments.origin.setFrom (origin);
+    moments.origin.setFrom(origin);
     if (!moments.shiftSumsToCentroid())
       return undefined;
     const products = moments.sums.matrixPart();
@@ -106,7 +111,7 @@ export class MomentData {
     const axisVectors = Matrix3d.createZero();
     tensor.fastSymmetricEigenvalues(axisVectors, moment2);
     MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
-    moments.localToWorldMap = Transform.createOriginAndMatrix (moments.origin, axisVectors);
+    moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
     moments.radiusOfGyration.set(
       Math.sqrt(moment2.x), Math.sqrt(moment2.y), Math.sqrt(moment2.z));
     moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(moments.sums.weight()));

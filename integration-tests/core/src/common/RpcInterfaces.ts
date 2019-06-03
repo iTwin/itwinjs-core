@@ -2,21 +2,18 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelToken,
+  IModelReadRpcInterface, IModelTileRpcInterface,
   IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
   DevToolsRpcInterface,
+  IModelTokenProps,
 } from "@bentley/imodeljs-common";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
 
 export abstract class TestRpcInterface extends RpcInterface {
-  public static version = "1.1.1";
-
-  public static types = () => [
-    IModelToken,
-    AccessToken,
-  ]
+  public static readonly interfaceName = "TestRpcInterface";
+  public static interfaceVersion = "1.1.1";
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
@@ -26,23 +23,23 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  public async extractChangeSummaries(_iModelToken: IModelToken, _options: any): Promise<void> {
+  public async extractChangeSummaries(_iModelToken: IModelTokenProps, _options: any): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async deleteChangeCache(_iModelToken: IModelToken): Promise<void> {
+  public async deleteChangeCache(_iModelToken: IModelTokenProps): Promise<void> {
     return this.forward(arguments);
   }
 
-  public async executeTest(_iModelToken: IModelToken, _testName: string, _params: any): Promise<any> {
+  public async executeTest(_iModelToken: IModelTokenProps, _testName: string, _params: any): Promise<any> {
     return this.forward(arguments);
   }
 
-  public async reportRequestContext(): Promise<ClientRequestContext> {
+  public async reportRequestContext(): Promise<ClientRequestContextProps> {
     return this.forward(arguments);
   }
 
-  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContext> {
+  public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
     return this.forward(arguments);
   }
 }

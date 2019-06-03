@@ -18,7 +18,7 @@ import { CategorySelectorProps } from "@bentley/imodeljs-common";
  * @public
  */
 export class CategorySelectorState extends ElementState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "CategorySelector"; }
   public categories: Set<string> = new Set<string>();
   constructor(props: CategorySelectorProps, iModel: IModelConnection) {
@@ -61,10 +61,14 @@ export class CategorySelectorState extends ElementState {
   public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
 
   /** Add one or more categories to this CategorySelector */
-  public addCategories(arg: Id64Arg): void { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
+  public addCategories(arg: Id64Arg): void {
+    Id64.forEach(arg, (id) => this.categories.add(id));
+  }
 
   /** Remove one or more categories from this CategorySelector */
-  public dropCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.delete(id)); }
+  public dropCategories(arg: Id64Arg) {
+    Id64.forEach(arg, (id) => this.categories.delete(id));
+  }
 
   /** Add or remove categories from this CategorySelector.
    * @param arg The categories to add or remove

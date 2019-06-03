@@ -2,14 +2,73 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/style/index";
+@import "@bentley/ui-core/lib/ui-core/index";
 
 .uifw-popup-message-inputField {
-  margin: 5px 0;
-  transition: all 3s ease;
-}
-
-.uifw-message-inputField-content {
-  color: $buic-text-color;
   background-color: $buic-background-control;
+  padding: 3px 3px 3px 6px;
+  border-radius: 5px;
+  color: $buic-text-color;
+  margin: 0px;
+  transition: all 3s ease;
+  display: flex;
+  align-items: center;
+
+  .icon {
+    margin: 0 5px 0 0;
+  }
+
+  .uifw-popup-message-inputField-content {
+    min-width: 180px;
+    max-width: 360px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    .uifw-popup-message-inputField-primary {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .icon-status-warning {
+      color: $buic-foreground-warning;
+    }
+
+    .icon-status-warning {
+      color: $buic-foreground-warning;
+    }
+
+    .icon-status-error {
+      color: $buic-foreground-alert;
+    }
+
+    .uifw-popup-message-brief {
+      @include uicore-text(body);
+    }
+
+    .uifw-popup-message-detailed {
+      @include uicore-text(small);
+    }
+  }
+
+  .uifw-popup-message-close {
+    display: flex;
+    align-items: center;
+    color: $buic-foreground-muted;
+    cursor: pointer;
+
+    &:hover {
+      color: $buic-foreground-activehover;
+    }
+
+    &:active {
+      color: $buic-foreground-activehover;
+    }
+
+    .icon {
+      margin: 0 3px 0 10px;
+    }
+  }
+
 }

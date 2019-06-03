@@ -1,6 +1,20 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Use fast-sass-loader instead of sass-loader
+- Fix copying of css files to webresource in prod build.
+- Update to css-loader 2.1.1
+- Fixed problems with not finding package.json for indirect dependencies, webpack error obscuration.
+- Fix webpack to put the .css files required into the version string of index.html
+- Webpack of plugins should not include main in versionsRequired
+- For production builds, create separate css files. Use fork of fast-css-loader until outputStyle issue addressed..
+- Use optimize-css-assets-webpack-plugin instead of fork of fast-sass-loader.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

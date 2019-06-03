@@ -6,8 +6,11 @@
 
 import * as React from "react";
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
+
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
+import { UiFramework } from "../UiFramework";
 
 /** Modeless Dialog Changed Event class.
  * @public
@@ -62,6 +65,7 @@ export class ModelessDialogManager {
       ModelessDialogManager.dialogManager.removeDialog(dialogInfo.reactNode);
       ModelessDialogManager._dialogMap.delete(id);
       const index = ModelessDialogManager._idArray.indexOf(id);
+      // istanbul ignore else
       if (index >= 0)
         ModelessDialogManager._idArray.splice(index, 1);
 
@@ -69,6 +73,8 @@ export class ModelessDialogManager {
         ModelessDialogManager._topZIndex = ZINDEX_DEFAULT;
 
       this.update();
+    } else {
+      Logger.logError(UiFramework.loggerCategory(this), `closeDialog: Could not find dialog with id of '${id}'`);
     }
   }
 
@@ -81,11 +87,10 @@ export class ModelessDialogManager {
   public static get activeDialog(): React.ReactNode | undefined {
     if (ModelessDialogManager._idArray.length > 0) {
       const id = ModelessDialogManager._idArray[ModelessDialogManager._idArray.length - 1];
-      if (id) {
-        const dialogInfo = ModelessDialogManager._dialogMap.get(id);
-        if (dialogInfo)
-          return dialogInfo.reactNode;
-      }
+      const dialogInfo = ModelessDialogManager._dialogMap.get(id);
+      // istanbul ignore else
+      if (dialogInfo)
+        return dialogInfo.reactNode;
     }
 
     return undefined;
@@ -114,6 +119,7 @@ export class ModelessDialogManager {
   public static getDialogZIndex(id: string): number {
     let zIndex = ZINDEX_DEFAULT;
     const dialogInfo = ModelessDialogManager._dialogMap.get(id);
+    // istanbul ignore else
     if (dialogInfo)
       zIndex = dialogInfo.zIndex;
     return zIndex;

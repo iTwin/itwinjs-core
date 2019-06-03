@@ -67,7 +67,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     let footerMessages: React.ReactNode;
     const isPercentageValid = (this.state.percentage > 0 && this.state.percentage < 100);
     if (this.state.isActivityMessageVisible && isPercentageValid) {
-      const moreDetails = UiFramework.i18n.translate("UiFramework:activityCenter.moreDetails");
+      const moreDetails = UiFramework.translate("activityCenter.moreDetails");
       const tooltip = this.state.title + " - " + moreDetails;
 
       footerMessages = (

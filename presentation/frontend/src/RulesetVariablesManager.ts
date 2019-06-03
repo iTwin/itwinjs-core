@@ -7,8 +7,75 @@
 import { Id64, Id64String, BeEvent } from "@bentley/bentleyjs-core";
 import { RulesetVariablesState, VariableValueTypes, VariableValue, IClientStateHolder } from "@bentley/presentation-common";
 
-/** @hidden */
-export default class RulesetVariablesManager implements IClientStateHolder<RulesetVariablesState> {
+/**
+ * Presentation ruleset variables' registry.
+ * @public
+ */
+export interface RulesetVariablesManager {
+
+  /**
+   * Retrieves `string` variable value.
+   * Returns empty string if variable does not exist or does not convert to string.
+   */
+  getString(variableId: string): Promise<string>;
+  /**
+   * Sets `string` variable value
+   */
+  setString(variableId: string, value: string): Promise<void>;
+
+  /**
+   * Retrieves `boolean` variable value.
+   * Returns `false` if variable does not exist or does not convert to boolean.
+   */
+  getBool(variableId: string): Promise<boolean>;
+  /**
+   * Sets `boolean` variable value
+   */
+  setBool(variableId: string, value: boolean): Promise<void>;
+
+  /**
+   * Retrieves `number` variable value.
+   * Returns `0` if variable does not exist or does not convert to integer.
+   */
+  getInt(variableId: string): Promise<number>;
+  /**
+   * Sets `number` variable value
+   */
+  setInt(variableId: string, value: number): Promise<void>;
+
+  /**
+   * Retrieves `number[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to integer array.
+   */
+  getInts(variableId: string): Promise<number[]>;
+  /**
+   * Sets `number[]` variable value
+   */
+  setInts(variableId: string, value: number[]): Promise<void>;
+
+  /**
+   * Retrieves `Id64String` variable value.
+   * Returns invalid Id64String if variable does not exist or does not convert to Id64String.
+   */
+  getId64(variableId: string): Promise<Id64String>;
+  /**
+   * Sets `Id64String` variable value
+   */
+  setId64(variableId: string, value: Id64String): Promise<void>;
+
+  /**
+   * Retrieves `Id64String[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to Id64String array.
+   */
+  getId64s(variableId: string): Promise<Id64String[]>;
+  /**
+   * Sets `Id64String[]` variable value
+   */
+  setId64s(variableId: string, value: Id64String[]): Promise<void>;
+}
+
+/** @internal */
+export class RulesetVariablesManagerImpl implements RulesetVariablesManager, IClientStateHolder<RulesetVariablesState> {
 
   private _rulesetId: string;
   private _clientValues = new Map<string, [VariableValueTypes, VariableValue]>();

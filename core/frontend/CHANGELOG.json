@@ -2,6 +2,174 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/imodeljs-frontend_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
+          },
+          {
+            "comment": "Updated release tags. "
+          },
+          {
+            "comment": "added Viewport.changeViewedModel2d"
+          },
+          {
+            "comment": "Clip shape tool should only set AccuDraw rotation on 1st point."
+          },
+          {
+            "comment": "#123874 Fix a prompt. #123731 Clip from element change to ignore selection set containing clip transient."
+          },
+          {
+            "comment": "Combine planar classifier textures to converve texture units"
+          },
+          {
+            "comment": "Removed MaybeRenderApp and WebGLTestContext from tests"
+          },
+          {
+            "comment": "Remove unnecessary comment and initialization checks from tests"
+          },
+          {
+            "comment": "Fix bug sending sync ToolSettings message to UI when tool did not want ToolSettings."
+          },
+          {
+            "comment": "Support emphasize of isolated elements. Allow default appearance independent of emphasize."
+          },
+          {
+            "comment": "Dont enforce front/back ratio when displaying map as it does not require z-Buffer."
+          },
+          {
+            "comment": "Export the classes from WebMercatorTileTree"
+          },
+          {
+            "comment": "Fix contentRange when GLTF contains RTC"
+          },
+          {
+            "comment": "Fix assertion when computing range of instanced meshes."
+          },
+          {
+            "comment": "Fix loader so that it doesn't attempt to load .css files that don't exist."
+          },
+          {
+            "comment": "Fix background map tile when child not found."
+          },
+          {
+            "comment": "Allow ^ to be used to define angle degrees."
+          },
+          {
+            "comment": "Downgraded certain NotificationManager methods to @beta to question styling support"
+          },
+          {
+            "comment": "Fix erroneous clipping of instanced geometry."
+          },
+          {
+            "comment": "constructors for BeButtonEvent classes now take props argument"
+          },
+          {
+            "comment": "Remove back face culling option due to lack of performance benefit and other observations"
+          },
+          {
+            "comment": "Increase precision of clipping by transforming clip planes off the GPU."
+          },
+          {
+            "comment": "Change ModifyElementSource to internal."
+          },
+          {
+            "comment": "Added onActiveClipChanged event to ViewClipDecorationProvider instead of having to implement ViewClipEventHandler. Support for named clips using SettingsAdmin (needs integration tests)."
+          },
+          {
+            "comment": "Saved clip integration tests. Change view rotate wheel to only zoom about target center when displayed."
+          },
+          {
+            "comment": "Support multipass rendering for planar classification for computers that down support multi-target framebuffers"
+          },
+          {
+            "comment": "Refactored and simplified implementation of IModelDb.open"
+          },
+          {
+            "comment": "83505"
+          },
+          {
+            "comment": "Reduce display performance degradation when non-convex clip shapes are applied to a view."
+          },
+          {
+            "comment": "Added Overflow button support"
+          },
+          {
+            "comment": "PropertyRecord can now optionally have `extendedData` which is a map of `any`"
+          },
+          {
+            "comment": "Add support for synchronous quantity parsing and showing and hiding InputFieldMessages."
+          },
+          {
+            "comment": "Set max tiles to skip to 1 for reality model tiles. (better user experience)"
+          },
+          {
+            "comment": "Set release tags for TiledGraphicsProvider classes"
+          },
+          {
+            "comment": "Reload tile tree if animation id changes"
+          },
+          {
+            "comment": "Removed use of OidcClientWrapper. "
+          },
+          {
+            "comment": "Add cSpell comment."
+          },
+          {
+            "comment": "Rename terrain to backgroundMap."
+          },
+          {
+            "comment": "Add IModelApp.queryRenderCompatibility() API to allow querying of any rendering limitations of a client system."
+          },
+          {
+            "comment": "Retire some tile-related feature gates."
+          },
+          {
+            "comment": "Add ability to save/restore toolsetting properties during a session."
+          },
+          {
+            "comment": "Change to using the new SharedSettings API."
+          },
+          {
+            "comment": "Added test for shareClip."
+          },
+          {
+            "comment": "Add slope biasing to solar shadow mapping."
+          },
+          {
+            "comment": "Reduce horizon limit so that shadows appear earlier and later."
+          },
+          {
+            "comment": "Reduced delay between opening a viewport and seeing any graphics."
+          },
+          {
+            "comment": "Don't await tentative as it can prevent being able to double click to fit."
+          },
+          {
+            "comment": "Change to the way the background map is specified, to allow overlays."
+          },
+          {
+            "comment": "Introduced tile format v4.0"
+          },
+          {
+            "comment": "Tool writers only need AccuDrawHintBuilder, AccuDraw should be internal."
+          },
+          {
+            "comment": "use HTMLElements for tooltips"
+          },
+          {
+            "comment": "Improve touch cursor visibility. Fix tap on canvas decoration when touch cursor is active."
+          },
+          {
+            "comment": "loader finds and loads css files in production mode."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/imodeljs-frontend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

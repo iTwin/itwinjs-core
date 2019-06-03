@@ -40,7 +40,9 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       label: () => Tool1.flyover,
       tooltip: () => Tool1.description,
-      execute: () => { IModelApp.tools.run(Tool1.toolId); },
+      execute: () => {
+        IModelApp.tools.run(Tool1.toolId);
+      },
     });
   }
 
@@ -60,7 +62,11 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:tools.ToolWithSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithSettings.description",
-      execute: () => { IModelApp.tools.run(ToolWithSettings.toolId); },
+      execute: async () => {
+        // make sure formatting and parsing data are cached before the tool starts.
+        await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
+        IModelApp.tools.run(ToolWithSettings.toolId);
+      },
     });
   }
 
@@ -85,24 +91,6 @@ export class AppTools {
       },
     });
   }
-
-  /* ------------- NEEDSWORK - figure out how to move to plugin.
-  public static get measurePoints() {
-    return new ToolItemDef({
-      toolId: MeasurePointsTool.toolId,
-      iconSpec: "icon-measure-distance",
-      labelKey: "SampleApp:tools.Measure.Points.flyover",
-      tooltipKey: "SampleApp:tools.Measure.Points.description",
-      execute: () => { IModelApp.tools.run(MeasurePointsTool.toolId); },
-
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
-        return returnState;
-      },
-    });
-  }
-  ----------------------------- */
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {

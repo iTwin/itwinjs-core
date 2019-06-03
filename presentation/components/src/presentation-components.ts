@@ -5,26 +5,27 @@
 /** @module Components */
 
 /** @module Common */
+export { IPresentationDataProvider } from "./common/IPresentationDataProvider";
 export { ContentBuilder } from "./common/ContentBuilder";
-export { ContentDataProvider } from "./common/ContentDataProvider";
-export * from "./DataProvidersFactory";
+export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./common/ContentDataProvider";
+export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProvidersFactory";
 
 /** @module PropertyGrid */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";
-export { propertyGridWithUnifiedSelection } from "./propertygrid/WithUnifiedSelection";
+export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
 
 /** @module Table */
-export { IPresentationTableDataProvider, PresentationTableDataProvider } from "./table/DataProvider";
-export { tableWithUnifiedSelection } from "./table/WithUnifiedSelection";
+export { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
+export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./table/WithUnifiedSelection";
 
 /** @module Tree */
 export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
-export { treeWithUnifiedSelection } from "./tree/WithUnifiedSelection";
-export { treeWithFilteringSupport } from "./tree/WithFilteringSupport";
+export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
+export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
 
 /** @module Viewport */
-export { viewWithUnifiedSelection, ViewportSelectionHandler } from "./viewport/WithUnifiedSelection";
+export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./viewport/WithUnifiedSelection";
 
 /** @module DisplayLabels */
 export { IPresentationLabelsProvider, LabelsProvider } from "./labels/LabelsProvider";

@@ -56,7 +56,7 @@ export class IModelJsExpressServer {
 
     this._app.set("port", port);
     return new Promise<HttpServer>((resolve) => {
-      const server = this._app.listen(this._app.get("port"), () => resolve(server));
+      const server: HttpServer = this._app.listen(this._app.get("port"), () => resolve(server));
     });
   }
 }

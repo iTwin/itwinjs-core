@@ -8,7 +8,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * Possible variable value types
- * @hidden
+ * @internal
  */
 export enum VariableValueTypes {
   /** Integer value */
@@ -28,21 +28,20 @@ export enum VariableValueTypes {
 
   /** Array of Id64String values */
   Id64Array = "id64[]",
-
 }
 
 /**
  * Union of all supported variable value types
- * @hidden
+ * @internal
  */
 export type VariableValue = boolean | string | number | number[] | Id64String[];
-/** @hidden */
+/** @internal */
 export type VariableValueJSON = boolean | string | string[] | number | number[];
 
-/** @hidden */
+/** @internal */
 export interface RulesetVariablesState { [rulesetId: string]: Array<[string, VariableValueTypes, VariableValue]>; }
 
-/** @hidden */
+/** @internal */
 export namespace RulesetVariablesState {
   export const STATE_ID = "ruleset variables";
 }

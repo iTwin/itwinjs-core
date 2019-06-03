@@ -61,7 +61,7 @@ export namespace SpatialClassificationProps {
     modelId: Id64String;
     /** a distance to expand the classification around the basic geometry.  Curve geometry is expanded to regions, regions are expanded to volumes. */
     expand: number;
-    flags: Flags;
+    flags: FlagsProps;
     name: string;
     isActive: boolean;
   }

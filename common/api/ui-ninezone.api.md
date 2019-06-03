@@ -6,7 +6,9 @@
 
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
+import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
+import { OmitChildrenProp } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
@@ -16,8 +18,6 @@ export class AppButton extends React.PureComponent<AppButtonProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "AppButtonProps" is marked as @alpha, but its signature references "OmitChildrenProp" which is marked as @internal
-// 
 // @alpha
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
@@ -38,8 +38,6 @@ export class BackButton extends React.PureComponent<BackButtonProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "BackButtonProps" is marked as @alpha, but its signature references "OmitChildrenProp" which is marked as @internal
-// 
 // @alpha
 export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
 }
@@ -99,11 +97,10 @@ export class BackTarget extends React.PureComponent<BackTargetProps> {
 
 // @beta
 export interface BackTargetProps extends MergeTargetProps {
-    // Warning: (ae-incompatible-release-tags) The symbol "zoneIndex" is marked as @beta, but its signature references "WidgetZoneIndex" which is marked as @alpha
     zoneIndex: WidgetZoneIndex;
 }
 
-// @internal
+// @alpha
 export class Cell implements CellProps {
     constructor(row: number, col: number);
     // (undocumented)
@@ -131,7 +128,7 @@ export class Cell implements CellProps {
     readonly row: number;
 }
 
-// @internal
+// @alpha
 export interface CellProps {
     readonly col: number;
     readonly row: number;
@@ -203,8 +200,6 @@ export class Css {
 
 // @internal
 export class CssProperties {
-    // Warning: (ae-forgotten-export) The symbol "React" needs to be exported by the entry point ui-ninezone.d.ts
-    // 
     // (undocumented)
     static fromBounds(props: RectangleProps): React_2.CSSProperties;
     // (undocumented)
@@ -328,9 +323,6 @@ export interface ExpandableItemProps extends CommonProps {
     panel?: React.ReactNode;
 }
 
-// @internal
-export const FlattenChildren: (children: React.ReactNode) => React.ReactNode;
-
 // @alpha (undocumented)
 export interface FloatingProps {
     // (undocumented)
@@ -363,8 +355,6 @@ export interface FooterIndicatorProps extends CommonProps {
     isInFooterMode?: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "FooterPopupState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class FooterPopup extends React.PureComponent<FooterPopupProps, FooterPopupState> {
     // (undocumented)
@@ -411,8 +401,6 @@ export class FooterSeparator extends React.PureComponent<FooterSeparatorProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "FooterSeparatorProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
@@ -496,12 +484,8 @@ export class GrowBottomStrategy extends GrowStrategy {
     getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpaceToRoot" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getSpaceToRoot(bounds: Rectangle, root: Root): number;
     // (undocumented)
@@ -518,12 +502,8 @@ export class GrowLeftStrategy extends GrowStrategy {
     getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpaceToRoot" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getSpaceToRoot(bounds: Rectangle, root: Root): number;
     // (undocumented)
@@ -540,12 +520,8 @@ export class GrowRightStrategy extends GrowStrategy {
     getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpaceToRoot" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getSpaceToRoot(bounds: Rectangle, root: Root): number;
     // (undocumented)
@@ -564,12 +540,8 @@ export abstract class GrowStrategy implements ResizeStrategy {
     getMaxResize(px: number, layout: Layout): number;
     // (undocumented)
     abstract getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     abstract getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpaceToRoot" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     abstract getSpaceToRoot(bounds: Rectangle, root: Root): number;
     // (undocumented)
@@ -588,12 +560,8 @@ export class GrowTopStrategy extends GrowStrategy {
     getMaxGrowSelfBy(layoutToShrink: Layout, layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, growBy: number): Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "getSpaceToRoot" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getSpaceToRoot(bounds: Rectangle, root: Root): number;
     // (undocumented)
@@ -706,6 +674,7 @@ export interface ItemProps extends CommonProps {
     isDisabled?: boolean;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
+    onSizeKnown?: (size: Size) => void;
     title?: string;
 }
 
@@ -728,12 +697,8 @@ export class Layout {
     readonly anchor: HorizontalAnchor;
     // (undocumented)
     readonly bottomLayouts: Layout[];
-    // Warning: (ae-incompatible-release-tags) The symbol "bounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     bounds: Rectangle;
-    // Warning: (ae-incompatible-release-tags) The symbol "floatingBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     floatingBounds: Rectangle | undefined;
     // (undocumented)
@@ -748,8 +713,6 @@ export class Layout {
     getGrowRight(px: number): number;
     // (undocumented)
     getGrowTop(px: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getInitialBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getInitialBounds(): Rectangle;
     // (undocumented)
@@ -862,8 +825,6 @@ export class Layout7 extends WidgetZoneLayout {
 
 // @alpha (undocumented)
 export class Layout8 extends WidgetZoneLayout {
-    // Warning: (ae-incompatible-release-tags) The symbol "getInitialBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getInitialBounds(): Rectangle;
     // (undocumented)
@@ -1049,8 +1010,6 @@ export class NineZone implements Iterable<ZoneManager> {
     constructor(props: NineZoneProps);
     // (undocumented)
     readonly draggingWidget: DraggingWidget | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "findZone" is marked as @alpha, but its signature references "CellProps" which is marked as @internal
-    // 
     // (undocumented)
     findZone(cell: CellProps): ZoneManager;
     // (undocumented)
@@ -1093,19 +1052,8 @@ export class NineZoneRoot extends Root {
     readonly nineZone: NineZone;
 }
 
-// @alpha
-export interface NoChildrenProps {
-    // (undocumented)
-    children?: undefined;
-}
-
 // @internal
 export const offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point;
-
-// @internal
-export type OmitChildrenProp<T extends {
-    children?: React.ReactNode;
-}> = Omit<T, "children">;
 
 // @alpha
 export enum OrthogonalDirection {
@@ -1176,7 +1124,7 @@ export interface PanelsProviderProps {
     panels: React.RefObject<HTMLElement>;
 }
 
-// @internal
+// @alpha
 export class Point implements PointProps {
     constructor(x?: number, y?: number);
     static create(pointProps: PointProps): Point;
@@ -1208,15 +1156,13 @@ export interface PointProps {
     readonly y: number;
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ProgressProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface ProgressProps extends CommonProps, NoChildrenProps {
     progress: number;
     status: Status;
 }
 
-// @internal
+// @alpha
 export class Rectangle implements RectangleProps {
     constructor(left?: number, top?: number, right?: number, bottom?: number);
     // (undocumented)
@@ -1349,8 +1295,6 @@ export interface ResizeStrategy {
 // @alpha (undocumented)
 export class Root {
     constructor(size: SizeProps, isInFooterMode: boolean);
-    // Warning: (ae-incompatible-release-tags) The symbol "bounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     readonly bounds: Rectangle;
     // (undocumented)
@@ -1361,8 +1305,6 @@ export class Root {
     size: SizeProps;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ScrollableState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @alpha
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
     // (undocumented)
@@ -1384,8 +1326,6 @@ export interface ScrollableProps extends ToolbarProps {
     visibleItemThreshold: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ScrollableToolSettingsState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class ScrollableToolSettings extends React.PureComponent<ScrollableToolSettingsProps, ScrollableToolSettingsState> {
     // (undocumented)
@@ -1419,8 +1359,6 @@ export class ShrinkBottomStrategy extends ShrinkVerticalStrategy {
     getMaxMoveToRoot(layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
     // (undocumented)
@@ -1429,8 +1367,6 @@ export class ShrinkBottomStrategy extends ShrinkVerticalStrategy {
 
 // @alpha (undocumented)
 export abstract class ShrinkHorizontalStrategy extends ShrinkStrategy {
-    // Warning: (ae-incompatible-release-tags) The symbol "getCurrentSize" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getCurrentSize(bounds: Rectangle): number;
     // (undocumented)
@@ -1447,8 +1383,6 @@ export class ShrinkLeftStrategy extends ShrinkHorizontalStrategy {
     getMaxMoveToRoot(layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
     // (undocumented)
@@ -1465,8 +1399,6 @@ export class ShrinkRightStrategy extends ShrinkHorizontalStrategy {
     getMaxMoveToRoot(layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
     // (undocumented)
@@ -1475,8 +1407,6 @@ export class ShrinkRightStrategy extends ShrinkHorizontalStrategy {
 
 // @alpha (undocumented)
 export abstract class ShrinkStrategy implements ResizeStrategy {
-    // Warning: (ae-incompatible-release-tags) The symbol "getCurrentSize" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     abstract getCurrentSize(bounds: Rectangle): number;
     // (undocumented)
@@ -1491,8 +1421,6 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     abstract getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
     // (undocumented)
     abstract getMinSize(layout: Layout): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     abstract getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
     // (undocumented)
@@ -1513,8 +1441,6 @@ export class ShrinkTopStrategy extends ShrinkVerticalStrategy {
     getMaxMoveToRoot(layout: Layout): number;
     // (undocumented)
     getMaxShrinkLayout(layoutToShrink: Layout, shrinkBy: number): number;
-    // Warning: (ae-incompatible-release-tags) The symbol "getResizedBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getResizedBounds(bounds: Rectangle, shrinkBy: number, moveBy: number): Rectangle;
     // (undocumented)
@@ -1523,15 +1449,13 @@ export class ShrinkTopStrategy extends ShrinkVerticalStrategy {
 
 // @alpha (undocumented)
 export abstract class ShrinkVerticalStrategy extends ShrinkStrategy {
-    // Warning: (ae-incompatible-release-tags) The symbol "getCurrentSize" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getCurrentSize(bounds: Rectangle): number;
     // (undocumented)
     getMinSize(layout: Layout): number;
 }
 
-// @internal
+// @beta
 export class Size implements SizeProps {
     constructor(width?: number, height?: number);
     static create(size: SizeProps): Size;
@@ -1667,7 +1591,7 @@ export interface StatusMessageProps extends CommonProps {
     status: Status;
 }
 
-// @alpha (undocumented)
+// @beta
 export type StatusZoneIndex = 8;
 
 // @alpha (undocumented)
@@ -1819,8 +1743,6 @@ export interface TitleProps extends CommonProps {
     children?: React.ReactNode;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToastState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @alpha
 export class Toast extends React.PureComponent<ToastProps, ToastState> {
     constructor(props: ToastProps);
@@ -1960,8 +1882,6 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "nz-panel-alignment-start";
 }
 
-// Warning: (ae-incompatible-release-tags) The symbol "ToolbarProps" is marked as @beta, but its signature references "NoChildrenProps" which is marked as @alpha
-// 
 // @beta
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
@@ -1981,8 +1901,6 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     render(): JSX.Element;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ToolSettingsPopupState" needs to be exported by the entry point ui-ninezone.d.ts
-// 
 // @beta
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
     // (undocumented)
@@ -2101,8 +2019,6 @@ export class Widget {
     equals(other: Widget): boolean;
     // (undocumented)
     readonly isAlone: boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "isCellBetweenWidgets" is marked as @alpha, but its signature references "Cell" which is marked as @internal
-    // 
     // (undocumented)
     static isCellBetweenWidgets(cell: Cell, widgets: ReadonlyArray<Widget>): boolean;
     // (undocumented)
@@ -2152,8 +2068,6 @@ export class WidgetZone extends ZoneManager {
     readonly bounds: RectangleProps;
     // (undocumented)
     canBeMergedTo(zone: WidgetZone): boolean;
-    // Warning: (ae-incompatible-release-tags) The symbol "_cell" is marked as @alpha, but its signature references "Cell" which is marked as @internal
-    // 
     // (undocumented)
     protected _cell: Cell | undefined;
     // (undocumented)
@@ -2216,7 +2130,7 @@ export class WidgetZone extends ZoneManager {
     protected _widgets: Widget[] | undefined;
 }
 
-// @alpha (undocumented)
+// @beta
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 
 // @alpha (undocumented)
@@ -2230,8 +2144,6 @@ export class WidgetZoneLayout extends Layout {
     getBottomZones(): WidgetZone[];
     // (undocumented)
     getInitialBottomZone(): WidgetZone | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "getInitialBounds" is marked as @alpha, but its signature references "Rectangle" which is marked as @internal
-    // 
     // (undocumented)
     getInitialBounds(): Rectangle;
     // (undocumented)
@@ -2401,8 +2313,6 @@ export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 // @alpha (undocumented)
 export class ZoneManager {
     constructor(nineZone: NineZone, id: ZoneIndex);
-    // Warning: (ae-incompatible-release-tags) The symbol "cell" is marked as @alpha, but its signature references "Cell" which is marked as @internal
-    // 
     // (undocumented)
     readonly cell: Cell;
     // (undocumented)

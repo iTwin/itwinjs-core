@@ -236,3 +236,8 @@ export class Title extends MarkupElement {
 
 }
 register(Title, "Title");
+
+/** only for tests
+ *  @internal
+ */
+export function initSvgExt() { }

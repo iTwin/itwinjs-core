@@ -1,0 +1,158 @@
+sep=;
+Release Tag;API Item
+beta;AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty
+beta;AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass
+beta;AnyDiagnostic = IDiagnostic
+beta;AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute
+beta;AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty
+beta;AnyEnumerator = Enumerator
+beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
+beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
+beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
+beta;AnyStructProperty = StructProperty | StructArrayProperty
+beta;class ArrayProperty 
+beta;class BaseDiagnostic
+beta;BaseRule
+beta;class ClassDiagnostic
+beta;classModifierToString(modifier: ECClassModifier): string
+beta;Constant 
+beta;containerTypeToString(type: CustomAttributeContainerType): string
+beta;createClassDiagnosticClass
+beta;createCustomAttributeContainerDiagnosticClass
+beta;createPropertyDiagnosticClass
+beta;createRelationshipConstraintDiagnosticClass
+beta;createSchemaDiagnosticClass
+beta;createSchemaItemDiagnosticClass
+beta;CustomAttributeClass 
+beta;class CustomAttributeContainerDiagnostic
+beta;CustomAttributeContainerType
+internal;DecimalPrecision
+internal;DelayedPromise
+beta;DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor
+beta;DelayedPromiseWithProps
+beta;DelayedPromiseWithPropsConstructor
+beta;DiagnosticCategory
+beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
+beta;DiagnosticCodes:
+beta;Diagnostics:
+beta;DiagnosticType
+beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
+beta;class ECClass 
+beta;ECClassModifier
+beta;ECName
+internal;ECObjectsError 
+internal;ECObjectsStatus
+beta;ECRuleSet: IRuleSet
+internal;ECStringConstants
+beta;ECVersion
+beta;EntityClass 
+beta;Enumeration 
+beta;EnumerationArrayProperty 
+beta;EnumerationProperty 
+beta;Enumerator
+internal;FileSchemaKey 
+beta;Format 
+beta;class FormatDiagnosticReporter 
+internal;formatStringRgx: RegExp
+internal;FormatTraits
+internal;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
+internal;FormatType
+internal;formatTypeToString(type: FormatType): string
+internal;FractionalPrecision
+beta;IDiagnostic
+beta;IDiagnosticReporter
+beta;InvertedUnit 
+beta;IRule
+beta;IRuleSet
+beta;ISchemaItemLocater
+beta;ISchemaLocater
+beta;ISchemaPartVisitor
+beta;KindOfQuantity 
+beta;LazyLoadedConstant = LazyLoadedSchemaItem
+beta;LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem
+beta;LazyLoadedECClass = LazyLoadedSchemaItem
+beta;LazyLoadedEntityClass = LazyLoadedSchemaItem
+beta;LazyLoadedEnumeration = LazyLoadedSchemaItem
+beta;LazyLoadedFormat = LazyLoadedSchemaItem
+beta;LazyLoadedInvertedUnit = LazyLoadedSchemaItem
+beta;LazyLoadedKindOfQuantity = LazyLoadedSchemaItem
+beta;LazyLoadedMixin = LazyLoadedSchemaItem
+beta;LazyLoadedPhenomenon = LazyLoadedSchemaItem
+beta;LazyLoadedPropertyCategory = LazyLoadedSchemaItem
+beta;LazyLoadedRelationshipClass = LazyLoadedSchemaItem
+beta;LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem
+beta;LazyLoadedSchema = Readonly
+beta;LazyLoadedSchemaItem
+beta;LazyLoadedStructClass = LazyLoadedSchemaItem
+beta;LazyLoadedUnit = LazyLoadedSchemaItem
+beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
+beta;LoggingDiagnosticReporter 
+beta;Mixin 
+beta;NavigationProperty 
+beta;NoDelayedPromiseMethods
+beta;OverrideFormat
+beta;parseClassModifier(modifier: string): ECClassModifier | undefined
+beta;parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined
+internal;parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision | undefined
+internal;parseFormatTrait(formatTraitsString: string): FormatTraits | undefined
+internal;parseFormatType(jsonObjType: string): FormatType | undefined
+internal;parseFractionalPrecision(jsonObjPrecision: number): FractionalPrecision | undefined
+internal;parsePrecision(precision: number, type: FormatType): DecimalPrecision | FractionalPrecision | undefined
+beta;parsePrimitiveType(type: string): PrimitiveType | undefined
+beta;parseRelationshipEnd(end: string): RelationshipEnd | undefined
+beta;parseSchemaItemType(type: string): SchemaItemType | undefined
+internal;parseScientificType(scientificType: string): ScientificType | undefined
+internal;parseShowSignOption(showSignOption: string): ShowSignOption | undefined
+beta;parseStrength(strength: string): StrengthType | undefined
+beta;parseStrengthDirection(direction: string): StrengthDirection | undefined
+beta;Phenomenon 
+beta;PrimitiveArrayProperty 
+beta;class PrimitiveOrEnumPropertyBase 
+beta;PrimitiveProperty 
+beta;PrimitiveType
+beta;primitiveTypeToString(type: PrimitiveType): string
+beta;class Property 
+beta;PropertyCategory 
+beta;class PropertyDiagnostic
+beta;PropertyType
+beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
+beta;PropertyTypeUtils
+beta;RelationshipClass 
+beta;RelationshipConstraint 
+beta;class RelationshipConstraintDiagnostic
+beta;RelationshipEnd
+beta;relationshipEndToString(end: RelationshipEnd): string
+beta;RelationshipMultiplicity
+beta;Schema 
+beta;SchemaCache 
+beta;SchemaContext 
+beta;class SchemaDiagnostic
+alpha;class SchemaFileLocater
+internal;SchemaGraphUtil
+beta;class SchemaItem
+beta;class SchemaItemDiagnostic
+beta;SchemaItemKey
+beta;SchemaItemType
+beta;schemaItemTypeToString(value: SchemaItemType): string
+alpha;SchemaJsonFileLocater 
+beta;SchemaKey
+beta;SchemaMap 
+beta;SchemaMatchType
+beta;SchemaPartVisitorDelegate
+beta;SchemaValidationVisitor 
+internal;SchemaWalker
+internal;SchemaXmlFileLocater 
+internal;ScientificType
+internal;scientificTypeToString(scientificType: ScientificType): string
+internal;ShowSignOption
+internal;showSignOptionToString(showSign: ShowSignOption): string
+beta;StrengthDirection
+beta;strengthDirectionToString(direction: StrengthDirection): string
+beta;strengthToString(strength: StrengthType): string
+beta;StrengthType
+beta;StructArrayProperty 
+beta;StructClass 
+beta;StructProperty 
+beta;class SuppressionDiagnosticReporter 
+beta;Unit 
+beta;UnitSystem 

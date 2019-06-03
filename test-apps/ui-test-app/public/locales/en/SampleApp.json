@@ -1,4 +1,8 @@
 {
+  "errors": {
+    "UnableToParseLength": "Unable to parse into a length value",
+    "UnableToParseAngle": "Unable to parse into an angle value"
+  },
   "Header": {
     "welcome": "Welcome to UI Test App"
   },
@@ -148,7 +152,8 @@
         "Weight": "Weight",
         "State": "State",
         "Coordinate": "Coordinate",
-        "Length": "Length"
+        "Length": "Length",
+        "Angle": "Angle"
       },
       "Options": {
         "Red": "Red",

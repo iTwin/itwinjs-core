@@ -19,6 +19,8 @@ import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
+import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
+import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
 
 // tslint:disable: completed-docs
 
@@ -62,8 +64,7 @@ export class TestUtils {
   public static get i18n(): I18N {
     if (!TestUtils._i18n) {
       // const port = process.debugPort;
-      // const i18nOptions = { urlTemplate: "http://localhost:" + port + "/locales/{{lng}}/{{ns}}.json" };
-      TestUtils._i18n = new I18N([], "" /*, i18nOptions*/);
+      TestUtils._i18n = new I18N();
     }
     return TestUtils._i18n;
   }
@@ -104,6 +105,7 @@ export class TestUtils {
       TestUtils._uiFrameworkInitialized = true;
     }
     ToolUiManager.clearCachedProperties();
+    SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
   public static terminateUiFramework() {
@@ -197,6 +199,22 @@ export class TestUtils {
     await TestUtils.flushAsyncOperations();
   }
 
+}
+
+// cSpell:ignore testuser mailinator saml
+
+export class MockAccessToken extends AccessToken {
+  public constructor() { super(); this._samlAssertion = ""; }
+  public getUserInfo(): UserInfo | undefined {
+    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
+    const email = { id: "testuser001@mailinator.com" };
+    const profile = { firstName: "test", lastName: "user" };
+    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
+    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
+    return new UserInfo(id, email, profile, organization, featureTracking);
+  }
+
+  public toTokenString() { return ""; }
 }
 
 export default TestUtils;   // tslint:disable-line: no-default-export

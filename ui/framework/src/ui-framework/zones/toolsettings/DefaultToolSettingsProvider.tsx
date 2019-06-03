@@ -7,17 +7,22 @@
 import * as React from "react";
 
 // cSpell:Ignore configurableui
-import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
-import { ToolUiProvider } from "./ToolUiProvider";
-import "./DefaultToolSettingsProvider.scss";
-import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
-import { FrontstageManager } from "../../frontstage/FrontstageManager";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
-import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
+
 import {
   IModelApp, PropertyRecord, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
   PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue, PropertyValueFormat,
 } from "@bentley/imodeljs-frontend";
+import { Logger } from "@bentley/bentleyjs-core";
+import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
+
+import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
+import { ToolUiProvider } from "./ToolUiProvider";
+import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
+import { FrontstageManager } from "../../frontstage/FrontstageManager";
+import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../toolsettings/ToolUiManager";
+import { UiFramework } from "../../UiFramework";
+
+import "./DefaultToolSettingsProvider.scss";
 
 /** @internal */
 export class TsLabel {
@@ -84,7 +89,6 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
   private _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
     let needToForceUpdate = false;
     args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
-      // tslint:disable-next-line:no-console
       // (`[_handleSyncToolSettingsPropertiesEvent] Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
       const colValue = this.state.valueMap.get(syncItem.propertyName);
       /* istanbul ignore else */
@@ -102,6 +106,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
       }
     });
 
+    // istanbul ignore else
     if (needToForceUpdate) {
       this.forceUpdate();
     }
@@ -198,6 +203,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
     if (col.type === ColumnType.Label) {
       const labelData = this.state.labelMap.get(col.name);
+      // istanbul ignore else
       if (labelData) {
         const className = labelData.isDisabled ? "uifw-toolSettings-label-disabled" : undefined;
         return ( // return a <span> containing a label
@@ -320,14 +326,12 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     const labelCol = record.editorPosition.columnIndex - 1;
     const label = (undefined === suppressLabelEditorParams) ? record.property.displayLabel : "";
     if (labelCol < 0) {
-      // tslint:disable-next-line:no-console
-      console.log(`Default ToolSettings Provider - invalid label column for ${propertyName}`);
+      Logger.logError(UiFramework.loggerCategory(this), `Invalid label column for ${propertyName}`);
       return;
     }
 
     if (row.cols[labelCol].type !== ColumnType.Empty) {
-      // tslint:disable-next-line:no-console
-      console.log(`Default ToolSettings Provider - label column for ${propertyName} is already in use`);
+      Logger.logError(UiFramework.loggerCategory(this), `Label column for ${propertyName} is already in use`);
       return;
     }
 
@@ -341,8 +345,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 
     // istanbul ignore if
     if (row.cols[editCol].type !== ColumnType.Empty) {
-      // tslint:disable-next-line:no-console
-      console.log(`Default ToolSettings Provider - label column for ${record.property.name} is already in use`);
+      Logger.logError(UiFramework.loggerCategory(this), `Label column for ${record.property.name} is already in use`);
       return;
     }
 

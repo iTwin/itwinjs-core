@@ -16,12 +16,10 @@ import {
   Descriptor, Field,
   SelectionInfo, Item,
   KeySet, Ruleset, RegisteredRuleset,
-  ContentResponse,
   Content, DescriptorOverrides,
 } from "@bentley/presentation-common";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
-import RulesetManager from "@bentley/presentation-frontend/lib/RulesetManager";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
@@ -368,7 +366,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("requests presentation manager for size", async () => {
-      const result = new PromiseContainer<ContentResponse>();
+      const result = new PromiseContainer<{ content: Content, size: number }>();
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
@@ -384,7 +382,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("memoizes result", async () => {
-      const resultPromiseContainer = new PromiseContainer<ContentResponse>();
+      const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>();
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor())
         .verifiable();
@@ -401,7 +399,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("requests size and first page when paging size is set", async () => {
-      const resultPromiseContainer = new PromiseContainer<ContentResponse>(); // TODO
+      const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>(); // TODO
       const pagingSize = 20;
 
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
@@ -421,10 +419,7 @@ describe("ContentDataProvider", () => {
 
     it("returns content size equal to content set size when page options are undefined", async () => {
       const descriptor = createRandomDescriptor();
-      const content = {
-        descriptor,
-        contentSet: [new Item([], "1", "", undefined, {}, {}, [])],
-      };
+      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable();
@@ -443,10 +438,7 @@ describe("ContentDataProvider", () => {
       provider.shouldConfigureContentDescriptor = () => false;
       provider.getDescriptorOverrides = () => overrides;
 
-      const content = {
-        descriptor: createRandomDescriptor(),
-        contentSet: [1, 2, 3].map(() => ({} as any)),
-      };
+      const content = new Content(createRandomDescriptor(), [1, 2, 3].map(() => ({} as any)));
 
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .verifiable(moq.Times.never());
@@ -479,11 +471,8 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for content", async () => {
       const descriptor = createRandomDescriptor();
-      const result: ContentResponse = {
-        content: {
-          descriptor,
-          contentSet: [],
-        },
+      const result: { content: Content, size: number } = {
+        content: new Content(descriptor, []),
         size: 1,
       };
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
@@ -500,7 +489,7 @@ describe("ContentDataProvider", () => {
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
       const resultContentFirstPagePromise0 = new PromiseContainer<Content>();
-      const resultContentFirstPagePromise1 = new PromiseContainer<ContentResponse>();
+      const resultContentFirstPagePromise1 = new PromiseContainer<{ content: Content, size: number }>();
       const resultContentNonFirstPagePromise = new PromiseContainer<Content>();
       presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => descriptor)
@@ -524,23 +513,14 @@ describe("ContentDataProvider", () => {
         provider.getContent({ start: 0, size: 1 }),
         provider.getContent({ start: 1, size: 0 }),
       ];
-      const results: ContentResponse[] = [{
-        content: {
-          descriptor,
-          contentSet: [new Item([], "1", "", undefined, {}, {}, [])],
-        },
+      const results: { content: Content, size: number }[] = [{
+        content: new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]),
         size: 1,
       }, {
-        content: {
-          descriptor,
-          contentSet: [new Item([], "2", "", undefined, {}, {}, [])],
-        },
+        content: new Content(descriptor, [new Item([], "2", "", undefined, {}, {}, [])]),
         size: 1,
       }, {
-        content: {
-          descriptor,
-          contentSet: [new Item([], "3", "", undefined, {}, {}, [])],
-        },
+        content: new Content(descriptor, [new Item([], "3", "", undefined, {}, {}, [])]),
         size: 1,
       }];
       resultContentFirstPagePromise0.resolve(results[0].content);

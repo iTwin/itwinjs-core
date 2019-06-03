@@ -33,7 +33,12 @@
 class ScriptLoader {
 
   // loads a single package
-  public static async loadPackage(packageName: string): Promise<void> {
+  public static async loadPackage(packageName: string | undefined): Promise<void> {
+    // if there is no package, just return resolve promise.
+    if (!packageName) {
+      return Promise.resolve();
+    }
+
     return new Promise<void>((resolve, reject) => {
       const head = document.getElementsByTagName("head")[0];
       if (!head)
@@ -55,6 +60,35 @@ class ScriptLoader {
     });
   }
 
+  // loads a single css file
+  public static async loadCss(cssName: string | undefined): Promise<void> {
+    // if there is no package, just return resolve promise.
+    if (!cssName) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      const head = document.getElementsByTagName("head")[0];
+      if (!head)
+        reject(new Error("no head element found"));
+
+      // create the script element. handle onload and onerror.
+      const cssElement: HTMLLinkElement = document.createElement("link");
+      cssElement.onload = () => {
+        cssElement.onload = null;
+        resolve();
+      };
+      cssElement.onerror = (ev) => {
+        cssElement.onload = null;
+        reject(new Error("can't load " + cssName + " : " + ev));
+      };
+      cssElement.type = "text/css";
+      cssElement.rel = "stylesheet";
+      cssElement.href = cssName;
+      head.insertBefore(cssElement, head.lastChild);
+    });
+  }
+
   // loads an array of packages in parallel. Promise is resolved when all are loaded.
   // The packages can be loaded in any order, so they must be independent of each other.
   public static async loadPackagesParallel(packages: string[], options: IModelJsLoadOptions): Promise<void[]> {
@@ -64,11 +98,29 @@ class ScriptLoader {
     }
     return Promise.all(promises);
   }
+
+  // look for any css files that need to be loaded and load them all in parallel.
+  public static async loadAllCssFiles(options: IModelJsLoadOptions): Promise<void[]> {
+    const promises: Array<Promise<void>> = new Array<Promise<void>>();
+    for (const key in options.iModelJsVersions) {
+      if (options.iModelJsVersions.hasOwnProperty(key)) {
+        if (key.endsWith(".css")) {
+          const cssFileName = "v".concat(options.iModelJsVersions[key], "/", key);
+          promises.push(this.loadCss(cssFileName));
+        }
+      }
+    }
+
+    if (0 === promises.length) {
+      return Promise.resolve([]);
+    }
+    return Promise.all(promises);
+  }
 }
 
 // Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
-  private _iModelJsVersions: any;
+  public iModelJsVersions: any;
   public loadUiComponents: boolean;
   public loadUiFramework: boolean;
   public loadECPresentation: boolean;
@@ -82,33 +134,32 @@ class IModelJsLoadOptions {
     this.loadMarkup = true;
 
     if (iModelJsVersionString) {
-      this._iModelJsVersions = JSON.parse(iModelJsVersionString);
-      this.loadUiComponents = (undefined !== this._iModelJsVersions["ui-core"]) || (undefined !== this._iModelJsVersions["ui-components"]);
-      this.loadUiFramework = (undefined !== this._iModelJsVersions["ui-ninezone"]) || (undefined !== this._iModelJsVersions["ui-framework"]);
-      this.loadECPresentation = (undefined !== this._iModelJsVersions["presentation-common"]) || (undefined !== this._iModelJsVersions["presentation-frontend"]) || (undefined !== this._iModelJsVersions["presentation-components"]);
-      this.loadMarkup = (undefined !== this._iModelJsVersions["imodeljs-markup"]);
+      this.iModelJsVersions = JSON.parse(iModelJsVersionString);
+      this.loadUiComponents = (undefined !== this.iModelJsVersions["ui-core"]) || (undefined !== this.iModelJsVersions["ui-components"]);
+      this.loadUiFramework = (undefined !== this.iModelJsVersions["ui-ninezone"]) || (undefined !== this.iModelJsVersions["ui-framework"]);
+      this.loadECPresentation = (undefined !== this.iModelJsVersions["presentation-common"]) || (undefined !== this.iModelJsVersions["presentation-frontend"]) || (undefined !== this.iModelJsVersions["presentation-components"]);
+      this.loadMarkup = (undefined !== this.iModelJsVersions["imodeljs-markup"]);
 
       // we need the uiComponents for either ECPresentation or uiFramework.
       if (this.loadECPresentation || this.loadUiFramework) {
         this.loadUiComponents = true;
       }
     } else {
-      this._iModelJsVersions = {};
+      this.iModelJsVersions = {};
     }
   }
 
-  public prefixVersion(packageName: string): string {
+  public prefixVersion(packageName: string): string | undefined {
     // find the version from the package name.
     let versionNumberString: string;
-    // remove the ".js" from the packageName to get the key
-    const key = packageName.substr(0, packageName.length - 3);
-    if (undefined === (versionNumberString = this._iModelJsVersions[key])) {
+    if (undefined === (versionNumberString = this.iModelJsVersions[packageName])) {
       // tslint:disable-next-line:no-console
       console.log("No version specified for ", packageName);
-      return "v-latest".concat("/", packageName);
+      return undefined;
     }
-    return "v".concat(versionNumberString, "/", packageName);
+    return "v".concat(versionNumberString, "/", packageName, ".js");
   }
+
 }
 
 /** Loads the iModelJs modules and the external modules that they depend on.
@@ -116,36 +167,39 @@ class IModelJsLoadOptions {
  */
 export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> {
   // if we are going to load the ui modules, get the third party stuff started now. They don't depend on any of our modules so can be loaded at any time.
+  const cssFilesPromise = ScriptLoader.loadAllCssFiles(options);
+
   let thirdPartyRootPromise;
   if (options.loadUiComponents)
-    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash.js", "react.js", "redux.js"], options);
+    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash", "react", "redux"], options);
 
   // load the lowest level stuff. geometry-core doesn't depend on bentleyjs-core, so they can be loaded together.
-  await ScriptLoader.loadPackagesParallel(["bentleyjs-core.js", "geometry-core.js"], options);
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-i18n.js"));
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-clients.js"));
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common.js"));
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-quantity.js"));
-  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-frontend.js"));
+  await ScriptLoader.loadPackagesParallel(["bentleyjs-core", "geometry-core"], options);
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-i18n"));
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-clients"));
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common"));
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-quantity"));
+  await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-frontend"));
   if (options.loadMarkup)
-    await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup.js"));
+    await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-markup"));
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"], options);
-    await ScriptLoader.loadPackage(options.prefixVersion("ui-core.js"));
-    await ScriptLoader.loadPackage(options.prefixVersion("ui-components.js"));
+    await ScriptLoader.loadPackagesParallel(["react-dom", "inspire-tree", "react-dnd", "react-dnd-html5-backend", "react-redux"], options);
+    await ScriptLoader.loadPackage(options.prefixVersion("ui-core"));
+    await ScriptLoader.loadPackage(options.prefixVersion("ui-components"));
     if (options.loadECPresentation) {
-      await ScriptLoader.loadPackage(options.prefixVersion("presentation-common.js"));
-      await ScriptLoader.loadPackage(options.prefixVersion("presentation-frontend.js"));
-      await ScriptLoader.loadPackage(options.prefixVersion("presentation-components.js"));
+      await ScriptLoader.loadPackage(options.prefixVersion("presentation-common"));
+      await ScriptLoader.loadPackage(options.prefixVersion("presentation-frontend"));
+      await ScriptLoader.loadPackage(options.prefixVersion("presentation-components"));
     }
     if (options.loadUiFramework) {
-      await ScriptLoader.loadPackage(options.prefixVersion("ui-ninezone.js"));
-      await ScriptLoader.loadPackage(options.prefixVersion("ui-framework.js"));
+      await ScriptLoader.loadPackage(options.prefixVersion("ui-ninezone"));
+      await ScriptLoader.loadPackage(options.prefixVersion("ui-framework"));
     }
   }
-  await ScriptLoader.loadPackage(options.prefixVersion("main.js"));
+  await cssFilesPromise;
+  await ScriptLoader.loadPackage(options.prefixVersion("main"));
 }
 
 function getOptions(): IModelJsLoadOptions {

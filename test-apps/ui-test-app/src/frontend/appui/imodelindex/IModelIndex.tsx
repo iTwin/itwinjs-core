@@ -55,8 +55,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     super(props, context);
 
     // TODO: registering categories is application specific, move this to Navigator source.
-    IModelIndex.RegisterCategory(UiFramework.i18n.translate("UiFramework:iModelIndex.views"), this._renderSheets);
-    IModelIndex.RegisterCategory(UiFramework.i18n.translate("UiFramework:iModelIndex.3dModels"), this._render3dModels);
+    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.views"), this._renderSheets);
+    IModelIndex.RegisterCategory(UiFramework.translate("iModelIndex.3dModels"), this._render3dModels);
 
     this.state = {
       currentCategory: 0, thumbnail: undefined, upToDate: false, header: undefined,
@@ -76,8 +76,8 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   public componentWillUnmount() {
     // TODO: an application should not have to unregister categories/tabs.
-    IModelIndex.UnregisterCategory(UiFramework.i18n.translate("UiFramework:iModelIndex.views"));
-    IModelIndex.UnregisterCategory(UiFramework.i18n.translate("UiFramework:iModelIndex.3dModels"));
+    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.views"));
+    IModelIndex.UnregisterCategory(UiFramework.translate("iModelIndex.3dModels"));
   }
 
   /* register a category (tab) */
@@ -177,14 +177,14 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
     return (
       <div className="imodelindex-waiting fade-in">
         <div className="entering-imodel">
-          <LoadingSpinner message={UiFramework.i18n.translate("UiFramework:iModelIndex.enteriModeling")} />
+          <LoadingSpinner message={UiFramework.translate("iModelIndex.enteriModeling")} />
         </div>
       </div>
     );
   }
   public render() {
-    const statusText = (this.state.upToDate) ? UiFramework.i18n.translate("UiFramework:iModelIndex.upToDate") :
-      UiFramework.i18n.translate("UiFramework:iModelIndex.updatesAvailable");
+    const statusText = (this.state.upToDate) ? UiFramework.translate("iModelIndex.upToDate") :
+      UiFramework.translate("iModelIndex.updatesAvailable");
     return (
       <div className="imodelindex fade-in">
         <div className="imodelindex-header">

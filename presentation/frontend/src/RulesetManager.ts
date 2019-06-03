@@ -7,8 +7,34 @@
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { RulesetManagerState, Ruleset, RegisteredRuleset, IClientStateHolder } from "@bentley/presentation-common";
 
-/** @hidden */
-export default class RulesetManager implements IClientStateHolder<RulesetManagerState> {
+/**
+ * Presentation ruleset registry.
+ * @public
+ */
+export interface RulesetManager {
+  /**
+   * Get a ruleset with the specified id.
+   */
+  get(id: string): Promise<RegisteredRuleset | undefined>;
+
+  /**
+   * Register the supplied ruleset
+   */
+  add(ruleset: Ruleset): Promise<RegisteredRuleset>;
+
+  /**
+   * Unregister the supplied ruleset
+   */
+  remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
+
+  /**
+   * Remove all rulesets registered in this session.
+   */
+  clear(): Promise<void>;
+}
+
+/** @internal */
+export class RulesetManagerImpl implements RulesetManager, IClientStateHolder<RulesetManagerState> {
 
   private _clientRulesets = new Map<string, RegisteredRuleset[]>();
   public key = RulesetManagerState.STATE_ID;

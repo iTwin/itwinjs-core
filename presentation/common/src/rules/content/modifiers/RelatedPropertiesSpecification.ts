@@ -7,7 +7,10 @@
 import { RelationshipDirection } from "../../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../../ClassSpecifications";
 
-/** Meaning of the relationship */
+/**
+ * Meaning of the relationship
+ * @public
+ */
 export enum RelationshipMeaning {
   /**
    * Related instance is part of the primary instance. Related properties
@@ -24,7 +27,10 @@ export enum RelationshipMeaning {
   RelatedInstance = "RelatedInstance",
 }
 
-/** Special values that can be used in [[RelatedPropertiesSpecification.propertyNames]] */
+/**
+ * Special values that can be used in [[RelatedPropertiesSpecification.propertyNames]]
+ * @public
+ */
 export enum RelatedPropertiesSpecialValues {
   /**
    * Used to specify that no properties should be included. Usually
@@ -35,6 +41,7 @@ export enum RelatedPropertiesSpecialValues {
 
 /**
  * Sub-specification to include additional related instance properties
+ * @public
  */
 export interface RelatedPropertiesSpecification {
   /**

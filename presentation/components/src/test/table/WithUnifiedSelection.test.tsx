@@ -13,12 +13,11 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey, instanceKeyFromJSON } from "@bentley/presentation-common";
+import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import {
-  Presentation,
+  Presentation, PresentationManager,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
 } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
@@ -65,7 +64,7 @@ describe("Table withUnifiedSelection", () => {
     providerMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (i: number) => rows![i]);
     providerMock.setup((x) => x.onColumnsChanged).returns(() => new TableDataChangeEvent());
     providerMock.setup((x) => x.onRowsChanged).returns(() => new TableDataChangeEvent());
-    providerMock.setup((x) => x.getRowKey(moq.It.isAny())).returns((row) => instanceKeyFromJSON(JSON.parse(row.key)));
+    providerMock.setup((x) => x.getRowKey(moq.It.isAny())).returns((row) => InstanceKey.fromJSON(JSON.parse(row.key)));
   };
 
   const createRandomRowItem = (): RowItem & { _key: InstanceKey } => {

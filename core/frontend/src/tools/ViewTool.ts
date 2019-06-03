@@ -10,7 +10,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, DepthRangeNpc, ScreenViewport, Viewport, ViewRect } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, ViewRect } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
@@ -290,8 +290,8 @@ export abstract class ViewManip extends ViewTool {
   public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
 
-    // If the rotate is active, the mouse wheel should work as if the cursor is at the target center
-    if ((this.handleMask & ViewHandleType.Rotate)) {
+    // If rotate is active, the mouse wheel should about the target center when it's displayed...
+    if ((this.handleMask & ViewHandleType.Rotate) && (this.targetCenterLocked || this.inHandleModify)) {
       ev.point = this.targetCenterWorld;
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
     }
@@ -1966,7 +1966,7 @@ export class WindowAreaTool extends ViewTool {
 
       let npcZValues = vp.determineVisibleDepthRange(windowRange);
       if (!npcZValues)
-        npcZValues = new DepthRangeNpc(0, ViewManip.getFocusPlaneNpc(vp));  // Just use the focus plane
+        npcZValues = { minimum: 0, maximum: ViewManip.getFocusPlaneNpc(vp) };
 
       const lensAngle = cameraView.getLensAngle();
 
@@ -2039,7 +2039,7 @@ export class DefaultViewTouchTool extends ViewManip {
     }
     this._lastPtView.setFrom(this._startPtView);
     this._startTouchCount = ev.touchCount;
-    this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : Vector2d.createZero());
+    this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : Vector2d.createZero());
     this._startDistance = (2 === ev.touchCount ? this._startDirection.magnitude() : 0.0);
   }
 
@@ -2048,7 +2048,7 @@ export class DefaultViewTouchTool extends ViewManip {
       return 1.0;
 
     const vp = this.viewport!;
-    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp)) : 0.0);
+    const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
 
     if (0.0 === distance)
       return 1.0;
@@ -2070,7 +2070,7 @@ export class DefaultViewTouchTool extends ViewManip {
       return Angle.createDegrees(0.0);
 
     const vp = this.viewport!;
-    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchInfo.targetTouches[1], vp));
+    const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp));
     const rotation = this._startDirection.angleTo(direction);
 
     if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)

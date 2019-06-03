@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WorkflowTask */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { Task, TaskManager } from "./Task";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for a [[Workflow]].
  * @public
@@ -27,7 +29,6 @@ export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
 }
-// -----------------------------------------------------------------------------
 
 /** Workflow class.
  * A Workflow is a defined sequence of tasks used to accomplish a goal.
@@ -165,8 +166,6 @@ export interface TaskActivatedEventArgs {
  */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
-// -----------------------------------------------------------------------------
-
 /** Workflow Manager class.
  * @public
  */
@@ -184,7 +183,7 @@ export class WorkflowManager {
    * @param workflowPropsList  the list of Workflows to load
    */
   public static loadWorkflows(workflowPropsList: WorkflowPropsList) {
-    this._defaultWorkflowId = workflowPropsList.defaultWorkflowId;
+    this.setDefaultWorkflowId(workflowPropsList.defaultWorkflowId);
     WorkflowManager.loadWorkflowDefs(workflowPropsList.workflows);
   }
 
@@ -247,7 +246,6 @@ export class WorkflowManager {
 
   /** Gets the active Workflow id */
   public static get activeWorkflowId(): string {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.id;
     return "";
@@ -255,7 +253,6 @@ export class WorkflowManager {
 
   /** Gets the active Task */
   public static get activeTask(): Task | undefined {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined)
       return this._activeWorkflow.activeTask;
     return undefined;
@@ -263,7 +260,6 @@ export class WorkflowManager {
 
   /** Gets the active Task id */
   public static get activeTaskId(): string {
-    // istanbul ignore else
     if (this._activeWorkflow !== undefined) {
       // istanbul ignore else
       if (this._activeWorkflow.activeTask)
@@ -277,15 +273,37 @@ export class WorkflowManager {
     return this._defaultWorkflowId;
   }
 
+  /** Sets the Id of the default Workflow */
+  public static setDefaultWorkflowId(id: string): void {
+    this._defaultWorkflowId = id;
+  }
+
+  /** Removes a Workflow
+   * @param workflow  The Workflow to remove
+   */
+  public static removeWorkflow(workflow: Workflow): boolean {
+    const id = workflow.id;
+    let result = false;
+
+    if (this._workflows.get(id)) {
+      this._workflows.delete(id);
+      result = true;
+    } else {
+      Logger.logError(UiFramework.loggerCategory(this), `removeWorkflow: Workflow with id '${id}' not found`);
+      result = false;
+    }
+
+    return result;
+  }
+
   public static getSortedWorkflows(): Workflow[] {
     const sortedWorkflows = new Array<Workflow>();
 
     for (const key of this._workflows.keys()) {
       const workflow = this._workflows.get(key);
       // istanbul ignore else
-      if (workflow) {
+      if (workflow)
         sortedWorkflows.push(workflow);
-      }
     }
 
     sortedWorkflows.sort((a: Workflow, b: Workflow) => {

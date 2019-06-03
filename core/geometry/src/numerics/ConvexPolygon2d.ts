@@ -9,6 +9,7 @@ import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range1d } from "../geometry3d/Range";
 import { Geometry } from "../Geometry";
 /**
+ * Ray with xy origin and direction
  * @internal
  */
 export class Ray2d {
@@ -19,20 +20,23 @@ export class Ray2d {
     this._origin = origin;
     this._direction = direction;
   }
-
+  /** Create from 2d `origin` and `target`.
+   * * `target - origin` is the direction vector.
+   */
   public static createOriginAndTarget(origin: Point2d, target: Point2d): Ray2d {
     return new Ray2d(origin.clone(), origin.vectorTo(target));
   }
-
+  /** Create from (clones of) `origin` point and `direction` vector */
   public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin.clone(), direction.clone());
   }
-
+  /** Captuer `origin` and `direction` as ray member variables. */
   public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin, direction);
   }
-
+  /** Get the (REFERENCE TO) the ray origin. */
   public get origin() { return this._origin; }
+  /** Get the (REFERENCE TO) the ray direction. */
   public get direction() { return this._direction; }
 
   /**
@@ -41,15 +45,16 @@ export class Ray2d {
   public parallelRay(leftFraction: number): Ray2d {
     return new Ray2d(this._origin.addForwardLeft(0.0, leftFraction, this._direction), this._direction);
   }
-
+  /** Return a ray with same origin, direction rotated 90 degrees counterclockwise */
   public ccwPerpendicularRay(): Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CCWXY());
   }
 
+  /** Return a ray with same origin, direction rotated 90 degrees clockwise */
   public cwPerpendicularRay(): Ray2d {
     return new Ray2d(this._origin, this._direction.rotate90CWXY());
   }
-
+  /** Normalize the direction vector in place. */
   public normalizeDirectionInPlace(): boolean {
     if (this._direction.normalize(this._direction)) {
       return true;
@@ -102,6 +107,7 @@ export class Ray2d {
   }
 }
 /**
+ * Convex hull of points in 2d.
  * @internal
  */
 export class ConvexPolygon2d {

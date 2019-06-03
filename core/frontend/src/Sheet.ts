@@ -8,7 +8,7 @@ import { assert, BeDuration, dispose, Id64String, Id64, Id64Array, JsonUtils } f
 import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
-  Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
+  Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, TileTreeProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
   ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -268,13 +268,15 @@ export namespace Attachments {
   /** @internal */
   export class Tile2d extends Tile {
     public constructor(root: Tree2d, range: ElementAlignedBox2d) {
-      super(new Tile.Params(
+      const params: Tile.Params = {
         root,
-        "",
-        new Range3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
-        512,  // does not matter... have no children
-        true,
-      ));
+        contentId: "",
+        range: new Range3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
+        maximumSize: 512,  // does not matter... have no children
+        isLeaf: true,
+      };
+
+      super(params);
       this.setIsReady();
     }
 
@@ -303,14 +305,14 @@ export namespace Attachments {
     private _tilePolyfaces: IndexedPolyface[] = [];
 
     private constructor(root: Tree3d, parent: Tile3d | undefined, tileRange: ElementAlignedBox3d) {
-      super(new Tile.Params(
+      super({
         root,
-        "",
-        tileRange,
-        .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
-        true,
+        contentId: "",
+        range: tileRange,
+        maximumSize: .5 * Math.sqrt(2 * QUERY_SHEET_TILE_PIXELS * QUERY_SHEET_TILE_PIXELS),
+        isLeaf: true,
         parent,
-      ));
+      });
     }
 
     public static create(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement): Tile3d {
@@ -581,9 +583,10 @@ export namespace Attachments {
     public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String) {
       // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
       const isLeaf = loader.is3dAttachment;
-      super(new TileTree.Params(
-        modelId,
-        {
+      const is3d = false; // NB: The attachment is 3d. The attachment tiles are 2d.
+      const props: TileTreeProps = {
+        id: modelId,
+        rootTile: {
           contentId: "",
           range: {
             low: { x: 0, y: 0, z: 0 },
@@ -592,14 +595,10 @@ export namespace Attachments {
           maximumSize: 512,
           isLeaf,
         },
-        iModel,
-        false, // NB: The attachment is 3d. The attachment tiles are 2d.
-        loader,
-        Transform.createIdentity(),
-        modelId,
-        undefined,
-        undefined,
-      ));
+        location: Transform.identity.toJSON(),
+      };
+      const params = TileTree.paramsFromJSON(props, iModel, is3d, loader, modelId);
+      super(params);
     }
   }
 
@@ -1051,7 +1050,7 @@ export namespace Attachments {
  * @public
  */
 export class SheetViewState extends ViewState2d {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SheetViewDefinition"; }
   public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);

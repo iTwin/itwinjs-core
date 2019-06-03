@@ -58,19 +58,28 @@ export namespace IModelJson {
    * @public
    */
   export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
+    /** `{indexedMesh:...}` */
     indexedMesh?: IndexedMeshProps;
+    /** `{point:...}` */
     point?: XYZProps;
+    /** `{bsurf:...}` */
     bsurf?: BSplineSurfaceProps;
   }
   /**
    * Property rules for json objects that can be deserialized to various CurvePrimitives
+   * * Only one of these is allowed in each instance.
    * @public
    */
   export interface CurvePrimitiveProps {
+    /** `{lineSegment:...}` */
     lineSegment?: [XYZProps, XYZProps];
+    /** `{lineString:...}` */
     lineString?: XYZProps[];
+    /** `{bcurve:...}` */
     bcurve?: BcurveProps;
+    /** `{transitionSpiral:...}` */
     transitionSpiral?: TransitionSpiralProps;
+    /** `{arc:...}` */
     arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
   }
 
@@ -79,18 +88,25 @@ export namespace IModelJson {
    * @public
    */
   export interface PointProps {
+    /** `{point:...}` */
     point?: XYZProps;
   }
 
   /**
    * Property rules for json objects that can be deserialized to a BsplineSurface
+   * See `BCurveProps` for discussion of knot and pole counts.
    * @public
    */
   export interface BSplineSurfaceProps {
+    /** polynomial order (one more than degree) in the u parameter direction */
     orderU: number;
+    /** polynomial order (one more than degree) in the v parameter direction */
     orderV: number;
+    /** Square grid of control points (aka poles) in row major order (row is along the u direction) */
     points: [[[number]]];   // each inner array is xyz or xyzw for a single control point. each middle array is a row of control points.
+    /** Array of knots for the u direction bspline */
     uKnots: [number];
+    /** Array of knots for the v direction bspline */
     vKnots: [number];
   }
 
@@ -110,12 +126,19 @@ export namespace IModelJson {
    * @public
    */
   export interface PlanarRegionProps {
-    /** A sequence of curves which connect head to tail, with the final connecting back to the first */
+    /** `{loop:...}`
+     * * A sequence of curves which connect head to tail, with the final connecting back to the first
+     */
     loop?: [CurvePrimitiveProps];
-    /** A collection of loops, with composite inside/outside determined by parity rules.
-     * (The single outer boundary with one or more holes is a parityRegion)
+    /** `{parityRegion:...}`
+     * * A collection of loops, with composite inside/outside determined by parity rules.
+     * * (The single outer boundary with one or more holes is a parityRegion)
      */
     parityRegion?: [{ loop: [CurvePrimitiveProps] }];
+    /** `{unionRegion:...}`
+     * * A collection of loops and parityRegions
+     */
+
     unionRegion?: [PlanarRegionProps];
   }
   /**
@@ -123,13 +146,21 @@ export namespace IModelJson {
    * @public
    */
   export interface SolidPrimitiveProps {
+    /** `{cylinder:...}` */
     cylinder?: CylinderProps;
+    /** `{box:...}` */
     box?: BoxProps;
+    /** `{sphere:............}` */
     sphere?: SphereProps;
+    /** `{cone:............}` */
     cone?: ConeProps;
+    /** `{torusPipe:............}` */
     torusPipe?: TorusPipeProps;
+    /** `{linearSweep:.........}` */
     linearSweep?: LinearSweepProps;
+    /** `{rotationalSweep:...}` */
     rotationalSweep?: RotationalSweepProps;
+    /** `{ruledSweep:...}` */
     ruledSweep?: RuledSweepProps;
   }
   /**
@@ -177,30 +208,35 @@ export namespace IModelJson {
    * @public
    */
   export interface ArcByVectorProps {
+    /** Arc center point */
     center: XYZProps;
+    /** Vector from center to 0-degree point (commonly callled major axis vector) */
     vectorX: XYZProps;
+    /** Vector from center to 90-degree point (common called minor axis vector) */
     vectorY: XYZProps;
+    /** Start and end angles in parameterization `X=C+cos(theta) * vectorX + sin(theta) * vectorY` */
     sweepStartEnd: AngleSweepProps;
   }
 
   /**
    * Interface for Cone value defined by centers, radii, and (optional) vectors for circular section planes.
+   * * VectorX and vectorY are optional.
+   * * If either one is missing, both vectors are constructed perpendicular to the vector from start to end.
    * @public
    */
   export interface ConeProps extends AxesProps {
+    /** Point on axis at start section. */
     start: XYZProps;
+    /** Point on axis at end section  */
     end: XYZProps;
 
-    /** radius at `start` */
+    /** radius at `start` section */
     startRadius: number;
-    /** radius at `end` */
+    /** radius at `end` section */
     endRadius?: number;
-
-    /**
-     * * VectorX and vectorY are optional.
-     * * If either one is missing, both vectors are constructed perpendicular to the vector from start to end.
-     */
+    /** optional x vector in start section.  Omit for circular sections perpendicular to axis. */
     vectorX?: XYZProps;
+    /** optional y vector in start section.  Omit for circular sections perpendicular to axis. */
     vectorY?: XYZProps;
     /** flag for circular end caps. */
     capped?: boolean;
@@ -215,6 +251,7 @@ export namespace IModelJson {
     start: XYZProps;
     /** axis point at end */
     end: XYZProps;
+    /** cylinder radius */
     radius: number;
     /** flag for circular end caps. */
     capped?: boolean;
@@ -275,10 +312,15 @@ export namespace IModelJson {
     origin: XYZProps;
     /** angle at departure from origin. */
     startBearing?: AngleProps;
+    /** End bearing. */
     endBearing?: AngleProps;
+    /** Radius at start  (0 for straight line) */
     startRadius?: number;
+    /** Radius at end  (0 for straight line) */
     endRadius?: number;
+    /** length along curve */
     curveLength?: number;
+    /** Fractional part of active interval. */
     fractionInterval?: number[];
     /** TransitionSpiral type.   Default is `"clothoid"` */
     type?: string; //   one of:   "clothoid" | "biquadratic" | "bloss" | "cosine" | "sine";
@@ -294,9 +336,9 @@ export namespace IModelJson {
    */
   export interface BcurveProps {
     /** control points */
-    point: [XYZProps];
+    points: [XYZProps];
     /** knots. */
-    knot: [number];
+    knots: [number];
     /** order of polynomial
      * * The order is the number of basis functions that are in effect at any knot value.
      * * The order is the number of points that affect the curve at any knot value,
@@ -312,6 +354,8 @@ export namespace IModelJson {
      * * Hence expect 7 poles.
      */
     order: number;
+    /** optional flag for periodic data. */
+    closed?: boolean;
   }
 
   /**
@@ -410,6 +454,7 @@ export namespace IModelJson {
    * @public
    */
   export interface RuledSweepProps {
+    /** Array of contours */
     countour: [CurveCollectionProps];
     /** optional capping flag. */
     capped?: boolean;
@@ -556,7 +601,7 @@ export namespace IModelJson {
       return undefined;
     }
 
-    private static parseYawPitchRollAngles(json: any): Matrix3d | undefined {
+    private static parseYawPitchRollAnglesToMatrix3d(json: YawPitchRollProps): Matrix3d | undefined {
       const ypr = YawPitchRollAngles.fromJSON(json);
       return ypr.toMatrix3d();
     }
@@ -592,7 +637,7 @@ export namespace IModelJson {
      */
     private static parseOrientation(json: any, createDefaultIdentity: boolean): Matrix3d | undefined {
       if (json.yawPitchRollAngles) {
-        return Reader.parseYawPitchRollAngles(json.yawPitchRollAngles);
+        return Reader.parseYawPitchRollAnglesToMatrix3d(json.yawPitchRollAngles);
       } else if (json.xyVectors) {
         return Reader.parseAxesFromVectors(json.xyVectors, AxisOrder.XYZ, createDefaultIdentity);
       } else if (json.zxVectors) {
@@ -636,15 +681,17 @@ export namespace IModelJson {
       arc = Reader.parseArcBy3Points(data);
       return arc; // possibly undefined.
     }
-
+    /** Parse point content (right side) `[1,2,3]` to a CoordinateXYZ object. */
     public static parseCoordinate(data?: any): CoordinateXYZ | undefined {
       const point = Point3d.fromJSON(data);
       if (point)
         return CoordinateXYZ.create(point);
       return undefined;
     }
-    /** @alpha */
-    public static parseTransitionSpiral(data?: any): TransitionSpiral3d | undefined {
+    /** Parse TransitionSpiral content (right side) to TransitionSpiral3d
+     * @alpha
+     */
+    public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
       const axes = Reader.parseOrientation(data, true)!;
       const origin = Reader.parsePoint3dProperty(data, "origin");
       // the create method will juggle any 4 out of these 5 inputs to define the other ..
@@ -697,7 +744,10 @@ export namespace IModelJson {
       }
       return false;
     }
+    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
     public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
+      if (data === undefined)
+        return undefined;
       if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order) && data.closed !== undefined) {
         if (data.points[0].length === 4) {
           const hPoles: Point4d[] = [];
@@ -754,6 +804,7 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Parse array of json objects to array of instances. */
     public static parseArray(data?: any): any[] | undefined {
       if (Array.isArray(data)) {
         const myArray = [];
@@ -777,6 +828,7 @@ export namespace IModelJson {
         }
       }
     }
+    /** parse polyface aux data content to PolyfaceAuxData instance */
     public static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined {
 
       if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
@@ -800,6 +852,7 @@ export namespace IModelJson {
       return auxData;
     }
 
+    /** parse indexed mesh content to an IndexedPolyface instance */
     public static parseIndexedMesh(data?: any): any | undefined {
       // {Coord:[[x,y,z],. . . ],   -- simple xyz for each ponit
       // CoordIndex[1,2,3,0]    -- zero-terminated, one based !!!
@@ -855,7 +908,7 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
+    /** parse contents of a curve collection to a CurveCollection instance */
     public static parseCurveCollectionMembers(result: CurveCollection, data?: any): CurveCollection | undefined {
       if (data && Array.isArray(data)) {
         for (const c of data) {
@@ -867,8 +920,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
-    public static parseBsurf(data?: any) {
+    /** Parse content of `bsurf` to BSplineSurface3d or BSplineSurface3dH */
+    public static parseBsurf(data?: any): BSplineSurface3d | BSplineSurface3dH | undefined {
       if (data.hasOwnProperty("uKnots") && Array.isArray(data.uKnots)
         && data.hasOwnProperty("vKnots") && Array.isArray(data.vKnots)
         && data.hasOwnProperty("orderU") && Number.isFinite(data.orderU)
@@ -896,9 +949,7 @@ export namespace IModelJson {
       }
       return undefined;
     }
-    /**
-     * Create a cone with data from a `ConeByCCRRV`.
-     */
+    /** Parse `cone` contents to `Cone` instance  */
     public static parseConeProps(json?: ConeProps): any {
       const axes = Reader.parseOrientation(json, false);
       const start = Reader.parsePoint3dProperty(json, "start");
@@ -926,9 +977,7 @@ export namespace IModelJson {
       return undefined;
     }
 
-    /**
-     * Create a cylinder.
-     */
+    /** Parse `cylinder` content to `Cone` instance */
     public static parseCylinderProps(json?: CylinderProps): any {
       const start = Reader.parsePoint3dProperty(json, "start");
       const end = Reader.parsePoint3dProperty(json, "end");
@@ -943,12 +992,12 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
+    /** Parse line segment (array of 2 points) properties to `LineSegment3d` instance */
     private static parseLineSegmentProps(value: any[]): any {
       if (Array.isArray(value) && value.length > 1)
         return LineSegment3d.create(Point3d.fromJSON(value[0]), Point3d.fromJSON(value[1]));
     }
-
+    /** Parse linear sweep content to `LinearSweep` instance. */
     public static parseLinearSweep(json?: any): any {
       const contour = Reader.parse(json.contour);
       const capped = Reader.parseBooleanProperty(json, "capped");
@@ -961,8 +1010,10 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
-    public static parseRotationalSweep(json?: any): any {
+    /** Parse rotational sweep contents to `RotationalSweep` instance */
+    public static parseRotationalSweep(json?: RotationalSweepProps): RotationalSweep | undefined {
+      if (json === undefined)
+        return undefined;
       const contour = Reader.parse(json.contour);
       const capped = Reader.parseBooleanProperty(json, "capped");
       const axisVector = Reader.parseVector3dProperty(json, "axis");
@@ -982,7 +1033,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-    public static parseBox(json?: any): any {
+    /** Parse box contents to `Box` instance */
+    public static parseBox(json?: BoxProps): Box | undefined {
       const capped = Reader.parseBooleanProperty(json, "capped", false);
       const baseOrigin = Reader.parsePoint3dProperty(json, "baseOrigin");
       const baseX = Reader.parseNumberProperty(json, "baseX");
@@ -1009,8 +1061,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
-    public static parseSphere(json?: SphereProps): any {
+    /** Parse `SphereProps` to `Sphere` instance. */
+    public static parseSphere(json?: SphereProps): Sphere | undefined {
       const center = Reader.parsePoint3dProperty(json, "center");
       // optional unqualified radius . . .
       const radius = Reader.parseNumberProperty(json, "radius");
@@ -1034,8 +1086,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
-    public static parseRuledSweep(json?: any): any {
+    /** Parse RuledSweepProps to RuledSweep instance. */
+    public static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined {
       const capped = Reader.parseBooleanProperty(json, "capped", false);
       const contours = this.loadContourArray(json, "contour");
       if (contours !== undefined
@@ -1044,8 +1096,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-
-    public static parseTorusPipe(json?: any): any {
+    /** Parse TorusPipe props to TorusPipe instance. */
+    public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
 
       const axes = Reader.parseOrientation(json, true)!;
       const center = Reader.parsePoint3dProperty(json, "center");
@@ -1064,7 +1116,8 @@ export namespace IModelJson {
       }
       return undefined;
     }
-    public static parsePointArray(json?: any): Point3d[] {
+    /** Parse an array object to array of Point3d instances. */
+    public static parsePointArray(json?: any[]): Point3d[] {
       const points = [];
       if (json && Array.isArray(json)) {
         for (const member of json) {
@@ -1077,7 +1130,7 @@ export namespace IModelJson {
       }
       return points;
     }
-
+    /** Deserialize `json` to `GeometryQuery` instances. */
     public static parse(json?: any): any {
       if (json !== undefined && json as object) {
         if (json.lineSegment !== undefined) {
@@ -1141,13 +1194,16 @@ export namespace IModelJson {
    * @public
    */
   export class Writer extends GeometryHandler {
+    /** Convert strongly typed instance to tagged json */
     public handleLineSegment3d(data: LineSegment3d): any {
       return { "lineSegment": [data.point0Ref.toJSON(), data.point1Ref.toJSON()] };
     }
+    /** Convert strongly typed instance to tagged json */
     public handleCoordinateXYZ(data: CoordinateXYZ): any {
       return { "point": data.point.toJSON() };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleArc3d(data: Arc3d): any {
       return {
         "arc": {
@@ -1207,7 +1263,10 @@ export namespace IModelJson {
       }
       data.xyVectors = [vectorU.toJSON(), vectorV.toJSON()];
     }
-  /** @alpha */
+    /**
+     * parse properties of a TransitionSpiral.
+     * @alpha
+     */
     public handleTransitionSpiral(data: TransitionSpiral3d): any {
       // TODO: HANDLE NONRIGID TRANSFORM !!
       // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the orignial data
@@ -1248,6 +1307,7 @@ export namespace IModelJson {
       return { "transitionSpiral": value };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleCone(data: Cone): any {
 
       const radiusA = data.getRadiusA();
@@ -1284,6 +1344,7 @@ export namespace IModelJson {
       }
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleSphere(data: Sphere): any {
       const xData = data.cloneVectorX().normalizeWithLength();
       const yData = data.cloneVectorY().normalizeWithLength();
@@ -1318,6 +1379,7 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleTorusPipe(data: TorusPipe): any {
 
       const vectorX = data.cloneVectorX();
@@ -1343,6 +1405,7 @@ export namespace IModelJson {
 
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleLineString3d(data: LineString3d): any {
       const pointsA = data.points;
       const pointsB = [];
@@ -1351,6 +1414,7 @@ export namespace IModelJson {
       return { "lineString": pointsB };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handlePointString3d(data: PointString3d): any {
       const pointsA = data.points;
       const pointsB = [];
@@ -1359,21 +1423,26 @@ export namespace IModelJson {
       return { "pointString": pointsB };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handlePath(data: Path): any {
       return { "path": this.collectChildren(data) };
     }
+    /** Convert strongly typed instance to tagged json */
     public handleLoop(data: Loop): any {
       return { "loop": this.collectChildren(data) };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleParityRegion(data: ParityRegion): any {
       return { "parityRegion": this.collectChildren(data) };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleUnionRegion(data: UnionRegion): any {
       return { "unionRegion": this.collectChildren(data) };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBagOfCurves(data: BagOfCurves): any {
       return { "bagOfCurves": this.collectChildren(data) };
     }
@@ -1390,6 +1459,7 @@ export namespace IModelJson {
       return children;
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleLinearSweep(data: LinearSweep): any {
       const extrusionVector = data.cloneSweepVector();
       const curves = data.getCurvesRef();
@@ -1408,6 +1478,7 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleRuledSweep(data: RuledSweep): any {
       const contours = data.cloneContours();
       const capped = data.capped;
@@ -1428,6 +1499,7 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleRotationalSweep(data: RotationalSweep): any {
       const axisRay = data.cloneAxisRay();
       const curves = data.getCurves();
@@ -1444,6 +1516,7 @@ export namespace IModelJson {
       };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBox(box: Box): any {
       const out: any = {
         "box": {
@@ -1494,6 +1567,7 @@ export namespace IModelJson {
       return contents;
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleIndexedPolyface(pf: IndexedPolyface): any {
       const points = [];
       const pointIndex: number[] = [];
@@ -1578,6 +1652,7 @@ export namespace IModelJson {
       return { "indexedMesh": contents };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBSplineCurve3d(curve: BSplineCurve3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
@@ -1640,6 +1715,7 @@ export namespace IModelJson {
       }
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBezierCurve3d(curve: BezierCurve3d): any {
       const knots = [];
       const order = curve.order;
@@ -1655,6 +1731,7 @@ export namespace IModelJson {
       };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBSplineCurve3dH(curve: BSplineCurve3dH): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
@@ -1689,6 +1766,7 @@ export namespace IModelJson {
       }
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
@@ -1733,6 +1811,7 @@ export namespace IModelJson {
       }
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBezierCurve3dH(curve: BezierCurve3dH): any {
       const knots = [];
       const order = curve.order;
@@ -1748,6 +1827,7 @@ export namespace IModelJson {
       };
     }
 
+    /** Convert strongly typed instance to tagged json */
     public handleBSplineSurface3dH(surface: BSplineSurface3dH): any {
       const data = surface.getPointGridJSON();
       return {
@@ -1761,6 +1841,7 @@ export namespace IModelJson {
       };
     }
 
+    /** Convert an array of strongly typed instances to an array of tagged json */
     public emitArray(data: object[]): any {
       const members = [];
       for (const c of data) {
@@ -1769,7 +1850,7 @@ export namespace IModelJson {
       }
       return members;
     }
-
+    /** Convert GeomeryQuery data (array or single instance) to instance to tagged json */
     public emit(data: any): any {
       if (Array.isArray(data))
         return this.emitArray(data);

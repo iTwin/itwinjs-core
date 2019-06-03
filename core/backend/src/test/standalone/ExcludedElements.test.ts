@@ -7,7 +7,7 @@ import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IM
 import { expect } from "chai";
 import * as path from "path";
 import { BackendRequestContext, DictionaryModel, DisplayStyle3d, Element, IModelDb } from "../../imodeljs-backend";
-import { IModelJsNative } from "../../IModelJsNative";
+import { NativeLoggerCategory } from "../../IModelJsNative";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "../integration/HubUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -23,10 +23,10 @@ describe("ExcludedElements", () => {
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
-    imodel1 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel4 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = IModelDb.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
@@ -40,8 +40,8 @@ describe("ExcludedElements", () => {
   });
 
   it.skip("dump cs file", () => {
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.DgnCore, LogLevel.Trace);
-    Logger.setLevel(IModelJsNative.BackendLoggerCategory.Changeset, LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
     const db = IModelDb.openStandalone("D:\\dgn\\problem\\83927\\EAP_TT_001\\seed\\EAP_TT_001.bim");
     HubUtility.dumpChangeSetFile(db, "D:\\dgn\\problem\\83927\\EAP_TT_001", "9fd0e30f88e93bec72532f6f1e05688e2c2408cd");
   });

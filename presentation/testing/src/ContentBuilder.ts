@@ -7,23 +7,35 @@ import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";
-import { using, Id64String } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 
-/** Interface for a data provider, which is used by ContentBuilder */
+/**
+ * Interface for a data provider, which is used by ContentBuilder.
+ * @public
+ */
 export interface IContentBuilderDataProvider {
+  /** Keys the data provider is creating content for */
   keys: Readonly<KeySet>;
+  /** Get the size of content result set */
   getContentSetSize: () => Promise<number>;
+  /** Get the content */
   getContent: (options?: PageOptions) => Promise<Readonly<Content> | undefined>;
 }
 
-/** Property records grouped under a single className */
+/**
+ * Property records grouped under a single className
+ * @public
+ */
 export interface ContentBuilderResult {
+  /** Full name of ECClass whose records are contained in this data structure */
   className: string;
+  /** Property records for the ECClass instance */
   records: PropertyRecord[];
 }
 
 /**
  * A class that constructs content from specified imodel and ruleset.
+ * @public
  */
 export class ContentBuilder {
   private readonly _iModel: IModelConnection;
@@ -40,14 +52,10 @@ export class ContentBuilder {
   }
 
   private async doCreateContent(rulesetId: string, instanceKeys: InstanceKey[], displayType: string): Promise<PropertyRecord[]> {
-    const keyset = new KeySet(instanceKeys);
-
     const dataProvider = this._dataProvider ? this._dataProvider : new ContentDataProvider(this._iModel, rulesetId, displayType);
-    dataProvider.keys = keyset;
+    dataProvider.keys = new KeySet(instanceKeys);
 
-    const contentCount = await dataProvider.getContentSetSize();
-    const content = await dataProvider.getContent({ size: contentCount });
-
+    const content = await dataProvider.getContent();
     if (!content)
       return [];
 
@@ -78,7 +86,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     if (typeof rulesetOrId === "string")
       return this.doCreateContent(rulesetOrId, instanceKeys, displayType);
 
@@ -88,12 +96,16 @@ export class ContentBuilder {
   }
 
   private async getECClassNames(): Promise<Array<{ schemaName: string, className: string }>> {
-    return this._iModel.queryPage(`
+    const rows = [];
+    for await (const row of this._iModel.query(`
       SELECT s.Name schemaName, c.Name className FROM meta.ECClassDef c
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
       WHERE c.Modifier <> 1 AND c.Type = 0
       ORDER BY s.Name, c.Name
-    `);
+    `)) {
+      rows.push(row);
+    }
+    return rows;
   }
 
   private async createContentForClasses(rulesetOrId: Ruleset | string, limitInstances: boolean, displayType: string) {
@@ -103,9 +115,12 @@ export class ContentBuilder {
 
     for (const nameEntry of classNameEntries) {
       // try {
-      const instanceIds = await this._iModel.queryPage(`
-          SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
-          ORDER BY ECInstanceId`, undefined, { size: limitInstances ? 1 : 4000 }) as Array<{ id: Id64String }>;
+      const instanceIds = [];
+      for await (const row of this._iModel.query(`
+      SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
+      ORDER BY ECInstanceId`, undefined, limitInstances ? 1 : 4000)) {
+        instanceIds.push(row);
+      }
 
       if (!instanceIds.length)
         continue;
@@ -128,7 +143,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContentForAllInstances(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, false, displayType);
   }
 
@@ -139,7 +154,7 @@ export class ContentBuilder {
    * @param displayType Type of content container display. For example:
    * "PropertyPane", "Grid", "List" etc.
    */
-  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PROPERTY_PANE) {
+  public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, true, displayType);
   }
 }

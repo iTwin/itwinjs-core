@@ -8,22 +8,14 @@ import {
   createRandomECClassInfo, createRandomECClassInfoJSON,
   createRandomRelationshipPath, createRandomRelationshipPathJSON,
   createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomEditorDescription, createRandomPrimitiveField,
+  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomNestedFieldJSON,
 } from "../_helpers/random";
-import { BaseFieldJSON, PropertiesFieldJSON, NestedContentFieldJSON } from "../../presentation-common";
+import { PropertiesFieldJSON } from "../../content/Fields";
 import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "../../presentation-common";
 
 const generateTestData = () => {
   const testData: any = {};
-  testData.baseFieldJSON = {
-    category: createRandomCategory(),
-    name: faker.random.word(),
-    label: faker.random.words(),
-    type: createRandomPrimitiveTypeDescription(),
-    isReadonly: faker.random.boolean(),
-    priority: faker.random.number(),
-    editor: createRandomEditorDescription(),
-  } as BaseFieldJSON;
+  testData.baseFieldJSON = createRandomPrimitiveFieldJSON();
   testData.propertiesFieldJSON = {
     ...testData.baseFieldJSON,
     properties: [{
@@ -35,33 +27,7 @@ const generateTestData = () => {
       relatedClassPath: createRandomRelationshipPathJSON(1),
     }],
   } as PropertiesFieldJSON;
-  testData.nestedContentFieldJSON = {
-    ...testData.baseFieldJSON,
-    type: {
-      valueFormat: PropertyValueFormat.Struct,
-      typeName: faker.random.word(),
-      members: [{
-        type: createRandomPrimitiveTypeDescription(),
-        name: "name1",
-        label: "label 1",
-      }, {
-        type: createRandomPrimitiveTypeDescription(),
-        name: "name2",
-        label: "label 2",
-      }],
-    } as StructTypeDescription,
-    contentClassInfo: createRandomECClassInfoJSON(),
-    pathToPrimaryClass: createRandomRelationshipPathJSON(),
-    nestedFields: [{
-      ...testData.baseFieldJSON,
-      name: "name1",
-      label: "label 1",
-    }, {
-      ...testData.baseFieldJSON,
-      name: "name2",
-      label: "label 2",
-    }],
-  } as NestedContentFieldJSON;
+  testData.nestedContentFieldJSON = createRandomNestedFieldJSON();
   return testData;
 };
 
@@ -187,6 +153,12 @@ describe("NestedContentField", () => {
     it("creates valid NestedContentField from valid serialized JSON", () => {
       const item = NestedContentField.fromJSON(JSON.stringify(testData.nestedContentFieldJSON));
       expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid NestedContentField from valid serialized JSON", () => {
+      testData.nestedContentFieldJSON.nestedFields = [createRandomPrimitiveFieldJSON(), undefined as any];
+      const field = NestedContentField.fromJSON(testData.nestedContentFieldJSON);
+      expect(field!.nestedFields.length).to.eq(1);
     });
 
     it("returns undefined for undefined JSON", () => {

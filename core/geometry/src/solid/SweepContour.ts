@@ -27,8 +27,11 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
  * @public
  */
 export class SweepContour {
+  /** The underlying curve collection, in its world coordinates position. */
   public curves: CurveCollection;
+  /** coordinate frame that in which the curves are all in the xy plane. */
   public localToWorld: Transform;
+  /** Axis used only in rotational case. */
   public axis: Ray3d | undefined;
 
   private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
@@ -36,6 +39,10 @@ export class SweepContour {
     this.localToWorld = map;
     this.axis = axis;
   }
+  /** Create for linear sweep.
+   * * The optional default normal may be useful for guiding coordinate frame setup.
+   * * the contour is CAPTURED.
+   */
   public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
@@ -43,6 +50,10 @@ export class SweepContour {
     }
     return undefined;
   }
+  /** Create for rotational sweep.
+   * * The axis ray is retained.
+   * * the contour is CAPTURED.
+   */
   public static createForRotation(contour: CurveCollection, axis: Ray3d): SweepContour | undefined {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, contour, axis);
@@ -51,7 +62,11 @@ export class SweepContour {
     }
     return undefined;
   }
+  /** Return (Reference to) the curves */
   public getCurves(): CurveCollection { return this.curves; }
+  /** Apply `transform` to the curves, axis.
+   * * The local to world frame is reconstructed for the transformed curves.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (this.curves.tryTransformInPlace(transform)) {
       if (this.axis)
@@ -67,15 +82,18 @@ export class SweepContour {
     }
     return false;
   }
+  /** Return a deep clone. */
   public clone(): SweepContour {
     return new SweepContour(this.curves.clone() as CurveCollection, this.localToWorld.clone(), this.axis);
   }
+  /** Return a transformed clone. */
   public cloneTransformed(transform: Transform): SweepContour | undefined {
     const newContour = this.clone();
     if (newContour.tryTransformInPlace(transform))
       return newContour;
     return undefined;
   }
+  /** Test for near equality of cures and local frame. */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof SweepContour) {
       return this.curves.isAlmostEqual(other.curves) && this.localToWorld.isAlmostEqual(other.localToWorld);

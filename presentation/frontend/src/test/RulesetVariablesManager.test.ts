@@ -9,19 +9,19 @@ import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
-import RulesetVariablesManager from "../RulesetVariablesManager";
+import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 import { VariableValueTypes, VariableValue } from "@bentley/presentation-common";
 
 describe("RulesetVariablesManager", () => {
 
-  let vars: RulesetVariablesManager;
+  let vars: RulesetVariablesManagerImpl;
   let rulesetId: string;
   let variableId: string;
 
   beforeEach(() => {
     rulesetId = faker.random.uuid();
     variableId = faker.random.word();
-    vars = new RulesetVariablesManager(rulesetId);
+    vars = new RulesetVariablesManagerImpl(rulesetId);
   });
 
   describe("[get] state", () => {

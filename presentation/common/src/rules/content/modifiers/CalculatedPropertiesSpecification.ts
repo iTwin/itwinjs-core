@@ -6,6 +6,7 @@
 
 /**
  * Sub-specification to include additional calculated properties into the content.
+ * @public
  */
 export interface CalculatedPropertiesSpecification {
   /** Label of the calculated property. May be [localized]($docs/learning/Localization.md). */

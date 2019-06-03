@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-quantity
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Allow ^ to be used to define angle degrees.
+- Add ParserSec to support synchronous quantity parsing.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

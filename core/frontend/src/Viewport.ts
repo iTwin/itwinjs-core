@@ -28,8 +28,9 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo } from "./ViewState";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -40,6 +41,7 @@ import { ToolSettings } from "./tools/Tool";
  * @public
  */
 export interface FeatureOverrideProvider {
+  /** Add to the supplied `overrides` any symbology overrides to be applied to the specified `viewport`. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
@@ -292,15 +294,11 @@ export class ViewRect {
  * Values are in [[CoordSystem.Npc]] so they will be between 0 and 1.0.
  * @public
  */
-export class DepthRangeNpc {
-  /**
-   * @param minimum The lowest (closest to back) value.
-   * @param maximum The highest (closest to the front) value.
-   */
-  constructor(public minimum = 0, public maximum = 1.0) { }
-
-  /** The value at the middle (halfway between the minimum and maximum) of this depth */
-  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+export interface DepthRangeNpc {
+  /** The value closest to the back. */
+  minimum: number;
+  /** The value closest to the front. */
+  maximum: number;
 }
 
 /** Coordinate system types
@@ -474,6 +472,14 @@ export interface ZoomToOptions {
   placementRelativeId?: StandardViewId;
   /** Set view rotation from Matrix3d. */
   viewRotation?: Matrix3d;
+}
+
+/** Options for changing the viewed Model of a 2d view via [[Viewport.changeViewedModel2d]]
+ * @public
+ */
+export interface ChangeViewedModel2dOptions {
+  /** If true, perform a "fit view" operation after changing to the new 2d model. */
+  doFit?: boolean;
 }
 
 /** Supplies facilities for interacting with a [[Viewport]]'s frustum.
@@ -657,7 +663,7 @@ export class ViewFrustum {
       const intersect = new Point3d();
       const frustum = new Frustum();
       let includeHorizon = false;
-      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta).map as Map4d;
+      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
       const minimumEyeDistance = 10.0;
       const horizonDistance = 10000;
       worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
@@ -784,7 +790,7 @@ export class ViewFrustum {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, undefined === displayedPlane /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) { // invalid frustum
       this.invalidFrustum = true;
       return;
@@ -947,7 +953,7 @@ export enum ViewUndoEvent { Undo = 0, Redo = 1 }
  * The override affects geometry on all subcategories belonging to the overridden category. That is, if the category is overridden to be visible, then geometry on all subcategories of the category
  * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
  * @see [[Viewport.perModelCategoryVisibility]]
- * @alpha
+ * @beta
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
@@ -1155,6 +1161,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
  * @see [[ViewManager]]
  * @public
  */
+
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
@@ -1273,6 +1280,8 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
   private _featureOverrideProvider?: FeatureOverrideProvider;
+  private _tiledGraphicsProviders?: Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>;
+  private _hilite = new Hilite.Settings();
 
   /** @internal */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -1309,8 +1318,13 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public readonly sync = new SyncFlags();
+
   /** The settings that control how elements are hilited in this Viewport. */
-  public hilite = new Hilite.Settings();
+  public get hilite(): Hilite.Settings { return this._hilite; }
+  public set hilite(hilite: Hilite.Settings) {
+    this._hilite = hilite;
+    this._selectionSetDirty = true;
+  }
 
   /** Determine whether the Grid display is currently enabled in this Viewport.
    * @return true if the grid display is on.
@@ -1378,9 +1392,10 @@ export abstract class Viewport implements IDisposable {
     return undefined !== ovr ? ovr.override(app) : app;
   }
 
-  /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport.
+  /** Determine whether geometry belonging to a specific SubCategory is visible in this viewport, assuming the containing Category is displayed.
    * @param id The Id of the subcategory
    * @returns true if the subcategory is visible in this viewport.
+   * @note Because this function does not know the Id of the containing Category, it does not check if the Category is enabled for display. The caller should check that separately if he knows the Id of the Category.
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
@@ -1451,10 +1466,35 @@ export abstract class Viewport implements IDisposable {
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
-  /** Attempt to replace the set of models currently viewed by this viewport.
+  /** Attempt to change the 2d Model this Viewport is displaying, if its ViewState is a ViewState2d.
+   * @param baseModelId The Id of the new 2d Model to be displayed.
+   * @param options options that determine how the new view is displayed
+   * @note This function *only works* if the viewport is viewing a [[ViewState2d]], otherwise it does nothing. Also note that
+   * the Model of baseModelId should be the same type (Drawing or Sheet) as the current view.
+   * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
+   */
+  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
+    if (!this.view.is2d)
+      return;
+
+    const newView = this.view.clone() as ViewState2d; // start by cloning the current ViewState
+    // NOTE: the cast below is necessary since baseModelId is marked as readonly after construction.
+    //  We know this is a special case where it is safe to change it.
+    (newView.baseModelId as Id64String) = baseModelId; // change its baseModelId.
+
+    await newView.load(); // make sure new model is loaded.
+    this.changeView(newView); // switch this viewport to use new ViewState2d
+
+    if (options && options.doFit) { // optionally fit view to the extents of the new model
+      const range = await this.iModel.models.queryModelRanges([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+    }
+  }
+
+  /** Attempt to replace the set of models currently viewed by this viewport, if it is displaying a SpatialView
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
-   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
     if (!this.view.isSpatialView())
@@ -1472,8 +1512,8 @@ export abstract class Viewport implements IDisposable {
   /** Add or remove a set of models from those models currently displayed in this viewport.
    * @param modelIds The Ids of the models to add or remove.
    * @param display Whether or not to display the specified models in the viewport.
-   * @returns false if thsi Viewport is not viewing a [[SpatialViewState]]
-   * @note This function has no effect unless the viewport is viewing a [[SpatialViewState]].
+   * @returns false if this Viewport is not viewing a [[SpatialViewState]]
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
     if (!this.view.isSpatialView())
@@ -1676,6 +1716,32 @@ export abstract class Viewport implements IDisposable {
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
   }
+  /** Add a TiledGraphicsProvider
+   * @internal
+   */
+  public addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
+    if (undefined === this._tiledGraphicsProviders)
+      this._tiledGraphicsProviders = new Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>();
+
+    if (undefined === this._tiledGraphicsProviders.get(type))
+      this._tiledGraphicsProviders.set(type, new Set<TiledGraphicsProvider.Provider>());
+
+    this._tiledGraphicsProviders!.get(type)!.add(provider);
+  }
+
+  /** Remove a TiledGraphicsProvider
+   * @internal
+   */
+  public removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
+    if (undefined !== this._tiledGraphicsProviders && undefined !== this._tiledGraphicsProviders.get(type))
+      this._tiledGraphicsProviders.get(type)!.delete(provider);
+  }
+  /** Get the tiled graphics providers for given type
+   * @internal
+   */
+  public getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined {
+    return this._tiledGraphicsProviders ? this._tiledGraphicsProviders.get(type) : undefined;
+  }
 
   /** @internal */
   public setViewedCategoriesPerModelChanged(): void {
@@ -1783,7 +1849,7 @@ export abstract class Viewport implements IDisposable {
         return;
 
       if (undefined === result) {
-        result = new DepthRangeNpc(minimum, maximum);
+        result = { minimum, maximum };
       } else {
         result.minimum = minimum;
         result.maximum = maximum;
@@ -1816,8 +1882,9 @@ export abstract class Viewport implements IDisposable {
     // We use the depth of the center of the view for that.
     let depthRange = this.determineVisibleDepthRange();
     if (!depthRange)
-      depthRange = new DepthRangeNpc();
-    const middle = depthRange.middle();
+      depthRange = { minimum: 0, maximum: 1 };
+
+    const middle = depthRange.minimum + ((depthRange.maximum - depthRange.minimum) / 2.0);
     const corners = [
       new Point3d(0.0, 0.0, middle), // lower left, at target depth
       new Point3d(1.0, 1.0, middle), // upper right at target depth
@@ -2363,17 +2430,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (this._selectionSetDirty) {
-      if ((0 === view.iModel.hilited.size && 0 === view.iModel.selectionSet.size) || (view.iModel.hilited.size > 0 && 0 === view.iModel.selectionSet.size)) {
-        target.setHiliteSet(view.iModel.hilited.elements); // only hilited has elements to send (or empty)
-      } else if (0 === view.iModel.hilited.size && view.iModel.selectionSet.size > 0) {
-        target.setHiliteSet(view.iModel.selectionSet.elements); // only selectionSet has elements to send
-      } else { // combine both sets (they both have elements to send)
-        const allHilites = new Set<string>();
-        view.iModel.hilited.elements.forEach((val) => allHilites.add(val));
-        view.iModel.selectionSet.elements.forEach((val) => allHilites.add(val));
-        target.setHiliteSet(allHilites);
-      }
-
+      target.setHiliteSet(view.iModel.hilited);
       this._selectionSetDirty = false;
       isRedrawNeeded = true;
     }
@@ -2411,11 +2468,12 @@ export abstract class Viewport implements IDisposable {
         const context = this.createSceneContext();
         view.createClassification(context);
         view.createScene(context);
-        view.createTerrain(context);
+        view.createBackgroundMap(context);
+        view.createProviderGraphics(context);
         view.createSolarShadowMap(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
-        target.changeTerrain(context.backgroundGraphics);
+        target.changeBackgroundMap(context.backgroundGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
         target.changeSolarShadowMap(context.solarShadowMap);
 
@@ -2596,11 +2654,15 @@ export class ScreenViewport extends Viewport {
   /** Create a new ScreenViewport that shows a View of an iModel into an HTMLDivElement. This method will create a new HTMLCanvasElement as a child of the supplied parentDiv.
    * It also creates two new child HTMLDivElements: one of class "overlay-decorators" for HTML overlay decorators, and one of class
    * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
-   * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
+   * @param parentDiv The HTMLDivElement to contain the ScreenViewport. The element must have non-zero width and height.
    * @param view The ViewState for the ScreenViewport.
    * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to become "live". You must also ensure you dispose of it properly.
+   * @throws Error if `parentDiv` has zero width or height.
    */
   public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
+    if (0 === parentDiv.clientWidth || 0 === parentDiv.clientHeight)
+      throw new Error("viewport cannot be created from a div with zero width or height");
+
     const canvas = document.createElement("canvas");
     const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
     vp.changeView(view);

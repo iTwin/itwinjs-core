@@ -48,7 +48,7 @@ export class WebAppRpcLogging {
   }
 
   private static getRpcInterfaceName(g: string | RpcInterfaceDefinition): string {
-    return (typeof g === "string") ? g : g.name;
+    return (typeof g === "string") ? g : g.interfaceName;
   }
 
   private static findPathIds(path: string) {
@@ -70,7 +70,7 @@ export class WebAppRpcLogging {
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {
-    const interfaceName = typeof (operation.interfaceDefinition) === "string" ? operation.interfaceDefinition : operation.interfaceDefinition.name;
+    const interfaceName = typeof (operation.interfaceDefinition) === "string" ? operation.interfaceDefinition : operation.interfaceDefinition.interfaceName;
     const operationName = operation.operationName;
     return `${interfaceName}.${operationName}`;
   }

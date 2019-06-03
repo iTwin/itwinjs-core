@@ -13,8 +13,8 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs } from "./Fragment";
+import { IsInstanced, IsAnimated, IsClassified, IsEdgeTestNeeded, FeatureMode, IsShadowable } from "../TechniqueFlags";
+import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { GLSLDecode } from "./Decode";
@@ -296,13 +296,13 @@ const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.wh
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 /** @internal */
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable): ProgramBuilder {
+export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable, isEdgeTestNeeded: IsEdgeTestNeeded): ProgramBuilder {
   const builder = createCommon(isInstanced, isAnimated, isClassified, isShadowable);
   addShaderFlags(builder);
 
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
-  addSurfaceDiscard(builder, feat);
+  addSurfaceDiscard(builder, feat, isEdgeTestNeeded, isClassified);
   addNormal(builder, isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
@@ -343,7 +343,10 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
     if (isClassified)
       addFeaturePlanarClassifier(builder);
     builder.frag.addFunction(GLSLDecode.depthRgb);
-    addPickBufferOutputs(builder.frag);
+    if (isEdgeTestNeeded || isClassified)
+      addPickBufferOutputs(builder.frag);
+    else
+      addAltPickBufferOutputs(builder.frag);
   }
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);

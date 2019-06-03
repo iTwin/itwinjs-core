@@ -2,7 +2,7 @@
 
 Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
-The [iModel.js](http://imodeljs.org) library is an open source library for creating, querying, modifying, and displaying iModels.
+The [iModel.js](http://imodeljs.org) library is an open source platform for creating, querying, modifying, and displaying iModels.
 
 If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
 
@@ -10,40 +10,31 @@ If you have questions, or wish to contribute to iModel.js, see our [Contributing
 
 [![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=1)
 
-This repository is a *monorepo* that holds the source code to several iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to several iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
 
-See [rush.json](./rush.json) for the list of packages. These packages are described below:
+See [rush.json](./rush.json) for the list of packages:
 
-* `package.json`
-  * Private, not published
-  * Provides the npm scripts to work with this repository
-* `core/bentley/package.json`
-  * Controls the version number and package dependencies for **@bentley/bentleyjs-core**
-* `core/geometry/package.json`
-  * Controls the version number and package dependencies for **@bentley/geometry-core**
-* `core/common/package.json`
-  * Controls the version number for **@bentley/imodeljs-common**
-  * Controls the package dependencies for the source code in common with both the backend and frontend
-* `core/backend/package.json`
-  * Controls the version number and package dependencies for **@bentley/imodeljs-backend**
-* `core/clients/package.json`
-  * Controls the version number and package dependencies for **@bentley/imodeljs-clients**
-* `core/frontend/package.json`
-  * Controls the version number and package dependencies for **@bentley/imodeljs-frontend**
-* `core/i18n/package.json`
-  * Controls the version number and package dependencies for **@bentley/imodeljs-i18n**
-* `core/ecschema-metadata`
-  * Comprehensive ECSchema library
-* `example-code`
-  * Example code snippets are extracted from these packages
-* `test-apps/display-test-app/package.json`
-  * Private, not published
-  * Test application for graphics visualization
-* `integration-tests/core/package.json`
-  * Private, not published
-  * Integration tests for frontend/backend interaction using standard RPC interfaces
+| Directory | npm package
+| ---- | ---
+| `core/backend` | `@bentley/imodeljs-backend`
+| `core/bentley` | `@bentley/bentleyjs-core`
+| `core/clients` | `@bentley/imodeljs-clients`
+| `core/common` | `@bentley/imodeljs-common`
+| `core/frontend` | `@bentley/imodeljs-frontend`
+| `core/geometry` | `@bentley/geometry-core`
+| `core/i18n` | `@bentley/imodeljs-i18n`
+| `core/markup` | `@bentley/imodeljs-markup`
+| `core/quantity` | `@bentley/imodeljs-quantity`
+| `presentation/backend` | `@bentley/presentation-backend`
+| `presentation/common` | `@bentley/presentation-common`
+| `presentation/components` | `@bentley/presentation-components`
+| `presentation/frontend` | `@bentley/presentation-frontend`
+| `ui/components` | `@bentley/ui-components`
+| `ui/core` | `@bentley/ui-core`
+| `ui/framework` | `@bentley/ui-framework`
+| `ui/ninezone` | `@bentley/ui-ninezone`
 
-Each package will have its own **node_modules** directory which will contain symbolic links to *common* dependencies managed by Rush.
+Each package creates its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
 
 ## Prerequisites
 

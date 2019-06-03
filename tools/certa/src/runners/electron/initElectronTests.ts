@@ -20,9 +20,6 @@ function startCertaTests(entryPoint: string) {
     // Load tests
     require(entryPoint);
 
-    // FIXME: This breakpoint is currently needed to ensure VS Code's chrome debugger has enough time to source-map the tests and set breakpoints.
-    debugger; // tslint:disable-line:no-debugger
-
     // Execute tests
     mocha.run((failedCount) => ipcRenderer.send("certa-done", failedCount));
   } catch ({ message, stack }) {

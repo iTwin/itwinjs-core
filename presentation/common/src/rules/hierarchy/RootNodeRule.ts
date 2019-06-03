@@ -10,6 +10,8 @@ import { RuleTypes } from "../Rule";
 /**
  * Root node rules define the nodes that are displayed
  * at the root hierarchy level.
+ *
+ * @public
  */
 export interface RootNodeRule extends NavigationRuleBase {
   /** Used for serializing to JSON. */

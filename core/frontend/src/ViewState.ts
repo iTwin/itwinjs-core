@@ -30,6 +30,7 @@ import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport, ViewFrustum } from "./Viewport";
 import { SpatialClassification } from "./SpatialClassification";
+import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -151,7 +152,7 @@ class ViewState2dUndo extends ViewStateUndo {
  * @public
  */
 export abstract class ViewState extends ElementState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "ViewDefinition"; }
 
   private _auxCoordSystem?: AuxCoordSystemState;
@@ -337,9 +338,31 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public createTerrain(context: SceneContext): void {
-    if (undefined !== this.displayStyle.backgroundMapPlane)
-      this.displayStyle.backgroundMap.addToScene(context);
+  public createBackgroundMap(context: SceneContext): void {
+    const backgroundMapProvider = this.displayStyle.backgroundMap;
+    if (undefined !== backgroundMapProvider)
+      this.createGraphicsFromProvider(context, backgroundMapProvider, TiledGraphicsProvider.Type.BackgroundMap);
+  }
+  /** @internal */
+  private createGraphicsFromProvider(context: SceneContext, provider: TiledGraphicsProvider.Provider, type: TiledGraphicsProvider.Type) {
+    const tree = provider.getTileTree(context.viewport);
+    if (tree !== undefined) {
+      context.tiledGraphicsProviderType = type;
+      context.extendedFrustumPlane = tree.plane;
+      tree.tileTree.drawScene(context);
+      context.extendedFrustumPlane = undefined;
+      context.tiledGraphicsProviderType = undefined;
+    }
+  }
+  /** @internal */
+  public createProviderGraphics(context: SceneContext): void {
+    for (let type = TiledGraphicsProvider.Type.Geometry; type <= TiledGraphicsProvider.Type.Overlay; type++) {
+      const providers = context.viewport.getTiledGraphicsProviders(type);
+      if (providers !== undefined) {
+        for (const provider of providers)
+          this.createGraphicsFromProvider(context, provider, type);
+      }
+    }
   }
 
   /** @internal */
@@ -401,7 +424,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d): { map: Map4d | undefined, frustFraction: number } {
+  public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
     if (viewRot === undefined) viewRot = this.getRotation();
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
@@ -427,7 +450,7 @@ export abstract class ViewState extends ElementState {
       let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
-      if (zFront / zBack < Viewport.nearScale24) {
+      if (enforceFrontToBackRatio && zFront / zBack < Viewport.nearScale24) {
         // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
         // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
         // Decreasing the maximumBackClip (MicroStation uses 1 kilometer) will reduce the minimum front
@@ -941,6 +964,8 @@ export abstract class ViewState extends ElementState {
  * @public
  */
 export abstract class ViewState3d extends ViewState {
+  /** @internal */
+  public static get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
   protected _cameraOn: boolean;
   /** The lower left back corner of the view frustum. */
@@ -953,8 +978,6 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
-  /** The name of the associated ECClass */
-  public static get className() { return "ViewDefinition3d"; }
   public onRenderFrame(_viewport: Viewport): void { }
   public allow3dManipulations(): boolean { return true; }
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
@@ -1467,7 +1490,7 @@ export abstract class ViewState3d extends ViewState {
  * @public
  */
 export class SpatialViewState extends ViewState3d {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
 
@@ -1504,7 +1527,6 @@ export class SpatialViewState extends ViewState3d {
         assert(contentRange.intersectsRange(this.iModel.projectExtents));
 
         range.extendRange(contentRange);
-
       }
     });
 
@@ -1573,7 +1595,7 @@ export class SpatialViewState extends ViewState3d {
  * @public
  */
 export class OrthographicViewState extends SpatialViewState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "OrthographicViewDefinition"; }
 
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
@@ -1585,7 +1607,7 @@ export class OrthographicViewState extends SpatialViewState {
  * @public
  */
 export abstract class ViewState2d extends ViewState {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
   public readonly delta: Point2d;
@@ -1669,7 +1691,7 @@ export abstract class ViewState2d extends ViewState {
  * @public
  */
 export class DrawingViewState extends ViewState2d {
-  /** The name of the associated ECClass */
+  /** @internal */
   public static get className() { return "DrawingViewDefinition"; }
   // Computed from the tile tree range once the tile tree is available; cached thereafter to avoid recomputing.
   private _modelLimits?: ExtentLimits;

@@ -16,7 +16,7 @@ import {
   WipRpcInterface,
   RpcOperationPolicy,
 } from "@bentley/imodeljs-common";
-import { BentleyError, Id64, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   TestRpcInterface,
   TestOp1Params,
@@ -37,8 +37,8 @@ const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolv
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
-    public static version = "0.0.0";
-    public static types = () => [];
+    public static readonly interfaceName = "LocalInterface";
+    public static interfaceVersion = "0.0.0";
     public async op(): Promise<void> { return this.forward(arguments); }
   }
 
@@ -54,87 +54,10 @@ describe("RpcInterface", () => {
     RpcManager.terminateInterface(LocalInterface);
   };
 
-  it("should marshall types over the wire", async () => {
-    const params = new TestOp1Params(1, 1);
+  it("should marshal data over the wire", async () => {
+    const params: TestOp1Params = { a: 1, b: 1 };
     const remoteSum = await TestRpcInterface.getClient().op1(params);
-    assert.strictEqual(remoteSum, params.sum());
-  });
-
-  it("should support toJSON/fromJSON", async () => {
-    const id1 = Id64.invalid;
-    const id2 = await TestRpcInterface.getClient().op2(id1);
-    assert.equal(id1, id2);
-  });
-
-  it("should support toJSON and fall back to constructor when fromJSON does not exist", async () => {
-    const date1 = new Date();
-    const date2 = await TestRpcInterface.getClient().op3(date1);
-    assert.strictEqual(date1.getTime(), date2.getTime());
-  });
-
-  it("should support Map", async () => {
-    const map1 = new Map();
-    map1.set(0, "a");
-    map1.set("x", 1);
-    map1.set(true, { y: "b" });
-    map1.set(false, new Date());
-    map1.set("params", new TestOp1Params(1, 1));
-    map1.set("id", Id64.invalid);
-
-    const map2 = await TestRpcInterface.getClient().op4(map1);
-    assert.equal(map1.size, map2.size);
-
-    map2.forEach((v, k) => {
-      if (v instanceof Date)
-        assert.strictEqual(v.getTime(), map1.get(k).getTime());
-      else if (v instanceof TestOp1Params)
-        assert.strictEqual(v.sum(), map1.get(k).sum());
-      else if (typeof (v) === "object")
-        assert.strictEqual(JSON.stringify(v), JSON.stringify(map1.get(k)));
-      else
-        assert.strictEqual(v, map1.get(k));
-    });
-  });
-
-  it("should support Set", async () => {
-    const set1 = new Set();
-    set1.add(1);
-    set1.add("x");
-    set1.add(true);
-    set1.add({ y: "b" });
-    set1.add(new Date());
-    set1.add(new TestOp1Params(1, 1));
-    set1.add(Id64.invalid);
-
-    const set2 = await TestRpcInterface.getClient().op5(set1);
-    assert.equal(set1.size, set2.size);
-
-    const set1Items = Array.from(set1);
-    const set2Items = Array.from(set2);
-
-    for (let i = 0; i !== set1Items.length; ++i) {
-      const v = set2Items[i];
-
-      if (v instanceof Date)
-        assert.strictEqual(v.getTime(), set1Items[i].getTime());
-      else if (v instanceof TestOp1Params)
-        assert.strictEqual(v.sum(), set1Items[i].sum());
-      else if (typeof (v) === "object")
-        assert.strictEqual(JSON.stringify(v), JSON.stringify(set1Items[i]));
-      else
-        assert.strictEqual(v, set1Items[i]);
-    }
-  });
-
-  it("should permit an unregistered type", async () => {
-    class InternalData {
-      constructor(public x: number, public y: number) { }
-    }
-
-    const data1 = new InternalData(1, 2);
-    const data2 = await TestRpcInterface.getClient().op6(data1);
-    assert.strictEqual(data1.x, data2.x);
-    assert.strictEqual(data1.y, data2.y);
+    assert.strictEqual(remoteSum, params.a + params.b);
   });
 
   it("should report aggregate operation load profile information #FIXME-direct", async () => {
@@ -257,9 +180,11 @@ describe("RpcInterface", () => {
   });
 
   it("should allow resolving a 'not found' state for a request #FIXME-direct", async () => {
-    const removeResolver = RpcRequest.notFoundHandlers.addListener((request, response, resubmit, reject) => {
-      if (!(response instanceof TestNotFoundResponse))
+    const removeResolver = RpcRequest.notFoundHandlers.addListener((request, _response, resubmit, reject) => {
+      if (!(_response.hasOwnProperty("isTestNotFoundResponse")))
         return;
+
+      const response = _response as TestNotFoundResponse;
 
       setTimeout(() => {
         if (response.code === TestNotFoundResponseCode.CanRecover) {
@@ -289,13 +214,13 @@ describe("RpcInterface", () => {
   it("should describe available RPC endpoints from the frontend #FIXME-direct", async () => {
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
-    const originalName = controlInterface.name;
+    const originalName = controlInterface.interfaceName;
     const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
 
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
       ((controlChannel as any)._configuration as RpcConfiguration).interfaces().forEach((definition) => {
-        interfaces.push(definition.name === "IModelReadRpcInterface" ? `${definition.name}@0.0.0` : `${definition.name}@${definition.version}`);
+        interfaces.push(definition.interfaceName === "IModelReadRpcInterface" ? `${definition.interfaceName}@0.0.0` : `${definition.interfaceName}@${definition.interfaceVersion}`);
       });
 
       return btoa(interfaces.sort().join(","));
@@ -307,14 +232,14 @@ describe("RpcInterface", () => {
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 
-    controlPolicy.sentCallback = () => Object.defineProperty(controlInterface, "name", { value: simulateIncompatible() });
+    controlPolicy.sentCallback = () => Object.defineProperty(controlInterface, "interfaceName", { value: simulateIncompatible() });
     assert(await executeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
 
     controlPolicy.sentCallback = () => { };
-    Object.defineProperty(controlInterface, "name", { value: originalName });
+    Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
     assert(await executeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
 
     const endpointsRestored = await RpcManager.describeAvailableEndpoints();
@@ -345,8 +270,8 @@ describe("RpcInterface", () => {
   });
 
   it("should reject a mismatched RPC interface request #FIXME-direct", async () => {
-    const realVersion = TestRpcInterface.version;
-    const realVersionZ = ZeroMajorRpcInterface.version;
+    const realVersion = TestRpcInterface.interfaceVersion;
+    const realVersionZ = ZeroMajorRpcInterface.interfaceVersion;
 
     const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       return new Promise(async (resolve, reject) => {
@@ -354,20 +279,20 @@ describe("RpcInterface", () => {
           reject();
         }
 
-        TestRpcInterface.version = code as string;
-        ZeroMajorRpcInterface.version = code as string;
+        TestRpcInterface.interfaceVersion = code as string;
+        ZeroMajorRpcInterface.interfaceVersion = code as string;
         try {
-          await c.op1(new TestOp1Params(0, 0));
-          TestRpcInterface.version = realVersion;
-          ZeroMajorRpcInterface.version = realVersionZ;
+          await c.op1({ a: 0, b: 0 });
+          TestRpcInterface.interfaceVersion = realVersion;
+          ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
           if (expectValid) {
             resolve();
           } else {
             reject();
           }
         } catch (err) {
-          TestRpcInterface.version = realVersion;
-          ZeroMajorRpcInterface.version = realVersionZ;
+          TestRpcInterface.interfaceVersion = realVersion;
+          ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
           if (expectValid) {
             reject();
           } else {
@@ -508,7 +433,7 @@ describe("RpcInterface", () => {
   });
 
   it("should successfully call WipRpcInterface.placeholder", async () => {
-    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
+    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken("test", "test", "test", "test", OpenMode.Readonly).toJSON());
     assert.equal(s, "placeholder");
   });
 
@@ -541,7 +466,7 @@ describe("RpcInterface", () => {
     async function check(k?: string, c?: string, i?: string, s?: string, o?: OpenMode) {
       const token = new IModelToken(k, c, i, s, o);
       const values: TokenValues = { key: k, contextId: c, iModelId: i, changeSetId: s, openMode: o };
-      assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
+      assert.isTrue(await TestRpcInterface.getClient().op16(token.toJSON(), values));
     }
 
     await check("key1", "context1", "imodel1", "change1", OpenMode.ReadWrite);

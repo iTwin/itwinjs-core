@@ -2,6 +2,21 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/certa_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to puppeteer 1.13.0 (current chrome-stable)"
+          },
+          {
+            "comment": "Fixed frontend debugging issues.  "
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/certa_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

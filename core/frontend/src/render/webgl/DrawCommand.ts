@@ -321,10 +321,10 @@ export class RenderCommands {
     this._forcedRenderPass = RenderPass.None;
   }
 
-  /** Add terrain graphics to their own render pass. */
-  public addTerrain(terrain: GraphicList): void {
-    this._forcedRenderPass = RenderPass.Terrain;
-    terrain.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+  /** Add backgroundMap graphics to their own render pass. */
+  public addBackgroundMapGraphics(backgroundMapGraphics: GraphicList): void {
+    this._forcedRenderPass = RenderPass.BackgroundMap;
+    backgroundMapGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -549,7 +549,7 @@ export class RenderCommands {
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, terrain: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, backgroundMap: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -568,7 +568,7 @@ export class RenderCommands {
     }
 
     this.addGraphics(scene);
-    this.addTerrain(terrain);
+    this.addBackgroundMapGraphics(backgroundMap);
 
     if (undefined !== dynamics && 0 < dynamics.length) {
       this.addDecorations(dynamics);
@@ -608,14 +608,12 @@ export class RenderCommands {
 
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
       if (RenderPass.Classification === prim.getRenderPass(this.target)) {
-        const geom = prim.cachedGeometry.asLUT;
-        if (undefined !== geom) {
-          geom.computeRange(this._scratchRange);
-          let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
-          frustum = frustum.transformBy(this.target.currentTransform, frustum);
-          if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
-            return;
-          }
+        const geom = prim.cachedGeometry;
+        geom.computeRange(this._scratchRange);
+        let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
+        frustum = frustum.transformBy(this.target.currentTransform, frustum);
+        if (FrustumPlanes.Containment.Outside === this._frustumPlanes.computeFrustumContainment(frustum)) {
+          return;
         }
       }
     }

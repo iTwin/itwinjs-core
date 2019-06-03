@@ -6,6 +6,7 @@
 
 /**
  * Specification for a list of ECSchemas
+ * @public
  */
 export interface SchemasSpecification {
   /** ECSchema names */

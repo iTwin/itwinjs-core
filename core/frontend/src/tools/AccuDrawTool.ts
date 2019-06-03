@@ -18,9 +18,9 @@ import { IModelApp } from "../IModelApp";
 function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
 function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
 /**
- * A shortcut may require no user input  (immediate) or it may install a viewing tool.Tool implementors should not use
- * this class to setup AccuDraw, instead use AccuDraw.setContext to provide hints.
- * @internal
+ * A shortcut may require no user input (immediate) or it may install a tool to collect the needed input. AccuDrawShortcuts are how users control AccuDraw.
+ * A tool implementor should not use this class to setup AccuDraw, instead use AccuDrawHintBuilder to provide hints.
+ * @alpha
  */
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
@@ -141,7 +141,7 @@ export class AccuDrawShortcuts {
   }
 
   // Helper method for GUI implementation...
-  public static itemFieldNavigate(index: ItemField, str: string, forward: boolean): void {
+  public static async itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void> {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isEnabled)
       return;
@@ -150,7 +150,7 @@ export class AccuDrawShortcuts {
       accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
 
     if (!accudraw.isActive && KeyinStatus.Partial === accudraw.getKeyinStatus(index)) {
-      accudraw.processFieldInput(index, str, true);
+      await accudraw.processFieldInput(index, str, true);
     } else {
       accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
       accudraw.onFieldValueChange(index);
@@ -188,9 +188,9 @@ export class AccuDrawShortcuts {
 
   public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
 
-  public static itemFieldAcceptInput(index: ItemField, str: string): void {
+  public static async itemFieldAcceptInput(index: ItemField, str: string): Promise<void> {
     const accudraw = IModelApp.accuDraw;
-    accudraw.processFieldInput(index, str, true);
+    await accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
 
     if (accudraw.getFieldLock(index))
@@ -823,6 +823,9 @@ export class AccuDrawShortcuts {
     const accudraw = IModelApp.accuDraw;
     if (!accudraw.isActive)
       return; // Require compass to already be active for this shortcut...
+
+    if (aboutCurrentZ)
+      accudraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base; base Z is used when defining compass rotation by x axis...
 
     if (accudraw.clearTentative() || IModelApp.accuSnap.isHot ||
       (CompassMode.Polar === accudraw.compassMode && accudraw.getFieldLock(ItemField.ANGLE_Item)) ||

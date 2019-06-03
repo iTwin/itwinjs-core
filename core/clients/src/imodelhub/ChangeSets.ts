@@ -18,7 +18,7 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /**
  * Specifies types of changes in a [[ChangeSet]].
- * @public
+ * @beta
  */
 export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
@@ -29,7 +29,7 @@ export enum ChangesType {
 
 /**
  * [ChangeSet]($docs/learning/Glossary.md#changeset) represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
- * @public
+ * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
@@ -95,9 +95,20 @@ export class ChangeSet extends WsgInstance {
 
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
- * @public
+ * @beta
  */
 export class ChangeSetQuery extends StringIdQuery {
+  /**
+   * Default page size which is used when querying ChangeSets
+   * @internal
+   */
+  public static defaultPageSize: number = 1000;
+
+  /** Constructor that sets default page size. */
+  constructor() {
+    super();
+    this.pageSize(ChangeSetQuery.defaultPageSize);
+  }
 
   /**
    * Query will additionally select [[ChangeSet]] file download URL. This is needed to use the ChangeSet object with [[ChangeSetHandler.download]].
@@ -268,7 +279,7 @@ class ParallelQueue {
 
 /**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
- * @public
+ * @beta
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;

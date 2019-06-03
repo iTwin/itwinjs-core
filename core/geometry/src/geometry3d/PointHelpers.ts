@@ -79,7 +79,7 @@ export class NumberArray {
     }
     return false;
   }
-  /** Return the max absolute vlaue in a array of numbers. */
+  /** Return the max absolute value in a array of numbers. */
   public static maxAbsArray(values: number[]) {
     const arrLen = values.length;
     if (arrLen === 0) {
@@ -140,7 +140,7 @@ export class Point2dArray {
     return (!dataA && !dataB);
   }
   /**
-   * @returns return an array containing clones of the Point3d data[]
+   * Return an array containing clones of the Point3d data[]
    * @param data source data
    */
   public static clonePoint2dArray(data: Point2d[]): Point2d[] {
@@ -184,7 +184,7 @@ export class Vector3dArray {
     return (!dataA && !dataB);
   }
   /**
-   * @returns return an array containing clones of the Vector3d data[]
+   * Return an array containing clones of the Vector3d data[]
    * @param data source data
    */
   public static cloneVector3dArray(data: XYAndZ[]): Vector3d[] {
@@ -258,6 +258,7 @@ export class Point4dArray {
       xyzw[i + 3] = xyzw1.w;
     }
   }
+  /** test for near equality of all corresponding numeric values, treated as coordinates. */
   public static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
@@ -313,8 +314,8 @@ export class Point3dArray {
   }
   /**
    * Compute the 8 weights of trilinear mapping
-   * By appropriate choice of weights, this can be usef for both point and derivative mappints.
-   * @param weights preallocated array to recevie weights.
+   * By appropriate choice of weights, this can be used for both point and derivative mappints.
+   * @param weights preallocated array to receive weights.
    * @param u0 low u weight
    * @param u1 high u weight
    * @param v0 low v weight
@@ -624,7 +625,7 @@ export class Point3dArray {
   }
 
   /**
-   * @returns return an array containing clones of the Point3d data[]
+   * Return an array containing clones of the Point3d data[]
    * @param data source data
    */
   public static clonePoint3dArray(data: XYAndZ[]): Point3d[] {
@@ -632,14 +633,14 @@ export class Point3dArray {
   }
 
   /**
-   * @returns return an array containing Point2d with xy parts of each Point3d
+   * Return an array containing Point2d with xy parts of each Point3d
    * @param data source data
    */
   public static clonePoint2dArray(data: XYAndZ[]): Point2d[] {
     return data.map((p: XYAndZ) => Point2d.create(p.x, p.y));
   }
   /**
-   * cloen points in the input array, inserting points within each edge to limit edge length.
+   * clone points in the input array, inserting points within each edge to limit edge length.
    * @param points array of points
    * @param maxEdgeLength max length of an edge
    */

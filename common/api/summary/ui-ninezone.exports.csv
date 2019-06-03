@@ -1,0 +1,260 @@
+sep=;
+Release Tag;API Item
+alpha;AppButton 
+alpha;AppButtonProps 
+alpha;BackArrow 
+alpha;BackArrowProps 
+alpha;BackButton 
+alpha;BackButtonProps 
+beta;Backstage 
+beta;BackstageDefaultProps = Pick
+beta;BackstageItem 
+beta;BackstageItemProps 
+beta;BackstageProps 
+beta;BackstageSeparator 
+beta;BackTarget 
+beta;BackTargetProps 
+alpha;Cell 
+alpha;CellProps
+alpha;Chevron 
+alpha;ChevronProps 
+alpha;Columns 
+alpha;ColumnsProps 
+alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
+alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
+alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
+alpha;ContentZone 
+alpha;ContentZoneIndex = 5
+alpha;Corner
+internal;Css
+internal;CssProperties
+alpha;DefaultHistoryManager: HistoryManager
+alpha;DefaultStateManager: StateManager
+beta;Dialog 
+beta;DialogProps 
+beta;Direction
+internal;DirectionHelpers
+alpha;DraggingWidget
+alpha;DraggingWidgetProps
+alpha;DropTarget
+alpha;Edge
+alpha;ExpandableButton 
+alpha;ExpandableButtonProps 
+beta;ExpandableItem 
+beta;ExpandableItemProps 
+alpha;FloatingProps
+alpha;FloatingZoneProps 
+beta;Footer 
+beta;FooterIndicator 
+beta;FooterIndicatorProps 
+beta;FooterPopup 
+beta;FooterPopupContentType
+beta;FooterPopupDefaultProps = Pick
+beta;FooterPopupProps 
+beta;FooterProps 
+beta;FooterSeparator 
+beta;FooterSeparatorProps 
+alpha;getDefaultNineZoneProps: () => NineZoneProps
+alpha;getDefaultStatusZoneProps: () => StatusZoneManagerProps
+alpha;getDefaultWidgetProps: (id: WidgetZoneIndex) => WidgetProps
+alpha;getDefaultZoneProps: (id: WidgetZoneIndex) => ZonePropsBase
+alpha;getDefaultZonesProps: () => Readonly
+alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+alpha;getToolbarItemProps: 
+alpha;Group 
+alpha;GroupColumn 
+alpha;GroupColumnProps 
+alpha;GroupProps 
+alpha;GroupTool 
+alpha;GroupToolExpander 
+alpha;GroupToolExpanderProps 
+alpha;GroupToolProps 
+alpha;GrowBottomStrategy 
+alpha;GrowLeftStrategy 
+alpha;GrowRightStrategy 
+alpha;class GrowStrategy 
+alpha;GrowTopStrategy 
+alpha;HandleMode
+alpha;HandleModeHelpers
+alpha;History
+alpha;HistoryEntry
+alpha;HistoryIcon 
+alpha;HistoryItem 
+alpha;HistoryItemProps 
+alpha;HistoryKey = number | string
+alpha;HistoryManager
+alpha;HistoryTray 
+alpha;HistoryTrayProps 
+alpha;HorizontalAnchor
+alpha;HorizontalAnchorHelpers
+alpha;isStatusZone: (zone: ZonePropsBase) => zone is StatusZoneManagerProps
+beta;Item 
+beta;ItemProps 
+alpha;Items 
+alpha;ItemsProps 
+alpha;Layout
+alpha;Layout1 
+alpha;Layout2 
+alpha;Layout3 
+alpha;Layout4 
+alpha;Layout6 
+alpha;Layout7 
+alpha;Layout8 
+alpha;Layout9 
+alpha;LayoutFactory
+alpha;LayoutProps
+beta;MergeTarget 
+beta;MergeTargetProps 
+beta;Message 
+beta;MessageButton 
+beta;MessageButtonProps 
+beta;MessageCenter 
+beta;MessageCenterDialog 
+beta;MessageCenterDialogProps 
+beta;MessageCenterMessage 
+beta;MessageCenterMessageProps 
+beta;MessageCenterProps 
+beta;MessageCenterTab 
+beta;MessageCenterTabProps 
+beta;MessageHyperlink 
+beta;MessageHyperlinkProps 
+beta;MessageLayout 
+beta;MessageLayoutProps 
+beta;MessageProgress 
+alpha;NestedGroup 
+alpha;NestedGroupProps 
+beta;NestedToolSettings 
+beta;NestedToolSettingsProps 
+alpha;NineZone 
+alpha;NineZoneFactory = (props: NineZoneProps) => NineZone
+alpha;NineZoneProps
+alpha;NineZoneRoot 
+internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
+alpha;OrthogonalDirection
+internal;OrthogonalDirectionHelpers
+beta;Outline 
+beta;OutlineProps 
+beta;Overflow 
+beta;OverflowProps 
+alpha;Panel 
+alpha;PanelProps 
+alpha;PanelsProvider 
+alpha;PanelsProviderProps
+alpha;Point 
+beta;PointProps
+beta;ProgressProps 
+alpha;Rectangle 
+beta;RectangleProps
+alpha;ResizeDirection
+alpha;ResizeDirectionHelpers
+alpha;ResizeGrip 
+alpha;ResizeGripProps 
+alpha;ResizeHandle = Corner | Edge
+alpha;Resizers
+alpha;ResizeStrategy
+alpha;Root
+alpha;Scrollable 
+alpha;ScrollableDefaultProps = Pick
+alpha;ScrollableProps 
+beta;ScrollableToolSettings 
+beta;ScrollableToolSettingsProps 
+alpha;ScrollIndicator 
+alpha;ShrinkBottomStrategy 
+alpha;class ShrinkHorizontalStrategy 
+alpha;ShrinkLeftStrategy 
+alpha;ShrinkRightStrategy 
+alpha;class ShrinkStrategy 
+alpha;ShrinkTopStrategy 
+alpha;class ShrinkVerticalStrategy 
+beta;Size 
+beta;SizeProps
+beta;Snap 
+beta;SnapMode 
+beta;SnapModePanel 
+beta;SnapModePanelProps 
+beta;SnapModeProps 
+beta;SnapProps 
+alpha;Stacked 
+alpha;StackedProps 
+alpha;StateManager
+beta;Status
+internal;StatusHelpers
+beta;StatusMessageProps 
+beta;StatusZoneIndex = 8
+alpha;StatusZoneManager 
+alpha;StatusZoneManagerProps 
+alpha;Tab 
+alpha;TabGroup 
+alpha;TabGroupProps 
+alpha;TabMode
+alpha;TabModeHelpers
+alpha;TabProps 
+alpha;TabSeparator 
+alpha;TabSeparatorProps 
+alpha;Target
+alpha;TargetType
+alpha;TargetZoneProps
+alpha;Title 
+beta;TitleBar 
+beta;TitleBarButton 
+beta;TitleBarButtonProps 
+beta;TitleBarProps 
+alpha;TitleProps 
+alpha;Toast 
+alpha;ToastDefaultProps = Pick
+alpha;ToastProps 
+alpha;ToastStyle = Pick
+beta;ToolAssistance 
+beta;ToolAssistanceDialog 
+beta;ToolAssistanceDialogProps 
+beta;ToolAssistanceItem 
+beta;ToolAssistanceItemProps 
+beta;ToolAssistanceProps 
+beta;ToolAssistanceSeparator 
+beta;ToolAssistanceSeparatorProps 
+beta;Toolbar 
+alpha;ToolbarButton 
+alpha;ToolbarButtonProps 
+alpha;ToolbarIcon 
+alpha;ToolbarIconProps 
+alpha;ToolbarItem
+alpha;ToolbarItemProps
+beta;ToolbarPanelAlignment
+alpha;ToolbarPanelAlignmentHelpers
+beta;ToolbarProps 
+alpha;Tools 
+beta;ToolSettings 
+beta;ToolSettingsPopup 
+beta;ToolSettingsPopupProps 
+beta;ToolSettingsProps 
+beta;ToolSettingsTab 
+beta;ToolSettingsTabProps 
+alpha;ToolsProps 
+beta;Tooltip 
+beta;TooltipDefaultProps = Pick
+beta;TooltipProps 
+beta;UserProfile 
+beta;UserProfileProps 
+alpha;VerticalAnchor
+alpha;VerticalAnchorHelpers
+alpha;Widget
+alpha;WidgetContent 
+alpha;WidgetContentProps 
+alpha;WidgetProps
+alpha;WidgetZone 
+beta;WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9
+alpha;WidgetZoneLayout 
+alpha;WidgetZoneLayout
+alpha;WidgetZoneLayoutProps
+alpha;withContainIn: 
+alpha;WithContainInProps
+beta;Zone 
+alpha;ZoneIdToWidget
+alpha;ZoneIdToWidget
+alpha;ZoneIndex = WidgetZoneIndex | ContentZoneIndex
+alpha;ZoneManager
+beta;ZoneProps 
+alpha;ZonePropsBase
+beta;Zones 
+beta;ZonesProps 
+alpha;ZonesType =

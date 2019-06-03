@@ -10,7 +10,8 @@
     "of": "of",
     "alert": "Alert",
     "toolSettings": "Tool Settings",
-    "minimize": "Minimize"
+    "minimize": "Minimize",
+    "overflow": "Overflow"
   },
   "rotations": {
     "top": "Top",

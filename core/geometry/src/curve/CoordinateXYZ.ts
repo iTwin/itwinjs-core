@@ -15,6 +15,7 @@ import { GeometryQuery } from "./GeometryQuery";
  */
 export class CoordinateXYZ extends GeometryQuery {
   private _xyz: Point3d;
+  /** Return a (REFERENCE TO) the coordinate data. */
   public get point() { return this._xyz; }
   /**
    * @param xyz point to be CAPTURED.
@@ -72,7 +73,7 @@ export class CoordinateXYZ extends GeometryQuery {
   public isAlmostEqual(other: GeometryQuery): boolean {
     return (other instanceof CoordinateXYZ) && this._xyz.isAlmostEqual(other._xyz);
   }
-/** Second step of double dispatch:  call `handler.handleCoordinateXYZ(this)` */
+  /** Second step of double dispatch:  call `handler.handleCoordinateXYZ(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCoordinateXYZ(this);
   }

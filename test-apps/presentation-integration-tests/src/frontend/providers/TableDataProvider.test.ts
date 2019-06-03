@@ -8,7 +8,7 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
+import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
@@ -147,7 +147,7 @@ describe("TableDataProvider", async () => {
       provider.filterExpression = `${columns[0].key} = "Properties_60InstancesWithUrl2"`;
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
-      const rowKey = instanceKeyFromJSON(JSON.parse(row!.key));
+      const rowKey = InstanceKey.fromJSON(JSON.parse(row!.key));
       expect(rowKey.id).to.eq(Id64.fromString(instances.physicalModel.id!));
     });
 

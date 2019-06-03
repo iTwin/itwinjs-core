@@ -11,6 +11,7 @@ import { InstanceLabelOverride } from "./InstanceLabelOverride";
 import { LabelOverride } from "./LabelOverride";
 import { SortingRule } from "./SortingRule";
 import { StyleOverride } from "./StyleOverride";
+import { ExtendedDataRule } from "./ExtendedDataRule";
 
 /**
  * Customization rules allow customizing each node or content item separately.
@@ -28,6 +29,8 @@ import { StyleOverride } from "./StyleOverride";
  * Customization rules have a `priority` attribute which defines the order in which they're applied. If priorities match,
  * rules engine looks at the nesting level - the deeper the rule is nested, the higher is its `priority`.
  * If the nesting levels also match, the rule defined first wins.
+ *
+ * @public
  */
 export declare type CustomizationRule = InstanceLabelOverride |
   CheckBoxRule |
@@ -35,4 +38,5 @@ export declare type CustomizationRule = InstanceLabelOverride |
   ImageIdOverride |
   LabelOverride |
   SortingRule |
-  StyleOverride;
+  StyleOverride |
+  ExtendedDataRule;

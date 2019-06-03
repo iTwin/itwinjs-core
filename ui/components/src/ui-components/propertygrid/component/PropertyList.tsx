@@ -24,6 +24,7 @@ export interface PropertyListProps extends CommonProps {
   properties: PropertyRecord[];
   selectedPropertyKey?: string;
   onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
+  onPropertyRightClicked?: (property: PropertyRecord, key?: string) => void;
   onPropertyContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
   columnRatio?: number;
   onColumnChanged?: (ratio: number) => void;
@@ -35,6 +36,8 @@ export interface PropertyListProps extends CommonProps {
   isPropertyHoverEnabled?: boolean;
   /** Enables/disables property selection */
   isPropertySelectionEnabled?: boolean;
+  /** Enables/disables property right click selection */
+  isPropertyRightClickSelectionEnabled?: boolean;
 }
 
 /**
@@ -110,6 +113,7 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
               propertyRecord={propertyRecord}
               orientation={this.props.orientation}
               onClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyClicked : undefined}
+              onRightClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyRightClicked : undefined}
               onContextMenu={this.props.onPropertyContextMenu}
               columnRatio={this.props.columnRatio}
               onColumnRatioChanged={this.props.onColumnChanged}
