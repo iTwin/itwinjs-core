@@ -71,6 +71,7 @@ interface PopupState {
  */
 export class Popup extends React.Component<PopupProps, PopupState> {
   private _popup: HTMLElement | null = null;
+  private _isAnimating = true;
 
   constructor(props: PopupProps) {
     super(props);
@@ -95,8 +96,22 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   public componentDidUpdate(previousProps: PopupProps) {
-    if (this.props.isOpen === previousProps.isOpen)
+    if (this.props.isOpen === previousProps.isOpen) {
+      if (this.props.isOpen) {
+        const position = this._toggleRelativePosition();
+        const point = this._fitPopup(this._getPosition(position));
+        if (this.state.left === point.x &&
+          this.state.top === point.y &&
+          this.state.position === position)
+          return;
+        this.setState({
+          left: point.x,
+          top: point.y,
+          position,
+        });
+      }
       return;
+    }
 
     if (this.props.isOpen) {
       this._onShow();
@@ -180,6 +195,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     this._unBindWindowEvents();
 
     this.setState({ isOpen: false }, () => {
+      this._isAnimating = true;
       if (this.props.onClose)
         this.props.onClose();
     });
@@ -225,22 +241,22 @@ export class Popup extends React.Component<PopupProps, PopupState> {
         case Position.Top:
         case Position.Bottom:
           popupWidth = popupRect.width;
-          popupHeight = popupRect.height * 2;
+          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
           break;
         case Position.TopLeft:
         case Position.BottomLeft:
-          popupWidth = popupRect.width * 2;
-          popupHeight = popupRect.height * 2;
+          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
+          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
           break;
         case Position.TopRight:
         case Position.BottomRight:
-          popupWidth = popupRect.width * 2;
-          popupHeight = popupRect.height * 2;
+          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
+          popupHeight = this._isAnimating ? popupRect.height * 2 : popupRect.height;
           break;
         case Position.Left:
         case Position.Right:
-          popupWidth = popupRect.width * 2;
-          popupHeight = popupRect.height;
+          popupWidth = this._isAnimating ? popupRect.width * 2 : popupRect.width;
+          popupHeight = this._isAnimating ? popupRect.height : popupRect.height;
           break;
       }
     }
@@ -403,6 +419,10 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return fittedPoint;
   }
 
+  private _handleAnimationEnd = () => {
+    this._isAnimating = false;
+  }
+
   public render() {
     const className = classnames(
       "core-popup",
@@ -424,7 +444,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
     return ReactDOM.createPortal(
       (
-        <div className={className} data-testid="core-popup" style={style} ref={(element) => { this._popup = element; }}>
+        <div
+          className={className} data-testid="core-popup"
+          onAnimationEnd={this._handleAnimationEnd}
+          ref={(element) => { this._popup = element; }}
+          style={style}
+        >
           {this.props.children}
         </div>
       ), document.body);
