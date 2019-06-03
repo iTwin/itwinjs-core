@@ -41,6 +41,12 @@ function saveImage(vp: Viewport) {
   window.open(url, "Saved View");
 }
 
+async function zoomToSelectedElements(vp: Viewport) {
+  const elems = vp.iModel.selectionSet.elements;
+  if (0 < elems.size)
+    await vp.zoomToElements(elems);
+}
+
 class DebugTools extends ToolBarDropDown {
   private readonly _element: HTMLElement;
 
@@ -83,6 +89,12 @@ class DebugTools extends ToolBarDropDown {
         className: "bim-icon-cancel",
         click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
         tooltip: "Emphasize selected elements",
+      }));
+    } else {
+      this._element.appendChild(createToolButton({
+        className: "bim-icon-cancel",
+        click: () => zoomToSelectedElements(IModelApp.viewManager.selectedView!),
+        tooltip: "Zoom to selected elements",
       }));
     }
 
