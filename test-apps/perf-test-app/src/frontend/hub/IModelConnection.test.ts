@@ -73,7 +73,7 @@ describe("IModelConnection (#integration)", () => {
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
     const info = { Description: "latest CS", Operation: "Open" };
-    await TestRpcInterface.getClient().addNewEntry("IModelConnection (#integration)", "OpenIModel", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     await noVersionsIModel.close();
   });
 
@@ -88,7 +88,7 @@ describe("IModelConnection (#integration)", () => {
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute a simple ECSQL query", elapsedTime1);
     const info = { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" };
-    await TestRpcInterface.getClient().addNewEntry("IModelConnection (#integration)", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     assert.equal(rows.length, 7);
   });
 
