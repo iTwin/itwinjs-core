@@ -11,12 +11,13 @@ import {
   createRandomECInstanceKey, createRandomSelectionScope, createRandomId, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
-import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
 import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
 import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../selection/SelectionManager";
+import { HiliteSetProvider } from "../../../lib/selection/HiliteSetProvider";
 
 const generateSelection = (): InstanceKey[] => {
   return [
@@ -592,7 +593,8 @@ describe("SelectionManager", () => {
         it("ignores events with different imodel", async () => {
           const spy = sinon.spy(selectionManager, "addToSelectionWithScope");
           const imodelMock2 = moq.Mock.ofType<IModelConnection>();
-          ss.onChanged.raiseEvent(imodelMock2.object, SelectionSetEventType.Add, [createRandomId()]);
+          const ss2 = new SelectionSet(imodelMock2.object);
+          ss.onChanged.raiseEvent({ type: SelectionSetEventType.Add, set: ss2, added: createRandomId() });
           await waitForPendingAsyncs(syncer);
           expect(spy).to.not.be.called;
         });
@@ -754,6 +756,100 @@ describe("SelectionManager", () => {
 
       });
 
+    });
+
+  });
+
+  describe("suspendIModelToolSelectionSync", () => {
+
+    let ss: SelectionSet;
+    const locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
+
+    beforeEach(() => {
+      ss = new SelectionSet(imodelMock.object);
+      imodelMock.setup((x) => x.selectionSet).returns(() => ss);
+
+      scopesMock.setup((x) => x.activeScope).returns(() => undefined);
+      scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString())).returns(async () => new KeySet());
+
+      const locateHitMock = moq.Mock.ofType<HitDetail>();
+      locateHitMock.setup((x) => x.sourceId).returns(() => createRandomId());
+      locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
+      (IModelApp as any)._locateManager = locateManagerMock.object; // core globals...
+
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object, true);
+    });
+
+    it("suspends selection synchronization", () => {
+      const spy = sinon.spy(selectionManager, "clearSelection");
+      using(selectionManager.suspendIModelToolSelectionSync(imodelMock.object), (_) => {
+        ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+      });
+      expect(spy).to.not.be.called;
+
+      ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+      expect(spy).to.be.called;
+    });
+
+    it("does nothing if synchronization is not set up", () => {
+      const spy = sinon.spy(selectionManager, "clearSelection");
+      selectionManager.setSyncWithIModelToolSelection(imodelMock.object, false);
+      using(selectionManager.suspendIModelToolSelectionSync(imodelMock.object), (_) => {
+        ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+      });
+      expect(spy).to.not.be.called;
+    });
+
+    it("doesn't suspend synchronization for other imodels", () => {
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+      const ss2 = new SelectionSet(imodelMock2.object);
+      imodelMock2.setup((x) => x.selectionSet).returns(() => ss2);
+      selectionManager.setSyncWithIModelToolSelection(imodelMock2.object);
+
+      const spy = sinon.spy(selectionManager, "clearSelection");
+      using(selectionManager.suspendIModelToolSelectionSync(imodelMock2.object), (_) => {
+        ss.onChanged.raiseEvent({ type: SelectionSetEventType.Clear, set: ss, removed: [] });
+      });
+      expect(spy).to.be.called;
+    });
+
+  });
+
+  describe("getHiliteSet", () => {
+
+    let factory: sinon.SinonStub;
+
+    beforeEach(() => {
+      const providerMock = moq.Mock.ofType<HiliteSetProvider>();
+      providerMock.setup((x) => x.getHiliteSet(moq.It.isAny())).returns(async () => ({}));
+      factory = sinon.stub(HiliteSetProvider, "create").returns(providerMock.object);
+    });
+
+    afterEach(() => {
+      factory.restore();
+    });
+
+    it("creates provider once for imodel", async () => {
+      const imodelMock1 = moq.Mock.ofType<IModelConnection>();
+      const imodelMock2 = moq.Mock.ofType<IModelConnection>();
+
+      // call for the first with an imodel should create a provider
+      await selectionManager.getHiliteSet(imodelMock1.object);
+      expect(factory).to.be.calledOnceWith(imodelMock1.object);
+      factory.resetHistory();
+
+      // second call with same imodel shouldn't create a new provider
+      await selectionManager.getHiliteSet(imodelMock1.object);
+      expect(factory).to.not.be.called;
+
+      // another imodel - new provider
+      await selectionManager.getHiliteSet(imodelMock2.object);
+      expect(factory).to.be.calledOnceWith(imodelMock2.object);
+      factory.resetHistory();
+
+      // make sure we still have provider for the first imodel
+      await selectionManager.getHiliteSet(imodelMock1.object);
+      expect(factory).to.not.be.called;
     });
 
   });

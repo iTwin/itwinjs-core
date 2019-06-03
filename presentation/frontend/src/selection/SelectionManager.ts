@@ -10,6 +10,7 @@ import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
 import { SelectionScopesManager } from "./SelectionScopesManager";
+import { HiliteSetProvider, HiliteSet } from "./HiliteSetProvider";
 
 /**
  * Properties for creating [[SelectionManager]].
@@ -27,6 +28,7 @@ export interface SelectionManagerProps {
 export class SelectionManager implements ISelectionProvider {
   private _selectionContainerMap = new Map<IModelConnection, SelectionContainer>();
   private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number, handler: ToolSelectionSyncHandler }>();
+  private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
 
   /** An event which gets broadcasted on selection changes */
   public readonly selectionChange: SelectionChangeEvent;
@@ -48,6 +50,7 @@ export class SelectionManager implements ISelectionProvider {
   private onConnectionClose(imodel: IModelConnection): void {
     this.clearSelection("Connection Close Event", imodel);
     this._selectionContainerMap.delete(imodel);
+    this._hiliteSetProviders.delete(imodel);
   }
 
   private getContainer(imodel: IModelConnection): SelectionContainer {
@@ -81,6 +84,20 @@ export class SelectionManager implements ISelectionProvider {
         }
       }
     }
+  }
+
+  /**
+   * Temporarily suspends tool selection synchronization until the returned `IDisposable`
+   * is disposed.
+   */
+  public suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable {
+    const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
+    if (!registration)
+      return { dispose: () => { } };
+
+    const wasSuspended = registration.handler.isSuspended;
+    registration.handler.isSuspended = true;
+    return { dispose: () => (registration.handler.isSuspended = wasSuspended) };
   }
 
   /** Get the selection levels currently stored in this manager for the specified imodel */
@@ -247,6 +264,19 @@ export class SelectionManager implements ISelectionProvider {
     const scopedKeys = await this.scopes.computeSelection(imodel, ids, scope);
     this.replaceSelection(source, imodel, scopedKeys, level, rulesetId);
   }
+
+  /**
+   * Get the current hilite set for the specified imodel
+   * @alpha
+   */
+  public async getHiliteSet(imodel: IModelConnection): Promise<HiliteSet> {
+    let provider = this._hiliteSetProviders.get(imodel);
+    if (!provider) {
+      provider = HiliteSetProvider.create(imodel);
+      this._hiliteSetProviders.set(imodel, provider);
+    }
+    return provider.getHiliteSet(this.getSelection(imodel));
+  }
 }
 
 /** @internal */
@@ -298,6 +328,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
   private _imodel: IModelConnection;
   private _imodelToolSelectionListenerDisposeFunc: () => void;
   private _asyncsInProgress = new Set<GuidString>();
+  public isSuspended?: boolean;
 
   public constructor(imodel: IModelConnection, locateManager: ElementLocateManager, logicalSelection: SelectionManager) {
     this._imodel = imodel;
@@ -315,6 +346,10 @@ export class ToolSelectionSyncHandler implements IDisposable {
 
   // tslint:disable-next-line:naming-convention
   private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
+    // ignore selection change event if the handler is suspended
+    if (this.isSuspended)
+      return;
+
     // this component only cares about its own imodel
     const imodel = ev.set.iModel;
     if (imodel !== this._imodel)

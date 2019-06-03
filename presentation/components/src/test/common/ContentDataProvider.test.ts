@@ -469,6 +469,18 @@ describe("ContentDataProvider", () => {
       expect(c).to.be.undefined;
     });
 
+    it("returns undefined when manager returns undefined content", async () => {
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => createRandomDescriptor())
+        .verifiable();
+      presentationManagerMock.setup(async (x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined }, moq.It.isAny(), moq.It.isAny()))
+        .returns(async () => undefined)
+        .verifiable();
+      const c = await provider.getContent();
+      presentationManagerMock.verifyAll();
+      expect(c).to.be.undefined;
+    });
+
     it("requests presentation manager for content", async () => {
       const descriptor = createRandomDescriptor();
       const result: { content: Content, size: number } = {
@@ -552,6 +564,13 @@ describe("ContentDataProvider", () => {
       expect(content).to.eq(result);
 
       presentationManagerMock.verifyAll();
+    });
+
+    it("doesn't request for content when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `false`", async () => {
+      provider.keys = new KeySet();
+      const spy = sinon.spy(provider, "shouldConfigureContentDescriptor");
+      await provider.getContent();
+      expect(spy).to.not.be.called;
     });
 
   });
