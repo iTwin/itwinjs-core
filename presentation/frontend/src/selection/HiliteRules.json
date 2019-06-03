@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
-  "id": "presentation-components/HiliteRules",
+  "id": "presentation-frontend/HiliteRules",
   "rules": [
     {
       "ruleType": "Content",

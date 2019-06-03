@@ -8,7 +8,7 @@ import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random"; /* tslint:disable-line:no-direct-imports */
+import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random"; /* tslint:disable-line:no-direct-imports */
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager"; /* tslint:disable-line:no-direct-imports */
 import { waitForAllAsyncs } from "@bentley/presentation-frontend/lib/test/_helpers/PendingAsyncsHelper"; // tslint:disable-line: no-direct-imports
 import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/viewport/WithUnifiedSelection"; // tslint:disable-line: no-direct-imports
@@ -64,6 +64,10 @@ describe("Unified Selection", () => {
     beforeEach(() => {
       Presentation.selection.clearSelection("", imodel);
       handler = new ViewportSelectionHandler(imodel);
+
+      // add something to selection set so we can check later
+      // if the contents changed
+      imodel.selectionSet.add(createRandomId());
     });
 
     afterEach(() => {
@@ -77,6 +81,7 @@ describe("Unified Selection", () => {
       instances.subject.nestedModelIds.forEach((id: Id64String) => expect(imodel.hilited.models.hasId(id)).to.be.true);
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.isEmpty).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(0);
     });
 
     it("hilites model", async () => {
@@ -87,6 +92,7 @@ describe("Unified Selection", () => {
       instances.model.nestedModelIds.forEach((id: Id64String) => expect(imodel.hilited.models.hasId(id)).to.be.true);
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.isEmpty).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(0);
     });
 
     it("hilites category", async () => {
@@ -96,6 +102,7 @@ describe("Unified Selection", () => {
       expect(imodel.hilited.subcategories.size).to.eq(instances.category.subCategoryIds.length);
       instances.category.subCategoryIds.forEach((id: Id64String) => expect(imodel.hilited.subcategories.hasId(id)).to.be.true);
       expect(imodel.hilited.elements.isEmpty).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(0);
     });
 
     it("hilites subcategory", async () => {
@@ -105,6 +112,7 @@ describe("Unified Selection", () => {
       expect(imodel.hilited.subcategories.size).to.eq(1);
       expect(imodel.hilited.subcategories.hasId(instances.subcategory.key.id)).to.be.true;
       expect(imodel.hilited.elements.isEmpty).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(0);
     });
 
     it("hilites assembly element", async () => {
@@ -115,6 +123,9 @@ describe("Unified Selection", () => {
       expect(imodel.hilited.elements.size).to.eq(1 + instances.assemblyElement.childElementIds.length);
       expect(imodel.hilited.elements.hasId(instances.assemblyElement.key.id)).to.be.true;
       instances.assemblyElement.childElementIds.forEach((id: Id64String) => expect(imodel.hilited.elements.hasId(id)).to.be.true);
+      expect(imodel.selectionSet.size).to.eq(1 + instances.assemblyElement.childElementIds.length);
+      expect(imodel.selectionSet.has(instances.assemblyElement.key.id)).to.be.true;
+      instances.assemblyElement.childElementIds.forEach((id: Id64String) => expect(imodel.selectionSet.has(id)).to.be.true);
     });
 
     it("hilites leaf element", async () => {
@@ -124,6 +135,8 @@ describe("Unified Selection", () => {
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1);
       expect(imodel.hilited.elements.hasId(instances.leafElement.key.id)).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(imodel.selectionSet.has(instances.leafElement.key.id)).to.be.true;
     });
 
     it("hilites transient element", async () => {
@@ -133,6 +146,8 @@ describe("Unified Selection", () => {
       expect(imodel.hilited.subcategories.isEmpty).to.be.true;
       expect(imodel.hilited.elements.size).to.eq(1);
       expect(imodel.hilited.elements.hasId(instances.transientElement.key.id)).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(imodel.selectionSet.has(instances.transientElement.key.id)).to.be.true;
     });
 
   });

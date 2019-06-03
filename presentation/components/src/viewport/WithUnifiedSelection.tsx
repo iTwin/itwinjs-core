@@ -5,25 +5,28 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Id64String, IDisposable, GuidString, Guid } from "@bentley/bentleyjs-core";
+import { IDisposable, GuidString, Guid, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, DefaultContentDisplayTypes, KeySet, Ruleset, RegisteredRuleset, ContentFlags, Key, Item } from "@bentley/presentation-common";
+import { SelectionInfo, KeySet, Ruleset } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { ContentDataProvider } from "../common/ContentDataProvider";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager"; /* tslint:disable-line:no-direct-imports */
-
-// tslint:disable-next-line: no-var-requires
-const DEFAULT_RULESET: Ruleset = require("./HiliteRules.json");
+import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/selection/HiliteSetProvider"; // tslint:disable-line: no-direct-imports
 
 /**
  * Props that are injected to the ViewWithUnifiedSelection HOC component.
  * @public
  */
 export interface ViewWithUnifiedSelectionProps {
-  /** Ruleset or its ID to use when determining viewport selection. */
+  /**
+   * Ruleset or its ID to use when determining viewport selection.
+   *
+   * @internal
+   * @deprecated This prop has been deprecated. The component expects a very
+   * specific ruleset to be used and thus supplying a custom one is not an option
+   * anymore. The prop is not used if supplied.
+   */
   ruleset?: Ruleset | string;
 
   /** @internal */
@@ -56,11 +59,11 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
     public get imodel() { return this.props.imodel; }
 
-    public get rulesetId() { return getRulesetId(this.props.ruleset); }
+    public get rulesetId() { return HILITE_RULESET.id; }
 
     public componentDidMount() {
       this.viewportSelectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel, this.props.ruleset);
+        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel);
     }
 
     public componentWillUnmount() {
@@ -73,7 +76,6 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
     public componentDidUpdate() {
       if (this.viewportSelectionHandler) {
         this.viewportSelectionHandler.imodel = this.props.imodel;
-        this.viewportSelectionHandler.ruleset = getRuleset(this.props.ruleset);
       }
     }
 
@@ -102,52 +104,27 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 export class ViewportSelectionHandler implements IDisposable {
 
   private _imodel: IModelConnection;
-  private _ruleset: Ruleset | string;
-  private _rulesetRegistration?: RegisteredRuleset;
   private _selectionHandler: SelectionHandler;
-  private _hiliteSetProvider: HiliteSetProvider;
   private _lastPendingSelectionChange?: { info: SelectionInfo, selection: Readonly<KeySet> };
   private _isInSelectedElementsRequest = false;
   private _asyncsInProgress = new Set<GuidString>();
 
-  public constructor(imodel: IModelConnection, ruleset?: Ruleset | string) {
+  public constructor(imodel: IModelConnection) {
     this._imodel = imodel;
-    this._ruleset = getRuleset(ruleset);
-    const rulesetId = getRulesetId(ruleset);
-
-    // tslint:disable-next-line: no-floating-promises
-    this.registerRuleset(this._ruleset);
 
     // handles changing and listening to unified selection
     this._selectionHandler = new SelectionHandler(Presentation.selection,
-      `Viewport_${counter++}`, imodel, rulesetId, this.onUnifiedSelectionChanged);
+      `Viewport_${counter++}`, imodel, undefined, this.onUnifiedSelectionChanged);
     this._selectionHandler.manager.setSyncWithIModelToolSelection(imodel, true);
 
     // stop imodel from syncing tool selection with hilited list - we want
     // to override that behavior
     imodel.hilited.wantSyncWithSelectionSet = false;
-
-    // handles querying for elements which should be hilited in the viewport
-    this._hiliteSetProvider = new HiliteSetProvider(imodel, rulesetId);
   }
 
   public dispose() {
-    this._selectionHandler.dispose();
     this._selectionHandler.manager.setSyncWithIModelToolSelection(this._imodel, false);
-    if (this._rulesetRegistration)
-      this._rulesetRegistration.dispose();
-    this._ruleset = "";
-  }
-
-  private async registerRuleset(ruleset: Ruleset | string) {
-    if (typeof ruleset !== "object")
-      return;
-
-    const reg = await Presentation.presentation.rulesets().add(ruleset);
-    if (this._ruleset !== ruleset)
-      reg.dispose();
-    else
-      this._rulesetRegistration = reg;
+    this._selectionHandler.dispose();
   }
 
   public get selectionHandler() { return this._selectionHandler; }
@@ -162,19 +139,6 @@ export class ViewportSelectionHandler implements IDisposable {
     this._imodel = value;
     this._imodel.hilited.wantSyncWithSelectionSet = false;
     this._selectionHandler.imodel = value;
-    this._hiliteSetProvider.imodel = value;
-  }
-
-  public get rulesetId() { return getRulesetId(this._ruleset); }
-  public set ruleset(value: Ruleset | string) {
-    if (this._rulesetRegistration)
-      this._rulesetRegistration.dispose();
-    this.registerRuleset(value); // tslint:disable-line: no-floating-promises
-
-    const rulesetId = getRulesetId(value);
-    this._ruleset = value;
-    this._selectionHandler.rulesetId = rulesetId;
-    this._hiliteSetProvider.rulesetId = rulesetId;
   }
 
   /** note: used only it tests */
@@ -190,26 +154,22 @@ export class ViewportSelectionHandler implements IDisposable {
     this._asyncsInProgress.add(asyncId);
     this._isInSelectedElementsRequest = true;
     try {
-      const ids = await this._hiliteSetProvider.getIds(new KeySet(selection), selectionInfo);
-      imodel.hilited.clear();
-      if (ids.models && ids.models.length) {
-        imodel.hilited.models.addIds(ids.models);
-        // WIP: also need to:
-        // imodel.selectionSet.emptyAll();
-        // and make sure we don't get into selection changes' loop
-      }
-      if (ids.subCategories && ids.subCategories.length) {
-        imodel.hilited.subcategories.addIds(ids.subCategories);
-        // WIP: also need to:
-        // imodel.selectionSet.emptyAll();
-        // and make sure we don't get into selection changes' loop
-      }
-      if (ids.elements.length) {
-        imodel.hilited.elements.addIds(ids.elements);
-        // WIP: also need to:
-        // imodel.selectionSet.replace(ids.elements);
-        // and make sure we don't get into selection changes' loop
-      }
+      const ids = await Presentation.selection.getHiliteSet(this._imodel);
+      using(Presentation.selection.suspendIModelToolSelectionSync(this._imodel), (_) => {
+        imodel.hilited.clear();
+        if (ids.models && ids.models.length) {
+          imodel.hilited.models.addIds(ids.models);
+          imodel.selectionSet.emptyAll();
+        }
+        if (ids.subCategories && ids.subCategories.length) {
+          imodel.hilited.subcategories.addIds(ids.subCategories);
+          imodel.selectionSet.emptyAll();
+        }
+        if (ids.elements && ids.elements.length) {
+          imodel.hilited.elements.addIds(ids.elements);
+          imodel.selectionSet.replace(ids.elements);
+        }
+      });
     } finally {
       this._isInSelectedElementsRequest = false;
       this._asyncsInProgress.delete(asyncId);
@@ -241,68 +201,5 @@ export class ViewportSelectionHandler implements IDisposable {
     await this.applyUnifiedSelection(args.imodel, info, selection);
   }
 }
-
-interface HiliteSet {
-  models?: Id64String[];
-  subCategories?: Id64String[];
-  elements: Id64String[];
-}
-class HiliteSetProvider extends ContentDataProvider {
-  public constructor(imodel: IModelConnection, rulesetId: string) {
-    super(imodel, rulesetId, DefaultContentDisplayTypes.Viewport);
-  }
-  protected shouldConfigureContentDescriptor() { return false; }
-  protected getDescriptorOverrides() {
-    return {
-      ...super.getDescriptorOverrides(),
-      contentFlags: ContentFlags.KeysOnly,
-    };
-  }
-  public async getIds(selectionKeys: KeySet, info: SelectionInfo): Promise<HiliteSet> {
-    // need to create a new set without transients
-    const transientIds = new Array<Id64String>();
-    const keys = new KeySet();
-    keys.add(selectionKeys, (key: Key) => {
-      if (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) {
-        transientIds.push(key.id);
-        return false;
-      }
-      return true;
-    });
-
-    this.keys = keys;
-    this.selectionInfo = info;
-
-    const content = await this.getContent();
-    if (!content)
-      return { elements: transientIds };
-
-    const modelIds = new Array<Id64String>();
-    const subCategoryIds = new Array<Id64String>();
-    const elementIds = transientIds; // note: not making a copy here since we're throwing away `transientIds` anyway
-    content.contentSet.forEach((rec) => {
-      const ids = isModelRecord(rec) ? modelIds : isSubCategoryRecord(rec) ? subCategoryIds : elementIds;
-      rec.primaryKeys.forEach((pk) => ids.push(pk.id));
-    });
-    return { models: modelIds, subCategories: subCategoryIds, elements: elementIds };
-  }
-}
-
-const isModelRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isModel);
-
-const isSubCategoryRecord = (rec: Item) => (rec.extendedData && rec.extendedData.isSubCategory);
-
-const getRuleset = (ruleset: Ruleset | string | undefined): Ruleset | string => {
-  if (!ruleset)
-    return DEFAULT_RULESET;
-  return ruleset;
-};
-
-const getRulesetId = (ruleset: Ruleset | string | undefined): string => {
-  ruleset = getRuleset(ruleset);
-  if (typeof ruleset === "string")
-    return ruleset;
-  return ruleset.id;
-};
 
 let counter = 1;

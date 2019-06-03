@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Downgrade json-schema-faker dependency to version `0.5.0-rc16` as `rc17` causes some tests to crash",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
