@@ -190,13 +190,12 @@ internal;ModifyElementSource
 alpha;MultilineTextEditorParams 
 internal;NoRenderApp
 public;NotificationManager
-public;NotifyMessageDetails
+beta;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
 internal;OffScreenViewport 
 beta;OidcBrowserClient 
-internal;OidcClientWrapper
 internal;OnScreenTarget 
 public;OrthographicViewState 
 public;OutputMessageAlert

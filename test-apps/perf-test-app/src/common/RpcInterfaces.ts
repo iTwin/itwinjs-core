@@ -34,6 +34,18 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async saveCSV(_testName: string, _testDescription: string, _testTime: number): Promise<any> {
     return this.forward(arguments);
   }
+
+  public async addNewEntry(_testSuit: string, _testName: string, _valueDescription: string, _value: number, _info: string): Promise<any> {
+    return this.forward(arguments);
+  }
+
+  public async initializeReporter(): Promise<any> {
+    return this.forward(arguments);
+  }
+
+  public async saveReport(): Promise<any> {
+    return this.forward(arguments);
+  }
 }
 
 export const rpcInterfaces = [

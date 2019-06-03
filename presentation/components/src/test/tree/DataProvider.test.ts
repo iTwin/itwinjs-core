@@ -310,11 +310,6 @@ describe("TreeDataProvider", () => {
       presentationManagerMock.setup((x) => x.getNodesAndCount(moq.It.isAny(), moq.It.isAny())).returns(async () => result);
       presentationManagerMock.setup((x) => x.getNodes(moq.It.isAny(), moq.It.isAny())).returns(async () => result.nodes);
 
-      // Paging size is not set and no pageOptions are passed
-      await provider.getNodes();
-      expect(loggerSpy.calledOnce).to.be.true;
-      loggerSpy.resetHistory();
-
       // Paging size is not set and pageOptions are passed
       await provider.getNodes(undefined, pageOptions);
       expect(loggerSpy.calledOnce).to.be.true;

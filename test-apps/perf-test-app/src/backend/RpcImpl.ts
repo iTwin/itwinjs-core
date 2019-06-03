@@ -9,8 +9,28 @@ import { TestRpcInterface } from "../common/RpcInterfaces";
 import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost } from "@bentley/imodeljs-backend";
 import * as path from "path";
 import * as fs from "fs";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
+  public static reporter: Reporter;
+
+  public async initializeReporter(): Promise<any> {
+    TestRpcImpl.reporter = new Reporter();
+  }
+
+  public async addNewEntry(testSuit: string, testName: string, valueDescription: string, value: number, info: string): Promise<any> {
+    const temp = JSON.parse(info);
+    TestRpcImpl.reporter.addEntry(testSuit, testName, valueDescription, value, temp);
+  }
+
+  public async saveReport(): Promise<any> {
+    const pth = "./lib/outputdir";
+    if (!IModelJsFs.existsSync(pth))
+      IModelJsFs.mkdirSync(pth);
+    const csvPath = path.join(pth, "IntegrationPefTests.csv");
+    TestRpcImpl.reporter.exportCSV(csvPath);
+  }
+
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }

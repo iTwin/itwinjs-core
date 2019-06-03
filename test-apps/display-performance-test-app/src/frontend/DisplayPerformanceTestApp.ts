@@ -3,7 +3,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
-  OidcClientWrapper, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -567,6 +567,7 @@ class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
+  public oidcClient?: OidcBrowserClient;
   constructor() { }
 }
 
@@ -606,15 +607,18 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
 }
 
 async function initializeOidc(requestContext: FrontendRequestContext) {
-  if (OidcClientWrapper.oidcClient)
+  assert(!!activeViewState);
+  if (activeViewState.oidcClient)
     return;
 
   const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
   const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
 
-  await OidcClientWrapper.initialize(requestContext, oidcConfig);
-  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+  const oidcClient = new OidcBrowserClient(oidcConfig);
+  await oidcClient.initialize(requestContext);
+  activeViewState.oidcClient = oidcClient;
+  IModelApp.authorizationClient = oidcClient;
 }
 
 // Wraps the signIn process
@@ -626,8 +630,8 @@ async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
   await initializeOidc(requestContext);
 
-  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
-    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+  if (!activeViewState.oidcClient!.hasSignedIn) {
+    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
     return false;
   }
 

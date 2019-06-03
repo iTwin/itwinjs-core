@@ -16,3 +16,4 @@ containsMetadata: 'AvailableScopes'
 | reality-data:read        | Required for read access to reality data                                                     |
 | imodeljs-router          |                                                                                              |
 | visible-api-scope        |                                                                                              |
+| urlps-third-party        | Third party access to ULAS logging                                                           |

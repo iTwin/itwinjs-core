@@ -8,7 +8,6 @@ import * as React from "react";
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
-import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { getUserColor } from "@bentley/ui-core";
 
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
@@ -63,8 +62,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     FrontstageManager.closeModalFrontstage();
 
     // istanbul ignore next
-    if (OidcClientWrapper && OidcClientWrapper.oidcClient)
-      OidcClientWrapper.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
+    if (UiFramework.oidcClient)
+      UiFramework.oidcClient.signOut(new ClientRequestContext()); // tslint:disable-line:no-floating-promises
 
     // istanbul ignore else
     if (this._handleSignOut)

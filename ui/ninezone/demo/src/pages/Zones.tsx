@@ -380,10 +380,10 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
             </div>
             {this.props.isInFooterMode && <FooterSeparator />}
             <FooterPopup
-              target={this._messageCenterTarget}
               isOpen={this.props.openWidget === FooterWidget.Messages}
               onClose={this._handlePopupClose}
               onOutsideClick={this._handleMessageCenterOutsideClick}
+              target={this._messageCenterTarget}
             >
               <MessageCenterDialog
                 buttons={
@@ -1747,7 +1747,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -2406,9 +2406,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         dropTarget={dropTarget}
         isInFooterMode={zone.props.isInFooterMode}
         key={zone.id}
+        message={this.state.message}
         onTargetChanged={this._handleTargetChanged}
         outlineBounds={outlineBounds}
-        message={this.state.message}
         onHideMessage={this._handleHideMessage}
         onOpenWidgetChange={this._handleOpenWidgetChange}
         openWidget={this.state.openWidget}

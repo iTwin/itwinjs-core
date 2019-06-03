@@ -52,14 +52,10 @@ export class ContentBuilder {
   }
 
   private async doCreateContent(rulesetId: string, instanceKeys: InstanceKey[], displayType: string): Promise<PropertyRecord[]> {
-    const keyset = new KeySet(instanceKeys);
-
     const dataProvider = this._dataProvider ? this._dataProvider : new ContentDataProvider(this._iModel, rulesetId, displayType);
-    dataProvider.keys = keyset;
+    dataProvider.keys = new KeySet(instanceKeys);
 
-    const contentCount = await dataProvider.getContentSetSize();
-    const content = await dataProvider.getContent({ size: contentCount });
-
+    const content = await dataProvider.getContent();
     if (!content)
       return [];
 

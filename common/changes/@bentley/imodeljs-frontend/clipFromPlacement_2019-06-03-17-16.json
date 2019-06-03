@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#128860 Clip from element change to try local range XZ or YZ when XY extents aren't valid.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

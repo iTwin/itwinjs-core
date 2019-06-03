@@ -23,7 +23,10 @@ const DEFAULT_RULESET: Ruleset = require("./HiliteRules.json");
  * @public
  */
 export interface ViewWithUnifiedSelectionProps {
-  /** Ruleset or its ID to use when determining viewport selection. */
+  /**
+   * Ruleset or its ID to use when determining viewport selection.
+   * @alpha
+   */
   ruleset?: Ruleset | string;
 
   /** @internal */

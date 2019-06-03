@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { HubIModel, Project, AccessToken } from "@bentley/imodeljs-clients";
-import { IModelConnection, ViewState, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState, Viewport, OidcBrowserClient } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { ConnectProjectConfiguration } from "../common/SVTConfiguration";
 
@@ -17,5 +17,6 @@ export class SimpleViewState {
   public viewState?: ViewState;
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
+  public oidcClient?: OidcBrowserClient;
   constructor() { }
 }

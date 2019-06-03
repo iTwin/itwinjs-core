@@ -5,6 +5,7 @@
 /** @module Core */
 
 import * as _ from "lodash";
+import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, PageOptions, SelectionInfo,
@@ -13,7 +14,6 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
-import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Properties for invalidating content cache.
@@ -148,7 +148,25 @@ export class ContentDataProvider implements IContentDataProvider {
   /** Display type used to format content */
   public get displayType(): string { return this._displayType; }
 
-  /** Paging options for obtaining content */
+  /**
+   * Paging options for obtaining content.
+   *
+   * Presentation data providers, when used with paging, have ability to save one backend request for size / count. That
+   * can only be achieved when `pagingSize` property is set on the data provider and it's value matches size which is used when
+   * requesting content. To help developers notice this problem, data provider emits a warning similar to this:
+   * ```
+   * ContentDataProvider.pagingSize doesn't match pageOptions in ContentDataProvider.getContent call. Make sure you set provider's pagingSize to avoid excessive backend requests.
+   * ```
+   * To fix the issue, developers should make sure the page size used for requesting data is also set for the data provider:
+   * ```TS
+   * const pageSize = 10;
+   * const provider = new ContentDataProvider(imodel, rulesetId, displayType);
+   * provider.pagingSize = pageSize;
+   * // only one backend request is made for the two following requests:
+   * provider.getContentSetSize();
+   * provider.getContent({ start: 0, size: pageSize });
+   * ```
+   */
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
 
@@ -303,6 +321,11 @@ export class ContentDataProvider implements IContentDataProvider {
    * @param pageOptions Paging options.
    */
   public async getContent(pageOptions?: PageOptions): Promise<Content | undefined> {
+    if (undefined !== pageOptions && pageOptions.size !== this.pagingSize) {
+      const msg = `ContentDataProvider.pagingSize doesn't match pageOptions in ContentDataProvider.getContent call.
+        Make sure you set provider's pagingSize to avoid excessive backend requests.`;
+      Logger.logWarning("Presentation.Components", msg);
+    }
     const contentAndSize = await this._getContentAndSize(pageOptions);
     if (undefined !== contentAndSize)
       return contentAndSize.content;

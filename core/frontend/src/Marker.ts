@@ -69,7 +69,7 @@ export class Marker implements CanvasDecoration {
   /** The font for [[label]]. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font. */
   public labelFont?: string;
   /** The title string to show in the ToolTip when the pointer is over this Marker. See [[NotificationManager.openToolTip]] */
-  public title?: string;
+  public title?: HTMLElement | string;
   /** The ToolTipOptions to use for [[title]]. */
   public tooltipOptions?: ToolTipOptions;
 

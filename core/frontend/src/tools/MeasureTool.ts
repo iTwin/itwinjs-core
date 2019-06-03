@@ -65,7 +65,7 @@ class MeasureLabel implements CanvasDecoration {
 /** @alpha */
 class MeasureMarker extends Marker {
   public isSelected: boolean = false;
-  constructor(label: string, title: string, worldLocation: XYAndZ, size: XAndY) {
+  constructor(label: string, title: HTMLElement, worldLocation: XYAndZ, size: XAndY) {
     super(worldLocation, size);
 
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
@@ -301,20 +301,21 @@ export class MeasureDistanceTool extends PrimitiveTool {
     this.reportMeasurements();
   }
 
-  protected async getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<string> {
-    let toolTip = "";
+  protected async getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<HTMLElement> {
+    const toolTip = document.createElement("div");
 
     const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
     if (undefined === distanceFormatterSpec)
       return toolTip;
 
+    let toolTipHtml = "";
     const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
-    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
+    toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
 
     const angleFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle);
     if (undefined !== angleFormatterSpec) {
       const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
+      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
     }
 
     const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
@@ -330,21 +331,22 @@ export class MeasureDistanceTool extends PrimitiveTool {
       const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
       const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
       const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
+      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
 
       const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, coordFormatterSpec);
       const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, coordFormatterSpec);
       const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, coordFormatterSpec);
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
+      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
     }
 
     if (undefined !== delta) {
       const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.x), distanceFormatterSpec);
       const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.y), distanceFormatterSpec);
       const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(Math.abs(delta.z), distanceFormatterSpec);
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
+      toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
 
+    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 
@@ -519,9 +521,10 @@ export class MeasureLocationTool extends PrimitiveTool {
     this.showPrompt();
   }
 
-  protected async getMarkerToolTip(point: Point3d): Promise<string> {
-    let toolTip = "";
+  protected async getMarkerToolTip(point: Point3d): Promise<HTMLElement> {
+    const toolTip = document.createElement("div");
 
+    let toolTipHtml = "";
     const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
     if (undefined !== coordFormatterSpec) {
       let pointAdjusted = point;
@@ -533,7 +536,7 @@ export class MeasureLocationTool extends PrimitiveTool {
       const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
       const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
       if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
-        toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+        toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
     }
 
     if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
@@ -546,12 +549,13 @@ export class MeasureLocationTool extends PrimitiveTool {
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
           const latDir = IModelApp.i18n.translateKeys(cartographic.latitude < 0 ? "%{CoreTools:tools.Measure.Labels.S}" : "%{CoreTools:tools.Measure.Labels.N}");
           const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
-          toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
-          toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
         } catch { }
       }
     }
 
+    toolTip.innerHTML = toolTipHtml;
     return toolTip;
   }
 

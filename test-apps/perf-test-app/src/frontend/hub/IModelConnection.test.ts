@@ -25,6 +25,7 @@ describe("IModelConnection (#integration)", () => {
   let testIModelId: string;
 
   before(async () => {
+    await TestRpcInterface.getClient().initializeReporter();
     MockRender.App.startup();
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -43,6 +44,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   after(async () => {
+    await TestRpcInterface.getClient().saveReport();
     if (iModel)
       await iModel.close();
     MockRender.App.shutdown();
@@ -70,6 +72,8 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(noVersionsIModel);
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
+    const info = { Description: "latest CS", Operation: "Open" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     await noVersionsIModel.close();
   });
 
@@ -83,6 +87,8 @@ describe("IModelConnection (#integration)", () => {
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute a simple ECSQL query", elapsedTime1);
+    const info = { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     assert.equal(rows.length, 7);
   });
 

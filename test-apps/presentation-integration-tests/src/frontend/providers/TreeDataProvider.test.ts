@@ -38,12 +38,14 @@ describe("TreeDataProvider", async () => {
   });
 
   it("returns root nodes with paging", async () => {
+    provider.pagingSize = 5;
     const nodes = await provider.getNodes(undefined, { start: 0, size: 5 });
     expect(nodes.length).to.eq(1);
     expect(nodes).to.matchSnapshot();
   });
 
   it("does not return root nodes with invalid paging", async () => {
+    provider.pagingSize = 5;
     const nodes = await provider.getNodes(undefined, { start: 1, size: 5 });
     expect(nodes.length).to.eq(0);
   });
@@ -62,6 +64,7 @@ describe("TreeDataProvider", async () => {
 
   it("returns child nodes with paging", async () => {
     const rootNodes = await provider.getNodes();
+    provider.pagingSize = 5;
     const nodes = await provider.getNodes(rootNodes[0], { start: 0, size: 5 });
     expect(nodes.length).to.eq(1);
     expect(nodes).to.matchSnapshot();
@@ -69,6 +72,7 @@ describe("TreeDataProvider", async () => {
 
   it("does not return child nodes with invalid paging", async () => {
     const rootNodes = await provider.getNodes();
+    provider.pagingSize = 5;
     const nodes = await provider.getNodes(rootNodes[0], { start: 1, size: 5 });
     expect(nodes.length).to.eq(0);
   });

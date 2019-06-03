@@ -56,10 +56,11 @@ class IntegrationTestsApp extends NoRenderApp {
 }
 
 export const initialize = (backendTimeout: number = 0) => {
-  // init logging (enable on demand while debugging)
+  // init logging
   Logger.initializeToConsole();
-  Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.None);
-  Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.None);
+  Logger.setLevelDefault(LogLevel.Error);
+  Logger.setLevel(LoggingNamespaces.ECObjects_ECExpressions, LogLevel.Warning);
+  Logger.setLevel(LoggingNamespaces.ECPresentation, LogLevel.Warning);
 
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: backendTimeout,

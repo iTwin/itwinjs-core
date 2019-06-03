@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, assert } from "@bentley/bentleyjs-core";
 import {
   BentleyCloudRpcManager,
   ElectronRpcConfiguration,
@@ -20,11 +20,11 @@ import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clien
 import {
   IModelApp,
   IModelConnection,
-  OidcClientWrapper,
   RenderDiagnostics,
   RenderSystem,
   FrontendRequestContext,
   WebGLExtensionName,
+  OidcBrowserClient,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
@@ -80,15 +80,18 @@ window.onbeforeunload = () => {
 };
 
 async function initializeOidc(requestContext: FrontendRequestContext) {
-  if (OidcClientWrapper.oidcClient)
+  assert(!!activeViewState);
+  if (activeViewState.oidcClient)
     return;
 
   const clientId = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_client_id") : Config.App.get("imjs_browser_test_client_id");
   const redirectUri = (ElectronRpcConfiguration.isElectron) ? Config.App.get("imjs_electron_test_redirect_uri") : Config.App.get("imjs_browser_test_redirect_uri");
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service" };
 
-  await OidcClientWrapper.initialize(requestContext, oidcConfig);
-  IModelApp.authorizationClient = OidcClientWrapper.oidcClient;
+  const oidcClient = new OidcBrowserClient(oidcConfig);
+  await oidcClient.initialize(requestContext);
+  activeViewState.oidcClient = oidcClient;
+  IModelApp.authorizationClient = oidcClient;
 }
 
 // Wraps the signIn process
@@ -100,12 +103,12 @@ async function signIn(): Promise<boolean> {
   const requestContext = new FrontendRequestContext();
   await initializeOidc(requestContext);
 
-  if (!OidcClientWrapper.oidcClient.hasSignedIn) {
-    await OidcClientWrapper.oidcClient.signIn(new FrontendRequestContext());
+  if (!activeViewState.oidcClient!.hasSignedIn) {
+    await activeViewState.oidcClient!.signIn(new FrontendRequestContext());
     return false;
   }
 
-  activeViewState.accessToken = await OidcClientWrapper.oidcClient!.getAccessToken(requestContext);
+  activeViewState.accessToken = await activeViewState.oidcClient!.getAccessToken(requestContext);
   return true;
 }
 
