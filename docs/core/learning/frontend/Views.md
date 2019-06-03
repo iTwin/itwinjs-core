@@ -85,8 +85,7 @@ Then, you may wish to change one of the existing views to show the contents of t
 
 ## Changing the Model displayed by a 2d view
 
-Viewports always display one ViewState. If that ViewState happens to be a ViewState2d, we sometimes call that a "2d view". Since ViewState2d shows
-one and only one 2d Model, it is sometimes is desireable to "switch the Model" of an existing 2d view, versus loading a new ViewState2d. This will sometimes
+Viewports always display one ViewState. If that ViewState happens to be a ViewState2d, we sometimes call that a "2d view". Since ViewState2d shows one and only one 2d Model, it is sometimes is desireable to "switch the Model" of an existing 2d view, versus loading a new ViewState2d. This will sometimes
 be appropriate if you *know* that a set of 2d Models use a common coordinate system and categories, etc.
 
 The [Viewport.changeViewedModel2d]($frontend) method can be used to accomplish this:
@@ -108,7 +107,11 @@ To facilitate that, you need to connect the event system of the browser with Vie
 
 After the viewport is added to the [ViewManager]($frontend), all HTML events for its canvas are directed to the active `Tool` class by the [ToolAdmin]($frontend).
 
-If there is more than one Viewport visible, the ViewManager keeps track of the *Selected Viewport* and treats it specially.
+### The "Selected" View
+
+It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iModel.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked.  [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend).
+
+> Note: If there is only one Viewport visible, that Viewport will always be the [ViewManager.selectedView]($frontend). If there are no Viewports visible, [ViewManager.selectedView]($frontend) can be undefined.
 
 ## Viewing Tools
 
@@ -173,34 +176,19 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
  This is what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean.
 
- ```cmd
-                 v-- {origin}
-            -----+-------------------------------------- -   [back plane]
-            ^\   .                                    /  ^
-            | \  .                                   /   |        P
-          d |  \ .                                  /    |        o
-          e |   \.         {targetPoint}           /     |        s
-          l |    |---------------+----------------|      |        i    [focus plane]
-          t |     \  ^delta.x    ^               /     b |        t
-          a |      \             |              /      a |        i
-          . |       \            |             /       c |        v
-          z |        \           | f          /        k |        e
-            |         \          | o         /         D |        Z
-            |          \         | c        /          i |        |
-            |           \        | u       /           s |        v
-            v            \       | s      /            t |
-            -     -       -----  | D -----               |   [front plane]
-                  ^              | i                     |
-                  |              | s                     |
-      frontDist ->|              | t                     |
-                  |              |                       |
-                  v           \  v  / <- lens angle      v
-                  -              + {eyePoint}            -     positiveX ->
-```
+<img src="./ViewFrustum-D1.png" width="75%">
+
+**<center>View Frustum - top view</center>**
+
+<img src="./ViewFrustum-D2.png" width="75%">
+
+**<center>View Frustum -  3D view</center>**
+
+<img src="./ViewFrustum-D3.png" width="75%">
+
+**<center>View Frustum NPC Corners</center>**
 
 ### Notes
-
-* Up vector (positiveY) points out of the screen towards you in this diagram. Likewise delta.y.
 
 * The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
 
@@ -223,15 +211,10 @@ It should generally be between the front plane and the back plane.
 
 * targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
 
-* The view volume is specified by: `{origin}<delta>[Matrix3d]`
-
-* Perspective is determined by `{eyePoint}`, which is independent of the view volume. Sometimes the eyepoint is not
- on the rectangle on the focus plane (that is, a vector from the eyepoint along the viewZ does not hit the view
-center.) This creates a 1-point perspective, which can be disconcerting. It is usually best to keep the camera centered.
+* The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
 
 * Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
 The lens angle value is not used to compute the perspective transform for a view.
 Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
 
-* View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope"
-views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
+* View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
