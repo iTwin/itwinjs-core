@@ -739,6 +739,34 @@ export class ViewClipByElementTool extends ViewClipTool {
           range.extendRange(placement.calculateRange());
         }
       }
+      if (range.isNull)
+        return false;
+      range.scaleAboutCenterInPlace(1.001); // pad range slightly...
+      if (range.isAlmostZeroX || range.isAlmostZeroY) {
+        if (range.isAlmostZeroZ)
+          return false;
+        // Invalid XY range for clip, see if XZ or YZ can be used instead...
+        const canUseXZ = !range.isAlmostZeroX;
+        const canUseYZ = !canUseXZ && !range.isAlmostZeroY;
+        if (!canUseXZ && !canUseYZ)
+          return false;
+        const zDir = canUseXZ ? Vector3d.unitY() : Vector3d.unitX();
+        const indices = Range3d.faceCornerIndices(canUseXZ ? 3 : 1);
+        const corners = range.corners();
+        const points: Point3d[] = [];
+        for (const index of indices) points.push(corners[index]);
+        transform.multiplyPoint3dArrayInPlace(points);
+        transform.multiplyVector(zDir, zDir);
+        transform.setFrom(Transform.createOriginAndMatrix(points[0], Matrix3d.createRigidHeadsUp(zDir)));
+        transform.multiplyInversePoint3dArrayInPlace(points);
+        ViewClipTool.enableClipVolume(viewport);
+        if (!ViewClipTool.doClipToShape(viewport, points, transform))
+          return false;
+        if (undefined !== this._clipEventHandler)
+          this._clipEventHandler.onNewClip(viewport);
+        this.onReinitialize();
+        return true;
+      }
       ViewClipTool.enableClipVolume(viewport);
       if (!ViewClipTool.doClipToRange(viewport, range, transform))
         return false;
