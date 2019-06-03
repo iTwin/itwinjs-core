@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/perf-tools",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/presentation-backend",

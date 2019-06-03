@@ -28,7 +28,8 @@
     "@bentley/imodeljs-frontend": "1.0.0-dev.3",
     "@bentley/imodeljs-i18n": "1.0.0-dev.3",
     "@types/file-saver": "^2.0.0",
-    "electron": "^4.1.0"
+    "electron": "^4.1.0",
+    "@bentley/perf-tools": "1.0.0-dev.3"
   },
   "devDependencies": {
     "@bentley/certa": "1.0.0-dev.3",
