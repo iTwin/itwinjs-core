@@ -39,8 +39,8 @@ describe("IModelConnection (#integration)", () => {
     testProjectId = await TestUtility.getTestProjectId("Bridge866");
     testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");
 
-    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
-    await iModel.close();
+    // iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    // await iModel.close();
   });
 
   after(async () => {
