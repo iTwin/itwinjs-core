@@ -143,7 +143,9 @@ export class HitDetail {
     // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
     let out = "";
     msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
-    return out;
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
   }
 }
 

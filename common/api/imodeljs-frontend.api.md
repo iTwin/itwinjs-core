@@ -3481,7 +3481,7 @@ export class Marker implements CanvasDecoration {
     setPosition(vp: Viewport): boolean;
     setScaleFactor(range: Range1dProps): void;
     size: Point2d;
-    title?: string;
+    title?: HTMLElement | string;
     tooltipOptions?: ToolTipOptions;
     visible: boolean;
     readonly wantImage: boolean;
@@ -3537,7 +3537,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
-    protected getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<string>;
+    protected getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<HTMLElement>;
     // (undocumented)
     protected getReferenceAxes(vp?: Viewport): Matrix3d;
     // (undocumented)
@@ -3598,7 +3598,7 @@ export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
-    protected getMarkerToolTip(point: Point3d): Promise<string>;
+    protected getMarkerToolTip(point: Point3d): Promise<HTMLElement>;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
