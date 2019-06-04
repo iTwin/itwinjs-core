@@ -181,12 +181,23 @@ export class SampleAppIModelApp {
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
     if (ElectronRpcConfiguration.isElectron) {
-      const clientId = Config.App.get("imjs_electron_test_client_id");
-      const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
+      let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
+      let redirectUri = "electron://frontend/signin-callback";
+      if (Config.App.has("imjs_electron_test_client_id"))
+        clientId = Config.App.get("imjs_electron_test_client_id");
+
+      if (Config.App.has("imjs_electron_test_redirect_uri"))
+        redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
       oidcConfiguration = { clientId, redirectUri, scope };
     } else {
-      const clientId = Config.App.get("imjs_browser_test_client_id");
-      const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+      let clientId = "imodeljs-spa-test-2686";
+      let redirectUri = "http://localhost:3000/signin-callback";
+
+      if (Config.App.has("imjs_browser_test_client_id"))
+        clientId = Config.App.get("imjs_browser_test_client_id");
+
+      if (Config.App.has("imjs_browser_test_redirect_uri"))
+        redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
       oidcConfiguration = { clientId, redirectUri, scope };
     }
 
