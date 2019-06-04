@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+alpha;HiliteSet
 public;ISelectionProvider
 beta;PersistenceHelper
 public;Presentation

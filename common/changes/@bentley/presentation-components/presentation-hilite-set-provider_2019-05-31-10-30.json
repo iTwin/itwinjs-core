@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved the part that determines hilite set out of `presentation-components` to `presentation-frontend` and expose it as a public API.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

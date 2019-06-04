@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ability to suspend tool selection set synchronization with logical selection",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

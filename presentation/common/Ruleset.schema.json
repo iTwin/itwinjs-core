@@ -1031,6 +1031,9 @@
               },
               {
                 "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
               }
             ]
           },
@@ -1130,6 +1133,9 @@
                   },
                   {
                     "$ref": "#/definitions/InstanceLabelOverrideLocalIdSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
                   }
                 ],
                 "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
@@ -1196,6 +1202,28 @@
       "required": [
         "propertyName",
         "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideStringValueSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses the specified value as the label content.",
+      "properties": {
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "String"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "description": "The value to use as the label content.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType",
+        "value"
       ],
       "type": "object"
     },

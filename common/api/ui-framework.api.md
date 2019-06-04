@@ -3511,7 +3511,7 @@ export class ViewUtilities {
 export class VisibilityHandler implements IDisposable {
     constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(node: TreeNodeItem, on: boolean): Promise<boolean>;
+    changeVisibility(node: TreeNodeItem, on: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -3524,8 +3524,6 @@ export class VisibilityHandler implements IDisposable {
 export interface VisibilityHandlerProps {
     // (undocumented)
     dataProvider: IPresentationTreeDataProvider;
-    // (undocumented)
-    getLoadedNode: (id: string) => TreeNodeItem | undefined;
     // (undocumented)
     onVisibilityChange: () => void;
     // (undocumented)

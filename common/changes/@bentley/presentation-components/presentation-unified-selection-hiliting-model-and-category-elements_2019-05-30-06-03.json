@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Implement hiliting for selected subjects, models and categories",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}
