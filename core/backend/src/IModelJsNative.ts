@@ -38,7 +38,7 @@ export declare namespace IModelJsNative {
     /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
     crashDir: string;
     /** Write .dmp files to crashDir? The default is false. Even if writeDumpsToCrashDir is false, the iModelJsNativeCrash*.properties.txt file will be written to crashDir. */
-    writeDumpsToCrashDir?: boolean;
+    enableCrashDumps?: boolean;
     /** max # .dmp files that may exist in crashDir */
     maxDumpsInDir?: number;
     /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */

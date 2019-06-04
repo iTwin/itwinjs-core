@@ -2517,10 +2517,10 @@ export namespace IModelJsNative {
     // (undocumented)
     export interface NativeCrashReportingConfig {
         crashDir: string;
+        enableCrashDumps?: boolean;
         maxDumpsInDir?: number;
         params?: NativeCrashReportingConfigNameValuePair[];
         wantFullMemory?: boolean;
-        writeDumpsToCrashDir?: boolean;
     }
     // (undocumented)
     export interface NativeCrashReportingConfigNameValuePair {
