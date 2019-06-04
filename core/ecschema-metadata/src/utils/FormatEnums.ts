@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,
@@ -17,7 +17,7 @@ export enum FormatTraits {
   ExponentOnlyNegative = 0x200,
 }
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum FractionalPrecision {
   One = 1,
   Two = 2,
@@ -30,7 +30,7 @@ export enum FractionalPrecision {
   TwoHundredFiftySix = 256,
 }
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum DecimalPrecision {
   Zero = 0,
   One = 1,
@@ -47,7 +47,7 @@ export enum DecimalPrecision {
   Twelve = 12,
 }
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum FormatType {
   Decimal,
   Fractional,
@@ -55,13 +55,13 @@ export enum FormatType {
   Station,
 }
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum ScientificType { // required if type is scientific; options: normalized, zeroNormalized
   Normalized,
   ZeroNormalized,
 }
 
-/** @internal Needs to be moved to quantity  */
+/** @beta Needs to be moved to quantity  */
 export enum ShowSignOption { // default is no sign
   NoSign,
   OnlyNegative,

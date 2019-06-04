@@ -26,8 +26,8 @@ beta;createSchemaItemDiagnosticClass
 beta;CustomAttributeClass 
 beta;class CustomAttributeContainerDiagnostic
 beta;CustomAttributeContainerType
-internal;DecimalPrecision
-internal;DelayedPromise
+beta;DecimalPrecision
+beta;DelayedPromise
 beta;DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor
 beta;DelayedPromiseWithProps
 beta;DelayedPromiseWithPropsConstructor
@@ -50,15 +50,15 @@ beta;Enumeration
 beta;EnumerationArrayProperty 
 beta;EnumerationProperty 
 beta;Enumerator
-internal;FileSchemaKey 
+alpha;FileSchemaKey 
 beta;Format 
 beta;class FormatDiagnosticReporter 
 internal;formatStringRgx: RegExp
-internal;FormatTraits
+beta;FormatTraits
 internal;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
-internal;FormatType
+beta;FormatType
 internal;formatTypeToString(type: FormatType): string
-internal;FractionalPrecision
+beta;FractionalPrecision
 beta;IDiagnostic
 beta;IDiagnosticReporter
 beta;InvertedUnit 
@@ -142,9 +142,9 @@ beta;SchemaPartVisitorDelegate
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
 internal;SchemaXmlFileLocater 
-internal;ScientificType
+beta;ScientificType
 internal;scientificTypeToString(scientificType: ScientificType): string
-internal;ShowSignOption
+beta;ShowSignOption
 internal;showSignOptionToString(showSign: ShowSignOption): string
 beta;StrengthDirection
 beta;strengthDirectionToString(direction: StrengthDirection): string
