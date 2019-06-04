@@ -46,7 +46,10 @@ class Notifications extends NotificationManager {
 
     // set up the message
     const span: HTMLSpanElement = document.createElement("span");
-    span.innerHTML = _message as string;  // TODO - support for HTMLElement
+    if (typeof _message === "string")
+      span.innerHTML = _message;
+    else
+      span.appendChild(_message);
     span.className = "notification-messageboxtext";
     dialog.appendChild(span);
 

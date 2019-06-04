@@ -1216,6 +1216,8 @@ export class ExpandableSection extends React_2.PureComponent<ExpandableSectionPr
 // @beta
 export interface ExpandableSectionProps extends CommonProps {
     // (undocumented)
+    expanded?: boolean;
+    // (undocumented)
     title?: string;
 }
 
@@ -3461,10 +3463,15 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelectorState> {
     constructor(props: ViewSelectorProps);
     // (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
     render(): JSX.Element;
+    static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
 
@@ -3485,9 +3492,22 @@ export interface ViewSelectorChangedEventArgs {
 }
 
 // @beta
+export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;
+
+// @beta
 export interface ViewSelectorProps {
     // (undocumented)
     imodel?: IModelConnection;
+    // (undocumented)
+    listenForShowUpdates?: boolean;
+    // (undocumented)
+    showDrawings: boolean;
+    // (undocumented)
+    showSheets: boolean;
+    // (undocumented)
+    showSpatials: boolean;
+    // (undocumented)
+    showUnknown: boolean;
 }
 
 // @public

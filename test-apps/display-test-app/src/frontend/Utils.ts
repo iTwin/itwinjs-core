@@ -12,12 +12,27 @@ export function showStatus(string1: string, string2?: string) {
   if (showstatus)
     showstatus.innerHTML = outString;
 }
+
 export function showError(string1: HTMLElement | string, string2?: string) {
-  let outString: string = string1 as string;  // TODO - support for HTMLElement
-  if (string2)
-    outString = outString.concat(" ", string2);
+  const span = document.createElement("span");
+
+  if (typeof string1 === "string") {
+    const textNode = document.createTextNode(string1);
+    span.appendChild(textNode);
+  } else {
+    span.appendChild(string1);
+  }
+
+  if (string2) {
+    const textNode = document.createTextNode(" " + string2);
+    span.appendChild(textNode);
+  }
 
   const showerror = document.getElementById("showerror");
-  if (showerror)
-    showerror.innerHTML = outString;
+  if (showerror) {
+    while (showerror.firstChild) {
+      showerror.removeChild(showerror.firstChild);
+    }
+    showerror.appendChild(span);
+  }
 }

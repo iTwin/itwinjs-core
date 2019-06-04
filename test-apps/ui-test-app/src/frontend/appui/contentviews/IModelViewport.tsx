@@ -13,6 +13,8 @@ import {
   ContentViewManager,
   ViewportContentControl,
   UiFramework,
+  ViewSelector,
+  ViewUtilities,
 } from "@bentley/ui-framework";
 import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -54,6 +56,7 @@ export class IModelViewportControl extends ViewportContentControl {
       this.setIsReady();
     }
   }
+
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> {
@@ -61,6 +64,18 @@ export class IModelViewportControl extends ViewportContentControl {
       return super.isReady;
     else
       return Promise.resolve();
+  }
+
+  public onActivated(): void {
+    super.onActivated();
+
+    // Demo for showing only the same type of view in ViewSelector - See ViewsFrontstage.tsx, <ViewSelector> listenForShowUpdates
+    if (this.viewport)
+      ViewSelector.updateShowSettings(
+        ViewUtilities.isSpatialView(this.viewport),
+        ViewUtilities.isDrawingView(this.viewport),
+        ViewUtilities.isSheetView(this.viewport),
+        false);
   }
 
   /** Get the NavigationAidControl associated with this ContentControl */

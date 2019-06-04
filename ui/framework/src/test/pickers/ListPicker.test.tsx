@@ -24,6 +24,27 @@ const setEnabled = sinon.spy();
 describe("ListPicker", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    const listItem: ListItem = {
+      enabled: true,
+      type: ListItemType.Item,
+      name: "123456789012345678901234567890",
+    };
+    listItems.push(listItem);
+
+    const separatorItem: ListItem = {
+      enabled: false,
+      type: ListItemType.Separator,
+    };
+    listItems.push(separatorItem);
+
+    const containerItem: ListItem = {
+      enabled: true,
+      type: ListItemType.Container,
+      children: [],
+    };
+    containerItem.children!.push(listItem);
+    listItems.push(containerItem);
   });
 
   describe("rendering", () => {

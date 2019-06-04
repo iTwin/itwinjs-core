@@ -2,7 +2,30 @@
 
 exports[`ListPicker ListPickerBase should render correctly 1`] = `
 <ExpandableItem
-  items={Array []}
+  items={
+    Array [
+      Object {
+        "enabled": true,
+        "name": "123456789012345678901234567890",
+        "type": 0,
+      },
+      Object {
+        "enabled": false,
+        "type": 1,
+      },
+      Object {
+        "children": Array [
+          Object {
+            "enabled": true,
+            "name": "123456789012345678901234567890",
+            "type": 0,
+          },
+        ],
+        "enabled": true,
+        "type": 2,
+      },
+    ]
+  }
   setEnabled={[Function]}
   title="Test"
 >
@@ -30,7 +53,30 @@ exports[`ListPicker ListPickerItem should render correctly 1`] = `
 
 exports[`ListPicker rendering should render correctly 1`] = `
 <ListPickerBase
-  items={Array []}
+  items={
+    Array [
+      Object {
+        "enabled": true,
+        "name": "123456789012345678901234567890",
+        "type": 0,
+      },
+      Object {
+        "enabled": false,
+        "type": 1,
+      },
+      Object {
+        "children": Array [
+          Object {
+            "enabled": true,
+            "name": "123456789012345678901234567890",
+            "type": 0,
+          },
+        ],
+        "enabled": true,
+        "type": 2,
+      },
+    ]
+  }
   setEnabled={[Function]}
   title="Test"
 />
