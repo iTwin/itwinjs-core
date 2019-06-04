@@ -17,6 +17,7 @@ export interface RadioBoxProps<T> {
   name?: string;
   parent?: HTMLElement;
   defaultValue?: T;
+  vertical?: boolean;
 }
 
 export interface RadioBox<T> {
@@ -66,8 +67,15 @@ export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T> {
 
     radioBoxes.push(input);
 
-    form.appendChild(input);
-    form.appendChild(inputLabel);
+    if (props.vertical) {
+      const container = document.createElement("div");
+      container.appendChild(input);
+      container.appendChild(inputLabel);
+      form.appendChild(container);
+    } else {
+      form.appendChild(input);
+      form.appendChild(inputLabel);
+    }
   }
 
   div.appendChild(form);

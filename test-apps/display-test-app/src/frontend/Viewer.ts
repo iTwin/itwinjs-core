@@ -20,6 +20,7 @@ import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from ".
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
+import { SavedViewPicker } from "./SavedViews";
 
 // ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
 // the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
@@ -164,7 +165,8 @@ export class Viewer {
     const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     const view = await views.getDefaultView(props.iModel);
     const viewport = ScreenViewport.create(vpDiv, view);
-    return new Viewer(viewport, views, props);
+    const viewer = new Viewer(viewport, views, props);
+    return viewer;
   }
 
   private constructor(viewport: ScreenViewport, views: ViewList, props: ViewerProps) {
@@ -228,6 +230,16 @@ export class Viewer {
       },
     });
 
+    this.toolBar.addDropDown({
+      className: "bim-icon-savedview",
+      tooltip: "External saved views",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new SavedViewPicker(this.viewport, container, this);
+        await picker.populate();
+        return picker;
+      },
+    });
+
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
       click: () => IModelApp.tools.run("Select"),
@@ -237,9 +249,9 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-settings",
       createDropDown: async (container: HTMLElement) => {
-        const picker = new ViewAttributesPanel(this.viewport, container);
-        await picker.populate();
-        return picker;
+        const panel = new ViewAttributesPanel(this.viewport, container);
+        await panel.populate();
+        return panel;
       },
     });
 
@@ -336,19 +348,19 @@ export class Viewer {
   private async changeView(id: Id64String): Promise<void> {
     await this.withSpinner(async () => {
       const view = await this.views.getView(id, this._imodel);
-      await this._changeView(view.clone());
+      await this.setView(view.clone());
       for (const control of this._3dOnly)
         control.style.display = this.viewport.view.is3d() ? "block" : "none";
     });
   }
 
-  private async _changeView(view: ViewState): Promise<void> {
+  public async setView(view: ViewState): Promise<void> {
     this.viewport.changeView(view);
     await this.toolBar.onViewChanged();
   }
 
   private async openView(view: ViewState): Promise<void> {
-    await this._changeView(view);
+    await this.setView(view);
     IModelApp.viewManager.addViewport(this.viewport);
   }
 

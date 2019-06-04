@@ -5,10 +5,11 @@
 
 import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend } from "./backend";
+import SVTRpcInterface from "../common/SVTRpcInterface";
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
 }
 
 // Initialize the backend
