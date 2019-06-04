@@ -1314,6 +1314,8 @@ export class Entity implements EntityProps {
     static readonly className: string;
     readonly className: string;
     clone(): this;
+    // @alpha
+    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1892,6 +1894,8 @@ export class IModelImporter {
     importModels(modeledElementClass: string): void;
     // (undocumented)
     importRelationships(): void;
+    // (undocumented)
+    initFromExternalSourceAspects(): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     }

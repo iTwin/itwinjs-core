@@ -8,6 +8,7 @@ import { DbOpcode, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
+import * as hash from "object-hash";
 
 /** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
  * @public
@@ -77,4 +78,13 @@ export class Entity implements EntityProps {
 
   /** Make a deep copy of this Entity */
   public clone(): this { return new this._ctor(this, this.iModel) as this; }
+
+  /** Compute a hash of the props of this Entity.
+   * @alpha
+   */
+  public computeHash(): string {
+    const options: object = { respectType: false };
+    const props: EntityProps = this.toJSON();
+    return hash(props, options);
+  }
 }

@@ -3,13 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Code, CodeSpec, ElementProps, IModel, IModelError } from "@bentley/imodeljs-common";
+import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
+import { ExternalSourceAspect, ElementAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelImporter;
@@ -125,7 +126,23 @@ export class IModelImporter {
     }
   }
 
+  public initFromExternalSourceAspects(): void {
+    const sql = `SELECT Element.Id AS elementId FROM ${ExternalSourceAspect.classFullName}`;
+    this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const row = statement.getRow();
+        const aspects: ElementAspect[] = this._targetDb.elements.getAspects(row.elementId, ExternalSourceAspect.classFullName);
+        for (const aspect of aspects) {
+          if (aspect.kind === Element.className) {
+            this._importContext.addElementId(aspect.identifier, row.elementId);
+          }
+        }
+      }
+    });
+  }
+
   public import(): void {
+    this.initFromExternalSourceAspects();
     this.importCodeSpecs();
     this.importFonts();
     this.importElement(IModel.rootSubjectId);
@@ -143,24 +160,25 @@ export class IModelImporter {
         Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId})`);
         return Id64.invalid; // already excluded
       }
-      const sourceElementProps = this._sourceDb.elements.getElementProps({ id: sourceElementId, wantGeometry: false });
-      if (this._excludedElementClassNames.has(sourceElementProps.classFullName)) { // WIP: handle subclasses
-        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Class(${sourceElementProps.classFullName})`);
+      const sourceElement = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
+      if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
+        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Class(${sourceElement.classFullName})`);
         this.excludeElementId(sourceElementId);
         return Id64.invalid; // excluded by class
       }
-      if (this._excludedCodeSpecIds.has(sourceElementProps.code.spec)) {
-        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by CodeSpec(${sourceElementProps.code.spec})`);
+      if (this._excludedCodeSpecIds.has(sourceElement.code.spec)) {
+        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by CodeSpec(${sourceElement.code.spec})`);
         this.excludeElementId(sourceElementId);
         return Id64.invalid; // excluded by CodeSpec
       }
-      if (sourceElementProps.category) {
-        if (this._excludedElementIds.has(sourceElementProps.category)) {
-          Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Category(${sourceElementProps.category})`);
+      if (sourceElement.category) {
+        if (this._excludedElementIds.has(sourceElement.category)) {
+          Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Category(${sourceElement.category})`);
           this.excludeElementId(sourceElementId);
           return Id64.invalid; // excluded by Category
         }
       }
+      const sourceElementHash: string = sourceElement.computeHash();
       const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElementId);
       targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (targetElementId === undefined) {
@@ -168,6 +186,16 @@ export class IModelImporter {
           targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
           this.addElementId(sourceElementId, targetElementId);
           Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
+          const aspectProps: ExternalSourceAspectProps = {
+            classFullName: ExternalSourceAspect.classFullName,
+            element: { id: targetElementId },
+            scope: { id: IModel.rootSubjectId },
+            identifier: sourceElementId,
+            kind: Element.className,
+            checksum: sourceElementHash,
+            // version: sourceElement.lastModifiedTime,
+          };
+          this._targetDb.elements.insertAspect(aspectProps);
         } catch (error) {
           Logger.logError(loggerCategory, "Error inserting Element into target iModel");
         }
