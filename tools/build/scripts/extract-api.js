@@ -48,8 +48,8 @@ const config = {
     },
     extractorMessageReporting: {
       "ae-missing-release-tag": {
-        logLevel: ignoreMissingTags ? "none" : "error",
-        addToApiReportFile: true
+        addToApiReportFile: false,
+        logLevel: ignoreMissingTags ? "none" : "error"
       },
       "ae-internal-missing-underscore": {
         addToApiReportFile: false,
