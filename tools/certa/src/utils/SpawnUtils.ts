@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as inspector from "inspector";
-import { spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess, StdioOptions } from "child_process";
 
 /**
  * Helper function for spawning a child process with the same cwd, env, stdout, and stderr as the current process.
@@ -11,10 +11,15 @@ import { spawn, ChildProcess } from "child_process";
  * @param command The command to run.
  * @param args List of string arguments.
  * @param env Environment vars to override in the child process.
+ * @param useIpc Whether to enable an IPC channel when spawning.
  */
-export function spawnChildProcess(command: string, args: ReadonlyArray<string>, env?: NodeJS.ProcessEnv): ChildProcess {
+export function spawnChildProcess(command: string, args: ReadonlyArray<string>, env?: NodeJS.ProcessEnv, useIpc = false): ChildProcess {
   const childEnv = { ...process.env, ...(env || {}) };
-  const childProcess = spawn(command, args, { stdio: "pipe", cwd: process.cwd(), env: childEnv });
+
+  // FIXME: We should be able to remove the useIpc param and just always enable it,
+  // but it's not safe to spawn electron with IPC enabled until https://github.com/electron/electron/issues/17044 is fixed.
+  const stdio: StdioOptions = (useIpc) ? ["ipc", "pipe", "pipe"] : "pipe";
+  const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.
   childProcess.stdout.on("data", (data: any) => process.stdout.write(data));
