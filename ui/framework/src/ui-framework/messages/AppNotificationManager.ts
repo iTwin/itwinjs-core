@@ -56,7 +56,7 @@ export class AppNotificationManager extends NotificationManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public async openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     return MessageManager.openMessageBox(mbType, message, icon);
   }
 
@@ -75,7 +75,7 @@ export class AppNotificationManager extends NotificationManager {
    * @param percentComplete  The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(messageText: string, percentComplete: number): boolean {
+  public outputActivityMessage(messageText: HTMLElement | string, percentComplete: number): boolean {
     return MessageManager.setupActivityMessageValues(messageText, percentComplete);
   }
 
@@ -87,10 +87,14 @@ export class AppNotificationManager extends NotificationManager {
   public endActivityMessage(reason: ActivityMessageEndReason): boolean {
     let result = false;
 
-    if (ActivityMessageEndReason.Completed === reason)
-      result = MessageManager.endActivityMessage(true);
-    else if (ActivityMessageEndReason.Cancelled === reason)
-      result = MessageManager.endActivityMessage(false);
+    switch (reason) {
+      case ActivityMessageEndReason.Completed:
+        result = MessageManager.endActivityMessage(true);
+        break;
+      case ActivityMessageEndReason.Cancelled:
+        result = MessageManager.endActivityMessage(false);
+        break;
+    }
 
     return result;
   }
@@ -106,6 +110,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Clear the ToolTip if it is currently open. If not open, does nothing. */
   public clearToolTip(): void {
+    // istanbul ignore else
     if (this.isToolTipOpen)
       ElementTooltip.hideTooltip();
   }

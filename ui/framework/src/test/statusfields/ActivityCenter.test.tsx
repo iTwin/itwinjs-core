@@ -54,13 +54,14 @@ describe("ActivityCenter", () => {
     wrapper.unmount();
   });
 
-  it("MessageManager.onActivityMessageUpdatedEvent should be handled", () => {
+  it("MessageManager.onActivityMessageUpdatedEvent should be handled", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     const message = "Test";
     const percentage = 50;
     MessageManager.setupActivityMessageValues(message, percentage);
+    await TestUtils.flushAsyncOperations();
     const field = wrapper.find(ActivityCenterField).at(0);
-    expect(field.state("title")).to.eq(message);
+    expect(field.state("message")).to.eq(message);
     expect(field.state("percentage")).to.eq(percentage);
     expect(field.state("isActivityMessageVisible")).to.be.true;
     wrapper.unmount();

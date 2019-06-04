@@ -35,7 +35,7 @@ class Notifications extends NotificationManager {
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public async openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
     if (!rootDiv)
       return Promise.resolve(MessageBoxValue.Cancel);
@@ -46,7 +46,7 @@ class Notifications extends NotificationManager {
 
     // set up the message
     const span: HTMLSpanElement = document.createElement("span");
-    span.innerHTML = _message;
+    span.innerHTML = _message as string;  // TODO - support for HTMLElement
     span.className = "notification-messageboxtext";
     dialog.appendChild(span);
 

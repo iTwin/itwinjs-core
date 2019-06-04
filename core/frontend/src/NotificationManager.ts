@@ -113,7 +113,7 @@ export interface ToolTipOptions {
 }
 
 /** Describes a message to be displayed to the user.
- * @beta
+ * @public
  */
 export class NotifyMessageDetails {
   public displayTime = BeDuration.fromSeconds(3.5);
@@ -129,7 +129,8 @@ export class NotifyMessageDetails {
    *  @param msgType         The type of message.
    *  @param openAlert       Whether an alert box should be displayed or not, and if so what kind.
    */
-  public constructor(public priority: OutputMessagePriority, public briefMessage: string, public detailedMessage?: string, public msgType = OutputMessageType.Toast, public openAlert = OutputMessageAlert.None) { }
+  public constructor(public priority: OutputMessagePriority, public briefMessage: HTMLElement | string,
+    public detailedMessage?: HTMLElement | string, public msgType = OutputMessageType.Toast, public openAlert = OutputMessageAlert.None) { }
 
   /** Set OutputMessageType.Pointer message details.
    * @param viewport            Viewport over which to display the Pointer type message.
@@ -189,9 +190,7 @@ export class NotificationManager {
    */
   public outputPrompt(_prompt: string) { }
 
-  /** Output a message and/or alert to the user.
-   * @beta
-   */
+  /** Output a message and/or alert to the user.  */
   public outputMessage(_message: NotifyMessageDetails) { }
 
   /** Output a MessageBox and wait for response from the user.
@@ -200,7 +199,7 @@ export class NotificationManager {
    * @param _icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public async openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return Promise.resolve(MessageBoxValue.Ok); }
+  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return Promise.resolve(MessageBoxValue.Ok); }
 
   /**
    * Set up for activity messages.
@@ -215,7 +214,7 @@ export class NotificationManager {
    * @param _percentComplete The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(_messageText: string, _percentComplete: number) { return true; }
+  public outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number) { return true; }
 
   /**
    * End an activity message.
@@ -230,20 +229,17 @@ export class NotificationManager {
   /** Return true if the tooltip is currently open. */
   public get isToolTipOpen(): boolean { return false; }
 
-  /** Implement to display a tooltip message at the specified location.
-   * @beta
-   */
+  /** Implement to display a tooltip message at the specified location. */
   protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void { }
 
   /** Show a tooltip window. Saves tooltip location for AccuSnap to test if cursor has moved far enough away to close tooltip.
-   * @param htmlElement The HTMLElement that that anchors the toolTip.
+   * @param htmlElement The HTMLElement that anchors the toolTip.
    * @param message What to display inside the ToolTip. May be a string or an HTMLElement.
    * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param options Options that supply additional information about how the ToolTip should function.
    * @note If message is an HTMLElement, the notification manager will display the HTMLElement verbatim. This can represent a security
    * risk if any part the element is created from user input. Applications should be careful to *sanitize* any such input before
    * creating an HTMLElement to pass to this method.
-   * @beta
    */
   public openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void {
     this.toolTipLocation.setFrom(location);

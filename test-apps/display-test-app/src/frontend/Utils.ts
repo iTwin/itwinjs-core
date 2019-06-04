@@ -12,8 +12,8 @@ export function showStatus(string1: string, string2?: string) {
   if (showstatus)
     showstatus.innerHTML = outString;
 }
-export function showError(string1: string, string2?: string) {
-  let outString: string = string1;
+export function showError(string1: HTMLElement | string, string2?: string) {
+  let outString: string = string1 as string;  // TODO - support for HTMLElement
   if (string2)
     outString = outString.concat(" ", string2);
 

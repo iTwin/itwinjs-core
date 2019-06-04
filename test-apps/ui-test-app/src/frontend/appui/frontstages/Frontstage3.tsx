@@ -160,7 +160,7 @@ export class Frontstage3 extends FrontstageProvider {
               iconSpec="icon-placeholder"
               items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
               AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
-              direction={Direction.Left}
+              direction={Direction.Right}
               itemsInColumn={7}
             />
           </>

@@ -21,16 +21,13 @@ import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bent
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { MessageDiv } from "../messages/MessageSpan";
 
 import "./StatusBar.scss";
 
 // tslint:disable-next-line: variable-name
-const MessageLabel = (props: { text: string }) => {
-  return (
-    <div
-      className="uifw-statusbar-message-label"
-      dangerouslySetInnerHTML={{ __html: props.text }} />
-  );
+const MessageLabel = (props: { message: HTMLElement | string }): JSX.Element => {
+  return <MessageDiv className="uifw-statusbar-message-label" message={props.message} />;
 };
 
 /** Enum for StatusBar Message Type
@@ -154,20 +151,20 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    */
   private _handleActivityMessageUpdatedEvent = (args: ActivityMessageEventArgs) => {
     const visibleMessage = StatusBarMessageType.Activity;
-    this.setState((_prevState) => ({
+    this.setState({
       visibleMessage,
       activityMessageInfo: args,
       isActivityMessageVisible: args.restored ? true : this.state.isActivityMessageVisible,
-    }));
+    });
   }
 
   /**
    * Hides ActivityMessage after cancellation
    */
   private _handleActivityMessageCancelledEvent = () => {
-    this.setState((_prevState) => ({
+    this.setState({
       isActivityMessageVisible: false,
-    }));
+    });
   }
 
   private getFooterMessage() {
@@ -194,11 +191,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                 }
               >
                 <MessageLayout>
-                  <MessageLabel text={this.state.messageDetails.briefMessage} />
+                  <MessageLabel message={this.state.messageDetails.briefMessage} />
                   {this.state.messageDetails.detailedMessage &&
                     <>
                       <br />
-                      <MessageLabel text={this.state.messageDetails.detailedMessage} />
+                      <MessageLabel message={this.state.messageDetails.detailedMessage} />
                     </>
                   }
                 </MessageLayout>
@@ -222,11 +219,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                 </MessageButton>
               }
             >
-              <MessageLabel text={this.state.messageDetails.briefMessage} />
+              <MessageLabel message={this.state.messageDetails.briefMessage} />
               {this.state.messageDetails.detailedMessage &&
                 <>
                   <br />
-                  <MessageLabel text={this.state.messageDetails.detailedMessage} />
+                  <MessageLabel message={this.state.messageDetails.detailedMessage} />
                 </>
               }
             </MessageLayout>
@@ -243,7 +240,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    * reflecting activity progress.
    */
   private getActivityMessage(): React.ReactNode {
-    const messageDetails = this.state.activityMessageInfo!.details;
+    // istanbul ignore next
+    if (!this.state.activityMessageInfo)
+      return null;
+
+    const messageDetails = this.state.activityMessageInfo.details;
     const percentComplete = UiFramework.translate("activityCenter.percentComplete");
     return (
       <Message
@@ -270,15 +271,15 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
             (messageDetails && messageDetails.showProgressBar) &&
             <MessageProgress
               status={Status.Information}
-              progress={this.state.activityMessageInfo!.percentage}
+              progress={this.state.activityMessageInfo.percentage}
             />
           }
         >
           <div>
-            {this.state.activityMessageInfo && <MessageLabel text={this.state.activityMessageInfo.message} />}
+            {<MessageLabel message={this.state.activityMessageInfo.message} />}
             {
               (messageDetails && messageDetails.showPercentInMessage) &&
-              <SmallText>{this.state.activityMessageInfo!.percentage + percentComplete}</SmallText>
+              <SmallText>{this.state.activityMessageInfo.percentage + percentComplete}</SmallText>
             }
           </div>
         </MessageLayout>
@@ -298,16 +299,14 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
    * Dismisses ActivityMessage
    */
   private _dismissActivityMessage = () => {
-    this.setState((_prevState) => ({
+    this.setState({
       isActivityMessageVisible: false,
-    }));
+    });
   }
 
   private _handleOpenWidget = (openWidget: StatusBarFieldId) => {
-    this.setState((_prevState, _props) => {
-      return {
-        openWidget,
-      };
+    this.setState({
+      openWidget,
     });
   }
 
@@ -316,9 +315,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   }
 
   private setVisibleMessage(visibleMessage: StatusBarMessageType, messageDetails?: NotifyMessageDetails) {
-    this.setState((_prevState) => ({
+    this.setState({
       visibleMessage,
       messageDetails,
-    }));
+    });
   }
 }

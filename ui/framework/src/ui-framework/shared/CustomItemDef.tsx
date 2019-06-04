@@ -9,7 +9,6 @@ import * as React from "react";
 import { Size } from "@bentley/ui-ninezone";
 
 import { CustomItemProps } from "./ItemProps";
-import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 
 /** @internal */
@@ -44,16 +43,13 @@ export class CustomItemDef extends ActionButtonItemDef {
     return this.customId;
   }
 
-  public handleSyncUiEvent(_args: SyncUiEventArgs): boolean {
-    return false;
-  }
-
   public toolbarReactNode(index?: number): React.ReactNode {
     if (!this.isVisible)
       return null;
 
     let clone: React.ReactNode;
 
+    // istanbul ignore else
     if (React.isValidElement(this.reactElement)) {
       const key = (index !== undefined) ? index.toString() : this.id;
       const cloneProps: CloneProps = {

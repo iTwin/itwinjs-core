@@ -87,11 +87,11 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
       "uifw-element-tooltip",
       this.props.className);
 
-    let message: React.ReactNode;
+    let messageNode: React.ReactNode;
     if (typeof this.state.message === "string")
-      message = <div dangerouslySetInnerHTML={{ __html: this.state.message }} />;
+      messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message }} />;   // TODO - After some time for warning, switch to pure text
     else
-      message = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
+      messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
 
     return (
       <div className="uifw-element-tooltip-container">
@@ -101,7 +101,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
           position={this.state.position}
           onSizeChanged={this._handleSizeChanged}
         >
-          {message}
+          {messageNode}
         </Tooltip>
       </div>
     );

@@ -183,7 +183,7 @@ export interface ActivityMessageEventArgs {
     // (undocumented)
     details?: ActivityMessageDetails;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     percentage: number;
     // (undocumented)
@@ -223,8 +223,8 @@ export class AppNotificationManager extends NotificationManager {
     protected _hidePointerMessage(): void;
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
-    openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    outputActivityMessage(messageText: string, percentComplete: number): boolean;
+    openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    outputActivityMessage(messageText: HTMLElement | string, percentComplete: number): boolean;
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
@@ -897,8 +897,6 @@ export class CustomItemDef extends ActionButtonItemDef {
     customId: string;
     // (undocumented)
     static customIdPrefix: string;
-    // (undocumented)
-    handleSyncUiEvent(_args: SyncUiEventArgs): boolean;
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -1781,9 +1779,9 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 // @public
 export interface InputFieldMessageEventArgs {
     // (undocumented)
-    detailedMessage: string;
+    detailedMessage: HTMLElement | string;
     // (undocumented)
-    messageText: string;
+    messageText: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -2153,7 +2151,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage?: string, priority?: OutputMessagePriority): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetails): string;
     static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
@@ -2167,10 +2165,10 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
-    static openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
-    static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean;
+    static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
     }
 
 // @public
@@ -2412,11 +2410,11 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 // @public
 export interface PointerMessageChangedEventArgs {
     // (undocumented)
-    detailedMessage?: string;
+    detailedMessage?: HTMLElement | string;
     // (undocumented)
     isVisible: boolean;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
