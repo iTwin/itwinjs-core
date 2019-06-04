@@ -73,8 +73,8 @@ describe("GrowableXYArray", () => {
   it("CloneExtractAndPop", () => {
     const ck = new Checker();
     const n = 11;
-    const pointAXYZ = Sample.createGrowableArrayCirclePoints(1.0, n, false);
-    const pointAXY = GrowableXYArray.create(pointAXYZ);
+    const pointA3d = Sample.createGrowableArrayCirclePoints(1.0, n, false);
+    const pointAXY = GrowableXYArray.create(pointA3d);
     const pointBXY = pointAXY.clone();
     const pointC = pointAXY.getPoint2dArray();
     const pointD = GrowableXYArray.create(pointC);
@@ -195,8 +195,8 @@ describe("GrowableXYArray", () => {
     const ck = new Checker();
     const numWrap = 3;
     for (let n = 5; n < 100; n *= 2) {
-      const pointAXYZ = Sample.createGrowableArrayCirclePoints(1.0, n, false);
-      const pointA = GrowableXYArray.create(pointAXYZ);
+      const pointA3d = Sample.createGrowableArrayCirclePoints(1.0, n, false);
+      const pointA = GrowableXYArray.create(pointA3d);
 
       pointA.pushWrap(numWrap);
       ck.testExactNumber(n + numWrap, pointA.length, "pushWrap increases length");
@@ -263,7 +263,7 @@ describe("GrowableXYArray", () => {
 
   it("IndexedXYCollection", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 0),
       Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(points);
@@ -312,7 +312,7 @@ describe("GrowableXYArray", () => {
 
   it("resizeAndBoundsChecks", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
     const xyPoints = new GrowableXYArray(points.length);    // just enough so we know the initial capacity.
     for (const p of points)
@@ -380,7 +380,7 @@ describe("GrowableXYArray", () => {
 
   it("transferAndSet", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
     const array0 = new GrowableXYArray(points.length);    // just enough so we know the initial capacity.
     for (const p of points)

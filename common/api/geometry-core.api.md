@@ -1654,6 +1654,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     isCloseToPlane(plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     isIndexValid(index: number): boolean;
     readonly length: number;
+    mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void;
     multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
@@ -1694,6 +1695,7 @@ export class HalfEdge {
     static createHalfEdgePairWithCoordinates(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, xB: number | undefined, yB: number | undefined, zB: number | undefined, iB: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
     decommission(): void;
     distanceXY(other: HalfEdge): number;
+    distanceXYZ(other: HalfEdge): number;
     readonly edgeMate: HalfEdge;
     readonly facePredecessor: HalfEdge;
     faceStepY(numStep: number): number;
@@ -1727,8 +1729,10 @@ export class HalfEdge {
     setMask(mask: HalfEdgeMask): void;
     setMaskAroundFace(mask: HalfEdgeMask): void;
     setMaskAroundVertex(mask: HalfEdgeMask): void;
+    setXYZFrom(node: HalfEdge): void;
     signedFaceArea(): number;
     sortAngle?: number;
+    sortData?: number;
     static splitEdge(base: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
     sumAroundFace(f: NodeToNumberFunction): number;
     sumAroundVertex(f: NodeToNumberFunction): number;
@@ -3183,6 +3187,7 @@ export class PolyfaceClip {
     static clipPolyface(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet): Polyface | undefined;
     static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean): Polyface;
     static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface;
+    static sectionPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane): LineString3d[];
 }
 
 // @public
@@ -3240,6 +3245,8 @@ export class PolyfaceQuery {
     static sumFacetAreas(source: Polyface | PolyfaceVisitor): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
+    static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
+    static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[];
     static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface;
     static visitorToLoop(visitor: PolyfaceVisitor): Loop;
 }
@@ -3715,10 +3722,10 @@ export class Sample {
     static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[];
     static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure?: boolean): Point3d[];
     static createEllipsoids(): Sphere[];
-    static createFractalDiamonConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createFractalDiamondConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalHatReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalLMildConcavePatter(numRecursion: number, perpendicularFactor: number): Point3d[];
-    static createFractalLReversingPatterh(numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createFractalLReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[];
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
@@ -3741,7 +3748,7 @@ export class Sample {
     static createRay(x: number, y: number, z: number, u: number, v: number, w: number): Ray3d;
     static createRectangle(x0: number, y0: number, x1: number, y1: number, z?: number, closed?: boolean): Point3d[];
     static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z?: number): Point3d[];
-    static createRecursvieFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[];
+    static createRecursiveFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[];
     static createRigidAxes(): Matrix3d[];
     static createRigidTransforms(): Transform[];
     static createRotationalSweepLineSegment3dArc3dLineString3d(capped: boolean): SolidPrimitive[];

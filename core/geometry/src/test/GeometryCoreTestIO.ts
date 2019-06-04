@@ -41,6 +41,18 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[], dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (newGeometry instanceof GeometryQuery) {
+      const g1 = newGeometry.clone();
+      if (g1)
+        GeometryCoreTestIO.captureGeometry(collection, g1, dx, dy, dz);
+      return;
+    }
+    if (Array.isArray(newGeometry)) {
+      for (const g of newGeometry)
+        this.captureCloneGeometry(collection, g, dx, dy, dz);
+    }
+  }
   /**
    * Create a circle (or many circles) given center and radius.  Save the arcs in collection, shifted by [dx,dy,dz]
    * @param collection growing array of geometry

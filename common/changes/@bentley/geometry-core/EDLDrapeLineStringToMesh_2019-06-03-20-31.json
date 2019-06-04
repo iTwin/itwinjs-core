@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add PolyfaceQuery methods to drape linestring to facets",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

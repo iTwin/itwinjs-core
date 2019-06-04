@@ -176,7 +176,7 @@ describe("Regularize", () => {
   });
   /**
    * Lots of regularization tests ..
-   * Each starts with a recilinear square wave and return, with varying wave counts and sizes
+   * Each starts with a rectilinear square wave and return, with varying wave counts and sizes
    * The basic shape is varied by
    * * simple rotation
    * * polar mapping that turns it into "circular" saw.
@@ -317,8 +317,8 @@ describe("Regularize", () => {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         for (const generatorFunction of [
           Sample.createFractalSquareReversingPattern,
-          Sample.createFractalDiamonConvexPattern,
-          Sample.createFractalLReversingPatterh,
+          Sample.createFractalDiamondConvexPattern,
+          Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
           for (const degrees of [0, 10, 79]) {
@@ -402,9 +402,9 @@ function testRegularize(
 
 /**
  * Lots of regularization tests ..
- * Each starts with a recilinear square wave and and wraps it in a spiral (multiple loops)
+ * Each starts with a rectilinear square wave and and wraps it in a spiral (multiple loops)
  */
-it("RegularizeSpirate", () => {
+it("RegularizeSpiralBand", () => {
   const ck = new Checker();
 
   let outputX0 = 0;
@@ -456,8 +456,8 @@ it("RegularizeSpirate", () => {
       outputY1 += bigStepY;
     }
   }
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpirate");
-  ck.testExactNumber(0, hardLoops.length, "See RegularizationSpirate.HardLoops for " + hardLoops.length + "regularization failure cases ");
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpiralBand");
+  ck.testExactNumber(0, hardLoops.length, "See RegularizationSpiralBand.HardLoops for " + hardLoops.length + "regularization failure cases ");
   GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
   expect(ck.getNumErrors()).equals(0);
 });

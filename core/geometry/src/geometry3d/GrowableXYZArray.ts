@@ -814,4 +814,17 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return undefined;
   }
+  /**
+   * Pass the (x,y,z) of each point to a function which returns a replacement for of of the 3 components.
+   * @param componentIndex Index (0,1,2) of component to be replaced.
+   * @param func function to be called as `func(x,y,z)`, returning a replacement value for componentIndex
+   */
+  public mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number) {
+    const n = this._data.length;
+    let q;
+    for (let i = 0; i + 2 < n; i += 3) {
+      q = func(this._data[i], this._data[i + 1], this._data[i + 2]);
+      this._data[i + componentIndex] = q;
+    }
+  }
 }

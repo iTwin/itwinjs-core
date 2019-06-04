@@ -109,7 +109,7 @@
 /**
  * @docs-group-description Utility
  * These modules and classes are outside the geometric structure
- * * geometry-core.ts -- gathers and exports class, so callers can import from geometry-core without knowning which classes
+ * * geometry-core.ts -- gathers and exports class, so callers can import from geometry-core without knowing which classes
  *        are in which files.
  */
 // doc:export class Utility { }
