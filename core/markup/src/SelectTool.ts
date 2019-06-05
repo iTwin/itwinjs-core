@@ -5,7 +5,7 @@
 /** @module MarkupTools */
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
-import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent } from "@bentley/imodeljs-frontend";
 import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -474,6 +474,7 @@ export class SelectTool extends MarkupTool {
   private _flashedElement?: MarkupElement;
   private readonly _dragging: MarkupElement[] = [];
   private _anchorPt!: Point3d;
+  private _isBoxSelect = false;
 
   public get flashedElement(): MarkupElement | undefined { return this._flashedElement; }
   public set flashedElement(el: MarkupElement | undefined) {
@@ -486,6 +487,7 @@ export class SelectTool extends MarkupTool {
     this.markup.setCursor("default");
     this.markup.enablePick();
     this.flashedElement = undefined;
+    this.boxSelectInit();
   }
   private clearSelect() {
     this.cancelDrag();
@@ -502,6 +504,7 @@ export class SelectTool extends MarkupTool {
   private cancelDrag() {
     this._dragging.forEach((el) => el.remove()); // remove temporary elements from DOM
     this._dragging.length = 0;
+    this.boxSelectInit();
   }
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     const selected = this.markup.selected;
@@ -523,7 +526,10 @@ export class SelectTool extends MarkupTool {
       if (handles.dragging)
         return handles.endDrag(markup.undo);
       if (handles.active) { // clicked on a handle
-        handles.active.onClick(ev);
+        if (ev.isControlKey)
+          selected.drop(handles.el);
+        else
+          handles.active.onClick(ev);
         handles.active = undefined;
         return EventHandled.Yes;
       }
@@ -542,8 +548,74 @@ export class SelectTool extends MarkupTool {
     return EventHandled.Yes;
   }
 
+  public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
+    // Allow tap with a second touch point to multiselect (similar functionality to control being held with mouse click).
+    if (ev.isSingleTap && 2 === ev.touchEvent.touches.length) {
+      const el = this.flashedElement = this.pickElement(ev.viewPoint);
+      if (el) {
+        const selected = this.markup.selected;
+        if (!selected.drop(el))
+          selected.add(el);
+        return EventHandled.Yes;
+      }
+    }
+    return super.onTouchTap(ev);
+  }
+
+  protected boxSelectInit(): void {
+    this._isBoxSelect = false;
+    this.markup.svgDynamics!.clear();
+  }
+
+  protected boxSelectStart(ev: BeButtonEvent): boolean {
+    if (!ev.isControlKey)
+      this.markup.selected.emptyAll();
+    this._anchorPt = MarkupApp.convertVpToVb(ev.viewPoint);
+    this._isBoxSelect = true;
+    return true;
+  }
+
+  protected boxSelect(ev: BeButtonEvent, isDynamics: boolean): boolean {
+    if (!this._isBoxSelect)
+      return false;
+    const start = this._anchorPt;
+    const end = MarkupApp.convertVpToVb(ev.viewPoint);
+    const vec = start.vectorTo(end);
+    const width = Math.abs(vec.x);
+    const height = Math.abs(vec.y);
+    if (width < 1 || height < 1)
+      return true;
+    const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
+    this.markup.svgDynamics!.clear();
+    this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
+    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": ev.isShiftKey ? "6,6" : "3,3", "fill": "none" });
+    const outlinesG = isDynamics ? this.markup.svgDynamics!.group() : undefined;
+    const selectRect = selectBox.node.getBoundingClientRect();
+    this.markup.svgMarkup!.forElementsOfGroup((child) => {
+      const childRect = child.node.getBoundingClientRect();
+      const inside = (childRect.left >= selectRect.left && childRect.top >= selectRect.top && childRect.right <= selectRect.right && childRect.bottom <= selectRect.bottom);
+      const overlap = !inside && (childRect.left < selectRect.right && childRect.right > selectRect.left && childRect.bottom > selectRect.top && childRect.top < selectRect.bottom);
+      const accept = inside || (overlap && ev.isShiftKey);
+      if (undefined !== outlinesG) {
+        if (inside || overlap) {
+          const outline = child.getOutline().attr(MarkupApp.props.handles.moveOutline).addTo(outlinesG);
+          if (accept)
+            outline.attr({ "fill": MarkupApp.props.hilite.flash, "fill-opacity": 0.2 });
+        }
+      } else if (accept) {
+        this.markup.selected.add(child);
+      }
+    });
+    if (!isDynamics)
+      this.boxSelectInit();
+    return true;
+  }
+
   /** called when the mouse moves while the data button is down. */
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (BeButton.Data !== ev.button)
+      return EventHandled.No;
+
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
@@ -553,11 +625,8 @@ export class SelectTool extends MarkupTool {
     }
 
     const flashed = this.flashedElement = this.pickElement(ev.viewPoint);
-    if (undefined === flashed) {
-      selected.emptyAll();
-      // TODO: drag select?
-      return EventHandled.Yes;
-    }
+    if (undefined === flashed)
+      return this.boxSelectStart(ev) ? EventHandled.Yes : EventHandled.No;
 
     if (!selected.has(flashed))
       selected.restart(flashed); // we clicked on an element not in the selection set, replace current selection with just this element
@@ -585,6 +654,8 @@ export class SelectTool extends MarkupTool {
     }
 
     if (this._dragging.length === 0) {
+      if (this.boxSelect(ev, true))
+        return;
       if (InputSource.Touch !== ev.inputSource)
         this.flashedElement = this.pickElement(ev.viewPoint);  // if we're not dragging, try to find an element under the cursor
       return;
@@ -606,7 +677,7 @@ export class SelectTool extends MarkupTool {
       return handles.endDrag(markup.undo);
 
     if (this._dragging.length === 0)
-      return EventHandled.Yes;    // we had nothing selected, nothing to do
+      return this.boxSelect(ev, false) ? EventHandled.Yes : EventHandled.No;
 
     // NOTE: all units should be in viewbox coordinates
     const delta = MarkupApp.convertVpToVb(ev.viewPoint).minus(this._anchorPt);

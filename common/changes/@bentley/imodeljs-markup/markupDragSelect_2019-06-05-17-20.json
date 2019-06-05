@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support drag box selection for markup. Support multiselect of markup using touch input.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}
