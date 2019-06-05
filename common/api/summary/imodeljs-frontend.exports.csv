@@ -27,6 +27,7 @@ internal;BackgroundMapProvider
 alpha;BasePropertyEditorParams
 beta;BasePropertyValue
 internal;class BaseTiledMapProvider 
+internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps

@@ -6,11 +6,12 @@
 import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { ElementAlignedBox3d, FeatureTable, Feature, BatchType } from "@bentley/imodeljs-common";
-import { Id64String, utf8ToString } from "@bentley/bentleyjs-core";
+import { Id64String, utf8ToString, JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
 import { Transform } from "@bentley/geometry-core";
+import { BatchedTileIdMap } from "./TileTree";
 
 /**
  * Provides facilities for deserializing Batched 3D Model (B3dm) tiles.
@@ -25,6 +26,7 @@ export namespace B3dmTileIO {
     public readonly batchTableJsonLength: number;
     public readonly batchTableBinaryLength: number;
     public readonly featureTableJson: any;
+    public readonly batchTableJson: any;
     public get isValid(): boolean { return TileIO.Format.B3dm === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
@@ -64,7 +66,11 @@ export namespace B3dmTileIO {
         if (sceneStr) this.featureTableJson = JSON.parse(sceneStr);
       }
       stream.advance(this.featureTableBinaryLength);
-      stream.advance(this.batchTableJsonLength);
+      if (0 !== this.batchTableJsonLength) {
+        const batchStrData = stream.nextBytes(this.batchTableJsonLength);
+        const batchStr = utf8ToString(batchStrData);
+        if (batchStr) this.batchTableJson = JSON.parse(batchStr);
+      }
       stream.advance(this.batchTableBinaryLength);
 
       if (stream.isPastTheEnd)
@@ -77,7 +83,7 @@ export namespace B3dmTileIO {
    * @internal
    */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled, idMap?: BatchedTileIdMap): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -88,18 +94,27 @@ export namespace B3dmTileIO {
       }
 
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
-      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, transformToRoot, isCanceled) : undefined;
+      const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
+      return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, batchTableLength, transformToRoot, header.batchTableJson, isCanceled, idMap) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _transformToRoot?: Transform, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any, isCanceled?: GltfTileIO.IsCanceled, private _idMap?: BatchedTileIdMap) {
       super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {
 
-      // TBD... Create an actual feature table if one exists.  For now we are only reading tiles from scalable mesh which have no features.
       // NB: For reality models with no batch table, we want the model ID in the feature table
-      const featureTable: FeatureTable = new FeatureTable(1, this._modelId, this._type);
-      const feature = new Feature(this._modelId);
-      featureTable.insert(feature);
+      const featureTable: FeatureTable = new FeatureTable(this._batchTableLength ? this._batchTableLength : 1, this._modelId, this._type);
+      if (this._batchTableLength > 0 && this._idMap !== undefined && this._batchTableJson !== undefined) {
+        for (let i = 0; i < this._batchTableLength; i++) {
+          const feature: any = {};
+          for (const key in this._batchTableJson)
+            feature[key] = this._batchTableJson[key][i];
+          featureTable.insert(new Feature(this._idMap.getBatchId(feature, this._iModel)));
+        }
+      } else {
+        const feature = new Feature(this._modelId);
+        featureTable.insert(feature);
+      }
 
       await this.loadTextures();
       if (this._isCanceled)
@@ -107,7 +122,16 @@ export namespace B3dmTileIO {
 
       return Promise.resolve(this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot));
     }
-    protected readFeatures(features: Mesh.Features, _json: any): boolean {
+    protected readFeatures(features: Mesh.Features, json: any): boolean {
+      let batchIds: any;
+      if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes && undefined !== (batchIds = super.readBufferData32(json.attributes, "_BATCHID"))) {
+        const indices = [];
+        for (let i = 0; i < batchIds.count; i++)
+          indices.push(batchIds.buffer[i]);
+
+        features.setIndices(indices);
+        return true;
+      }
       const feature = new Feature(this._modelId);
 
       features.add(feature, 1);

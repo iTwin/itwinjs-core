@@ -1171,6 +1171,14 @@ export abstract class BaseTiledMapProvider implements IDisposable {
     protected _tileTree?: TileTree;
 }
 
+// @internal
+export class BatchedTileIdMap {
+    // (undocumented)
+    getBatchId(properties: any, iModel: IModelConnection): Id64String | undefined;
+    // (undocumented)
+    getBatchProperties(id: Id64String): any | undefined;
+    }
+
 // @public (undocumented)
 export enum BeButton {
     // (undocumented)
@@ -1561,8 +1569,12 @@ export enum ContextMode {
 // @internal (undocumented)
 export class ContextRealityModelState implements TileTreeModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
+    // (undocumented)
+    protected _batchedIdMap: BatchedTileIdMap;
     static findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     static findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+    // (undocumented)
+    getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // (undocumented)
     readonly iModel: IModelConnection;
     // (undocumented)
@@ -3844,6 +3856,8 @@ export class ModelState extends EntityState implements ModelProps {
     readonly asGeometricModel3d: GeometricModel3dState | undefined;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha
+    getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     readonly isGeometricModel: boolean;
     // (undocumented)
     readonly isPrivate: boolean;
@@ -6550,6 +6564,8 @@ export abstract class TileLoader {
     protected readonly _batchType: BatchType;
     compareTilePriorities(lhs: Tile, rhs: Tile): number;
     // (undocumented)
+    getBatchIdMap(): BatchedTileIdMap | undefined;
+    // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
     // (undocumented)
     protected readonly _loadEdges: boolean;
@@ -6674,6 +6690,7 @@ export namespace TileTree {
 
 // @alpha
 export interface TileTreeModelState {
+    getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // @internal (undocumented)
     readonly iModel: IModelConnection;
     // @internal (undocumented)
@@ -7922,6 +7939,8 @@ export abstract class Viewport implements IDisposable {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal
     getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined;
+    // @internal (undocumented)
+    getToolTip(hit: HitDetail): HTMLElement | string;
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;

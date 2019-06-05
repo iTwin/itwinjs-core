@@ -793,6 +793,30 @@ const enum TileState {
   Abandoned = Tile.LoadStatus.Abandoned, // tile was abandoned.
 }
 
+/**
+ * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
+ * these properties may be present in batched tile sets.
+ * @internal
+ */
+export class BatchedTileIdMap {
+  private _featureMap = new Map<string, { id: Id64String, properties: any }>();
+  private _idMap = new Map<Id64String, any>();
+  public getBatchId(properties: any, iModel: IModelConnection): Id64String | undefined {
+    const keyString = JSON.stringify(properties);
+    const found = this._featureMap.get(keyString);
+    if (found)
+      return found.id;
+
+    const id = iModel.transientIds.next;
+    this._featureMap.set(keyString, { id, properties });
+    this._idMap.set(id, properties);
+    return id;
+  }
+  public getBatchProperties(id: Id64String): any | undefined {
+    return this._idMap.get(id);
+  }
+}
+
 /** A hierarchical level-of-detail tree of 3d [[Tile]]s to be rendered in a [[Viewport]].
  * @internal
  */
@@ -917,6 +941,7 @@ export abstract class TileLoader {
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
+  public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
   /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
    * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
    */
@@ -947,7 +972,7 @@ export abstract class TileLoader {
         return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled);
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled, this.getBatchIdMap());
         break;
       case TileIO.Format.IModel:
         reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);

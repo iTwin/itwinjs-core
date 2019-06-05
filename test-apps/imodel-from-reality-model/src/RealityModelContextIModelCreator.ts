@@ -58,7 +58,7 @@ export class RealityModelContextIModelCreator {
      * @param iModelFileName the output iModel file name
      * @param url the reality model URL
      */
-    public constructor(iModelFileName: string, url: string) {
+    public constructor(iModelFileName: string, url: string, private _name: string) {
         fs.unlink(iModelFileName, ((_err) => { }));
         this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
         this.url = url;
@@ -96,7 +96,7 @@ export class RealityModelContextIModelCreator {
                 worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(tileRange)));
             }
         }
-        return { realityModel: { tilesetUrl: this.url, name: this.url }, geoLocated };
+        return { realityModel: { tilesetUrl: this.url, name: this._name ? this._name : this.url }, geoLocated };
     }
     /** Perform the import */
     public async create(): Promise<void> {
@@ -127,7 +127,7 @@ export class RealityModelContextIModelCreator {
                             geoLocated = true;
                         }
                         worldRange.extendRange(worldToEcef.inverse()!.multiplyRange(ecefRange));
-                        realityModels.push({ tilesetUrl: modelUrl, name: model.name });
+                        realityModels.push({ tilesetUrl: modelUrl, name: this._name ? this._name : model.name });
                     }
                 }
             } else {

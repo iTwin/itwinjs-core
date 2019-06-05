@@ -13,6 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
 import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { TileTree, TileTreeState } from "./tile/TileTree";
+import { HitDetail } from "./HitDetail";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -62,6 +63,11 @@ export class ModelState extends EntityState implements ModelProps {
    * @internal
    */
   public onIModelConnectionClose() { }
+  /**
+   * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
+   * @alpha
+   */
+  public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
 }
 
 /** Interface adopted by an object which can supply a tile tree for display within a [[ViewState]].
@@ -94,6 +100,11 @@ export interface TileTreeModelState {
    * @internal
    */
   loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
+  /**
+   * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
+   * @alpha
+   */
+  getToolTip(hit: HitDetail): HTMLElement | string | undefined;
 }
 
 /** Represents the front-end state of a [GeometricModel]($backend).

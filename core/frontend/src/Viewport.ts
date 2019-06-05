@@ -1606,6 +1606,17 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
     }
   }
+  /** @internal */
+  public getToolTip(hit: HitDetail): HTMLElement | string {
+    let toolTip: string | HTMLElement = "";
+    if (this.displayStyle)
+      this.displayStyle.forEachContextRealityModel((model) => {
+        const thisToolTip = model.getToolTip(hit);
+        if (thisToolTip !== undefined)
+          toolTip = thisToolTip;
+      });
+    return toolTip;
+  }
 
   /** @internal */
   protected constructor(target: RenderTarget) {
