@@ -270,6 +270,9 @@ class TestDataManager {
     assert.exists(aspect);
     assert.equal(aspect.kind, Element.className);
     assert.equal(aspect.scope.id, IModel.rootSubjectId);
+    assert.exists(aspect.version);
+    const targetLastMod: string = this.targetDb.elements.queryLastModifiedTime(targetElementId);
+    assert.notEqual(aspect.version, targetLastMod);
     const sourceElement: Element = this.sourceDb.elements.getElement({ id: aspect.identifier, wantGeometry: true });
     assert.exists(sourceElement);
     assert.equal(sourceElement.computeHash(), aspect.checksum);

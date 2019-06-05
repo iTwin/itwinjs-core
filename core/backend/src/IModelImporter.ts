@@ -193,7 +193,7 @@ export class IModelImporter {
             identifier: sourceElementId,
             kind: Element.className,
             checksum: sourceElementHash,
-            // version: sourceElement.lastModifiedTime,
+            version: this._sourceDb.elements.queryLastModifiedTime(sourceElementId),
           };
           this._targetDb.elements.insertAspect(aspectProps);
         } catch (error) {

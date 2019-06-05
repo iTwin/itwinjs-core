@@ -112,8 +112,7 @@ export class Element extends Entity implements ElementProps {
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
   public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.getValue(); }
 
-  /**
-   * Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
+  /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
    */
   public getToolTipMessage(): string[] {
@@ -136,8 +135,7 @@ export class Element extends Entity implements ElementProps {
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
 
-  /**
-   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
+  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }

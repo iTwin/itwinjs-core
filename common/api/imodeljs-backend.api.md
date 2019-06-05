@@ -1747,6 +1747,8 @@ export namespace IModelDb {
         insertElement(elProps: ElementProps): Id64String;
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
+        // @internal
+        queryLastModifiedTime(elementId: Id64String): string;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
     }
