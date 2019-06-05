@@ -169,6 +169,7 @@ alpha;UserInfoQuery
 alpha;UserStatistics 
 alpha;UserStatisticsHandler
 alpha;UserStatisticsQuery 
+public;ValueType = string | boolean | number
 beta;Version 
 beta;VersionEvent 
 beta;VersionHandler

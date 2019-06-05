@@ -388,7 +388,7 @@ export interface CodeUpdateOptions {
     unlimitedReporting?: boolean;
 }
 
-// @public
+// @public (undocumented)
 export class Config {
     static readonly App: Config;
     get(varName: string, defaultVal?: ValueType): any;
@@ -1871,6 +1871,9 @@ export class UserStatisticsQuery extends Query {
     selectOwnedLocksCount(): this;
     selectPushedChangeSetsCount(): this;
     }
+
+// @public (undocumented)
+export type ValueType = string | boolean | number;
 
 // @beta
 export class Version extends WsgInstance {

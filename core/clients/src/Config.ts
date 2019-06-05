@@ -4,9 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Config */
 
-type ValueType = string | boolean | number;
+/**
+ * @public
+ */
+export type ValueType = string | boolean | number;
 
-/** Option to specify the version of the iModel to be acquired and used
+/**
  * @public
  */
 export class Config {
@@ -116,7 +119,7 @@ export class Config {
     const name = this.translateVar(varName);
     return this._container.hasOwnProperty(name);
   }
-  /** retrieves a property if it exists, otherwise returns undefined */
+  /** Retrieves a property if it exists, otherwise returns undefined */
   public query(varName: string): any {
     return this.has(varName) ? this.get(varName) : undefined;
   }
