@@ -546,20 +546,12 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
@@ -3320,7 +3312,7 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum ItemField {
     // (undocumented)
     ANGLE_Item = 1,

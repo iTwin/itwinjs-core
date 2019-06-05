@@ -159,7 +159,7 @@ public;InputSource
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
-internal;ItemField
+alpha;ItemField
 alpha;JsonEditorParams 
 internal;KeyinStatus
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
