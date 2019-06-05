@@ -606,6 +606,8 @@ export class SelectTool extends MarkupTool {
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected unflashSelected(): void;
 }
 
 // @beta

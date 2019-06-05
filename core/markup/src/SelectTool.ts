@@ -483,6 +483,10 @@ export class SelectTool extends MarkupTool {
     if (undefined !== el) el.flash();
     this._flashedElement = el;
   }
+  protected unflashSelected(): void {
+    if (undefined !== this._flashedElement && this.markup.selected.has(this._flashedElement))
+      this.flashedElement = undefined;
+  }
   private initSelect() {
     this.markup.setCursor("default");
     this.markup.enablePick();
@@ -725,6 +729,7 @@ export class SelectTool extends MarkupTool {
     switch (key.key.toLowerCase()) {
       case "delete": // delete key or backspace = delete current selection set
       case "backspace":
+        this.unflashSelected();
         markup.deleteSelected();
         return EventHandled.Yes;
       case "escape": // esc = cancel current operation
@@ -735,9 +740,9 @@ export class SelectTool extends MarkupTool {
       case "f": // alt-shift-f = bring to front
         return (key.altKey && key.shiftKey) ? (markup.bringToFront(), EventHandled.Yes) : EventHandled.No;
       case "g": // ctrl-g = create group
-        return (key.ctrlKey) ? (markup.groupSelected(), EventHandled.Yes) : EventHandled.No;
+        return (key.ctrlKey) ? (this.unflashSelected(), markup.groupSelected(), EventHandled.Yes) : EventHandled.No;
       case "u": // ctrl-u = ungroup
-        return (key.ctrlKey) ? (markup.ungroupSelected(), EventHandled.Yes) : EventHandled.No;
+        return (key.ctrlKey) ? (this.unflashSelected(), markup.ungroupSelected(), EventHandled.Yes) : EventHandled.No;
     }
     return EventHandled.No;
   }

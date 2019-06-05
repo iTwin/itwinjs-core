@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Clear flashed element (if it's selected) before deleting or adding to group.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}
