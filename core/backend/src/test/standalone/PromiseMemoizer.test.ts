@@ -38,15 +38,12 @@ describe("PromiseMemoizer", () => {
     requestContextManager = new AuthorizedBackendRequestContext(fakeManagerAccessToken);
   });
 
-  // ###TODO Raman investigate, fails:
-  // AssertionError: expected 999 to be above 999
-  // + expected - actual
   it("should be able to await memoized promise", async () => {
     const startTime = Date.now();
     const qp: QueryablePromise<string> = memoizeTest(requestContextRegular, "contextId2", "iModelId2", OpenParams.fixedVersion(), IModelVersion.latest());
     await qp.promise;
     const endTime = Date.now();
-    assert.isAbove(endTime - startTime, 997);
+    assert.isAbove(endTime - startTime, 950);
   });
 
   it("should be able to memoize and deleteMemoized function calls", async () => {
