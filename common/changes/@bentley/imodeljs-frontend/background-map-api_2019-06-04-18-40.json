@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleaned up background map API",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Heather.Neely@bentley.com"
+}

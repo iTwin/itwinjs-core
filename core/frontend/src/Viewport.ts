@@ -10,7 +10,7 @@ import {
   Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  AnalysisStyle, AntiAliasPref, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
   Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -1461,6 +1461,30 @@ export abstract class Viewport implements IDisposable {
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
+  }
+
+  /** The settings controlling how a background map is displayed within a view.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
+   * @beta
+   */
+  public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
+  public set backgroundMapSettings(settings: BackgroundMapSettings) {
+    this.displayStyle.backgroundMapSettings = settings;
+    this.invalidateScene();
+  }
+
+  /** Modify a subset of the background map display settings.
+   * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   *
+   * Example that changes only the elevation, leaving the provider and type unchanged:
+   * ``` ts
+   *  viewport.changeBackgroundMapProps({ groundBias: 16.2 });
+   * ```
+   * @beta
+   */
+  public changeBackgroundMapProps(props: BackgroundMapProps): void {
+    this.displayStyle.changeBackgroundMapProps(props);
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */

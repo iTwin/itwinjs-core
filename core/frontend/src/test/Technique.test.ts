@@ -77,11 +77,12 @@ describe("Technique tests", () => {
     target.techniques.draw(drawParams);
   });
 
+  // NB: this can potentially take a long time, especially on our mac build machines.
   it("should successfully compile all shader programs", () => {
     if (IModelApp.initialized) {
       expect(System.instance.techniques.compileShaders()).to.be.true;
     }
-  }).timeout("10000");
+  }).timeout("80000");
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);

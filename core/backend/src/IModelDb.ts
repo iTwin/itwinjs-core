@@ -555,6 +555,12 @@ export class IModelDb extends IModel {
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
+        // We are in an async timer callback. We must verify the briefcase was not closed before we were called back.
+        if (!this.briefcase || !this.briefcase.nativeDb || !this.briefcase.nativeDb.isOpen()) {
+          resolve({ status: QueryResponseStatus.Done, rows: [] });
+          return;
+        }
+
         const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
         if (pollrc.status === PollStatus.Done)
           resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });

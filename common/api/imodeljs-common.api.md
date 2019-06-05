@@ -283,13 +283,29 @@ export enum BackgroundFill {
 
 // @public
 export interface BackgroundMapProps {
-    // (undocumented)
     groundBias?: number;
-    // (undocumented)
     providerData?: {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
+}
+
+// @beta
+export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+// @beta
+export class BackgroundMapSettings {
+    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number);
+    clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
+    // (undocumented)
+    equals(other: BackgroundMapSettings): boolean;
+    equalsJSON(json?: BackgroundMapProps): boolean;
+    static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    readonly groundBias: number;
+    readonly mapType: BackgroundMapType;
+    readonly providerName: BackgroundMapProviderName;
+    // (undocumented)
+    toJSON(): BackgroundMapProps;
 }
 
 // @public
@@ -1213,7 +1229,7 @@ export class DisplayStyleSettings {
     addExcludedElements(id: Id64String): void;
     backgroundColor: ColorDef;
     // @alpha (undocumented)
-    backgroundMap: BackgroundMapProps | undefined;
+    backgroundMap: BackgroundMapSettings;
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)

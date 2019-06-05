@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  JsonUtils,
   Id64String,
 } from "@bentley/bentleyjs-core";
 import {
@@ -17,6 +16,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import {
   BackgroundMapProps,
+  BackgroundMapProviderName,
   BackgroundMapType,
   RenderMode,
   ViewFlags,
@@ -522,7 +522,7 @@ export class ViewAttributes {
 
   private addBackgroundMap(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
-    const getBackgroundMap = (view: ViewState) => view.displayStyle.settings.backgroundMap ? view.displayStyle.settings.backgroundMap : {};
+    const getBackgroundMap = (view: ViewState) => view.displayStyle.settings.backgroundMap;
 
     const div = document.createElement("div");
     div.appendChild(document.createElement("hr")!);
@@ -551,7 +551,7 @@ export class ViewAttributes {
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMap(getBackgroundMap(this._vp.view), select.value, undefined),
+      handler: (select) => this.updateBackgroundMap({ providerName: select.value as BackgroundMapProviderName }),
     }).select;
 
     const types = createComboBox({
@@ -563,8 +563,23 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMap(getBackgroundMap(this._vp.view), undefined, Number.parseInt(select.value, 10)),
+      handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
     }).select;
+
+    const groundBiasDiv = document.createElement("div") as HTMLDivElement;
+    const groundBiasLabel = document.createElement("label") as HTMLLabelElement;
+    groundBiasLabel.style.display = "inline";
+    groundBiasLabel.htmlFor = "ts_viewToolPickRadiusInches";
+    groundBiasLabel.innerText = "Ground Bias: ";
+    groundBiasDiv.appendChild(groundBiasLabel);
+    const groundBias = createNumericInput({
+      parent: groundBiasDiv,
+      value: getBackgroundMap(this._vp.view).groundBias,
+      handler: (value) => this.updateBackgroundMap({ groundBias: value }),
+    }, true);
+    groundBiasDiv.style.display = "block";
+    groundBiasDiv.style.textAlign = "left";
+    comboBoxesDiv.appendChild(groundBiasDiv);
 
     this._updates.push((view) => {
       const visible = isMapSupported(view);
@@ -576,8 +591,9 @@ export class ViewAttributes {
       showHideDropDowns(checkbox.checked);
 
       const map = getBackgroundMap(view);
-      providers.value = JsonUtils.asString(map.providerName, "BingProvider");
-      types.value = JsonUtils.asInt(map.providerData ? map.providerData.mapType : undefined, BackgroundMapType.Hybrid).toString();
+      providers.value = map.providerName;
+      types.value = map.mapType.toString();
+      groundBias.value = map.groundBias.toString();
     });
 
     div.appendChild(comboBoxesDiv);
@@ -585,25 +601,8 @@ export class ViewAttributes {
     this._element.appendChild(div);
   }
 
-  private updateBackgroundMap(map: BackgroundMapProps, newProvider?: string, newType?: BackgroundMapType): void {
-    let type: BackgroundMapType | undefined;
-    if (undefined !== newType)
-      type = newType;
-    else if (undefined !== map.providerData)
-      type = map.providerData.mapType;
-
-    if (undefined === type)
-      type = BackgroundMapType.Hybrid;
-
-    const props = {
-      providerName: undefined !== newProvider ? newProvider : map.providerName,
-      providerData: {
-        mapType: type,
-      },
-    };
-
-    (this._vp.view as ViewState3d).getDisplayStyle3d().setBackgroundMap(props);
-    this.sync();
+  private updateBackgroundMap(props: BackgroundMapProps): void {
+    this._vp.changeBackgroundMapProps(props);
   }
 
   private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent?: HTMLElement): CheckBox {

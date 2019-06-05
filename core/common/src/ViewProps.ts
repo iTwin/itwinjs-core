@@ -146,12 +146,94 @@ export enum BackgroundMapType {
  * @public
  */
 export interface BackgroundMapProps {
+  /** The elevation of the map in meters relative to sea level. Default value: 0. */
   groundBias?: number;
-  /** The Id of a map tile provider. Currently the type should technically be `"BingProvider" | "MapBoxProvider"`, but support for other providers may be added in the future. */
+  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
+   *
+   * Default value: "BingProvider"
+   */
   providerName?: string;
+  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used. */
   providerData?: {
+    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
     mapType?: BackgroundMapType;
   };
+}
+
+/** The current set of supported background map providers.
+ * @beta
+ */
+export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+/** Normalized representation of a [[BackgroundMapProps]] for which type and provider have been validated and default values have been applied where explicit values not defined.
+ * @beta
+ */
+export class BackgroundMapSettings {
+  /** Elevation in meters, relative to sea level. */
+  public readonly groundBias: number;
+  /** Identifies the provider from which map graphics will be obtained. */
+  public readonly providerName: BackgroundMapProviderName;
+  /** The type of map graphics to be drawn. */
+  public readonly mapType: BackgroundMapType;
+
+  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0) {
+    this.groundBias = groundBias;
+    this.providerName = providerName;
+    switch (mapType) {
+      case BackgroundMapType.Street:
+      case BackgroundMapType.Aerial:
+        this.mapType = mapType;
+        break;
+      default:
+        this.mapType = BackgroundMapType.Hybrid;
+    }
+  }
+
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
+    if (undefined === json)
+      return new BackgroundMapSettings();
+
+    const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
+    const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias);
+  }
+
+  public toJSON(): BackgroundMapProps {
+    return {
+      groundBias: this.groundBias,
+      providerName: this.providerName,
+      providerData: { mapType: this.mapType },
+    };
+  }
+
+  /** Returns true if these settings are equivalent to the supplied JSON settings. */
+  public equalsJSON(json?: BackgroundMapProps): boolean {
+    return this.equals(BackgroundMapSettings.fromJSON(json));
+  }
+
+  public equals(other: BackgroundMapSettings): boolean {
+    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType;
+  }
+
+  /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
+   * @param changedProps JSON representation of the properties to change.
+   * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   */
+  public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
+    if (undefined === changedProps)
+      return this;
+
+    const props = {
+      providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
+      groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
+      providerData: {
+        mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
+      },
+    };
+
+    return BackgroundMapSettings.fromJSON(props);
+  }
 }
 
 /** JSON representation of a [[GroundPlane]].
@@ -418,6 +500,7 @@ export class DisplayStyleSettings {
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
+  private _backgroundMap: BackgroundMapSettings;
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -428,10 +511,12 @@ export class DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
+
     this._json = jsonProperties.styles;
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
+    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
 
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
@@ -487,12 +572,15 @@ export class DisplayStyleSettings {
   }
 
   /** @alpha */
-  public get backgroundMap(): BackgroundMapProps | undefined {
-    const props = this._json.backgroundMap;
-    return undefined !== props ? props : {};
-  }
+  public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
+
   /** @alpha */
-  public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
+  public set backgroundMap(map: BackgroundMapSettings) {
+    if (!this.backgroundMap.equals(map)) {
+      this._backgroundMap = map; // it's an immutable type.
+      this._json.backgroundMap = map.toJSON();
+    }
+  }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.

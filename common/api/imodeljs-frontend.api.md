@@ -16,6 +16,8 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
+import { BackgroundMapProviderName } from '@bentley/imodeljs-common';
+import { BackgroundMapSettings } from '@bentley/imodeljs-common';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BatchType } from '@bentley/imodeljs-common';
 import { BeDuration } from '@bentley/bentleyjs-core';
@@ -1127,15 +1129,17 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 // @internal
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
-    constructor(json: BackgroundMapProps, iModel: IModelConnection);
-    // (undocumented)
-    equalsProps(props: BackgroundMapProps): boolean;
+    constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
     // (undocumented)
     getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
     // (undocumented)
-    mapType: BackgroundMapType;
+    readonly groundBias: number;
     // (undocumented)
-    providerName: string;
+    readonly mapType: BackgroundMapType;
+    // (undocumented)
+    readonly providerName: BackgroundMapProviderName;
+    // (undocumented)
+    readonly settings: BackgroundMapSettings;
 }
 
 // @alpha
@@ -1151,16 +1155,18 @@ export interface BasePropertyValue {
 }
 
 // @internal
-export class BaseTiledMapProvider {
-    constructor(iModel: IModelConnection, groundBias: number);
+export abstract class BaseTiledMapProvider implements IDisposable {
+    constructor(iModel: IModelConnection);
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    dispose(): void;
     // (undocumented)
     getPlane(): Plane3dByOriginAndUnitNormal;
     // (undocumented)
     getTilesForView(viewport: ScreenViewport): Tile[];
     // (undocumented)
-    protected _groundBias: number;
+    abstract readonly groundBias: number;
     // (undocumented)
     protected _imageryProvider?: ImageryProvider;
     // (undocumented)
@@ -1866,6 +1872,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly backgroundMap: BackgroundMapProvider;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // @beta (undocumented)
+    backgroundMapSettings: BackgroundMapSettings;
+    // @beta
+    changeBackgroundMapProps(props: BackgroundMapProps): void;
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
@@ -1890,7 +1900,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     removeContextRealityModel(index: number): void;
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
-    // @alpha
+    // @deprecated
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;
     viewFlags: ViewFlags;
@@ -4126,7 +4136,9 @@ export class OverlayMapProvider extends BaseTiledMapProvider implements TiledGra
     constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection);
     // (undocumented)
     getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
-}
+    // (undocumented)
+    readonly groundBias: number;
+    }
 
 // @internal (undocumented)
 export interface PackedFeature {
@@ -7859,6 +7871,10 @@ export abstract class Viewport implements IDisposable {
     readonly auxCoordSystem: AuxCoordSystemState;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // @beta
+    backgroundMapSettings: BackgroundMapSettings;
+    // @beta
+    changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;

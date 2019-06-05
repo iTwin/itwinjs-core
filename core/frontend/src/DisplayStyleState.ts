@@ -17,6 +17,7 @@ import {
   DisplayStyleSettings,
   DisplayStyle3dSettings,
   BackgroundMapProps,
+  BackgroundMapSettings,
   AnalysisStyle,
   ContextRealityModelProps,
   Cartographic,
@@ -60,7 +61,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    this._backgroundMap = new BackgroundMapProvider(mapProps, iModel);
+    this._backgroundMap = new BackgroundMapProvider(BackgroundMapSettings.fromJSON(mapProps), iModel);
     this._contextRealityModels = [];
 
     if (styles) {
@@ -78,17 +79,46 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Modify the background map display settings.
    * @param mapProps JSON representation of the new settings.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   * @see [[DisplayStyleState.backgroundMapSettings]] and [[DisplayStyleState.changeBackgroundMapProps]] for a more convenient API, particularly when you want to change only a subset of the map settings.
    * @note Currently the behavior of this method is not ideal.
    *  - If this display style is associated with a Viewport, you must call Viewport.invalidateScene for the view to display the new map.
    *  - Any properties omitted from `mapProps` will be reset to their defaults.
    *  - All loaded tiles will be discarded and new ones will be requested, even if only changing the groundBias.
-   * @alpha
+   * @deprecated
    */
   public setBackgroundMap(mapProps: BackgroundMapProps): void {
-    if (!this.backgroundMap.equalsProps(mapProps)) {
-      this._backgroundMap = new BackgroundMapProvider(mapProps, this.iModel);
-      this.settings.backgroundMap = mapProps;
-    }
+    this.changeBackgroundMapProps(BackgroundMapSettings.fromJSON(mapProps));
+  }
+
+  /** The settings controlling how a background map is displayed within a view.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
+   * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
+   * @beta
+   */
+  public get backgroundMapSettings(): BackgroundMapSettings { return this.backgroundMap.settings; }
+  /** @beta */
+  public set backgroundMapSettings(settings: BackgroundMapSettings) {
+    if (settings.equals(this.backgroundMap.settings))
+      return;
+
+    this.backgroundMap.dispose();
+    this._backgroundMap = new BackgroundMapProvider(settings, this.iModel);
+    this.settings.backgroundMap = settings;
+  }
+
+  /** Modify a subset of the background map display settings.
+   * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
+   * @note If the style is associated with a Viewport, [[Viewport.changeBackgroundMapProps]] should be used instead to ensure the view updates immediately.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   *
+   * Example that changes only the elevation, leaving the provider and type unchanged:
+   * ``` ts
+   *  style.changeBackgroundMapProps({ groundBias: 16.2 });
+   * ```
+   * @beta
+   */
+  public changeBackgroundMapProps(props: BackgroundMapProps): void {
+    this.backgroundMapSettings = this.backgroundMapSettings.clone(props);
   }
 
   /** @internal */
@@ -118,7 +148,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public get backgroundMap() { return this._backgroundMap; }
+  public get backgroundMap(): BackgroundMapProvider { return this._backgroundMap; }
 
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }

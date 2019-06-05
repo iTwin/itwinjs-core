@@ -9,13 +9,14 @@ import {
   BentleyError,
   ClientRequestContext,
   compareNumbers,
+  dispose,
+  IDisposable,
   IModelStatus,
-  JsonUtils,
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
-  BackgroundMapType, BackgroundMapProps, GeoCoordStatus,
+  BackgroundMapSettings, BackgroundMapType, BackgroundMapProviderName, GeoCoordStatus,
 } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile } from "./TileTree";
@@ -828,17 +829,19 @@ const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available 
 /** Methods and properties common to both BackgroundMapProviders and OverlayMapProviders
  * @internal
  */
-export class BaseTiledMapProvider {
+export abstract class BaseTiledMapProvider implements IDisposable {
   protected _iModel: IModelConnection;
   protected _tileTree?: TileTree;
   protected _imageryProvider?: ImageryProvider;
-  protected _groundBias: number;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   private _gcsConverterStatus: GcsConverterStatus = GcsConverterStatus.Uninitialized;
 
-  constructor(iModel: IModelConnection, groundBias: number) {
-    this._groundBias = groundBias;
+  constructor(iModel: IModelConnection) {
     this._iModel = iModel;
+  }
+
+  public dispose() {
+    dispose(this._tileTree);
   }
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
@@ -846,8 +849,10 @@ export class BaseTiledMapProvider {
     this._loadStatus = TileTree.LoadStatus.Loaded;
   }
 
+  public abstract get groundBias(): number;
+
   public getPlane(): Plane3dByOriginAndUnitNormal {
-    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this._groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
+    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this.groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
   }
 
   public getTilesForView(viewport: ScreenViewport): Tile[] {
@@ -887,8 +892,8 @@ export class BaseTiledMapProvider {
     if (GcsConverterStatus.Pending === this._gcsConverterStatus)
       return this._loadStatus;
 
-    const loader = new WebMapTileLoader(this._imageryProvider!, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
-    const tileTreeProps = new WebMapTileTreeProps(this._groundBias);
+    const loader = new WebMapTileLoader(this._imageryProvider!, this._iModel, this.groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
+    const tileTreeProps = new WebMapTileTreeProps(this.groundBias);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;
   }
@@ -929,36 +934,27 @@ export class BaseTiledMapProvider {
  * @internal
  */
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
-  public providerName: string;
-  public mapType: BackgroundMapType;
+  public readonly settings: BackgroundMapSettings;
+
+  public get groundBias(): number { return this.settings.groundBias; }
+  public get providerName(): BackgroundMapProviderName { return this.settings.providerName; }
+  public get mapType(): BackgroundMapType { return this.settings.mapType; }
 
   // constructs the BackgroundMapProvider from the props persisted in the iModel.
-  public constructor(json: BackgroundMapProps, iModel: IModelConnection) {
-    super(iModel, JsonUtils.asDouble(json.groundBias, 0.0));
-    this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
-    this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
+  public constructor(settings: BackgroundMapSettings, iModel: IModelConnection) {
+    super(iModel);
+    this.settings = settings;
 
-    // JSON may specify MapType.None (0) which is not defined in enum and is not meaningful.
-    // (May also specify any other arbitrary meaningless integer value).
-    // If so, use default
-    switch (this.mapType) {
-      case BackgroundMapType.Street:
-      case BackgroundMapType.Aerial:
-      case BackgroundMapType.Hybrid:
+    switch (this.providerName) {
+      case "BingProvider":
+        this._imageryProvider = new BingImageryProvider(this.mapType);
+        break;
+      case "MapBoxProvider":
+        this._imageryProvider = new MapBoxImageryProvider(this.mapType);
         break;
       default:
-        this.mapType = BackgroundMapType.Hybrid;
-        break;
+        throw new BentleyError(IModelStatus.BadModel, "Unrecognized background map provider name");
     }
-
-    // get the map provider.
-    if ("BingProvider" === this.providerName) {
-      this._imageryProvider = new BingImageryProvider(this.mapType);
-    } else if ("MapBoxProvider" === this.providerName) {
-      this._imageryProvider = new MapBoxImageryProvider(this.mapType);
-    }
-    if (this._imageryProvider === undefined)
-      throw new BentleyError(IModelStatus.BadModel, "WebMap provider invalid");
   }
 
   public getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined {
@@ -968,23 +964,19 @@ export class BackgroundMapProvider extends BaseTiledMapProvider implements Tiled
     this.loadTileTree();
     return (undefined === this._tileTree) ? undefined : { tileTree: this._tileTree, plane: this.getPlane() };
   }
-
-  public equalsProps(props: BackgroundMapProps): boolean {
-    const providerName = JsonUtils.asString(props.providerName, "BingProvider");
-    const groundBias = JsonUtils.asDouble(props.groundBias, 0.0);
-    const mapType = undefined !== props.providerData ? JsonUtils.asInt(props.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
-
-    return providerName === this.providerName && groundBias === this._groundBias && mapType === this.mapType;
-  }
 }
 
 /** @internal */
 // this class is the specialization of BasedTiledMapProvider used for Overlay layers. In this case the
 // creator of the Overlay must specify the ImageryProvider.
 export class OverlayMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
+  private readonly _groundBias: number;
+
+  public get groundBias(): number { return this._groundBias; }
 
   public constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection) {
-    super(iModel, groundBias);
+    super(iModel);
+    this._groundBias = groundBias;
     this._imageryProvider = imageryProvider;
   }
 

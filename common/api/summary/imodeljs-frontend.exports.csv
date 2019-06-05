@@ -26,7 +26,7 @@ public;class AuxCoordSystemState
 internal;BackgroundMapProvider 
 alpha;BasePropertyEditorParams
 beta;BasePropertyValue
-internal;BaseTiledMapProvider
+internal;class BaseTiledMapProvider 
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
