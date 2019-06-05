@@ -233,9 +233,9 @@ internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
 public;QueryPriority
-internal;QueryQuota
-internal;QueryResponse
-internal;QueryResponseStatus
+public;QueryQuota
+public;QueryResponse
+public;QueryResponseStatus
 public;Rank
 internal;ReadableFormData 
 internal;REGISTRY: unique symbol

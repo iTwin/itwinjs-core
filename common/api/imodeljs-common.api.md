@@ -2442,9 +2442,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryQuota" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryResponse" which is marked as @internal
-    // 
     // (undocumented)
     queryRows(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse>;
     // (undocumented)
@@ -3500,13 +3497,13 @@ export enum QueryPriority {
     Normal = 1
 }
 
-// @internal
+// @public
 export interface QueryQuota {
     maxMemoryAllowed?: number;
     maxTimeAllowed?: number;
 }
 
-// @internal
+// @public
 export interface QueryResponse {
     // (undocumented)
     rows: any[];
@@ -3514,7 +3511,7 @@ export interface QueryResponse {
     status: QueryResponseStatus;
 }
 
-// @internal
+// @public
 export enum QueryResponseStatus {
     // (undocumented)
     Done = 2,
