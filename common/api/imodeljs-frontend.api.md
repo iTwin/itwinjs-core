@@ -7917,7 +7917,7 @@ export abstract class Viewport implements IDisposable {
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
-    // @internal (undocumented)
+    // @beta
     invalidateDecorations(): void;
     // @internal (undocumented)
     invalidateRenderPlan(): void;

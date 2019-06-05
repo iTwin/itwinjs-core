@@ -1726,7 +1726,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined === this._tiledGraphicsProviders.get(type))
       this._tiledGraphicsProviders.set(type, new Set<TiledGraphicsProvider.Provider>());
 
-    this._tiledGraphicsProviders!.get(type)!.add(provider);
+    this._tiledGraphicsProviders.get(type)!.add(provider);
   }
 
   /** Remove a TiledGraphicsProvider
@@ -1753,8 +1753,16 @@ export abstract class Viewport implements IDisposable {
 
   /** True if this is a 3d view with the camera turned on. */
   public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
-  /** @internal */
+
+  /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
+   * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
+   * them to be recreated to show the changes.
+   * @note On the next frame, the `decorate` method of all [[ViewManager.decorators]] will be called. There is no way (or need) to
+   * invalidate individual decorations.
+   * @beta
+   */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
+
   /** @internal */
   public invalidateRenderPlan() { this.sync.invalidateRenderPlan(); }
   /** @internal */
