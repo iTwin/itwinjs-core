@@ -250,7 +250,7 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
 // @public
 export interface ViewWithUnifiedSelectionProps {
-    // @alpha
+    // @alpha @deprecated
     ruleset?: Ruleset | string;
     // @internal (undocumented)
     selectionHandler?: ViewportSelectionHandler;

@@ -331,6 +331,7 @@ public;ViewportContentControl
 beta;ViewSelector 
 beta;ViewSelectorChangedEvent 
 beta;ViewSelectorChangedEventArgs
+beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 internal;VisibilityHandler 

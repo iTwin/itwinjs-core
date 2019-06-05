@@ -1524,7 +1524,7 @@ export class SpatialViewState extends ViewState3d {
       if (tileTree !== undefined && tileTree.rootTile !== undefined) {
         const contentRange = tileTree.rootTile.computeWorldContentRange();
         assert(!contentRange.isNull);
-        assert(contentRange.intersectsRange(this.iModel.projectExtents));
+        // NO - silly iModels with attached reality data outside extents. assert(contentRange.intersectsRange(this.iModel.projectExtents));
 
         range.extendRange(contentRange);
       }

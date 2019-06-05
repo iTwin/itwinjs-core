@@ -3890,28 +3890,25 @@ export class NotificationManager {
     endActivityMessage(_reason: ActivityMessageEndReason): boolean;
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
-    openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    // @beta
+    openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue>;
     openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
-    outputActivityMessage(_messageText: string, _percentComplete: number): boolean;
-    // @beta
+    outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number): boolean;
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
     outputPromptByKey(key: string): void;
     setupActivityMessage(_details: ActivityMessageDetails): boolean;
-    // @beta
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
     // (undocumented)
     readonly toolTipLocation: Point2d;
 }
 
-// @beta
+// @public
 export class NotifyMessageDetails {
-    constructor(priority: OutputMessagePriority, briefMessage: string, detailedMessage?: string | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    constructor(priority: OutputMessagePriority, briefMessage: HTMLElement | string, detailedMessage?: string | HTMLElement | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)
-    briefMessage: string;
+    briefMessage: HTMLElement | string;
     // (undocumented)
-    detailedMessage?: string | undefined;
+    detailedMessage?: string | HTMLElement | undefined;
     // (undocumented)
     displayPoint?: Point2d;
     // (undocumented)
@@ -7920,7 +7917,7 @@ export abstract class Viewport implements IDisposable {
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
-    // @internal (undocumented)
+    // @beta
     invalidateDecorations(): void;
     // @internal (undocumented)
     invalidateRenderPlan(): void;

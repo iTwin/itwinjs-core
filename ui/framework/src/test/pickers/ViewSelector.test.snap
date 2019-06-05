@@ -30,6 +30,10 @@ exports[`ViewSelector should render correctly 1`] = `
   }
   onExpanded={[Function]}
   setEnabled={[Function]}
+  showDrawings={true}
+  showSheets={true}
+  showSpatials={true}
+  showUnknown={true}
   title="savedViews.views"
 />
 `;

@@ -79,10 +79,12 @@ export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
       this.props.isFocused && "is-focused",
       this.props.className,
     );
+    // TODO - if cut off, show a title
+    const title: string | undefined = (this.props.label && this.props.label.length > 25) ? this.props.label : undefined;
 
     return (
       <div className={itemClassName} onClick={this.props.onClick}>
-        <div className="label">
+        <div className="label" title={title}>
           {this.props.label}
         </div>
       </div>
@@ -95,6 +97,7 @@ export class ListPickerItem extends React.PureComponent<ListPickerItemProps> {
  */
 export interface ExpandableSectionProps extends CommonProps {
   title?: string;
+  expanded?: boolean;
 }
 
 /** State for the [[ExpandableSection]] component
@@ -111,7 +114,7 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
   /** Creates an ExpandableSection */
   constructor(props: ExpandableSectionProps) {
     super(props);
-    this.state = { expanded: false };
+    this.state = { expanded: !!this.props.expanded };
   }
 
   /** Renders ExpandableSection */
@@ -221,8 +224,14 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     if (!this.state.expanded)
       return undefined;
 
-    let listItemToElement: (item: ListItem, itemIndex: number) => any;
-    listItemToElement = (item: ListItem, itemIndex: number) => {
+    const expandSingleSection = (): boolean => {
+      const populatedContainers = this.props.items.filter((item: ListItem) => {
+        return (item.type === ListItemType.Container && item.children!.length !== 0);
+      });
+      return populatedContainers.length === 1;
+    };
+
+    const listItemToElement = (item: ListItem, itemIndex: number) => {
       switch (item.type) {
         case ListItemType.Item:
           return (
@@ -245,7 +254,8 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
               <ExpandableSection
                 key={itemIndex.toString()}
                 title={item.name}
-                className="ListPickerInnerContainer">
+                className="ListPickerInnerContainer"
+                expanded={expandSingleSection()}>
                 <GroupColumn>
                   {item.children!.map(listItemToElement)}
                 </GroupColumn>

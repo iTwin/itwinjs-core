@@ -59,7 +59,8 @@ export class HalfEdge {
   public z: number;
   /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
-
+  /** numeric value for application-specific tagging (e.g. sorting) */
+  public sortData?: number;
   private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
@@ -212,7 +213,6 @@ export class HalfEdge {
    * @param mask mask to query
    */
   public getMask(mask: HalfEdgeMask): number { return (this.maskBits & mask); }
-
   /**
    * Clear mask bits from this HalfEdge
    * @param mask mask to clear
@@ -308,6 +308,16 @@ export class HalfEdge {
     this.maskBits |= mask;
     return oldMask;
   }
+  /**
+   * Set (copy) the this.x, this.y, this.z from node.x, node.y, node.z
+   * @param node node containing xyz
+   */
+  public setXYZFrom(node: HalfEdge) {
+    this.x = node.x;
+    this.y = node.y;
+    this.z = node.z;
+  }
+
   /**
    * Test if mask bits are set in the node's bitMask.
    * @return Return true (as a simple boolean, not a mask) if any bits of the mask parameter match bits of the node's bitMask
@@ -434,6 +444,10 @@ export class HalfEdge {
     return Geometry.distanceXYXY(this.x, this.y, other.x, other.y);
   }
 
+  /** Return true if x and y coordinates of this and other are exactly equal */
+  public distanceXYZ(other: HalfEdge): number {
+    return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
+  }
   /**
    *
    * * Evaluate f(node) at each node around a face loop.

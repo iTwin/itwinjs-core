@@ -22,6 +22,8 @@ import { Transform } from "../geometry3d/Transform";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { Geometry } from "../Geometry";
+import { LineSegment3d } from "../curve/LineSegment3d";
+import { ChainMergeContext } from "../topology/ChainMerge";
 
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each method.
  * @public
@@ -198,8 +200,36 @@ export class PolyfaceQuery {
       });
     return builder.claimPolyface(true);
   }
+  /** Find segments (within the linestring) which project to facets.
+   * * Return collected line segments
+   */
+  public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
+    const drapeGeometry: LineSegment3d[] = [];
+    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
+      (_linestring: GrowableXYZArray, _segmentIndex: number,
+        _polyface: Polyface, _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
+        drapeGeometry.push(LineSegment3d.create(points[indexA], points[indexB]));
+      });
+    return drapeGeometry;
+  }
+
+  /** Find segments (within the linestring) which project to facets.
+   * * Return chains.
+   */
+  public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
+    const chainContext = ChainMergeContext.create();
+
+    this.announceSweepLinestringToConvexPolyfaceXY(linestringPoints, polyface,
+      (_linestring: GrowableXYZArray, _segmentIndex: number,
+        _polyface: Polyface, _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
+        chainContext.addSegment(points[indexA], points[indexB]);
+      });
+    chainContext.clusterAndMergeVerticesXYZ();
+    return chainContext.collectMaximalChains();
+  }
 
 }
+
 /** Announce the points on a drape panel.
  * * The first two points in the array are always along the draped line segment.
  * * The last two are always on the facet.

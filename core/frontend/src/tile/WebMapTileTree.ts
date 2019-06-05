@@ -64,7 +64,7 @@ class LinearTransformChildCreator implements ChildCreator {
   }
 
   // gets longitude in a number between 0 and 1, corresponding to the coordinate system of the tiles.
-  private longitudeToPixelFraction (longitude: number) {
+  private longitudeToPixelFraction(longitude: number) {
     return (longitude + Angle.piRadians) / Angle.pi2Radians;
   }
 
@@ -648,9 +648,10 @@ class BingImageryProvider extends ImageryProvider {
     return matchingAttributions;
   }
 
-  private showAttributions(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport) {
+  private showAttributions(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport, event: MouseEvent) {
     // our "this" is the BingImageryProvider for which we want to show the data provider attribution.
     // We need to get the tiles that are used in the view.
+    event.stopPropagation();
     const tiles: Tile[] = tileProvider.getTilesForView(viewport);
     const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
     let dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
@@ -666,6 +667,12 @@ class BingImageryProvider extends ImageryProvider {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
     copyrightElement.className = "bgmap-copyright";
     copyrightElement.onclick = this.showAttributions.bind(this, tileProvider, viewport);
+    // stop propagation of all mouse related events so they don't go through to the view.
+    copyrightElement.onmousemove = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseenter = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseout = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmousedown = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseup = (event: MouseEvent) => { event.stopPropagation(); };
     copyrightElement.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
     copyrightElement.style.textDecoration = "underline";
     copyrightElement.style.cursor = "pointer";
@@ -912,6 +919,7 @@ export class BaseTiledMapProvider {
       style.color = "silver";
       style.backgroundColor = "transparent";
       style.pointerEvents = "initial";
+      style.zIndex = "50";
     }
   }
 }

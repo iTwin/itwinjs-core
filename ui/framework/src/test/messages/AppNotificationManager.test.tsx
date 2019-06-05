@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager } from "../../ui-framework";
+import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {
@@ -53,15 +53,36 @@ describe("AppNotificationManager", () => {
     expect(spyMethod.calledOnce).to.be.true;
   });
 
+  it("outputMessage with InputField", () => {
+    const spyMethod = sinon.spy(MessageManager, "addMessage");
+    const spyMethod2 = sinon.spy(MessageManager, "displayInputFieldMessage");
+    const spyMethod3 = sinon.spy(MessageManager, "hideInputFieldMessage");
+    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.InputField);
+    let divElement: HTMLElement | null;
+    mount(<div ref={(el) => { divElement = el; }} />);
+    details.setInputFieldTypeDetails(divElement!);
+    notifications.outputMessage(details);
+    expect(spyMethod.calledOnce).to.be.true;
+    expect(spyMethod2.calledOnce).to.be.true;
+    notifications.closeInputFieldMessage();
+    expect(spyMethod3.calledOnce).to.be.true;
+  });
+
   it("openMessageBox", () => {
+    const wrapper = mount(<ModalDialogRenderer />);
+
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
     expect(ModalDialogManager.dialogCount).to.eq(0);
     notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
-    expect(spyMethod.calledOnce).to.be.true;
 
+    expect(spyMethod.calledOnce).to.be.true;
     expect(ModalDialogManager.dialogCount).to.eq(1);
-    ModalDialogManager.closeDialog();
+
+    wrapper.update();
+    wrapper.find("button.dialog-button-ok").simulate("click");
     expect(ModalDialogManager.dialogCount).to.eq(0);
+
+    wrapper.unmount();
   });
 
   it("setupActivityMessage", () => {

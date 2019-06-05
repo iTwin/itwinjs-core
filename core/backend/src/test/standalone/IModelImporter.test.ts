@@ -2,23 +2,25 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
+import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelSelectorProps,
+  Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
+import * as hash from "object-hash";
 import * as path from "path";
+import { ExternalSourceAspect } from "../../ElementAspect";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
-  Element, GroupModel, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, Element, GroupModel,
+  IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject, ECSqlStatement,
 } from "../../imodeljs-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestDataManager {
   public sourceDb: IModelDb;
@@ -102,6 +104,10 @@ class TestDataManager {
     };
     const physicalObjectId1: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps1);
     assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    const hash1: string = this.sourceDb.elements.getElement<Element>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
+    const hash2: string = this.sourceDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
+    assert.exists(hash1);
+    assert.equal(hash1, hash2);
     const drawingCategoryId = DrawingCategory.insert(this.sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
     const drawingGraphicProps: GeometricElement2dProps = {
@@ -209,52 +215,67 @@ class TestDataManager {
     const groupModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Group"))!;
     const physicalModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Physical"))!;
     const documentListModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Document"))!;
-    assert.isTrue(Id64.isValidId64(definitionModelId));
-    assert.isTrue(Id64.isValidId64(informationModelId));
-    assert.isTrue(Id64.isValidId64(groupModelId));
-    assert.isTrue(Id64.isValidId64(physicalModelId));
-    assert.isTrue(Id64.isValidId64(documentListModelId));
+    this.assertExternalSourceAspect(definitionModelId);
+    this.assertExternalSourceAspect(informationModelId);
+    this.assertExternalSourceAspect(groupModelId);
+    this.assertExternalSourceAspect(physicalModelId);
+    this.assertExternalSourceAspect(documentListModelId);
     // SpatialCategory
     const spatialCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, definitionModelId, "SpatialCategory"))!;
-    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    this.assertExternalSourceAspect(spatialCategoryId);
     const spatialCategoryProps = this.targetDb.elements.getElementProps(spatialCategoryId);
     assert.equal(definitionModelId, spatialCategoryProps.model);
     assert.equal(definitionModelId, spatialCategoryProps.code.scope);
+    // SubCategory
     const subCategoryId = this.targetDb.elements.queryElementIdByCode(SubCategory.createCode(this.targetDb, spatialCategoryId, "SubCategory"))!;
-    assert.isTrue(Id64.isValidId64(subCategoryId));
+    this.assertExternalSourceAspect(subCategoryId);
     // DrawingCategory
     const drawingCategoryId = this.targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(this.targetDb, definitionModelId, "DrawingCategory"))!;
-    assert.isTrue(Id64.isValidId64(drawingCategoryId));
+    this.assertExternalSourceAspect(drawingCategoryId);
     const drawingCategoryProps = this.targetDb.elements.getElementProps(drawingCategoryId);
     assert.equal(definitionModelId, drawingCategoryProps.model);
     assert.equal(definitionModelId, drawingCategoryProps.code.scope);
     // Spatial CategorySelector
     const spatialCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "SpatialCategories"))!;
-    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    this.assertExternalSourceAspect(spatialCategorySelectorId);
     const spatialCategorySelectorProps = this.targetDb.elements.getElementProps<CategorySelectorProps>(spatialCategorySelectorId);
     assert.isTrue(spatialCategorySelectorProps.categories.includes(spatialCategoryId));
     // Drawing CategorySelector
     const drawingCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "DrawingCategories"))!;
-    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+    this.assertExternalSourceAspect(drawingCategorySelectorId);
     const drawingCategorySelectorProps = this.targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
     assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
     // ModelSelector
     const modelSelectorId = this.targetDb.elements.queryElementIdByCode(ModelSelector.createCode(this.targetDb, definitionModelId, "PhysicalModels"))!;
-    assert.isTrue(Id64.isValidId64(modelSelectorId));
+    this.assertExternalSourceAspect(modelSelectorId);
     const modelSelectorProps = this.targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
     assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
     // DisplayStyle
     const displayStyle3dId = this.targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(this.targetDb, definitionModelId, "DisplayStyle3d"))!;
-    assert.isTrue(Id64.isValidId64(displayStyle3dId));
+    this.assertExternalSourceAspect(displayStyle3dId);
     // ViewDefinition
     const viewId = this.targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(this.targetDb, definitionModelId, "Orthographic View"))!;
-    assert.isTrue(Id64.isValidId64(viewId));
+    this.assertExternalSourceAspect(viewId);
     const viewProps = this.targetDb.elements.getElementProps<SpatialViewDefinitionProps>(viewId);
     assert.equal(viewProps.displayStyleId, displayStyle3dId);
     assert.equal(viewProps.categorySelectorId, spatialCategorySelectorId);
     assert.equal(viewProps.modelSelectorId, modelSelectorId);
     // AuxCoordSystem2d
     assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")));
+  }
+
+  public assertExternalSourceAspect(targetElementId: Id64String): void {
+    assert.isTrue(Id64.isValidId64(targetElementId));
+    const aspect: ExternalSourceAspect = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName)[0] as ExternalSourceAspect;
+    assert.exists(aspect);
+    assert.equal(aspect.kind, Element.className);
+    assert.equal(aspect.scope.id, IModel.rootSubjectId);
+    assert.exists(aspect.version);
+    const targetLastMod: string = this.targetDb.elements.queryLastModifiedTime(targetElementId);
+    assert.notEqual(aspect.version, targetLastMod);
+    const sourceElement: Element = this.sourceDb.elements.getElement({ id: aspect.identifier, wantGeometry: true });
+    assert.exists(sourceElement);
+    assert.equal(sourceElement.computeHash(), aspect.checksum);
   }
 }
 
@@ -265,6 +286,54 @@ describe("IModelImporter", () => {
     manager.testIdMaps();
     manager.importIntoTargetDb();
     manager.assertTargetDbContents();
+
+    // re-import to ensure no additional elements are imported
+    const elementCount: number = countElements(manager.targetDb);
+    manager.importIntoTargetDb(); // second import should be a no-op
+    assert.equal(elementCount, countElements(manager.targetDb), "Second import should be a no-op");
+  });
+
+  function countElements(iModelDb: IModelDb): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
+
+  function isEqualHash(object1: object, object2: object): boolean {
+    const options: object = { respectType: false };
+    const hash1: string = hash(object1, options);
+    const hash2: string = hash(object2, options);
+    assert.exists(hash1);
+    assert.exists(hash2);
+    // console.log("==="); // tslint:disable-line:no-console
+    // (hash as any).writeToStream(object1, options, process.stdout);
+    // console.log("\n==="); // tslint:disable-line:no-console
+    // (hash as any).writeToStream(object2, options, process.stdout);
+    // console.log("\n==="); // tslint:disable-line:no-console
+    return hash1 === hash2;
+  }
+
+  it("test object-hash", async () => {
+    assert.isTrue(isEqualHash({ a: 1, b: "B" }, { b: "B", a: 1 }), "Object member order should not matter");
+    assert.isFalse(isEqualHash([1, 2], [2, 1]), "Array entry order should matter");
+    const point1: Point3d = new Point3d(1, 2, 3);
+    const point2: Point3d = new Point3d(1, 2, 3);
+    const range1: Range3d = new Range3d(1, 1, 1, 2, 2, 2);
+    const range2: Range3d = new Range3d(1, 1, 1, 2, 2, 2);
+    const placement1: Placement3d = new Placement3d(point1, new YawPitchRollAngles(), range1);
+    const placement2: Placement3d = new Placement3d(point2, new YawPitchRollAngles(), range2);
+    assert.isTrue(isEqualHash(placement1, placement2), "Should have same hash");
+    placement2.bbox.high.z = 3;
+    assert.isFalse(isEqualHash(placement1, placement2), "Should recurse into nested objects to detect difference");
+    const pointProps1: XYZProps = { x: 1, y: 2, z: 3 };
+    const pointProps2: XYZProps = { x: 1, y: 2, z: 3 };
+    const rangeProps1: LowAndHighXYZ = { low: { x: 1, y: 1, z: 1 }, high: { x: 2, y: 2, z: 2 } };
+    const rangeProps2: LowAndHighXYZ = { low: { x: 1, y: 1, z: 1 }, high: { x: 2, y: 2, z: 2 } };
+    const placementProps1: Placement3dProps = { origin: pointProps1, angles: {}, bbox: rangeProps1 };
+    const placementProps2: Placement3dProps = { origin: pointProps2, angles: {}, bbox: rangeProps2 };
+    assert.isTrue(isEqualHash(placementProps1, placementProps2), "Should have same hash");
+    placementProps2.bbox!.high.z = 3;
+    assert.isFalse(isEqualHash(placementProps1, placementProps2), "Should recurse into nested objects to detect difference");
   });
 
   it.skip("OPData", async () => {

@@ -18,6 +18,7 @@ import {
   TitleBarButton, FooterPopup,
 } from "@bentley/ui-ninezone";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { MessageSpan } from "../messages/MessageSpan";
 
 /** Enum for the [[MessageCenterField]] active tab
  * @internal
@@ -180,11 +181,11 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
             key={index.toString()}
             icon={<i className={iconClassName} />}
           >
-            <span dangerouslySetInnerHTML={{ __html: message }} />
+            <MessageSpan message={message} />
             {details.detailedMessage &&
               <>
                 <br />
-                <span className="uicore-text-small" dangerouslySetInnerHTML={{ __html: details.detailedMessage }} />
+                <MessageSpan className="uicore-text-small" message={details.detailedMessage} />
               </>
             }
           </MessageCenterMessage>,

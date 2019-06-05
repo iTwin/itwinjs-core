@@ -534,7 +534,10 @@ class FrontstageNavigationWidget extends React.Component {
   private get _viewSelectorItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />
+        <ViewSelector
+          imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}
+          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
+        />
       ),
     });
   }

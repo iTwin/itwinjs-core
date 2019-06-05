@@ -25,6 +25,14 @@
           "groupByClass": false,
           "groupByLabel": false
         }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isSubject": "true"
+          }
+        }
       ]
     },
     {
@@ -91,6 +99,14 @@
           "groupByClass": false,
           "groupByLabel": false
         }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isSubject": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")"
+          }
+        }
       ]
     },
     {
@@ -137,6 +153,14 @@
           "groupByClass": false,
           "groupByLabel": false
         }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isModel": "ThisNode.IsOfClass(\"Model\", \"BisCore\")"
+          }
+        }
       ]
     },
     {
@@ -161,6 +185,15 @@
           "skipRelatedLevel": 1,
           "groupByClass": false,
           "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isCategory": "true",
+            "modelId": "ParentNode.InstanceId"
+          }
         }
       ]
     },
@@ -187,6 +220,15 @@
           "groupByClass": false,
           "groupByLabel": false
         }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "modelId": "this.Model.Id",
+            "categoryId": "this.Category.Id"
+          }
+        }
       ]
     },
     {
@@ -211,12 +253,21 @@
           "groupByClass": false,
           "groupByLabel": false
         }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "modelId": "this.Model.Id",
+            "categoryId": "this.Category.Id"
+          }
+        }
       ]
     },
     {
       "ruleType": "ImageIdOverride",
       "condition": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
-      "imageIdExpression": "\"icon-table-of-contents\""
+      "imageIdExpression": "IIF(this.Parent.Id = NULL, \"icon-imodel-hollow-2\", \"icon-folder\")"
     },
     {
       "ruleType": "ImageIdOverride",

@@ -20,6 +20,7 @@
 - [Categories](./intro/categories.md)
 - [Schema Customization](./intro/schema-customization.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
+- [Schema Production Status](./intro/schema-production-status.md)
 - [Schema Versioning](./intro/schema-versioning-and-generations.md)
 - [BIS Glossary](./intro/glossary.md)
 

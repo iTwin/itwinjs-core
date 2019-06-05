@@ -283,7 +283,7 @@ export class Point3d extends XYZ {
   }
   /**
    * Copy and unweight xyzw.
-   * @param xyzData flat array of xyzwxyzw for multiple points
+   * @param xyzData flat array of x,y,z,w,x,y,z,w for multiple points
    * @param pointIndex index of point to extract.   This index is multiplied by 4 to obtain starting index in the array.
    * @param result optional result point.
    */
@@ -450,7 +450,7 @@ export class Point3d extends XYZ {
 export class Vector3d extends XYZ {
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
   /**
-   * Copy xyz from this instance to a new (or optionally resused) Vector3d
+   * Copy xyz from this instance to a new (or optionally reused) Vector3d
    * @param result optional instance to reuse.
    */
   public clone(result?: Vector3d): Vector3d { return Vector3d.create(this.x, this.y, this.z, result); }
@@ -736,9 +736,9 @@ export class Vector3d extends XYZ {
   }
   /**
    * Return a (new or optionally preallocated) vector that is rotated 90 degrees in the plane of this vector and the target vector.
-   * @param target Second vector which deifnes the plane of rotation.
+   * @param target Second vector which defines the plane of rotation.
    * @param result optional preallocated vector for result.
-   * @returns rotated vector, or undefined if the crossproduct of this and the the target cannot be normalized (i.e. if the target and this are colinear)
+   * @returns rotated vector, or undefined if the cross product of this and the the target cannot be normalized (i.e. if the target and this are colinear)
    */
   public rotate90Towards(target: Vector3d, result?: Vector3d): Vector3d | undefined {
     const normal = this.crossProduct(target).normalize();
@@ -875,6 +875,7 @@ export class Vector3d extends XYZ {
   }
   /**
    * Normalize this vector, using given xyz as default if length is zero.
+   * * if this instance and x,y,z are both 000, return unit x vector.
    * @param x x value for default result
    * @param y y value for default result
    * @param z z value for default result
@@ -884,7 +885,12 @@ export class Vector3d extends XYZ {
     const unit = this.normalize(result);
     if (unit)
       return unit;
-    return Vector3d.create(x, y, z, result);
+    // try back to x,y,z
+    result = Vector3d.create(x, y, z, result);
+    if (result.normalizeInPlace())
+      return result;
+
+    return Vector3d.create(1, 0, 0, result);
   }
   /**
    * Try to normalize (divide by magnitude), storing the result in place.

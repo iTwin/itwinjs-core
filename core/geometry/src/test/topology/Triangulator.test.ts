@@ -290,12 +290,12 @@ describe("Triangulation", () => {
     const allGeometry = [];
     // REMARK
     // EDL Feb 20 2019
-    // Triangulation introduces a search zheap (not understood by me at this time) for very large polygons.
+    // Triangulation introduces a search z heap (not understood by me at this time) for very large polygons.
     // With original trigger of 80 edges, some invalid triangulations occur for numRecursion = 2 (the original limit)
     // Raise the trigger to 200 and all is fine.
     // But the statement coverage drops significantly -- 94% to 93.37
     // numRecursion = 3 generates larger polygons (around 400) and again there are some failures.
-    // so we conclude the zheap is large chunk of code with some bugs.
+    // so we conclude the z heap is large chunk of code with some bugs.
     // This is an unlikely use case at this time.  So
     //   1) the heap trigger is left at 200 (see Triangulation.ts)
     //   2) add a method `Triangulation.setAndReturnHeapTrigger (number): number`
@@ -306,8 +306,8 @@ describe("Triangulation", () => {
         const baseVectorB = baseVectorA.clone();
         for (const generatorFunction of [
           Sample.createFractalSquareReversingPattern,
-          Sample.createFractalDiamonConvexPattern,
-          Sample.createFractalLReversingPatterh,
+          Sample.createFractalDiamondConvexPattern,
+          Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
           for (const degrees of [0, 10, 79]) {
@@ -464,7 +464,7 @@ describe("Triangulation", () => {
     const allGeometry = [];
     const r = 1.0;
     let x0 = 0.0;
-    // proimise: all x above x0 is free space.
+    // promise: all x above x0 is free space.
     for (const points of [
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),

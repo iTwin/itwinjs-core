@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "1.1.0-dev.0",
+  "version": "1.1.0-dev.2",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -10,7 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2 && npm run createLocalization",
     "clean": "rimraf lib package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema-metadata",
     "lint": "tslint --project . 1>&2",
@@ -18,7 +18,7 @@
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
-    "postbuild": "node ./build/createLocalization.js"
+    "createLocalization": "node ./build/createLocalization.js"
   },
   "keywords": [
     "Bentley",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.1.0-dev.0",
-    "@bentley/build-tools": "1.1.0-dev.0",
-    "@bentley/imodeljs-i18n": "1.1.0-dev.0",
+    "@bentley/bentleyjs-core": "1.1.0-dev.2",
+    "@bentley/build-tools": "1.1.0-dev.2",
+    "@bentley/imodeljs-i18n": "1.1.0-dev.2",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -59,8 +59,8 @@
     "bunyan-seq": "^0.2.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.1.0-dev.0",
-    "@bentley/imodeljs-i18n": "^1.1.0-dev.0"
+    "@bentley/bentleyjs-core": "^1.1.0-dev.2",
+    "@bentley/imodeljs-i18n": "^1.1.0-dev.2"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

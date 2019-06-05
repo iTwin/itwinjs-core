@@ -550,7 +550,7 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
 }
 
 // @public
-export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
+export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
 
 // @public
 export interface InstanceLabelOverrideValueSpecificationBase {
@@ -570,7 +570,9 @@ export enum InstanceLabelOverrideValueSpecificationType {
     // (undocumented)
     LocalId = "LocalId",
     // (undocumented)
-    Property = "Property"
+    Property = "Property",
+    // (undocumented)
+    String = "String"
 }
 
 // @public

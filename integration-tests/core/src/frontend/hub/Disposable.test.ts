@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -13,14 +12,10 @@ import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
-import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
-import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
 
-/* tslint:disable:no-console */
+const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/");
+const iModelLocation = path.join(iModelDir, "test.bim");
 
-const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
-let viewDiv: HTMLDivElement;
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
 const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
@@ -114,33 +109,18 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 }
 
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
-describe("Disposal of System (#integration)", () => {
+describe("Disposal of System", () => {
   before(async () => {
-    viewDiv = document.createElement("div") as HTMLDivElement;
-    assert(null !== viewDiv);
-    viewDiv!.style.width = viewDiv!.style.height = "1000px";
-    document.body.appendChild(viewDiv!);
-
     IModelApp.startup();
-
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
-
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    imodel1 = await IModelConnection.open(testProjectId, testIModelId);
   });
 
   after(async () => {
     await imodel0.closeSnapshot();
-    await imodel1.close();
     IModelApp.shutdown();
   });
 
-  it("expect rendersystem disposal to trigger disposal of textures cached in id-map (#integration)", async () => {
+  it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
     if (!IModelApp.hasRenderSystem) {
       return;
     }
@@ -174,34 +154,22 @@ describe("Disposal of System (#integration)", () => {
   });
 });
 
-describe("Disposal of WebGL Resources (#integration)", () => {
+describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    viewDiv = document.createElement("viewDiv") as HTMLDivElement;
-    viewDiv!.style.width = viewDiv!.style.height = "1000px";
-    assert(null !== viewDiv);
-    document.body.appendChild(viewDiv!);
-
     IModelApp.startup();
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
-
     imodel0 = await IModelConnection.openSnapshot(iModelLocation);
-
-    const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");
-    imodel1 = await IModelConnection.open(testProjectId, testIModelId);
+    imodel1 = await IModelConnection.openSnapshot(path.join(iModelDir, "testImodel.bim"));
   });
 
   after(async () => {
     await imodel0.closeSnapshot();
-    await imodel1.close();
+    await imodel1.closeSnapshot();
     IModelApp.shutdown();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
-  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources (#integration)", async () => {
+  it("expect disposal of graphics to trigger top-down disposal of all WebGL resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
     const system = IModelApp.renderSystem;
@@ -247,9 +215,10 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     assert.isTrue(isDisposed(tileGraphic));
   });
 
-  it("expect disposal of target to trigger disposal of only owned resources (#integration)", async () => {
+  it("expect disposal of target to trigger disposal of only owned resources", async () => {
     if (!IModelApp.hasRenderSystem)
       return;
+
     const system = IModelApp.renderSystem;
 
     // Let's grab an actual view and set up a target that is holding prepared decorations
@@ -257,6 +226,10 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     assert.isTrue(viewDefinitions.length > 0);
     const viewState = await imodel1.views.load(viewDefinitions[0].id);
     assert.exists(viewState);
+
+    const viewDiv = document.createElement("div") as HTMLDivElement;
+    viewDiv.style.width = viewDiv.style.height = "1000px";
+    document.body.appendChild(viewDiv);
 
     const viewport = ScreenViewport.create(viewDiv, viewState);
     viewport.changeView(viewState);

@@ -11,7 +11,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
-  Placement2d, Placement2dProps, Placement3d, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -1726,7 +1726,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined === this._tiledGraphicsProviders.get(type))
       this._tiledGraphicsProviders.set(type, new Set<TiledGraphicsProvider.Provider>());
 
-    this._tiledGraphicsProviders!.get(type)!.add(provider);
+    this._tiledGraphicsProviders.get(type)!.add(provider);
   }
 
   /** Remove a TiledGraphicsProvider
@@ -1753,8 +1753,16 @@ export abstract class Viewport implements IDisposable {
 
   /** True if this is a 3d view with the camera turned on. */
   public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
-  /** @internal */
+
+  /** Mark the current set of decorations invalid, so that they will be recreated on the next render frame.
+   * This can be useful, for example, if an external event causes one or more current decorations to become invalid and you wish to force
+   * them to be recreated to show the changes.
+   * @note On the next frame, the `decorate` method of all [[ViewManager.decorators]] will be called. There is no way (or need) to
+   * invalidate individual decorations.
+   * @beta
+   */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
+
   /** @internal */
   public invalidateRenderPlan() { this.sync.invalidateRenderPlan(); }
   /** @internal */
@@ -2103,18 +2111,23 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
    * @param props array of PlacementProps. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
+   * @note any invalid placements are ignored (e.g., those having null range of nonsensical origin). If no valid placements are supplied, this function does nothing.
    */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    if (placementProps.length === 0)
+    const toPlacement = (placement: Placement2dProps | Placement3dProps): Placement2d | Placement3d => {
+      const props = placement as any;
+      return undefined !== props.angle ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
+    };
+
+    const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
+    if (-1 === indexOfFirstValidPlacement)
       return;
 
-    const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
     if (undefined !== options) {
       if (undefined !== options.standardViewId) {
         this.view.setStandardRotation(options.standardViewId);
       } else if (undefined !== options.placementRelativeId) {
-        const firstProps = placementProps[0];
-        const firstPlacement = hasAngle(firstProps) ? Placement2d.fromJSON(firstProps) : Placement3d.fromJSON(firstProps);
+        const firstPlacement = toPlacement(placementProps[indexOfFirstValidPlacement]);
         const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
         viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
         this.view.setRotation(viewRotation);
@@ -2126,9 +2139,10 @@ export abstract class Viewport implements IDisposable {
     const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
-    for (const props of placementProps) {
-      const placement = hasAngle(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
-      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
+    for (let i = indexOfFirstValidPlacement; i < placementProps.length; i++) {
+      const placement = toPlacement(placementProps[i]);
+      if (placement.isValid)
+        viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
     }
 
     this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);

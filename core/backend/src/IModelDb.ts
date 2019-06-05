@@ -1293,8 +1293,7 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /**
-     * Read element data from iModel as a json string
+    /** Read element data from iModel as a json string
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @return a json string with the properties of the element.
      */
@@ -1305,8 +1304,7 @@ export namespace IModelDb {
       return val.result! as T;
     }
 
-    /**
-     * Get properties of an Element by Id, FederationGuid, or Code
+    /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
@@ -1318,8 +1316,7 @@ export namespace IModelDb {
       return this.getElementJson<T>(JSON.stringify(elementId));
     }
 
-    /**
-     * Get an element by Id, FederationGuid, or Code
+    /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
@@ -1332,8 +1329,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
     }
 
-    /**
-     * Query for the Id of the element that has a specified code.
+    /** Query for the Id of the element that has a specified code.
      * This method is for the case where you know the element's Code.
      * If you only know the code *value*, then in the simplest case, you can query on that
      * and filter the results.
@@ -1362,15 +1358,27 @@ export namespace IModelDb {
       });
     }
 
-    /**
-     * Create a new instance of an element.
+    /** Query for the last modified time of the specified element.
+     * @internal
+     */
+    public queryLastModifiedTime(elementId: Id64String): string {
+      const sql = `SELECT LastMod FROM ${Element.classFullName} WHERE ECInstanceId=:elementId`;
+      return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
+        statement.bindId("elementId", elementId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          return statement.getValue(0).getDateTime();
+        }
+        throw new IModelError(IModelStatus.InvalidId, "Element not found", Logger.logWarning, loggerCategory);
+      });
+    }
+
+    /** Create a new instance of an element.
      * @param elProps The properties of the new element.
      * @throws [[IModelError]] if there is a problem creating the element.
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
-    /**
-     * Insert a new element into the iModel.
+    /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
@@ -1407,8 +1415,7 @@ export namespace IModelDb {
       jsClass.onUpdated(elProps, iModel);
     }
 
-    /**
-     * Delete one or more elements from this iModel.
+    /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
      */

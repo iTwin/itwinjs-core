@@ -17,6 +17,7 @@ export interface ComboBoxProps<T> {
   parent?: HTMLElement;
   handler?: ComboBoxHandler;
   value?: T;
+  tooltip?: string;
 }
 
 export interface ComboBox {
@@ -53,6 +54,9 @@ export function createComboBox<T>(props: ComboBoxProps<T>): ComboBox {
   const handler = props.handler;
   if (undefined !== handler)
     select.onchange = () => handler(select);
+
+  if (undefined !== props.tooltip)
+    div.title = props.tooltip;
 
   div.appendChild(select);
   if (undefined !== props.parent)

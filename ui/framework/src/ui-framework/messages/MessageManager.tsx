@@ -21,6 +21,7 @@ import { UiFramework } from "../UiFramework";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
 import { ConfigurableUiActionId } from "../configurableui/state";
+import { MessageSpan } from "./MessageSpan";
 
 class MessageBoxCallbacks {
   constructor(
@@ -44,7 +45,7 @@ export interface MessageAddedEventArgs {
  * @public
  */
 export interface ActivityMessageEventArgs {
-  message: string;
+  message: HTMLElement | string;
   percentage: number;
   details?: ActivityMessageDetails;
   restored?: boolean;
@@ -55,8 +56,8 @@ export interface ActivityMessageEventArgs {
  */
 export interface InputFieldMessageEventArgs {
   target: Element;
-  messageText: string;
-  detailedMessage: string;
+  messageText: HTMLElement | string;
+  detailedMessage: HTMLElement | string;
   priority: OutputMessagePriority;
 }
 
@@ -92,7 +93,7 @@ export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
  * Used to display tracked progress in ActivityMessage.
  */
 class OngoingActivityMessage {
-  public message: string = "";
+  public message: HTMLElement | string = "";
   public percentage: number = 0;
   public details: ActivityMessageDetails = new ActivityMessageDetails(true, true, true);
   public isRestored: boolean = false;
@@ -170,7 +171,7 @@ export class MessageManager {
    *                    is now being restored from the status bar.
    * @returns true if details is valid and can be used to display ActivityMessage
    */
-  public static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean {
+  public static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean {
     this._OngoingActivityMessage.message = message;
     this._OngoingActivityMessage.percentage = percentage;
 
@@ -216,7 +217,7 @@ export class MessageManager {
    * @param detailedMessage   Optional detailed message text to display.
    * @param priority   Optional message priority which controls icon to display.
    */
-  public static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage = "", priority = OutputMessagePriority.Error) {
+  public static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage: HTMLElement | string = "", priority = OutputMessagePriority.Error) {
     this.onInputFieldMessageAddedEvent.emit({
       target,
       messageText,
@@ -296,12 +297,12 @@ export class MessageManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public static async openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const title = UiFramework.translate("general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
-      const messageElement = <span dangerouslySetInnerHTML={{ __html: message }} />;
+      const messageElement = <MessageSpan message={message} />;
       ModalDialogManager.openDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
     });
   }
@@ -311,11 +312,11 @@ export class MessageManager {
     const iconType = this.getIconType(messageDetails);
     const content = (
       <>
-        <span dangerouslySetInnerHTML={{ __html: messageDetails.briefMessage }} />
+        <MessageSpan message={messageDetails.briefMessage} />
         {
           messageDetails.detailedMessage && (
             <p>
-              <span dangerouslySetInnerHTML={{ __html: messageDetails.detailedMessage }} />
+              <MessageSpan message={messageDetails.detailedMessage} />
             </p>
           )
         }

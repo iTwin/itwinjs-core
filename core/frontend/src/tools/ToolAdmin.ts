@@ -664,8 +664,20 @@ export class ToolAdmin {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
-      case "mouseenter": return this.onMouseEnter(event.vp!);
-      case "mouseleave": return this.onMouseLeave(event.vp!);
+      case "mouseover": {
+        // handle the mouseover (which is similar to mouseenter) only if the target is our canvas.
+        if (event.ev.target === event.vp!.canvas) {
+          return this.onMouseEnter(event.vp!);
+        }
+        return;
+      }
+      case "mouseout": {
+        // handle the mouseout (which is similar to mouseleave) only if the target is our canvas.
+        if (event.ev.target === event.vp!.canvas) {
+          return this.onMouseLeave(event.vp!);
+        }
+        return;
+      }
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
       case "keyup": return this.onKeyTransition(event, false);

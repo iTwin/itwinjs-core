@@ -11,46 +11,37 @@ import {
   ViewState,
   ViewState3d,
   Viewport,
-  SkyGradient,
-  Environment,
-  SkyBox,
   DisplayStyle3dState,
   DisplayStyle2dState,
   DisplayStyleState,
 } from "@bentley/imodeljs-frontend";
 import {
-  AmbientOcclusion,
   BackgroundMapProps,
   BackgroundMapType,
   RenderMode,
   ViewFlags,
   ColorDef,
-  SkyBoxProps,
   HiddenLine,
   LinePixels,
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
 import { createComboBox, ComboBox } from "./ComboBox";
-import { createSlider, Slider } from "./Slider";
-import { createButton } from "./Button";
 import { ToolBarDropDown } from "./ToolBar";
-import { createRadioBox, RadioBox } from "./RadioBox";
-import { createColorInput, ColorInput, ColorInputProps } from "./ColorInput";
+import { createColorInput, ColorInputProps } from "./ColorInput";
 import { createNumericInput } from "./NumericInput";
 import { Settings } from "./FeatureOverrides";
 import { isString } from "util";
 import { createNestedMenu } from "./NestedMenu";
+import { AmbientOcclusionEditor } from "./AmbientOcclusion";
+import { EnvironmentEditor } from "./EnvironmentEditor";
 
 type UpdateAttribute = (view: ViewState) => void;
 
 type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "shadows" | "forceSurfaceDiscard";
-type EnvironmentAspect = "ground" | "sky";
-type SkyboxType = "2colors" | "4colors";
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
   private static _expandEdgeDisplay = false;
-  private static _expandEnvironmentEditor = false;
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -58,22 +49,7 @@ export class ViewAttributes {
   private readonly _removeMe: () => void;
   private readonly _parent: HTMLElement;
   private _id = 0;
-  private _aoBias?: Slider;
-  private _aoZLengthCap?: Slider;
-  private _aoIntensity?: Slider;
-  private _aoTexelStepSize?: Slider;
-  private _aoBlurDelta?: Slider;
-  private _aoBlurSigma?: Slider;
-  private _aoBlurTexelStepSize?: Slider;
   private _scratchViewFlags = new ViewFlags();
-  private _eeSkyboxType?: RadioBox<SkyboxType>;
-  private _eeZenithColor?: ColorInput;
-  private _eeSkyColor?: ColorInput;
-  private _eeGroundColor?: ColorInput;
-  private _eeNadirColor?: ColorInput;
-  private _eeSkyExponent?: Slider;
-  private _eeGroundExponent?: Slider;
-  private _eeBackgroundColor?: ColorInput;
 
   private _displayStylePickerDiv?: HTMLDivElement;
   public set displayStylePickerInput(newComboBox: ComboBox) {
@@ -398,222 +374,8 @@ export class ViewAttributes {
   }
 
   private addEnvironmentEditor() {
-    const nestedMenu = createNestedMenu({
-      id: this._nextId,
-      label: "Environment",
-      parent: this._element,
-      // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      expand: ViewAttributes._expandEnvironmentEditor,
-      handler: (expanded) => ViewAttributes._expandEnvironmentEditor = expanded,
-    }).body;
-    const is3d = this._vp.view.is3d();
-
-    this._eeBackgroundColor = createColorInput({
-      parent: nestedMenu,
-      value: this._vp.view.backgroundColor.toHexString(),
-      handler: (value) => {
-        this._vp.view.displayStyle.backgroundColor = new ColorDef(value);
-        this.sync();
-      },
-      id: this._nextId,
-      label: "Background Color",
-      display: is3d ? "none" : "block",
-    });
-    this._eeBackgroundColor.div.style.textAlign = "right";
-
-    this._vp.onDisplayStyleChanged.addListener((vp) => {
-      this.updateEnvironmentEditorUI(vp.view);
-    });
-
-    let currentEnvironment: SkyGradient | undefined;
-    const eeDiv = document.createElement("div");
-    if (this._vp.view.is3d()) {
-      const env = this._vp.view.getDisplayStyle3d().environment.sky;
-
-      // Could be a SkySphere, SkyCube, etc...we currently only support editing a SkyGradient.
-      if (env instanceof SkyGradient)
-        currentEnvironment = env;
-    }
-
-    eeDiv.hidden = undefined !== currentEnvironment && !currentEnvironment.display;
-
-    const showSkyboxControls = (enabled: boolean) => {
-      eeDiv.hidden = !enabled;
-      this._eeBackgroundColor!.div.style.display = enabled ? "none" : "block";
-    };
-
-    this.addEnvAttribute(nestedMenu, "Sky Box", "sky", showSkyboxControls);
-
-    nestedMenu.appendChild(this._eeBackgroundColor.div);
-
-    this._eeSkyboxType = createRadioBox({
-      id: this._nextId,
-      entries: [
-        { value: "2colors", label: "2 Colors" },
-        { value: "4colors", label: "4 Colors" },
-      ],
-      handler: (value) => {
-        this.updateEnvironment({ twoColor: value === "2colors" });
-
-        // Hide elements not relevant to 2 colors
-        const twoColors = value !== "4colors";
-        this._eeSkyColor!.div.hidden = twoColors;
-        this._eeGroundColor!.div.hidden = twoColors;
-        this._eeSkyExponent!.div.style.display = twoColors ? "none" : "block";
-        this._eeGroundExponent!.div.style.display = twoColors ? "none" : "block";
-      },
-      parent: eeDiv,
-      defaultValue: (undefined !== currentEnvironment && currentEnvironment.twoColor) ? "2colors" : "4colors",
-    });
-
-    const row1 = document.createElement("div");
-    eeDiv.appendChild(row1);
-    row1.style.display = "flex";
-    row1.style.justifyContent = "flex-end";
-
-    this._eeSkyColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ skyColor: new ColorDef(value) }),
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyColor.toHexString(),
-      label: "Sky Color",
-      parent: row1,
-    });
-    this._eeSkyColor.div.style.marginRight = "10px";
-
-    this._eeZenithColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ zenithColor: new ColorDef(value) }),
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.zenithColor.toHexString(),
-      label: "Zenith Color",
-      parent: row1,
-    });
-
-    const row2 = document.createElement("div");
-    eeDiv.appendChild(row2);
-    row2.style.display = "flex";
-    row2.style.justifyContent = "flex-end";
-
-    this._eeGroundColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ groundColor: new ColorDef(value) }),
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundColor.toHexString(),
-      label: "Ground Color",
-      parent: row2,
-    });
-    this._eeGroundColor.div.style.marginRight = "16px";
-
-    this._eeNadirColor = createColorInput({
-      handler: (value: string) => this.updateEnvironment({ nadirColor: new ColorDef(value) }),
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.nadirColor.toHexString(),
-      label: "Nadir Color",
-      parent: row2,
-    });
-
-    this._eeSkyExponent = createSlider({
-      parent: eeDiv,
-      name: "Sky Exponent",
-      id: this._nextId,
-      min: "0.0",
-      step: "0.25",
-      max: "20.0",
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.skyExponent.toString(),
-      handler: (slider) => this.updateEnvironment({ skyExponent: parseFloat(slider.value) }),
-    });
-
-    this._eeGroundExponent = createSlider({
-      parent: eeDiv,
-      name: "Ground Exponent",
-      id: this._nextId,
-      min: "0.0",
-      step: "0.25",
-      max: "20.0",
-      value: undefined === currentEnvironment ? "#FFFFFF" : currentEnvironment.groundExponent.toString(),
-      handler: (slider) => this.updateEnvironment({ groundExponent: parseFloat(slider.value) }),
-    });
-
-    const buttonDiv = document.createElement("div") as HTMLDivElement;
-
-    createButton({
-      parent: buttonDiv,
-      id: "viewAttr_EEReset",
-      value: "Reset",
-      inline: true,
-      handler: () => this.resetEnvironmentEditor(),
-    });
-    createButton({
-      parent: buttonDiv,
-      id: "viewAttr_eeExport",
-      value: "Export",
-      inline: true,
-      handler: () => {
-        const env = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky as SkyGradient;
-        let msg = `Zenith Color: ${env.zenithColor.toRgbString()}\nNadir Color: ${env.nadirColor.toRgbString()}`;
-        if (!env.twoColor)
-          msg = msg.concat(`\nSky Color: ${env.skyColor.toRgbString()}\nGround Color: ${env.groundColor.toRgbString()}\nSky Exponent: ${env.skyExponent}\nGround Exponent: ${env.groundExponent}`);
-        alert(msg);
-      },
-    });
-    buttonDiv.style.textAlign = "center";
-    eeDiv.appendChild(buttonDiv);
-
-    showSkyboxControls(undefined !== currentEnvironment && currentEnvironment.display);
-    nestedMenu.appendChild(eeDiv);
-    this._updates.push((view) => {
-      let skyboxEnabled = false;
-      if (view.is3d()) {
-        const env = (view as ViewState3d).getDisplayStyle3d().environment.sky;
-        skyboxEnabled = env.display;
-      }
-
-      showSkyboxControls(skyboxEnabled);
-      this.updateEnvironmentEditorUI(view);
-    });
-    this.addEnvAttribute(nestedMenu, "Ground Plane", "ground");
-  }
-
-  private updateEnvironment(newEnv: SkyBoxProps): void {
-    const oldEnv = (this._vp.view as ViewState3d).getDisplayStyle3d().environment;
-    const oldSkyEnv = oldEnv.sky as SkyGradient;
-    newEnv = {
-      display: (oldSkyEnv as SkyBox).display,
-      twoColor: undefined !== newEnv.twoColor ? newEnv.twoColor : oldSkyEnv.twoColor,
-      zenithColor: undefined !== newEnv.zenithColor ? new ColorDef(newEnv.zenithColor) : oldSkyEnv.zenithColor,
-      skyColor: undefined !== newEnv.skyColor ? new ColorDef(newEnv.skyColor) : oldSkyEnv.skyColor,
-      groundColor: undefined !== newEnv.groundColor ? new ColorDef(newEnv.groundColor) : oldSkyEnv.groundColor,
-      nadirColor: undefined !== newEnv.nadirColor ? new ColorDef(newEnv.nadirColor) : oldSkyEnv.nadirColor,
-      skyExponent: undefined !== newEnv.skyExponent ? newEnv.skyExponent : oldSkyEnv.skyExponent,
-      groundExponent: undefined !== newEnv.groundExponent ? newEnv.groundExponent : oldSkyEnv.groundExponent,
-    };
-    (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
-      {
-        sky: new SkyGradient(newEnv),
-        ground: oldEnv.ground,
-      });
-    this.sync();
-  }
-
-  private updateEnvironmentEditorUI(view: ViewState): void {
-    this._eeBackgroundColor!.input.value = view.backgroundColor.toHexString();
-    if (view.is2d())
-      return;
-
-    const getSkyEnvironment = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().environment.sky;
-    const skyEnvironment = getSkyEnvironment(view) as SkyGradient;
-
-    this._eeSkyboxType!.setValue(skyEnvironment.twoColor ? "2colors" : "4colors");
-    this._eeZenithColor!.input.value = skyEnvironment.zenithColor.toHexString();
-    this._eeSkyColor!.input.value = skyEnvironment.skyColor.toHexString();
-    this._eeGroundColor!.input.value = skyEnvironment.groundColor.toHexString();
-    this._eeNadirColor!.input.value = skyEnvironment.nadirColor.toHexString();
-    this._eeSkyExponent!.slider.value = skyEnvironment.skyExponent!.toString();
-    this._eeGroundExponent!.slider.value = skyEnvironment.groundExponent!.toString();
-  }
-
-  private resetEnvironmentEditor(): void {
-    const skyEnvironment = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky;
-    (this._vp.view as ViewState3d).getDisplayStyle3d().environment = new Environment(
-      {
-        sky: { display: (skyEnvironment as SkyBox).display },
-      });
-    this.sync();
-    this.updateEnvironmentEditorUI(this._vp.view);
+    const env = new EnvironmentEditor(this._vp, this._element);
+    this._updates.push((view) => env.update(view));
   }
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
@@ -719,31 +481,6 @@ export class ViewAttributes {
     this._updates.push(update);
   }
 
-  private addEnvAttribute(parent: HTMLElement, label: string, aspect: EnvironmentAspect, updateHandler?: (enabled: boolean) => void): void {
-    const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const view3d = this._vp.view as ViewState3d;
-      const style = view3d.getDisplayStyle3d();
-      const env = style.environment;
-      env[aspect].display = enabled;
-      view3d.getDisplayStyle3d().environment = env; // setter converts it to JSON
-      if (undefined !== updateHandler)
-        updateHandler(enabled);
-      this.sync();
-    }, parent);
-
-    const update = (view: ViewState) => {
-      const visible = view.is3d();
-      elems.div.style.display = visible ? "block" : "none";
-      if (visible) {
-        const view3d = view as ViewState3d;
-        const style = view3d.getDisplayStyle3d();
-        elems.checkbox.checked = style.environment[aspect].display;
-      }
-    };
-
-    this._updates.push(update);
-  }
-
   private addRenderMode(): void {
     const div = document.createElement("div") as HTMLDivElement;
 
@@ -779,164 +516,8 @@ export class ViewAttributes {
   }
 
   private addAmbientOcclusion(): void {
-    const isAOSupported = (view: ViewState) => view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode;
-    const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
-
-    const div = document.createElement("div");
-    div.appendChild(document.createElement("hr")!);
-
-    const slidersDiv = document.createElement("div")!;
-
-    const showHideDropDowns = (show: boolean) => {
-      const display = show ? "block" : "none";
-      slidersDiv.style.display = display;
-    };
-
-    const enableAO = (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.ambientOcclusion = enabled;
-      this._vp.viewFlags = vf;
-      showHideDropDowns(enabled);
-      this.sync();
-    };
-    const checkbox = this.addCheckbox("Ambient Occlusion", enableAO, div).checkbox;
-
-    this._aoBias = createSlider({
-      parent: slidersDiv,
-      name: "Bias: ",
-      id: "viewAttr_AOBias",
-      min: "0.0",
-      step: "0.025",
-      max: "1.0",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(parseFloat(slider.value)),
-    });
-
-    this._aoZLengthCap = createSlider({
-      parent: slidersDiv,
-      name: "Length Cap: ",
-      id: "viewAttr_AOZLengthCap",
-      min: "0.0",
-      step: "0.000025",
-      max: "0.25",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, parseFloat(slider.value)),
-    });
-
-    this._aoIntensity = createSlider({
-      parent: slidersDiv,
-      name: "Intensity: ",
-      id: "viewAttr_AOIntensity",
-      min: "1.0",
-      step: "0.1",
-      max: "16.0",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, parseFloat(slider.value)),
-    });
-
-    this._aoTexelStepSize = createSlider({
-      parent: slidersDiv,
-      name: "Step: ",
-      id: "viewAttr_AOTexelStepSize",
-      min: "1.0",
-      step: "0.005",
-      max: "5.0",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, parseFloat(slider.value)),
-    });
-
-    this._aoBlurDelta = createSlider({
-      parent: slidersDiv,
-      name: "Blur Delta: ",
-      id: "viewAttr_AOBlurDelta",
-      min: "0.5",
-      step: "0.0001",
-      max: "1.5",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, parseFloat(slider.value)),
-    });
-
-    this._aoBlurSigma = createSlider({
-      parent: slidersDiv,
-      name: "Blur Sigma: ",
-      id: "viewAttr_AOBlurSigma",
-      min: "0.5",
-      step: "0.0001",
-      max: "5.0",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, undefined, parseFloat(slider.value)),
-    });
-
-    this._aoBlurTexelStepSize = createSlider({
-      parent: slidersDiv,
-      name: "Blur Step: ",
-      id: "viewAttr_AOBlurTexelStepSize",
-      min: "1.0",
-      step: "0.005",
-      max: "5.0",
-      value: "0.0",
-      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, undefined, undefined, parseFloat(slider.value)),
-    });
-
-    const resetButton = createButton({
-      parent: slidersDiv,
-      id: "viewAttr_AOReset",
-      value: "Reset",
-      handler: () => this.resetAmbientOcclusion(),
-    });
-    resetButton.div.style.textAlign = "center";
-
-    this._updates.push((view) => {
-      const visible = isAOSupported(view);
-      div.style.display = visible ? "block" : "none";
-      if (!visible)
-        return;
-
-      checkbox.checked = isAOEnabled(view);
-      showHideDropDowns(checkbox.checked);
-
-      this.updateAmbientOcclusionUI(view);
-    });
-
-    div.appendChild(slidersDiv);
-
-    this._element.appendChild(div);
-  }
-
-  private updateAmbientOcclusionUI(view: ViewState) {
-    const getAOSettings = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
-
-    const aoSettings = getAOSettings(view);
-
-    this._aoBias!.slider.value = aoSettings.bias!.toString();
-    this._aoZLengthCap!.slider.value = aoSettings.zLengthCap!.toString();
-    this._aoIntensity!.slider.value = aoSettings.intensity!.toString();
-    this._aoTexelStepSize!.slider.value = aoSettings.texelStepSize!.toString();
-    this._aoBlurDelta!.slider.value = aoSettings.blurDelta!.toString();
-    this._aoBlurSigma!.slider.value = aoSettings.blurSigma!.toString();
-    this._aoBlurTexelStepSize!.slider.value = aoSettings.blurTexelStepSize!.toString();
-  }
-
-  private updateAmbientOcclusion(newBias?: number, newZLengthCap?: number, newIntensity?: number, newTexelStepSize?: number, newBlurDelta?: number, newBlurSigma?: number, newBlurTexelStepSize?: number): void {
-    const oldAOSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
-    const newAOSettings = AmbientOcclusion.Settings.fromJSON({
-      bias: newBias !== undefined ? newBias : oldAOSettings.bias,
-      zLengthCap: newZLengthCap !== undefined ? newZLengthCap : oldAOSettings.zLengthCap,
-      intensity: newIntensity !== undefined ? newIntensity : oldAOSettings.intensity,
-      texelStepSize: newTexelStepSize !== undefined ? newTexelStepSize : oldAOSettings.texelStepSize,
-      blurDelta: newBlurDelta !== undefined ? newBlurDelta : oldAOSettings.blurDelta,
-      blurSigma: newBlurSigma !== undefined ? newBlurSigma : oldAOSettings.blurSigma,
-      blurTexelStepSize: newBlurTexelStepSize !== undefined ? newBlurTexelStepSize : oldAOSettings.blurTexelStepSize,
-    });
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
-    this.sync();
-  }
-
-  private resetAmbientOcclusion(): void {
-    const newAOSettings = AmbientOcclusion.Settings.defaults;
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
-    this.sync();
-    this.updateAmbientOcclusionUI(this._vp.view);
+    const ao = new AmbientOcclusionEditor(this._vp, this._element);
+    this._updates.push((view) => ao.update(view));
   }
 
   private addBackgroundMap(): void {

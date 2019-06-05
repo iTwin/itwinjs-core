@@ -183,7 +183,7 @@ export interface ActivityMessageEventArgs {
     // (undocumented)
     details?: ActivityMessageDetails;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     percentage: number;
     // (undocumented)
@@ -223,8 +223,8 @@ export class AppNotificationManager extends NotificationManager {
     protected _hidePointerMessage(): void;
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
-    openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    outputActivityMessage(messageText: string, percentComplete: number): boolean;
+    openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    outputActivityMessage(messageText: HTMLElement | string, percentComplete: number): boolean;
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
@@ -898,8 +898,6 @@ export class CustomItemDef extends ActionButtonItemDef {
     // (undocumented)
     static customIdPrefix: string;
     // (undocumented)
-    handleSyncUiEvent(_args: SyncUiEventArgs): boolean;
-    // (undocumented)
     readonly id: string;
     // (undocumented)
     reactElement: React_2.ReactNode;
@@ -1217,6 +1215,8 @@ export class ExpandableSection extends React_2.PureComponent<ExpandableSectionPr
 
 // @beta
 export interface ExpandableSectionProps extends CommonProps {
+    // (undocumented)
+    expanded?: boolean;
     // (undocumented)
     title?: string;
 }
@@ -1781,9 +1781,9 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 // @public
 export interface InputFieldMessageEventArgs {
     // (undocumented)
-    detailedMessage: string;
+    detailedMessage: HTMLElement | string;
     // (undocumented)
-    messageText: string;
+    messageText: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -2153,7 +2153,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage?: string, priority?: OutputMessagePriority): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetails): string;
     static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
@@ -2167,10 +2167,10 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
-    static openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
-    static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean;
+    static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
     }
 
 // @public
@@ -2412,11 +2412,11 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 // @public
 export interface PointerMessageChangedEventArgs {
     // (undocumented)
-    detailedMessage?: string;
+    detailedMessage?: HTMLElement | string;
     // (undocumented)
     isVisible: boolean;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -3463,10 +3463,15 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelectorState> {
     constructor(props: ViewSelectorProps);
     // (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
     render(): JSX.Element;
+    static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
 
@@ -3487,9 +3492,22 @@ export interface ViewSelectorChangedEventArgs {
 }
 
 // @beta
+export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;
+
+// @beta
 export interface ViewSelectorProps {
     // (undocumented)
     imodel?: IModelConnection;
+    // (undocumented)
+    listenForShowUpdates?: boolean;
+    // (undocumented)
+    showDrawings: boolean;
+    // (undocumented)
+    showSheets: boolean;
+    // (undocumented)
+    showSpatials: boolean;
+    // (undocumented)
+    showUnknown: boolean;
 }
 
 // @public
@@ -3511,7 +3529,7 @@ export class ViewUtilities {
 export class VisibilityHandler implements IDisposable {
     constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(node: TreeNodeItem, on: boolean): Promise<boolean>;
+    changeVisibility(node: TreeNodeItem, on: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -3524,8 +3542,6 @@ export class VisibilityHandler implements IDisposable {
 export interface VisibilityHandlerProps {
     // (undocumented)
     dataProvider: IPresentationTreeDataProvider;
-    // (undocumented)
-    getLoadedNode: (id: string) => TreeNodeItem | undefined;
     // (undocumented)
     onVisibilityChange: () => void;
     // (undocumented)

@@ -1314,6 +1314,8 @@ export class Entity implements EntityProps {
     static readonly className: string;
     readonly className: string;
     clone(): this;
+    // @alpha
+    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1745,6 +1747,8 @@ export namespace IModelDb {
         insertElement(elProps: ElementProps): Id64String;
         queryChildren(elementId: Id64String): Id64String[];
         queryElementIdByCode(code: Code): Id64String | undefined;
+        // @internal
+        queryLastModifiedTime(elementId: Id64String): string;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
     }
@@ -1892,6 +1896,8 @@ export class IModelImporter {
     importModels(modeledElementClass: string): void;
     // (undocumented)
     importRelationships(): void;
+    // (undocumented)
+    initFromExternalSourceAspects(): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     }
@@ -2513,10 +2519,10 @@ export namespace IModelJsNative {
     // (undocumented)
     export interface NativeCrashReportingConfig {
         crashDir: string;
+        enableCrashDumps?: boolean;
         maxDumpsInDir?: number;
         params?: NativeCrashReportingConfigNameValuePair[];
         wantFullMemory?: boolean;
-        writeDumpsToCrashDir?: boolean;
     }
     // (undocumented)
     export interface NativeCrashReportingConfigNameValuePair {

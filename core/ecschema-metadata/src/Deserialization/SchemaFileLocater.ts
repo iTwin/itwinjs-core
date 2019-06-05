@@ -49,7 +49,7 @@ if (!String.prototype.padStartEx) {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @internal - Not sure this is how we should implement this long-term.
+ * @alpha - Not sure this is how we should implement this long-term.
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemnaKey

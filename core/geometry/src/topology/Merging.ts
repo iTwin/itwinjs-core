@@ -328,6 +328,19 @@ export class HalfEdgeGraphOps {
       node0.sortAngle = Math.atan2((node1.y - node0.y), (node1.x - node0.x));
     }
   }
+  /**
+   * * Visit all nodes in `graph`.
+   * * invoke `pinch(node, vertexPredecessor)`
+   * * this leaves the graph as isolated edges.
+   * @param graph graph to modify
+   */
+  public static isolateAllEdges(graph: HalfEdgeGraph) {
+    for (const nodeA of graph.allHalfEdges) {
+      const nodeB = nodeA.vertexPredecessor;
+      HalfEdge.pinch(nodeA, nodeB);
+    }
+  }
+
 }
 /**
  * @internal
