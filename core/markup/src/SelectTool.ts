@@ -108,7 +108,6 @@ class StretchHandle extends ModifyHandle {
       diagVec = Vector2d.createZero();
 
     // if the shift key is down, don't preserve aspect ratio
-
     const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;
     if (this.posNpc.x === 0) {
@@ -589,17 +588,19 @@ export class SelectTool extends MarkupTool {
     const height = Math.abs(vec.y);
     if (width < 1 || height < 1)
       return true;
+    const rightToLeft = (start.x > end.x);
+    const overlapMode = (ev.isShiftKey ? !rightToLeft : rightToLeft); // Shift inverts inside/overlap selection...
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
     this.markup.svgDynamics!.clear();
     this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
-    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": ev.isShiftKey ? "6,6" : "3,3", "fill": "none" });
+    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": overlapMode ? "5" : "2", "fill": "none" });
     const outlinesG = isDynamics ? this.markup.svgDynamics!.group() : undefined;
     const selectRect = selectBox.node.getBoundingClientRect();
     this.markup.svgMarkup!.forElementsOfGroup((child) => {
       const childRect = child.node.getBoundingClientRect();
       const inside = (childRect.left >= selectRect.left && childRect.top >= selectRect.top && childRect.right <= selectRect.right && childRect.bottom <= selectRect.bottom);
       const overlap = !inside && (childRect.left < selectRect.right && childRect.right > selectRect.left && childRect.bottom > selectRect.top && childRect.top < selectRect.bottom);
-      const accept = inside || (overlap && ev.isShiftKey);
+      const accept = inside || (overlap && overlapMode);
       if (undefined !== outlinesG) {
         if (inside || overlap) {
           const outline = child.getOutline().attr(MarkupApp.props.handles.moveOutline).addTo(outlinesG);
