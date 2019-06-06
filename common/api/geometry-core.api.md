@@ -1111,6 +1111,7 @@ export class CoordinateXYZ extends GeometryQuery {
     clone(): GeometryQuery | undefined;
     cloneTransformed(transform: Transform): GeometryQuery | undefined;
     static create(point: Point3d): CoordinateXYZ;
+    static createXYZ(x?: number, y?: number, z?: number): CoordinateXYZ;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     isAlmostEqual(other: GeometryQuery): boolean;
@@ -1143,7 +1144,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
-    static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex;
+    static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
     protected curveAndChildFractionToFragment(curve: CurvePrimitive, fraction: number): PathFragment | undefined;
     curveLength(): number;
     curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
@@ -1160,6 +1161,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
+    readonly path: CurveChain;
     quickLength(): number;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d;
@@ -4249,6 +4251,7 @@ export class UnionRegion extends CurveCollection {
 // @internal
 export class UnivariateBezier extends BezierCoffs {
     constructor(data: number | Float64Array | number[]);
+    addConstant(a: number): void;
     addSquaredSquaredBezier(coffA: Float64Array, scale: number): boolean;
     allocateOrder(order: number): void;
     basisFunctions(u: number, result?: Float64Array): Float64Array;

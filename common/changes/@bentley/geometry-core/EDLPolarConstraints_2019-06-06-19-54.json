@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

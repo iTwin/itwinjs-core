@@ -265,14 +265,14 @@ class ExerciseCurve {
         const unitRay = curve.fractionToPointAndUnitTangent(fraction);
         ck.testParallel(unitRay.direction, derivativeRay.direction);
         ck.testPoint3d(pointA1, derivativeRay.origin);
-        const aproximateDerivative = delta02.scale(0.5 / derivativeIncrement);
+        const approximateDerivative = delta02.scale(0.5 / derivativeIncrement);
         const approximateDerivative2 = delta012.scale(1.0 / (derivativeIncrement * derivativeIncrement));
-        ck.testTrue(aproximateDerivative.distance(derivativeRay.direction) < derivativeTolerance * (1 + derivativeRay.direction.magnitude()),
-          "approximate derivative", derivativeRay.direction, aproximateDerivative, curve, fraction);
+        ck.testTrue(approximateDerivative.distance(derivativeRay.direction) < derivativeTolerance * (1 + derivativeRay.direction.magnitude()),
+          "approximate derivative", derivativeRay.direction, approximateDerivative, curve, fraction);
         if (plane1) { //  curve instanceof TransitionSpiral3d
           ck.testPoint3d(derivativeRay.origin, plane1.origin, "points with derivatives");
           if (!(curve instanceof TransitionSpiral3d)) {
-            // TransitionSpiral has wierd derivative behavior?
+            // TransitionSpiral has weird derivative behavior?
             // if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude())))
             //  curve.fractionToPointAnd2Derivatives(fraction);
             const radians = approximateDerivative2.angleTo(plane1.vectorV).radians;
@@ -510,12 +510,12 @@ describe("Curves", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
     const dx = 10.0;
-    const allGeoemtry = [];
+    const allGeometry = [];
     for (const p of paths) {
       const q = p.clone()!;
       ck.testTrue(p.isAlmostEqual(q));
       q.tryTranslateInPlace(dx, 0, 0);
-      allGeoemtry.push(p.clone());
+      allGeometry.push(p.clone());
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
       ExerciseCurve.exerciseStroke(ck, p);
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
@@ -532,7 +532,7 @@ describe("Curves", () => {
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
-    GeometryCoreTestIO.saveGeometry(allGeoemtry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
+    GeometryCoreTestIO.saveGeometry(allGeometry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -655,7 +655,7 @@ describe("CurvePrimitive.TransitionSpiral", () => {
     if (Checker.noisy.spirals) {
       console.log("arcLength", c.curveLength());
       console.log("  chordSum ", chordSum, " deltaC", chordSum - c.curveLength());
-      console.log("  trapdSum ", trapezoidSum, " deltaT", trapezoidSum - c.curveLength());
+      console.log("  trapSum ", trapezoidSum, " deltaT", trapezoidSum - c.curveLength());
     }
     ck.testCoordinate(c.curveLength(), chordSum, "spiral length versus chord sum");
     ck.testCoordinate(c.curveLength(), trapezoidSum, "spiral length versus trapezoid sum");
@@ -670,7 +670,7 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
   let n0 = 0;
   // whatever is in samples:
   // 1) If it has toJSON method, write that to console
-  // 2) Otherwiswe try IModelJson . .
+  // 2) Otherwise try IModelJson . .
   for (let i = 0; i < samples.length; i++) {
     const s = samples[i];
     if (i < maxEcho) {
@@ -759,7 +759,7 @@ describe("Linestring3dSpecials", () => {
         Point3d.create(0, 0, 0),
         Point3d.create(1, 0, 0),  // pure X
         Point3d.create(1, 1, 0),  // pure Y
-        Point3d.create(4, 2, 1),  // evertything tilts
+        Point3d.create(4, 2, 1),  // everything tilts
         Point3d.create(8, 1, 0)), // dive down
       LineString3d.createRegularPolygonXY(Point3d.create(0, 10, 0), 7, 3.0, true)]) {
       geometry.push(linestring);
@@ -777,7 +777,7 @@ describe("Linestring3dSpecials", () => {
         ck.testPerpendicular(tangent.direction, frame0.matrix.columnZ());
       }
     }
-    GeometryCoreTestIO.saveGeometry(geometry, undefined, "Linestring3d.fractionToFrenentFrame");
+    GeometryCoreTestIO.saveGeometry(geometry, undefined, "Linestring3d.fractionToFrenetFrame");
     ck.checkpoint("Linestring3dSpecials.FrenetFrame");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -822,7 +822,7 @@ describe("Linestring3dSpecials", () => {
           const index2 = findPointInCLDArray(point2, intersections, index1);
           if (ck.testExactNumber(index0 + 1, index1, "consecutive points in intersection list.")
             && ck.testExactNumber(index1 + 1, index2, "consecutive points in intersection list.")) {
-            // when inspecting the invervalRole, allow for ends to be subsumed by larger intervals.
+            // when inspecting the intervalRole, allow for ends to be subsumed by larger intervals.
             testCurveIntervalRole(ck, intersections[index0], [CurveIntervalRole.intervalStart, CurveIntervalRole.intervalInterior]);
             testCurveIntervalRole(ck, intersections[index1], [CurveIntervalRole.intervalInterior]);
             testCurveIntervalRole(ck, intersections[index2], [CurveIntervalRole.intervalEnd, CurveIntervalRole.intervalInterior]);
@@ -907,7 +907,7 @@ describe("IsomorphicCurves", () => {
         for (let i = 0; i + 1 < currentPoints.length; i++) {
           path.tryAddChild(LineSegment3d.create(currentPoints[i], currentPoints[i + 1]));
         }
-        const chain = CurveChainWithDistanceIndex.createCapture(path, options);
+        const chain = CurveChainWithDistanceIndex.createCapture(path, options)!;
         compareIsomorphicCurves(ck, linestring, chain);
       }
     }
@@ -933,7 +933,7 @@ describe("CylindricalRange", () => {
         ck.testPointer(vector2);
         const d1 = vector1!.magnitude();
         const d2 = vector2!.magnitude();
-        // stroked range should be smaller.  But cvylindricalRangeQuery uses strokes.  Be fluffy . ..
+        // stroked range should be smaller.  But cylindricalRangeQuery uses strokes.  Be fluffy . ..
         const e = Math.abs(d1 - d2);
         ck.testLE(e, 2.0 * options.chordTol);
       }
