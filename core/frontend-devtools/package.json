@@ -1,0 +1,67 @@
+{
+  "name": "@bentley/frontend-devtools",
+  "version": "1.1.0-dev.3",
+  "description": "Debug menu and supporting UI widgets",
+  "license": "MIT",
+  "main": "lib/frontend-devtools.js",
+  "scripts": {
+    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "clean": "rimraf lib package-deps.json",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-devtools",
+    "lint": "tslint --project . 1>&2",
+    "test": "",
+    "cover": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "sourceResources": [
+        {
+          "source": "./src/public/**/*",
+          "dest": "./lib/public"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/frontend-devtools.js",
+        "bundleName": "frontend-devtools"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "UI",
+    "Widget"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "@bentley/imodeljs-frontend": "1.1.0-dev.3",
+    "@bentley/imodeljs-common": "1.1.0-dev.3",
+    "@bentley/bentleyjs-core": "1.1.0-dev.3",
+    "@bentley/geometry-core": "1.1.0-dev.3"
+  },
+  "peerDependencies": {
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "1.1.0-dev.3",
+    "@bentley/webpack-tools": "1.1.0-dev.3",
+    "@types/node": "10.14.1",
+    "typescript": "~3.2.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "all": true
+  }
+}

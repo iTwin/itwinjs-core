@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Package created from display-test-app's debug menu and ui widgets.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Nathan.Elrod@bentley.com"
+}

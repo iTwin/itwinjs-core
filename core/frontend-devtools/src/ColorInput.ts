@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { RgbColor } from "@bentley/imodeljs-common";
 
+/** @alpha */
 export type ColorInputHandler = (value: string) => void;
 
+/** @alpha */
 export interface ColorInputProps {
   handler: ColorInputHandler;
   value: string;
@@ -17,12 +19,14 @@ export interface ColorInputProps {
   tooltip?: string;
 }
 
+/** @alpha */
 export interface ColorInput {
   div: HTMLDivElement;
   input: HTMLInputElement;
   label?: HTMLLabelElement;
 }
 
+/** @alpha */
 export function convertHexToRgb(hex: string): RgbColor | undefined {
   // Parse a hex color string formatted as "#FFFFFF"
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -33,6 +37,7 @@ export function convertHexToRgb(hex: string): RgbColor | undefined {
   ) : undefined;
 }
 
+/** @alpha */
 export function createColorInput(props: ColorInputProps): ColorInput {
 
   const inputDiv = document.createElement("div");

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added Viewport.onChangeView event to notify listeners when a new ViewState becomes associated with the Viewport.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

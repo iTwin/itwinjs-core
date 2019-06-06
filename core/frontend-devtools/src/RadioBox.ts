@@ -3,13 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @alpha */
 export interface RadioBoxEntry<T> {
   value: T;
   label: string;
 }
 
+/** @alpha */
 export type RadioBoxHandler = (value: string, form: HTMLFormElement) => void;
 
+/** @alpha */
 export interface RadioBoxProps<T> {
   id: string;
   entries: Array<RadioBoxEntry<T>>;
@@ -20,12 +23,14 @@ export interface RadioBoxProps<T> {
   vertical?: boolean;
 }
 
+/** @alpha */
 export interface RadioBox<T> {
   label?: HTMLLabelElement;
   setValue: (newValue: T) => boolean;
   div: HTMLDivElement;
 }
 
+/** @alpha */
 export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T> {
   const div = document.createElement("div");
 

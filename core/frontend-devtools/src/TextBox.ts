@@ -3,14 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/** @alpha */
 export interface TextBox {
   label?: HTMLLabelElement;
   textbox: HTMLInputElement;
   div: HTMLDivElement;
 }
 
+/** @alpha */
 export type TextBoxHandler = (textbox: HTMLInputElement) => void;
 
+/** @alpha */
 export interface TextBoxProps {
   label?: string;
   id: string;
@@ -19,6 +22,7 @@ export interface TextBoxProps {
   tooltip?: string;
 }
 
+/** @alpha */
 export function createTextBox(props: TextBoxProps): TextBox {
   const div = document.createElement("div");
 

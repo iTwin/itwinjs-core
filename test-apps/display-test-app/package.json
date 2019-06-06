@@ -54,6 +54,7 @@
   },
   "repository": {},
   "dependencies": {
+    "@bentley/frontend-devtools": "1.1.0-dev.3",
     "@bentley/bentleyjs-core": "1.1.0-dev.3",
     "@bentley/electron-manager": "1.1.0-dev.3",
     "@bentley/geometry-core": "1.1.0-dev.3",

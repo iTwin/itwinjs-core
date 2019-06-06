@@ -1401,13 +1401,15 @@ export enum ChangeFlag {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Overrides = 268435447,
+    Overrides = 268435319,
     // (undocumented)
     ViewedCategories = 4,
     // (undocumented)
     ViewedCategoriesPerModel = 64,
     // (undocumented)
-    ViewedModels = 8
+    ViewedModels = 8,
+    // (undocumented)
+    ViewState = 128
 }
 
 // @beta
@@ -1438,11 +1440,14 @@ export class ChangeFlags {
     // (undocumented)
     setViewedModels(): void;
     // (undocumented)
+    setViewState(): void;
+    // (undocumented)
     readonly value: ChangeFlag;
     readonly viewedCategories: boolean;
     // @alpha
     readonly viewedCategoriesPerModel: boolean;
     readonly viewedModels: boolean;
+    readonly viewState: boolean;
 }
 
 // @public
@@ -7882,8 +7887,8 @@ export abstract class Viewport implements IDisposable {
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration): void;
     // @internal (undocumented)
     animationFraction: number;
-    // @internal (undocumented)
-    applyViewState(val: ViewState, animationTime?: BeDuration): void;
+    // @internal
+    applyViewState(val: ViewState): void;
     // (undocumented)
     readonly auxCoordSystem: AuxCoordSystemState;
     // @internal (undocumented)
@@ -7988,6 +7993,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
+    readonly onChangeView: BeEvent<(vp: Viewport, previousViewState: ViewState) => void>;
+    // @beta
     readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
@@ -8049,6 +8056,7 @@ export abstract class Viewport implements IDisposable {
     toView(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
     static undoDelay: BeDuration;
+    protected updateChangeFlags(newView: ViewState): void;
     readonly view: ViewState;
     view4dToWorld(input: Point4d, out?: Point3d): Point3d;
     view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;

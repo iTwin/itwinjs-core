@@ -6,9 +6,7 @@
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, SpatialClassification } from "@bentley/imodeljs-frontend";
-import { CheckBox, createCheckBox } from "./CheckBox";
-import { ComboBox, ComboBoxEntry, createComboBox } from "./ComboBox";
-import { createNumericInput } from "./NumericInput";
+import { CheckBox, createCheckBox, ComboBox, createComboBox, ComboBoxEntry, createNumericInput } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {

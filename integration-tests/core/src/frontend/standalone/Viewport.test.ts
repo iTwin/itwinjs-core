@@ -308,7 +308,8 @@ class ViewportChangedHandler {
     if (undefined !== this._changeFlags)
       expect(this._changeFlags.areFeatureOverridesDirty).to.equal(expectFeatureOverridesChanged);
 
-    expect(this._eventFlags.value).to.equal(flags);
+    // No dedicated deferred event for ViewState changed...just the immediate one.
+    expect(this._eventFlags.value).to.equal(flags & ~ChangeFlag.ViewState);
 
     // Reset for next frame.
     this._eventFlags.clear();
@@ -501,11 +502,11 @@ describe("Viewport changed events", async () => {
       mon.expect(ChangeFlag.None, () => expect(vp.changeModelDisplay(id64(0x27), true)).to.be.false);
       const viewedModels = new Set<string>();
       viewedModels.add(id64(0x27));
-      mon.expect(ChangeFlag.None, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
+      mon.expect(ChangeFlag.ViewState, () => expect(vp.changeViewedModels(viewedModels)).to.be.false);
 
       // Switching to a different 2d view of the same model should not produce model-changed event
       const view20 = await testImodel.views.load(id64(0x20)); // views model 0x1e
-      mon.expect(ChangeFlag.None, () => vp.changeView(view20));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view20));
 
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
@@ -514,7 +515,7 @@ describe("Viewport changed events", async () => {
 
       // Switch back to previous view.
       // Note: changeView() clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories, () => vp.changeView(view20.clone()));
+      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.ViewState, () => vp.changeView(view20.clone()));
     });
   });
 
@@ -592,11 +593,11 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different view with same category selector produces no category-changed event
       const view13 = await testImodel.views.load(id64(0x13));
-      mon.expect(ChangeFlag.None, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view13));
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.None, () => vp.changeView(view17));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view17));
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
       mon.expect(ChangeFlag.ViewedCategories, () => {
@@ -604,7 +605,7 @@ describe("Viewport changed events", async () => {
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.None, () => vp.changeView(view13));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view13));
     });
   });
 
@@ -709,23 +710,44 @@ describe("Viewport changed events", async () => {
     const vp = ScreenViewport.create(viewDiv, view2d20.clone());
     ViewportChangedHandler.test(vp, (mon) => {
       // No effective change to view
-      mon.expect(ChangeFlag.None, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view2d20.clone()));
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d2e.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d2e.clone()));
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view3d15.clone()));
 
       // No effective change
-      mon.expect(ChangeFlag.None, () => vp.changeView(view3d15.clone()));
+      mon.expect(ChangeFlag.ViewState, () => vp.changeView(view3d15.clone()));
 
       // 3d => 3d - same model selector, same display style, different category selector
-      mon.expect(ChangeFlag.ViewedCategories, () => vp.changeView(view3d17.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, () => vp.changeView(view3d17.clone()));
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d20.clone()));
+      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, () => vp.changeView(view2d20.clone()));
+
+      // Pass the exact same ViewState reference => no "ViewState changed" event.
+      mon.expect(ChangeFlag.None, () => vp.changeView(vp.view));
     });
+
+    // Test the immediately-fire onChangeView event.
+    let numEvents = 0;
+    const removeListener = vp.onChangeView.addListener(() => ++numEvents);
+
+    // Same ViewState reference => no event
+    vp.changeView(vp.view);
+    expect(numEvents).to.equal(0);
+
+    // Different ViewState reference => event
+    vp.changeView(view2d20.clone());
+    expect(numEvents).to.equal(1);
+
+    // Different ViewState reference to an logically identical ViewState => event
+    vp.changeView(view2d20);
+    expect(numEvents).to.equal(2);
+
+    removeListener();
   });
 
   // ###TODO AFFAN PLEASE FIX

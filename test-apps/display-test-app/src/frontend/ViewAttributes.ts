@@ -24,14 +24,19 @@ import {
   HiddenLine,
   LinePixels,
 } from "@bentley/imodeljs-common";
-import { CheckBox, createCheckBox } from "./CheckBox";
-import { createComboBox, ComboBox } from "./ComboBox";
+import {
+  CheckBox,
+  createCheckBox,
+  ComboBox,
+  createComboBox,
+  createColorInput,
+  ColorInputProps,
+  createNestedMenu,
+  createNumericInput,
+ } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
-import { createColorInput, ColorInputProps } from "./ColorInput";
-import { createNumericInput } from "./NumericInput";
 import { Settings } from "./FeatureOverrides";
 import { isString } from "util";
-import { createNestedMenu } from "./NestedMenu";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 

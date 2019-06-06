@@ -92,8 +92,9 @@ export enum ChangeFlag {
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
   ViewedCategoriesPerModel = 1 << 6,
+  ViewState = 1 << 7,
   All = 0x0fffffff,
-  Overrides = ChangeFlag.All & ~ChangeFlag.ViewedModels,
+  Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
 }
 
@@ -123,6 +124,9 @@ export class ChangeFlags {
   /** The [[FeatureOverrideProvider]] has changed, or its internal state has changed such that its overrides must be recomputed. */
   public get featureOverrideProvider() { return this.isSet(ChangeFlag.FeatureOverrideProvider); }
   public setFeatureOverrideProvider() { this.set(ChangeFlag.FeatureOverrideProvider); }
+  /** [[changeView]] was used to replace the previous [[ViewState]] with a new one. */
+  public get viewState() { return this.isSet(ChangeFlag.ViewState); }
+  public setViewState() { this.set(ChangeFlag.ViewState); }
   /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
    * @alpha
    */
@@ -1166,6 +1170,8 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.
+   * @see [[onViewportChanged]] for receiving events at more regular intervals with more specific information about what changed.
+   * @see [[onChangeView]] for an event raised specifically when a different [[ViewState]] becomes associated with the viewport.
    */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
@@ -1209,6 +1215,10 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
+  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
+   * @beta
+   */
+  public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
@@ -1837,11 +1847,18 @@ export abstract class Viewport implements IDisposable {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
+    const prevView = undefined !== this.viewFrustum ? this.view : undefined;
+
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateScene();
     this.sync.invalidateController();
     this.target.reset();
+
+    if (undefined !== prevView && prevView !== view) {
+      this.onChangeView.raiseEvent(this, prevView);
+      this._changeFlags.setViewState();
+    }
   }
 
   /** @internal */
@@ -2254,18 +2271,18 @@ export abstract class Viewport implements IDisposable {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  /** @internal */
-  public applyViewState(val: ViewState, animationTime?: BeDuration) {
+  /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
+   * Does *not* trigger "ViewState changed" events.
+   * @internal
+   */
+  public applyViewState(val: ViewState) {
     this.updateChangeFlags(val);
-    const startFrust = this.getFrustum();
     this._viewFrustum.view = val;
     this.synchWithView(false);
-    if (animationTime)
-      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
-  /** Invoked from applyViewState and changeView to potentially recompute change flags based on differences between current and new ViewState. */
-  private updateChangeFlags(newView: ViewState): void {
+  /** Invoked from finishUndoRedo, applyViewState, and changeView to potentially recompute change flags based on differences between current and new ViewState. */
+  protected updateChangeFlags(newView: ViewState): void {
     // Before the first call to changeView, this.view is undefined because we have no frustum. Our API pretends it is never undefined.
     const oldView = undefined !== this.viewFrustum ? this.view : undefined;
 
@@ -2919,7 +2936,7 @@ export class ScreenViewport extends Viewport {
     this._forwardStack.push(this._currentBaseline);
     this._currentBaseline = this._backStack.pop()!;
     this.view.setFromUndo(this._currentBaseline);
-    this.applyViewState(this.view, animationTime);
+    this.finishUndoRedo(animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
@@ -2931,8 +2948,17 @@ export class ScreenViewport extends Viewport {
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
     this.view.setFromUndo(this._currentBaseline);
-    this.applyViewState(this.view, animationTime);
+    this.finishUndoRedo(animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
+  }
+
+  /** @internal */
+  private finishUndoRedo(animationTime?: BeDuration): void {
+    this.updateChangeFlags(this.view);
+    const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
+    this.synchWithView(false);
+    if (undefined !== animationTime && undefined !== startFrust)
+      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */

@@ -315,6 +315,12 @@
       "projectFolder": "test-apps/perf-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "projectFolder": "core/frontend-devtools",
+      "reviewCategory": "frontend",
+      "shouldPublish": true
     }
   ]
 }

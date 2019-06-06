@@ -13,9 +13,12 @@ import {
   ViewState,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { createSlider, Slider } from "./Slider";
-import { createCheckBox } from "./CheckBox";
-import { createButton } from "./Button";
+import {
+  createCheckBox,
+  Slider,
+  createSlider,
+  createButton,
+ } from "@bentley/frontend-devtools";
 
 export class AmbientOcclusionEditor {
   private readonly _vp: Viewport;

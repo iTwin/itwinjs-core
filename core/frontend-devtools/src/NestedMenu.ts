@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { createButton } from "./Button";
 
+/** @alpha */
 export type NestMenuHandler = (expanded: boolean) => void;
+
+/** @alpha */
 export interface NestedMenuProps {
   id?: string;
   label?: string;
@@ -14,12 +17,14 @@ export interface NestedMenuProps {
   body?: HTMLElement;
 }
 
+/** @alpha */
 export interface NestedMenu {
   div: HTMLDivElement;
   label: HTMLLabelElement;
   body: HTMLElement;
 }
 
+/** @alpha */
 export function createNestedMenu(props: NestedMenuProps): NestedMenu {
   const div = document.createElement("div");
   const body = undefined !== props.body ? props.body : document.createElement("div");
