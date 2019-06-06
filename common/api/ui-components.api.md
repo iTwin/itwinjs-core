@@ -731,6 +731,8 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     static defaultProps: Partial<ColorPickerProps>;
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta
@@ -3029,6 +3031,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     };
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta

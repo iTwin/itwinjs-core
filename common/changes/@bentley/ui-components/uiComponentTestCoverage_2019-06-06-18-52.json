@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve test coverage.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

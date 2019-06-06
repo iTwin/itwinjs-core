@@ -21,6 +21,11 @@ describe("<ColorSwatch />", () => {
     expect(renderedComponent).not.to.be.undefined;
   });
 
+  it("should render rounded", () => {
+    const renderedComponent = render(<ColorSwatch colorDef={colorDef} round={true} />);
+    expect(renderedComponent).not.to.be.undefined;
+  });
+
   it("Fire click event to pick color", async () => {
     const spyOnPick = sinon.spy();
     function handleColorPick(color: ColorDef): void {

@@ -102,6 +102,7 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
     if (this._container && this.props.onSaturationChange) {
       const change = this._calculateChange(e, this.props.hsv, this._container);
       change && typeof this.props.onSaturationChange === "function" && this.props.onSaturationChange(change);
@@ -133,8 +134,11 @@ export class SaturationPicker extends React.PureComponent<SaturationPickerProps>
       newColor.v = 100;
     } else if (evt.key === "Home") {
       newColor.s = 0;
-    } else if (evt.key === "End") {
-      newColor.s = 100;
+    } else {
+      // istanbul ignore else
+      if (evt.key === "End") {
+        newColor.s = 100;
+      }
     }
 
     // istanbul ignore if

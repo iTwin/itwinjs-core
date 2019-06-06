@@ -197,6 +197,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
   }
 
   private _getMilliseconds(time: string) {
+    // istanbul ignore else - WIP
     if (time.indexOf(":") !== -1) {
       return (Number(time.split(":")[0]) * 60 + Number(time.split(":")[1])) * 1000;
     } else {
@@ -209,6 +210,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     // NOTE: we should reset the current duration to 0
     const milliseconds = this._getMilliseconds(value);
     this.setState({ totalDuration: milliseconds }, () => {
+      // istanbul ignore else
       if (this.props.onSettingsChange) {
         this.props.onSettingsChange({ duration: this.state.totalDuration });
       }
@@ -223,6 +225,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     this.setState({ isSettingsOpen: false });
   }
 
+  // istanbul ignore next - WIP
   private _onModeChanged = () => {
     this.setState({ minimized: !this.state.minimized, isSettingsOpen: false }, () => {
       if (this.props.onSettingsChange) {
@@ -233,6 +236,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
 
   private _onRepeatChanged = () => {
     this.setState({ repeat: !this.state.repeat, isSettingsOpen: false }, () => {
+      // istanbul ignore else
       if (this.props.onSettingsChange) {
         this.props.onSettingsChange({ loop: this.state.repeat });
       }

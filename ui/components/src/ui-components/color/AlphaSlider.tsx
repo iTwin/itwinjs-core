@@ -101,6 +101,7 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore else
     if (this._container && this.props.onAlphaChange) {
       const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.alpha, this._container);
       undefined !== change && typeof this.props.onAlphaChange === "function" && this.props.onAlphaChange(change);
@@ -128,10 +129,14 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
       newTransparency = this.props.alpha + (evt.ctrlKey ? .5 : .25);
     } else if (evt.key === "Home") {
       newTransparency = 0;
-    } else if (evt.key === "End") {
-      newTransparency = 1;
+    } else {
+      // istanbul ignore else
+      if (evt.key === "End") {
+        newTransparency = 1;
+      }
     }
 
+    // istanbul ignore else
     if (undefined !== newTransparency) {
       // istanbul ignore if
       if (newTransparency > 1) newTransparency = 1;

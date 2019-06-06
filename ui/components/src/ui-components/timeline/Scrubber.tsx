@@ -7,6 +7,7 @@ import { CommonProps } from "@bentley/ui-core";
 import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-compound-slider";
 import "./Scrubber.scss";
 
+// istanbul ignore next - WIP
 const formatTime = (value: number) => {
   const addZero = (i: number) => {
     return (i < 10) ? "0" + i : i;
@@ -57,15 +58,18 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     //  document.addEventListener("mousedown", this._onMouseDown);
   }
 
+  // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     document.addEventListener("mousemove", this._onMouseMove);
   }
 
+  // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ value: null, percent: null });
     document.removeEventListener("mousemove", this._onMouseMove);
   }
 
+  // istanbul ignore next - WIP
   private _onMouseMove = (e: Event) => {
     const { activeHandleID, getEventData } = this.props;
 
@@ -76,6 +80,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     }
   }
 
+  // istanbul ignore next - WIP
   public render() {
     const { value, percent } = this.state;
     const { activeHandleID, getRailProps, isPlaying, startDate, endDate } = this.props;
@@ -133,14 +138,17 @@ class Handle extends React.Component<HandleProps, HandleState> {
     this.state = { mouseOver: false };
   }
 
+  // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     this.setState({ mouseOver: true });
   }
 
+  // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ mouseOver: false });
   }
 
+  // istanbul ignore next - WIP
   public render() {
     const {
       domain: [min, max],

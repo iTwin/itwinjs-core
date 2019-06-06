@@ -60,6 +60,12 @@ describe("<CustomNumberEditor />", () => {
     await TestUtils.flushAsyncOperations();
     // renderedComponent.debug();
     expect(spyOnCommit).to.be.calledOnce;
+    fireEvent.change(inputField, { target: { value: "66" } });
+    expect(inputField.value).to.be.equal("66");
+    // renderedComponent.debug();
+    fireEvent.keyDown(inputField, { key: "Escape" });
+    expect(inputField.value).to.be.equal(displayVal);
+    await TestUtils.flushAsyncOperations();
   });
 
   it("CustomNumberPropertyEditor with undefined initial display value", async () => {
