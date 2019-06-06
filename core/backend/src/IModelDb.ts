@@ -311,7 +311,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.Message, iModelToken: imodelDb.iModelToken }));
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
