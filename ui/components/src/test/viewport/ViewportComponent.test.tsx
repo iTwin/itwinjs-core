@@ -21,6 +21,7 @@ import { Face } from "@bentley/ui-core";
 describe("ViewportComponent", () => {
 
   before(async () => {
+    ViewportComponentEvents.terminate();
     TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
     MockRender.App.startup();
   });

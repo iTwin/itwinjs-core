@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
 
-import { SortDirection, getClassName } from "@bentley/ui-core";
+import { SortDirection, UiError } from "@bentley/ui-core";
+import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+
 import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEvent } from "./TableDataProvider";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { Primitives, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { UiComponents } from "../UiComponents";
+
 /**
  * A Table Data Provider using an array of items.
  * @beta
@@ -55,6 +57,7 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     let realRowIndex: number = -1;
 
     if (unfiltered) {
+      // istanbul ignore else
       if (0 <= rowIndex && rowIndex < this._items.length)
         realRowIndex = rowIndex;
     } else {
@@ -65,13 +68,15 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     if (0 <= realRowIndex && realRowIndex < this._items.length)
       return this._items[realRowIndex];
 
-    throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}.getRow: Invalid row index`);
+    throw new UiError(UiComponents.loggerCategory(this), `getRow: Invalid row index`);
   }
 
   private getRowIndexFromFilteredRowIndex(filteredRowIndex: number): number {
+    // istanbul ignore else
     if (filteredRowIndex === undefined)
       return filteredRowIndex;
 
+    // istanbul ignore else
     if (filteredRowIndex < 0 || filteredRowIndex >= this._rowItemIndices.length)
       return -1;
 

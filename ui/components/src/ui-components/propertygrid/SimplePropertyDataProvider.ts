@@ -41,23 +41,31 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
     const index = this.records[this.categories[categoryIdx].name].findIndex((record: PropertyRecord) => {
       return record === propertyRecord;
     });
+
+    let result = false;
+
+    // istanbul ignore else
     if (index >= 0) {
       this.records[this.categories[categoryIdx].name].splice(index, 1);
       this.onDataChanged.raiseEvent();
-      return true;
+      result = true;
     }
-    return false;
+    return result;
   }
 
   public replaceProperty(propertyRecord: PropertyRecord, categoryIdx: number, newRecord: PropertyRecord): boolean {
     const index = this.records[this.categories[categoryIdx].name].findIndex((record: PropertyRecord) => {
       return record === propertyRecord;
     });
+
+    let result = false;
+
+    // istanbul ignore else
     if (index >= 0) {
       this.records[this.categories[categoryIdx].name].splice(index, 1, newRecord);
-      return true;
+      result = true;
     }
-    return false;
+    return result;
   }
 
   public async getData(): Promise<PropertyData> {

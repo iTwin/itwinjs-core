@@ -2966,6 +2966,8 @@ export class ViewportComponentEvents {
     static setStandardRotation(standardRotation: StandardViewId): void;
     // (undocumented)
     static setViewMatrix(viewport: Viewport, animationTime?: number): void;
+    // @internal
+    static terminate(): void;
 }
 
 // @public

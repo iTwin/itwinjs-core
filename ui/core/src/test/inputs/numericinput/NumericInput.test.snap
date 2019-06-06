@@ -1,7 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`NumericInput renders 1`] = `"<span class=\\"core-numeric-input\\" data-testid=\\"core-numeric-input\\"><span style=\\"position: relative; display: inline-block;\\" class=\\"react-numeric-input\\"><input type=\\"text\\" style=\\"padding-right: 3ex; box-sizing: border-box; font-size: inherit; border: 1px solid #ccc; border-radius: 2px; padding-left: 4px; display: block; line-height: normal;\\" value=\\"\\" pattern=\\".*\\"><b style=\\"position: absolute; right: 2px; width: 2.26ex; border-style: solid; text-align: center; cursor: default; transition: all 0.1s; background: rgba(0, 0, 0, 0.1); box-shadow: -1px -1px 3px rgba(0,0,0,.1) inset,1px 1px 3px rgba(255,255,255,.7) inset; top: 2px; bottom: 50%; border-radius: 2px 2px 0 0; border-width: 1px 1px 0px 1px;\\"><i style=\\"position: absolute; top: 50%; left: 50%; width: 0px; height: 0px; border-width: 0px 0.6ex 0.6ex 0.6ex; border-style: solid; margin: -0.3ex 0px 0px -0.56ex;\\"></i></b><b style=\\"position: absolute; right: 2px; width: 2.26ex; border-style: solid; text-align: center; cursor: default; transition: all 0.1s; background: rgba(0, 0, 0, 0.1); box-shadow: -1px -1px 3px rgba(0,0,0,.1) inset,1px 1px 3px rgba(255,255,255,.7) inset; top: 50%; bottom: 2px; border-radius: 0 0 2px 2px; border-width: 0px 1px 1px 1px;\\"><i style=\\"position: absolute; top: 50%; left: 50%; width: 0px; height: 0px; border-width: 0.6ex 0.6ex 0px 0.6ex; border-style: solid; margin: -0.3ex 0px 0px -0.56ex;\\"></i></b></span></span>"`;
-
 exports[`NumericInput should render correctly 1`] = `
 <span
   className="core-numeric-input"
@@ -16,7 +14,7 @@ exports[`NumericInput should render correctly 1`] = `
     parse={null}
     precision={null}
     step={[Function]}
-    strict={false}
+    strict={true}
     style={Object {}}
   />
 </span>

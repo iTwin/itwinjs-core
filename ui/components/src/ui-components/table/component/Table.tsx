@@ -376,6 +376,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const columnDescriptions = await this.props.dataProvider.getColumns();
     this._currentUpdate = TableUpdate.None;
 
+    // istanbul ignore next
     if (!this._isMounted)
       return UpdateStatus.Abort;
 
@@ -427,6 +428,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const rowsCount = await this.props.dataProvider.getRowsCount();
     this._currentUpdate = TableUpdate.None;
 
+    // istanbul ignore next
     if (!this._isMounted)
       return UpdateStatus.Abort;
 
@@ -698,6 +700,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const maxIndex = Math.min(this.state.rowsCount, index + this._pageAmount);
     const loadResult = await this.loadRows(index, maxIndex);
 
+    // istanbul ignore next
     if (!this._isMounted)
       return;
 
@@ -852,6 +855,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private async gridSortAsync(columnKey: string, directionEnum: SortDirection) {
     let columnIndex = this.getColumnIndexFromKey(columnKey);
+    // istanbul ignore next
     if (columnIndex < 0)
       return;
 
@@ -864,6 +868,8 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     await this.props.dataProvider.sort(columnIndex, directionEnum);
+
+    // istanbul ignore next
     if (!this._isMounted)
       return;
 

@@ -46,12 +46,22 @@ export interface NumericInputProps extends Omit<
   precision?: number | (() => number | null | undefined);
   snap?: boolean;
   step?: StepFunctionProp;
-  strict?: boolean;
+  strict: boolean;
   value?: number | string;
 }
 
+/** Default properties of [[NumericInput]] component.
+ * @alpha
+ */
+export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
+
 /** @alpha */
 export class NumericInput extends React.Component<NumericInputProps> {
+
+  /** @internal */
+  public static readonly defaultProps: NumericInputDefaultProps = {
+    strict: true,
+  };
 
   private _step = (_component: ReactNumericInput, direction: string): number | undefined => {
     let result: number | undefined;

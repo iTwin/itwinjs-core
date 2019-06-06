@@ -5,9 +5,9 @@
 /** @module Common */
 
 import * as React from "react";
-import { WebFontIcon, getClassName } from "@bentley/ui-core";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { WebFontIcon, UiError } from "@bentley/ui-core";
 import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
+import { UiComponents } from "../UiComponents";
 
 /** A class that renders images from data provided by an image loader
  * @internal
@@ -15,6 +15,7 @@ import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImage
 export class ImageRenderer {
   private hexToBase64(hexstring: string) {
     const match = hexstring.match(/\w{2}/g);
+    // istanbul ignore next
     if (!match)
       return "";
 
@@ -67,7 +68,7 @@ export class ImageRenderer {
         return this.renderCoreIcon((loadedImage as LoadedImage).value);
 
       default:
-        throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: Can't handle sourceType: "${loadedImage.sourceType}"`);
+        throw new UiError(UiComponents.loggerCategory(this), `Can't handle sourceType: "${loadedImage.sourceType}"`);
     }
   }
 }
