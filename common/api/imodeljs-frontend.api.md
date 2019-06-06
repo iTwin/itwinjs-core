@@ -1135,7 +1135,7 @@ export class BackgroundMapProvider extends BaseTiledMapProvider implements Tiled
     readonly settings: BackgroundMapSettings;
 }
 
-// @alpha
+// @beta
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes;
@@ -1318,7 +1318,7 @@ export function bisectRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @alpha
+// @beta
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -1541,7 +1541,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @alpha
+// @beta
 export interface ColorEditorParams extends BasePropertyEditorParams {
     colorValues: number[];
     numColumns?: number;
@@ -1741,7 +1741,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @alpha
+// @beta
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
     // (undocumented)
     formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
@@ -2940,7 +2940,7 @@ export enum HitSource {
     TentativeSnap = 4
 }
 
-// @alpha
+// @beta
 export interface IconDefinition {
     iconClass: string;
     // (undocumented)
@@ -3241,7 +3241,7 @@ export abstract class InputCollector extends InteractiveTool {
     run(): boolean;
 }
 
-// @alpha
+// @beta
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -4215,7 +4215,7 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export interface ParseResults {
     // (undocumented)
     parseError?: string;
@@ -4464,16 +4464,14 @@ export interface PropertyDescription {
 export interface PropertyEditorInfo {
     // (undocumented)
     name?: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "params" is marked as @beta, but its signature references "PropertyEditorParams" which is marked as @alpha
-    // 
     // (undocumented)
     params?: PropertyEditorParams[];
 }
 
-// @alpha
+// @beta
 export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
 
-// @alpha
+// @beta
 export enum PropertyEditorParamTypes {
     // (undocumented)
     ButtonGroupData = 0,
@@ -4582,7 +4580,7 @@ export class QuantityFormatter implements UnitsProvider {
     useImperialFormats: boolean;
 }
 
-// @alpha
+// @beta
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -5854,7 +5852,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @alpha
+// @beta
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     suppressLabelPlaceholder?: boolean;
     // (undocumented)
