@@ -46,6 +46,8 @@ beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
+public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
+public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
 beta;ChangeFlag
 beta;ChangeFlags
@@ -144,6 +146,7 @@ alpha;IconEditorParams
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined
+public;imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise

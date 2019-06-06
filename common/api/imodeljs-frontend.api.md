@@ -86,6 +86,7 @@ import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageBuffer } from '@bentley/imodeljs-common';
+import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
@@ -1358,6 +1359,12 @@ export interface CanvasDecoration {
 
 // @public
 export type CanvasDecorationList = CanvasDecoration[];
+
+// @public
+export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined;
+
+// @public
+export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
 
 // @public
 export class CategorySelectorState extends ElementState {
@@ -2978,6 +2985,9 @@ export class IdleTool extends InteractiveTool {
 
 // @public
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined;
+
+// @public
+export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined;
 
 // @public
 export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined;

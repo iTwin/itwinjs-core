@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow Viewport's readImage() method to resize images as requested.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}
