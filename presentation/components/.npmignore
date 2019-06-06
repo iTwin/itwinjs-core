@@ -4,7 +4,7 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 !lib/module/dev/presentation-components.js.map
-!lib/**/*.scss
+!lib/**/*.*css
 !lib/**/*.json
 !lib/public/**/*
 !package.json
