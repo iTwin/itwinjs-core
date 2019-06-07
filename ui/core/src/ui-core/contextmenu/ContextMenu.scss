@@ -39,48 +39,48 @@
     border: 1px solid $buic-background-control-stroke;
     box-shadow: rgba($uicore-black, 0.25) 0px 1px 1px;
 
-    &.floating {
+    &.core-context-menu-floating {
       position: fixed;
     }
 
-    &.opened {
+    &.core-context-menu-opened {
       visibility: inherit;
       transform-origin: top;
       transform: scaleY(1);
     }
 
-    &.center {
+    &.core-context-menu-center {
       transform: translate(-50%, -50%);
     }
 
-    &.right {
+    &.core-context-menu-right {
       transform: translate(0%, -50%);
     }
 
-    &.left {
+    &.core-context-menu-left {
       transform: translate(-100%, -50%);
     }
 
-    &.top {
+    &.core-context-menu-top {
       transform: translate(-50%, -100%);
 
-      &.right {
+      &.core-context-menu-right {
         transform: translate(0%, -100%);
       }
 
-      &.left {
+      &.core-context-menu-left {
         transform: translate(-100%, -100%);
       }
     }
 
-    &.bottom {
+    &.core-context-menu-bottom {
       transform: translate(-50%, 0%);
 
-      &.right {
+      &.core-context-menu-right {
         transform: translate(0%, 0%);
       }
 
-      &.left {
+      &.core-context-menu-left {
         transform: translate(-100%, 0%);
       }
     }
@@ -96,11 +96,11 @@
         background-color: $buic-row-hover;
       }
 
-      &.is-selected {
+      &.core-context-menu-is-selected {
         background-color: $buic-row-selection;
       }
 
-      &.disabled {
+      &.core-context-menu-disabled {
         color: $buic-foreground-disabled;
       }
 
@@ -138,47 +138,47 @@
     .core-context-submenu {
       display: flex;
 
-      &.top {
+      &.core-context-menu-top {
         flex-direction: column;
         align-items: center;
       }
 
-      &.left {
+      &.core-context-menu-left {
         flex-direction: row-reverse;
         align-items: center;
       }
 
-      &.right {
+      &.core-context-menu-right {
         flex-direction: row;
         align-items: center;
       }
 
-      &.center {
+      &.core-context-menu-center {
         flex-direction: column;
         align-items: center;
       }
 
-      &.top.left {
+      &.core-context-menu-top.core-context-menu-left {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      &.top.right {
+      &.core-context-menu-top.core-context-menu-right {
         flex-direction: row;
         align-items: flex-end;
       }
 
-      &.bottom.left {
+      &.core-context-menu-bottom.core-context-menu-left {
         flex-direction: row-reverse;
         align-items: flex-start;
       }
 
-      &.bottom.right {
+      &.core-context-menu-bottom.core-context-menu-right {
         flex-direction: row;
         align-items: flex-start;
       }
 
-      .core-context-submenucontainer .core-context-submenuarrow {
+      .core-context-submenu-container .core-context-submenu-arrow {
         flex-shrink: 0;
         flex-grow: 0;
         margin-left: $uicore-unbordered-padding;

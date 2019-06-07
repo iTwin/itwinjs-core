@@ -203,25 +203,25 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 // @public
 export enum ContextMenuDirection {
     // (undocumented)
-    Bottom = "bottom",
+    Bottom = "core-context-menu-bottom",
     // (undocumented)
-    BottomLeft = "bottom left",
+    BottomLeft = "core-context-menu-bottom core-context-menu-left",
     // (undocumented)
-    BottomRight = "bottom right",
+    BottomRight = "core-context-menu-bottom core-context-menu-right",
     // (undocumented)
-    Center = "center",
+    Center = "core-context-menu-center",
     // (undocumented)
-    Left = "left",
+    Left = "core-context-menu-left",
     // (undocumented)
     None = "",
     // (undocumented)
-    Right = "right",
+    Right = "core-context-menu-right",
     // (undocumented)
-    Top = "top",
+    Top = "core-context-menu-top",
     // (undocumented)
-    TopLeft = "top left",
+    TopLeft = "core-context-menu-top core-context-menu-left",
     // (undocumented)
-    TopRight = "top right"
+    TopRight = "core-context-menu-top core-context-menu-right"
 }
 
 // @public
@@ -369,23 +369,23 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 // @public
 export enum DialogAlignment {
     // (undocumented)
-    Bottom = "bottom",
+    Bottom = "core-dialog-bottom",
     // (undocumented)
-    BottomLeft = "bottom-left",
+    BottomLeft = "core-dialog-bottom-left",
     // (undocumented)
-    BottomRight = "bottom-right",
+    BottomRight = "core-dialog-bottom-right",
     // (undocumented)
-    Center = "center",
+    Center = "core-dialog-center",
     // (undocumented)
-    Left = "left",
+    Left = "core-dialog-left",
     // (undocumented)
-    Right = "right",
+    Right = "core-dialog-right",
     // (undocumented)
-    Top = "top",
+    Top = "core-dialog-top",
     // (undocumented)
-    TopLeft = "top-left",
+    TopLeft = "core-dialog-top-left",
     // (undocumented)
-    TopRight = "top-right"
+    TopRight = "core-dialog-top-right"
 }
 
 // @public

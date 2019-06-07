@@ -1136,6 +1136,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerRowHeight={TABLE_ROW_HEIGHT}
                 rowHeight={TABLE_ROW_HEIGHT}
                 onGridSort={this._handleGridSort}
+                enableRowSelect={null}  // Prevent deprecation warning
               />}
           </ReactResizeDetector>
         </div>

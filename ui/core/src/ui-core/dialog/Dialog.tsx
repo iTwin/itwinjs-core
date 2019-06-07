@@ -44,9 +44,15 @@ export enum DialogButtonStyle {
  * @public
  */
 export enum DialogAlignment {
-  TopLeft = "top-left", Top = "top", TopRight = "top-right",
-  Left = "left", Center = "center", Right = "right",
-  BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
+  TopLeft = "core-dialog-top-left",
+  Top = "core-dialog-top",
+  TopRight = "core-dialog-top-right",
+  Left = "core-dialog-left",
+  Center = "core-dialog-center",
+  Right = "core-dialog-right",
+  BottomLeft = "core-dialog-bottom-left",
+  Bottom = "core-dialog-bottom",
+  BottomRight = "core-dialog-bottom-right",
 }
 
 /** Interface for a dialog button in a button cluster
@@ -220,7 +226,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "core-dialog",
-          { "core-dialog-hidden": !modal, opened },
+          !modal && "core-dialog-hidden",
+          opened && "core-dialog-opened",
           className,
         )}
         style={divStyle}

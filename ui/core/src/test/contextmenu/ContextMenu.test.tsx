@@ -263,12 +263,33 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
-    it("onSelect handled correctly", () => {
+    it("onSelect handled correctly on click", () => {
       const handleSelect = sinon.fake();
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
       const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("click"));
       handleSelect.should.have.been.calledOnce;
+    });
+    it("onHover handled correctly", () => {
+      const handleHover = sinon.fake();
+      const component = render(<ContextMenuItem onHover={handleHover}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+      handleHover.should.have.been.calledOnce;
+    });
+    it("onSelect handled correctly on Enter", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+      handleSelect.should.have.been.calledOnce;
+    });
+    it("onSelect not called on Escape", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+      handleSelect.should.not.have.been.called;
     });
   });
   describe("<ContextSubMenu />", () => {
@@ -280,6 +301,38 @@ describe("ContextMenu", () => {
           </ContextSubMenu>
         </ContextMenu>);
       expect(component.getByText("test")).to.exist;
+    });
+    it("onHover handled correctly", () => {
+      const handleHover = sinon.fake();
+      const component = render(
+        <ContextSubMenu label="test" onHover={handleHover}>
+          <ContextMenuItem> Test </ContextMenuItem>
+        </ContextSubMenu>);
+      const item = component.getByTestId("core-context-submenu");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+      handleHover.should.have.been.calledOnce;
+    });
+    it("onHover handled internally when in ContextMenu", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test">
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-submenu");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+    });
+    it("onClick handled correctly", () => {
+      const handleClick = sinon.fake();
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" onClick={handleClick}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-submenu-container");
+      item.dispatchEvent(createBubbledEvent("click"));
+      handleClick.should.have.been.calledOnce;
     });
   });
   describe("ContextMenu.autoFlip", () => {

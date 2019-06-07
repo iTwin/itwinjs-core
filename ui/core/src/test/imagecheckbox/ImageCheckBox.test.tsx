@@ -37,4 +37,16 @@ describe("<ImageCheckBox />", () => {
     handler.should.have.been.calledWithExactly(true);
   });
 
+  it("_onInputClick should be called on input click", () => {
+    const wrapper = shallow(<ImageCheckBox imageOn="icon-visibility" imageOff="icon-visibility-hide-2" checked={false} />);
+    const input = wrapper.find("input");
+    input.simulate("click");
+  });
+
+  it("_onLabelClick  should be called on label click", () => {
+    const wrapper = shallow(<ImageCheckBox imageOn="icon-visibility" imageOff="icon-visibility-hide-2" checked={false} />);
+    const label = wrapper.find("label");
+    label.simulate("click");
+  });
+
 });

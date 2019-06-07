@@ -32,27 +32,32 @@ export interface ImageCheckBoxProps extends CommonProps {
 }
 
 /**
- * ImageCheckBox React component
- * Component to show a checked or unchecked image'
+ * ImageCheckBox React component shows a checked or unchecked image
  * @beta
  */
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 
   private _onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.stopPropagation)
+    // istanbul ignore next
+    if (e && e.stopPropagation)
       e.stopPropagation();
 
+    // istanbul ignore else
     if (this.props.onClick) {
       this.props.onClick(e.target.checked);
     }
   }
 
   private _onInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-    e.stopPropagation();
+    // istanbul ignore next
+    if (e && e.stopPropagation)
+      e.stopPropagation();
   }
 
   private _onLabelClick = (e: React.MouseEvent<HTMLLabelElement>) => {
-    e.stopPropagation();
+    // istanbul ignore next
+    if (e && e.stopPropagation)
+      e.stopPropagation();
   }
 
   /** @internal */

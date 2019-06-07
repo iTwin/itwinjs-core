@@ -20,9 +20,15 @@ const DivWithOutsideClick = withOnOutsideClick((props) => (<div {...props} />));
  */
 export enum ContextMenuDirection {
   None = "",
-  TopLeft = "top left", Top = "top", TopRight = "top right",
-  Left = "left", Center = "center", Right = "right",
-  BottomLeft = "bottom left", Bottom = "bottom", BottomRight = "bottom right",
+  TopLeft = "core-context-menu-top core-context-menu-left",
+  Top = "core-context-menu-top",
+  TopRight = "core-context-menu-top core-context-menu-right",
+  Left = "core-context-menu-left",
+  Center = "core-context-menu-center",
+  Right = "core-context-menu-right",
+  BottomLeft = "core-context-menu-bottom core-context-menu-left",
+  Bottom = "core-context-menu-bottom",
+  BottomRight = "core-context-menu-bottom core-context-menu-right",
 }
 
 /** Properties for the [[ContextMenu]] component
@@ -188,7 +194,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
             ref={this._menuRef}
             tabIndex={0}
             data-testid="core-context-menu-container"
-            className={classnames("core-context-menu-container", { opened, floating }, dir)}>
+            className={classnames("core-context-menu-container",
+              opened && "core-context-menu-opened",
+              floating && "core-context-menu-floating",
+              dir,
+            )}>
             {this._injectedChildren}
           </div>
         </DivWithOutsideClick>
@@ -474,7 +484,10 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
         data-testid={"core-context-menu-item"}
-        className={classnames("core-context-menu-item", className, { disabled, "is-selected": isSelected })}>
+        className={classnames("core-context-menu-item", className,
+          disabled && "core-context-menu-disabled",
+          isSelected && "core-context-menu-is-selected")
+        }>
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -619,15 +632,17 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       <div className={classnames("core-context-submenu", dir, className)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
+        data-testid="core-context-submenu"
         {...props} >
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          className={classnames("core-context-menu-item", "core-context-submenucontainer", { disabled, "is-selected": isSelected })}
+          className={classnames("core-context-menu-item", "core-context-submenu-container", { disabled, "is-selected": isSelected })}
+          data-testid="core-context-submenu-container"
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
-          <div className={classnames("core-context-submenuarrow", "icon", "icon-caret-right")} />
+          <div className={classnames("core-context-submenu-arrow", "icon", "icon-caret-right")} />
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
