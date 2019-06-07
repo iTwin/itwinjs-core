@@ -1170,6 +1170,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
 // @public
 export interface FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
     filteringInProgress: boolean;
     onFilterCancel: () => void;
     onFilterClear: () => void;
