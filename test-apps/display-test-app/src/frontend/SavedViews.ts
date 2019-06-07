@@ -5,11 +5,14 @@
 
 import {
   ViewStateProps,
+  SheetProps,
+  CodeProps,
 } from "@bentley/imodeljs-common";
 import {
   EntityState,
   IModelConnection,
   SpatialViewState,
+  SheetViewState,
   Viewport,
   ViewState,
 } from "@bentley/imodeljs-frontend";
@@ -18,7 +21,7 @@ import {
   createButton,
   createRadioBox,
   RadioBoxEntry,
- } from "@bentley/frontend-devtools";
+} from "@bentley/frontend-devtools";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
 import { ToolBarDropDown } from "./ToolBar";
@@ -167,6 +170,7 @@ export class SavedViewPicker extends ToolBarDropDown {
       return Promise.reject("Could not create ViewState from ViewStateProps");
 
     const viewState = ctor.createFromProps(vsp, this._vp.view.iModel)!;
+    await viewState.load(); // make sure any attachments are loaded
     await this._viewer.setView(viewState);
   }
 
@@ -200,7 +204,24 @@ export class SavedViewPicker extends ToolBarDropDown {
       modelSelectorProps,
     };
 
-    // ###TODO: Sheets...
+    if (view instanceof SheetViewState) {
+      // Need to setup props.sheetProps and props.sheetAttachments
+      const sheetViewState = view as SheetViewState;
+      // For sheetProps all that is actually used is the size, so just null out everything else.
+      const codeProps: CodeProps = { spec: "", scope: "", value: "" };
+      const sp: SheetProps = {
+        model: "",
+        code: codeProps,
+        classFullName: "",
+        width: sheetViewState.sheetSize.x,
+        height: sheetViewState.sheetSize.y,
+        scale: 1,
+      };
+      props.sheetProps = sp;
+      // Copy the sheet attachment ids
+      props.sheetAttachments = [];
+      sheetViewState.attachmentIds.forEach((idProp) => props.sheetAttachments!.push(idProp));
+    }
 
     const json = JSON.stringify(props);
     const nvsp = new NamedViewStatePropsString(newName, json);

@@ -5426,6 +5426,8 @@ export class SheetModelState extends GeometricModel2dState {
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
     // @internal (undocumented)
+    readonly attachmentIds: string[];
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     computeFitRange(): Range3d;
