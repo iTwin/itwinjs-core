@@ -44,14 +44,23 @@ Each package creates its own **node_modules** directory that contains symbolic l
 * [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
-### Linux
+## Supported Backend Platforms
+The imodeljs **backend** is built and tested on the following:
+- Windows 10 version 1803 (or greater)
+- Debian 9 "Stretch"
 
-The imodeljs-backend requires:
+In addition, **backends** are deployed on:
+- Windows Server 2016 Datacenter version 1607
 
-* GLIBC 2.24 (or newer)
-* GLIBCXX 3.4.22 (or newer)
+### Notes
+imodeljs **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) for. However, regular testing only occurs on the platforms listed above. Support for other platforms will be considered, but prioritized below them.
 
-The imodeljs-backend is built and primarily tested on Debian 9 (stretch). Most current distributions also deliver these pre-reqs, or newer, such as Fedora 29, Slackware 14.2, OpenSUSE 15, and Ubuntu 18.04.
+### Backend Additional Prerequisites
+- Windows
+    - [Visual Studio 2017 C Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+- Linux
+    - GLIBC 2.24 (or greater)
+    - GLIBCXX 3.4.22 (or greater)
 
 ## Build Instructions
 
