@@ -367,7 +367,7 @@ export class VisibilityHandler implements IDisposable {
     if (isSubjectNode(node)) {
       await this.changeSubjectState(key.instanceKey.id, on);
     } else if (isModelNode(node)) {
-      this.changeModelState(key.instanceKey.id, on);
+      await this.changeModelState(key.instanceKey.id, on);
     } else if (isCategoryNode(node)) {
       this.changeCategoryState(key.instanceKey.id, this.getCategoryParentModelId(node), on);
     } else {
@@ -380,14 +380,21 @@ export class VisibilityHandler implements IDisposable {
       return;
 
     const modelIds = await this.getSubjectModelIds(id);
-    this._props.viewport.changeModelDisplay(modelIds, on);
+    return this.changeModelsVisibility(modelIds, on);
   }
 
-  private changeModelState(id: Id64String, on: boolean) {
+  private async changeModelState(id: Id64String, on: boolean) {
     if (!this._props.viewport.view.isSpatialView())
       return;
 
-    this._props.viewport.changeModelDisplay([id], on);
+    return this.changeModelsVisibility([id], on);
+  }
+
+  private async changeModelsVisibility(ids: Id64String[], visible: boolean) {
+    if (visible)
+      return this._props.viewport.addViewedModels(ids);
+    else
+      this._props.viewport.changeModelDisplay(ids, false);
   }
 
   private changeCategoryState(categoryId: Id64String, parentModelId: Id64String | undefined, on: boolean) {

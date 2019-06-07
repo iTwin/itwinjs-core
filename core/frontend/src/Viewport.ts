@@ -1529,6 +1529,8 @@ export abstract class Viewport implements IDisposable {
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note This function *does not load* any models. If any of the supplied `modelIds` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
+   * @see [[replaceViewedModels]] for a similar function that also ensures the requested models are loaded.
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
     if (!this.view.isSpatialView())
@@ -1543,11 +1545,25 @@ export abstract class Viewport implements IDisposable {
     return true;
   }
 
+  /** Attempt to replace the set of models currently viewed by this viewport, if it is displaying a SpatialView
+   * @param modelIds The Ids of the models to be displayed.
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   */
+  public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
+    if (this.view.isSpatialView()) {
+      this.view.modelSelector.models.clear();
+      return this.addViewedModels(modelIds);
+    }
+  }
+
   /** Add or remove a set of models from those models currently displayed in this viewport.
    * @param modelIds The Ids of the models to add or remove.
    * @param display Whether or not to display the specified models in the viewport.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
+   * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
     if (!this.view.isSpatialView())
@@ -1565,6 +1581,26 @@ export abstract class Viewport implements IDisposable {
     }
 
     return true;
+  }
+
+  /** Adds a set of models to the set of those currently displayed in this viewport.
+   * @param modelIds The Ids of the models to add or remove.
+   * @param display Whether or not to display the specified models in the viewport.
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   */
+  public async addViewedModels(models: Id64Arg): Promise<void> {
+    // NB: We want the model selector to update immediately, to avoid callers repeatedly requesting we load+display the same models while we are already loading them.
+    // This will also trigger scene invalidation and changed events.
+    if (!this.changeModelDisplay(models, true))
+      return; // means it's a 2d model - this function can do nothing useful in 2d.
+
+    const unloaded = this.iModel.models.filterLoaded(models);
+    if (undefined === unloaded)
+      return;
+
+    // Need to redraw once models are available. Don't want to trigger events again.
+    return this.iModel.models.load(models).then(() => this.invalidateScene());
   }
 
   /** @internal */

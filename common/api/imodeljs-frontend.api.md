@@ -3200,6 +3200,8 @@ export namespace IModelConnection {
     export class Models {
         // @internal
         constructor(_iModel: IModelConnection);
+        // @alpha
+        filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
@@ -7880,6 +7882,7 @@ export abstract class Viewport implements IDisposable {
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @internal
     addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
+    addViewedModels(models: Id64Arg): Promise<void>;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
@@ -8033,6 +8036,7 @@ export abstract class Viewport implements IDisposable {
     removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     // @internal (undocumented)
     renderFrame(): boolean;
+    replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
     // @internal (undocumented)
     readonly scheduleTime: number;
