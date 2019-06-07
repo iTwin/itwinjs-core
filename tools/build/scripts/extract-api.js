@@ -47,21 +47,33 @@ const config = {
       }
     },
     extractorMessageReporting: {
+      default: {
+        logLevel: "error",
+        addToApiReportFile: false
+      },
       "ae-incompatible-release-tags": {
         logLevel: "error",
         addToApiReportFile: false
       },
       "ae-missing-release-tag": {
-        addToApiReportFile: false,
-        logLevel: ignoreMissingTags ? "none" : "error"
+        logLevel: ignoreMissingTags ? "none" : "error",
+        addToApiReportFile: false
       },
       "ae-internal-missing-underscore": {
-        addToApiReportFile: false,
-        logLevel: "none"
+        logLevel: "none",
+        addToApiReportFile: false
       },
       "ae-forgotten-export": {
-        addToApiReportFile: false,
-        logLevel: "none"
+        logLevel: "none",
+        addToApiReportFile: false
+      },
+      "ae-unresolved-inheritdoc-reference": {
+        logLevel: "error",
+        addToApiReportFile: true
+      },
+      "ae-unresolved-inheritdoc-base": {
+        logLevel: "error",
+        addToApiReportFile: true
       }
     }
   }
