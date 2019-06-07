@@ -294,7 +294,7 @@ export class IModelDb extends IModel {
       }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
