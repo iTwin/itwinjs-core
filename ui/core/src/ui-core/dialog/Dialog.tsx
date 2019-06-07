@@ -44,15 +44,9 @@ export enum DialogButtonStyle {
  * @public
  */
 export enum DialogAlignment {
-  TopLeft = "core-dialog-top-left",
-  Top = "core-dialog-top",
-  TopRight = "core-dialog-top-right",
-  Left = "core-dialog-left",
-  Center = "core-dialog-center",
-  Right = "core-dialog-right",
-  BottomLeft = "core-dialog-bottom-left",
-  Bottom = "core-dialog-bottom",
-  BottomRight = "core-dialog-bottom-right",
+  TopLeft = "top-left", Top = "top", TopRight = "top-right",
+  Left = "left", Center = "center", Right = "right",
+  BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
 /** Interface for a dialog button in a button cluster
@@ -237,7 +231,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         {opened &&
           <DivWithOutsideClick onOutsideClick={onOutsideClick}>
             <div
-              className={classnames("core-dialog-container", alignment)}
+              className={classnames("core-dialog-container", this.getCSSClassNameFromAlignment(alignment))}
               style={containerStyle}
               data-testid="core-dialog-container"
               onPointerDown={this._handleContainerPointerDown}
@@ -288,6 +282,46 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         }
       </div>
     );
+  }
+
+  private getCSSClassNameFromAlignment(alignment?: DialogAlignment): string {
+    let className = "";
+
+    // istanbul ignore next
+    if (!alignment)
+      alignment = DialogAlignment.Center;
+
+    switch (alignment) {
+      case DialogAlignment.TopLeft:
+        className = "core-dialog-top-left";
+        break;
+      case DialogAlignment.Top:
+        className = "core-dialog-top";
+        break;
+      case DialogAlignment.TopRight:
+        className = "core-dialog-top-right";
+        break;
+      case DialogAlignment.Left:
+        className = "core-dialog-left";
+        break;
+      case DialogAlignment.Center:
+        className = "core-dialog-center";
+        break;
+      case DialogAlignment.Right:
+        className = "core-dialog-right";
+        break;
+      case DialogAlignment.BottomLeft:
+        className = "core-dialog-bottom-left";
+        break;
+      case DialogAlignment.Bottom:
+        className = "core-dialog-bottom";
+        break;
+      case DialogAlignment.BottomRight:
+        className = "core-dialog-bottom-right";
+        break;
+    }
+
+    return className;
   }
 
   private getFooterButtons(props: DialogProps) {

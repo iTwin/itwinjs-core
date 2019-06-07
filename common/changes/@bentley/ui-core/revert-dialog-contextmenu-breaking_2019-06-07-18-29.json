@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Reverted ContextMenuDirection and DialogAlignment breaking changes",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

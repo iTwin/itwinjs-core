@@ -192,6 +192,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     static defaultProps: Partial<ContextMenuProps>;
     // (undocumented)
     focus: () => void;
+    // @internal (undocumented)
+    static getCSSClassNameFromDirection: (direction?: ContextMenuDirection | undefined) => string;
     // (undocumented)
     getRect: () => ClientRect;
     // (undocumented)
@@ -203,25 +205,25 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 // @public
 export enum ContextMenuDirection {
     // (undocumented)
-    Bottom = "core-context-menu-bottom",
+    Bottom = "bottom",
     // (undocumented)
-    BottomLeft = "core-context-menu-bottom core-context-menu-left",
+    BottomLeft = "bottom left",
     // (undocumented)
-    BottomRight = "core-context-menu-bottom core-context-menu-right",
+    BottomRight = "bottom right",
     // (undocumented)
-    Center = "core-context-menu-center",
+    Center = "center",
     // (undocumented)
-    Left = "core-context-menu-left",
+    Left = "left",
     // (undocumented)
     None = "",
     // (undocumented)
-    Right = "core-context-menu-right",
+    Right = "right",
     // (undocumented)
-    Top = "core-context-menu-top",
+    Top = "top",
     // (undocumented)
-    TopLeft = "core-context-menu-top core-context-menu-left",
+    TopLeft = "top left",
     // (undocumented)
-    TopRight = "core-context-menu-top core-context-menu-right"
+    TopRight = "top right"
 }
 
 // @public
@@ -369,23 +371,23 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 // @public
 export enum DialogAlignment {
     // (undocumented)
-    Bottom = "core-dialog-bottom",
+    Bottom = "bottom",
     // (undocumented)
-    BottomLeft = "core-dialog-bottom-left",
+    BottomLeft = "bottom-left",
     // (undocumented)
-    BottomRight = "core-dialog-bottom-right",
+    BottomRight = "bottom-right",
     // (undocumented)
-    Center = "core-dialog-center",
+    Center = "center",
     // (undocumented)
-    Left = "core-dialog-left",
+    Left = "left",
     // (undocumented)
-    Right = "core-dialog-right",
+    Right = "right",
     // (undocumented)
-    Top = "core-dialog-top",
+    Top = "top",
     // (undocumented)
-    TopLeft = "core-dialog-top-left",
+    TopLeft = "top-left",
     // (undocumented)
-    TopRight = "core-dialog-top-right"
+    TopRight = "top-right"
 }
 
 // @public
