@@ -47,6 +47,10 @@ const config = {
       }
     },
     extractorMessageReporting: {
+      "ae-incompatible-release-tags": {
+        logLevel: "error",
+        addToApiReportFile: false
+      },
       "ae-missing-release-tag": {
         addToApiReportFile: false,
         logLevel: ignoreMissingTags ? "none" : "error"
