@@ -210,7 +210,7 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(SurfaceTechnique._kClassified + numFeatureVariants(1) + 1);
+    super(SurfaceTechnique._kClassified + numFeatureVariants(2) + 1);
     const flags = scratchTechniqueFlags;
 
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -240,16 +240,18 @@ class SurfaceTechnique extends VariedTechnique {
     }
 
     this.addHiliteShader(gl, IsInstanced.No, IsClassified.Yes, createSurfaceHiliter);
-    for (const featureMode of featureModes) {
-      flags.reset(featureMode, IsInstanced.No, IsShadowable.No);
-      flags.isClassified = IsClassified.Yes;
+    for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+      for (const featureMode of featureModes) {
+        flags.reset(featureMode, IsInstanced.No, shadowable);
+        flags.isClassified = IsClassified.Yes;
 
-      const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes, IsShadowable.No, flags.isEdgeTestNeeded);
-      addMonochrome(builder.frag);
-      addMaterial(builder.frag);
-      addSurfaceDiscardByAlpha(builder.frag);
+        const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes, flags.isShadowable, flags.isEdgeTestNeeded);
+        addMonochrome(builder.frag);
+        addMaterial(builder.frag);
+        addSurfaceDiscardByAlpha(builder.frag);
 
-      this.addShader(builder, flags, gl);
+        this.addShader(builder, flags, gl);
+      }
     }
 
     this.verifyShadersContiguous();
@@ -262,11 +264,10 @@ class SurfaceTechnique extends VariedTechnique {
       assert(!flags.isAnimated);
       assert(!flags.isTranslucent);
       assert(!flags.isInstanced);
-      assert(!flags.isShadowable);
       assert(!flags.isEdgeTestNeeded);
 
       const baseIndex = SurfaceTechnique._kClassified;
-      return flags.isHilite ? baseIndex + numFeatureVariants(1) : baseIndex + flags.featureMode;
+      return baseIndex + (flags.isHilite ? numFeatureVariants(2) : (flags.isShadowable ? numFeatureVariants(1) : 0) + flags.featureMode);
     } else if (flags.isHilite) {
       assert(flags.hasFeatures);
       return SurfaceTechnique._kHilite + flags.isInstanced;

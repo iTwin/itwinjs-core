@@ -102,11 +102,11 @@ export function addFrustum(builder: ProgramBuilder) {
   builder.addGlobal("kFrustumType_Perspective", VariableType.Float, ShaderType.Both, "2.0", true);
 }
 
-const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition);";
+const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition).rgb;";
 
 /** @internal */
 export function addEyeSpace(builder: ProgramBuilder) {
-  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);
+  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
 }
 
 /** @internal */

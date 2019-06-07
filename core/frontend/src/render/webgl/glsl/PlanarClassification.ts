@@ -51,7 +51,7 @@ const computeClassifiedSurfaceHiliteColorNoTexture = `
   return vec4(hiliteTexel.a > 0.5 ? 1.0 : 0.0);
 `;
 
-const computeClassifierPos = "vec4 proj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = proj.xyz/proj.w;";
+const computeClassifierPos = "vec4 classProj = u_pClassProj * MAT_MODEL * rawPosition; v_pClassPos = classProj.xy/classProj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
@@ -68,7 +68,7 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   });
 
   addModelMatrix(vert);
-  builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec3, computeClassifierPos);
+  builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, computeClassifierPos);
 }
 
 /** @internal */
