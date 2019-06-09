@@ -74,7 +74,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _hotKeyMap: Map<number, string> = new Map();
 
   private _lastChildren: React.ReactNode;
-  private _lastDir: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
+  private _lastDirection: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
   private _lastSelectedIndex: number = 0;
   private _injectedChildren: React.ReactNode;
 
@@ -98,7 +98,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   /** @internal */
-  public static autoFlip = (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => {
+  public static autoFlip = (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number): ContextMenuDirection => {
     if (rect.right > windowWidth) {
       switch (dir) {
         case ContextMenuDirection.TopRight:
@@ -160,19 +160,19 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
 
   public render(): JSX.Element {
     const { opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, floating, parentMenu, parentSubmenu, children, ...props } = this.props;
-    let dir = parentMenu === undefined ? this.state.direction : direction;
+    let renderDirection = parentMenu === undefined ? this.state.direction : direction;
     // check if menu should flip
     if (autoflip && parentMenu === undefined) {
       const menuRect = this.getRect();
-      dir = ContextMenu.autoFlip(dir!, menuRect, window.innerWidth, window.innerHeight);
-      if (dir !== this.state.direction)
-        this.setState({ direction: dir });
+      renderDirection = ContextMenu.autoFlip(renderDirection!, menuRect, window.innerWidth, window.innerHeight);
+      if (renderDirection !== this.state.direction)
+        this.setState({ direction: renderDirection });
     }
 
-    if (this._lastChildren !== children || this._lastDir !== dir || this._lastSelectedIndex !== this.state.selectedIndex) {
-      this._injectedChildren = this._injectMenuItemProps(children, dir, this.state.selectedIndex);
+    if (this._lastChildren !== children || this._lastDirection !== renderDirection || this._lastSelectedIndex !== this.state.selectedIndex) {
+      this._injectedChildren = this._injectMenuItemProps(children, renderDirection, this.state.selectedIndex);
       this._lastChildren = children;
-      this._lastDir = dir;
+      this._lastDirection = renderDirection;
       this._lastSelectedIndex = this.state.selectedIndex;
     }
     return (
@@ -188,12 +188,60 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
             ref={this._menuRef}
             tabIndex={0}
             data-testid="core-context-menu-container"
-            className={classnames("core-context-menu-container", { opened, floating }, dir)}>
+            className={classnames("core-context-menu-container",
+              opened && "core-context-menu-opened",
+              floating && "core-context-menu-floating",
+              ContextMenu.getCSSClassNameFromDirection(renderDirection),
+            )}>
             {this._injectedChildren}
           </div>
         </DivWithOutsideClick>
       </div>
     );
+  }
+
+  /** @internal */
+  public static getCSSClassNameFromDirection = (direction?: ContextMenuDirection): string => {
+    let className = "";
+
+    // istanbul ignore next
+    if (direction === undefined)
+      direction = ContextMenuDirection.BottomRight;
+
+    if (direction === ContextMenuDirection.None)
+      return "";
+
+    switch (direction) {
+      case ContextMenuDirection.TopLeft:
+        className = "core-context-menu-top core-context-menu-left";
+        break;
+      case ContextMenuDirection.Top:
+        className = "core-context-menu-top";
+        break;
+      case ContextMenuDirection.TopRight:
+        className = "core-context-menu-top core-context-menu-right";
+        break;
+      case ContextMenuDirection.Left:
+        className = "core-context-menu-left";
+        break;
+      case ContextMenuDirection.Center:
+        className = "core-context-menu-center";
+        break;
+      case ContextMenuDirection.Right:
+        className = "core-context-menu-right";
+        break;
+      case ContextMenuDirection.BottomLeft:
+        className = "core-context-menu-bottom core-context-menu-left";
+        break;
+      case ContextMenuDirection.Bottom:
+        className = "core-context-menu-bottom";
+        break;
+      case ContextMenuDirection.BottomRight:
+        className = "core-context-menu-bottom core-context-menu-right";
+        break;
+    }
+
+    return className;
   }
 
   private _injectMenuItemProps = (children: React.ReactNode, direction: ContextMenuDirection | undefined, selectedIndex: number) => {
@@ -474,7 +522,10 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
         data-testid={"core-context-menu-item"}
-        className={classnames("core-context-menu-item", className, { disabled, "is-selected": isSelected })}>
+        className={classnames("core-context-menu-item", className,
+          disabled && "core-context-menu-disabled",
+          isSelected && "core-context-menu-is-selected")
+        }>
         <div className={classnames("core-context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
           {typeof icon !== "string" ? icon : undefined}
         </div>
@@ -603,12 +654,12 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       children, onClick, className, ...props } = this.props;
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
 
-    let dir = this.state.direction;
+    let renderDirection = this.state.direction;
     if (autoflip && this._menuElement) {
       const menuRect = this._menuElement.getRect();
-      dir = ContextMenu.autoFlip(dir, menuRect, window.innerWidth, window.innerHeight);
-      if (dir !== this.state.direction)
-        this.setState({ direction: dir });
+      renderDirection = ContextMenu.autoFlip(renderDirection, menuRect, window.innerWidth, window.innerHeight);
+      if (renderDirection !== this.state.direction)
+        this.setState({ direction: renderDirection });
     }
 
     if (this._lastLabel !== label) {
@@ -616,24 +667,29 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       this._lastLabel = label;
     }
     return (
-      <div className={classnames("core-context-submenu", dir, className)}
+      <div className={classnames("core-context-submenu", ContextMenu.getCSSClassNameFromDirection(renderDirection), className)}
         onMouseOver={this._handleMouseOver}
         ref={(el) => { this._subMenuElement = el; }}
+        data-testid="core-context-submenu"
         {...props} >
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          className={classnames("core-context-menu-item", "core-context-submenucontainer", { disabled, "is-selected": isSelected })}
+          className={classnames("core-context-menu-item",
+            "core-context-submenu-container",
+            disabled && "core-context-menu-disabled",
+            isSelected && "core-context-menu-is-selected")}
+          data-testid="core-context-submenu-container"
         >
           <div className={classnames("core-context-menu-icon", "icon", icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
-          <div className={classnames("core-context-submenuarrow", "icon", "icon-caret-right")} />
+          <div className={classnames("core-context-submenu-arrow", "icon", "icon-caret-right")} />
         </div>
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
           opened={this.state.opened}
           selectedIndex={0}
-          direction={dir}
+          direction={renderDirection}
           parentSubmenu={this}
           {...contextMenuProps} >
           {children}

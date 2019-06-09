@@ -17,6 +17,7 @@ import {
   Viewport,
   ViewRect,
 } from "@bentley/imodeljs-frontend";
+import { Point2d } from "@bentley/geometry-core";
 
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
@@ -157,6 +158,45 @@ describe("Render mirukuru", () => {
       expect(pixels.length).to.equal(2);
       expect(pixels.containsFeature(elemId, subcatId));
       expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+    });
+  });
+
+  it("should read image at expected sizes", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      let imgBuffer = vp.readImage();
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 2), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 4), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 2), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 4), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
     });
   });
 

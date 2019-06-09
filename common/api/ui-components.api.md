@@ -731,6 +731,8 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     static defaultProps: Partial<ColorPickerProps>;
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta
@@ -1168,6 +1170,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
 // @public
 export interface FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
     filteringInProgress: boolean;
     onFilterCancel: () => void;
     onFilterClear: () => void;
@@ -2966,6 +2969,8 @@ export class ViewportComponentEvents {
     static setStandardRotation(standardRotation: StandardViewId): void;
     // (undocumented)
     static setViewMatrix(viewport: Viewport, animationTime?: number): void;
+    // @internal
+    static terminate(): void;
 }
 
 // @public
@@ -3027,6 +3032,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     };
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta

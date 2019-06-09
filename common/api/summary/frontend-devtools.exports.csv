@@ -1,0 +1,46 @@
+sep=;
+Release Tag;API Item
+alpha;Button
+alpha;ButtonHandler = (button: HTMLInputElement) => void
+alpha;ButtonProps
+alpha;CheckBox
+alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
+alpha;CheckBoxProps
+alpha;ColorInput
+alpha;ColorInputHandler = (value: string) => void
+alpha;ColorInputProps
+alpha;ComboBox
+alpha;ComboBoxEntry
+alpha;ComboBoxHandler = (select: HTMLSelectElement) => void
+alpha;ComboBoxProps
+alpha;convertHexToRgb(hex: string): RgbColor | undefined
+alpha;createButton(props: ButtonProps): Button
+alpha;createCheckBox(props: CheckBoxProps): CheckBox
+alpha;createColorInput(props: ColorInputProps): ColorInput
+alpha;createComboBox
+alpha;createNestedMenu(props: NestedMenuProps): NestedMenu
+alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement
+alpha;createRadioBox
+alpha;createSlider(props: SliderProps): Slider
+alpha;createTextBox(props: TextBoxProps): TextBox
+alpha;DiagnosticsPanel
+alpha;FpsTracker
+alpha;FrustumDecorator 
+alpha;MemoryTracker
+alpha;NestedMenu
+alpha;NestedMenuProps
+alpha;NestMenuHandler = (expanded: boolean) => void
+alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
+alpha;NumericInputProps
+alpha;RadioBox
+alpha;RadioBoxEntry
+alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
+alpha;RadioBoxProps
+alpha;Slider
+alpha;SliderHandler = (slider: HTMLInputElement) => void
+alpha;SliderProps
+alpha;StatsTracker
+alpha;TextBox
+alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
+alpha;TextBoxProps
+alpha;ToolSettingsTracker

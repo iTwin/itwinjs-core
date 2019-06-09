@@ -197,6 +197,11 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return CurveChainWithDistanceIndex.createCapture(c as CurveChain);
     return undefined;
   }
+  /** Reference to the contained path.
+   * * Do not modify the path.  The distance index will be wrong.
+   */
+  public get path(): CurveChain { return this._path; }
+
   /** Return a deep clone */
   public clone(): CurvePrimitive | undefined {
     const c = this._path.clone();
@@ -290,7 +295,9 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * Capture (not clone) a path into a new `CurveChainWithDistanceIndex`
    * @param primitives primitive array to be CAPTURED (not cloned)
    */
-  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex {
+  public static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined {
+    if (path.children.length === 0)
+      return undefined;
     const fragments = DistanceIndexConstructionContext.createPathFragmentIndex(path, options);
     const result = new CurveChainWithDistanceIndex(path, fragments);
     return result;

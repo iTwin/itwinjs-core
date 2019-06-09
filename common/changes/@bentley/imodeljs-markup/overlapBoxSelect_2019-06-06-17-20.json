@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use left/right direction for inside/overlap selection to match element select tool and to support touch move.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}

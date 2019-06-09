@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed issues with deleting briefcases if there were errors with preparing briefcases. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

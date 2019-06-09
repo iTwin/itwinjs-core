@@ -15,9 +15,9 @@ const computeBaseColor = "return vec4(1.0);";
 
 const assignFragData = `
   if (v_texCoord.y < .5)
-   FragColor0 = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 2.0));
+   FragColor = TEXTURE(u_texture0, vec2(v_texCoord.x, v_texCoord.y * 2.0));
   else
-   FragColor0 = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 2.0 - 1.0));
+   FragColor = TEXTURE(u_texture1, vec2(v_texCoord.x, v_texCoord.y * 2.0 - 1.0));
 `;
 
 /** @internal */
@@ -39,7 +39,6 @@ export function createCombineTexturesProgram(context: WebGLRenderingContext): Sh
     });
   }, VariablePrecision.High);
 
-  frag.addDrawBuffersExtension();
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
   return builder.buildProgram(context);

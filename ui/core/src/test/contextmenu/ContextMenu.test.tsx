@@ -226,6 +226,59 @@ describe("ContextMenu", () => {
         expect(idx).to.equal(1);
       });
     });
+
+    describe("direction", () => {
+      it("should render bottom right by default", () => {
+        const component = render(<ContextMenu opened={true} />);
+        expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
+        expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
+      });
+      it("should render no direction for None", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.None} />);
+        expect(component.container.querySelector(".core-context-menu-bottom")).to.be.null;
+        expect(component.container.querySelector(".core-context-menu-right")).to.be.null;
+      });
+      it("should render top left", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.TopLeft} />);
+        expect(component.container.querySelector(".core-context-menu-top")).not.to.be.null;
+        expect(component.container.querySelector(".core-context-menu-left")).not.to.be.null;
+      });
+      it("should render top", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.Top} />);
+        expect(component.container.querySelector(".core-context-menu-top")).not.to.be.null;
+      });
+      it("should render top right", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.TopRight} />);
+        expect(component.container.querySelector(".core-context-menu-top")).not.to.be.null;
+        expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
+      });
+      it("should render left", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.Left} />);
+        expect(component.container.querySelector(".core-context-menu-left")).not.to.be.null;
+      });
+      it("should render center", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.Center} />);
+        expect(component.container.querySelector(".core-context-menu-center")).not.to.be.null;
+      });
+      it("should render right", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
+        expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
+      });
+      it("should render bottom left", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.BottomLeft} />);
+        expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
+        expect(component.container.querySelector(".core-context-menu-left")).not.to.be.null;
+      });
+      it("should render bottom", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.Bottom} />);
+        expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
+      });
+      it("should render bottom right", () => {
+        const component = render(<ContextMenu opened={true} direction={ContextMenuDirection.BottomRight} />);
+        expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
+        expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
+      });
+    });
   });
   // TODO: tests for hover/current active menu item
   describe("<GlobalContextMenu />", () => {
@@ -263,12 +316,33 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
-    it("onSelect handled correctly", () => {
+    it("onSelect handled correctly on click", () => {
       const handleSelect = sinon.fake();
       const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
       const item = component.getByTestId("core-context-menu-item");
       item.dispatchEvent(createBubbledEvent("click"));
       handleSelect.should.have.been.calledOnce;
+    });
+    it("onHover handled correctly", () => {
+      const handleHover = sinon.fake();
+      const component = render(<ContextMenuItem onHover={handleHover}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+      handleHover.should.have.been.calledOnce;
+    });
+    it("onSelect handled correctly on Enter", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 13 /* <Return> */ }));
+      handleSelect.should.have.been.calledOnce;
+    });
+    it("onSelect not called on Escape", () => {
+      const handleSelect = sinon.fake();
+      const component = render(<ContextMenuItem onSelect={handleSelect}>Test</ContextMenuItem>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+      handleSelect.should.not.have.been.called;
     });
   });
   describe("<ContextSubMenu />", () => {
@@ -280,6 +354,38 @@ describe("ContextMenu", () => {
           </ContextSubMenu>
         </ContextMenu>);
       expect(component.getByText("test")).to.exist;
+    });
+    it("onHover handled correctly", () => {
+      const handleHover = sinon.fake();
+      const component = render(
+        <ContextSubMenu label="test" onHover={handleHover}>
+          <ContextMenuItem> Test </ContextMenuItem>
+        </ContextSubMenu>);
+      const item = component.getByTestId("core-context-submenu");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+      handleHover.should.have.been.calledOnce;
+    });
+    it("onHover handled internally when in ContextMenu", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test">
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-submenu");
+      item.dispatchEvent(createBubbledEvent("mouseover"));
+    });
+    it("onClick handled correctly", () => {
+      const handleClick = sinon.fake();
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" onClick={handleClick}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-submenu-container");
+      item.dispatchEvent(createBubbledEvent("click"));
+      handleClick.should.have.been.calledOnce;
     });
   });
   describe("ContextMenu.autoFlip", () => {

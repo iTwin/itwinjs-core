@@ -96,8 +96,15 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     this.setState((_prevState) => ({ showPopup: false }));
   }
 
+  public setFocus(): void {
+    // istanbul ignore else
+    if (this._target)
+      this._target.focus();
+  }
+
   private _handleColorPicked = (color: ColorDef) => {
     this._closePopup();
+    // istanbul ignore else
     if (this.props.onColorPick)
       this.props.onColorPick(color);
   }

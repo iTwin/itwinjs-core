@@ -85,6 +85,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
   private static readonly _onViewSelectorShowUpdateEvent = new ViewSelectorShowUpdateEvent();
   private _removeShowUpdateListener?: () => void;
+  private _isMounted = false;
 
   public static readonly defaultProps: ViewSelectorDefaultProps = {
     showSpatials: true,
@@ -119,6 +120,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   }
 
   public async componentDidMount() {
+    this._isMounted = true;
     if (this.props.listenForShowUpdates)
       this._removeShowUpdateListener = ViewSelector._onViewSelectorShowUpdateEvent.addListener(this._handleViewSelectorShowUpdateEvent);
 
@@ -126,11 +128,16 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   }
 
   public componentWillUnmount() {
+    this._isMounted = false;
     if (this._removeShowUpdateListener)
       this._removeShowUpdateListener();
   }
 
   private _handleViewSelectorShowUpdateEvent = (args: ViewSelectorShowUpdateEventArgs): void => {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState(args, async () => this.loadViews());
   }
 
@@ -174,6 +181,10 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       if (unknown.length !== 0)
         containers.push(unknownContainer);
     }
+
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
 
     this.setState({
       items: containers,
@@ -273,6 +284,11 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
       // Create the new array with the current item enabled
       const itemsWithEnabled = this.state.items.map(itemMapper);
+
+      // istanbul ignore next
+      if (!this._isMounted)
+        return;
+
       // Update the state so that we show the user it was enabled while we work in the background
       this.setState(Object.assign({}, this.state, { items: itemsWithEnabled }));
     }

@@ -55,6 +55,12 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     this.state = { showPopup: false };
   }
 
+  public setFocus(): void {
+    // istanbul ignore else
+    if (this._focusTarget.current)
+      this._focusTarget.current.focus();
+  }
+
   public static defaultProps = {
     weights: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   };

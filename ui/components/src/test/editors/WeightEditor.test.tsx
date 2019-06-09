@@ -16,17 +16,21 @@ describe("<WeightEditor />", () => {
   afterEach(cleanup);
 
   it("should render", () => {
-    const renderedComponent = render(<WeightEditor />);
+    const renderedComponent = render(<WeightEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 
   it("button press should open popup and allow weight selection", async () => {
-    const weight = 3;
+    const weight1 = 1;
+    const weight2 = 3;
     const firstWeightValue = 1;
-    const record = TestUtils.createWeightProperty("Test", weight);
+    const record1 = TestUtils.createWeightProperty("Test", weight1);
+    const record2 = TestUtils.createWeightProperty("Test", weight2);
 
-    const originalValue = (record.value as PrimitiveValue).value as number;
-    expect(originalValue).to.be.equal(weight);
+    const originalValue = (record1.value as PrimitiveValue).value as number;
+    expect(originalValue).to.be.equal(weight1);
+
+    const renderedComponent = render(<WeightEditor propertyRecord={record1} />);
 
     const spyOnCommit = sinon.spy();
     function handleCommit(commit: PropertyUpdatedArgs): void {
@@ -35,7 +39,7 @@ describe("<WeightEditor />", () => {
       spyOnCommit();
     }
 
-    const renderedComponent = render(<WeightEditor propertyRecord={record} onCommit={handleCommit} />);
+    renderedComponent.rerender(<WeightEditor propertyRecord={record2} onCommit={handleCommit} />);
     const pickerButton = renderedComponent.getByTestId("components-weightpicker-button");
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);

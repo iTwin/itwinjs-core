@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v0.191.0": "changehistory"
+      "v1.0.0": "changehistory"
     },
     "packageAliases": {
       "backend": "imodeljs-backend",
@@ -54,7 +54,15 @@
       "geometry": "geometry-core",
       "i18n": "imodeljs-i18n",
       "markup": "imodeljs-markup",
-      "quantity": "imodeljs-quantity"
+      "quantity": "imodeljs-quantity",
+      "components": "ui-components",
+      "core": "ui-core",
+      "framework": "ui-framework",
+      "ninezone": "ui-ninezone",
+      "presentation-backend": "presentation-backend",
+      "presentation-common": "presentation-common",
+      "presentation-components": "presentation-components",
+      "presentation-frontend": "presentation-frontend"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
     "ogShareImage": "landing-page/assets/twitter-share.png"

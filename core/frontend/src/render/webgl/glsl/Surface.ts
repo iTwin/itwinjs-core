@@ -80,7 +80,7 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
 const computePosition = `
   vec4 pos = MAT_MV * rawPos;
-  v_pos = pos.xyz;
+  v_eyeSpace = pos.xyz;
   return u_proj * pos;
 `;
 
@@ -97,7 +97,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
-  builder.addVarying("v_pos", VariableType.Vec3);
+  builder.addVarying("v_eyeSpace", VariableType.Vec3);
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   return builder;

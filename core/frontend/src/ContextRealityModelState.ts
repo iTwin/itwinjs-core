@@ -8,10 +8,11 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { TileTreeModelState, SpatialModelState } from "./ModelState";
-import { TileTree, TileTreeState } from "./tile/TileTree";
+import { TileTree, TileTreeState, BatchedTileIdMap } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { HitDetail } from "./HitDetail";
 
 /** @internal */
 export class ContextRealityModelState implements TileTreeModelState {
@@ -21,6 +22,7 @@ export class ContextRealityModelState implements TileTreeModelState {
   protected _iModel: IModelConnection;
   protected _modelId: Id64String;
   protected _jsonProperties: { [key: string]: any };
+  protected _batchedIdMap = new BatchedTileIdMap();
   constructor(props: ContextRealityModelProps, iModel: IModelConnection) {
     this._name = props.name ? props.name : "";
     this._tilesetUrl = props.tilesetUrl;
@@ -43,8 +45,25 @@ export class ContextRealityModelState implements TileTreeModelState {
 
     tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
 
-    RealityModelTileTree.loadRealityModelTileTree(this._tilesetUrl, undefined, tileTreeState);
+    RealityModelTileTree.loadRealityModelTileTree(this._tilesetUrl, undefined, tileTreeState, this._batchedIdMap);
+
     return tileTreeState.loadStatus;
+  }
+  public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
+
+    const batchFound = this._batchedIdMap.getBatchProperties(hit.sourceId);
+    if (batchFound === undefined && this._modelId !== hit.sourceId)
+      return undefined;
+
+    const strings = [];
+    strings.push(this._name ? this._name : this._tilesetUrl);
+    if (batchFound !== undefined)
+      for (const key of Object.keys(batchFound))
+        strings.push(key + ": " + batchFound[key]);
+
+    let out = "";
+    strings.forEach((line) => out += line + "<br>");
+    return out;
   }
 
   private static async getAccessToken(): Promise<AccessToken | undefined> {

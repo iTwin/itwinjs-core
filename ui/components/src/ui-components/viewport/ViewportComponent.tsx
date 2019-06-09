@@ -5,7 +5,7 @@
 /** @module Viewport */
 
 import * as React from "react";
-import { Id64String, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelApp,
   IModelConnection,
@@ -17,7 +17,7 @@ import {
   TentativePoint,
 } from "@bentley/imodeljs-frontend";
 import { Transform, Point3d } from "@bentley/geometry-core";
-import { CommonProps, getClassName } from "@bentley/ui-core";
+import { CommonProps, UiError } from "@bentley/ui-core";
 
 import {
   ViewportComponentEvents,
@@ -26,6 +26,7 @@ import {
   DrawingViewportChangeEventArgs,
 } from "./ViewportComponentEvents";
 import { NpcCenter } from "@bentley/imodeljs-common";
+import { UiComponents } from "../UiComponents";
 
 /**
  * Properties for [[ViewportComponent]] component.
@@ -83,7 +84,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
     // istanbul ignore next
     if (!this._viewportDiv.current)
-      throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: Parent <div> failed to load`);
+      throw new UiError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
 
     const viewState = await this.getViewState();
 
@@ -147,10 +148,10 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
       // istanbul ignore next
       if (!viewState) {
-        throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: View state failed to load`);
+        throw new UiError(UiComponents.loggerCategory(this), `View state failed to load`);
       }
     } /* istanbul ignore next */ else {
-      throw new BentleyError(BentleyStatus.ERROR, `${getClassName(this)}: Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
+      throw new UiError(UiComponents.loggerCategory(this), `Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop`);
     }
 
     return viewState;

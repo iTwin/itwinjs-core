@@ -112,8 +112,11 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     if (this.props.orientation === Orientation.Vertical)
       displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation) }}>{displayValue}</span>;
 
-    if (this._isMounted)
-      this.setState({ displayValue });
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
+    this.setState({ displayValue });
   }
 
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
@@ -128,16 +131,19 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** Display property record value in an editor */
   public updateDisplayValueAsEditor(props: PropertyRendererProps) {
-    if (this._isMounted)
-      this.setState({
-        displayValue:
-          <EditorContainer
-            propertyRecord={props.propertyRecord}
-            onCommit={this._onEditCommit}
-            onCancel={this._onEditCancel}
-            setFocus={true}
-          />,
-      });
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
+    this.setState({
+      displayValue:
+        <EditorContainer
+          propertyRecord={props.propertyRecord}
+          onCommit={this._onEditCommit}
+          onCancel={this._onEditCancel}
+          setFocus={true}
+        />,
+    });
   }
 
   /** @internal */

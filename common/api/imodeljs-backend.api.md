@@ -1871,6 +1871,7 @@ export class IModelImporter {
     protected _excludedElementClassNames: Set<string>;
     // (undocumented)
     protected _excludedElementIds: Set<string>;
+    protected excludeElement(sourceElement: Element): boolean;
     // (undocumented)
     excludeElementClass(classFullName: string): void;
     // (undocumented)
@@ -1887,7 +1888,7 @@ export class IModelImporter {
     // (undocumented)
     importCodeSpecs(): void;
     // (undocumented)
-    importElement(sourceElementId: Id64String): Id64String;
+    importElement(sourceElementId: Id64String): void;
     // (undocumented)
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
@@ -1900,7 +1901,8 @@ export class IModelImporter {
     initFromExternalSourceAspects(): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
-    }
+    protected transformAndInsertElement(sourceElement: Element): void;
+}
 
 // @public
 export class IModelJsFs {

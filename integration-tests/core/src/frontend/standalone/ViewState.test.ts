@@ -156,11 +156,9 @@ describe("ViewState", () => {
 
     const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
     if (undefined !== oldBackgroundMap) {
-      let mt = BackgroundMapType.Aerial;
-      if (oldBackgroundMap.providerData !== undefined)
-        mt = oldBackgroundMap.providerData.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Aerial;
+      const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.setBackgroundMap({
-        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapProvider" : "BingProvider",
+        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         providerData: { mapType: mt },
       });
     } else {
@@ -228,10 +226,10 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
     assert.isDefined(vs0BackgroundMap);
-    assert.isDefined(vs0BackgroundMap!.providerData);
+    assert.isDefined(vs0BackgroundMap!.mapType);
     assert.isDefined(vs1BackgroundMap);
-    assert.isDefined(vs1BackgroundMap!.providerData);
-    assert.equal(vs0BackgroundMap!.providerData!.mapType, vs1BackgroundMap!.providerData!.mapType, "clone should copy displayStyle.backgroundMap.providerData.mapType");
+    assert.isDefined(vs1BackgroundMap!.mapType);
+    assert.equal(vs0BackgroundMap!.mapType, vs1BackgroundMap!.mapType, "clone should copy displayStyle.backgroundMap.mapType");
     assert.isDefined(vs0BackgroundMap!.providerName);
     assert.isDefined(vs1BackgroundMap!.providerName);
     assert.equal(vs0BackgroundMap!.providerName, vs1BackgroundMap!.providerName, "clone should copy displayStyle.backgroundMap.providerName");

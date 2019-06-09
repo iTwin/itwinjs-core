@@ -31,6 +31,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@bentley/frontend-devtools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/geometry-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },

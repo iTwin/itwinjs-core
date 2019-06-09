@@ -326,7 +326,7 @@ export class ViewManager {
       if (undefined !== decorator.testDecorationHit && undefined !== decorator.getDecorationToolTip && decorator.testDecorationHit(hit.sourceId))
         return decorator.getDecorationToolTip(hit);
     }
-    return "";
+    return hit.viewport ? hit.viewport.getToolTip(hit) : "";
   }
 
   /** Allow a pickable decoration to handle a button event that identified it for the SelectTool.

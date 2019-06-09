@@ -99,6 +99,10 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     execute(): void;
     // (undocumented)
     getDimension(orientation: Orientation): number;
+    // @internal (undocumented)
+    getKey: (index?: number | undefined) => string;
+    // @internal (undocumented)
+    static getRandomId(): string;
     // (undocumented)
     handleSizeKnown: (size: Size) => void;
     // (undocumented)
@@ -106,7 +110,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // (undocumented)
     size?: Size;
     // (undocumented)
-    toolbarReactNode(_index?: number): React_2.ReactNode;
+    toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
 // @public

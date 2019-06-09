@@ -192,6 +192,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     static defaultProps: Partial<ContextMenuProps>;
     // (undocumented)
     focus: () => void;
+    // @internal (undocumented)
+    static getCSSClassNameFromDirection: (direction?: ContextMenuDirection | undefined) => string;
     // (undocumented)
     getRect: () => ClientRect;
     // (undocumented)
@@ -896,9 +898,14 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & {
 
 // @alpha (undocumented)
 export class NumericInput extends React.Component<NumericInputProps> {
+    // @internal (undocumented)
+    static readonly defaultProps: NumericInputDefaultProps;
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @alpha
+export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
 // @alpha (undocumented)
 export interface NumericInputProps extends Omit<ReactNumericInput.NumericInputProps, "min" | "max" | "step" | "precision" | "defaultValue" | "onInvalid" | "style" | "nostyle" | "mobile">, CommonProps {
@@ -943,7 +950,7 @@ export interface NumericInputProps extends Omit<ReactNumericInput.NumericInputPr
     // (undocumented)
     step?: StepFunctionProp;
     // (undocumented)
-    strict?: boolean;
+    strict: boolean;
     // (undocumented)
     value?: number | string;
 }

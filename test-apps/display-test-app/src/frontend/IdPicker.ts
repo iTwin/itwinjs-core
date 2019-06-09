@@ -4,11 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { Viewport, SpatialViewState, SpatialModelState, GeometricModelState, SpatialClassification } from "@bentley/imodeljs-frontend";
-import { CheckBox, createCheckBox } from "./CheckBox";
-import { ComboBox, ComboBoxEntry, createComboBox } from "./ComboBox";
-import { createNumericInput } from "./NumericInput";
+import { Viewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import { CheckBox, createCheckBox, createComboBox, ComboBoxEntry } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {
@@ -278,7 +275,12 @@ export class ModelPicker extends IdPicker {
   protected get _elementType(): "Model" { return "Model"; }
   protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
   protected get _showIn2d() { return false; }
-  protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeModelDisplay(ids, enabled); }
+  protected changeDisplay(ids: Id64Arg, enabled: boolean) {
+    if (enabled)
+      this._vp.addViewedModels(ids); // tslint:disable-line no-floating-promises
+    else
+      this._vp.changeModelDisplay(ids, enabled);
+  }
 
   protected hiliteEnabled(hiliteOn: boolean): void {
     const modelIds = this._enabledIds;
@@ -301,110 +303,8 @@ export class ModelPicker extends IdPicker {
 
     const selector = view.modelSelector;
     for (const prop of props) {
-      if (undefined === prop.id || undefined === prop.name)
-        continue;
-
-      let model = view.iModel.models.getLoaded(prop.id);
-      if (undefined === model) {
-        // ###TODO: Load models on demand when they are enabled in the dialog - not all up front like this...super-inefficient.
-        await view.iModel.models.load(prop.id);
-        model = view.iModel.models.getLoaded(prop.id);
-        if (undefined === model)
-          continue;
-      }
-
-      const id = prop.id;
-      const cb = this.addCheckbox(prop.name, id, selector.has(id));
-
-      const geometricModel = model as GeometricModelState;
-      // If reality model with no classifiers -- add classifiers (for testing)
-      if (model.jsonProperties && undefined !== model.jsonProperties.tilesetUrl && undefined === model.jsonProperties.classifiers)   // We need a better test for reality models.
-        for (const otherProp of props)
-          if (otherProp !== prop && undefined !== otherProp.id && undefined !== otherProp.name)
-            SpatialClassification.addSpatialClassifier(geometricModel, new SpatialClassificationProps.Properties({ name: otherProp.name, modelId: otherProp.id, expand: 1.0, flags: new SpatialClassificationProps.Flags(), isActive: false }));
-
-      let insideCombo: ComboBox | undefined;
-      let outsideCombo: ComboBox | undefined;
-      let expandInput: HTMLInputElement | undefined;
-      if (undefined !== geometricModel && undefined !== SpatialClassification.getSpatialClassifier(geometricModel, 0)) {
-        const div = document.createElement("div");
-        cb.div.appendChild(div);
-
-        const entries = [{ name: "None", value: -1 }];
-        let classifier;
-        let activeClassifierIndex = SpatialClassification.getActiveSpatialClassifier(geometricModel);
-        let activeClassifier = (activeClassifierIndex >= 0) ? SpatialClassification.getSpatialClassifier(geometricModel, activeClassifierIndex) : undefined;
-        for (let i = 0; undefined !== (classifier = SpatialClassification.getSpatialClassifier(geometricModel, i)); i++)
-          entries.push({ name: classifier.name, value: i });
-
-        createComboBox({
-          parent: div,
-          name: "Classifier: ",
-          id: "Classifier_" + id,
-          value: activeClassifierIndex,
-          handler: (select) => {
-            activeClassifierIndex = Number.parseInt(select.value, 10);
-            SpatialClassification.setActiveSpatialClassifier(geometricModel, activeClassifierIndex, true).then((_) => {
-              activeClassifier = SpatialClassification.getSpatialClassifier(geometricModel, activeClassifierIndex);
-              this.showOrHide(insideCombo!.div, activeClassifier !== undefined);
-              this.showOrHide(outsideCombo!.div, activeClassifier !== undefined);
-              this.showOrHide(expandInput!, activeClassifier !== undefined);
-              if (activeClassifier) {
-                if (insideCombo) insideCombo.div.style.display = "block";
-                if (outsideCombo) outsideCombo.select.selectedIndex = activeClassifier.flags.outside;
-                if (expandInput) expandInput.value = activeClassifier.expand.toString();
-              }
-              this._vp.invalidateScene();
-            }).catch((_) => undefined);
-          },
-          entries,
-        });
-
-        insideCombo = createComboBox({
-          parent: div,
-          name: "Inside: ",
-          id: "ClassifierInside_" + id,
-          value: activeClassifier ? activeClassifier!.flags.inside : 1,
-          handler: (select) => {
-            if (activeClassifier) {
-              activeClassifier.flags.inside = Number.parseInt(select.value, 10);
-              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
-              this._vp.invalidateScene();
-            }
-          },
-          entries: [{ name: "Off", value: 0 }, { name: "On", value: 1 }, { name: "Dimmed", value: 2 }, { name: "Hilite", value: 3 }, { name: "Color", value: 4 }],
-        });
-        outsideCombo = createComboBox({
-          parent: div,
-          name: "Outside: ",
-          id: "ClassifierInside_" + id,
-          value: activeClassifier ? activeClassifier.flags.outside : 1,
-          handler: (select) => {
-            if (activeClassifier) {
-              activeClassifier.flags.outside = Number.parseInt(select.value, 10);
-              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
-              this._vp.invalidateScene();
-            }
-          },
-          entries: [{ name: "Off", value: 0 }, { name: "On", value: 1 }, { name: "Dimmed", value: 2 }],
-        });
-        expandInput = createNumericInput({
-          parent: div,
-          id: "ClassifierExpand_" + id,
-          value: activeClassifier ? activeClassifier.expand : 0.0,
-          handler: (select) => {
-            if (activeClassifier) {
-              activeClassifier.expand = select;
-              SpatialClassification.setSpatialClassifier(geometricModel, activeClassifierIndex, activeClassifier);
-              this._vp.invalidateScene();
-            }
-          },
-        });
-
-        this.showOrHide(insideCombo!.div, activeClassifier !== undefined);
-        this.showOrHide(outsideCombo!.div, activeClassifier !== undefined);
-        this.showOrHide(expandInput!, activeClassifier !== undefined);
-      }
+      if (undefined !== prop.id && undefined !== prop.name)
+        this.addCheckbox(prop.name, prop.id, selector.has(prop.id));
     }
   }
 }

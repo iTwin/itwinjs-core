@@ -13,7 +13,7 @@ import {
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
-import { createCheckBox } from "./CheckBox";
+import { createCheckBox } from "@bentley/frontend-devtools";
 
 // ###TODO: Why not just append these to the contents of the model picker?
 export class RealityModelPicker extends ToolBarDropDown {

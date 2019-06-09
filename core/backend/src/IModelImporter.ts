@@ -153,64 +153,78 @@ export class IModelImporter {
     this.importRelationships();
   }
 
-  public importElement(sourceElementId: Id64String): Id64String {
-    let targetElementId: Id64String | undefined = this._importContext.findElementId(sourceElementId);
-    if (!Id64.isValidId64(targetElementId)) {
-      if (this._excludedElementIds.has(sourceElementId)) {
-        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId})`);
-        return Id64.invalid; // already excluded
-      }
-      const sourceElement = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
-      if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
-        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Class(${sourceElement.classFullName})`);
-        this.excludeElementId(sourceElementId);
-        return Id64.invalid; // excluded by class
-      }
-      if (this._excludedCodeSpecIds.has(sourceElement.code.spec)) {
-        Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by CodeSpec(${sourceElement.code.spec})`);
-        this.excludeElementId(sourceElementId);
-        return Id64.invalid; // excluded by CodeSpec
-      }
-      if (sourceElement.category) {
-        if (this._excludedElementIds.has(sourceElement.category)) {
-          Logger.logInfo(loggerCategory, `Excluding Element(${sourceElementId}) by Category(${sourceElement.category})`);
-          this.excludeElementId(sourceElementId);
-          return Id64.invalid; // excluded by Category
-        }
-      }
-      const sourceElementHash: string = sourceElement.computeHash();
-      const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElementId);
-      targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
-      if (targetElementId === undefined) {
-        try {
-          targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
-          this.addElementId(sourceElementId, targetElementId);
-          Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
-          const aspectProps: ExternalSourceAspectProps = {
-            classFullName: ExternalSourceAspect.classFullName,
-            element: { id: targetElementId },
-            scope: { id: IModel.rootSubjectId },
-            identifier: sourceElementId,
-            kind: Element.className,
-            checksum: sourceElementHash,
-            version: this._sourceDb.elements.queryLastModifiedTime(sourceElementId),
-          };
-          this._targetDb.elements.insertAspect(aspectProps);
-        } catch (error) {
-          Logger.logError(loggerCategory, "Error inserting Element into target iModel");
-        }
-      } else {
-        try {
-          targetElementProps.id = targetElementId;
-          this._targetDb.elements.updateElement(targetElementProps);
-          this.addElementId(sourceElementId, targetElementId);
-        } catch (error) {
-          Logger.logError(loggerCategory, "Error updating Element within target iModel");
-        }
+  /** Returns true if the specified sourceElement should be excluded from the target iModel. */
+  protected excludeElement(sourceElement: Element): boolean {
+    if (this._excludedElementIds.has(sourceElement.id)) {
+      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Id`);
+      return true;
+    }
+    if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
+      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
+      this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
+      return true;
+    }
+    if (this._excludedCodeSpecIds.has(sourceElement.code.spec)) {
+      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by CodeSpec [${sourceElement.code.spec}]`);
+      this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
+      return true;
+    }
+    if (sourceElement.category) {
+      if (this._excludedElementIds.has(sourceElement.category)) {
+        Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Category [${sourceElement.category}]`);
+        this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
+        return true;
       }
     }
+    return false;
+  }
+
+  /** Transform the specified sourceElement and insert result into the target iModel. */
+  protected transformAndInsertElement(sourceElement: Element): void {
+    const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElement.id);
+    let targetElementId: Id64String | undefined = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+    if (targetElementId === undefined) {
+      try {
+        targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
+        this.addElementId(sourceElement.id, targetElementId);
+        Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
+        const sourceElementHash: string = sourceElement.computeHash();
+        const aspectProps: ExternalSourceAspectProps = {
+          classFullName: ExternalSourceAspect.classFullName,
+          element: { id: targetElementId },
+          scope: { id: IModel.rootSubjectId },
+          identifier: sourceElement.id,
+          kind: Element.className,
+          checksum: sourceElementHash,
+          version: this._sourceDb.elements.queryLastModifiedTime(sourceElement.id),
+        };
+        this._targetDb.elements.insertAspect(aspectProps);
+      } catch (error) {
+        Logger.logError(loggerCategory, "Error inserting Element into target iModel");
+      }
+    } else {
+      try {
+        targetElementProps.id = targetElementId;
+        this._targetDb.elements.updateElement(targetElementProps);
+        this.addElementId(sourceElement.id, targetElementId);
+      } catch (error) {
+        Logger.logError(loggerCategory, "Error updating Element within target iModel");
+      }
+    }
+  }
+
+  public importElement(sourceElementId: Id64String): void {
+    const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
+    const targetElementId: Id64String | undefined = this._importContext.findElementId(sourceElementId);
+    if (Id64.isValidId64(targetElementId)) {
+      // WIP - check for update
+    } else {
+      if (this.excludeElement(sourceElement)) { // excluding an element will also exclude its children or sub-models
+        return;
+      }
+      this.transformAndInsertElement(sourceElement);
+    }
     this.importChildElements(sourceElementId);
-    return targetElementId!;
   }
 
   /** Import child elements into the target IModelDb

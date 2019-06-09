@@ -6,10 +6,10 @@
 
 import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { BentleyStatus, assert, Guid } from "@bentley/bentleyjs-core";
+import { BentleyStatus, assert, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
+import { TileTree, TileTreeState, Tile, TileLoader, BatchedTileIdMap } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
@@ -61,6 +61,7 @@ export class RealityModelTileUtils {
 
 /** @internal */
 class RealityModelTileTreeProps implements TileTreeProps {
+  private _featureMap = new Map<string, { id: Id64String, properties: any }>();
   public id: string = "";
   public rootTile: TileProps;
   public location: TransformProps;
@@ -73,6 +74,16 @@ class RealityModelTileTreeProps implements TileTreeProps {
     this.location = tilesetTransform.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
+  }
+  public getBatchId(properties: any, iModel: IModelConnection): Id64String | undefined {
+    const keyString = JSON.stringify(properties);
+    const found = this._featureMap.get(keyString);
+    if (found)
+      return found.id;
+
+    const id = iModel.transientIds.next;
+    this._featureMap.set(keyString, { id, properties });
+    return id;
   }
 }
 
@@ -108,15 +119,15 @@ class FindChildResult {
 
 /** @internal */
 class RealityModelTileLoader extends TileLoader {
-  constructor(private _tree: RealityModelTileTreeProps) { super(); }
+  constructor(private _tree: RealityModelTileTreeProps, private _batchedIdMap?: BatchedTileIdMap) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   protected static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
   public get viewFlagOverrides() { return RealityModelTileLoader._viewFlagOverrides; }
+  public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
-
     const thisId = parent.contentId;
     const prefix = thisId.length ? thisId + "_" : "";
     const findResult = await this.findTileInJson(this._tree.tilesetJson, thisId, "", undefined, true);
@@ -128,7 +139,6 @@ class RealityModelTileLoader extends TileLoader {
           props.push(new RealityModelTileProps(foundChild.json, foundChild.id, foundChild.transformToRoot));
       }
     }
-
     return props;
   }
 
@@ -188,10 +198,10 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @internal */
 export class RealityModelTileTree {
-  public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState): void {
 
+  public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState, batchedTileIdMap?: BatchedTileIdMap): void {
     this.getTileTreeProps(url, tilesetToDb, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
-      tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps));
+      tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps, batchedTileIdMap));
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }

@@ -10,7 +10,7 @@ import { expect } from "chai";
 import { Dialog, DialogButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
 import { UiCore } from "../../ui-core/UiCore";
-import { GlobalDialog } from "../../ui-core/dialog/Dialog";
+import { GlobalDialog, DialogAlignment } from "../../ui-core/dialog/Dialog";
 
 describe("Dialog", () => {
 
@@ -203,6 +203,49 @@ describe("Dialog", () => {
       const head = component.getByTestId("core-dialog-head");
       head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
       expect(spyOnPointerDown).to.be.calledOnce;
+    });
+  });
+
+  describe("alignment", () => {
+    it("should render center by default", () => {
+      const component = render(<Dialog opened={true} />);
+      expect(component.container.querySelector(".core-dialog-center")).not.to.be.null;
+    });
+    it("should render top left", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.TopLeft} />);
+      expect(component.container.querySelector(".core-dialog-top-left")).not.to.be.null;
+    });
+    it("should render top", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.Top} />);
+      expect(component.container.querySelector(".core-dialog-top")).not.to.be.null;
+    });
+    it("should render top right", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.TopRight} />);
+      expect(component.container.querySelector(".core-dialog-top-right")).not.to.be.null;
+    });
+    it("should render left", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.Left} />);
+      expect(component.container.querySelector(".core-dialog-left")).not.to.be.null;
+    });
+    it("should render center", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.Center} />);
+      expect(component.container.querySelector(".core-dialog-center")).not.to.be.null;
+    });
+    it("should render right", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.Right} />);
+      expect(component.container.querySelector(".core-dialog-right")).not.to.be.null;
+    });
+    it("should render bottom left", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.BottomLeft} />);
+      expect(component.container.querySelector(".core-dialog-bottom-left")).not.to.be.null;
+    });
+    it("should render bottom", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.Bottom} />);
+      expect(component.container.querySelector(".core-dialog-bottom")).not.to.be.null;
+    });
+    it("should render bottom right", () => {
+      const component = render(<Dialog opened={true} alignment={DialogAlignment.BottomRight} />);
+      expect(component.container.querySelector(".core-dialog-bottom-right")).not.to.be.null;
     });
   });
 

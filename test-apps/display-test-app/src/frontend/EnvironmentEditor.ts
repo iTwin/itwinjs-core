@@ -15,12 +15,18 @@ import {
   ViewState,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { createRadioBox, RadioBox } from "./RadioBox";
-import { createNestedMenu } from "./NestedMenu";
-import { createColorInput, ColorInput } from "./ColorInput";
-import { createButton } from "./Button";
-import { createSlider, Slider } from "./Slider";
-import { CheckBox, createCheckBox } from "./CheckBox";
+import {
+  CheckBox,
+  createCheckBox,
+  Slider,
+  createSlider,
+  RadioBox,
+  createRadioBox,
+  ColorInput,
+  createColorInput,
+  createNestedMenu,
+  createButton,
+ } from "@bentley/frontend-devtools";
 
 type EnvironmentAspect = "ground" | "sky";
 type SkyboxType = "2colors" | "4colors";

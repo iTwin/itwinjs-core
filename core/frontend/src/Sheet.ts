@@ -1081,6 +1081,9 @@ export class SheetViewState extends ViewState2d {
   private _all3dAttachmentTilesLoaded: boolean = true;
 
   /** @internal */
+  public get attachmentIds() { return this._attachmentIds; }
+
+  /** @internal */
   public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 }; }
 
   /** Manually mark this SheetViewState as having to re-create its scene due to still-loading tiles for 3d attachments. This is called directly from the attachment tiles.

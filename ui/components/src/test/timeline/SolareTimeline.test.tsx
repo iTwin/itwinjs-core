@@ -8,6 +8,7 @@ import { render, cleanup, fireEvent } from "react-testing-library";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
+import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
 import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
 import TestUtils from "../TestUtils";
 
@@ -23,6 +24,34 @@ class TestSolarDataProvider extends BaseSolarDataProvider {
     super();
   }
 }
+
+describe("<SpeedTimeline />", () => {
+
+  before(async () => {
+    // need to initialize to get localized strings
+    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+  });
+
+  afterEach(() => {
+    afterEach(cleanup);
+  });
+
+  it("should render", async () => {
+    let valueChanged = false;
+    const onChange = (_value: number) => {
+      valueChanged = true;
+    };
+
+    const renderedComponent = render(<SpeedTimeline speed={3} onChange={onChange} />);
+    expect(renderedComponent).not.to.be.undefined;
+    // renderedComponent.debug();
+    expect(valueChanged).to.be.false;
+    const sliderDiv = renderedComponent.getByRole ("slider");
+    expect(sliderDiv).not.to.be.undefined;
+    const ariaValue = sliderDiv.getAttribute ("aria-valuenow");
+    expect(ariaValue).to.be.equal("3");
+  });
+});
 
 describe("<SolarTimeline />", () => {
   const rafSpy = sinon.spy((cb: FrameRequestCallback) => {

@@ -128,7 +128,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={actionItem.label}
-        key={actionItem.id}
+        key={actionItem.getKey()}
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}

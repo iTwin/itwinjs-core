@@ -16,6 +16,8 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
+import { BackgroundMapProviderName } from '@bentley/imodeljs-common';
+import { BackgroundMapSettings } from '@bentley/imodeljs-common';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BatchType } from '@bentley/imodeljs-common';
 import { BeDuration } from '@bentley/bentleyjs-core';
@@ -84,6 +86,7 @@ import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageBuffer } from '@bentley/imodeljs-common';
+import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
@@ -544,20 +547,12 @@ export class AccuDrawShortcuts {
     static defineACSByPoints(): void;
     // (undocumented)
     static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldAcceptInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldAcceptInput(index: ItemField, str: string): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldLockToggle" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldLockToggle(index: ItemField): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNavigate" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void>;
-    // Warning: (ae-incompatible-release-tags) The symbol "itemFieldNewInput" is marked as @alpha, but its signature references "ItemField" which is marked as @internal
-    // 
     // (undocumented)
     static itemFieldNewInput(index: ItemField): void;
     // (undocumented)
@@ -1127,18 +1122,20 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 // @internal
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
-    constructor(json: BackgroundMapProps, iModel: IModelConnection);
-    // (undocumented)
-    equalsProps(props: BackgroundMapProps): boolean;
+    constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
     // (undocumented)
     getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
     // (undocumented)
-    mapType: BackgroundMapType;
+    readonly groundBias: number;
     // (undocumented)
-    providerName: string;
+    readonly mapType: BackgroundMapType;
+    // (undocumented)
+    readonly providerName: BackgroundMapProviderName;
+    // (undocumented)
+    readonly settings: BackgroundMapSettings;
 }
 
-// @alpha
+// @beta
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes;
@@ -1151,16 +1148,18 @@ export interface BasePropertyValue {
 }
 
 // @internal
-export class BaseTiledMapProvider {
-    constructor(iModel: IModelConnection, groundBias: number);
+export abstract class BaseTiledMapProvider implements IDisposable {
+    constructor(iModel: IModelConnection);
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    dispose(): void;
     // (undocumented)
     getPlane(): Plane3dByOriginAndUnitNormal;
     // (undocumented)
     getTilesForView(viewport: ScreenViewport): Tile[];
     // (undocumented)
-    protected _groundBias: number;
+    abstract readonly groundBias: number;
     // (undocumented)
     protected _imageryProvider?: ImageryProvider;
     // (undocumented)
@@ -1172,6 +1171,14 @@ export class BaseTiledMapProvider {
     // (undocumented)
     protected _tileTree?: TileTree;
 }
+
+// @internal
+export class BatchedTileIdMap {
+    // (undocumented)
+    getBatchId(properties: any, iModel: IModelConnection): Id64String | undefined;
+    // (undocumented)
+    getBatchProperties(id: Id64String): any | undefined;
+    }
 
 // @public (undocumented)
 export enum BeButton {
@@ -1311,7 +1318,7 @@ export function bisectRange2d(range: Range3d, takeUpper: boolean): void;
 // @internal (undocumented)
 export function bisectRange3d(range: Range3d, takeUpper: boolean): void;
 
-// @alpha
+// @beta
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -1354,6 +1361,12 @@ export interface CanvasDecoration {
 export type CanvasDecorationList = CanvasDecoration[];
 
 // @public
+export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined;
+
+// @public
+export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
+
+// @public
 export class CategorySelectorState extends ElementState {
     constructor(props: CategorySelectorProps, iModel: IModelConnection);
     addCategories(arg: Id64Arg): void;
@@ -1388,13 +1401,15 @@ export enum ChangeFlag {
     // (undocumented)
     None = 0,
     // (undocumented)
-    Overrides = 268435447,
+    Overrides = 268435319,
     // (undocumented)
     ViewedCategories = 4,
     // (undocumented)
     ViewedCategoriesPerModel = 64,
     // (undocumented)
-    ViewedModels = 8
+    ViewedModels = 8,
+    // (undocumented)
+    ViewState = 128
 }
 
 // @beta
@@ -1425,11 +1440,14 @@ export class ChangeFlags {
     // (undocumented)
     setViewedModels(): void;
     // (undocumented)
+    setViewState(): void;
+    // (undocumented)
     readonly value: ChangeFlag;
     readonly viewedCategories: boolean;
     // @alpha
     readonly viewedCategoriesPerModel: boolean;
     readonly viewedModels: boolean;
+    readonly viewState: boolean;
 }
 
 // @public
@@ -1528,7 +1546,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @alpha
+// @beta
 export interface ColorEditorParams extends BasePropertyEditorParams {
     colorValues: number[];
     numColumns?: number;
@@ -1563,8 +1581,12 @@ export enum ContextMode {
 // @internal (undocumented)
 export class ContextRealityModelState implements TileTreeModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
+    // (undocumented)
+    protected _batchedIdMap: BatchedTileIdMap;
     static findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     static findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+    // (undocumented)
+    getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // (undocumented)
     readonly iModel: IModelConnection;
     // (undocumented)
@@ -1724,7 +1746,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @alpha
+// @beta
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
     // (undocumented)
     formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
@@ -1866,6 +1888,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly backgroundMap: BackgroundMapProvider;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // @beta (undocumented)
+    backgroundMapSettings: BackgroundMapSettings;
+    // @beta
+    changeBackgroundMapProps(props: BackgroundMapProps): void;
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
@@ -1890,7 +1916,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     removeContextRealityModel(index: number): void;
     // @internal (undocumented)
     readonly scheduleScript: RenderScheduleState.Script | undefined;
-    // @alpha
+    // @deprecated
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;
     viewFlags: ViewFlags;
@@ -2919,7 +2945,7 @@ export enum HitSource {
     TentativeSnap = 4
 }
 
-// @alpha
+// @beta
 export interface IconDefinition {
     iconClass: string;
     // (undocumented)
@@ -2964,6 +2990,9 @@ export class IdleTool extends InteractiveTool {
 
 // @public
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined;
+
+// @public
+export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined;
 
 // @public
 export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined;
@@ -3171,6 +3200,8 @@ export namespace IModelConnection {
     export class Models {
         // @internal
         constructor(_iModel: IModelConnection);
+        // @alpha
+        filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
@@ -3217,7 +3248,7 @@ export abstract class InputCollector extends InteractiveTool {
     run(): boolean;
 }
 
-// @alpha
+// @beta
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -3310,7 +3341,7 @@ export class IntersectDetail extends SnapDetail {
     readonly otherPrimitive: CurvePrimitive;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum ItemField {
     // (undocumented)
     ANGLE_Item = 1,
@@ -3842,6 +3873,8 @@ export class ModelState extends EntityState implements ModelProps {
     readonly asGeometricModel3d: GeometricModel3dState | undefined;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha
+    getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     readonly isGeometricModel: boolean;
     // (undocumented)
     readonly isPrivate: boolean;
@@ -4126,7 +4159,9 @@ export class OverlayMapProvider extends BaseTiledMapProvider implements TiledGra
     constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection);
     // (undocumented)
     getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
-}
+    // (undocumented)
+    readonly groundBias: number;
+    }
 
 // @internal (undocumented)
 export interface PackedFeature {
@@ -4187,7 +4222,7 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export interface ParseResults {
     // (undocumented)
     parseError?: string;
@@ -4436,16 +4471,14 @@ export interface PropertyDescription {
 export interface PropertyEditorInfo {
     // (undocumented)
     name?: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "params" is marked as @beta, but its signature references "PropertyEditorParams" which is marked as @alpha
-    // 
     // (undocumented)
     params?: PropertyEditorParams[];
 }
 
-// @alpha
+// @beta
 export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
 
-// @alpha
+// @beta
 export enum PropertyEditorParamTypes {
     // (undocumented)
     ButtonGroupData = 0,
@@ -4554,7 +4587,7 @@ export class QuantityFormatter implements UnitsProvider {
     useImperialFormats: boolean;
 }
 
-// @alpha
+// @beta
 export enum QuantityType {
     // (undocumented)
     Angle = 2,
@@ -5395,6 +5428,8 @@ export class SheetModelState extends GeometricModel2dState {
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
     // @internal (undocumented)
+    readonly attachmentIds: string[];
+    // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     computeFitRange(): Range3d;
@@ -5826,7 +5861,7 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @alpha
+// @beta
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     suppressLabelPlaceholder?: boolean;
     // (undocumented)
@@ -6546,6 +6581,8 @@ export abstract class TileLoader {
     protected readonly _batchType: BatchType;
     compareTilePriorities(lhs: Tile, rhs: Tile): number;
     // (undocumented)
+    getBatchIdMap(): BatchedTileIdMap | undefined;
+    // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
     // (undocumented)
     protected readonly _loadEdges: boolean;
@@ -6670,6 +6707,7 @@ export namespace TileTree {
 
 // @alpha
 export interface TileTreeModelState {
+    getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // @internal (undocumented)
     readonly iModel: IModelConnection;
     // @internal (undocumented)
@@ -7844,6 +7882,7 @@ export abstract class Viewport implements IDisposable {
     addModelSubCategoryVisibilityOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
     // @internal
     addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
+    addViewedModels(models: Id64Arg): Promise<void>;
     readonly alwaysDrawn: Id64Set | undefined;
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
@@ -7853,12 +7892,16 @@ export abstract class Viewport implements IDisposable {
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration): void;
     // @internal (undocumented)
     animationFraction: number;
-    // @internal (undocumented)
-    applyViewState(val: ViewState, animationTime?: BeDuration): void;
+    // @internal
+    applyViewState(val: ViewState): void;
     // (undocumented)
     readonly auxCoordSystem: AuxCoordSystemState;
     // @internal (undocumented)
     readonly backgroundMapPlane: Plane3dByOriginAndUnitNormal | undefined;
+    // @beta
+    backgroundMapSettings: BackgroundMapSettings;
+    // @beta
+    changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
     changeDynamics(dynamics: GraphicList | undefined): void;
@@ -7914,6 +7957,8 @@ export abstract class Viewport implements IDisposable {
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     // @internal
     getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined;
+    // @internal (undocumented)
+    getToolTip(hit: HitDetail): HTMLElement | string;
     getWorldFrustum(box?: Frustum): Frustum;
     hilite: Hilite.Settings;
     readonly iModel: IModelConnection;
@@ -7953,6 +7998,8 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readonly onAlwaysDrawnChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
+    readonly onChangeView: BeEvent<(vp: Viewport, previousViewState: ViewState) => void>;
+    // @beta
     readonly onDisplayStyleChanged: BeEvent<(vp: Viewport) => void>;
     // @beta
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
@@ -7989,6 +8036,7 @@ export abstract class Viewport implements IDisposable {
     removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider): void;
     // @internal (undocumented)
     renderFrame(): boolean;
+    replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
     // @internal (undocumented)
     readonly scheduleTime: number;
@@ -8014,6 +8062,7 @@ export abstract class Viewport implements IDisposable {
     toView(from: XYZ, to?: XYZ): void;
     turnCameraOn(lensAngle?: Angle): ViewStatus;
     static undoDelay: BeDuration;
+    protected updateChangeFlags(newView: ViewState): void;
     readonly view: ViewState;
     view4dToWorld(input: Point4d, out?: Point3d): Point3d;
     view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void;

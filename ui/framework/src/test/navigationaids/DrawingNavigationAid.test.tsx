@@ -134,7 +134,7 @@ describe("DrawingNavigationAid", () => {
       drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
       drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -155,7 +155,7 @@ describe("DrawingNavigationAid", () => {
       drawingWindow.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
       drawingWindow.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -176,7 +176,7 @@ describe("DrawingNavigationAid", () => {
       drawingContainer.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
       drawingContainer.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -196,7 +196,7 @@ describe("DrawingNavigationAid", () => {
       expect(navAid.style.height).to.equal("300px");
       drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -216,7 +216,7 @@ describe("DrawingNavigationAid", () => {
       expect(navAid.style.height).to.equal("300px");
       drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -236,7 +236,7 @@ describe("DrawingNavigationAid", () => {
       expect(navAid.style.height).to.equal("300px");
       drawingContainer.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, cancelable: true, view: window, key: "Esc" }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -258,7 +258,7 @@ describe("DrawingNavigationAid", () => {
       outside.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
       outside.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true, view: window, clientX: 4, clientY: 4 }));
 
-      await waitForSpy(animationEnd, { timeout: 500 });
+      await waitForSpy(animationEnd, { timeout: 1000 });
 
       const navAid2 = component.queryByTestId("drawing-navigation-aid");
       expect(navAid2).to.exist;
@@ -315,7 +315,7 @@ describe("DrawingNavigationAid", () => {
         expect(viewWindow.style.transform).to.equal("matrix3d(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 32, 32, 0, 1)");
         const unRotate = component.getByTestId("drawing-unrotate-button");
         unRotate.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-        await waitForSpy(animationEnd, { timeout: 500 });
+        await waitForSpy(animationEnd, { timeout: 1000 });
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 32, 32, 0, 1)");
       });
       it("should update rotation and reset on un-rotate with rotateMinimapWithView", async () => {
@@ -328,7 +328,7 @@ describe("DrawingNavigationAid", () => {
         expect(viewWindow.style.transform).to.equal("translate(32px, 32px)");
         const unRotate = component.getByTestId("drawing-unrotate-button");
         unRotate.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
-        await waitForSpy(animationEnd, { timeout: 500 });
+        await waitForSpy(animationEnd, { timeout: 1000 });
         expect(viewWindow.style.transform).to.equal("translate(32px, 32px)");
       });
     });

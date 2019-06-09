@@ -602,23 +602,39 @@ export namespace IModelConnection {
     /** Find a ModelState in the set of loaded Models by ModelId. */
     public getLoaded(id: string): ModelState | undefined { return this.loaded.get(id); }
 
-    /** load a set of Models by Ids. After calling this method, you may get the ModelState objects by calling getLoadedModel. */
-    public async load(modelIds: Id64Arg): Promise<void> {
-      const notLoaded = new Set<string>();
+    /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
+     * @param modelIds The set of model Ids
+     * @returns The subset of the supplied Ids corresponding to models that are not currently loaded, or undefined if all of the specified models are loaded.
+     * @alpha
+     */
+    public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
+      let unloaded: Set<string> | undefined;
       Id64.forEach(modelIds, (id) => {
-        if (undefined === this.getLoaded(id))
-          notLoaded.add(id);
+        if (undefined === this.getLoaded(id)) {
+          if (undefined === unloaded)
+            unloaded = new Set<string>();
+
+          unloaded.add(id);
+        }
       });
 
-      if (notLoaded.size === 0)
+      return unloaded;
+    }
+
+    /** load a set of Models by Ids. After the returned Promise resolves, you may get the ModelState objects by calling getLoadedModel. */
+    public async load(modelIds: Id64Arg): Promise<void> {
+      const notLoaded = this.filterLoaded(modelIds);
+      if (undefined === notLoaded)
         return; // all requested models are already loaded
 
       try {
         const propArray = await this.getProps(notLoaded);
         for (const props of propArray) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
-          const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
-          this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
+          if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
+            const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+            this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
+          }
         }
       } catch (err) { }  // ignore error, we had nothing to do.
     }

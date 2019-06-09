@@ -103,6 +103,7 @@ beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
 alpha;NumericInput 
+alpha;NumericInputDefaultProps = Pick
 alpha;NumericInputProps 
 public;Omit
 beta;OmitChildrenProp

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support batch tables in 3d Tilesets.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

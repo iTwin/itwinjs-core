@@ -92,7 +92,7 @@ export enum ContextMode {
   None = 15,
 }
 
-/** @internal */
+/** @alpha */
 export enum ItemField {
   DIST_Item = 0,
   ANGLE_Item = 1,

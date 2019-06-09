@@ -49,6 +49,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
     //   }
   }
 
+  // istanbul ignore next
   public getValue(): number {
     return this.state.weightValue;
   }
@@ -72,7 +73,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
   private setFocus(): void {
     // istanbul ignore else
     if (this._control && !this.state.isDisabled) {
-      this._control.focus();
+      this._control.setFocus();
     }
   }
 
@@ -127,9 +128,6 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
         () => {
           if (this.props.setFocus) {
             this.setFocus();
-            // istanbul ignore else
-            if (this._control)
-              this._control.select();
           }
         },
       );

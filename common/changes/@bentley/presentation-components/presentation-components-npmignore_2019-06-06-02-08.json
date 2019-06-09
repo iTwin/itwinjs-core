@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "jason.crow@bentley.com"
+}

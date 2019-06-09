@@ -17,8 +17,20 @@ describe("<ColorEditor />", () => {
   afterEach(cleanup);
 
   it("should render", () => {
-    const renderedComponent = render(<ColorEditor />);
+    const renderedComponent = render(<ColorEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;
+  });
+
+  it("should trigger componentDidUpdate", async () => {
+    const record1 = TestUtils.createColorProperty("Test", ColorByName.green as number);
+    const record2 = TestUtils.createColorProperty("Test", ColorByName.blue as number);
+
+    const originalValue = (record1.value as PrimitiveValue).value as number;
+    expect(originalValue).to.be.equal(ColorByName.green as number);
+
+    const renderedComponent = render(<ColorEditor propertyRecord={record1} />);
+    renderedComponent.rerender(<ColorEditor propertyRecord={record2} />);
+    // renderedComponent.debug();
   });
 
   it("button press should open popup and allow color selection", async () => {

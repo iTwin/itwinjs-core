@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added internal method to retrieve attachments from SheetViewState for use in saving/recalling views.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "marc.neely@bentley.com"
+}

@@ -7,7 +7,7 @@ import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Enumeration for Property Editor Param Types
- * @alpha
+ * @beta
  */
 export enum PropertyEditorParamTypes {
   ButtonGroupData,
@@ -26,7 +26,7 @@ export enum PropertyEditorParamTypes {
 
 /**
  * Base interface for Property Editor Params
- * @alpha
+ * @beta
  */
 export interface BasePropertyEditorParams {
   type: PropertyEditorParamTypes;
@@ -34,7 +34,7 @@ export interface BasePropertyEditorParams {
 
 /**
  * Parameters used by PropertyEditors that use HTML <input> element.
- * @alpha
+ * @beta
  */
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.InputEditorSize;
@@ -47,7 +47,7 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
 /**
  * Parameters used to populate color type editor with a specific set of colors. If not specified the Color
  * Editor will show a default palette of 16 colors.
- * @alpha
+ * @beta
  */
 export interface ColorEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ColorData;
@@ -59,7 +59,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
 
 /**
  * Information about an icon displayed next to a property editor.
- * @alpha
+ * @beta
  */
 export interface IconDefinition {
   /** icon class name. */
@@ -69,7 +69,7 @@ export interface IconDefinition {
 
 /**
  * Parameters used by EnumButtonGroupEditor to define icons in button group.
- * @alpha
+ * @beta
  */
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ButtonGroupData;
@@ -78,7 +78,7 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
 
 /**
  * Parameters used to suppress the label for a type editor in the ToolSettings widget.
- * @alpha
+ * @beta
  */
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressEditorLabel;
@@ -167,7 +167,7 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
 
 /**
  * defines Results of parsing a string input by a user into its desired value type
- * @alpha
+ * @beta
  */
 export interface ParseResults {
   value?: string | number | boolean | {} | string[] | Date | [] | undefined;
@@ -176,7 +176,7 @@ export interface ParseResults {
 
 /**
  * Parameters used with properties that want to control parsing and formatting.
- * @alpha
+ * @beta
  */
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CustomFormattedNumber;
@@ -186,7 +186,7 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 
 /**
  * Type definition for all Property Editor params
- * @alpha
+ * @beta
  */
 export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
 /*  Not yet supported

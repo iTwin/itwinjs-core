@@ -46,12 +46,14 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
         colorParams.colorValues.forEach((colorNumber: number) => {
           this._availableColors.push(new ColorDef(colorNumber));
         });
+        // istanbul ignore else
         if (colorParams.numColumns)
           this._numColumns = colorParams.numColumns;
       }
     }
   }
 
+  // istanbul ignore next
   public getValue(): number {
     return this.state.colorValue;
   }
@@ -75,7 +77,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   private setFocus(): void {
     // istanbul ignore else
     if (this._control && !this.state.isDisabled) {
-      this._control.focus();
+      this._control.setFocus();
     }
   }
 
@@ -130,9 +132,6 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
         () => {
           if (this.props.setFocus) {
             this.setFocus();
-            // istanbul ignore else
-            if (this._control)
-              this._control.select();
           }
         },
       );

@@ -8,9 +8,11 @@ import {
   ViewClipDecorationProvider,
   Viewport,
 } from "@bentley/imodeljs-frontend";
+import {
+  createComboBox,
+  createButton,
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
-import { createComboBox } from "./ComboBox";
-import { createButton } from "./Button";
 
 function setFocusToHome(): void {
   const element = document.activeElement as HTMLElement;

@@ -24,9 +24,10 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;BackgroundMapProvider 
-alpha;BasePropertyEditorParams
+beta;BasePropertyEditorParams
 beta;BasePropertyValue
-internal;BaseTiledMapProvider
+internal;class BaseTiledMapProvider 
+internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
 public;BeButtonEventProps
@@ -38,13 +39,15 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
-alpha;ButtonGroupEditorParams 
+beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
 public;CanvasDecoration
 public;CanvasDecorationList = CanvasDecoration[]
+public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
+public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
 beta;ChangeFlag
 beta;ChangeFlags
@@ -57,7 +60,7 @@ beta;enum ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
-alpha;ColorEditorParams 
+beta;ColorEditorParams 
 internal;CompassMode
 internal;ContextMode
 internal;ContextRealityModelState 
@@ -67,7 +70,7 @@ public;CoordSource
 public;CoordSystem
 internal;CurrentInputState
 internal;CurrentState
-alpha;CustomFormattedNumberParams 
+beta;CustomFormattedNumberParams 
 public;DecorateContext 
 alpha;DecorationAnimator 
 public;Decorations 
@@ -138,11 +141,12 @@ public;HitListHolder
 public;HitParentGeomType
 public;HitPriority
 public;HitSource
-alpha;IconDefinition
+beta;IconDefinition
 alpha;IconEditorParams 
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined
+public;imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise
@@ -154,12 +158,12 @@ public;IModelConnection
 public;IModelConnection
 internal;Tiles
 public;class InputCollector 
-alpha;InputEditorSizeParams 
+beta;InputEditorSizeParams 
 public;InputSource
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
-internal;ItemField
+alpha;ItemField
 alpha;JsonEditorParams 
 internal;KeyinStatus
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
@@ -205,7 +209,7 @@ internal;OverlayMapProvider
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PanViewTool 
-alpha;ParseResults
+beta;ParseResults
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
@@ -221,13 +225,13 @@ beta;PrimitiveValue
 internal;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
-alpha;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
-alpha;PropertyEditorParamTypes
+beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
+beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
 alpha;QuantityFormatter 
-alpha;QuantityType
+beta;QuantityType
 alpha;RangeEditorParams 
 public;RelativePosition
 public;RemoveMe
@@ -304,7 +308,7 @@ beta;StructValue
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
-alpha;SuppressLabelEditorParams 
+beta;SuppressLabelEditorParams 
 alpha;SuppressUnitLabelEditorParams 
 internal;SuspendedToolState
 internal;SyncFlags

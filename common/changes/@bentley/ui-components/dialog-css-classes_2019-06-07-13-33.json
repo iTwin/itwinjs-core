@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added prefixes to Dialog & ContextMenu positioning CSS classes",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

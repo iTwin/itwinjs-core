@@ -297,7 +297,7 @@ export class IModelDb extends IModel {
       }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
@@ -314,7 +314,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.Message, iModelToken: imodelDb.iModelToken }));
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 

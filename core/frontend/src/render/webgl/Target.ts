@@ -33,6 +33,7 @@ import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { FloatRgba } from "./FloatRGBA";
 import { SolarShadowMap } from "./SolarShadowMap";
+import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 
 // tslint:disable:no-const-enum
 
@@ -450,12 +451,12 @@ export abstract class Target extends RenderTarget {
     const p = this._scratchRangeCorners;
     p[0].setFromPoint3d(r.low);
     p[1].set(r.high.x, r.low.y, r.low.z),
-    p[2].set(r.low.x, r.high.y, r.low.z),
-    p[3].set(r.high.x, r.high.y, r.low.z),
-    p[4].set(r.low.x, r.low.y, r.high.z),
-    p[5].set(r.high.x, r.low.y, r.high.z),
-    p[6].set(r.low.x, r.high.y, r.high.z),
-    p[7].setFromPoint3d(r.high);
+      p[2].set(r.low.x, r.high.y, r.low.z),
+      p[3].set(r.high.x, r.high.y, r.low.z),
+      p[4].set(r.low.x, r.low.y, r.high.z),
+      p[5].set(r.high.x, r.low.y, r.high.z),
+      p[6].set(r.low.x, r.high.y, r.high.z),
+      p[7].setFromPoint3d(r.high);
     return p;
   }
 
@@ -1080,23 +1081,6 @@ export abstract class Target extends RenderTarget {
     return result;
   }
 
-  /** Given a ViewRect, return a new rect that has been adjusted for the given aspect ratio. */
-  private adjustRectForAspectRatio(requestedRect: ViewRect, targetAspectRatio: number): ViewRect {
-    const rect = requestedRect.clone();
-    if (targetAspectRatio >= 1) {
-      const requestedWidth = rect.width;
-      const requiredWidth = rect.height * targetAspectRatio;
-      const adj = requiredWidth - requestedWidth;
-      rect.inset(-adj / 2, 0);
-    } else {
-      const requestedHeight = rect.height;
-      const requiredHeight = rect.width / targetAspectRatio;
-      const adj = requiredHeight - requestedHeight;
-      rect.inset(0, -adj / 2);
-    }
-    return rect;
-  }
-
   protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean {
     assert(this._fbo !== undefined);
     if (this._fbo === undefined)
@@ -1116,6 +1100,16 @@ export abstract class Target extends RenderTarget {
     return true;
   }
 
+  /** Returns a new size scaled up to a maximum size while maintaining proper aspect ratio.  The new size will be
+   * curSize adjusted so that it fits fully within maxSize in one dimension, maintaining its original aspect ratio.
+   */
+  private static _applyAspectRatioCorrection(curSize: Point2d, maxSize: Point2d): Point2d {
+    const widthRatio = maxSize.x / curSize.x;
+    const heightRatio = maxSize.y / curSize.y;
+    const bestRatio = Math.min(widthRatio, heightRatio);
+    return new Point2d(curSize.x * bestRatio, curSize.y * bestRatio);
+  }
+
   public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     // Determine capture rect and validate
     const actualViewRect = this.renderRect;
@@ -1126,55 +1120,59 @@ export abstract class Target extends RenderTarget {
       wantRect.bottom = actualViewRect.bottom;
     }
 
+    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
+    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
+      return undefined;
+
+    this.assignDC();
+
+    // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
+    const bytesPerPixel = 4;
+    const imageData = new Uint8Array(bytesPerPixel * wantRect.width * wantRect.height);
+    const isValidImageData = this.readImagePixels(imageData, wantRect.left, wantRect.top, wantRect.width, wantRect.height);
+    if (!isValidImageData)
+      return undefined;
+    let image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, wantRect.width);
+    if (!image)
+      return undefined;
+
     const targetSize = targetSizeIn.clone();
     if (targetSize.x === 0 || targetSize.y === 0) { // Indicates image should have same dimensions as rect (no scaling)
       targetSize.x = wantRect.width;
       targetSize.y = wantRect.height;
     }
 
-    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
-    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
-      return undefined;
+    if (targetSize.x === wantRect.width && targetSize.y === wantRect.height) {
+      // No need to scale image.
+      // Some callers want background pixels to be treated as fully-transparent
+      // They indicate this by supplying a background color with full transparency
+      // Any other pixels are treated as fully-opaque as alpha has already been blended
+      // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
+      const preserveBGAlpha = 0.0 === this.bgColor.alpha;
 
-    let captureRect = this.adjustRectForAspectRatio(wantRect, targetSize.x / targetSize.y);
-
-    captureRect = wantRect.clone();
-    targetSize.x = captureRect.width;
-    targetSize.y = captureRect.height;
-
-    if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
-      return undefined; // ###TODO: additional logic to shrink requested rectangle to fit inside view
-
-    this.assignDC();
-
-    // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
-    const bytesPerPixel = 4;
-    const imageData = new Uint8Array(bytesPerPixel * captureRect.width * captureRect.height);
-    const isValidImageData = this.readImagePixels(imageData, captureRect.left, actualViewRect.height - captureRect.bottom, captureRect.width, captureRect.height);
-    if (!isValidImageData)
-      return undefined;
-    const image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, targetSize.x);
-    if (!image)
-      return undefined;
-
-    // No need to scale image.
-    // Some callers want background pixels to be treated as fully-transparent
-    // They indicate this by supplying a background color with full transparency
-    // Any other pixels are treated as fully-opaque as alpha has already been blended
-    // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
-    const preserveBGAlpha = 0.0 === this.bgColor.alpha;
-
-    // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
-    let isEmptyImage = true;
-    for (let i = 3; i < image.data.length; i += 4) {
-      const a = image.data[i];
-      if (!preserveBGAlpha || 0 < a) {
-        image.data[i] = 0xff;
-        isEmptyImage = false;
+      // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
+      let isEmptyImage = true;
+      for (let i = 3; i < image.data.length; i += 4) {
+        const a = image.data[i];
+        if (!preserveBGAlpha || 0 < a) {
+          image.data[i] = 0xff;
+          isEmptyImage = false;
+        }
       }
+      if (isEmptyImage)
+        return undefined;
+    } else {
+      const canvas = imageBufferToCanvas(image); // retrieve a canvas of the image we read
+      if (undefined === canvas)
+        return undefined;
+
+      const adjustedTargetSize = Target._applyAspectRatioCorrection(new Point2d(wantRect.width, wantRect.height), targetSize);
+      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), new ColorDef(this.bgColor.colorDefValue).toHexString());
+
+      const resizedImage = canvasToImageBuffer(resizedCanvas);
+      if (undefined !== resizedImage)
+        image = resizedImage;
     }
-    if (isEmptyImage)
-      return undefined;
 
     if (flipVertically) {
       const halfHeight = Math.floor(image.height / 2);

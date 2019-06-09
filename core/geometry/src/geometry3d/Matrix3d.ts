@@ -643,16 +643,16 @@ export class Matrix3d implements BeJSONFunctions {
     }
     if (!this.isRigid())
       return result;
-    const QminusI = this.clone();
-    QminusI.coffs[0] -= 1.0;
-    QminusI.coffs[4] -= 1.0;
-    QminusI.coffs[8] -= 1.0;
+    const QMinusI = this.clone();
+    QMinusI.coffs[0] -= 1.0;
+    QMinusI.coffs[4] -= 1.0;
+    QMinusI.coffs[8] -= 1.0;
     // Each column of (Q - I) is the motion of the corresponding axis vector
     // during the rotation.
     // Only one of the three axes can really be close to the rotation axis.
-    const delta0 = QminusI.columnX();
-    const delta1 = QminusI.columnY();
-    const delta2 = QminusI.columnZ();
+    const delta0 = QMinusI.columnX();
+    const delta1 = QMinusI.columnY();
+    const delta2 = QMinusI.columnZ();
     const cross01 = delta0.crossProduct(delta1);
     const cross12 = delta1.crossProduct(delta2);
     const cross20 = delta2.crossProduct(delta0);
@@ -882,6 +882,7 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return the dot product of the vector parameter with the Z row. */
   public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
 
+  // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen
   /** Return the dot product of the x,y,z with the X row. */
   public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
   /** Return the dot product of the x,y,z with the Y row. */
@@ -1380,7 +1381,7 @@ export class Matrix3d implements BeJSONFunctions {
     result[2] = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
     return result;
   }
-  /** Multiply transpose of this matrix times  avector. */
+  /** Multiply transpose of this matrix times a vector. */
   public multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     const x = vector.x;
@@ -1584,7 +1585,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Transform.createRefs(
         this.multiplyXYZ(other.origin.x, other.origin.y, other.origin.z),
         this.multiplyMatrixMatrix(other.matrix));
-    // be sure to do the point mulitplication first before aliasing changes the matrix ..
+    // be sure to do the point multiplication first before aliasing changes the matrix ..
     this.multiplyXYZtoXYZ(other.origin, result.origin);
     this.multiplyMatrixMatrix(other.matrix, result.matrix);
     return result;

@@ -38,6 +38,7 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    // istanbul ignore else
     if (props && props.onColorPick)
       props.onColorPick(props.colorDef, e);
   };

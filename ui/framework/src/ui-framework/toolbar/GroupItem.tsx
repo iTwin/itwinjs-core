@@ -92,7 +92,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    const key = (index !== undefined) ? index.toString() : this.id;
+    const key = this.getKey(index);
     this.resolveItems();
 
     return (

@@ -20,12 +20,18 @@ import {
   FeatureSymbology,
   Viewport,
 } from "@bentley/imodeljs-frontend";
+import {
+  createButton,
+  createNumericInput,
+  createCheckBox,
+  createComboBox,
+  ComboBoxHandler,
+  ComboBox,
+  createColorInput,
+  convertHexToRgb,
+  ColorInputProps,
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
-import { createButton } from "./Button";
-import { createNumericInput } from "./NumericInput";
-import { createCheckBox } from "./CheckBox";
-import { createComboBox, ComboBoxHandler, ComboBox } from "./ComboBox";
-import { createColorInput, convertHexToRgb, ColorInputProps } from "./ColorInput";
 
 export function emphasizeSelectedElements(vp: Viewport): void {
   const emph = EmphasizeElements.getOrCreate(vp);

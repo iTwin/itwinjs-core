@@ -5,8 +5,7 @@
 /** @module Common */
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { getClassName } from "@bentley/ui-core";
+import { getClassName, UiError } from "@bentley/ui-core";
 
 /**
  * Entry point for static initialization required by various
@@ -37,7 +36,7 @@ export class UiComponents {
   /** The internationalization service created by the IModelApp. */
   public static get i18n(): I18N {
     if (!UiComponents._i18n)
-      throw new BentleyError(BentleyStatus.ERROR, "UiComponents not initialized");
+      throw new UiError(UiComponents.loggerCategory(this), "UiComponents not initialized");
     return UiComponents._i18n;
   }
 

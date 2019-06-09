@@ -762,7 +762,7 @@ describe("VisibilityTree", () => {
           };
 
           const vpMock = mockViewport();
-          vpMock.setup((x) => x.changeModelDisplay(moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
+          vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
           await using(createHandler({ viewport: vpMock.object }), async (handler) => {
             await handler.changeVisibility(node, true);
@@ -779,7 +779,7 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeModelDisplay(moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
+            vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
@@ -798,7 +798,7 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeModelDisplay(subjectModelIds, true)).verifiable();
+            vpMock.setup((x) => x.addViewedModels(subjectModelIds)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
@@ -839,7 +839,7 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => false);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeModelDisplay(moq.It.isAny(), moq.It.isAny())).verifiable(moq.Times.never());
+            vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               await handler.changeVisibility(node, true);
@@ -855,7 +855,7 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.changeModelDisplay([key.id], true)).verifiable();
+            vpMock.setup((x) => x.addViewedModels([key.id])).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               await handler.changeVisibility(node, true);

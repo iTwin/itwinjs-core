@@ -10,7 +10,7 @@ import {
   Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, SmoothTransformBetweenFrusta, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
+  AnalysisStyle, AntiAliasPref, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc, NpcCenter, NpcCorners,
   Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -92,8 +92,9 @@ export enum ChangeFlag {
   DisplayStyle = 1 << 4,
   FeatureOverrideProvider = 1 << 5,
   ViewedCategoriesPerModel = 1 << 6,
+  ViewState = 1 << 7,
   All = 0x0fffffff,
-  Overrides = ChangeFlag.All & ~ChangeFlag.ViewedModels,
+  Overrides = ChangeFlag.All & ~(ChangeFlag.ViewedModels | ChangeFlag.ViewState),
   Initial = ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
 }
 
@@ -123,6 +124,9 @@ export class ChangeFlags {
   /** The [[FeatureOverrideProvider]] has changed, or its internal state has changed such that its overrides must be recomputed. */
   public get featureOverrideProvider() { return this.isSet(ChangeFlag.FeatureOverrideProvider); }
   public setFeatureOverrideProvider() { this.set(ChangeFlag.FeatureOverrideProvider); }
+  /** [[changeView]] was used to replace the previous [[ViewState]] with a new one. */
+  public get viewState() { return this.isSet(ChangeFlag.ViewState); }
+  public setViewState() { this.set(ChangeFlag.ViewState); }
   /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
    * @alpha
    */
@@ -1166,6 +1170,8 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.
+   * @see [[onViewportChanged]] for receiving events at more regular intervals with more specific information about what changed.
+   * @see [[onChangeView]] for an event raised specifically when a different [[ViewState]] becomes associated with the viewport.
    */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called after reversing the most recent change to the Viewport from the undo stack or reapplying the most recently undone change to the Viewport from the redo stack.
@@ -1209,6 +1215,10 @@ export abstract class Viewport implements IDisposable {
    * @beta
    */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
+  /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
+   * @beta
+   */
+  public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
@@ -1463,6 +1473,30 @@ export abstract class Viewport implements IDisposable {
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
   }
 
+  /** The settings controlling how a background map is displayed within a view.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
+   * @beta
+   */
+  public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
+  public set backgroundMapSettings(settings: BackgroundMapSettings) {
+    this.displayStyle.backgroundMapSettings = settings;
+    this.invalidateScene();
+  }
+
+  /** Modify a subset of the background map display settings.
+   * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
+   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   *
+   * Example that changes only the elevation, leaving the provider and type unchanged:
+   * ``` ts
+   *  viewport.changeBackgroundMapProps({ groundBias: 16.2 });
+   * ```
+   * @beta
+   */
+  public changeBackgroundMapProps(props: BackgroundMapProps): void {
+    this.displayStyle.changeBackgroundMapProps(props);
+  }
+
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
 
@@ -1495,6 +1529,8 @@ export abstract class Viewport implements IDisposable {
    * @param modelIds The Ids of the models to be displayed.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note This function *does not load* any models. If any of the supplied `modelIds` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
+   * @see [[replaceViewedModels]] for a similar function that also ensures the requested models are loaded.
    */
   public changeViewedModels(modelIds: Id64Arg): boolean {
     if (!this.view.isSpatialView())
@@ -1509,11 +1545,25 @@ export abstract class Viewport implements IDisposable {
     return true;
   }
 
+  /** Attempt to replace the set of models currently viewed by this viewport, if it is displaying a SpatialView
+   * @param modelIds The Ids of the models to be displayed.
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   */
+  public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
+    if (this.view.isSpatialView()) {
+      this.view.modelSelector.models.clear();
+      return this.addViewedModels(modelIds);
+    }
+  }
+
   /** Add or remove a set of models from those models currently displayed in this viewport.
    * @param modelIds The Ids of the models to add or remove.
    * @param display Whether or not to display the specified models in the viewport.
    * @returns false if this Viewport is not viewing a [[SpatialViewState]]
    * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note This function *does not load* any models. If `display` is `true` and any of the supplied `models` refers to a model that has not been loaded, no graphics will be loaded+displayed in the viewport for that model.
+   * @see [[addViewedModels]] for a similar function that also ensures the requested models are loaded.
    */
   public changeModelDisplay(models: Id64Arg, display: boolean): boolean {
     if (!this.view.isSpatialView())
@@ -1531,6 +1581,26 @@ export abstract class Viewport implements IDisposable {
     }
 
     return true;
+  }
+
+  /** Adds a set of models to the set of those currently displayed in this viewport.
+   * @param modelIds The Ids of the models to add or remove.
+   * @param display Whether or not to display the specified models in the viewport.
+   * @note This function *only works* if the viewport is viewing a [[SpatialViewState]], otherwise it does nothing.
+   * @note If any of the requested models is not yet loaded this function will asynchronously load them before updating the set of displayed models.
+   */
+  public async addViewedModels(models: Id64Arg): Promise<void> {
+    // NB: We want the model selector to update immediately, to avoid callers repeatedly requesting we load+display the same models while we are already loading them.
+    // This will also trigger scene invalidation and changed events.
+    if (!this.changeModelDisplay(models, true))
+      return; // means it's a 2d model - this function can do nothing useful in 2d.
+
+    const unloaded = this.iModel.models.filterLoaded(models);
+    if (undefined === unloaded)
+      return;
+
+    // Need to redraw once models are available. Don't want to trigger events again.
+    return this.iModel.models.load(models).then(() => this.invalidateScene());
   }
 
   /** @internal */
@@ -1581,6 +1651,17 @@ export abstract class Viewport implements IDisposable {
       this._fadeOutActive = active;
       this.invalidateRenderPlan();
     }
+  }
+  /** @internal */
+  public getToolTip(hit: HitDetail): HTMLElement | string {
+    let toolTip: string | HTMLElement = "";
+    if (this.displayStyle)
+      this.displayStyle.forEachContextRealityModel((model) => {
+        const thisToolTip = model.getToolTip(hit);
+        if (thisToolTip !== undefined)
+          toolTip = thisToolTip;
+      });
+    return toolTip;
   }
 
   /** @internal */
@@ -1802,11 +1883,18 @@ export abstract class Viewport implements IDisposable {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    */
   public changeView(view: ViewState) {
+    const prevView = undefined !== this.viewFrustum ? this.view : undefined;
+
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateScene();
     this.sync.invalidateController();
     this.target.reset();
+
+    if (undefined !== prevView && prevView !== view) {
+      this.onChangeView.raiseEvent(this, prevView);
+      this._changeFlags.setViewState();
+    }
   }
 
   /** @internal */
@@ -2219,18 +2307,18 @@ export abstract class Viewport implements IDisposable {
     this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
-  /** @internal */
-  public applyViewState(val: ViewState, animationTime?: BeDuration) {
+  /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
+   * Does *not* trigger "ViewState changed" events.
+   * @internal
+   */
+  public applyViewState(val: ViewState) {
     this.updateChangeFlags(val);
-    const startFrust = this.getFrustum();
     this._viewFrustum.view = val;
     this.synchWithView(false);
-    if (animationTime)
-      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
-  /** Invoked from applyViewState and changeView to potentially recompute change flags based on differences between current and new ViewState. */
-  private updateChangeFlags(newView: ViewState): void {
+  /** Invoked from finishUndoRedo, applyViewState, and changeView to potentially recompute change flags based on differences between current and new ViewState. */
+  protected updateChangeFlags(newView: ViewState): void {
     // Before the first call to changeView, this.view is undefined because we have no frustum. Our API pretends it is never undefined.
     const oldView = undefined !== this.viewFrustum ? this.view : undefined;
 
@@ -2884,7 +2972,7 @@ export class ScreenViewport extends Viewport {
     this._forwardStack.push(this._currentBaseline);
     this._currentBaseline = this._backStack.pop()!;
     this.view.setFromUndo(this._currentBaseline);
-    this.applyViewState(this.view, animationTime);
+    this.finishUndoRedo(animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Undo);
   }
 
@@ -2896,8 +2984,17 @@ export class ScreenViewport extends Viewport {
     this._backStack.push(this._currentBaseline!);
     this._currentBaseline = this._forwardStack.pop()!;
     this.view.setFromUndo(this._currentBaseline);
-    this.applyViewState(this.view, animationTime);
+    this.finishUndoRedo(animationTime);
     this.onViewUndoRedo.raiseEvent(this, ViewUndoEvent.Redo);
+  }
+
+  /** @internal */
+  private finishUndoRedo(animationTime?: BeDuration): void {
+    this.updateChangeFlags(this.view);
+    const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
+    this.synchWithView(false);
+    if (undefined !== animationTime && undefined !== startFrust)
+      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */

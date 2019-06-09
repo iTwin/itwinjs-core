@@ -51,7 +51,7 @@ export class CustomItemDef extends ActionButtonItemDef {
 
     // istanbul ignore else
     if (React.isValidElement(this.reactElement)) {
-      const key = (index !== undefined) ? index.toString() : this.id;
+      const key = this.getKey(index);
       const cloneProps: CloneProps = {
         key,
         onSizeKnown: this.handleSizeKnown,

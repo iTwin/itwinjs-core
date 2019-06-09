@@ -35,8 +35,42 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
   return idx + 4;
 }
 
-/** Creates a canvas element with the same dimensions and contents as the ImageBuffer. */
-function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined {
+/** Resize a canvas to a desired size.  The final size will be targetSize plus barSize.  The original canvas is left untouched and a new, resized canvas with potential side bars is returned.
+ * @param canvasIn the source [[HTMLCanvasElement]] to resize.
+ * @param targetSize the desired new size for the canvas image.
+ * @param barSize total size of side bars to add to the image in width and height; defaults to (0, 0).  For example, if you specify (2, 0), a 1 pixel side bar will be added to the left and right sides of the resized image.  If an odd dimension is specified, the left or upper side of the image will be one pixel larger than the opposite side.  For example, if you specify (1, 0), a 1 pixel side bar will be added to the left side of the image and a 0 pixel side bar will be added to the right side of the image.
+ * @param barStyle CSS style string to apply to any side bars; defaults to "#C0C0C0", which is silver.
+ * @returns an [[HTMLCanvasElement]] object containing the resized image and any requested side bars.
+ * @public
+ */
+export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
+  const canvasOut = document.createElement("canvas");
+  canvasOut.width = targetSize.x + barSize.x;
+  canvasOut.height = targetSize.y + barSize.y;
+
+  let adjustImageX = barSize.x / 2;
+  let adjustImageY = barSize.y / 2;
+
+  if (1 === barSize.x % 2) {
+    adjustImageX += 0.5;
+  }
+  if (1 === barSize.y % 2) {
+    adjustImageY += 0.5;
+  }
+
+  const context = canvasOut.getContext("2d")!;
+  context.fillStyle = barStyle;
+  context.fillRect(0, 0, canvasOut.width, canvasOut.height);
+  context.drawImage(canvasIn, adjustImageX, adjustImageY, targetSize.x, targetSize.y);
+  return canvasOut;
+}
+
+/** Create a canvas element with the same dimensions and contents as an image buffer.
+ * @param buffer the source [[ImageBuffer]] object from which the [[HTMLCanvasElement]] object will be constructed.
+ * @returns an [[HTMLCanvasElement]] object containing the contents of the source image buffer, or undefined if the conversion fails.
+ * @public
+ */
+export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
   if (null === canvas)
     return undefined;
@@ -66,6 +100,56 @@ function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
 
   context.putImageData(imageData, 0, 0);
   return canvas;
+}
+
+/** Create an ImageBuffer in the specified format with the same dimensions and contents as a canvas.
+ * @param canvas the source [[HTMLCanvasElement]] object from which the [[ImageBuffer]] object will be constructed.
+ * @param format the desired format of the created ImageBuffer; defaults to [[ImageBufferFormat.Rgba]].
+ * @returns an [[ImageBuffer]] object containing the contents of the source canvas, or undefined if the conversion fails.
+ * @public
+ */
+export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBufferFormat.Rgba): ImageBuffer | undefined {
+  const context = canvas.getContext("2d");
+  if (null === context)
+    return undefined;
+
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+  let imageBufferData: Uint8Array | undefined;
+
+  if (ImageBufferFormat.Rgba === format) {
+    imageBufferData = new Uint8Array(imageData.data.length);
+  } else if (ImageBufferFormat.Rgb === format) {
+    imageBufferData = new Uint8Array((imageData.data.length / 4) * 3);
+  } else if (ImageBufferFormat.Alpha === format) {
+    imageBufferData = new Uint8Array(imageData.data.length / 4);
+  }
+
+  if (undefined === imageBufferData)
+    return undefined;
+
+  let i = 0;
+  let j = 0;
+  while (i < imageData.data.length) {
+    if (ImageBufferFormat.Rgba === format) {
+      imageBufferData[j + 0] = imageData.data[i + 0];
+      imageBufferData[j + 1] = imageData.data[i + 1];
+      imageBufferData[j + 2] = imageData.data[i + 2];
+      imageBufferData[j + 3] = imageData.data[i + 3];
+      j += 4;
+    } else if (ImageBufferFormat.Rgb === format) {
+      imageBufferData[j + 0] = imageData.data[i + 0];
+      imageBufferData[j + 1] = imageData.data[i + 1];
+      imageBufferData[j + 2] = imageData.data[i + 2];
+      j += 3;
+    } else if (ImageBufferFormat.Alpha === format) {
+      imageBufferData[j] = imageData.data[i + 3];
+      j++;
+    }
+    i += 4;
+  }
+
+  return ImageBuffer.create(imageBufferData, format, canvas.width);
 }
 
 /** Get a string describing the mime type associated with an ImageSource format.

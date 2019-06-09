@@ -1707,21 +1707,21 @@ export class Sample {
     const result = [];
     // one singleton per basic curve type ...
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0)))));
+      Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0))))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(Arc3d.createCircularStartMiddleEnd(
-        Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0))!)));
+        Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0))!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(LineString3d.create(pointsA))));
+      Path.create(LineString3d.create(pointsA)))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!)));
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!)));
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(
         LineSegment3d.create(pointsA[0], pointsA[1]),
         Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
-        LineSegment3d.create(pointsA[3], pointsA[4]))));
+        LineSegment3d.create(pointsA[3], pointsA[4])))!);
     return result;
   }
   /**

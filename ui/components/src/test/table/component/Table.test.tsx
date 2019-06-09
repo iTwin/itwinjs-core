@@ -67,7 +67,7 @@ describe("Table", () => {
 
   const columns: ColumnDescription[] = [
     { label: "label0", key: "key0", sortable: true },
-    { label: "label1", key: "key1" },
+    { label: "label1", key: "key1", resizable: true },
     { label: "label2", key: "key2", editable: true },
   ];
   const onRowsLoaded = sinon.spy();
@@ -893,12 +893,41 @@ describe("Table", () => {
 
   describe("sort", () => {
 
-    it.skip("clicking on a sortable column heading should sort", async () => {
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+    });
+
+    it("clicking on a sortable column heading should sort", async () => {
       // Simulate clicking on the header for sort
-      const headerCellDiv = table.find("div.react-grid-HeaderCell-sortable");
+      let header = table.find("div.react-grid-Header");
+      let tEl = header.find("t[sortDirection=\"NONE\"]");
+      expect(tEl.length).to.eq(1);
+
+      let headerCellDiv = header.find("div.react-grid-HeaderCell-sortable");
       headerCellDiv.simulate("click");  // Ascending
+      table.update();
+      header = table.find("div.react-grid-Header");
+      tEl = header.find("t[sortDirection=\"ASC\"]");
+      expect(tEl.length).to.eq(1);
+
+      headerCellDiv = header.find("div.react-grid-HeaderCell-sortable");
       headerCellDiv.simulate("click");  // Descending
+      table.update();
+      header = table.find("div.react-grid-Header");
+      tEl = header.find("t[sortDirection=\"DESC\"]");
+      expect(tEl.length).to.eq(1);
+
+      headerCellDiv = header.find("div.react-grid-HeaderCell-sortable");
       headerCellDiv.simulate("click");  // NoSort
+      table.update();
+      header = table.find("div.react-grid-Header");
+      tEl = header.find("t[sortDirection=\"NONE\"]");
+      expect(tEl.length).to.eq(1);
     });
 
   });
@@ -967,6 +996,28 @@ describe("Table", () => {
 
   });
 
+  const storageMock = () => {
+    const storage: { [key: string]: any } = {};
+    return {
+      setItem: (key: string, value: string) => {
+        storage[key] = value || "";
+      },
+      getItem: (key: string) => {
+        return key in storage ? storage[key] : null;
+      },
+      removeItem: (key: string) => {
+        delete storage[key];
+      },
+      get length() {
+        return Object.keys(storage).length;
+      },
+      key: (i: number) => {
+        const keys = Object.keys(storage);
+        return keys[i] || null;
+      },
+    };
+  };
+
   describe("column drag and drop", async () => {
 
     beforeEach(async () => {
@@ -975,6 +1026,8 @@ describe("Table", () => {
         dataProvider={dataProviderMock.object}
         onRowsLoaded={onRowsLoaded}
         reorderableColumns={true}
+        settingsIdentifier="test"
+        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -988,33 +1041,12 @@ describe("Table", () => {
       const firstInstance = head.at(1).instance() as any;
       backend.simulateBeginDrag([firstInstance.getHandlerId()]);
       backend.simulateEndDrag();
+      table.update();
     });
 
   });
 
   describe("columns show/hide", async () => {
-
-    const storageMock = () => {
-      const storage: { [key: string]: any } = {};
-      return {
-        setItem: (key: string, value: string) => {
-          storage[key] = value || "";
-        },
-        getItem: (key: string) => {
-          return key in storage ? storage[key] : null;
-        },
-        removeItem: (key: string) => {
-          delete storage[key];
-        },
-        get length() {
-          return Object.keys(storage).length;
-        },
-        key: (i: number) => {
-          const keys = Object.keys(storage);
-          return keys[i] || null;
-        },
-      };
-    };
 
     beforeEach(async () => {
       table = enzyme.mount(<Table

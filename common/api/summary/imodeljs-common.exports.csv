@@ -14,6 +14,8 @@ public;AxisAlignedBox3dProps = Range3dProps
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
+beta;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+beta;BackgroundMapSettings
 public;BackgroundMapType
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
@@ -231,9 +233,9 @@ internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
 public;QueryPriority
-internal;QueryQuota
-internal;QueryResponse
-internal;QueryResponseStatus
+public;QueryQuota
+public;QueryResponse
+public;QueryResponseStatus
 public;Rank
 internal;ReadableFormData 
 internal;REGISTRY: unique symbol

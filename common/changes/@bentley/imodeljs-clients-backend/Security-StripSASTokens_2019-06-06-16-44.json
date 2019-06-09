@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove sensitive information from download/upload url for logging purpose",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "khanaffan@gmail.com"
+}

@@ -345,7 +345,7 @@ describe("Breadcrumb", () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
             fireEvent.keyUp(input, { keyCode: 27 });
-            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("opened")).to.be.false;
+            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.false;
           });
           it("Should prevent default on <Up> and <Down> keydown", async () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
@@ -363,10 +363,10 @@ describe("Breadcrumb", () => {
             await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
             const input = renderedComponent.getByTestId("components-breadcrumb-input");
             fireEvent.keyUp(input, { keyCode: 27 });
-            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("opened")).to.be.false;
+            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.false;
             fireEvent.keyUp(input, { keyCode: 38 });
             fireEvent.keyUp(input, { keyCode: 40 });
-            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("opened")).to.be.true;
+            expect(renderedComponent.getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.true;
           });
         });
       });

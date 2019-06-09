@@ -100,7 +100,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     let axes = Matrix3d.createRigidFromColumns(plane.vectorU, plane.vectorV, AxisOrder.XYZ);
     if (axes)
       return Transform.createRefs(plane.origin, axes, result);
-    // 2nd derivative not distinct -- do arbitrary headsup ...
+    // 2nd derivative not distinct -- do arbitrary headsUP ...
     const perpVector = Matrix3d.createPerpendicularVectorFavorXYPlane(plane.vectorU, plane.vectorV);
     axes = Matrix3d.createRigidFromColumns(plane.vectorU, perpVector, AxisOrder.XYZ);
     if (axes)
@@ -186,7 +186,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    *     * `stoppedAtBoundary` partial movement completed. This can be due to either
    *        * `allowExtension` parameter sent as `false`
    *        * the curve type (e.g. bspline) does not support extended range.
-   * * if `allowExtension` is true, movement may still end at the startpoint or endpoint for curves that do not support extended geometry (specifically bsplines)
+   * * if `allowExtension` is true, movement may still end at the startPoint or end point for curves that do not support extended geometry (specifically bsplines)
    * * if the curve returns a value (i.e. not `undefined`) for `curve.getFractionToDistanceScale()`, the base class carries out the computation
    *    and returns a final location.
    *   * LineSegment3d relies on this.
@@ -197,7 +197,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    *    * `curveStartState` = `CurveSearchStatus.error`
    * @param startFraction fractional position where the move starts
    * @param signedDistance distance to move.   Negative distance is backwards in the fraction space
-   * @param allowExtension if true, all the move to go beyond the startpoint or endpoint of the curve.  If false, do not allow movement beyond the startpoint or endpoint
+   * @param allowExtension if true, all the move to go beyond the startPoint or endpoint of the curve.  If false, do not allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above.  Note that if the curve does not support the calculation, there is still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState` member
    */
@@ -223,7 +223,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return this.moveSignedDistanceFromFractionGeneric(startFraction, signedDistance, allowExtension, result);
   }
   /**
-   * Generic algorithm to search for point at signed distance from a fractional start point.
+   * Generic algorithm to search for point at signed distance from a fractional startPoint.
    * * This will work for well for smooth curves.
    * * Curves with tangent or other low-order-derivative discontinuities may need to implement specialized algorithms.
    * * We need to find an endFraction which is the end-of-interval (usually upper) limit of integration of the tangent magnitude from startFraction to endFraction
@@ -377,7 +377,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @returns Returns true if the curve is completely within tolerance of the plane.
    */
   public abstract isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
-  /** return the start point of the primitive.  The default implementation returns fractionToPoint (0.0) */
+  /** return the startPoint of the primitive.  The default implementation returns fractionToPoint (0.0) */
   public startPoint(result?: Point3d): Point3d { return this.fractionToPoint(0.0, result); }
   /** return the end point of the primitive. The default implementation returns fractionToPoint(1.0) */
   public endPoint(result?: Point3d): Point3d { return this.fractionToPoint(1.0, result); }
@@ -399,7 +399,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * attach StrokeCountMap structure to this primitive (and recursively to any children)
    * * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and attaches it.
    * * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   * * Subdivided primitives (linestring, bspline curve) implment themselves and attach a StrokeCountMap containing the
+   * * Subdivided primitives (linestring, bspline curve) implement themselves and attach a StrokeCountMap containing the
    *       total count, and also containing an array of StrokeCountMap per component.
    * * For CurvePrimitiveWithDistanceIndex, the top level gets (only) a total count, and each child gets
    *       its own StrokeCountMap with appropriate structure.
@@ -420,7 +420,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * evaluate strokes at fractions indicated in a StrokeCountMap.
    *   * Base class implementation (here) gets the simple count from computeStrokeCountForOptions and strokes at uniform fractions.
    *   * LineString3d, arc3d, BezierCurve3d, BezierCurve3dH accept that default.
-   *   * Subdivided primitives (linestring, bspline curve) implment themselves and evaluate within components.
+   *   * Subdivided primitives (linestring, bspline curve) implement themselves and evaluate within components.
    *   * CurvePrimitiveWithDistanceIndex recurses to its children.
    * * if packedFraction and packedDerivative arrays are present in the LineString3d, fill them.
    * @param map = stroke count data.
@@ -628,10 +628,10 @@ class CurveLengthContext implements IStrokeHandler {
       this._fraction0 = fraction1;
       this._fraction1 = fraction0;
     }
-    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy overallocation-- the quadrature class only handles up to 5.)
+    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
     this._gaussX = new Float64Array(maxGauss);
     this._gaussW = new Float64Array(maxGauss);
-    // This sets the number of gauss points.  This intgetes exactly for polynomials of (degree 2*numGauss - 1).
+    // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
     if (numGaussPoints > 5 || numGaussPoints < 1)
       numGaussPoints = 5;
     switch (numGaussPoints) {

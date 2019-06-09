@@ -19,7 +19,7 @@
   overflow: auto;
   background: rgba(0, 0, 0, 0.4);
 
-  &.opened {
+  &.core-dialog-opened {
     display: block;
   }
 
@@ -31,53 +31,53 @@
   .core-dialog-container {
     position: fixed;
 
-    &.top-left {
+    &.core-dialog-top-left {
       top: 0;
       left: 0;
     }
 
-    &.top {
+    &.core-dialog-top {
       top: 0;
       left: 0;
       right: 0;
     }
 
-    &.top-right {
+    &.core-dialog-top-right {
       top: 0;
       right: 0;
     }
 
-    &.left {
+    &.core-dialog-left {
       top: 0;
       bottom: 0;
       left: 0;
     }
 
-    &.center {
+    &.core-dialog-center {
       top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-    }
-
-    &.right {
-      top: 0;
-      bottom: 0;
-      right: 0;
-    }
-
-    &.bottom-left {
-      bottom: 0;
-      left: 0;
-    }
-
-    &.bottom {
       bottom: 0;
       left: 0;
       right: 0;
     }
 
-    &.bottom-right {
+    &.core-dialog-right {
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+
+    &.core-dialog-bottom-left {
+      bottom: 0;
+      left: 0;
+    }
+
+    &.core-dialog-bottom {
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    &.core-dialog-bottom-right {
       bottom: 0;
       right: 0;
     }

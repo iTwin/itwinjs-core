@@ -103,6 +103,7 @@ describe("<TimelineComponent />", () => {
 
   it("should render without milestones - minimized", async () => {
     const dataProvider = new TestTimelineDataProvider(false);
+    expect(dataProvider.loop).to.be.false;
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}

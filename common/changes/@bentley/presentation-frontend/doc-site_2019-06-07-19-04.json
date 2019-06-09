@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Reorganize docs script output",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "will.bentley@bentley.com"
+}

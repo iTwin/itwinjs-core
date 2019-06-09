@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added autofocus to the FilteringInput component.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "joe.zbuchalski@bentley.com"
+}
