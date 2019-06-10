@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed missing group descriptions",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "will.bentley@bentley.com"
+}

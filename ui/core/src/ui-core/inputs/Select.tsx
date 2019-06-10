@@ -39,9 +39,10 @@ export class Select extends React.PureComponent<SelectProps> {
   public render(): JSX.Element {
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
     const defaultValue =
-      this.props.defaultValue || // first try this.props.defaultValue
-      (this.props.value + "") ||  // else use current value
-      showPlaceholder + "" && ""; // otherwise, if placeholder should show, show nothing
+      this.props.defaultValue ||                    // first try this.props.defaultValue
+      this.props.value && this.props.value + "" ||  // else use current value
+      showPlaceholder && "" ||                      // otherwise, if placeholder should show, show nothing
+      "";
     const required = showPlaceholder || this.props.required;
     const options = this.props.options;
     return (

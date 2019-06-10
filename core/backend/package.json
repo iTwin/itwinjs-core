@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "1.1.0-dev.5",
+  "version": "1.1.0-dev.7",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -24,6 +24,7 @@
     "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep \"ImodelChangesetPerformance|ElementAspectPerfomance\" --invert",
     "cs-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "eleAspect-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
+    "backend-perf-tests": "npm run perftest && npm run cs-perftest && npm run eleAspect-perftest",
     "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {
@@ -40,25 +41,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.1.0-dev.5",
-    "@bentley/geometry-core": "^1.1.0-dev.5",
-    "@bentley/imodeljs-clients": "^1.1.0-dev.5",
-    "@bentley/imodeljs-clients-backend": "^1.1.0-dev.5",
-    "@bentley/imodeljs-common": "^1.1.0-dev.5"
+    "@bentley/bentleyjs-core": "^1.1.0-dev.7",
+    "@bentley/geometry-core": "^1.1.0-dev.7",
+    "@bentley/imodeljs-clients": "^1.1.0-dev.7",
+    "@bentley/imodeljs-clients-backend": "^1.1.0-dev.7",
+    "@bentley/imodeljs-common": "^1.1.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "1.1.0-dev.5",
-    "@bentley/bentleyjs-core": "1.1.0-dev.5",
-    "@bentley/build-tools": "1.1.0-dev.5",
-    "@bentley/geometry-core": "1.1.0-dev.5",
-    "@bentley/imodeljs-clients": "1.1.0-dev.5",
-    "@bentley/imodeljs-clients-backend": "1.1.0-dev.5",
-    "@bentley/imodeljs-common": "1.1.0-dev.5",
-    "@bentley/perf-tools": "1.1.0-dev.5",
+    "@bentley/config-loader": "1.1.0-dev.7",
+    "@bentley/bentleyjs-core": "1.1.0-dev.7",
+    "@bentley/build-tools": "1.1.0-dev.7",
+    "@bentley/geometry-core": "1.1.0-dev.7",
+    "@bentley/imodeljs-clients": "1.1.0-dev.7",
+    "@bentley/imodeljs-clients-backend": "1.1.0-dev.7",
+    "@bentley/imodeljs-common": "1.1.0-dev.7",
+    "@bentley/perf-tools": "1.1.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",

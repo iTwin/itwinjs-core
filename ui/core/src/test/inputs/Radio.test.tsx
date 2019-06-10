@@ -18,4 +18,8 @@ describe("<Radio />", () => {
   it("renders status correctly", () => {
     shallow(<Radio label="radio test" status={InputStatus.Success} />).should.matchSnapshot();
   });
+
+  it("renders disabled correctly", () => {
+    shallow(<Radio label="radio test" disabled />).should.matchSnapshot();
+  });
 });

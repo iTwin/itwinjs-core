@@ -8,15 +8,14 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import { ContextMenu, GlobalContextMenu, ContextMenuItem, ContextSubMenu, ContextMenuDivider } from "../../ui-core";
 import { ContextMenuDirection, TildeFinder } from "../../ui-core/contextmenu/ContextMenu";
+import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
 
   afterEach(cleanup);
 
   const createBubbledEvent = (type: string, props = {}) => {
-    const event = new Event(type, { bubbles: true });
-    Object.assign(event, props);
-    return event;
+    return TestUtils.createBubbledEvent(type, props);
   };
 
   describe("<ContextMenu />", () => {
@@ -51,6 +50,21 @@ describe("ContextMenu", () => {
         </ContextMenu>);
       expect(component.getByTestId("core-context-menu-test-div")).to.exist;
     });
+    it("should call onOutsideClick on window mouseup", () => {
+      const spyMethod = sinon.fake();
+      render(
+        <ContextMenu opened={true} onOutsideClick={spyMethod}>
+          <ContextMenuItem> Test </ContextMenuItem>
+        </ContextMenu>);
+
+      const mouseUp = document.createEvent("HTMLEvents");
+      mouseUp.initEvent("mouseup");
+      sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(mouseUp);
+
+      spyMethod.should.have.been.called;
+    });
+
     describe("Keyboard navigation", () => {
       it("should handle Escape press", () => {
         const handleEsc = sinon.fake();

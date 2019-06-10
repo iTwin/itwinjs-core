@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed missing group descriptions",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "will.bentley@bentley.com"
+}

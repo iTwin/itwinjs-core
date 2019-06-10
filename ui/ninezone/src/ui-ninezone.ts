@@ -129,20 +129,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * For more information, see [learning about ui-ninezone]($docs/learning/ninezone/index.md).
  */
 /**
- * @docs-group-description App
- * Classes for working with a App
- */
-/**
  * @docs-group-description Backstage
  * Classes for working with a Backstage
- */
-/**
- * @docs-group-description Base
- * Base classes for for working with the 9-Zone pattern
- */
-/**
- * @docs-group-description Button
- * Classes for working with a Button
  */
 /**
  * @docs-group-description Footer
@@ -163,10 +151,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description SnapMode
  * Classes for working with SnapMode UI
- */
-/**
- * @docs-group-description Theme
- * Provides ability to switch between different 9-Zone styles
  */
 /**
  * @docs-group-description ToolAssistance

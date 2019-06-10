@@ -363,26 +363,34 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
     const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
     if ((targetRect.bottom + popupHeight + bottomMargin + offsetArrow + offset) > viewportRect.bottom) {
-      if (newPosition === Position.Bottom) newPosition = Position.Top;
-      else if (newPosition === Position.BottomLeft) newPosition = Position.TopLeft;
-      else if (newPosition === Position.BottomRight) newPosition = Position.TopRight;
+      if (newPosition === Position.Bottom)
+        newPosition = Position.Top;
+      else if (newPosition === Position.BottomLeft)
+        newPosition = Position.TopLeft;
+      else if (newPosition === Position.BottomRight)
+        newPosition = Position.TopRight;
     }
 
     const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
     if ((targetRect.top - popupHeight - topMargin - offsetArrow - offset) < viewportRect.top) {
-      if (newPosition === Position.Top) newPosition = Position.Bottom;
-      else if (newPosition === Position.TopLeft) newPosition = Position.BottomLeft;
-      else if (newPosition === Position.TopRight) newPosition = Position.BottomRight;
+      if (newPosition === Position.Top)
+        newPosition = Position.Bottom;
+      else if (newPosition === Position.TopLeft)
+        newPosition = Position.BottomLeft;
+      else if (newPosition === Position.TopRight)
+        newPosition = Position.BottomRight;
     }
 
     const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
     if ((targetRect.left - popupWidth - leftMargin - offsetArrow - offset) < viewportRect.left) {
-      if (newPosition === Position.Left) newPosition = Position.Right;
+      if (newPosition === Position.Left)
+        newPosition = Position.Right;
     }
 
     const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
     if ((targetRect.right + popupWidth + rightMargin + offsetArrow + offset) > viewportRect.right) {
-      if (newPosition === Position.Right) newPosition = Position.Left;
+      if (newPosition === Position.Right)
+        newPosition = Position.Left;
     }
 
     return newPosition;

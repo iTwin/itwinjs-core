@@ -45,22 +45,27 @@ Each package creates its own **node_modules** directory that contains symbolic l
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 ## Supported Backend Platforms
-The imodeljs **backend** is built and tested on the following:
-- Windows 10 version 1803 (or greater)
-- Debian 9 "Stretch"
+
+The iModel.js **backend** is built and tested on the following:
+
+* Windows 10 version 1803 (or greater)
+* Debian 9 "Stretch"
 
 In addition, **backends** are deployed on:
-- Windows Server 2016 Datacenter version 1607
+
+* Windows Server 2016 Datacenter version 1607
 
 ### Notes
-imodeljs **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) for. However, regular testing only occurs on the platforms listed above. Support for other platforms will be considered, but prioritized below them.
+
+iModel.js **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) for.  However, regular testing only occurs on the platforms listed above. Support for other platforms will be considered, but prioritized below them.
 
 ### Backend Additional Prerequisites
-- Windows
-    - [Visual Studio 2017 C Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
-- Linux
-    - GLIBC 2.24 (or greater)
-    - GLIBCXX 3.4.22 (or greater)
+
+* Windows
+  * [Visual Studio 2017 C Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+* Linux
+  * GLIBC 2.24 (or greater)
+  * GLIBCXX 3.4.22 (or greater)
 
 ## Build Instructions
 

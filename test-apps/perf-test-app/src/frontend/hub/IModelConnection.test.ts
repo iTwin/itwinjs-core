@@ -54,7 +54,7 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("Bridge866");
     const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
 
-    /* // time to open an imodel with first revision
+    // time to open an imodel with first revision
     const startTime = new Date().getTime();
     const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
     const endTime = new Date().getTime();
@@ -62,7 +62,9 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(noVersionsIModel2);
     const elapsedTime = (endTime - startTime) / 1000.0;
     await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
-    await noVersionsIModel2.close(); */
+    const info1 = { Description: "first CS", Operation: "Open" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime, JSON.stringify(info1));
+    await noVersionsIModel2.close();
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();

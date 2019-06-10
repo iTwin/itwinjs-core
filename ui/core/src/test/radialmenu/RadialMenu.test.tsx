@@ -2,13 +2,21 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { mount, shallow } from "enzyme";
+import { render } from "react-testing-library";
 import { RadialMenu, RadialButton } from "../../ui-core";
+import { expect } from "chai";
+import sinon = require("sinon");
+import { TestUtils } from "../TestUtils";
 
 describe("RadialMenu", () => {
 
   let radialMenu1: React.ReactElement<any>;
+
+  const createBubbledEvent = (type: string, props = {}) => {
+    return TestUtils.createBubbledEvent(type, props);
+  };
 
   beforeEach(() => {
     radialMenu1 = <RadialMenu
@@ -23,6 +31,12 @@ describe("RadialMenu", () => {
   describe("<RadialMenu />", () => {
     it("should render", () => {
       const wrapper = mount(radialMenu1);
+
+      const div = wrapper.find(".core-radial-menu");
+      const containerStyle = div.get(0).props.style;
+      expect(containerStyle).to.have.property("left", 100);
+      expect(containerStyle).to.have.property("top", 100);
+
       wrapper.unmount();
     });
 
@@ -32,8 +46,55 @@ describe("RadialMenu", () => {
 
     it("should handle props changes", () => {
       const wrapper = mount(radialMenu1);
-      wrapper.setProps({ innerRadius: 20, outRadius: 120 });
+      expect(wrapper.prop("innerRadius")).to.eq(10);
+      expect(wrapper.prop("outerRadius")).to.eq(100);
+
+      wrapper.setProps({ innerRadius: 20, outerRadius: 120 });
+      wrapper.update();
+      expect(wrapper.prop("innerRadius")).to.eq(20);
+      expect(wrapper.prop("outerRadius")).to.eq(120);
+      wrapper.unmount();
     });
+
+    it("should fix x and y if too low", () => {
+      const wrapper = mount(<RadialMenu opened={true} left={-1} top={-1} innerRadius={10} outerRadius={100} />);
+      const div = wrapper.find(".core-radial-menu");
+      const containerStyle = div.get(0).props.style;
+      expect(containerStyle).to.have.property("left", 0);
+      expect(containerStyle).to.have.property("top", 0);
+      wrapper.unmount();
+    });
+
+    it("should fix x and y if too height", () => {
+      const value = 10000;
+      const wrapper = mount(<RadialMenu opened={true} left={value} top={value} innerRadius={10} outerRadius={100} />);
+      const div = wrapper.find(".core-radial-menu");
+      const containerStyle = div.get(0).props.style;
+      expect(containerStyle.left).to.be.lessThan(window.innerWidth);
+      expect(containerStyle.top).to.be.lessThan(window.innerWidth);
+      wrapper.unmount();
+    });
+
+    it("should call onEsc", () => {
+      const spyMethod = sinon.fake();
+      const component = render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onEsc={spyMethod} />);
+      const item = component.getByTestId("core-radial-menu");
+      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+      spyMethod.should.have.been.called;
+    });
+
+    it("should call onBlur on window mouseup", () => {
+      const spyMethod = sinon.fake();
+      render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onBlur={spyMethod} />);
+
+      const mouseUp = document.createEvent("HTMLEvents");
+      mouseUp.initEvent("mouseup");
+      sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+      window.dispatchEvent(mouseUp);
+
+      spyMethod.should.have.been.called;
+    });
+
   });
 
   describe("<RadialButton />", () => {
@@ -70,13 +131,65 @@ describe("RadialMenu", () => {
       </RadialMenu>;
     });
 
-    it("RadialButton should render", () => {
+    it("should render", () => {
       const wrapper = mount(radialMenu2);
       wrapper.unmount();
     });
 
-    it("RadialButton renders correctly", () => {
+    it("renders correctly", () => {
       shallow(radialMenu2).should.matchSnapshot();
     });
+
+    it("should call onSelect", () => {
+      const spyMethod = sinon.fake();
+      const wrapper = mount(<RadialMenu opened={true} innerRadius={10} outerRadius={100}>
+        <RadialButton key="0" icon="icon-placeholder" onSelect={spyMethod}> Test </RadialButton>
+      </RadialMenu >);
+      const button = wrapper.find(RadialButton);
+      const gEl = button.find("g");
+      gEl.simulate("click");
+      spyMethod.should.have.been.called;
+      wrapper.unmount();
+    });
+
+    it("should call onSelect when button select API called", () => {
+      const spyMethod = sinon.fake();
+      const wrapper = mount(<RadialMenu opened={true} innerRadius={10} outerRadius={100}>
+        <RadialButton key="0" icon="icon-placeholder" onSelect={spyMethod}> Test </RadialButton>
+      </RadialMenu >);
+
+      const button = wrapper.find(RadialButton);
+      (button.instance() as RadialButton).select();
+      spyMethod.should.have.been.called;
+
+      wrapper.unmount();
+    });
+
+    it("should call onSelect when menu select API called", () => {
+      const spyMethod = sinon.fake();
+      const wrapper = mount(<RadialMenu opened={true} innerRadius={10} outerRadius={100} selected={0}>
+        <RadialButton key="0" icon="icon-placeholder" onSelect={spyMethod}> Test </RadialButton>
+      </RadialMenu >);
+
+      const menu = wrapper.find(RadialMenu);
+      (menu.instance() as RadialMenu).select();
+      spyMethod.should.have.been.called;
+
+      wrapper.unmount();
+    });
+
+    it("should handle hover state", () => {
+      const wrapper = mount(<RadialMenu opened={true} innerRadius={10} outerRadius={100}>
+        <RadialButton key="0" icon="icon-placeholder" labelRotate={true} > Test </RadialButton>
+      </RadialMenu >);
+      const button = wrapper.find(RadialButton);
+      const gEl = button.find("g");
+      gEl.simulate("mouseover");
+      expect(button.state("hover")).to.be.true;
+      gEl.simulate("mouseout");
+      expect(button.state("hover")).to.be.false;
+      wrapper.unmount();
+    });
+
   });
 });

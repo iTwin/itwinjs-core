@@ -566,6 +566,9 @@
       "name": "⚠️Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000"
+      ],
       "args": [
         "--debug",
         "-r",

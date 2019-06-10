@@ -23,15 +23,6 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
 
-  /*  // open imodel from local cache with first revision
-   const startTime2 = new Date().getTime();
-   const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.pullOnly(), IModelVersion.first());
-   const endTime2 = new Date().getTime();
-   assert.exists(imodeldb2);
-   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-   imodeldb2.close(requestContext).catch();
-   fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n"); */
-
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
@@ -53,6 +44,16 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   imodeldb1.close(requestContext).catch();
   fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
+
+  // open imodel from local cache with first revision
+  const startTime2 = new Date().getTime();
+  const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
+  const endTime2 = new Date().getTime();
+  assert.exists(imodeldb2);
+  const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
+  imodeldb2.close(requestContext).catch();
+  fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n");
+  reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime2, { Description: "from cache first CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();

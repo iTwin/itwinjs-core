@@ -133,7 +133,7 @@ The following shows a sample with two entries that reference the ViewportContent
 
 ## Defining Content Layouts
 
-When defining Content Layouts, the **ContentLayoutProps** interface and **ContentLayoutDef** class are used. The ContentLayoutDef can be referenced directly by a Frontstage or it may be registered and referenced by id. The Content Layout uses index numbers to reference content within a Content Group. Both the Content Layout and the Content Group are provides as properties to a Frontstage.
+When defining Content Layouts, the **ContentLayoutProps** interface and **ContentLayoutDef** class are used. The ContentLayoutDef can be referenced directly by a Frontstage or it may be registered and referenced by id. The Content Layout uses index numbers to reference content within a Content Group. Both the Content Layout and the Content Group are provided as properties to a Frontstage.
 
 ### A single view
 
