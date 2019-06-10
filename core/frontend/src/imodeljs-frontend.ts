@@ -141,11 +141,3 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with the set of selected elements.
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
-/**
- * @docs-group-description Tile
- * Classes for selecting and drawing tiles in views.
- */
-/**
- * @docs-group-description WebGL
- * Classes for interfacing to WebGL in browsers.
- */

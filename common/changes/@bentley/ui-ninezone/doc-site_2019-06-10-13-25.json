@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed missing group descriptions",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "will.bentley@bentley.com"
+}

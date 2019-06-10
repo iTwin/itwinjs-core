@@ -174,10 +174,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with a Table.
  */
 /**
- * @docs-group-description Timeline
- * Classes for working with a Timeline.
- */
-/**
  * @docs-group-description Tree
  * Classes for working with a Tree.
  */

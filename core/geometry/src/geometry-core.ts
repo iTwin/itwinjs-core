@@ -107,13 +107,6 @@
  */
 // doc:export class SolidDOc { }
 /**
- * @docs-group-description Utility
- * These modules and classes are outside the geometric structure
- * * geometry-core.ts -- gathers and exports class, so callers can import from geometry-core without knowing which classes
- *        are in which files.
- */
-// doc:export class Utility { }
-/**
  * @docs-group-description Topology
  * The Topology classes provide adjacency structures used in triangulations.
  */

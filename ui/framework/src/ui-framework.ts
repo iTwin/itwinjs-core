@@ -164,10 +164,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with a Backstage
  */
 /**
- * @docs-group-description ClientServices
- * Classes for working with services for iModels, Login and Projects
- */
-/**
  * @docs-group-description ConfigurableUi
  * Classes for working with the Application UI Configuration
  */
@@ -251,4 +247,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Zone
  * Classes for working with a Zone
+ */
+/**
+ * @docs-group-description Item
+ * Classes for working with an Item
  */
