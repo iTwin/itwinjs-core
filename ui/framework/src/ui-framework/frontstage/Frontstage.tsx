@@ -197,7 +197,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case ZoneLocation.BottomRight:
         zoneElement = props.bottomRight;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }
@@ -245,7 +245,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case StagePanelLocation.BottomMost:
         panelElement = props.bottomMostPanel;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }

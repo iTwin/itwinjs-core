@@ -54,45 +54,45 @@ describe("StackedWidget", () => {
     }
   }
 
-  it("Producing a StackedWidget", async () => {
+  class Frontstage1 extends FrontstageProvider {
 
-    class Frontstage1 extends FrontstageProvider {
+    public get frontstage(): React.ReactElement<FrontstageProps> {
+      const myContentGroup: ContentGroup = new ContentGroup({
+        contents: [{ classId: "TestContentControl2" }],
+      });
 
-      public get frontstage(): React.ReactElement<FrontstageProps> {
-        const myContentGroup: ContentGroup = new ContentGroup({
-          contents: [{ classId: "TestContentControl2" }],
-        });
+      const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
+        id: "SingleContent",
+        descriptionKey: "UiFramework:tests.singleContent",
+        priority: 100,
+      });
 
-        const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-          id: "SingleContent",
-          descriptionKey: "UiFramework:tests.singleContent",
-          priority: 100,
-        });
-
-        return (
-          <Frontstage
-            id="StackedWidget-Frontstage"
-            defaultTool={CoreTools.selectElementCommand}
-            defaultLayout={myContentLayout}
-            contentGroup={myContentGroup}
-            centerRight={
-              <Zone defaultState={ZoneState.Open}
-                widgets={[
-                  <Widget id="widget1" control={TestWidget1} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
-                  <Widget id="widget2" control={TestWidget2} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
-                ]}
-              />
-            }
-          />
-        );
-      }
+      return (
+        <Frontstage
+          id="StackedWidget-Frontstage"
+          defaultTool={CoreTools.selectElementCommand}
+          defaultLayout={myContentLayout}
+          contentGroup={myContentGroup}
+          centerRight={
+            <Zone defaultState={ZoneState.Open}
+              widgets={[
+                <Widget id="widget1" control={TestWidget1} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
+                <Widget id="widget2" control={TestWidget2} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
+              ]}
+            />
+          }
+        />
+      );
     }
+  }
 
+  before(() => {
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+  });
 
-    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
-
+  it("should produce a StackedWidget with 2 widgets", async () => {
+    await FrontstageManager.setActiveFrontstageDef(undefined);
     const wrapper = mount(<FrontstageComposer />);
 
     const frontstageDef = ConfigurableUiManager.findFrontstageDef("StackedWidget-Frontstage");
@@ -105,8 +105,6 @@ describe("StackedWidget", () => {
 
     const tabs = wrapper.find("div.nz-draggable");
     expect(tabs.length).to.eq(2);
-
-    // TODO - tab click, resize, tab drag
 
     wrapper.unmount();
   });

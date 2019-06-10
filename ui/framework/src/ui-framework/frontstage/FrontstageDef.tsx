@@ -111,6 +111,7 @@ export class FrontstageDef {
       controlReadyPromises.push(control.isReady);
     });
 
+    // istanbul ignore else
     if (ContentLayoutManager.activeLayout) {
       const usedContentIndexes = ContentLayoutManager.activeLayout.getUsedContentIndexes();
       this.contentControls.forEach((control: ContentControl, index: number) => {
@@ -187,7 +188,7 @@ export class FrontstageDef {
       case 9:
         zoneDef = this.bottomRight;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }
@@ -236,7 +237,7 @@ export class FrontstageDef {
       case StagePanelLocation.BottomMost:
         panelDef = this.bottomMostPanel;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }

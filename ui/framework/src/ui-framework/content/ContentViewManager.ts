@@ -66,6 +66,7 @@ export class ContentViewManager {
 
   /** Return the active ContentControl. */
   public static getActiveContentControl(): ContentControl | undefined {
+    let activeContentControl: ContentControl | undefined;
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
 
     // istanbul ignore else
@@ -73,11 +74,11 @@ export class ContentViewManager {
       const activeContentGroup = activeFrontstageDef.contentGroup;
       // istanbul ignore else
       if (activeContentGroup) {
-        return activeContentGroup.getControlFromElement(this._activeContent);
+        activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
       }
     }
 
-    return undefined;
+    return activeContentControl;
   }
 
   /** Sets the active [[ContentControl]] */

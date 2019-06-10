@@ -2070,6 +2070,10 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 // @beta
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     getExpandedContent(): React_2.ReactNode;
     isExpanded: () => boolean;
     minimize: () => void;
@@ -2156,6 +2160,7 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 // @public
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
+    static addToMessageCenter(message: NotifyMessageDetails): void;
     static clearMessages(): void;
     static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
@@ -3208,7 +3213,7 @@ export class ToolInformation {
 
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
-    constructor(commandItemProps: ToolItemProps);
+    constructor(toolItemProps: ToolItemProps);
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -3368,6 +3373,7 @@ export class UiFramework {
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    // @beta (undocumented)
     static readonly oidcClient: IOidcFrontendClient;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;

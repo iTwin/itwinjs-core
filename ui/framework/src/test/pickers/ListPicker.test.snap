@@ -24,6 +24,11 @@ exports[`ListPicker ListPickerBase should render correctly 1`] = `
         "enabled": true,
         "type": 2,
       },
+      Object {
+        "children": Array [],
+        "enabled": true,
+        "type": 2,
+      },
     ]
   }
   setEnabled={[Function]}
@@ -72,6 +77,11 @@ exports[`ListPicker rendering should render correctly 1`] = `
             "type": 0,
           },
         ],
+        "enabled": true,
+        "type": 2,
+      },
+      Object {
+        "children": Array [],
         "enabled": true,
         "type": 2,
       },

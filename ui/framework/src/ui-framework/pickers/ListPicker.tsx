@@ -154,6 +154,8 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
  * @beta
  */
 export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPickerState> {
+  private _isMounted = false;
+
   /** Creates a ListPickerBase */
   constructor(props: any) {
     super(props);
@@ -168,18 +170,20 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
     // Minimize any other list picker that has been opened
     // This is to mimic Bimium's behavior where pickers only close when other pickers are opened
     if (expand) {
-      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker._toggleIsExpanded())
+      if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.isExpanded())
         lastOpenedPicker!.minimize();
 
       lastOpenedPicker = this;
     }
 
-    this.setState((_prevState, _props) => {
-      return {
-        ..._prevState,
-        expanded: !_prevState.expanded,
-      };
-    });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState((prevState) => {
+        return {
+          ...prevState,
+          expanded: !prevState.expanded,
+        };
+      });
 
     if (this.props.onExpanded)
       this.props.onExpanded(expand);
@@ -187,17 +191,26 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
 
   /** Minimizes the expandable component. */
   public minimize = () => {
-    this.setState((_prevState, _props) => {
-      return {
-        ..._prevState,
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({
         expanded: false,
-      };
-    });
+      });
   }
 
   /** Checks if ExpandableItem is expanded. */
   public isExpanded = () => {
     return this.state.expanded;
+  }
+
+  /** @internal */
+  public componentDidMount() {
+    this._isMounted = true;
+  }
+
+  /** @internal */
+  public componentWillUnmount() {
+    this._isMounted = false;
   }
 
   /** Renders ListPickerBase */
@@ -355,16 +368,19 @@ export class ListPicker extends React.Component<ListPickerPropsExtended> {
       if (self.isSpecialItem(item)) {
         switch (item.key) {
           case ListPicker.Key_All: {
+            // istanbul ignore else
             if (self.props.enableAllFunc)
               self.props.enableAllFunc();
             return;
           }
           case ListPicker.Key_None: {
+            // istanbul ignore else
             if (self.props.disableAllFunc)
               self.props.disableAllFunc();
             return;
           }
           case ListPicker.Key_Invert: {
+            // istanbul ignore else
             if (self.props.invertFunc)
               self.props.invertFunc();
             return;
