@@ -19,7 +19,7 @@ import { HubUtility } from "./HubUtility";
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
-  const iModelRootDir = "d:\\temp\\IModelDumps\\";
+  const iModelRootDir = "d:\\testmodels\\";
 
   before(async () => {
     IModelTestUtils.setupLogging();
@@ -136,8 +136,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "PenChemOSBL7";
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "Stadium Dataset 1";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
   });
