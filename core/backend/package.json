@@ -24,6 +24,7 @@
     "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep \"ImodelChangesetPerformance|ElementAspectPerfomance\" --invert",
     "cs-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "eleAspect-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
+    "backend-perf-tests": "npm run perftest && npm run cs-perftest && npm run eleAspect-perftest",
     "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {
