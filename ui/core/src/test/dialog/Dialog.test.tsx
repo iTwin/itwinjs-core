@@ -17,9 +17,7 @@ describe("Dialog", () => {
   afterEach(cleanup);
 
   const createBubbledEvent = (type: string, props = {}) => {
-    const event = new Event(type, { bubbles: true });
-    Object.assign(event, props);
-    return event;
+    return TestUtils.createBubbledEvent(type, props);
   };
 
   before(async () => {
@@ -203,6 +201,13 @@ describe("Dialog", () => {
       const head = component.getByTestId("core-dialog-head");
       head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
       expect(spyOnPointerDown).to.be.calledOnce;
+    });
+    it("should not call handler for pointerDown if no modelessId", () => {
+      const spyOnPointerDown = sinon.spy();
+      const component = render(<Dialog opened={true} modal={false} onModelessPointerDown={spyOnPointerDown} />);
+      const head = component.getByTestId("core-dialog-head");
+      head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
+      expect(spyOnPointerDown).to.not.be.called;
     });
   });
 

@@ -96,5 +96,17 @@ describe("SearchBox", () => {
       buttonNode.simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
     });
+
+    it("should set focus to input", () => {
+      const wrapper = mount(<SearchBox onValueChanged={() => { }} placeholder="Search" />);
+      const searchBox = wrapper.instance() as SearchBox;
+      searchBox.focus();
+
+      const input = wrapper.find("input");
+      const focusedElement = document.activeElement;
+
+      expect(input.instance()).to.eq(focusedElement);
+      wrapper.unmount();
+    });
   });
 });

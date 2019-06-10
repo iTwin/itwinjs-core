@@ -319,14 +319,18 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   private _handleFocusChange = (event: any) => {
+    // istanbul ignore else
     if (this._rootElement && this.props.opened && event.target instanceof Node && this.props.onOutsideClick && !this._rootElement.contains(event.target))
       this.props.onOutsideClick(event);
   }
+
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (this.props.onSelect)
       this.props.onSelect(event);
   }
+
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    // istanbul ignore else
     if (event.key) {
       for (const [key, value] of this._hotKeyMap) {
         if (!this.props.hotkeySelect! && key > this.state.selectedIndex) { // Start search at current index.
@@ -347,6 +351,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         }
       }
     }
+
     if (event.keyCode === 37) /*<Left>*/ {
       event.stopPropagation();
       if (this.props.parentMenu && this.props.parentSubmenu) {
@@ -356,17 +361,24 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       if (this.props.onEsc)
         this.props.onEsc(event);
     }
+
     if (event.keyCode === 27/*<Esc>*/) {
+      // istanbul ignore else
       if (this.props.onEsc)
         this.props.onEsc(event);
     }
+
     if ((event.keyCode === 13 /*<Return>*/ || event.keyCode === 39 /*<Right>*/) && this._selectedElement) {
       event.stopPropagation();
+
+      // istanbul ignore else
       if (event.keyCode === 13 || this._selectedElement instanceof ContextSubMenu) {
+        // istanbul ignore else
         if (this._selectedElement.select)
           this._selectedElement.select();
       }
     }
+
     let { selectedIndex } = this.state;
     if (event.keyCode === 38 /*<Up>*/ || event.keyCode === 40/*<Down>*/) {
       event.stopPropagation();
@@ -559,12 +571,14 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   }
 
   private _handleMouseOver = (_event: React.MouseEvent<HTMLDivElement>) => {
+    // istanbul ignore else
     if (this._root && this._root.style.visibility !== "hidden" && this.props.onHover) {
       this.props.onHover();
     }
   }
 
   public select = () => {
+    // istanbul ignore else
     if (this._root) {
       this._root.click();
       if (this.props.parentMenu && this.props.parentMenu.props.parentSubmenu)

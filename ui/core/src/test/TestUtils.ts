@@ -34,6 +34,13 @@ export class TestUtils {
     UiCore.terminate();
     TestUtils._uiCoreInitialized = false;
   }
+
+  public static createBubbledEvent(type: string, props = {}) {
+    const event = new Event(type, { bubbles: true });
+    Object.assign(event, props);
+    return event;
+  }
+
 }
 
 export default TestUtils;   // tslint:disable-line: no-default-export

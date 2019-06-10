@@ -19,6 +19,14 @@ describe("<Select />", () => {
     shallow(<Select options={[]} />).should.matchSnapshot();
   });
 
+  it("renders defaultValue correctly", () => {
+    shallow(<Select options={[]} defaultValue="test" />).should.matchSnapshot();
+  });
+
+  it("renders value correctly", () => {
+    shallow(<Select options={[]} value="test" />).should.matchSnapshot();
+  });
+
   it("renders placeholder correctly", () => {
     shallow(<Select options={[]} placeholder="test" />).should.matchSnapshot();
   });

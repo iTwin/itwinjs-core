@@ -1,8 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RadialMenu <RadialButton /> RadialButton renders correctly 1`] = `
+exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
 <div
   className="core-radial-menu opened"
+  data-testid="core-radial-menu"
   style={
     Object {
       "left": undefined,
@@ -784,6 +785,7 @@ exports[`RadialMenu <RadialButton /> RadialButton renders correctly 1`] = `
 exports[`RadialMenu <RadialMenu /> renders correctly 1`] = `
 <div
   className="core-radial-menu opened"
+  data-testid="core-radial-menu"
   style={
     Object {
       "left": 100,

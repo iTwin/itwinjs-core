@@ -147,6 +147,20 @@ describe("Popup />", () => {
       expect(popup.length).be.eq(1);
       wrapper.unmount();
     });
+
+    it("should render Bottom then Right", () => {
+      const wrapper = mount(<Popup isOpen={false} position={Position.Bottom} target={targetElement} />);
+      wrapper.setProps({ isOpen: true });
+      let popup = wrapper.find("div.core-popup-bottom");
+      expect(popup.length).be.eq(1);
+
+      wrapper.setProps({ position: Position.Right });
+      wrapper.update();
+      popup = wrapper.find("div.core-popup-right");
+      expect(popup.length).be.eq(1);
+
+      wrapper.unmount();
+    });
   });
 
   describe("outside click", () => {
