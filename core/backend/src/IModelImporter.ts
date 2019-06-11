@@ -26,6 +26,10 @@ export class IModelImporter {
   protected _excludedElementIds = new Set<Id64String>();
   protected _excludedElementClassNames = new Set<string>();
 
+  /** Construct a new IModelImporter
+   * @param sourceDb The source IModelDb
+   * @param targetDb The target IModelDb
+   */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     this._sourceDb = sourceDb;
     this._targetDb = targetDb;
@@ -142,14 +146,15 @@ export class IModelImporter {
   }
 
   public import(): void {
+    const targetScopeElementId: Id64String = IModel.rootSubjectId;
     this.initFromExternalSourceAspects();
     this.importCodeSpecs();
     this.importFonts();
-    this.importElement(IModel.rootSubjectId);
-    this.importModels(DefinitionPartition.classFullName);
-    this.importModels(InformationPartitionElement.classFullName);
-    this.importModels(Drawing.classFullName);
-    this.importModels(Sheet.classFullName);
+    this.importElement(IModel.rootSubjectId, targetScopeElementId);
+    this.importModels(DefinitionPartition.classFullName, targetScopeElementId);
+    this.importModels(InformationPartitionElement.classFullName, targetScopeElementId);
+    this.importModels(Drawing.classFullName, targetScopeElementId);
+    this.importModels(Sheet.classFullName, targetScopeElementId);
     this.importRelationships();
   }
 
@@ -179,71 +184,111 @@ export class IModelImporter {
     return false;
   }
 
-  /** Transform the specified sourceElement and insert result into the target iModel. */
-  protected transformAndInsertElement(sourceElement: Element): void {
+  /** Transform the specified sourceElement into ElementProps for the target iModel.
+   * @param sourceElement The Element from the source iModel to transform.
+   * @returns ElementProps for the target iModel.
+   */
+  protected transformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElement.id);
+    targetElementProps.federationGuid = sourceElement.federationGuid; // cloneElement strips off federationGuid
+    return targetElementProps;
+  }
+
+  /** Transform the specified sourceElement and insert result into the target iModel.
+   * @param sourceElement The Element from the source iModel to import.
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   */
+  protected transformAndInsertElement(sourceElement: Element, targetScopeElementId: Id64String): void {
+    const targetElementProps: ElementProps = this.transformElement(sourceElement);
     let targetElementId: Id64String | undefined = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
     if (targetElementId === undefined) {
-      try {
-        targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
-        this.addElementId(sourceElement.id, targetElementId);
-        Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
-        const sourceElementHash: string = sourceElement.computeHash();
-        const aspectProps: ExternalSourceAspectProps = {
-          classFullName: ExternalSourceAspect.classFullName,
-          element: { id: targetElementId },
-          scope: { id: IModel.rootSubjectId },
-          identifier: sourceElement.id,
-          kind: Element.className,
-          checksum: sourceElementHash,
-          version: this._sourceDb.elements.queryLastModifiedTime(sourceElement.id),
-        };
-        this._targetDb.elements.insertAspect(aspectProps);
-      } catch (error) {
-        Logger.logError(loggerCategory, "Error inserting Element into target iModel");
-      }
+      targetElementId = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
+      this.addElementId(sourceElement.id, targetElementId);
+      Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
+      const aspectProps: ExternalSourceAspectProps = ExternalSourceAspect.createPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+      this._targetDb.elements.insertAspect(aspectProps);
     } else {
-      try {
-        targetElementProps.id = targetElementId;
-        this._targetDb.elements.updateElement(targetElementProps);
-        this.addElementId(sourceElement.id, targetElementId);
-      } catch (error) {
-        Logger.logError(loggerCategory, "Error updating Element within target iModel");
-      }
+      targetElementProps.id = targetElementId;
+      this._targetDb.elements.updateElement(targetElementProps);
+      this.addElementId(sourceElement.id, targetElementId);
     }
   }
 
-  public importElement(sourceElementId: Id64String): void {
+  /** Returns true if a change within sourceElement is detected.
+   * @param sourceElement The Element from the source iModel
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   * @param targetElementId The Element from the target iModel to compare against.
+   */
+  protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean {
+    const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
+    for (const aspect of aspects) {
+      const sourceAspect = aspect as ExternalSourceAspect;
+      if ((ExternalSourceAspect.Kind.Element === sourceAspect.kind) && (sourceAspect.scope.id === targetScopeElementId)) {
+        const lastModifiedTime: string = this._targetDb.elements.queryLastModifiedTime(sourceElement.id);
+        if ((lastModifiedTime === sourceAspect.version) || (sourceElement.computeHash() === sourceAspect.checksum)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** Transform the specified sourceElement and update result into the target iModel.
+   * @param sourceElement The Element from the source iModel to import
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   * @param targetElementId The Element in the target iModel to update
+   */
+  public transformAndUpdateElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): void {
+    const targetElementProps: ElementProps = this.transformElement(sourceElement);
+    targetElementProps.id = targetElementId;
+    this._targetDb.elements.updateElement(targetElementProps);
+    ExternalSourceAspect.deleteForElement(this._targetDb, targetScopeElementId, targetElementId);
+    const aspectProps: ExternalSourceAspectProps = ExternalSourceAspect.createPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+    this._targetDb.elements.insertAspect(aspectProps);
+  }
+
+  /** Import the specified Element and its child Elements (if applicable).
+   * @param sourceElementId Identifies the Element from the source iModel to import.
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   */
+  public importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     const targetElementId: Id64String | undefined = this._importContext.findElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
-      // WIP - check for update
+      if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
+        this.transformAndUpdateElement(sourceElement, targetScopeElementId, targetElementId);
+      }
     } else {
       if (this.excludeElement(sourceElement)) { // excluding an element will also exclude its children or sub-models
         return;
       }
-      this.transformAndInsertElement(sourceElement);
+      this.transformAndInsertElement(sourceElement, targetScopeElementId);
     }
-    this.importChildElements(sourceElementId);
+    this.importChildElements(sourceElementId, targetScopeElementId);
   }
 
   /** Import child elements into the target IModelDb
    * @param sourceElementId Import the child elements of this element in the source IModelDb.
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importChildElements(sourceElementId: Id64String): void {
+  public importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
     const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
     for (const childElementId of childElementIds) {
-      this.importElement(childElementId);
+      this.importElement(childElementId, targetScopeElementId);
     }
   }
 
-  public importModels(modeledElementClass: string): void {
+  /** Import matching sub-models into the target IModelDb
+   * @param modeledElementClass The [Element.classFullName]($backend) to use to query for which sub-models to import.
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   */
+  public importModels(modeledElementClass: string, targetScopeElementId: Id64String): void {
     const sql = `SELECT ECInstanceId AS id FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modeledElementId = statement.getRow().id;
         this.importModel(modeledElementId);
-        this.importModelContents(modeledElementId);
+        this.importModelContents(modeledElementId, targetScopeElementId);
       }
     });
   }
@@ -269,14 +314,15 @@ export class IModelImporter {
 
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
+   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importModelContents(sourceModeledElementId: Id64String): void {
+  public importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void {
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", sourceModeledElementId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
-        this.importElement(row.id);
+        this.importElement(row.id, targetScopeElementId);
       }
     });
   }

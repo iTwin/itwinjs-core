@@ -7,6 +7,10 @@ import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
+import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
+import { ItemProps } from "../../ui-framework/shared/ItemProps";
+import { Orientation } from "@bentley/ui-core";
+import { Size } from "@bentley/ui-ninezone";
 
 describe("Item", () => {
 
@@ -66,6 +70,52 @@ describe("Item", () => {
     });
     expect(toolItem.isPressed).to.be.true;
     expect(toolItem.isActive).to.be.true;
+  });
+
+  class TestItemDef extends ActionButtonItemDef {
+    public toolId: string = "";
+
+    constructor(itemProps: ItemProps) {
+      super(itemProps);
+    }
+
+    public get id(): string {
+      return "";
+    }
+  }
+
+  it("ActionButtonItemDef with no id or index gets random key", () => {
+    const testItem = new TestItemDef({
+      iconSpec: "icon-placeholder",
+    });
+    const key = testItem.getKey();
+    const numericKey = parseInt(key, 10);
+    expect(numericKey).to.be.greaterThan(1000);
+  });
+
+  it("ActionButtonItemDef with no id but index gets index", () => {
+    const testItem = new TestItemDef({
+      iconSpec: "icon-placeholder",
+    });
+    const key = testItem.getKey(100);
+    const numericKey = parseInt(key, 10);
+    expect(numericKey).to.eq(100);
+  });
+
+  it("ActionButtonItemDef with no size returns dimension of 0", () => {
+    const testItem = new TestItemDef({
+      iconSpec: "icon-placeholder",
+    });
+    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(0);
+  });
+
+  it("ActionButtonItemDef with size returns correct dimension", () => {
+    const testItem = new TestItemDef({
+      iconSpec: "icon-placeholder",
+    });
+    testItem.handleSizeKnown(new Size(200, 100));
+    expect(testItem.getDimension(Orientation.Horizontal)).to.eq(200);
+    expect(testItem.getDimension(Orientation.Vertical)).to.eq(100);
   });
 
 });

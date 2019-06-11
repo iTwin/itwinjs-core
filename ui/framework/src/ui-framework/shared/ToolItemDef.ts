@@ -13,14 +13,14 @@ import { ActionButtonItemDef } from "./ActionButtonItemDef";
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";
 
-  constructor(commandItemProps: ToolItemProps) {
-    super(commandItemProps);
+  constructor(toolItemProps: ToolItemProps) {
+    super(toolItemProps);
 
-    if (commandItemProps.execute) {
-      this._commandHandler = { execute: commandItemProps.execute, parameters: commandItemProps.parameters, getCommandArgs: commandItemProps.getCommandArgs };
+    if (toolItemProps.execute) {
+      this._commandHandler = { execute: toolItemProps.execute, parameters: toolItemProps.parameters, getCommandArgs: toolItemProps.getCommandArgs };
     }
 
-    this.toolId = commandItemProps.toolId;
+    this.toolId = toolItemProps.toolId;
   }
 
   public get id(): string {

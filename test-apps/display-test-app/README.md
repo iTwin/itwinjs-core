@@ -19,21 +19,23 @@ The application contained within this directory provides a test environment for 
 
 ## Getting Started
 
-The application may be ran as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
+The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 
-* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see [here](#Environment\ Variables).
+* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see below.
 
 * To start the application in Electron, navigate to the root of display-test-app, and use the command:
-  ```
-  npm run start:electron
-  ```
+
+```cmd
+npm run start
+```
 
 * To start the application in a browser, run the following command, and then navigate to localhost:3000 in any supported browser (not Internet Explorer):
-  ```
-  npm run start:servers
-  ```
+
+```cmd
+npm run start:servers
+```
 
 ## Using display-test-app
 
@@ -56,14 +58,15 @@ Debugging display-test-app can be accomplished using the following procedures, d
 * Installed dependencies for display-test-app may be found in the generated node_modules directory. Since display-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
 * Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in display-test-app. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
 * If dependencies have changed after pulling the most recent version of imodeljs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
-  ```
-  rush install -c
-  ```
+
+```cmd
+rush install -c
+```
 
 ## Environment Variables
 
 * SVT_STANDALONE_FILENAME
-  * Local path to an iModel, which will be the one opened by default at start-up.
+  * Local path to an iModel, that be the one opened by default at start-up.
 * SVT_STANDALONE_FILEPATH
   * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
 * SVT_STANDALONE_VIEWNAME

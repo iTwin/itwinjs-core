@@ -133,7 +133,7 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     }
     return result;
   }
-  // specialized cloners override this (and allow announceCurvePrimitive to insert to parent)
+  // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
   protected doClone(primitive: CurvePrimitive): CurvePrimitive {
     if (this._transform)
       return primitive.cloneTransformed(this._transform) as CurvePrimitive;

@@ -20,6 +20,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
+import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 
 /** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
  * @public
@@ -34,7 +35,6 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
  * @public
  */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
-
 /**
  * A curve primitive is bounded
  * A curve primitive maps fractions in 0..1 to points in space.
@@ -314,10 +314,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always succeed
    * @param spacePoint point in space
-   * @param extend true to extend the curve (if possible)
+   * @param extend true to extend the curve (if possible), false for no extend, single CurveExtendOptions (for both directions), or array of distinct CurveExtendOptions for start and end.
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
-  public closestPoint(spacePoint: Point3d, extend: boolean): CurveLocationDetail | undefined {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
     const strokeHandler = new ClosestPointStrokeHandler(spacePoint, extend);
     this.emitStrokableParts(strokeHandler);
     return strokeHandler.claimResult();
@@ -700,7 +700,7 @@ class ClosestPointStrokeHandler extends NewtonRotRStrokeHandler implements IStro
   private _curve: CurvePrimitive | undefined;
   private _closestPoint: CurveLocationDetail | undefined;
   private _spacePoint: Point3d;
-  private _extend: boolean;
+  private _extend: VariantCurveExtendParameter;
   private _fractionA: number = 0;
   private _functionA: number = 0;
   private _functionB: number = 0;
@@ -711,7 +711,7 @@ class ClosestPointStrokeHandler extends NewtonRotRStrokeHandler implements IStro
   private _workRay: Ray3d;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
 
-  public constructor(spacePoint: Point3d, extend: boolean) {
+  public constructor(spacePoint: Point3d, extend: VariantCurveExtendParameter) {
     super();
     this._spacePoint = spacePoint;
     this._workPoint = Point3d.create();
@@ -726,8 +726,11 @@ class ClosestPointStrokeHandler extends NewtonRotRStrokeHandler implements IStro
     if (this._closestPoint) {
       this._newtonSolver.setX(this._closestPoint.fraction);
       this._curve = this._closestPoint.curve;
-      if (this._newtonSolver.runIterations())
-        this.announceSolutionFraction(this._newtonSolver.getX());
+      if (this._newtonSolver.runIterations()) {
+        let fraction = this._newtonSolver.getX();
+        fraction = CurveExtendOptions.correctFraction(this._extend, fraction);
+        this.announceSolutionFraction(fraction);
+      }
     }
     return this._closestPoint;
   }

@@ -134,12 +134,7 @@ export class MessageManager {
    * @param  message  Details about the message to output.
    */
   public static addMessage(message: NotifyMessageDetails): void {
-    this._messages.push(message);
-
-    if (this._messages.length > this._maxCachedMessages) {
-      const numToErase = this._maxCachedMessages / 4;
-      this._messages.splice(0, numToErase);
-    }
+    this.addToMessageCenter(message);
 
     if (message.msgType === OutputMessageType.Alert) {
       if (message.openAlert === OutputMessageAlert.Balloon)
@@ -149,6 +144,18 @@ export class MessageManager {
     }
 
     this.onMessageAddedEvent.emit({ message });
+  }
+
+  /** Add a message to the Message Center.
+   * @param  message  Details about the message to output.
+   */
+  public static addToMessageCenter(message: NotifyMessageDetails): void {
+    this._messages.push(message);
+
+    if (this._messages.length > this._maxCachedMessages) {
+      const numToErase = this._maxCachedMessages / 4;
+      this._messages.splice(0, numToErase);
+    }
   }
 
   /**

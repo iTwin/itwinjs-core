@@ -7,10 +7,12 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState } from "../../ui-framework";
+import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup } from "../../ui-framework";
 import { getDefaultNineZoneProps } from "@bentley/ui-ninezone";
 import sinon = require("sinon");
-import { TestFrontstage } from "./FrontstageTestUtils";
+import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
+import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
+import { Logger } from "@bentley/bentleyjs-core";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";
@@ -131,5 +133,49 @@ describe("FrontstageComposer", () => {
     setWidgetStateSpy2.notCalled.should.true;
 
     wrapper.unmount();
+  });
+
+  it("should log error if FrontstageDef has no provider", async () => {
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const frontstageDef: FrontstageDef = new FrontstageDef();
+    frontstageDef.contentGroup = new ContentGroup(
+      {
+        contents: [
+          {
+            classId: TestContentControl,
+            applicationData: { label: "Content 1a", bgColor: "black" },
+          },
+        ],
+      },
+    );
+    frontstageDef.defaultLayout = new ContentLayoutDef(
+      {
+        id: "SingleContent",
+        descriptionKey: "App:ContentLayoutDef.SingleContent",
+        priority: 100,
+      },
+    );
+
+    const spyMethod = sinon.spy(Logger, "logError");
+
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    spyMethod.called.should.true;
+
+    wrapper.unmount();
+    (Logger.logError as any).restore();
+  });
+
+  it("should log error if FrontstageComposer.getZoneDef called with no active frontstageDef", async () => {
+    await FrontstageManager.setActiveFrontstageDef(undefined);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const spyMethod = sinon.spy(Logger, "logError");
+
+    const instance = wrapper.instance() as FrontstageComposer;
+    instance.getZoneDef(1);
+    spyMethod.called.should.true;
+
+    await FrontstageManager.setActiveFrontstageDef(undefined);
+    wrapper.unmount();
+    (Logger.logError as any).restore();
   });
 });

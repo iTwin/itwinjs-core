@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ElementAspects */
 
+import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
+import { ECSqlStatement } from "./ECSqlStatement";
+import { Element } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
@@ -94,5 +97,52 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
     return val;
+  }
+
+  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
+   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
+   * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
+   * @param targetElementId The new ExternalSourceAspectProps will be persisted on this Element in the target iModel.
+   * @alpha
+   */
+  public static createPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps {
+    const sourceElementHash: string = sourceElement.computeHash();
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: this.classFullName,
+      element: { id: targetElementId },
+      scope: { id: targetScopeElementId },
+      identifier: sourceElement.id,
+      kind: ExternalSourceAspect.Kind.Element,
+      checksum: sourceElementHash,
+      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
+    };
+    return aspectProps;
+  }
+
+  /** Delete matching ExternalSourceAspects.
+   * @param targetDb The IModelDb
+   * @param targetScopeElementId Only consider ExternalSourceAspects from a particular source (scoped by this Element in the target IModelDb).
+   * @param targetElementId Only consider ExternalSourceAspects owned by this Element.
+   * @alpha
+   */
+  public static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void {
+    const sql = `SELECT ECInstanceId FROM ${this.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind='${ExternalSourceAspect.Kind.Element}'`;
+    targetDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      statement.bindId("elementId", targetElementId);
+      statement.bindId("scopeId", targetScopeElementId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        targetDb.elements.deleteAspect(statement.getValue(0).getId());
+      }
+    });
+  }
+}
+
+/** @public */
+export namespace ExternalSourceAspect {
+  /** Standard values for the `Kind` property of `ExternalSourceAspect`.
+   * @public
+   */
+  export enum Kind {
+    Element = "Element",
   }
 }

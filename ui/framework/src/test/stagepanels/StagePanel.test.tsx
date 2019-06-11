@@ -21,6 +21,8 @@ import {
   ConfigurableCreateInfo,
 } from "../../ui-framework";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
+import { UiFramework } from "../../ui-framework/UiFramework";
+import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
 
 describe("StagePanel", () => {
   class TestWidget extends WidgetControl {
@@ -118,6 +120,12 @@ describe("StagePanel", () => {
     expect(wrapper.find("div.uifw-stagepanel-left").length).to.eq(1);
     expect(wrapper.find("div.uifw-stagepanel-right").length).to.eq(1);
     expect(wrapper.find("div.uifw-stagepanel-bottom").length).to.eq(2);
+
+    UiFramework.setIsUiVisible(false);
+    UiShowHideManager.showHidePanels = true;
+    wrapper.update();
+    expect(wrapper.find("div.uifw-stagepanel").length).to.eq(0);
+    UiShowHideManager.showHidePanels = false;
 
     wrapper.unmount();
   });

@@ -44,6 +44,7 @@ The iModel.js library requires a JavaScript engine with es2017 support.
 
 ## Helpful articles
 
+* [Snapshot iModels](./backend/AccessingIModels.md)
 * [App frontend development](./frontend/index)
 * [App backend development](./backend/index)
 * [Classes packages by both frontends and backends](./common/index)
@@ -70,18 +71,3 @@ See also:
 
 * [Glossary of terms used in iModel.js](./Glossary)
 * [Frequently asked Questions](./faq)
-
-## iModel.js Organization
-
-The iModel.js library is divided into these npm packages in the `@bentley` scope:
-
-|Package Name|Description
-|---|---
-|**bentleyjs-core**|General classes and utilities that are not specific to iModel.js.
-|**geometry-core**|Operations on 2d and 3d geometry.
-|**imodeljs-backend**|Usually runs on a server or desktop via Node.js, but also runs mobile devices. The backend code exposes operations to the frontend via an RpcInterface.
-|**imodeljs-frontend**|Runs in a web browser. The frontend utilizes the HTML document paradigm. It includes everything you need to query, display 2d and 3d views, and create [Tools](../learning/frontend/Tools) that modify iModels.
-|**imodeljs-common**|Classes that are shared between the frontend and backend.
-|**imodeljs-native**|Performs low-level I/O to an iModel. Runs only on backends, and `imodeljs-backend` depends on this package.
-|**imodeljs-markup**|Provides tools for creating SVG-based markup of an iModel.js Viewport.
-|**imodeljs-quantity**|Provides classes for parsing, formatting and converting between quantity values.

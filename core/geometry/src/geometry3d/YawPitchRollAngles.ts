@@ -23,8 +23,24 @@ export interface YawPitchRollProps {
   /** roll field */
   roll?: AngleProps;
 }
-
+// cspell:word Tait
 /** Three angles that determine the orientation of an object in space. Sometimes referred to as [Tait–Bryan angles](https://en.wikipedia.org/wiki/Euler_angles).
+ * * The matrix construction can be replicated by this logic:
+ * * xyz coordinates have
+ *   * x forward
+ *   * y to left
+ *   * z up
+ *   * Note that this is a right handed coordinate system.
+ *   * yaw is a rotation of x towards y, i.e. around positive z:
+ *     * `yawMatrix = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(yawDegrees));`
+ *   * pitch is a rotation that raises x towards z, i.e. rotation around negative y:
+ *     * `pitchMatrix = Matrix3d.createRotationAroundAxisIndex(1, Angle.createDegrees(-pitchDegrees));`
+ *   * roll is rotation of y towards z, i.e. rotation around positive x:
+ *     * `rollMatrix = Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(rollDegrees));`
+ *   * The YPR matrix is the product
+ *     * `result = yawMatrix.multiplyMatrixMatrix(pitchMatrix.multiplyMatrixMatrix(rollMatrix));`
+ *   * Note that this is for "column based" matrix, with vectors appearing to the right
+ *     * Hence a vector is first rotated by roll, then the pitch, finally yaw.
  * @public
  */
 export class YawPitchRollAngles {

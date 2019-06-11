@@ -6,7 +6,7 @@ Bentley **backends** are built and tested on the following:
 In addition, **backends** are deployed on:
 - Windows Server 2016 Datacenter version 1607
 
-imodeljs **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) for. However, regular testing only occurs on the platforms listed above.
+imodeljs **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list). However, regular testing only occurs on the platforms listed above.
 
 ### Backend Prerequisites
 - Windows

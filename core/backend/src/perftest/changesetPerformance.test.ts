@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as fs from "fs";
 import { assert } from "chai";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
@@ -16,8 +15,7 @@ import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
-async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelId: string, client: IModelHubClient) {
-  csvPath = csvPath;
+async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   reporter = reporter;
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
@@ -31,7 +29,6 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const elapsedTime = (endTime - startTime) / 1000.0;
   assert.strictEqual<string>(imodeldb.briefcase.currentChangeSetId, firstChangeSetId);
   imodeldb.close(requestContext).catch();
-  fs.appendFileSync(csvPath, "Open, From Hub first cs," + elapsedTime + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
@@ -42,7 +39,6 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
   imodeldb1.close(requestContext).catch();
-  fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with first revision
@@ -52,7 +48,6 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.exists(imodeldb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
   imodeldb2.close(requestContext).catch();
-  fs.appendFileSync(csvPath, "Open, From Cache First CS," + elapsedTime2 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime2, { Description: "from cache first CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
@@ -62,12 +57,10 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.exists(imodeldb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
   imodeldb3.close(requestContext).catch();
-  fs.appendFileSync(csvPath, "Open, From Cache Latest CS," + elapsedTime3 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
-async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelPushId: string) {
-  csvPath = csvPath;
+async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
   reporter = reporter;
   const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
@@ -80,7 +73,6 @@ async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientReques
   iModelPullAndPush.saveChanges("user changes root subject of the imodel");
   const endTime = new Date().getTime();
   const elapsedTime = (endTime - startTime) / 1000.0;
-  fs.appendFileSync(csvPath, "Update, Make Meta Changes," + elapsedTime + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime, { Description: "make meta changes", Operation: "Update" });
 
   try {
@@ -89,7 +81,6 @@ async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientReques
     await iModelPullAndPush.pushChanges(requestContext);
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    fs.appendFileSync(csvPath, "Push, Meta Changes to Hub," + elapsedTime1 + "\n");
     reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "meta changes to hub", Operation: "Push" });
   } catch (error) { }
   await iModelPullAndPush.close(requestContext, KeepBriefcase.No);
@@ -117,8 +108,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   return { modelId, spatialCategoryId };
 }
 
-async function pushImodelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
-  csvPath = csvPath;
+async function pushImodelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   reporter = reporter;
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
@@ -142,13 +132,11 @@ async function pushImodelAfterDataChanges(requestContext: AuthorizedClientReques
   await rwIModel.pushChanges(requestContext).catch();
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  fs.appendFileSync(csvPath, "Push, Data Changes to Hub," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
-  csvPath = csvPath;
+async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   reporter = reporter;
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
@@ -172,7 +160,6 @@ async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   await rwIModel.pushChanges(requestContext);
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  fs.appendFileSync(csvPath, "Push, Schema Changes to Hub," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "PushSchemaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "schema changes to hub", Operation: "Push" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
@@ -183,8 +170,7 @@ const getElementCount = (iModel: IModelDb): number => {
   return count;
 };
 
-async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string, imodelId: string) {
-  csvPath = csvPath;
+async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
   reporter = reporter;
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
   assert.exists(imodeldb);
@@ -193,13 +179,11 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
-  fs.appendFileSync(csvPath, "ExecuteQuery, Execute a simple ECSQL query," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "ExecuteQuery", "Execution time(s)", elapsedTime1, { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" });
   imodeldb.close(requestContext).catch();
 }
 
-async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
-  csvPath = csvPath;
+async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   reporter = reporter;
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
@@ -242,13 +226,11 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);
 
-  fs.appendFileSync(csvPath, "ReverseChanges, Reverse the imodel to first CS from latest," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "ReverseChanges", "Execution time(s)", elapsedTime1, { Description: "reverse the imodel to first CS from latest", Operation: "ReverseChanges" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, csvPath: string, projectId: string) {
-  csvPath = csvPath;
+async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   reporter = reporter;
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
@@ -294,7 +276,6 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const reinstateCount = getElementCount(rwIModel);
   assert.equal(reinstateCount, secondCount);
 
-  fs.appendFileSync(csvPath, "ReinstateChanges, Reinstate the imodel to latest CS from first," + elapsedTime1 + "\n");
   reporter.addEntry("ImodelChangesetPerformance", "ReinstateChanges", "Execution time(s)", elapsedTime1, { Description: "reinstate the imodel to latest CS from first", Operation: "ReinstateChanges" });
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
@@ -302,10 +283,6 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
 describe("ImodelChangesetPerformance", async () => {
   if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
     IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
-  const csvPath = path.join(KnownTestLocations.outputDir, "ImodelPerformance.csv");
-  if (!IModelJsFs.existsSync(csvPath)) {
-    fs.appendFileSync(csvPath, "Operation,Description,ExecutionTime\n");
-  }
   const reporter = new Reporter();
   let projectId: string;
   let imodelId: string;
@@ -341,31 +318,31 @@ describe("ImodelChangesetPerformance", async () => {
   });
 
   it("GetImodel", async () => {
-    await getImodelAfterApplyingCS(requestContext, reporter, csvPath, projectId, imodelId, client).catch();
+    await getImodelAfterApplyingCS(requestContext, reporter, projectId, imodelId, client).catch();
   });
 
   it("PushMetaChangeToHub", async () => {
-    await pushImodelAfterMetaChanges(requestContext, reporter, csvPath, projectId, imodelPushId).catch();
+    await pushImodelAfterMetaChanges(requestContext, reporter, projectId, imodelPushId).catch();
   });
 
   it("PushDataChangeToHub", async () => {
-    await pushImodelAfterDataChanges(requestContext, reporter, csvPath, projectId).catch();
+    await pushImodelAfterDataChanges(requestContext, reporter, projectId).catch();
   });
 
   it("PushSchemaChangeToHub", async () => {
-    await pushImodelAfterSchemaChanges(requestContext, reporter, csvPath, projectId).catch();
+    await pushImodelAfterSchemaChanges(requestContext, reporter, projectId).catch();
   });
 
   it("ExecuteQuery", async () => {
-    await executeQueryTime(requestContext, reporter, csvPath, projectId, imodelId).catch();
+    await executeQueryTime(requestContext, reporter, projectId, imodelId).catch();
   });
 
   it("ReverseChanges", async () => {
-    await reverseChanges(requestContext, reporter, csvPath, projectId).catch();
+    await reverseChanges(requestContext, reporter, projectId).catch();
   });
 
   it("ReinstateChanges", async () => {
-    await reinstateChanges(requestContext, reporter, csvPath, projectId).catch();
+    await reinstateChanges(requestContext, reporter, projectId).catch();
   });
 
 });

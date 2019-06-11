@@ -119,7 +119,7 @@ export class UiFramework {
   }
 
   private static _oidcClient: IOidcFrontendClient;
-  /** beta */
+  /** @beta */
   public static get oidcClient(): IOidcFrontendClient {
     return UiFramework._oidcClient;
   }

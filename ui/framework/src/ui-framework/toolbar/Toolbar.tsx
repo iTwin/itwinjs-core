@@ -114,7 +114,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
     actionItems.forEach((item: ActionButtonItemDef) => {
       // istanbul ignore else
       if (item.size) {
-        itemDimensions += item.getDimension(this.props.orientation);
+        itemDimensions += item.getDimension(this.props.orientation) + 1;
       }
     });
 
@@ -136,7 +136,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
             overflowItems.unshift(item);
 
             if (index !== lastItemIndex && item.size)
-              itemDimensions -= item.getDimension(this.props.orientation);
+              itemDimensions -= item.getDimension(this.props.orientation) + 1;
 
             if (itemDimensions <= this._dimension)
               break;

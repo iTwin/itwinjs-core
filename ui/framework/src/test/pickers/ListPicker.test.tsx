@@ -14,8 +14,9 @@ import {
   ExpandableSection,
   ListPickerBase,
   ListItemType,
+  ListPickerPropsExtended,
 } from "../../ui-framework";
-import { Item } from "@bentley/ui-ninezone";
+import { Item, Group } from "@bentley/ui-ninezone";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -45,6 +46,13 @@ describe("ListPicker", () => {
     };
     containerItem.children!.push(listItem);
     listItems.push(containerItem);
+
+    const emptyContainerItem: ListItem = {
+      enabled: true,
+      type: ListItemType.Container,
+      children: [],
+    };
+    listItems.push(emptyContainerItem);
   });
 
   describe("rendering", () => {
@@ -172,6 +180,7 @@ describe("ListPicker", () => {
       );
       component.unmount();
     });
+
   });
 
   describe("ExpandableSection", () => {
@@ -277,4 +286,129 @@ describe("ListPicker", () => {
       component.unmount();
     });
   });
+
+  describe("setEnabled", () => {
+    let listPickerWrapper: enzyme.ReactWrapper<ListPickerPropsExtended>;
+    const localSetEnabled = sinon.fake();
+    const localListItems = new Array<ListItem>();
+    const allSpyMethod = sinon.fake();
+    const noneSpyMethod = sinon.fake();
+    const invertSpyMethod = sinon.fake();
+
+    before(async () => {
+      const listItem: ListItem = {
+        enabled: true,
+        type: ListItemType.Item,
+        name: "not-special",
+      };
+      localListItems.push(listItem);
+
+      const invalidListItem: ListItem = {
+        enabled: true,
+        type: 100,
+        name: "invalid-item",
+      };
+      localListItems.push(invalidListItem);
+    });
+
+    beforeEach(() => {
+      listPickerWrapper = enzyme.mount(
+        <ListPicker
+          title={title}
+          items={localListItems}
+          setEnabled={localSetEnabled}
+          enableAllFunc={allSpyMethod}
+          disableAllFunc={noneSpyMethod}
+          invertFunc={invertSpyMethod}
+          iconSpec={<svg />}
+        />,
+      );
+
+      const itemComponent = listPickerWrapper.find(Item);
+      expect(itemComponent).not.to.be.undefined;
+      itemComponent.simulate("click");
+      listPickerWrapper.update();
+    });
+
+    afterEach(() => {
+      listPickerWrapper.unmount();
+    });
+
+    it("should call enableAllFunc handler when All clicked", () => {
+      const listPickerItem = listPickerWrapper.find({ label: "pickerButtons.all" });
+      listPickerItem.should.exist;
+      listPickerItem.find(".ListPicker-item").simulate("click");
+      allSpyMethod.calledOnce.should.true;
+    });
+
+    it("should call disableAllFunc handler when All clicked", () => {
+      const listPickerItem = listPickerWrapper.find({ label: "pickerButtons.none" });
+      listPickerItem.should.exist;
+      listPickerItem.find(".ListPicker-item").simulate("click");
+      noneSpyMethod.calledOnce.should.true;
+    });
+
+    it("should call invertFunc handler when All clicked", () => {
+      const listPickerItem = listPickerWrapper.find({ label: "pickerButtons.invert" });
+      listPickerItem.should.exist;
+      listPickerItem.find(".ListPicker-item").simulate("click");
+      invertSpyMethod.calledOnce.should.true;
+    });
+
+    it("should call setEnabled handler when item clicked that isn't special", () => {
+      const listPickerItem = listPickerWrapper.find({ label: "not-special" });
+      listPickerItem.should.exist;
+      listPickerItem.find(".ListPicker-item").simulate("click");
+      localSetEnabled.calledOnce.should.true;
+    });
+  });
+
+  describe("Multiple ListPickers", () => {
+    const localListItems = new Array<ListItem>();
+    const listItem: ListItem = {
+      enabled: true,
+      type: ListItemType.Item,
+      name: "123456789012345678901234567890",
+    };
+
+    before(() => {
+      localListItems.push(listItem);
+    });
+
+    it("Close other ListPicker", () => {
+      const wrapper1 = enzyme.mount(
+        <ListPicker
+          title={title}
+          items={localListItems}
+          setEnabled={setEnabled}
+        />);
+      const itemComponent1 = wrapper1.find(Item);
+      expect(itemComponent1).not.to.be.undefined;
+      itemComponent1.simulate("click");
+      wrapper1.update();
+      wrapper1.find(Group).should.exist;
+
+      const wrapper2 = enzyme.mount(
+        <ListPicker
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+        />);
+      const itemComponent2 = wrapper2.find(Item);
+      expect(itemComponent2).not.to.be.undefined;
+      itemComponent2.simulate("click");
+      wrapper2.update();
+      wrapper2.find(Group).should.exist;
+      wrapper1.update();
+      wrapper1.find(Group).length.should.eq(0);
+
+      itemComponent2.simulate("click");
+      wrapper2.update();
+      wrapper2.find(Group).length.should.eq(0);
+
+      wrapper1.unmount();
+      wrapper2.unmount();
+    });
+  });
+
 });

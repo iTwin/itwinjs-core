@@ -106,8 +106,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
-    if (undefined === args.activatedFrontstageDef) // may be encountered during unit tests
-      return;
     // Save the nineZoneProps into the former FrontstageDef
     if (this._frontstageDef)
       this._frontstageDef.nineZoneProps = { ...this.state.nineZoneProps };

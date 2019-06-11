@@ -106,13 +106,6 @@ export * from "./IModelDb"; // must be last
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
  */
 /**
- * @docs-group-description SQLite
- * Classes for executing SQLite SQL queries. Use them only for exceptional cases. Prefer [ECSQL]($docs/learning/ECSQL.md) when reading
- * the content of iModels. Prefer the [iModel APIs]($docs/learning/backend/IModelDbReadwrite.md) when modifying the content of iModels.
- *
- * *Note:* Executing a data-modifying SQL statement can corrupt the local copy of an iModel!
- */
-/**
  * @docs-group-description Portability
  * Classes to help write [portable apps]($docs/learning/Portability.md) and libraries that will run on any platform, including web apps, node services, Electron desktops apps, and mobile apps.
  */
