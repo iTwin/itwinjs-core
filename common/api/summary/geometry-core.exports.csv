@@ -63,6 +63,8 @@ public;CurveChainWithDistanceIndex
 public;class CurveCollection 
 public;CurveCurve
 public;CurveCurveApproachType
+public;CurveExtendMode
+public;CurveExtendOptions
 public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair
@@ -198,6 +200,7 @@ public;UVSelect
 public;UVSurface
 public;UVSurfaceIsoParametricDistance
 public;UVSurfaceOps
+public;VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode[]
 public;Vector2d 
 public;Vector3d 
 public;Vector3dArray

@@ -40,6 +40,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 /* tslint:disable:no-console */
 
 class StrokeCountSearch extends NullGeometryHandler {
@@ -529,6 +530,42 @@ describe("Curves", () => {
       ck.testPoint3d(point0, point0F);
       ck.testPoint3d(point1, point1F);
       ck.testFalse(p.isAlmostEqual(LineSegment3d.createXYXY(1, 2, 3, 4)));
+      // test closest point for points on extended tangent ....
+      const e = 0.001;
+      const ray0 = p.fractionToPointAndUnitTangent(0.0);
+      const ray1 = p.fractionToPointAndUnitTangent(1.0);
+      const p0 = ray0.fractionToPoint(-e);
+      const p1 = ray1.fractionToPoint(e);
+
+      const c0 = p.closestPoint(p0, false);
+      const c1 = p.closestPoint(p1, false);
+      const error0 = ck.getNumErrors();
+      // console.log("\n\n  START CURVE ", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
+      if (ck.testPointer(c0) && c0) {
+        if (!ck.testPoint3d(ray0.origin, c0.point))
+          p.closestPoint(p0, false);
+      }
+      if (ck.testPointer(c1) && c1) {
+        if (!ck.testPoint3d(ray1.origin, c1.point))
+          p.closestPoint(p1, false);
+      }
+
+      const c0x = p.closestPoint(p0, CurveExtendMode.OnCurve);
+      const c1x = p.closestPoint(p1, CurveExtendMode.OnCurve);
+      const proximityFactor = 0.01;   // WE TRUST THAT THE CURVE DOES NOT BEND MUCH IN SMALL EXTRAPOLATION -- projected point should be closer than extension distance.
+      if (ck.testPointer(c0x) && c0x) {
+        if (c0x.childDetail && c0x.childDetail.curve!.isExtensibleFractionSpace)
+          ck.testLT(p0.distance(c0x.point), proximityFactor * e, "small distance from curve");
+        p.closestPoint(p0, CurveExtendMode.OnCurve);
+      }
+      if (ck.testPointer(c1x) && c1x) {
+        if (c1x.childDetail && c1x.childDetail.curve!.isExtensibleFractionSpace)
+          ck.testLT(p1.distance(c1x.point), proximityFactor * e, "small distance from curve");
+        p.closestPoint(p1, CurveExtendMode.OnCurve);
+      }
+
+      if (ck.getNumErrors() > error0)
+        console.log("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");

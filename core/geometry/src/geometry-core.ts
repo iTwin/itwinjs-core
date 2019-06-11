@@ -170,6 +170,7 @@ export * from "./curve/ConstructCurveBetweenCurves";
 export * from "./curve/CoordinateXYZ";
 export * from "./curve/CurveChain";
 export * from "./curve/CurveChainWithDistanceIndex";
+export * from "./curve/CurveExtendMode";
 export * from "./curve/CurveCollection";
 export * from "./curve/CurveCurveIntersectXY";
 export * from "./curve/CurveLocationDetail";
