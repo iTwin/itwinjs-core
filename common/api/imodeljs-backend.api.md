@@ -1677,6 +1677,8 @@ export class IModelDb extends IModel {
     importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
+    // @internal
+    readonly isOpen: boolean;
     readonly isReadonly: boolean;
     // @deprecated
     readonly isStandalone: boolean;
