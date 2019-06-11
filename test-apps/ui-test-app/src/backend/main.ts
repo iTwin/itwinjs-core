@@ -28,6 +28,7 @@ Presentation.initialize({
   // Specify location of where application's presentation rule sets are located.
   // May be omitted if application doesn't have any presentation rules.
   rulesetDirectories: [path.join("assets", "presentation_rules")],
+  enableSchemasPreload: true,
 });
 
 // invoke platform-specific initialization
