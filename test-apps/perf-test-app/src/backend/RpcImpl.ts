@@ -8,7 +8,6 @@ import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestRpcInterface } from "../common/RpcInterfaces";
 import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost } from "@bentley/imodeljs-backend";
 import * as path from "path";
-import * as fs from "fs";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -56,17 +55,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async executeTest(tokenProps: IModelTokenProps, testName: string, params: any): Promise<any> {
     return JSON.parse(IModelDb.find(IModelToken.fromJSON(tokenProps)).nativeDb.executeTest(testName, JSON.stringify(params)));
-  }
-
-  public async saveCSV(testName: string, testDescription: string, testTime: number): Promise<any> {
-    const pth = "./lib/outputdir";
-    if (!IModelJsFs.existsSync(pth))
-      IModelJsFs.mkdirSync(pth);
-    const csvPath = path.join(pth, "ImodelPerformance.csv");
-    if (!IModelJsFs.existsSync(csvPath)) {
-      fs.appendFileSync(csvPath, "Operation,Description,ExecutionTime\n");
-    }
-    fs.appendFileSync(csvPath, testName + "," + testDescription + "," + testTime + "\n");
   }
 }
 
