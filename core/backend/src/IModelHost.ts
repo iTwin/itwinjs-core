@@ -130,8 +130,8 @@ export class IModelHostConfiguration {
     cachedStatementsPerThread: 40,
     maxQueueSize: (os.cpus().length - 1) * 500,
     pollInterval: 50,
-    useSharedCache: true,
-    useUncommitedRead: true,
+    useSharedCache: false,
+    useUncommitedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes

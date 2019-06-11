@@ -14,6 +14,7 @@ import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core
 import { KnownTestLocations } from "../KnownTestLocations";
 
 async function query(ecdb: ECDb, ecsql: string, args: any[] | object, limit?: number, callback?: (row: any) => void) {
+  ecdb.saveChanges();
   let rowCount: number = 0;
   for await (const row of ecdb.query(ecsql, args, limit)) {
     rowCount++;
@@ -650,7 +651,6 @@ describe("ECSqlStatement", () => {
           assert.equal(row.s, "3");
         });
 
-
         assert.equal(await query(ecdb, "SELECT D,I,L,S FROM Test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
           assert.equal(row.d, smallIntVal);
           assert.equal(row.i, smallIntVal);
@@ -709,7 +709,6 @@ describe("ECSqlStatement", () => {
           assert.equal(row.sl, largeUnsafeNumberStr);
           assert.equal(row.hl, largeUnsafeNumberHexStr);
         });
-
 
         // assert.equal(await query(ecdb, "SELECT Str(I) si, HexStr(I) hi, Str(L) sl, HexStr(L) hl FROM Test.Foo WHERE ECInstanceId=?", [id], 1, (row: any) => {
         //   assert.equal(row.si, largeUnsafeNumberStr);
@@ -1135,33 +1134,33 @@ describe("ECSqlStatement", () => {
             assert.equal(row.s_p3d.z, p3dVal.z);
             assert.equal(row.s_s, strVal);
 
-            assert.equal(await query(ecdb, "SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", [expectedId], 1, (row: any) => {
-              assert.deepEqual(row.bl, blobVal);
-              const f64a = new Float64Array(row.bl.buffer);
+            assert.equal(await query(ecdb, "SELECT Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl s_bl,Struct.Bo s_bo,Struct.D s_d,Struct.Dt s_dt,Struct.I s_i,Struct.P2d s_p2d,Struct.P3d s_p3d,Struct.S s_s FROM test.Foo WHERE ECInstanceId=?", [expectedId], 1, (row1: any) => {
+              assert.deepEqual(row1.bl, blobVal);
+              const f64a = new Float64Array(row1.bl.buffer);
               const r2a = new Range3d(...f64a);
               assert.deepEqual(r2a, testRange);
-              assert.equal(row.bo, boolVal);
-              assert.equal(row.d, doubleVal);
-              assert.equal(row.dt, dtVal);
-              assert.equal(row.i, intVal);
-              assert.equal(row.p2d.x, p2dVal.x);
-              assert.equal(row.p2d.y, p2dVal.y);
-              assert.equal(row.p3d.x, p3dVal.x);
-              assert.equal(row.p3d.y, p3dVal.y);
-              assert.equal(row.p3d.z, p3dVal.z);
-              assert.equal(row.s, strVal);
+              assert.equal(row1.bo, boolVal);
+              assert.equal(row1.d, doubleVal);
+              assert.equal(row1.dt, dtVal);
+              assert.equal(row1.i, intVal);
+              assert.equal(row1.p2d.x, p2dVal.x);
+              assert.equal(row1.p2d.y, p2dVal.y);
+              assert.equal(row1.p3d.x, p3dVal.x);
+              assert.equal(row1.p3d.y, p3dVal.y);
+              assert.equal(row1.p3d.z, p3dVal.z);
+              assert.equal(row1.s, strVal);
 
-              assert.deepEqual(row.s_bl, blobVal);
-              assert.equal(row.s_bo, boolVal);
-              assert.equal(row.s_d, doubleVal);
-              assert.equal(row.s_dt, dtVal);
-              assert.equal(row.s_i, intVal);
-              assert.equal(row.s_p2d.x, p2dVal.x);
-              assert.equal(row.s_p2d.y, p2dVal.y);
-              assert.equal(row.s_p3d.x, p3dVal.x);
-              assert.equal(row.s_p3d.y, p3dVal.y);
-              assert.equal(row.s_p3d.z, p3dVal.z);
-              assert.equal(row.s_s, strVal);
+              assert.deepEqual(row1.s_bl, blobVal);
+              assert.equal(row1.s_bo, boolVal);
+              assert.equal(row1.s_d, doubleVal);
+              assert.equal(row1.s_dt, dtVal);
+              assert.equal(row1.s_i, intVal);
+              assert.equal(row1.s_p2d.x, p2dVal.x);
+              assert.equal(row1.s_p2d.y, p2dVal.y);
+              assert.equal(row1.s_p3d.x, p3dVal.x);
+              assert.equal(row1.s_p3d.y, p3dVal.y);
+              assert.equal(row1.s_p3d.z, p3dVal.z);
+              assert.equal(row1.s_s, strVal);
             }), 1);
           });
         };
@@ -1283,18 +1282,18 @@ describe("ECSqlStatement", () => {
             assert.equal(row.struct.p3d.z, structVal.p3d.z);
             assert.equal(row.struct.s, structVal.s);
 
-            assert.equal(await query(ecdb, "SELECT Struct FROM test.Foo WHERE ECInstanceId=?", [expectedId], 1, (row: any) => {
-              assert.isTrue(blobEqual(row.struct.bl, structVal.bl));
-              assert.equal(row.struct.bo, structVal.bo);
-              assert.equal(row.struct.d, structVal.d);
-              assert.equal(row.struct.dt, structVal.dt);
-              assert.equal(row.struct.i, structVal.i);
-              assert.equal(row.struct.p2d.x, structVal.p2d.x);
-              assert.equal(row.struct.p2d.y, structVal.p2d.y);
-              assert.equal(row.struct.p3d.x, structVal.p3d.x);
-              assert.equal(row.struct.p3d.y, structVal.p3d.y);
-              assert.equal(row.struct.p3d.z, structVal.p3d.z);
-              assert.equal(row.struct.s, structVal.s);
+            assert.equal(await query(ecdb, "SELECT Struct FROM test.Foo WHERE ECInstanceId=?", [expectedId], 1, (row1: any) => {
+              assert.isTrue(blobEqual(row1.struct.bl, structVal.bl));
+              assert.equal(row1.struct.bo, structVal.bo);
+              assert.equal(row1.struct.d, structVal.d);
+              assert.equal(row1.struct.dt, structVal.dt);
+              assert.equal(row1.struct.i, structVal.i);
+              assert.equal(row1.struct.p2d.x, structVal.p2d.x);
+              assert.equal(row1.struct.p2d.y, structVal.p2d.y);
+              assert.equal(row1.struct.p3d.x, structVal.p3d.x);
+              assert.equal(row1.struct.p3d.y, structVal.p3d.y);
+              assert.equal(row1.struct.p3d.z, structVal.p3d.z);
+              assert.equal(row1.struct.s, structVal.s);
             }), 1);
           });
         };
