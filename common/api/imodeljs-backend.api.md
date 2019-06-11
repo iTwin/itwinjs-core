@@ -1361,6 +1361,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum: string;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha
+    static createPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps;
+    // @alpha
+    static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void;
     identifier: string;
     jsonProperties: {
         [key: string]: any;
@@ -1370,6 +1374,14 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     // @internal (undocumented)
     toJSON(): ExternalSourceAspectProps;
     version?: string;
+}
+
+// @public (undocumented)
+export namespace ExternalSourceAspect {
+    export enum Kind {
+        // (undocumented)
+        Element = "Element"
+    }
 }
 
 // @public
@@ -1880,28 +1892,29 @@ export class IModelImporter {
     excludeSubject(subjectPath: string): void;
     findCodeSpecId(sourceId: Id64String): Id64String;
     findElementId(sourceId: Id64String): Id64String;
+    protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
     // (undocumented)
     import(): void;
-    importChildElements(sourceElementId: Id64String): void;
+    importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
     // (undocumented)
     importCodeSpec(sourceId: Id64String): Id64String;
     // (undocumented)
     importCodeSpecs(): void;
-    // (undocumented)
-    importElement(sourceElementId: Id64String): void;
+    importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
     // (undocumented)
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String): void;
-    // (undocumented)
-    importModels(modeledElementClass: string): void;
+    importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
+    importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
     // (undocumented)
     importRelationships(): void;
     // (undocumented)
     initFromExternalSourceAspects(): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
-    protected transformAndInsertElement(sourceElement: Element): void;
+    protected transformAndInsertElement(sourceElement: Element, targetScopeElementId: Id64String): void;
+    transformAndUpdateElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): void;
+    protected transformElement(sourceElement: Element): ElementProps;
 }
 
 // @public

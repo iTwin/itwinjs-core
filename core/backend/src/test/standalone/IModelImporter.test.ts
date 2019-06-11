@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, DbResult, Guid } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, FontType,
@@ -277,6 +277,37 @@ class TestDataManager {
     assert.exists(sourceElement);
     assert.equal(sourceElement.computeHash(), aspect.checksum);
   }
+
+  public updateSourceDb(): void {
+    const subjectId = this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Subject"))!;
+    assert.isTrue(Id64.isValidId64(subjectId));
+    const subject: Subject = this.sourceDb.elements.getElement<Subject>(subjectId);
+    subject.description = "Subject description (Updated)";
+    this.sourceDb.elements.updateElement(subject);
+    const definitionModelId = this.sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.sourceDb, subjectId, "Definition"))!;
+    assert.isTrue(Id64.isValidId64(definitionModelId));
+    const spatialCategoryId = this.sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.sourceDb, definitionModelId, "SpatialCategory"))!;
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const spatialCategory: SpatialCategory = this.sourceDb.elements.getElement<SpatialCategory>(spatialCategoryId);
+    spatialCategory.federationGuid = Guid.createValue();
+    this.sourceDb.elements.updateElement(spatialCategory);
+    this.sourceDb.saveChanges();
+  }
+
+  public assertUpdatesInTargetDb(): void {
+    // assert Subject was updated
+    const subjectId = this.targetDb.elements.queryElementIdByCode(Subject.createCode(this.targetDb, IModel.rootSubjectId, "Subject"))!;
+    assert.isTrue(Id64.isValidId64(subjectId));
+    const subject: Subject = this.targetDb.elements.getElement<Subject>(subjectId);
+    assert.equal(subject.description, "Subject description (Updated)");
+    // assert SpatialCategory was updated
+    const definitionModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Definition"))!;
+    assert.isTrue(Id64.isValidId64(definitionModelId));
+    const spatialCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, definitionModelId, "SpatialCategory"))!;
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const spatialCategory: SpatialCategory = this.targetDb.elements.getElement<SpatialCategory>(spatialCategoryId);
+    assert.exists(spatialCategory.federationGuid);
+  }
 }
 
 describe("IModelImporter", () => {
@@ -289,12 +320,26 @@ describe("IModelImporter", () => {
 
     // re-import to ensure no additional elements are imported
     const elementCount: number = countElements(manager.targetDb);
+    const aspectCount: number = countExternalSourceAspects(manager.targetDb);
     manager.importIntoTargetDb(); // second import should be a no-op
-    assert.equal(elementCount, countElements(manager.targetDb), "Second import should be a no-op");
+    assert.equal(elementCount, countElements(manager.targetDb), "Second import should not add elements");
+    assert.equal(aspectCount, countExternalSourceAspects(manager.targetDb), "Second import should not add aspects");
+
+    manager.updateSourceDb();
+    manager.importIntoTargetDb();
+    manager.assertUpdatesInTargetDb();
+    assert.equal(elementCount, countElements(manager.targetDb), "Third import should not add elements");
+    assert.equal(aspectCount, countExternalSourceAspects(manager.targetDb), "Third import should not add aspects");
   });
 
   function countElements(iModelDb: IModelDb): number {
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
+
+  function countExternalSourceAspects(iModelDb: IModelDb): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ExternalSourceAspect.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
   }
@@ -355,6 +400,7 @@ describe("IModelImporter", () => {
     assert.isFalse(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
 
     const importer: IModelImporter = new IModelImporter(sourceDb, targetDb);
+    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP - Needs to be Element in target IModelDb that represents the source repository
     assert.exists(importer);
     importer.importCodeSpecs();
     targetDb.saveChanges("Import CodeSpecs");
@@ -374,7 +420,7 @@ describe("IModelImporter", () => {
     let targetFunctionalElementCount: number = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
     assert.isAtLeast(sourceFunctionalElementCount, 1);
     assert.equal(targetFunctionalElementCount, 0);
-    importer.importModelContents(sourceFunctionalPartitionId);
+    importer.importModelContents(sourceFunctionalPartitionId, targetScopeElementId);
     targetDb.saveChanges("Import FunctionalModel contents");
     targetFunctionalElementCount = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
     assert.equal(sourceFunctionalElementCount, targetFunctionalElementCount);

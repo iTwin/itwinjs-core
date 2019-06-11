@@ -99,6 +99,7 @@ beta;ExportGraphicsInfo
 beta;ExportGraphicsMesh
 beta;ExportGraphicsProps
 public;ExternalSourceAspect 
+public;ExternalSourceAspect
 public;class FunctionalBreakdownElement 
 public;class FunctionalComponentElement 
 public;FunctionalComposite 
