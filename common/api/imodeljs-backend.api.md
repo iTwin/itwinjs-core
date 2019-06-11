@@ -2272,6 +2272,8 @@ export namespace IModelJsNative {
         // (undocumented)
         dispose(): void;
         // (undocumented)
+        forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
+        // (undocumented)
         getRulesets(rulesetId: string): ErrorStatusOrResult<ECPresentationStatus, string>;
         // (undocumented)
         getRulesetVariableValue(rulesetId: string, variableId: string, type: string): ErrorStatusOrResult<ECPresentationStatus, any>;

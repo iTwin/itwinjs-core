@@ -345,6 +345,7 @@ export declare namespace IModelJsNative {
 
   export class ECPresentationManager implements IDisposable {
     constructor(id?: string);
+    public forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;

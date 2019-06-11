@@ -42,6 +42,12 @@ export interface PresentationManagerProps {
   activeLocale?: string;
 
   /**
+   * Should schemas preloading be enabled. If true, presentation manager listens
+   * for `IModelDb.onOpened` event and force pre-loads all ECSchemas.
+   */
+  enableSchemasPreload?: boolean;
+
+  /**
    * An identifier which helps separate multiple presentation managers. It's
    * mostly useful in tests where multiple presentation managers can co-exist
    * and try to share the same resources, which we don't want. With this identifier
@@ -67,6 +73,7 @@ export class PresentationManager {
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
   private _isDisposed: boolean;
+  private _disposeIModelOpenedListener?: () => void;
 
   /**
    * Get / set active locale used for localizing presentation data
@@ -88,6 +95,8 @@ export class PresentationManager {
       this.activeLocale = props.activeLocale;
     this.setupLocaleDirectories(props);
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
+    if (this._props.enableSchemasPreload)
+      this._disposeIModelOpenedListener = IModelDb.onOpened.addListener(this.onIModelOpened);
   }
 
   /**
@@ -98,6 +107,8 @@ export class PresentationManager {
       this.getNativePlatform().dispose();
       this._nativePlatform = undefined;
     }
+    if (this._disposeIModelOpenedListener)
+      this._disposeIModelOpenedListener();
     this._isDisposed = true;
   }
 
@@ -115,6 +126,13 @@ export class PresentationManager {
    */
   public vars(rulesetId: string): RulesetVariablesManager {
     return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onIModelOpened = (requestContext: ClientRequestContext, imodel: IModelDb) => {
+    const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
+    // tslint:disable-next-line: no-floating-promises
+    this.getNativePlatform().forceLoadSchemas(requestContext, imodelAddon);
   }
 
   /** @internal */
