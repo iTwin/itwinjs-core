@@ -88,7 +88,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.130.0",
+    "@bentley/imodeljs-native": "~0.132.0",
     "azure-storage": "^2.10.2",
     "form-data": "2.3.2",
     "fs-extra": "^6.0.1",
