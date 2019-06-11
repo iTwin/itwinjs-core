@@ -24,6 +24,10 @@ export interface Config {
   pollInterval?: number;
   /** Global restriction on query quota */
   quota?: QueryQuota;
+  /** Use sqlite shared cache option */
+  useSharedCache?: boolean;
+  /** Read uncommited read for better performance */
+  useUncommitedRead?: boolean;
 }
 
 /** Post status for concurrent query manager

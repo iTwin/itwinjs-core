@@ -38,7 +38,7 @@ describe("ECSql Query", () => {
   });
 
   // new new addon build
-  it.skip("ECSQL with BLOB", async () => {
+  it("ECSQL with BLOB", async () => {
     let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
     const row: any = rows[0];
@@ -98,10 +98,10 @@ describe("ECSql Query", () => {
         if (Reflect.ownKeys(row).length > 1) {
           assert.isTrue(Reflect.has(row, "parentId"));
           const parentId: string = row.parentId;
-          assert.isTrue(parentId.startsWith("0x"));
+          assert.isTrue(Id64.isValidId64(parentId));
         }
         const id: string = row.id;
-        assert.isTrue(id.startsWith("0x"));
+        assert.isTrue(Id64.isValidId64(id));
       }
       const entry = dbs.indexOf(db);
       assert.equal(rowCounts[entry], resultSet.length);

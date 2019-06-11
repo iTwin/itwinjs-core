@@ -47,9 +47,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const k = this.poleIndexToDataIndex(poleIndex);
     if (k !== undefined) {
       const data = this._bcurve.packedData;
-      const divw = Geometry.conditionalDivideFraction(1.0, data[k + 3]);
-      if (divw !== undefined)
-        return Point3d.create(data[k] * divw, data[k + 1] * divw, data[k + 2] * divw, result);
+      const divW = Geometry.conditionalDivideFraction(1.0, data[k + 3]);
+      if (divW !== undefined)
+        return Point3d.create(data[k] * divW, data[k + 1] * divW, data[k + 2] * divW, result);
     }
     return undefined;
   }
@@ -161,10 +161,10 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public evaluatePointAndDerivativeInSpan(spanIndex: number, spanFraction: number, result?: Ray3d): Ray3d {
     this._bcurve.evaluateBuffersInSpan1(spanIndex, spanFraction);
     const xyzw = this._bcurve.poleBuffer;
-    const dxyzw = this._bcurve.poleBuffer1;
+    const dXYZW = this._bcurve.poleBuffer1;
     return Point4d.createRealDerivativeRay3dDefault000(
       xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dxyzw[0], dxyzw[1], dxyzw[2], dxyzw[3], result);
+      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3], result);
   }
 
   /** Evaluate at a position given by a knot value. */
@@ -177,22 +177,22 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d {
     this._bcurve.evaluateBuffersAtKnot(u, 1);
     const xyzw = this._bcurve.poleBuffer;
-    const dxyzw = this._bcurve.poleBuffer1;
+    const dXYZW = this._bcurve.poleBuffer1;
     return Point4d.createRealDerivativeRay3dDefault000(
       xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dxyzw[0], dxyzw[1], dxyzw[2], dxyzw[3], result);
+      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3], result);
   }
 
   /** Evaluate at a position given by a knot value.  Return point with 2 derivatives. */
   public knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     this._bcurve.evaluateBuffersAtKnot(u, 2);
     const xyzw = this._bcurve.poleBuffer;
-    const dxyzw = this._bcurve.poleBuffer1;
-    const ddxyzw = this._bcurve.poleBuffer2;
+    const dXYZW = this._bcurve.poleBuffer1;
+    const ddXYZW = this._bcurve.poleBuffer2;
     return Point4d.createRealDerivativePlane3dByOriginAndVectorsDefault000(
       xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dxyzw[0], dxyzw[1], dxyzw[2], dxyzw[3],
-      ddxyzw[0], ddxyzw[1], ddxyzw[2], ddxyzw[3],
+      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3],
+      ddXYZW[0], ddXYZW[1], ddXYZW[2], ddXYZW[3],
       result);
   }
   /** test if the curve is almost equal to `other` */
@@ -207,7 +207,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point4dArray.isCloseToPlane(this._bcurve.packedData, plane);
   }
-  /** Rreturn the control polygon length as quick approximation to the curve length. */
+  /** Return the control polygon length as quick approximation to the curve length. */
   public quickLength(): number { return Point3dArray.sumEdgeLengths(this._bcurve.packedData); }
   /** call a handler with interval data for stroking. */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {

@@ -20,6 +20,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { CurveLocationDetail } from "./CurveLocationDetail";
+import { VariantCurveExtendParameter, CurveExtendMode, CurveExtendOptions } from "./CurveExtendMode";
 /**
  * * Annotation of an interval of a curve.
  * * The interval is marked with two pairs of numbers:
@@ -101,10 +102,14 @@ export class PathFragment {
   }
   /**
    * convert a fractional position on the childCurve to distance in the chain space.
+   * * Return value is SIGNED -- will be negative when fraction < this.childFraction0.
    * @param fraction fraction along the curve within this fragment
    */
   public childFractionTChainDistance(fraction: number): number {
-    return this.chainDistance0 + this.childCurve.curveLengthBetweenFractions(this.childFraction0, fraction);
+    let d = this.childCurve.curveLengthBetweenFractions(this.childFraction0, fraction);
+    if (fraction < this.childFraction0)
+      d = -d;
+    return this.chainDistance0 + d;
   }
 }
 /** Non-instantiable class to build a distance index for a path. */
@@ -341,6 +346,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       for (const fragment of fragments) {
         if (fragment.containsChildCurveAndChildFraction(curve, fraction)) return fragment;
       }
+      if (fraction <= 0)
+        return fragments[0];
+      if (fraction > 1.0)
+        return fragments[numFragments - 1];
     }
     return undefined;
   }
@@ -493,9 +502,27 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @param extend true to extend the curve (NOT USED)
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
-  public closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
     // umm... to "extend", would require selective extension of first, last
-    const childDetail = super.closestPoint(spacePoint, false);
+    let childDetail: CurveLocationDetail | undefined;
+    let aMin = Number.MAX_VALUE;
+    const numChildren = this.path.children.length;
+    if (numChildren === 1) {
+      childDetail = this.path.children[0].closestPoint(spacePoint, extend);
+    } else {
+      const extend0 = [CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0), CurveExtendMode.None];
+      const extend1 = [CurveExtendMode.None, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1)];
+      for (let childIndex = 0; childIndex < numChildren; childIndex++) {
+        const child = this.path.children[childIndex];
+        const detailA = child.closestPoint(spacePoint, childIndex === 0 ? extend0 : childIndex + 1 === numChildren ? extend1 : false);
+        if (detailA && detailA.a < aMin) {
+          aMin = detailA.a;
+          childDetail = CurveLocationDetail.createCurveFractionPoint(detailA.curve!, detailA.fraction, detailA.point, childDetail)!;
+          childDetail.a = detailA.a;
+        }
+      }
+
+    }
     if (!childDetail)
       return undefined;
     const fragment = this.curveAndChildFractionToFragment(childDetail.curve!, childDetail.fraction);

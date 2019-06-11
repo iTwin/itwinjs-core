@@ -188,7 +188,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     clone(): Arc3d;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive;
-    closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     static createCenterNormalRadius(center: Point3d, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;
@@ -1141,7 +1141,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     protected chainDistanceToFragment(distance: number, allowExtrapolation?: boolean): PathFragment | undefined;
     clone(): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive | undefined;
-    closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static createCapture(path: CurveChain, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
@@ -1201,6 +1201,20 @@ export enum CurveCurveApproachType {
     Intersection = 0,
     ParallelGeometry = 3,
     PerpendicularChord = 1
+}
+
+// @public
+export enum CurveExtendMode {
+    None = 0,
+    OnCurve = 2,
+    OnTangent = 1
+}
+
+// @public
+export class CurveExtendOptions {
+    static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number;
+    static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): number;
+    static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode;
 }
 
 // @public
@@ -1266,7 +1280,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
-    closestPoint(spacePoint: Point3d, extend: boolean): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap): void;
     abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
     curveLength(): number;
@@ -2162,7 +2176,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     clone(): LineSegment3d;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive;
-    closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(point0: Point3d, point1: Point3d, result?: LineSegment3d): LineSegment3d;
     static createXYXY(x0: number, y0: number, x1: number, y1: number, z?: number, result?: LineSegment3d): LineSegment3d;
@@ -4292,6 +4306,9 @@ export interface UVSurfaceIsoParametricDistance {
 export class UVSurfaceOps {
     static createLinestringOnUVLine(surface: UVSurface, u0: number, v0: number, u1: number, v1: number, numEdge: number, saveUV?: boolean, saveFraction?: boolean): LineString3d;
 }
+
+// @public
+export type VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode[];
 
 // @public
 export class Vector2d extends XY implements BeJSONFunctions {
