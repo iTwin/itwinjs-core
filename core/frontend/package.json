@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "1.1.0-dev.7",
+  "version": "1.1.0-dev.8",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -55,27 +55,27 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.1.0-dev.7",
-    "@bentley/geometry-core": "^1.1.0-dev.7",
-    "@bentley/imodeljs-clients": "^1.1.0-dev.7",
-    "@bentley/imodeljs-common": "^1.1.0-dev.7",
-    "@bentley/imodeljs-i18n": "^1.1.0-dev.7",
-    "@bentley/imodeljs-quantity": "^1.1.0-dev.7"
+    "@bentley/bentleyjs-core": "^1.1.0-dev.8",
+    "@bentley/geometry-core": "^1.1.0-dev.8",
+    "@bentley/imodeljs-clients": "^1.1.0-dev.8",
+    "@bentley/imodeljs-common": "^1.1.0-dev.8",
+    "@bentley/imodeljs-i18n": "^1.1.0-dev.8",
+    "@bentley/imodeljs-quantity": "^1.1.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.1.0-dev.7",
-    "@bentley/build-tools": "1.1.0-dev.7",
-    "@bentley/certa": "1.1.0-dev.7",
-    "@bentley/geometry-core": "1.1.0-dev.7",
-    "@bentley/imodeljs-clients": "1.1.0-dev.7",
-    "@bentley/imodeljs-common": "1.1.0-dev.7",
-    "@bentley/imodeljs-i18n": "1.1.0-dev.7",
-    "@bentley/imodeljs-quantity": "1.1.0-dev.7",
-    "@bentley/webpack-tools": "1.1.0-dev.7",
+    "@bentley/bentleyjs-core": "1.1.0-dev.8",
+    "@bentley/build-tools": "1.1.0-dev.8",
+    "@bentley/certa": "1.1.0-dev.8",
+    "@bentley/geometry-core": "1.1.0-dev.8",
+    "@bentley/imodeljs-clients": "1.1.0-dev.8",
+    "@bentley/imodeljs-common": "1.1.0-dev.8",
+    "@bentley/imodeljs-i18n": "1.1.0-dev.8",
+    "@bentley/imodeljs-quantity": "1.1.0-dev.8",
+    "@bentley/webpack-tools": "1.1.0-dev.8",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
