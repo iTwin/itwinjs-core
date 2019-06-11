@@ -104,7 +104,8 @@ export class OpenParams {
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
+ * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
+ * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
  */
 export class IModelDb extends IModel {
@@ -186,10 +187,12 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** Create an *empty* local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param args The parameters that define the new iModel *snapshot*
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
   public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
@@ -197,11 +200,12 @@ export class IModelDb extends IModel {
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
   }
 
-  /** Create a local iModel *snapshot* file using this iModel as a *seed* or starting point.
-   * Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @returns A writeable IModelDb
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
   public createSnapshot(snapshotFile: string): IModelDb {
@@ -249,6 +253,7 @@ export class IModelDb extends IModel {
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
    * @see [[open]]
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
    * @beta
    */

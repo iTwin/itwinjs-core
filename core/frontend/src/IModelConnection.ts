@@ -786,7 +786,7 @@ export namespace IModelConnection {
      *
      * For example:
      * ```ts
-     * [[include:IModelConnection.Views.getViewList]]
+     * [[include:IModelConnection.Views.getSpatialViewList]]
      * ```
      * @param queryParams The parameters for the views to find. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.

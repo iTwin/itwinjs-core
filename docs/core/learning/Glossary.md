@@ -77,6 +77,7 @@ tableRowAnchors: true
 |**Rush**|A tool for [managing multiple NPM packages](http://rushjs.io/) within a single git repository.
 |**Schema**|See ECSchema
 |**SheetModel**|A digital representation of a *sheet of paper*. Sheet Models are 2d models in bounded paper coordinates. SheetModels may contain annotation Elements as well as references to [DrawingViewDefinition]($backend)s. or [SpatialViewDefinition]($backend)s.
+|**Snapshot iModel**|A [static]($docs/learning/backend/AccessingIModels.md/#snapshot-imodels) point-in-time representation of the state of an iModel.
 |**Spatial Coordinate System**|The 3d coordinate system of an iModel. The units are always meters (see ACS). The origin (0,0,0) of the Spatial Coordinate System may be oriented on the earth via an EcefLocation.
 |**SpatialModel**|A subclass of GeometricModel that holds 3d Elements in the iModel's Spatial Coordinate System.
 |**SpatialViewDefinition**|A subclass of ViewDefinition that displays one or more SpatialModels.
