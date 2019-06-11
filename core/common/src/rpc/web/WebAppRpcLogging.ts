@@ -70,6 +70,10 @@ export class WebAppRpcLogging {
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {
+    if (!operation) {
+      return "unknown.unknown";
+    }
+
     const interfaceName = typeof (operation.interfaceDefinition) === "string" ? operation.interfaceDefinition : operation.interfaceDefinition.interfaceName;
     const operationName = operation.operationName;
     return `${interfaceName}.${operationName}`;
