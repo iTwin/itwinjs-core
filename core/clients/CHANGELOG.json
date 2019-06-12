@@ -2,6 +2,69 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/imodeljs-clients_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
+          },
+          {
+            "comment": "Updated release tags. "
+          },
+          {
+            "comment": "Added state for Checkpoint class"
+          },
+          {
+            "comment": "Added an error for seed file timeout"
+          },
+          {
+            "comment": "Switched from iModelHub Project API to Context API"
+          },
+          {
+            "comment": "Fixed release tags. "
+          },
+          {
+            "comment": "Added query option to get owned briefcases"
+          },
+          {
+            "comment": "Logging changes. "
+          },
+          {
+            "comment": "Refactored and simplified implementation of IModelDb.open"
+          },
+          {
+            "comment": "Added hability to obtain an Azure blub SAS URL write-access."
+          },
+          {
+            "comment": "Added methods to SettingsAdmin that retrieve all settings saved with the given namespace. Intended for use with user-named settings such as Named Clips."
+          },
+          {
+            "comment": "Incorporate the newly implemented SharedSettings feature of the Product Settings Service into the Settings API."
+          },
+          {
+            "comment": "cease providing ulas user data that can be inferred from the accesstoken"
+          },
+          {
+            "comment": "specify explicit GuidString type for activityId and sessionId on ClientRequestContext"
+          },
+          {
+            "comment": "remove .only() on ulas tests"
+          },
+          {
+            "comment": "restore projectId/contextId to ULAS requests"
+          },
+          {
+            "comment": "remove machine-specifi-usernames in ulas tests"
+          },
+          {
+            "comment": "Use paging for Locks, Codes and ChangeSets"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/imodeljs-clients_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

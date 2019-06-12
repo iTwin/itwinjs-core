@@ -1,6 +1,37 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Switched from iModelHub Project API to Context API
+- Disable SyncUi test that occasionally fails on CI job.
+- Added UI Logger & UiError usage & improved i18n calls
+- Fix spelling error and rename frontstageKey to iModelId since token was used to inform ui when imodel changed.
+- Fix setWidgetState(Hidden)
+- Support touch move for navigation controls.
+- Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone
+- Added Overflow button support
+- InputFieldMessages are now hosted by ConfigurableUiContent control.
+- Release tag cleanup and ui-framework unit tests
+- Updated UI package release tags for 1.0 release.
+- Fixed release tag warnings in UI packages
+- Removed use of OidcClientWrapper. 
+- Remove console log message output by SyncUiEventDispatcher. Add Logging.
+- Changed some release tags from @hidden to @internal
+- Add alpha level support for solar timeline
+- Fix widget content renderer when widget prop changes.
+- Prevent configurableui wrapper from creating a stacking context.
+- Use the updated onCheckboxClick API inside ModelSelectorTree and VisibilityTree.
+- Visibility Tree: Fix reference subjects being hidden even when they have nested subjects
+- Visibility Tree: Fix statuses of subjects and elements
+- Visibility Tree: Refactor subjects' status checking and elements' category and model ids' retrieval for better performance
+- Visibility Tree: Enable all subcategories' display when making category visible
+- #124300. Add a notification event when a view is chosen in ViewSelector. #124295. ViewSelector incorrectly handles the case when a selected view has not initialized with a viewport.
+- Added ViewSelectorChangedEvent
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -1,6 +1,20 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Increased default backend timeout up to 90 seconds.
+- Removed backend timeout when it is set to 0.
+- Added backend timeout closure when request is completed.
+- Timeout clearing moved to 'finally' block
+- Added presentation request timing out if it takes longer that predefined periond of time.
+- Add release tags
+- Cleanup API
+- Refactor RPC interface to use pure JSON objects
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

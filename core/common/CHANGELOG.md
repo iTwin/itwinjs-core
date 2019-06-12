@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Add ExternalSourceAspectProps
+- Refactored and simplified implementation of IModelDb.open
+- Rename terrain to backgroundMap.
+- Retire some tile-related feature gates.
+- Introduced tile format v4.0
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -2,6 +2,42 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/presentation-common_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
+          },
+          {
+            "comment": "Add optional predicate parameter to `KeySet.add` to filter added keys"
+          },
+          {
+            "comment": "Add a new presentation rule `ExtendedDataRule` for injecting custom data into presentation objects."
+          },
+          {
+            "comment": "Refactor InstanceLabelOverride rule for more flexibility"
+          },
+          {
+            "comment": "Added handling for timeouted backend responses with request repeating"
+          },
+          {
+            "comment": "Add release tags"
+          },
+          {
+            "comment": "Cleanup API"
+          },
+          {
+            "comment": "Refactor RPC interface to use pure JSON objects"
+          },
+          {
+            "comment": "Fix content descriptor deserialization"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/presentation-common_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

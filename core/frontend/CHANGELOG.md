@@ -1,6 +1,65 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Updated release tags. 
+- added Viewport.changeViewedModel2d
+- Clip shape tool should only set AccuDraw rotation on 1st point.
+- #123874 Fix a prompt. #123731 Clip from element change to ignore selection set containing clip transient.
+- Combine planar classifier textures to converve texture units
+- Removed MaybeRenderApp and WebGLTestContext from tests
+- Remove unnecessary comment and initialization checks from tests
+- Fix bug sending sync ToolSettings message to UI when tool did not want ToolSettings.
+- Support emphasize of isolated elements. Allow default appearance independent of emphasize.
+- Dont enforce front/back ratio when displaying map as it does not require z-Buffer.
+- Export the classes from WebMercatorTileTree
+- Fix contentRange when GLTF contains RTC
+- Fix assertion when computing range of instanced meshes.
+- Fix loader so that it doesn't attempt to load .css files that don't exist.
+- Fix background map tile when child not found.
+- Allow ^ to be used to define angle degrees.
+- Downgraded certain NotificationManager methods to @beta to question styling support
+- Fix erroneous clipping of instanced geometry.
+- constructors for BeButtonEvent classes now take props argument
+- Remove back face culling option due to lack of performance benefit and other observations
+- Increase precision of clipping by transforming clip planes off the GPU.
+- Change ModifyElementSource to internal.
+- Added onActiveClipChanged event to ViewClipDecorationProvider instead of having to implement ViewClipEventHandler. Support for named clips using SettingsAdmin (needs integration tests).
+- Saved clip integration tests. Change view rotate wheel to only zoom about target center when displayed.
+- Support multipass rendering for planar classification for computers that down support multi-target framebuffers
+- Refactored and simplified implementation of IModelDb.open
+- 83505
+- Reduce display performance degradation when non-convex clip shapes are applied to a view.
+- Added Overflow button support
+- PropertyRecord can now optionally have `extendedData` which is a map of `any`
+- Add support for synchronous quantity parsing and showing and hiding InputFieldMessages.
+- Set max tiles to skip to 1 for reality model tiles. (better user experience)
+- Set release tags for TiledGraphicsProvider classes
+- Reload tile tree if animation id changes
+- Removed use of OidcClientWrapper. 
+- Add cSpell comment.
+- Rename terrain to backgroundMap.
+- Add IModelApp.queryRenderCompatibility() API to allow querying of any rendering limitations of a client system.
+- Retire some tile-related feature gates.
+- Add ability to save/restore toolsetting properties during a session.
+- Change to using the new SharedSettings API.
+- Added test for shareClip.
+- Add slope biasing to solar shadow mapping.
+- Reduce horizon limit so that shadows appear earlier and later.
+- Reduced delay between opening a viewport and seeing any graphics.
+- Don't await tentative as it can prevent being able to double click to fit.
+- Change to the way the background map is specified, to allow overlays.
+- Introduced tile format v4.0
+- Tool writers only need AccuDrawHintBuilder, AccuDraw should be internal.
+- use HTMLElements for tooltips
+- Improve touch cursor visibility. Fix tap on canvas decoration when touch cursor is active.
+- loader finds and loads css files in production mode.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -1,6 +1,30 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Updated release tags. 
+- Added state for Checkpoint class
+- Added an error for seed file timeout
+- Switched from iModelHub Project API to Context API
+- Fixed release tags. 
+- Added query option to get owned briefcases
+- Logging changes. 
+- Refactored and simplified implementation of IModelDb.open
+- Added hability to obtain an Azure blub SAS URL write-access.
+- Added methods to SettingsAdmin that retrieve all settings saved with the given namespace. Intended for use with user-named settings such as Named Clips.
+- Incorporate the newly implemented SharedSettings feature of the Product Settings Service into the Settings API.
+- cease providing ulas user data that can be inferred from the accesstoken
+- specify explicit GuidString type for activityId and sessionId on ClientRequestContext
+- remove .only() on ulas tests
+- restore projectId/contextId to ULAS requests
+- remove machine-specifi-usernames in ulas tests
+- Use paging for Locks, Codes and ChangeSets
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

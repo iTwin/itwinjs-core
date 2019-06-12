@@ -2,6 +2,84 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/imodeljs-backend_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Migrated agent applications to the newer client "
+          },
+          {
+            "comment": "RPC system now accepts only basic values (primitives, \"interface\" objects, and binary)."
+          },
+          {
+            "comment": "Switched from iModelHub Project API to Context API"
+          },
+          {
+            "comment": "Fix bug in IModelDb.createSnapshotFromSeed"
+          },
+          {
+            "comment": "Add BriefcaseId.Snapshot"
+          },
+          {
+            "comment": "Improve reading and binding binary blob using concurrent query manager"
+          },
+          {
+            "comment": "Fixed typo in function name"
+          },
+          {
+            "comment": "Modified ElementAspect Performance tests"
+          },
+          {
+            "comment": "Add options to IModelHost for logging large tile sizes and long tile load times."
+          },
+          {
+            "comment": "Add TypeScript wrapper for BisCore:ExternalSourceAspect"
+          },
+          {
+            "comment": "Made poll interval configurable for concurrent query manager."
+          },
+          {
+            "comment": "Updated code to use new ownedByMe option when quering briefcases"
+          },
+          {
+            "comment": "Logging changes. "
+          },
+          {
+            "comment": "Refactored and simplified implementation of IModelDb.open"
+          },
+          {
+            "comment": "IModelDb.openSnapshot cannot open a briefcase copy of an iModel managed by iModelHub"
+          },
+          {
+            "comment": "The IModelDb.createSnapshot instance method replaces the IModelDb.createSnapshotFromSeed static method"
+          },
+          {
+            "comment": "crash reporting, node-report opt-in"
+          },
+          {
+            "comment": "rush extract-api + rush change"
+          },
+          {
+            "comment": "Throw IModelError if an IModelDb query would return too many rows"
+          },
+          {
+            "comment": "Retire some tile-related feature gates."
+          },
+          {
+            "comment": "Introduced tile format v4.0"
+          },
+          {
+            "comment": "improve ulas error message logs"
+          },
+          {
+            "comment": "Catch tile upload errors."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/imodeljs-backend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

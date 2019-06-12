@@ -2,6 +2,54 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/ui-components_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use parse error message from callback."
+          },
+          {
+            "comment": "Added UI Logger & UiError usage & improved i18n calls"
+          },
+          {
+            "comment": "Added Overflow button support"
+          },
+          {
+            "comment": "Define `extendedData` in `TreeNodeItem` and `RowItem` as a key-value pairs structure. We're about to expose this structure to external consumers and don't want them to set `extendedData` to some primitive value. Instead, consumers should put key-value pairs with keys unique enough to not overwrite others' values."
+          },
+          {
+            "comment": "Update CustomNumberEditor to show InputFieldMessage when unable to parse quantity."
+          },
+          {
+            "comment": "Release tag cleanup and ui-framework unit tests"
+          },
+          {
+            "comment": "Updated UI package release tags for 1.0 release."
+          },
+          {
+            "comment": "Fixed release tag warnings in UI packages"
+          },
+          {
+            "comment": "Add alpha level support for solar timeline"
+          },
+          {
+            "comment": "Added property selection to the property grid component on right click"
+          },
+          {
+            "comment": "Update Tree API. Allow onCheckboxClick callback to receive multiple checkbox state changes."
+          },
+          {
+            "comment": "Tree: Fix node placeholder offset"
+          },
+          {
+            "comment": "Added ViewSelectorChangedEvent"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/ui-components_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

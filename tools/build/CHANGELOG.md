@@ -1,6 +1,17 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Update extract-api script to generate a summary file if in the context of an automated build.
+- Update to css-loader 2.1.1
+- Fix the docs script to not require consumers to take a devDependency on TypeDoc.
+- Update the standard configuration for extract-api to turn off ae-forgotten-export warnings.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

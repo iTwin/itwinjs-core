@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Added UI Logger & UiError usage & improved i18n calls
+- Change FrontStage to Frontstage
+- Moved NoChildrenProps, OmitChildrenProp and flattenChildren to ui-core from ui-ninezone
+- Release tag cleanup and ui-framework unit tests
+- Updated UI package release tags for 1.0 release.
+- Fixed release tag warnings in UI packages
+- Add ability to save property only for current session.
+- Added NumericInput component to ui-core. Added dependency on react-numeric-input.
+- Update popup position when component updates.
+- Remove unused z-index layers and move backstage to the end (since zones no longer create a stacking context).
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

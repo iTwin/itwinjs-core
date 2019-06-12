@@ -2,6 +2,39 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "1.0.0",
+      "tag": "@bentley/presentation-backend_v1.0.0",
+      "date": "Mon, 03 Jun 2019 18:09:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Increased default backend timeout up to 90 seconds."
+          },
+          {
+            "comment": "Removed backend timeout when it is set to 0."
+          },
+          {
+            "comment": "Added backend timeout closure when request is completed."
+          },
+          {
+            "comment": "Timeout clearing moved to 'finally' block"
+          },
+          {
+            "comment": "Added presentation request timing out if it takes longer that predefined periond of time."
+          },
+          {
+            "comment": "Add release tags"
+          },
+          {
+            "comment": "Cleanup API"
+          },
+          {
+            "comment": "Refactor RPC interface to use pure JSON objects"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.191.0",
       "tag": "@bentley/presentation-backend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",

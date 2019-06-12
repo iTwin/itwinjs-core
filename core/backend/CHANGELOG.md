@@ -1,6 +1,35 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Migrated agent applications to the newer client 
+- RPC system now accepts only basic values (primitives, "interface" objects, and binary).
+- Switched from iModelHub Project API to Context API
+- Fix bug in IModelDb.createSnapshotFromSeed
+- Add BriefcaseId.Snapshot
+- Improve reading and binding binary blob using concurrent query manager
+- Fixed typo in function name
+- Modified ElementAspect Performance tests
+- Add options to IModelHost for logging large tile sizes and long tile load times.
+- Add TypeScript wrapper for BisCore:ExternalSourceAspect
+- Made poll interval configurable for concurrent query manager.
+- Updated code to use new ownedByMe option when quering briefcases
+- Logging changes. 
+- Refactored and simplified implementation of IModelDb.open
+- IModelDb.openSnapshot cannot open a briefcase copy of an iModel managed by iModelHub
+- The IModelDb.createSnapshot instance method replaces the IModelDb.createSnapshotFromSeed static method
+- crash reporting, node-report opt-in
+- rush extract-api + rush change
+- Throw IModelError if an IModelDb query would return too many rows
+- Retire some tile-related feature gates.
+- Introduced tile format v4.0
+- improve ulas error message logs
+- Catch tile upload errors.
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 13 May 2019 15:52:05 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+
+## 1.0.0
+Mon, 03 Jun 2019 18:09:39 GMT
+
+### Updates
+
+- Update to use parse error message from callback.
+- Added UI Logger & UiError usage & improved i18n calls
+- Added Overflow button support
+- Define `extendedData` in `TreeNodeItem` and `RowItem` as a key-value pairs structure. We're about to expose this structure to external consumers and don't want them to set `extendedData` to some primitive value. Instead, consumers should put key-value pairs with keys unique enough to not overwrite others' values.
+- Update CustomNumberEditor to show InputFieldMessage when unable to parse quantity.
+- Release tag cleanup and ui-framework unit tests
+- Updated UI package release tags for 1.0 release.
+- Fixed release tag warnings in UI packages
+- Add alpha level support for solar timeline
+- Added property selection to the property grid component on right click
+- Update Tree API. Allow onCheckboxClick callback to receive multiple checkbox state changes.
+- Tree: Fix node placeholder offset
+- Added ViewSelectorChangedEvent
 
 ## 0.191.0
 Mon, 13 May 2019 15:52:05 GMT

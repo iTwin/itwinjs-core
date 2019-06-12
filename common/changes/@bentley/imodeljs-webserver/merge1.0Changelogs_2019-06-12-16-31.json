@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/imodeljs-webserver",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "Caleb.Shafer@bentley.com"
+}
