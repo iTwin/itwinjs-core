@@ -1362,10 +1362,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     // @internal (undocumented)
     static readonly className: string;
     // @alpha
-    static createPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps;
-    // @alpha
     static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void;
     identifier: string;
+    // @alpha
+    static initPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };
@@ -1912,11 +1912,11 @@ export class IModelImporter {
     importRelationships(): void;
     // (undocumented)
     initFromExternalSourceAspects(): void;
+    protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
-    protected transformAndInsertElement(sourceElement: Element, targetScopeElementId: Id64String): void;
-    transformAndUpdateElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): void;
-    protected transformElement(sourceElement: Element): ElementProps;
+    protected transformElement(sourceElement: Element): ElementProps[];
+    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
 }
 
 // @public

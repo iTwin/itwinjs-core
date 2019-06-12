@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Call filterclear when the user enters an empty search string and clicks Search.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "joe.zbuchalski@bentley.com"
+}

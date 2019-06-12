@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ElementAspects */
 
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element } from "./Element";
@@ -102,10 +102,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
    * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
    * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
-   * @param targetElementId The new ExternalSourceAspectProps will be persisted on this Element in the target iModel.
+   * @param targetElementId The optional Id of the Element that will own the ExternalSourceAspect. If not provided, it will be set to Id64.invalid.
    * @alpha
    */
-  public static createPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): ExternalSourceAspectProps {
+  public static initPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
     const sourceElementHash: string = sourceElement.computeHash();
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: this.classFullName,
@@ -119,7 +119,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     return aspectProps;
   }
 
-  /** Delete matching ExternalSourceAspects.
+  /** Delete matching ExternalSourceAspects. Must match Kind, Scope, and owning ElementId.
    * @param targetDb The IModelDb
    * @param targetScopeElementId Only consider ExternalSourceAspects from a particular source (scoped by this Element in the target IModelDb).
    * @param targetElementId Only consider ExternalSourceAspects owned by this Element.

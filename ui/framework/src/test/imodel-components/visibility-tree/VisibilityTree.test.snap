@@ -22,7 +22,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
           <div
             class="ReactVirtualized__Grid__innerScrollContainer"
             role="rowgroup"
-            style="width: auto; height: 24px; max-width: 200px; max-height: 24px; overflow: hidden; position: relative;"
+            style="width: auto; height: 48px; max-width: 200px; max-height: 48px; overflow: hidden; position: relative;"
           >
             <div
               class="node-wrapper"
@@ -38,7 +38,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
                   style="margin-left: 0px;"
                 >
                   <div
-                    class="core-tree-expansionToggle expansion-toggle"
+                    class="core-tree-expansionToggle is-expanded expansion-toggle"
                     data-testid="tree-node-expansion-toggle"
                   >
                     <i
@@ -57,6 +57,44 @@ exports[`VisibilityTree #integration renders component with real data and no act
                   >
                     <span>
                       Joe's house.bim
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="node-wrapper"
+              style="height: 24px; left: 0px; position: absolute; top: 24px; width: 100%;"
+            >
+              <div
+                class="core-tree-node"
+                data-testid="tree-node"
+              >
+                <div
+                  class="contents"
+                  data-testid="tree-node-contents"
+                  style="margin-left: 20px;"
+                >
+                  <div
+                    class="core-tree-expansionToggle expansion-toggle"
+                    data-testid="tree-node-expansion-toggle"
+                  >
+                    <i
+                      class="toggle icon icon-chevron-right"
+                    />
+                  </div>
+                  <div
+                    class="core-tree-node-icon"
+                  >
+                    <span
+                      class="bui-webfont-icon icon-folder"
+                    />
+                  </div>
+                  <div
+                    class="components-tree-node-content"
+                  >
+                    <span>
+                      Joe's house
                     </span>
                   </div>
                 </div>
@@ -87,6 +125,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
 exports[`VisibilityTree #integration shows correct hierarchy 1`] = `
 Array [
   Object {
+    "autoExpand": true,
     "children": Array [
       Object {
         "children": Array [
