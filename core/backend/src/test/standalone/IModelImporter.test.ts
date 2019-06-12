@@ -2,12 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, DbResult, Guid } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, ModelSelectorProps,
-  Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
+  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as hash from "object-hash";
@@ -15,13 +15,76 @@ import * as path from "path";
 import { ExternalSourceAspect } from "../../ElementAspect";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, Element, GroupModel,
-  IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject, ECSqlStatement,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  GroupModel, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
+/** Specialization of IModelImporter for testing */
+class TestIModelImporter extends IModelImporter {
+  public numInsertElementCalls = 0;
+  public numUpdateElementCalls = 0;
+  public numExcludedElementCalls = 0;
+
+  public numElementsInserted = 0;
+  public numElementsUpdated = 0;
+  public numElementsExcluded = 0;
+
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
+    super(sourceDb, targetDb);
+    this.initExclusions();
+  }
+
+  /** Initialize some sample exclusion rules for testing */
+  private initExclusions(): void {
+    super.excludeCodeSpec("CodeSpec2");
+    super.excludeElementClass(AuxCoordSystem2d.classFullName);
+    super.excludeSubject("/Only in Source");
+  }
+
+  /** Override insertElement to count calls */
+  protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+    this.numInsertElementCalls++;
+    super.insertElement(targetElementProps, sourceAspectProps);
+  }
+
+  /** Override updateElement to count calls */
+  protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+    this.numUpdateElementCalls++;
+    super.updateElement(targetElementProps, sourceAspectProps);
+  }
+
+  /** Override excludeElement to count calls */
+  protected excludeElement(sourceElement: Element): boolean {
+    const excluded: boolean = super.excludeElement(sourceElement);
+    if (excluded) {
+      this.numExcludedElementCalls++;
+    }
+    return excluded;
+  }
+
+  /** Count number of Elements inserted in this callback */
+  protected onElementInserted(sourceElement: Element, targetElementIds: Id64Array): void {
+    this.numElementsInserted += targetElementIds.length;
+    super.onElementInserted(sourceElement, targetElementIds);
+  }
+
+  /** Count number of Elements updated in this callback */
+  protected onElementUpdated(sourceElement: Element, targetElementIds: Id64Array): void {
+    this.numElementsUpdated += targetElementIds.length;
+    super.onElementUpdated(sourceElement, targetElementIds);
+  }
+
+  /** Count number of Elements excluded in this callback */
+  protected onElementExcluded(sourceElement: Element): void {
+    this.numElementsExcluded++;
+    super.onElementExcluded(sourceElement);
+  }
+}
+
+/** Manages the creation of the source and target iModels for testing. */
 class TestDataManager {
   public sourceDb: IModelDb;
   public targetDb: IModelDb;
@@ -171,27 +234,6 @@ class TestDataManager {
     return geometryStreamBuilder.geometryStream;
   }
 
-  public testIdMaps(): void {
-    const remapTester = new IModelImporter(this.sourceDb, this.targetDb);
-    const id1 = "0x1";
-    const id2 = "0x2";
-    remapTester.addCodeSpecId(id1, id2);
-    assert.equal(id2, remapTester.findCodeSpecId(id1));
-    remapTester.addElementId(id1, id2);
-    assert.equal(id2, remapTester.findElementId(id1));
-    remapTester.dispose();
-  }
-
-  public importIntoTargetDb(): void {
-    const importer = new IModelImporter(this.sourceDb, this.targetDb);
-    importer.excludeCodeSpec("CodeSpec2");
-    importer.excludeElementClass(AuxCoordSystem2d.classFullName);
-    importer.excludeSubject("/Only in Source");
-    importer.import();
-    importer.dispose();
-    this.targetDb.saveChanges();
-  }
-
   public assertTargetDbContents(): void {
     // CodeSpec
     assert.isTrue(this.targetDb.codeSpecs.hasName("CodeSpec1"));
@@ -311,25 +353,16 @@ class TestDataManager {
 }
 
 describe("IModelImporter", () => {
-  it("should import", async () => {
-    const manager = new TestDataManager();
-    manager.createSourceDb();
-    manager.testIdMaps();
-    manager.importIntoTargetDb();
-    manager.assertTargetDbContents();
+  let testDataManager: TestDataManager;
 
-    // re-import to ensure no additional elements are imported
-    const elementCount: number = countElements(manager.targetDb);
-    const aspectCount: number = countExternalSourceAspects(manager.targetDb);
-    manager.importIntoTargetDb(); // second import should be a no-op
-    assert.equal(elementCount, countElements(manager.targetDb), "Second import should not add elements");
-    assert.equal(aspectCount, countExternalSourceAspects(manager.targetDb), "Second import should not add aspects");
+  before(() => {
+    testDataManager = new TestDataManager();
+    testDataManager.createSourceDb();
+  });
 
-    manager.updateSourceDb();
-    manager.importIntoTargetDb();
-    manager.assertUpdatesInTargetDb();
-    assert.equal(elementCount, countElements(manager.targetDb), "Third import should not add elements");
-    assert.equal(aspectCount, countExternalSourceAspects(manager.targetDb), "Third import should not add aspects");
+  after(() => {
+    testDataManager.sourceDb.closeSnapshot();
+    testDataManager.targetDb.closeSnapshot();
   });
 
   function countElements(iModelDb: IModelDb): number {
@@ -357,6 +390,17 @@ describe("IModelImporter", () => {
     // console.log("\n==="); // tslint:disable-line:no-console
     return hash1 === hash2;
   }
+
+  it("should map Ids", async () => {
+    const remapTester = new TestIModelImporter(testDataManager.sourceDb, testDataManager.sourceDb); // something to satisfy constructor, not actually going to import
+    const id1 = "0xa";
+    const id2 = "0xb";
+    remapTester.addCodeSpecId(id1, id2);
+    assert.equal(id2, remapTester.findCodeSpecId(id1));
+    remapTester.addElementId(id1, id2);
+    assert.equal(id2, remapTester.findElementId(id1));
+    remapTester.dispose();
+  });
 
   it("test object-hash", async () => {
     assert.isTrue(isEqualHash({ a: 1, b: "B" }, { b: "B", a: 1 }), "Object member order should not matter");
@@ -429,5 +473,55 @@ describe("IModelImporter", () => {
     sourceDb.closeSnapshot();
     targetDb.closeSnapshot();
     console.log("IMPORTER-1"); // tslint:disable-line:no-console
+  });
+
+  it("should import", async () => {
+    let numElementsExcluded: number;
+
+    if (true) { // initial import
+      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      importer.importAll();
+      importer.dispose();
+      assert.isAbove(importer.numElementsInserted, 0);
+      assert.isAbove(importer.numElementsUpdated, 0);
+      assert.isAbove(importer.numElementsExcluded, 0);
+      assert.equal(importer.numElementsInserted, importer.numInsertElementCalls);
+      assert.equal(importer.numElementsUpdated, importer.numUpdateElementCalls);
+      assert.equal(importer.numElementsExcluded, importer.numExcludedElementCalls);
+      numElementsExcluded = importer.numElementsExcluded;
+      testDataManager.targetDb.saveChanges();
+      testDataManager.assertTargetDbContents();
+    }
+
+    const elementCount: number = countElements(testDataManager.targetDb);
+    const aspectCount: number = countExternalSourceAspects(testDataManager.targetDb);
+
+    if (true) { // second import with no changes to source, should be a no-op
+      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      importer.importAll();
+      importer.dispose();
+      assert.equal(importer.numElementsInserted, 0);
+      assert.equal(importer.numElementsUpdated, 0);
+      assert.equal(importer.numElementsExcluded, numElementsExcluded);
+      assert.equal(importer.numInsertElementCalls, 0);
+      assert.equal(importer.numUpdateElementCalls, 0);
+      assert.equal(importer.numExcludedElementCalls, numElementsExcluded);
+      assert.equal(elementCount, countElements(testDataManager.targetDb), "Second import should not add elements");
+      assert.equal(aspectCount, countExternalSourceAspects(testDataManager.targetDb), "Second import should not add aspects");
+    }
+
+    if (true) { // update source db, then import again
+      testDataManager.updateSourceDb();
+      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      importer.importAll();
+      importer.dispose();
+      assert.equal(importer.numElementsInserted, 0);
+      assert.equal(importer.numElementsUpdated, 2);
+      assert.equal(importer.numElementsExcluded, numElementsExcluded);
+      testDataManager.targetDb.saveChanges();
+      testDataManager.assertUpdatesInTargetDb();
+      assert.equal(elementCount, countElements(testDataManager.targetDb), "Third import should not add elements");
+      assert.equal(aspectCount, countExternalSourceAspects(testDataManager.targetDb), "Third import should not add aspects");
+    }
   });
 });

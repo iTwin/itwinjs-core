@@ -1894,7 +1894,7 @@ export class IModelImporter {
     findElementId(sourceId: Id64String): Id64String;
     protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
     // (undocumented)
-    import(): void;
+    importAll(): void;
     importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
     // (undocumented)
     importCodeSpec(sourceId: Id64String): Id64String;
@@ -1911,6 +1911,9 @@ export class IModelImporter {
     // (undocumented)
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected onElementExcluded(_sourceElement: Element): void;
+    protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected transformElement(sourceElement: Element): ElementProps[];

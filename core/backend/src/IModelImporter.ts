@@ -34,7 +34,6 @@ export class IModelImporter {
     this._sourceDb = sourceDb;
     this._targetDb = targetDb;
     this._importContext = new IModelHost.platform.ImportContext(this._sourceDb.nativeDb, this._targetDb.nativeDb);
-    this._importContext.addElementId(IModel.rootSubjectId, IModel.rootSubjectId);
   }
 
   /** Dispose any native resources associated with this IModelImporter. */
@@ -145,8 +144,8 @@ export class IModelImporter {
     });
   }
 
-  public import(): void {
-    const targetScopeElementId: Id64String = IModel.rootSubjectId;
+  public importAll(): void {
+    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP
     this.initFromExternalSourceAspects();
     this.importCodeSpecs();
     this.importFonts();
@@ -157,6 +156,15 @@ export class IModelImporter {
     this.importModels(Sheet.classFullName, targetScopeElementId);
     this.importRelationships();
   }
+
+  /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel. */
+  protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void { }
+
+  /** Called after processing a source Element when that processing caused an Element or Elements to be updated in the target iModel. */
+  protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void { }
+
+  /** Called after processing a source Element when that processing caused an Element to be excluded from the target iModel. */
+  protected onElementExcluded(_sourceElement: Element): void { }
 
   /** Returns true if the specified sourceElement should be excluded from the target iModel. */
   protected excludeElement(sourceElement: Element): boolean {
@@ -251,33 +259,42 @@ export class IModelImporter {
   public importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     if (this.excludeElement(sourceElement)) {
+      this.onElementExcluded(sourceElement);
       return; // excluding an element will also exclude its children or sub-models
     }
     let targetElementId: Id64String | undefined = this.findElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
-        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-        for (const targetElementProps of this.transformElement(sourceElement)) {
-          targetElementProps.id = targetElementId;
-          this.updateElement(targetElementProps, sourceAspectProps);
-          break; // shouldn't be more than 1 targetElement in the update case
+        const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
+        if (transformedElementProps.length > 0) {
+          transformedElementProps[0].id = targetElementId;
+          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+          for (const targetElementProps of transformedElementProps) {
+            this.updateElement(targetElementProps, sourceAspectProps);
+          }
+          this.onElementUpdated(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
         }
       }
     } else {
       const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
       targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(transformedElementProps[0].code));
       if (targetElementId === undefined) {
-        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId);
-        for (const targetElementProps of transformedElementProps) {
-          this.insertElement(targetElementProps, sourceAspectProps);
+        if (transformedElementProps.length > 0) {
+          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId);
+          for (const targetElementProps of transformedElementProps) {
+            this.insertElement(targetElementProps, sourceAspectProps);
+          }
+          this.onElementInserted(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
         }
       } else if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
-        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-        for (const targetElementProps of transformedElementProps) {
-          targetElementProps.id = targetElementId;
-          this.updateElement(targetElementProps, sourceAspectProps);
-          this.addElementId(sourceElement.id, targetElementId);
-          break; // shouldn't be more than 1 targetElement in the update case
+        if (transformedElementProps.length > 0) {
+          this.addElementId(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+          transformedElementProps[0].id = targetElementId;
+          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+          for (const targetElementProps of transformedElementProps) {
+            this.updateElement(targetElementProps, sourceAspectProps);
+          }
+          this.onElementUpdated(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
         }
       }
     }
