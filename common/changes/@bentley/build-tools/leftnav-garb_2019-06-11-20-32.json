@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added *test* to list of excluded dirs during docs script",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "will.bentley@bentley.com"
+}
