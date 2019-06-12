@@ -19,7 +19,8 @@
       "src/test/public",
     ],
     "args": [
-      "--disable-web-security"
+      "--disable-web-security",
+      "--no-sandbox"
     ]
   }
 }
