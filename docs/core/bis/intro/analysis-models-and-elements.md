@@ -1,69 +1,55 @@
-# Analysis Models and Elements
+# Analytical Models and Elements
 
 ## Introduction
 
-Analysis Models are models used to facilitate analyses of  infrastructure. Analyses that require an Analysis Model typically cannot be performed directly on Physical Models as the physical world is too complex; these analyses require simplified geometry and other data.  Analysis Models are similar in purpose to Functional Models, but have one significant difference: they are models in true world coordinates.
+`AnalyticalModel`s are models used to facilitate analyses of infrastructure. Analyses that require an AnalyticalModel typically are specialized analytical perspectives that cannot be performed directly on `PhysicalModel`s as the physical world is too complex; these analyses require simplified geometry and other data. AnalyticalModels are similar in purpose to `FunctionalModel`s, but have one significant difference: they are models in true world coordinates.
 
-Not all analyses require an Analysis Model. Examples of analyses that would not require Analysis Models are clash, cost and schedule analyses.
+Typically each AnalyticalModel is relevant to only one type of analysis. A particular PhysicalModel (e.g. a building) may have multiple associated AnalyticalModels. Examples of the analyses facilitated by AnalyticalModels are Hydraulic analysis, Building energy analysis, Traffic analysis and Structural analysis.
 
-Typically each Analysis Model is relevant to only one type of analysis. A particular Physical Model (e.g. a building) may have multiple associated Analysis Models. Examples of the analyses facilitated by Analysis Models are hydraulic analysis, building energy analysis, roadway analysis and structural analysis.
+## Analytical Elements
 
-<!-- WIP: References to classes that do not exist
-*Analysis Model* and *Analysis Element* do not directly correspond to BIS classes; they are concepts that can be applied to and be implemented by multiple classes. Currently *AnalysisModel3d* and *AnalysisElement3d* are the only classes that implement these concepts.
--->
+`AnalyticalElement`s are simplified representations of real physical infrastructure. An example of an AnalyticalElement is a Pipe Segment (not a physical pipe) in a Hydraulic Analytical Model. This Pipe Segment might have a simple 2D line segment location, together with a set of hydraulic analytical properties; it would also likely have relationships to other Hydraulic Analytical Elements in the network being analyzed.
 
-## Analysis Elements
+AnalyticalElements must always be contained in AnalyticalModels. AnalyticalElements will frequently have `AnalyticalElementSimulatesSpatialElement` relationships to the PhysicalElements or SpatialLocationElements that model the same real world infrastructure. This relationship, however, is not always 1:1.
 
-As discussed in [Element Fundamentals](./element-fundamentals.md), Analysis Elements are simplified representations of real physical infrastructure. An example of an Analysis Element is a Pipe Segment (not a physical pipe) in a hydraulic analysis model. This Pipe Segment might have a simple 2D line segment location, together with a set of hydraulic analysis properties; it would also likely have relationships to other hydraulic Analysis Elements in the network being analyzed.
+## Analytical Models
 
-Analysis Elements must always be contained in Analysis Models. Analysis Elements will frequently have relationships to the Physical Elements that model the same real world infrastructure. This relationship, however, is not always 1:1.
+`AnalyticalModel`s exist to facilitate the analyses of infrastructure. AnalyticalModels contain – directly or indirectly - all of the information necessary for one or more analysis of single type. For some Analytical domains, it may be appropriate to have more than one AnalysisModel for a `PhysicalModel`.
 
-<!-- WIP: References to classes that do not exist
-Currently, only AnalysisElement3d is defined. This class is for Analysis Elements that are placed in real-world 3D space. Every AnalysisElement3d must exist in an AnalysisModel3d.
--->
+### Contents of Analytical Models
 
-## Analysis Models
+`AnalyticalModel`s contain `AnalyticalElement`s, but they may also contain other types of Elements. AnalyticalModels will frequently contain `InformationElement`s. AnalyticalModels never contain `PhysicalElement`s.
 
-As discussed in [Model Fundamentals](./model-fundamentals.md), Analysis Models exist to facilitate the analyses of infrastructure. Analysis Models contain – directly or indirectly - all of the information necessary for one or more analysis of single type. For some analysis domains, it may be appropriate to have more than one AnalysisModel for a PhysicalModel.
+### Analytical Models in Model Hierarchy
 
-<!-- WIP: References to classes that do not exist
-Currently, only AnalysisModel3d is defined. This class is for Analysis Models that relate to real-world 3D space.
--->
+As `AnalyticalModel`s are used to assist in the design or understanding of physical infrastructure, AnalyticalModels are often linked to `PhysicalModel`s. Such link is expressed via `AnalyticalElementSimulatesSpatialElement` relationships between their elements.
 
-### Contents of Analysis Models
+At the [Top of the World](./information-hierarchy.md), a specialized analysis is introduced via an `AnalyticalPartition` subclass, which is broken down by an AnalyticalModel.
 
-Analysis Models contain Analysis Elements, but they may also contain other types of Elements. Analysis Models will frequently contain InformationElements. AnalysisModel3ds may contain SpatialElement3ds. Analysis Models never contain PhysicalElements.
+## Typical Analytical Model Workflows
 
-### Analysis Models in Model Hierarchy
+`AnalyticalModel`s are expected to be used in three basic scenarios:
 
-As Analysis Models are used to assist in the design or understanding of physical infrastructure, Analysis Models are often linked to PhysicalModels.
+1. AnalyticalModel is derived from a `PhysicalModel`
+2. PhysicalModel is derived from an AnalyticalModel
+3. AnalyticalModel is used without relationship to a PhysicalModel.
 
-<!-- TODO: Finish this section. Likely reference [Information Hierarchy](./information-hierarchy.md). -->
+Deriving an AnalyticalModel from a PhysicalModel is expected to be a common workflow. Existing or planned infrastructure will frequently be modeled and need to be analyzed. The derivation of the AnalyticalModel may be automated, partially automated or manual. The derivation will typically create `AnalyticalElementSimulatesSpatialElement` relationships between the `AnalyticalElement`s and the `PhysicalElement`s or `SpatialLocationElement`s. These relationships can be used later to assist with updating the AnalyticalModel when the PhysicalModel changes, or in creating a two-way syncing of information between the two models.
 
-## Typical Analysis Model Workflows
+Deriving a PhysicalModel from an AnalyticalModel may be a common workflow for new infrastructure when the analytical design of the infrastructure occurs before the physical design. The derivation of the PhysicalModel from the AnalyticalModel is often a simple automated operation, but typically does not produces a fully-detailed PhysicalModel. As with the Physical-to-Analytical derivation, AnalyticalElementSimulatesSpatialElement relationships will typically be created. These relationships can be used for updating and two-way syncing.
 
-Analysis Models are expected to be used in three basic scenarios:
+A standalone AnalyticalModel that is not related to a PhysicalModel is a valid configuration. This configuration might be used when the organization using the iModel is only involved in the analytical investigation.
 
-1. Analysis Model is derived from a PhysicalModel
-2. PhysicalModel is derived from an Analysis Model
-3. Analysis Model is used without relationship to a PhysicalModel.
-
-Deriving an Analysis Model from a PhysicalModel is expected to be a common workflow. Existing or planned infrastructure will frequently be modeled and need to be analyzed. The derivation of the Analysis Model may be automated, partially automated or manual. The derivation will typically create relationships between the PhysicalElements and the Analysis Elements. These relationships can be used later to assist with updating the Analysis Model when the PhysicalModel changes, or in creating a two-way syncing of information between the two models.
-
-Deriving a PhysicalModel from an Analysis Model may be a common workflow for new infrastructure when the analytical design of the infrastructure occurs before the physical design. The derivation of the PhysicalModel from the Analysis Model is often a simple automated operation, but typically does not produces a fully-detailed PhysicalModel. As with the Physical-to-Analysis derivation, relationships between PhysicalElements and Analysis Elements will typically be created. These relationships can be used for updating and two-way syncing.
-
-A standalone Analysis Model that is not related to a PhysicalModel is a valid configuration. This configuration might be used when the organization using the iModel is only involved in the analytical investigation.
-
-<!-- WIP: References to classes that do not exist
 ## Example - Building Thermal Analysis
 
-Building thermal analysis is one likely use of AnalysisModel3d.
+Building thermal analysis is one likely use of `AnalyticalModel`. This specialized analysis is introduced in the model hierarchy via a subclass of `AnalyticalPartition`.
 
-The exterior envelope and interior partitions of the building might be modelled with an EnvelopePanel subclass of AnalysisElement3d which would contain information on the panel shape, with relevant infrared radiation transmittance, thermal mass and thermal insulation properties. These EnvelopePanel elements would be related back to whatever items in the PhysicalModel that they were representing.
+The exterior envelope and interior partitions of the building might be modelled with an EnvelopePanel subclass of `AnalyticalElement` which would contain information on the panel shape, with relevant infrared radiation transmittance, thermal mass and thermal insulation properties. These EnvelopePanel elements would be related back to whatever items in the `PhysicalModel` that they were representing.
 
-Similarly, AnalysisElement3ds subclasses would be created to represent the key components of the HVAC system. These would also be related back to their associated PhysicalElements.
+Similarly, AnalyticalElement subclasses would be created to represent the key components of the HVAC system. These would also be related back to their associated `PhysicalElement`s.
 
-InformationElement subclasses would be used to record other parameters for the analysis, such as weather scenarios and building operating assumptions.
+`InformationElement` subclasses would be used to record other parameters for the analysis, such as weather scenarios and building operating assumptions.
 
-The complete results of the thermal analysis would likely be large and would not be stored directly in the iModel. However, key or summary results would likely be stored in Elements (InformationElements or AnalysisElement3ds) in the AnalysisModel3d.
--->
+The complete results of the thermal analysis would likely be large and would not be stored directly in the iModel. However, key or summary results would likely be stored in Elements (InformationElements or AnalyticalElements) in the AnalyticalModel.
+
+![Analytical Hierarchy](./media/analytical-hierarchy.png)
