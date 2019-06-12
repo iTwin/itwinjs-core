@@ -387,8 +387,6 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): string;
     static imodelClient: IModelClient;
     static open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
-    // (undocumented)
-    static openPullAndPush(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
@@ -2976,6 +2974,12 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 }
 
 // @internal
+export class Mutex {
+    // (undocumented)
+    lock(): Promise<UnlockFnType>;
+    }
+
+// @internal
 export enum NativeLoggerCategory {
     // (undocumented)
     BeSQLite = "BeSQLite",
@@ -3684,6 +3688,9 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     // (undocumented)
     recipe?: RelatedElement;
 }
+
+// @internal
+export type UnlockFnType = () => void;
 
 // @public
 export class UrlLink extends LinkElement {

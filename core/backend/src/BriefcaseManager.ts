@@ -225,6 +225,42 @@ export class BriefcaseEntry {
 
 }
 
+/**
+ * Type of method to unlock the held mutex
+ * @see [[Mutex]]
+ * @internal
+ */
+export type UnlockFnType = () => void;
+
+/**
+ * Utility to ensure a block of async code executes atomically.
+ * Even if JavaScript precludes the possibility of race conditions between threads, there is potential for
+ * race conditions with async code. This utility is needed in cases where a blocks of async code needs to run
+ * to completion before another block is started.
+ * This utility was based on this article: https://spin.atomicobject.com/2018/09/10/javascript-concurrency/
+ * @internal
+ */
+export class Mutex {
+  private _mutex = Promise.resolve();
+
+  public async lock(): Promise<UnlockFnType> {
+    /**
+     * Note: The promise returned by this method will resolve (with the unlock function, which is actually the
+     * mutex’s then’s resolve function) once any previous mutexes have finished and called their
+     * respective unlock function that was yielded over their promise.
+     */
+    let begin: (unlock: UnlockFnType) => void = (_unlock) => { };
+
+    this._mutex = this._mutex.then(async (): Promise<void> => {
+      return new Promise(begin);
+    });
+
+    return new Promise((res) => {
+      begin = res;
+    });
+  }
+}
+
 /** In-memory cache of briefcases
  * @internal
  */
@@ -502,6 +538,8 @@ export class BriefcaseManager {
     return +changeSet.index!;
   }
 
+  private static _mutex = new Mutex();
+
   /** Open a briefcase */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     requestContext.enter();
@@ -512,7 +550,13 @@ export class BriefcaseManager {
     if (openParams.openMode === OpenMode.Readonly)
       return this.openFixedVersion(requestContext, contextId, iModelId, changeSetId);
 
-    return this.openPullAndPush(requestContext, contextId, iModelId, changeSetId);
+    const unlock = await this._mutex.lock();
+    try {
+      // Note: It's important that the code below is called only once at a time - see docs with the method for more info
+      return await this.openPullAndPush(requestContext, contextId, iModelId, changeSetId);
+    } finally {
+      unlock();
+    }
   }
 
   private static async openFixedVersion(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry> {
@@ -547,37 +591,29 @@ export class BriefcaseManager {
     return newBriefcase;
   }
 
-  public static async openPullAndPush(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry> {
+  /** Open (or create) a briefcase for pull and push workflows
+   * Note: It's important that this method ibe made atomic - i.e., there should never be a case where there are two asynchronous calls to this method
+   * being processed at the same time. Otherwise there may be multiple briefcases that are acquired and downloaded for the same user.
+   */
+  private static async openPullAndPush(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry> {
     requestContext.enter();
 
-    // Get user's briefcases or acquire one
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
     requestContext.enter();
-    const createBriefcase = hubBriefcases.length === 0;
-    if (createBriefcase) {
-      const hubBriefcase = await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
-      requestContext.enter();
-      hubBriefcases.push(hubBriefcase);
-    }
 
     // Get the name of the iModel (briefcase) to be able to locate or create it on local disk
     const iModelName = await BriefcaseManager.getIModelName(requestContext, contextId, iModelId);
     requestContext.enter();
 
-    /*
-     * Note: It's important that there are no await-s between cache lookup and cache update!!
-     *                 -- so the calls below should be kept synchronous --
-     */
-
-    if (!createBriefcase) {
-      // Find any of the briefcases in cache
+    if (hubBriefcases.length > 0) {
+      /** Find any of the briefcases in cache */
       const cachedBriefcase = this.findPullAndPushBriefcaseInCache(iModelId, hubBriefcases);
       if (cachedBriefcase) {
         Logger.logTrace(loggerCategory, "BriefcaseManager.openPullAndPush - found briefcase in cache", () => cachedBriefcase.getDebugInfo());
         return cachedBriefcase;
       }
 
-      // Find matching briefcase on disk if available (and add it to the cache)
+      /** Find matching briefcase on disk if available(and add it to the cache) */
       const diskBriefcase = this.openPullAndPushBriefcaseOnDisk(requestContext, contextId, iModelId, changeSetId, hubBriefcases, iModelName);
       if (diskBriefcase) {
         Logger.logTrace(loggerCategory, "BriefcaseManager.openPullAndPush - opening briefcase from disk", () => diskBriefcase.getDebugInfo());
@@ -585,8 +621,13 @@ export class BriefcaseManager {
       }
     }
 
-    // Create a new briefcase (and it to the cache)
-    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, iModelName, hubBriefcases[0].briefcaseId!);
+    /** Create a new briefcase(and add it to the cache) */
+    // Acquire a briefcase if necessary
+    const hubBriefcase = hubBriefcases.length > 0 ? hubBriefcases[0] : await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
+    requestContext.enter();
+
+    // Set up the briefcase and add it to the cache
+    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, iModelName, hubBriefcase.briefcaseId!);
     Logger.logTrace(loggerCategory, "BriefcaseManager.openPullAndPush - creating a new briefcase", () => newBriefcase.getDebugInfo());
     return newBriefcase;
   }

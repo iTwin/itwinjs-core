@@ -158,6 +158,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;Mutex
 internal;NativeLoggerCategory
 public;OpenParams
 public;OrthographicViewDefinition 
@@ -227,6 +228,7 @@ public;TxnAction
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
+internal;UnlockFnType = () => void
 public;UrlLink 
 beta;ValidationError
 public;ViewAttachment 
