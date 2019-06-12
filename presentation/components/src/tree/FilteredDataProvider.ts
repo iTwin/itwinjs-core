@@ -51,8 +51,10 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
         this.createHierarchy(paths[i].children, hierarchy, node.id);
         node.hasChildren = true;
         node.autoExpand = true;
-      } else
-        node.hasChildren = false;
+      } else {
+        delete node.hasChildren;
+        delete node.autoExpand;
+      }
 
       treeNodes[i] = node;
     }

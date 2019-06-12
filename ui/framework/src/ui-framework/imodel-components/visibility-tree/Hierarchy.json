@@ -9,6 +9,7 @@
   "rules": [
     {
       "ruleType": "RootNodes",
+      "autoExpand": true,
       "specifications": [
         {
           "specType": "InstanceNodesOfSpecificClasses",
