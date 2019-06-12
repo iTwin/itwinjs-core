@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "1.1.0-dev.8",
+  "version": "1.1.0-dev.9",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -41,25 +41,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.1.0-dev.8",
-    "@bentley/geometry-core": "^1.1.0-dev.8",
-    "@bentley/imodeljs-clients": "^1.1.0-dev.8",
-    "@bentley/imodeljs-clients-backend": "^1.1.0-dev.8",
-    "@bentley/imodeljs-common": "^1.1.0-dev.8"
+    "@bentley/bentleyjs-core": "^1.1.0-dev.9",
+    "@bentley/geometry-core": "^1.1.0-dev.9",
+    "@bentley/imodeljs-clients": "^1.1.0-dev.9",
+    "@bentley/imodeljs-clients-backend": "^1.1.0-dev.9",
+    "@bentley/imodeljs-common": "^1.1.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "1.1.0-dev.8",
-    "@bentley/bentleyjs-core": "1.1.0-dev.8",
-    "@bentley/build-tools": "1.1.0-dev.8",
-    "@bentley/geometry-core": "1.1.0-dev.8",
-    "@bentley/imodeljs-clients": "1.1.0-dev.8",
-    "@bentley/imodeljs-clients-backend": "1.1.0-dev.8",
-    "@bentley/imodeljs-common": "1.1.0-dev.8",
-    "@bentley/perf-tools": "1.1.0-dev.8",
+    "@bentley/config-loader": "1.1.0-dev.9",
+    "@bentley/bentleyjs-core": "1.1.0-dev.9",
+    "@bentley/build-tools": "1.1.0-dev.9",
+    "@bentley/geometry-core": "1.1.0-dev.9",
+    "@bentley/imodeljs-clients": "1.1.0-dev.9",
+    "@bentley/imodeljs-clients-backend": "1.1.0-dev.9",
+    "@bentley/imodeljs-common": "1.1.0-dev.9",
+    "@bentley/perf-tools": "1.1.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
