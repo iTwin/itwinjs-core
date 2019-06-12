@@ -1677,6 +1677,8 @@ export class IModelDb extends IModel {
     importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
+    // @internal
+    readonly isOpen: boolean;
     readonly isReadonly: boolean;
     // @deprecated
     readonly isStandalone: boolean;
@@ -2271,6 +2273,8 @@ export namespace IModelJsNative {
         clearRulesets(): ErrorStatusOrResult<ECPresentationStatus, void>;
         // (undocumented)
         dispose(): void;
+        // (undocumented)
+        forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
         // (undocumented)
         getRulesets(rulesetId: string): ErrorStatusOrResult<ECPresentationStatus, string>;
         // (undocumented)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add a new method `forceLoadSchemas` to `IModelJsNative.ECPresentationManager`.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

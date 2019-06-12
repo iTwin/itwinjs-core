@@ -129,9 +129,9 @@ export class IModelDb extends IModel {
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
-  public readFontJson(): string { return this.nativeDb.readFontMap(); }
+  public readFontJson(): string { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
+  public embedFont(prop: FontProps): FontProps { if (!this.isOpen) throw this.newNotOpenError(); this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
@@ -175,6 +175,9 @@ export class IModelDb extends IModel {
   }
 
   private initializeIModelDb() {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
     super.initialize(name, props);
@@ -445,6 +448,13 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
+  /** Check if the connection to briefcase is valid or not
+   * @internal
+   */
+  public get isOpen(): boolean {
+    return this.briefcase && this.briefcase.nativeDb && this.briefcase.nativeDb.isOpen();
+  }
+
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
@@ -459,6 +469,9 @@ export class IModelDb extends IModel {
    * @returns the value returned by cb
    */
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     const stmt = this.getPreparedStatement(ecsql);
     const release = () => {
       if (stmt.isShared)
@@ -527,6 +540,10 @@ export class IModelDb extends IModel {
    * @internal
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
+
     if (!this._concurrentQueryInitialized) {
       this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(IModelHost.configuration!.concurrentQuery);
     }
@@ -555,30 +572,31 @@ export class IModelDb extends IModel {
       return value;
     };
     return new Promise<QueryResponse>((resolve) => {
-      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-      if (postrc.status !== PostStatus.Done)
-        resolve({ status: QueryResponseStatus.PostError, rows: [] });
-
-      const poll = () => {
-        // We are in an async timer callback. We must verify the briefcase was not closed before we were called back.
-        if (!this.briefcase || !this.briefcase.nativeDb || !this.briefcase.nativeDb.isOpen()) {
-          resolve({ status: QueryResponseStatus.Done, rows: [] });
-          return;
-        }
-
-        const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-        if (pollrc.status === PollStatus.Done)
-          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Partial)
-          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Timeout)
-          resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-        else if (pollrc.status === PollStatus.Pending)
-          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
-        else
-          resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
-      };
-      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+      if (!this.isOpen) {
+        resolve({ status: QueryResponseStatus.Done, rows: [] });
+      } else {
+        const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
+        if (postrc.status !== PostStatus.Done)
+          resolve({ status: QueryResponseStatus.PostError, rows: [] });
+        const poll = () => {
+          if (!this.isOpen) {
+            resolve({ status: QueryResponseStatus.Done, rows: [] });
+          } else {
+            const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
+            if (pollrc.status === PollStatus.Done)
+              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
+            else if (pollrc.status === PollStatus.Partial)
+              resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
+            else if (pollrc.status === PollStatus.Timeout)
+              resolve({ status: QueryResponseStatus.Timeout, rows: [] });
+            else if (pollrc.status === PollStatus.Pending)
+              setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+            else
+              resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+          }
+        };
+        setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+      }
     });
   }
   /** Execute a query and stream its results
@@ -605,6 +623,9 @@ export class IModelDb extends IModel {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
   public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     let result: QueryResponse;
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
@@ -647,6 +668,9 @@ export class IModelDb extends IModel {
    * @deprecated use withPreparedStatement or query or queryPage instead
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       if (bindings)
         stmt.bindValues(bindings);
@@ -670,6 +694,9 @@ export class IModelDb extends IModel {
    * @internal
    */
   public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     const stmt = this.getPreparedSqlStatement(sql);
     const release = () => {
       if (stmt.isShared)
@@ -698,6 +725,9 @@ export class IModelDb extends IModel {
    * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     const stmt = new SqliteStatement();
     stmt.prepare(this.briefcase.nativeDb, sql);
     return stmt;
@@ -709,6 +739,9 @@ export class IModelDb extends IModel {
    * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedSqlStatement(sql: string): SqliteStatement {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
     if (cachedStatement !== undefined && cachedStatement.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
       cachedStatement.useCount++;
@@ -765,10 +798,10 @@ export class IModelDb extends IModel {
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Get the GUID of this iModel.  */
-  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
+  public getGuid(): GuidString { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.getDbGuid(); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: GuidString): DbResult { return this.nativeDb.setDbGuid(guid); }
+  public setGuid(guid: GuidString): DbResult { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.setDbGuid(guid); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -788,7 +821,7 @@ export class IModelDb extends IModel {
   }
 
   /** Update the IModelProps of this iModel in the database. */
-  public updateIModelProps() { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
+  public updateIModelProps() { if (!this.isOpen) throw this.newNotOpenError(); this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
   /**
    * Commit pending changes to this iModel.
@@ -797,6 +830,9 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string) {
+    if (!this.isOpen) {
+      throw this.newNotOpenError();
+    }
     if (this.openParams.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
@@ -812,6 +848,7 @@ export class IModelDb extends IModel {
 
   /** Abandon pending changes in this iModel */
   public abandonChanges() {
+    if (!this.isOpen) throw this.newNotOpenError();
     this.concurrencyControl.abandonRequest();
     this.nativeDb.abandonChanges();
   }
@@ -877,6 +914,7 @@ export class IModelDb extends IModel {
    * @param guid Optionally provide db guid. If its not provided the method would generate one.
    */
   public setAsMaster(guid?: GuidString): void {
+    if (!this.isOpen) throw this.newNotOpenError();
     if (guid === undefined) {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggerCategory);
@@ -897,9 +935,7 @@ export class IModelDb extends IModel {
    */
   public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
     requestContext.enter();
-    if (!this.briefcase)
-      throw this.newNotOpenError();
-
+    if (!this.isOpen) throw this.newNotOpenError();
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchema(schemaFileName);
       if (DbResult.BE_SQLITE_OK !== status)
@@ -976,8 +1012,7 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
+    if (!this.isOpen) throw this.newNotOpenError();
     const stmt = new ECSqlStatement();
     stmt.prepare(this.nativeDb, sql);
     return stmt;
@@ -1044,6 +1079,7 @@ export class IModelDb extends IModel {
 
   /*** @internal */
   private loadMetaData(classFullName: string) {
+    if (!this.isOpen) throw this.newNotOpenError();
     if (this.classMetaDataRegistry.find(classFullName))
       return;
 
@@ -1069,6 +1105,7 @@ export class IModelDb extends IModel {
    * @see importSchema
    */
   public containsClass(classFullName: string): boolean {
+    if (!this.isOpen) throw this.newNotOpenError();
     const className = classFullName.split(":");
     return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
   }
@@ -1076,33 +1113,34 @@ export class IModelDb extends IModel {
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
    */
-  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
+  public queryFilePropertyString(prop: FilePropertyProps): string | undefined { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.queryFileProperty(JSON.stringify(prop), true) as string | undefined; }
 
   /** Query a "file property" from this iModel, as a blob.
    * @returns the property blob or undefined if the property is not present.
    */
-  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
+  public queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.queryFileProperty(JSON.stringify(prop), false) as Uint8Array | undefined; }
 
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
    * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.saveFileProperty(JSON.stringify(prop), strValue, blobVal); }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
    * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult { return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
+  public deleteFileProperty(prop: FilePropertyProps): DbResult { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.saveFileProperty(JSON.stringify(prop), undefined, undefined); }
 
   /** Query for the next available major id for a "file property" from this iModel.
    * @param prop the FilePropertyProps that describes the property
    * @returns the next available (that is, an unused) id for prop. If none are present, will return 0.
    */
-  public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
+  public queryNextAvailableFileProperty(prop: FilePropertyProps) { if (!this.isOpen) throw this.newNotOpenError(); return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
   public async requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    if (!this.isOpen) throw this.newNotOpenError();
     requestContext.enter();
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
@@ -1112,13 +1150,17 @@ export class IModelDb extends IModel {
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
-      request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-        this._snaps.delete(sessionId);
-        if (ret.error !== undefined)
-          reject(new Error(ret.error.message));
-        else
-          resolve(ret.result);
-      });
+      if (!this.isOpen) {
+        reject(this.newNotOpenError());
+      } else {
+        request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
+          this._snaps.delete(sessionId);
+          if (ret.error !== undefined)
+            reject(new Error(ret.error.message));
+          else
+            resolve(ret.result);
+        });
+      }
     });
   }
 
@@ -1133,6 +1175,7 @@ export class IModelDb extends IModel {
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps> {
+    if (!this.isOpen) throw this.newNotOpenError();
     requestContext.enter();
     const resultString: string = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
     return JSON.parse(resultString) as IModelCoordinatesResponseProps;
@@ -1140,6 +1183,7 @@ export class IModelDb extends IModel {
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps> {
+    if (!this.isOpen) throw this.newNotOpenError();
     requestContext.enter();
     const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
@@ -1177,6 +1221,7 @@ export class IModelDb extends IModel {
    * @beta Waiting for feedback from community before finalizing.
    */
   public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
+    if (!this.isOpen) throw this.newNotOpenError();
     return this.nativeDb.exportGraphics(exportProps);
   }
 }
@@ -1212,7 +1257,7 @@ export namespace IModelDb {
      * @return a json string with the properties of the model.
      */
     public getModelJson(modelIdArg: string): string {
-      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const val = this._iModel.nativeDb.getModel(modelIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "Model=" + modelIdArg);
@@ -1245,6 +1290,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       if (props.isPrivate === undefined) // temporarily work around bug in addon
         props.isPrivate = false;
 
@@ -1266,6 +1312,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: ModelProps): void {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
       if (IModelStatus.Success !== jsClass.onUpdate(props))
         return;
@@ -1282,6 +1329,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public deleteModel(ids: Id64Arg): void {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getModelProps(id);
         const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
@@ -1309,6 +1357,7 @@ export namespace IModelDb {
      * @return a json string with the properties of the element.
      */
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const val = this._iModel.nativeDb.getElement(elementIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
@@ -1395,6 +1444,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
       if (IModelStatus.Success !== jsClass.onInsert(elProps, iModel))
@@ -1414,6 +1464,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const iModel = this._iModel;
       const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName);
       if (IModelStatus.Success !== jsClass.onUpdate(elProps, iModel))
@@ -1431,6 +1482,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public deleteElement(ids: Id64Arg): void {
+      if (!this._iModel.isOpen) throw this._iModel.newNotOpenError();
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getElementProps(id);
@@ -1503,9 +1555,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      if (!this._iModel.briefcase)
+      if (!this._iModel.isOpen)
         throw this._iModel.newNotOpenError();
-
       const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
@@ -1516,7 +1567,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      if (!this._iModel.briefcase)
+      if (!this._iModel.isOpen)
         throw this._iModel.newNotOpenError();
 
       const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
@@ -1529,6 +1580,9 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public deleteAspect(ids: Id64Arg): void {
+      if (!this._iModel.isOpen)
+        throw this._iModel.newNotOpenError();
+
       Id64.toIdSet(ids).forEach((id) => {
         const status = this._iModel.nativeDb.deleteElementAspect(id);
         if (status !== IModelStatus.Success)
@@ -1622,6 +1676,9 @@ export namespace IModelDb {
      * @return the ThumbnailProps, or undefined if no thumbnail exists.
      */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
+      if (!this._iModel.isOpen)
+        throw this._iModel.newNotOpenError();
+
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const sizeProps = this._iModel.nativeDb.queryFileProperty(viewArg, true) as string;
       if (undefined === sizeProps)
@@ -1638,6 +1695,9 @@ export namespace IModelDb {
      * @returns 0 if successful
      */
     public saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number {
+      if (!this._iModel.isOpen)
+        throw this._iModel.newNotOpenError();
+
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
@@ -1674,7 +1734,7 @@ export namespace IModelDb {
     /** @internal */
     public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
       requestContext.enter();
-      if (!this._iModel.briefcase)
+      if (!this._iModel.isOpen)
         throw this._iModel.newNotOpenError();
 
       return new Promise<TileTreeProps>((resolve, reject) => {
@@ -1690,7 +1750,7 @@ export namespace IModelDb {
 
     private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
       requestContext.enter();
-      if (!this._iModel.briefcase) {
+      if (!this._iModel.isOpen) {
         reject(this._iModel.newNotOpenError());
         return;
       }
@@ -1781,10 +1841,10 @@ export class TxnManager {
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
-  public reportError(error: ValidationError) { this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
+  public reportError(error: ValidationError) { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
 
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
-  public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
+  public get hasFatalError(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.hasFatalTxnError(); }
 
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
   public readonly onCommit = new BeEvent<() => void>();
@@ -1800,20 +1860,20 @@ export class TxnManager {
   public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
 
   /** Determine if there are currently any reversible (undoable) changes to this IModelDb. */
-  public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
+  public get isUndoPossible(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.isUndoPossible(); }
 
   /** Determine if there are currently any reinstatable (redoable) changes to this IModelDb */
-  public get isRedoPossible(): boolean { return this._nativeDb.isRedoPossible(); }
+  public get isRedoPossible(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.isRedoPossible(); }
 
   /** Get the description of the operation that would be reversed by calling reverseTxns(1).
    * This is useful for showing the operation that would be undone, for example in a menu.
    */
-  public getUndoString(): string { return this._nativeDb.getUndoString(); }
+  public getUndoString(): string { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.getUndoString(); }
 
   /** Get a description of the operation that would be reinstated by calling reinstateTxn.
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
    */
-  public getRedoString(): string { return this._nativeDb.getRedoString(); }
+  public getRedoString(): string { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.getRedoString(); }
 
   /** Begin a new multi-Txn operation. This can be used to cause a series of Txns, that would normally
    * be considered separate actions for undo, to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
@@ -1821,13 +1881,13 @@ export class TxnManager {
    * all changes constitute a single operation.
    * @note This method must always be paired with a call to endMultiTxnAction.
    */
-  public beginMultiTxnOperation(): DbResult { return this._nativeDb.beginMultiTxnOperation(); }
+  public beginMultiTxnOperation(): DbResult { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.beginMultiTxnOperation(); }
 
   /** End a multi-Txn operation */
-  public endMultiTxnOperation(): DbResult { return this._nativeDb.endMultiTxnOperation(); }
+  public endMultiTxnOperation(): DbResult { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.endMultiTxnOperation(); }
 
   /** Return the depth of the multi-Txn stack. Generally for diagnostic use only. */
-  public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
+  public getMultiTxnOperationDepth(): number { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
@@ -1837,60 +1897,60 @@ export class TxnManager {
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus { return this._nativeDb.reverseTxns(numOperations); }
+  public reverseTxns(numOperations: number): IModelStatus { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.reverseTxns(numOperations); }
 
   /** Reverse the most recent operation. */
   public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
 
   /** Reverse all changes back to the beginning of the session. */
-  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+  public reverseAll(): IModelStatus { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.reverseAll(); }
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString) { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString) { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.reverseTo(txnId); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString) { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString) { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.cancelTo(txnId); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
    * @note If there are any outstanding uncommitted changes, they are reversed before the Txn is reinstated.
    */
-  public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
+  public reinstateTxn(): IModelStatus { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
+  public queryFirstTxnId(): TxnIdString { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.queryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: TxnIdString): TxnIdString { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.queryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.queryPreviousTxnId(txnId); }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
+  public getCurrentTxnId(): TxnIdString { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.getCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
+  public getTxnDescription(txnId: TxnIdString): string { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.getTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: TxnIdString): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
+  public get hasPendingTxns(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
+  public get hasUnsavedChanges(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this._nativeDb.hasUnsavedChanges(); }
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
+  public get hasLocalChanges(): boolean { if (!this._iModel.isOpen) throw this._iModel.newNotOpenError(); return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Make a description of the changeset by combining all local txn comments. */
   public describeChangeSet(endTxnId?: TxnIdString): string {
