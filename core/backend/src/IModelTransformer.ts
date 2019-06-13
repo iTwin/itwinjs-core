@@ -13,10 +13,10 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "./IModelJsNative";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
-const loggerCategory: string = BackendLoggerCategory.IModelImporter;
+const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
 /** @alpha */
-export class IModelImporter {
+export class IModelTransformer {
   private _sourceDb: IModelDb;
   private _targetDb: IModelDb;
   private _importContext: IModelJsNative.ImportContext;
@@ -123,7 +123,7 @@ export class IModelImporter {
   }
 
   public excludeSubject(subjectPath: string): void {
-    const subjectId: Id64String | undefined = IModelImporter.resolveSubjectId(this._sourceDb, subjectPath);
+    const subjectId: Id64String | undefined = IModelTransformer.resolveSubjectId(this._sourceDb, subjectPath);
     if (subjectId && Id64.isValidId64(subjectId)) {
       this._excludedElementIds.add(subjectId);
     }

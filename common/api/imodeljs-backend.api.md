@@ -292,9 +292,9 @@ export enum BackendLoggerCategory {
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
     IModelHost = "imodeljs-backend.IModelHost",
-    // @alpha
-    IModelImporter = "imodeljs-backend.IModelImporter",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    // @alpha
+    IModelTransformer = "imodeljs-backend.IModelTransformer",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
@@ -1867,59 +1867,6 @@ export class IModelHostConfiguration {
     tileTreeRequestTimeout: number;
 }
 
-// @alpha (undocumented)
-export class IModelImporter {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb);
-    addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
-    addElementId(sourceId: Id64String, targetId: Id64String): void;
-    dispose(): void;
-    // (undocumented)
-    excludeCodeSpec(codeSpecName: string): void;
-    // (undocumented)
-    protected _excludedCodeSpecIds: Set<string>;
-    // (undocumented)
-    protected _excludedCodeSpecNames: Set<string>;
-    // (undocumented)
-    protected _excludedElementClassNames: Set<string>;
-    // (undocumented)
-    protected _excludedElementIds: Set<string>;
-    protected excludeElement(sourceElement: Element): boolean;
-    // (undocumented)
-    excludeElementClass(classFullName: string): void;
-    // (undocumented)
-    excludeElementId(elementId: Id64String): void;
-    // (undocumented)
-    excludeSubject(subjectPath: string): void;
-    findCodeSpecId(sourceId: Id64String): Id64String;
-    findElementId(sourceId: Id64String): Id64String;
-    protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
-    // (undocumented)
-    importAll(): void;
-    importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
-    importCodeSpec(sourceId: Id64String): Id64String;
-    // (undocumented)
-    importCodeSpecs(): void;
-    importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
-    importFonts(): void;
-    importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
-    importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
-    // (undocumented)
-    importRelationships(): void;
-    // (undocumented)
-    initFromExternalSourceAspects(): void;
-    protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
-    protected onElementExcluded(_sourceElement: Element): void;
-    protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
-    protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
-    // (undocumented)
-    static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
-    protected transformElement(sourceElement: Element): ElementProps[];
-    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
-}
-
 // @public
 export class IModelJsFs {
     static appendFileSync(path: string, str: string): void;
@@ -2628,6 +2575,59 @@ export namespace IModelJsNative {
         // (undocumented)
         elapsedSeconds: number;
     }
+}
+
+// @alpha (undocumented)
+export class IModelTransformer {
+    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
+    addElementId(sourceId: Id64String, targetId: Id64String): void;
+    dispose(): void;
+    // (undocumented)
+    excludeCodeSpec(codeSpecName: string): void;
+    // (undocumented)
+    protected _excludedCodeSpecIds: Set<string>;
+    // (undocumented)
+    protected _excludedCodeSpecNames: Set<string>;
+    // (undocumented)
+    protected _excludedElementClassNames: Set<string>;
+    // (undocumented)
+    protected _excludedElementIds: Set<string>;
+    protected excludeElement(sourceElement: Element): boolean;
+    // (undocumented)
+    excludeElementClass(classFullName: string): void;
+    // (undocumented)
+    excludeElementId(elementId: Id64String): void;
+    // (undocumented)
+    excludeSubject(subjectPath: string): void;
+    findCodeSpecId(sourceId: Id64String): Id64String;
+    findElementId(sourceId: Id64String): Id64String;
+    protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
+    // (undocumented)
+    importAll(): void;
+    importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    // (undocumented)
+    importCodeSpec(sourceId: Id64String): Id64String;
+    // (undocumented)
+    importCodeSpecs(): void;
+    importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    // (undocumented)
+    importFonts(): void;
+    importModel(sourceModeledElementId: Id64String): void;
+    importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
+    importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
+    // (undocumented)
+    importRelationships(): void;
+    // (undocumented)
+    initFromExternalSourceAspects(): void;
+    protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected onElementExcluded(_sourceElement: Element): void;
+    protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    // (undocumented)
+    static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected transformElement(sourceElement: Element): ElementProps[];
+    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
 }
 
 // @internal @deprecated

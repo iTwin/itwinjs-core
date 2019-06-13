@@ -134,10 +134,10 @@ internal;TileContentState
 internal;Tiles
 public;IModelHost
 public;IModelHostConfiguration
-alpha;IModelImporter
 public;IModelJsFs
 public;IModelJsFsStats
 internal;IModelJsNative
+alpha;IModelTransformer
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 

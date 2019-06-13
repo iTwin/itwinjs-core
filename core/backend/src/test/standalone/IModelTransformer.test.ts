@@ -16,14 +16,14 @@ import { ExternalSourceAspect } from "../../ElementAspect";
 import {
   AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
-  GroupModel, IModelDb, IModelImporter, IModelJsFs, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
+  GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-/** Specialization of IModelImporter for testing */
-class TestIModelImporter extends IModelImporter {
+/** Specialization of IModelTransformer for testing */
+class TestIModelTransformer extends IModelTransformer {
   public numInsertElementCalls = 0;
   public numUpdateElementCalls = 0;
   public numExcludedElementCalls = 0;
@@ -94,16 +94,16 @@ class TestDataManager {
     if (!IModelJsFs.existsSync(outputDir))
       IModelJsFs.mkdirSync(outputDir);
     // Source IModelDb
-    const createdOutputFile: string = path.join(outputDir, "TestIModelImporter-Source.bim");
+    const createdOutputFile: string = path.join(outputDir, "TestIModelTransformer-Source.bim");
     if (IModelJsFs.existsSync(createdOutputFile))
       IModelJsFs.removeSync(createdOutputFile);
-    this.sourceDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelImporter-Source" } });
+    this.sourceDb = IModelDb.createSnapshot(createdOutputFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
     assert.isTrue(IModelJsFs.existsSync(createdOutputFile));
     // Target IModelDb
-    const importedOutputFile: string = path.join(outputDir, "TestIModelImporter-Target.bim");
+    const importedOutputFile: string = path.join(outputDir, "TestIModelTransformer-Target.bim");
     if (IModelJsFs.existsSync(importedOutputFile))
       IModelJsFs.removeSync(importedOutputFile);
-    this.targetDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelImporter-Target" } });
+    this.targetDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
     assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
     // insert some elements to avoid getting same IDs for sourceDb and targetDb
     const subjectId = Subject.insert(this.targetDb, IModel.rootSubjectId, "Only in Target");
@@ -352,7 +352,7 @@ class TestDataManager {
   }
 }
 
-describe("IModelImporter", () => {
+describe("IModelTransformer", () => {
   let testDataManager: TestDataManager;
 
   before(() => {
@@ -392,7 +392,7 @@ describe("IModelImporter", () => {
   }
 
   it("should map Ids", async () => {
-    const remapTester = new TestIModelImporter(testDataManager.sourceDb, testDataManager.sourceDb); // something to satisfy constructor, not actually going to import
+    const remapTester = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.sourceDb); // something to satisfy constructor, not actually going to import
     const id1 = "0xa";
     const id2 = "0xb";
     remapTester.addCodeSpecId(id1, id2);
@@ -443,7 +443,7 @@ describe("IModelImporter", () => {
     assert.isTrue(sourceDb.codeSpecs.hasName(dgnV8CodeSpecName));
     assert.isFalse(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
 
-    const importer: IModelImporter = new IModelImporter(sourceDb, targetDb);
+    const importer: IModelTransformer = new IModelTransformer(sourceDb, targetDb);
     const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP - Needs to be Element in target IModelDb that represents the source repository
     assert.exists(importer);
     importer.importCodeSpecs();
@@ -479,7 +479,7 @@ describe("IModelImporter", () => {
     let numElementsExcluded: number;
 
     if (true) { // initial import
-      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       importer.importAll();
       importer.dispose();
       assert.isAbove(importer.numElementsInserted, 0);
@@ -497,7 +497,7 @@ describe("IModelImporter", () => {
     const aspectCount: number = countExternalSourceAspects(testDataManager.targetDb);
 
     if (true) { // second import with no changes to source, should be a no-op
-      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       importer.importAll();
       importer.dispose();
       assert.equal(importer.numElementsInserted, 0);
@@ -512,7 +512,7 @@ describe("IModelImporter", () => {
 
     if (true) { // update source db, then import again
       testDataManager.updateSourceDb();
-      const importer = new TestIModelImporter(testDataManager.sourceDb, testDataManager.targetDb);
+      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       importer.importAll();
       importer.dispose();
       assert.equal(importer.numElementsInserted, 0);
