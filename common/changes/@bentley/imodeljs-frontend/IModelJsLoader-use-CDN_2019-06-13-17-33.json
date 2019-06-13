@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow index.html to set a CDN from which to load imodeljs external modules.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}
