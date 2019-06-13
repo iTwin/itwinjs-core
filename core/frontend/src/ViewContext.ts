@@ -536,6 +536,9 @@ export class SceneContext extends RenderContext {
         case TiledGraphicsProvider.Type.BackgroundMap:
           this.backgroundGraphics.push(graphic);
           break;
+        case TiledGraphicsProvider.Type.Overlay:
+          this.graphics.push(graphic);
+          break;
         default:
           assert(false, "currently unsupported graphics provider type");
       }

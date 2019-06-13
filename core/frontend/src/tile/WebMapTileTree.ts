@@ -451,10 +451,7 @@ export abstract class ImageryProvider {
 
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    let tileUrl: string = this.constructUrl(row, column, zoomLevel);
-
-    if (!tileUrl.includes("https"))
-      tileUrl = tileUrl.replace("http", "https");
+    const tileUrl: string = this.constructUrl(row, column, zoomLevel);
 
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
