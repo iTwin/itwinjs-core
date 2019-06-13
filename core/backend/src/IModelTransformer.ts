@@ -17,8 +17,8 @@ const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
 /** @alpha */
 export class IModelTransformer {
-  private _sourceDb: IModelDb;
-  private _targetDb: IModelDb;
+  protected _sourceDb: IModelDb;
+  protected _targetDb: IModelDb;
   private _importContext: IModelJsNative.ImportContext;
 
   protected _excludedCodeSpecNames = new Set<string>();
@@ -320,9 +320,14 @@ export class IModelTransformer {
     const sql = `SELECT ECInstanceId AS id FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const modeledElementId = statement.getRow().id;
-        this.importModel(modeledElementId);
-        this.importModelContents(modeledElementId, targetScopeElementId);
+        const modeledElementId: Id64String = statement.getRow().id;
+        const modeledElement: Element = this._sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: true });
+        if (this.excludeElement(modeledElement)) {
+          this.onElementExcluded(modeledElement);
+        } else {
+          this.importModel(modeledElementId);
+          this.importModelContents(modeledElementId, targetScopeElementId);
+        }
       }
     });
   }

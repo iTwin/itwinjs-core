@@ -12,10 +12,9 @@ import {
 import { assert } from "chai";
 import * as hash from "object-hash";
 import * as path from "path";
-import { ExternalSourceAspect } from "../../ElementAspect";
 import {
-  AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
@@ -56,9 +55,11 @@ class TestIModelTransformer extends IModelTransformer {
     super.updateElement(targetElementProps, sourceAspectProps);
   }
 
-  /** Override excludeElement to count calls */
+  /** Override excludeElement to count calls and exclude all Element from the Functional schema */
   protected excludeElement(sourceElement: Element): boolean {
-    const excluded: boolean = super.excludeElement(sourceElement);
+    const excluded: boolean =
+      super.excludeElement(sourceElement) ||
+      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
     if (excluded) {
       this.numExcludedElementCalls++;
     }
@@ -81,6 +82,17 @@ class TestIModelTransformer extends IModelTransformer {
   protected onElementExcluded(sourceElement: Element): void {
     this.numElementsExcluded++;
     super.onElementExcluded(sourceElement);
+  }
+
+  /** Override transformElement to make sure that all target Elements have a FederationGuid */
+  protected transformElement(sourceElement: Element): ElementProps[] {
+    const transformedElementProps: ElementProps[] = super.transformElement(sourceElement);
+    for (const targetElementProps of transformedElementProps) {
+      if (!targetElementProps.federationGuid) {
+        targetElementProps.federationGuid = Guid.createValue();
+      }
+    }
+    return transformedElementProps;
   }
 }
 
@@ -113,7 +125,10 @@ class TestDataManager {
     Subject.insert(this.targetDb, subjectId, "4");
   }
 
-  public createSourceDb(): void {
+  public async createSourceDb(): Promise<void> {
+    const requestContext = new BackendRequestContext();
+    await FunctionalSchema.importSchema(requestContext, this.sourceDb);
+    FunctionalSchema.registerSchema();
     if (Platform.platformName.startsWith("win")) {
       this.sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
       assert.exists(this.sourceDb.fontMap.getFont("Arial"));
@@ -137,6 +152,8 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(groupModelId));
     const physicalModelId = PhysicalModel.insert(this.sourceDb, subjectId, "Physical");
     assert.isTrue(Id64.isValidId64(physicalModelId));
+    const functionalModelId = FunctionalModel.insert(this.sourceDb, subjectId, "Functional");
+    assert.isTrue(Id64.isValidId64(functionalModelId));
     const documentListModelId = DocumentListModel.insert(this.sourceDb, subjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
     const drawingId = Drawing.insert(this.sourceDb, documentListModelId, "Drawing");
@@ -257,47 +274,47 @@ class TestDataManager {
     const groupModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Group"))!;
     const physicalModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Physical"))!;
     const documentListModelId = this.targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.targetDb, subjectId, "Document"))!;
-    this.assertExternalSourceAspect(definitionModelId);
-    this.assertExternalSourceAspect(informationModelId);
-    this.assertExternalSourceAspect(groupModelId);
-    this.assertExternalSourceAspect(physicalModelId);
-    this.assertExternalSourceAspect(documentListModelId);
+    this.assertTargetElement(definitionModelId);
+    this.assertTargetElement(informationModelId);
+    this.assertTargetElement(groupModelId);
+    this.assertTargetElement(physicalModelId);
+    this.assertTargetElement(documentListModelId);
     // SpatialCategory
     const spatialCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, definitionModelId, "SpatialCategory"))!;
-    this.assertExternalSourceAspect(spatialCategoryId);
+    this.assertTargetElement(spatialCategoryId);
     const spatialCategoryProps = this.targetDb.elements.getElementProps(spatialCategoryId);
     assert.equal(definitionModelId, spatialCategoryProps.model);
     assert.equal(definitionModelId, spatialCategoryProps.code.scope);
     // SubCategory
     const subCategoryId = this.targetDb.elements.queryElementIdByCode(SubCategory.createCode(this.targetDb, spatialCategoryId, "SubCategory"))!;
-    this.assertExternalSourceAspect(subCategoryId);
+    this.assertTargetElement(subCategoryId);
     // DrawingCategory
     const drawingCategoryId = this.targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(this.targetDb, definitionModelId, "DrawingCategory"))!;
-    this.assertExternalSourceAspect(drawingCategoryId);
+    this.assertTargetElement(drawingCategoryId);
     const drawingCategoryProps = this.targetDb.elements.getElementProps(drawingCategoryId);
     assert.equal(definitionModelId, drawingCategoryProps.model);
     assert.equal(definitionModelId, drawingCategoryProps.code.scope);
     // Spatial CategorySelector
     const spatialCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "SpatialCategories"))!;
-    this.assertExternalSourceAspect(spatialCategorySelectorId);
+    this.assertTargetElement(spatialCategorySelectorId);
     const spatialCategorySelectorProps = this.targetDb.elements.getElementProps<CategorySelectorProps>(spatialCategorySelectorId);
     assert.isTrue(spatialCategorySelectorProps.categories.includes(spatialCategoryId));
     // Drawing CategorySelector
     const drawingCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "DrawingCategories"))!;
-    this.assertExternalSourceAspect(drawingCategorySelectorId);
+    this.assertTargetElement(drawingCategorySelectorId);
     const drawingCategorySelectorProps = this.targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
     assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
     // ModelSelector
     const modelSelectorId = this.targetDb.elements.queryElementIdByCode(ModelSelector.createCode(this.targetDb, definitionModelId, "PhysicalModels"))!;
-    this.assertExternalSourceAspect(modelSelectorId);
+    this.assertTargetElement(modelSelectorId);
     const modelSelectorProps = this.targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
     assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
     // DisplayStyle
     const displayStyle3dId = this.targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(this.targetDb, definitionModelId, "DisplayStyle3d"))!;
-    this.assertExternalSourceAspect(displayStyle3dId);
+    this.assertTargetElement(displayStyle3dId);
     // ViewDefinition
     const viewId = this.targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(this.targetDb, definitionModelId, "Orthographic View"))!;
-    this.assertExternalSourceAspect(viewId);
+    this.assertTargetElement(viewId);
     const viewProps = this.targetDb.elements.getElementProps<SpatialViewDefinitionProps>(viewId);
     assert.equal(viewProps.displayStyleId, displayStyle3dId);
     assert.equal(viewProps.categorySelectorId, spatialCategorySelectorId);
@@ -306,8 +323,10 @@ class TestDataManager {
     assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")));
   }
 
-  public assertExternalSourceAspect(targetElementId: Id64String): void {
+  public assertTargetElement(targetElementId: Id64String): void {
     assert.isTrue(Id64.isValidId64(targetElementId));
+    const element: Element = this.targetDb.elements.getElement(targetElementId);
+    assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
     const aspect: ExternalSourceAspect = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName)[0] as ExternalSourceAspect;
     assert.exists(aspect);
     assert.equal(aspect.kind, Element.className);
@@ -355,12 +374,12 @@ class TestDataManager {
 describe("IModelTransformer", () => {
   let testDataManager: TestDataManager;
 
-  before(() => {
+  before(async () => {
     testDataManager = new TestDataManager();
-    testDataManager.createSourceDb();
+    await testDataManager.createSourceDb();
   });
 
-  after(() => {
+  after(async () => {
     testDataManager.sourceDb.closeSnapshot();
     testDataManager.targetDb.closeSnapshot();
   });
@@ -479,16 +498,16 @@ describe("IModelTransformer", () => {
     let numElementsExcluded: number;
 
     if (true) { // initial import
-      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
-      importer.importAll();
-      importer.dispose();
-      assert.isAbove(importer.numElementsInserted, 0);
-      assert.isAbove(importer.numElementsUpdated, 0);
-      assert.isAbove(importer.numElementsExcluded, 0);
-      assert.equal(importer.numElementsInserted, importer.numInsertElementCalls);
-      assert.equal(importer.numElementsUpdated, importer.numUpdateElementCalls);
-      assert.equal(importer.numElementsExcluded, importer.numExcludedElementCalls);
-      numElementsExcluded = importer.numElementsExcluded;
+      const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      assert.isAbove(transformer.numElementsInserted, 0);
+      assert.isAbove(transformer.numElementsUpdated, 0);
+      assert.isAbove(transformer.numElementsExcluded, 0);
+      assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
+      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementCalls);
+      assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
+      numElementsExcluded = transformer.numElementsExcluded;
       testDataManager.targetDb.saveChanges();
       testDataManager.assertTargetDbContents();
     }
@@ -497,27 +516,27 @@ describe("IModelTransformer", () => {
     const aspectCount: number = countExternalSourceAspects(testDataManager.targetDb);
 
     if (true) { // second import with no changes to source, should be a no-op
-      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
-      importer.importAll();
-      importer.dispose();
-      assert.equal(importer.numElementsInserted, 0);
-      assert.equal(importer.numElementsUpdated, 0);
-      assert.equal(importer.numElementsExcluded, numElementsExcluded);
-      assert.equal(importer.numInsertElementCalls, 0);
-      assert.equal(importer.numUpdateElementCalls, 0);
-      assert.equal(importer.numExcludedElementCalls, numElementsExcluded);
+      const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      assert.equal(transformer.numElementsInserted, 0);
+      assert.equal(transformer.numElementsUpdated, 0);
+      assert.equal(transformer.numElementsExcluded, numElementsExcluded);
+      assert.equal(transformer.numInsertElementCalls, 0);
+      assert.equal(transformer.numUpdateElementCalls, 0);
+      assert.equal(transformer.numExcludedElementCalls, numElementsExcluded);
       assert.equal(elementCount, countElements(testDataManager.targetDb), "Second import should not add elements");
       assert.equal(aspectCount, countExternalSourceAspects(testDataManager.targetDb), "Second import should not add aspects");
     }
 
     if (true) { // update source db, then import again
       testDataManager.updateSourceDb();
-      const importer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
-      importer.importAll();
-      importer.dispose();
-      assert.equal(importer.numElementsInserted, 0);
-      assert.equal(importer.numElementsUpdated, 2);
-      assert.equal(importer.numElementsExcluded, numElementsExcluded);
+      const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
+      transformer.importAll();
+      transformer.dispose();
+      assert.equal(transformer.numElementsInserted, 0);
+      assert.equal(transformer.numElementsUpdated, 2);
+      assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       testDataManager.targetDb.saveChanges();
       testDataManager.assertUpdatesInTargetDb();
       assert.equal(elementCount, countElements(testDataManager.targetDb), "Third import should not add elements");

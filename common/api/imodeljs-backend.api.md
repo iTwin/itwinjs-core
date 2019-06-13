@@ -2626,6 +2626,10 @@ export class IModelTransformer {
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    // (undocumented)
+    protected _sourceDb: IModelDb;
+    // (undocumented)
+    protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
 }
