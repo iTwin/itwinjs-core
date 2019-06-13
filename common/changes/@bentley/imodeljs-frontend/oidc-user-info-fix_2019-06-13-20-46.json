@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added feature tracking info to UserInfo obtained by OidcBrowserClient. ",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

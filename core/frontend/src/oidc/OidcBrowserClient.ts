@@ -309,6 +309,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       response_type: "id_token token",
       query_status_response_type: "id_token token",
       scope: this._configuration.scope,
+      loadUserInfo: true,
     };
     return userManagerSettings;
   }
