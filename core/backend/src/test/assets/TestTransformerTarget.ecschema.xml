@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestTransformerTarget" alias="target" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" description="The target schema for IModelTransformer tests">
+
+    <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+
+    <ECEntityClass typeName="TargetPhysicalElement" modifier="Sealed">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <ECProperty propertyName="TargetString" typeName="string"/>
+        <ECProperty propertyName="TargetDouble" typeName="double"/>
+    </ECEntityClass>
+
+</ECSchema>

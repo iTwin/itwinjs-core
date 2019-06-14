@@ -63,6 +63,7 @@
         "ecinstanceid",
         "ecproperties",
         "ecproperty",
+        "ecschema",
         "ecsql",
         "Elems",
         "endverbatim",

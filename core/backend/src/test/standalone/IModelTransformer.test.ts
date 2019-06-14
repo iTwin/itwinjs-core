@@ -13,12 +13,11 @@ import { assert } from "chai";
 import * as hash from "object-hash";
 import * as path from "path";
 import {
-  AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  AuxCoordSystem2d, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 /** Specialization of IModelTransformer for testing */
@@ -59,10 +58,10 @@ class TestIModelTransformer extends IModelTransformer {
   protected excludeElement(sourceElement: Element): boolean {
     const excluded: boolean =
       super.excludeElement(sourceElement) ||
-      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
-    if (excluded) {
-      this.numExcludedElementCalls++;
-    }
+      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ||
+      sourceElement.classFullName.startsWith("TestTransformerSource");
+
+    if (excluded) { this.numExcludedElementCalls++; }
     return excluded;
   }
 
@@ -117,29 +116,45 @@ class TestDataManager {
       IModelJsFs.removeSync(importedOutputFile);
     this.targetDb = IModelDb.createSnapshot(importedOutputFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
     assert.isTrue(IModelJsFs.existsSync(importedOutputFile));
-    // insert some elements to avoid getting same IDs for sourceDb and targetDb
+  }
+
+  public async prepareTargetDb(): Promise<void> {
+    // Import desired target schemas
+    const requestContext = new BackendRequestContext();
+    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
+    await this.targetDb.importSchema(requestContext, targetSchemaFileName);
+    // Insert some elements to avoid getting same IDs for sourceDb and targetDb
     const subjectId = Subject.insert(this.targetDb, IModel.rootSubjectId, "Only in Target");
-    Subject.insert(this.targetDb, subjectId, "1");
-    Subject.insert(this.targetDb, subjectId, "2");
-    Subject.insert(this.targetDb, subjectId, "3");
-    Subject.insert(this.targetDb, subjectId, "4");
+    Subject.insert(this.targetDb, subjectId, "S1");
+    Subject.insert(this.targetDb, subjectId, "S2");
+    Subject.insert(this.targetDb, subjectId, "S3");
+    Subject.insert(this.targetDb, subjectId, "S4");
   }
 
   public async createSourceDb(): Promise<void> {
+    // Import desired source schemas
     const requestContext = new BackendRequestContext();
     await FunctionalSchema.importSchema(requestContext, this.sourceDb);
     FunctionalSchema.registerSchema();
+    this.sourceDb.saveChanges();
+    BriefcaseManager.createStandaloneChangeSet(this.sourceDb.briefcase); // importSchema below will fail if this is not called to flush local changes
+    const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
+    await this.sourceDb.importSchema(requestContext, sourceSchemaFileName);
+    // Embed font
     if (Platform.platformName.startsWith("win")) {
       this.sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
       assert.exists(this.sourceDb.fontMap.getFont("Arial"));
       assert.exists(this.sourceDb.fontMap.getFont(1));
     }
+    // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     this.sourceDb.updateProjectExtents(projectExtents);
+    // Create CodeSpecs
     const codeSpecId1: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId2: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec2", CodeScopeSpec.Type.ParentElement);
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
+    // Create RepositoryModel structure
     const subjectId = Subject.insert(this.sourceDb, IModel.rootSubjectId, "Subject", "Subject description");
     assert.isTrue(Id64.isValidId64(subjectId));
     const sourceOnlySubjectId = Subject.insert(this.sourceDb, IModel.rootSubjectId, "Only in Source");
@@ -158,6 +173,7 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(documentListModelId));
     const drawingId = Drawing.insert(this.sourceDb, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValidId64(drawingId));
+    // Create DefinitionElements
     const modelSelectorId = ModelSelector.insert(this.sourceDb, definitionModelId, "PhysicalModels", [physicalModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const defaultAppearance: SubCategoryAppearance.Props = {
@@ -170,6 +186,24 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const subCategoryId = SubCategory.insert(this.sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue });
     assert.isTrue(Id64.isValidId64(subCategoryId));
+    const drawingCategoryId = DrawingCategory.insert(this.sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    assert.isTrue(Id64.isValidId64(drawingCategoryId));
+    const spatialCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
+    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    const drawingCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
+    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+    const displayStyle2dId = DisplayStyle2d.insert(this.sourceDb, definitionModelId, "DisplayStyle2d");
+    assert.isTrue(Id64.isValidId64(displayStyle2dId));
+    const displayStyle3dId = DisplayStyle3d.insert(this.sourceDb, definitionModelId, "DisplayStyle3d");
+    assert.isTrue(Id64.isValidId64(displayStyle3dId));
+    const auxCoordSystemProps: AuxCoordSystem2dProps = {
+      classFullName: AuxCoordSystem2d.classFullName,
+      model: definitionModelId,
+      code: AuxCoordSystem2d.createCode(this.sourceDb, definitionModelId, "AuxCoordSystem2d"),
+    };
+    const auxCoordSystemId = this.sourceDb.elements.insertElement(auxCoordSystemProps);
+    assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+    // Create PhysicalElements
     const physicalObjectProps1: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
@@ -188,8 +222,21 @@ class TestDataManager {
     const hash2: string = this.sourceDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
     assert.exists(hash1);
     assert.equal(hash1, hash2);
-    const drawingCategoryId = DrawingCategory.insert(this.sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    assert.isTrue(Id64.isValidId64(drawingCategoryId));
+    const sourcePhysicalElementProps: GeometricElement3dProps = {
+      classFullName: "TestTransformerSource:SourcePhysicalElement",
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "SourcePhysicalElement1",
+      geom: TestDataManager.createBox(Point3d.create(2, 2, 2)),
+      placement: {
+        origin: Point3d.create(4, 4, 4),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const sourcePhysicalElementId: Id64String = this.sourceDb.elements.insertElement(sourcePhysicalElementProps);
+    assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
+    // Create DrawingGraphics
     const drawingGraphicProps: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
       model: drawingId,
@@ -206,27 +253,13 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(drawingGraphicId));
     const drawingGraphicRepresentsId = DrawingGraphicRepresentsElement.insert(this.sourceDb, drawingGraphicId, physicalObjectId1);
     assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId));
-    const spatialCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
-    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
-    const drawingCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
-    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const displayStyle2dId = DisplayStyle2d.insert(this.sourceDb, definitionModelId, "DisplayStyle2d");
-    assert.isTrue(Id64.isValidId64(displayStyle2dId));
-    const displayStyle3dId = DisplayStyle3d.insert(this.sourceDb, definitionModelId, "DisplayStyle3d");
-    assert.isTrue(Id64.isValidId64(displayStyle3dId));
+    // Create ViewDefinitions
     const viewId = OrthographicViewDefinition.insert(this.sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
     this.sourceDb.views.setDefaultViewId(viewId);
     const drawingViewRange = new Range2d(0, 0, 100, 100);
     const drawingViewId = DrawingViewDefinition.insert(this.sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
     assert.isTrue(Id64.isValidId64(drawingViewId));
-    const auxCoordSystemProps: AuxCoordSystem2dProps = {
-      classFullName: AuxCoordSystem2d.classFullName,
-      model: definitionModelId,
-      code: AuxCoordSystem2d.createCode(this.sourceDb, definitionModelId, "AuxCoordSystem2d"),
-    };
-    const auxCoordSystemId = this.sourceDb.elements.insertElement(auxCoordSystemProps);
-    assert.isTrue(Id64.isValidId64(auxCoordSystemId));
     this.sourceDb.saveChanges();
   }
 
@@ -377,6 +410,7 @@ describe("IModelTransformer", () => {
   before(async () => {
     testDataManager = new TestDataManager();
     await testDataManager.createSourceDb();
+    await testDataManager.prepareTargetDb();
   });
 
   after(async () => {
@@ -442,56 +476,6 @@ describe("IModelTransformer", () => {
     assert.isTrue(isEqualHash(placementProps1, placementProps2), "Should have same hash");
     placementProps2.bbox!.high.z = 3;
     assert.isFalse(isEqualHash(placementProps1, placementProps2), "Should recurse into nested objects to detect difference");
-  });
-
-  it.skip("OPData", async () => {
-    const seedDataDirectory = "d:/temp/importer/";
-    const sourceDbFileName = "OPData.bim";
-    const targetDbFileName = "OPDataTrg.bim";
-    const dgnV8CodeSpecName = "DgnV8LW";
-    const functionalPartitionName = "ProcessFunctionalModel";
-
-    const outputDir = KnownTestLocations.outputDir;
-    if (!IModelJsFs.existsSync(outputDir))
-      IModelJsFs.mkdirSync(outputDir);
-
-    const sourceDb: IModelDb = IModelDb.openSnapshot(path.join(seedDataDirectory, sourceDbFileName));
-    const targetDb: IModelDb = IModelTestUtils.createSnapshotFromSeed(path.join(outputDir, targetDbFileName), path.join(seedDataDirectory, targetDbFileName));
-    assert.exists(sourceDb);
-    assert.exists(targetDb);
-    assert.isTrue(sourceDb.codeSpecs.hasName(dgnV8CodeSpecName));
-    assert.isFalse(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
-
-    const importer: IModelTransformer = new IModelTransformer(sourceDb, targetDb);
-    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP - Needs to be Element in target IModelDb that represents the source repository
-    assert.exists(importer);
-    importer.importCodeSpecs();
-    targetDb.saveChanges("Import CodeSpecs");
-    assert.isTrue(targetDb.codeSpecs.hasName(dgnV8CodeSpecName));
-
-    const sourceFunctionalPartitionCode: Code = InformationPartitionElement.createCode(sourceDb, IModel.rootSubjectId, functionalPartitionName);
-    const targetFunctionalPartitionCode: Code = InformationPartitionElement.createCode(targetDb, IModel.rootSubjectId, functionalPartitionName);
-    const sourceFunctionalPartitionId: Id64String = sourceDb.elements.queryElementIdByCode(sourceFunctionalPartitionCode)!;
-    const targetFunctionalPartitionId: Id64String = targetDb.elements.queryElementIdByCode(targetFunctionalPartitionCode)!;
-    assert.isTrue(Id64.isValidId64(sourceFunctionalPartitionId));
-    assert.isTrue(Id64.isValidId64(targetFunctionalPartitionId));
-    assert.exists(sourceDb.models.getModel(sourceFunctionalPartitionId));
-    assert.exists(targetDb.models.getModel(targetFunctionalPartitionId));
-    importer.addElementId(sourceFunctionalPartitionId, targetFunctionalPartitionId);
-
-    const sourceFunctionalElementCount: number = await sourceDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${sourceFunctionalPartitionId}`);
-    let targetFunctionalElementCount: number = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
-    assert.isAtLeast(sourceFunctionalElementCount, 1);
-    assert.equal(targetFunctionalElementCount, 0);
-    importer.importModelContents(sourceFunctionalPartitionId, targetScopeElementId);
-    targetDb.saveChanges("Import FunctionalModel contents");
-    targetFunctionalElementCount = await targetDb.queryRowCount(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Model.Id=${targetFunctionalPartitionId}`);
-    assert.equal(sourceFunctionalElementCount, targetFunctionalElementCount);
-
-    importer.dispose();
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
-    console.log("IMPORTER-1"); // tslint:disable-line:no-console
   });
 
   it("should import", async () => {

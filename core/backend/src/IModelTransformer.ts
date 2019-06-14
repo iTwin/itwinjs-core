@@ -243,7 +243,7 @@ export class IModelTransformer {
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
       if ((ExternalSourceAspect.Kind.Element === sourceAspect.kind) && (sourceAspect.scope.id === targetScopeElementId)) {
-        const lastModifiedTime: string = this._targetDb.elements.queryLastModifiedTime(sourceElement.id);
+        const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
         if ((lastModifiedTime === sourceAspect.version) || (sourceElement.computeHash() === sourceAspect.checksum)) {
           return false;
         }

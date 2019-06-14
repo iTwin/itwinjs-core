@@ -102,6 +102,7 @@
     "ecclass",
     "eceflocation",
     "ecinstanceid",
+    "ecschema",
     "ecsql",
     "endverbatim",
     "enqueues",
