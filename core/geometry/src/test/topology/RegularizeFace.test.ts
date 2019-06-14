@@ -7,7 +7,7 @@
 
 import { expect } from "chai";
 import { Checker } from "../Checker";
-import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../../topology/Graph";
 
 import { Sample } from "../../serialization/GeometrySamples";
 import { RegularizationContext } from "../../topology/RegularizeFace";
@@ -25,6 +25,7 @@ import { HalfEdgeGraphOps } from "../../topology/Merging";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Geometry } from "../../Geometry";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 
 /** Treat each xy as (r, radians) */
 function mapThetaR(points: Point3d[], scaleX: number, scaleY: number): Point3d[] {
@@ -401,6 +402,91 @@ function testRegularize(
 }
 
 /**
+ * Return true if this combination of sweeps produces a regularized graph.
+ * Optionally mark the graph for parity.
+ */
+function testFullGraphRegularize(
+  _ck: Checker,
+  allGeometry: GeometryQuery[],
+  dx: number,
+  dy: number,
+  loops: Point3d[][],
+  sweepUp: boolean,
+  sweepDown: boolean,
+  showParity: boolean): boolean {
+  const graph = new HalfEdgeGraph();
+  for (const loop of loops)
+    Triangulator.createFaceLoopFromCoordinatesAndMasks(graph, loop, false, HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR)!;
+  const context = new RegularizationContext(graph);
+  context.regularizeGraph(sweepUp, sweepDown);
+  HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+
+  const range = HalfEdgeGraphOps.graphRange(graph);
+  const ax = 2.5 * range.xLength();
+  const bx = 4.0 * range.xLength();
+  let dumpEdges = false;
+  const mesh = PolyfaceBuilder.graphToPolyface(graph);
+  GeometryCoreTestIO.captureGeometry(allGeometry, mesh, dx, dy);
+  const monotoneFaces: HalfEdge[] = [];
+  const nonMonotoneFaces: HalfEdge[] = [];
+  RegularizationContext.collectMappedFaceRepresentatives(graph, true, RegularizationContext.isMonotoneFace, monotoneFaces, nonMonotoneFaces);
+  const interiorMonotone = [];
+  const exteriorMonotone = [];
+  for (const face of monotoneFaces) {
+    if (!face.isMaskSet(HalfEdgeMask.EXTERIOR))
+      interiorMonotone.push(face);
+    else
+      exteriorMonotone.push(face);
+  }
+  if (interiorMonotone.length !== 0) {
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, interiorMonotone);
+    if (sweepUp && sweepDown) { // With both sweeps it SHOULD be a complete facet set ...
+      const ex = 0.2 * range.xLength();
+      const ey = 0.2 * range.yLength();
+      const ls1 = Sample.createRectangleXY(range.low.x - ex, range.low.y - ey, range.xLength() + 2 * ex, range.yLength() + 2 * ey)!;
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(ls1), dx + ax, dy, 0.0);
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, mesh1.clone(), dx + ax, dy, 0.0);
+  }
+  const r0 = -0.25;
+  const r1 = 1.25;    // fractions for non-monotone face annotation line.
+  if (nonMonotoneFaces.length !== 0) {
+    const mesh1 = PolyfaceBuilder.graphFacesToPolyface(graph, nonMonotoneFaces);
+
+    if (sweepUp && sweepDown) { // With both sweeps this should be empty ...
+      let numBad = 0;
+      for (const f of nonMonotoneFaces) {
+        if (!RegularizationContext.isMonotoneFace(f))
+          numBad++;
+      }
+      console.log(" nonMonotone faces " + numBad + " of " + nonMonotoneFaces.length);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(range.fractionToPoint(r0, r0, 0), range.fractionToPoint(r1, r1, 0)), dx + bx, dy, 0.0);
+      dumpEdges = true;
+    }
+    GeometryCoreTestIO.captureGeometry(allGeometry, mesh1, dx + bx, dy, 0.0);
+  }
+  if (dumpEdges)
+    for (const edge of graph.allHalfEdges) {
+      if (edge.id < edge.edgeMate.id)
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYZXYZ(
+          edge.x, edge.y, 0, edge.faceSuccessor.x, edge.faceSuccessor.y, 0), dx + ax + bx, dy, 0.0);
+    }
+  if (showParity) {
+    const components = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+    for (const component of components) {
+      const interiorFaces = [];
+      for (const f of component)
+        if (!f.isMaskSet(HalfEdgeMask.EXTERIOR))
+          interiorFaces.push(f);
+      const mesh2 = PolyfaceBuilder.graphFacesToPolyface(graph, interiorFaces);
+
+      GeometryCoreTestIO.captureGeometry(allGeometry, mesh2, dx + 2.0 * ax, dy, 0.0);
+    }
+  }
+  return monotoneFaces.length > 0 && nonMonotoneFaces.length === 0;
+}
+
+/**
  * Lots of regularization tests ..
  * Each starts with a rectilinear square wave and and wraps it in a spiral (multiple loops)
  */
@@ -459,5 +545,133 @@ it("RegularizeSpiralBand", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "RegularizeSpiralBand");
   ck.testExactNumber(0, hardLoops.length, "See RegularizationSpiralBand.HardLoops for " + hardLoops.length + "regularization failure cases ");
   GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeC.HardLoops");
+  expect(ck.getNumErrors()).equals(0);
+});
+/**
+ *
+ * @param method (0==>testFullGraphRegularize with various sweep controls) (1==>testFullGraphRegularizeAndTriangulate)
+ * @param filename
+ */
+function testStars(method: number, filename: string) {
+  const ck = new Checker();
+  let outputX0 = 0.0;
+  let outputY0 = 0;
+  const outputStepX = 600.0;
+  const outputStepY = 80.0;
+  const outputRowStepY = 500.0;
+  let outputRowY = 0.0;
+  const allGeometry: GeometryQuery[] = [];
+  for (const degrees of [0, 15, 163.2132121]) {
+    const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+    for (const numOuterStarPoint of [5, 7]) {
+      for (const loops of [Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 0, true),
+      Sample.createStarsInStars(25, 10, numOuterStarPoint, 1, 0.5, 3, 2, 1, true),
+      Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 3, true),
+      Sample.createStarsInStars(25, 10, numOuterStarPoint, 0.9, 0.2, 3, 2, 5, true)]) {
+        // console.log([outputX0, outputY0]);
+        transform.multiplyPoint3dArrayArrayInPlace(loops);
+        for (const loop of loops)
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(loop), outputX0, outputY0);
+        outputY0 += outputStepY;
+        if (method === 1) {
+          testFullGraphRegularizeAndTriangulate(ck, allGeometry, outputX0, outputY0 += outputStepY, loops);
+        } else {
+          if (!testFullGraphRegularize(ck, allGeometry, outputX0, outputY0 += outputStepY, loops, true, true, true)) {
+            if (testFullGraphRegularize(ck, allGeometry, outputX0, outputY0 += outputStepY, loops, true, false, false)) { }
+            if (testFullGraphRegularize(ck, allGeometry, outputX0, outputY0 += outputStepY, loops, false, true, false)) { }
+          }
+        }
+        outputY0 = outputRowY;
+        outputX0 += outputStepX;
+      }
+      outputX0 = 0.0;
+      outputRowY += outputRowStepY;
+      outputY0 = outputRowY;
+    }
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", filename);
+  // GeometryCoreTestIO.saveGeometry(hardLoops, "Graph", "RegularizeD.HardLoops");
+  expect(ck.getNumErrors()).equals(0);
+}
+
+/**
+ *
+ */
+it("FullGraphRegularizeStars", () => {
+  testStars(0, "FullGraphRegularizeStars");
+});
+
+/**
+ *
+ */
+it("FullGraphTriangulateStars", () => {
+  testStars(1, "FullGraphTriangulateStars");
+});
+
+/**
+ */
+function testFullGraphRegularizeAndTriangulate(
+  _ck: Checker,
+  allGeometry: GeometryQuery[],
+  dx: number,
+  dy: number,
+  loops: Point3d[][]): boolean {
+  const graph = new HalfEdgeGraph();
+  for (const loop of loops)
+    Triangulator.createFaceLoopFromCoordinatesAndMasks(graph, loop, true, HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR)!;
+  const context = new RegularizationContext(graph);
+  context.regularizeGraph(true, true);
+  HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+  const range = HalfEdgeGraphOps.graphRange(graph);
+  const by = 2.0 * range.yLength();
+  const mesh = PolyfaceBuilder.graphToPolyface(graph);
+  GeometryCoreTestIO.captureGeometry(allGeometry, mesh, dx, dy);
+  const monotoneFaces: HalfEdge[] = [];
+  const nonMonotoneFaces: HalfEdge[] = [];
+  RegularizationContext.collectMappedFaceRepresentatives(graph, true, RegularizationContext.isMonotoneFace, monotoneFaces, nonMonotoneFaces);
+  for (const seed of monotoneFaces) {
+    if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR))
+      Triangulator.triangulateSingleMonotoneFace(graph, seed);
+  }
+  const mesh2 = PolyfaceBuilder.graphToPolyface(graph, undefined,
+    (faceSeed: HalfEdge) => {
+      return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
+    });
+  GeometryCoreTestIO.captureGeometry(allGeometry, mesh2, dx, dy + by, 0.0);
+  Triangulator.flipTriangles(graph);
+  const mesh3 = PolyfaceBuilder.graphToPolyface(graph, undefined,
+    (faceSeed: HalfEdge) => {
+      return !faceSeed.isMaskSet(HalfEdgeMask.EXTERIOR);
+    });
+  GeometryCoreTestIO.captureGeometry(allGeometry, mesh3, dx, dy + 2 * by, 0.0);
+  return true;
+}
+
+/**
+ *
+ */
+it("SingleFaceTriangulation", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const ax = 6;
+  const ay = 10;
+  let dx = 0.0;
+  let dy = 0.0;
+  for (const data of [
+    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, -2, -2, - 1, ax, ay, 0, 0),
+      3, 3, 0, 0, 1, 1),
+    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(-1, 0, -2, - 1, ax, ay, 0, 0),
+      4, 2, 0, 0, 1, 1),
+    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, -2, - 1, ax, ay, 0, 0),
+      4, 2, 1, 0, 2, 1),
+    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 2, - 1, ax, ay, 0, 0),
+      3, 3, 1, 1, 2, 2),
+    new VerticalStaggerData(Sample.creatVerticalStaggerPolygon(1, 0, 0, 1, ax, ay, 0, 0),
+      3, 3, 1, 0, 2, 1)]) {
+    testFullGraphRegularizeAndTriangulate(ck, allGeometry, dx, dy, [data.points]);
+    dx += 20.0;
+    dy = 0.0;
+  }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "SingleFaceTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });

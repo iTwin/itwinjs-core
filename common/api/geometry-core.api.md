@@ -1448,6 +1448,7 @@ export class Geometry {
     static isNumberArray(json: any, minEntries?: number): boolean;
     static isSameCoordinate(x: number, y: number, tol?: number): boolean;
     static isSameCoordinateSquared(x: number, y: number): boolean;
+    static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol?: number): boolean;
     static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean;
     static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean;
     static isSamePoint3dXY(dataA: Point3d, dataB: Point3d): boolean;
@@ -1697,6 +1698,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
 // @internal
 export class HalfEdge {
     constructor(x?: number, y?: number, z?: number, i?: number);
+    belowYX(other: HalfEdge): boolean;
     clearMask(mask: HalfEdgeMask): void;
     clearMaskAroundFace(mask: HalfEdgeMask): void;
     clearMaskAroundVertex(mask: HalfEdgeMask): void;
@@ -1709,6 +1711,10 @@ export class HalfEdge {
     static createEdgeXYXY(id0: any, x0: number, y0: number, id1: any, x1: number, y1: number): HalfEdge;
     static createHalfEdgePair(heArray: HalfEdge[] | undefined): HalfEdge;
     static createHalfEdgePairWithCoordinates(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, xB: number | undefined, yB: number | undefined, zB: number | undefined, iB: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
+    // (undocumented)
+    static crossProductAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number;
+    // (undocumented)
+    static crossProductToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number;
     decommission(): void;
     distanceXY(other: HalfEdge): number;
     distanceXYZ(other: HalfEdge): number;
@@ -1722,6 +1728,7 @@ export class HalfEdge {
     fractionToPoint2d(fraction: number, result?: Point2d): Point2d;
     fractionToX(fraction: number): number;
     fractionToY(fraction: number): number;
+    fractionToZ(fraction: number): number;
     getMask(mask: HalfEdgeMask): number;
     static horizontalScanFraction(node0: HalfEdge, y: number): number | undefined | HalfEdge;
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
@@ -1749,10 +1756,13 @@ export class HalfEdge {
     signedFaceArea(): number;
     sortAngle?: number;
     sortData?: number;
-    static splitEdge(base: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
+    static splitEdge(baseA: undefined | HalfEdge, xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, heArray: HalfEdge[] | undefined): HalfEdge;
     sumAroundFace(f: NodeToNumberFunction): number;
     sumAroundVertex(f: NodeToNumberFunction): number;
     testAndSetMask(mask: HalfEdgeMask): number;
+    // (undocumented)
+    static testFacePositiveAreaXY(node: HalfEdge): boolean;
+    // (undocumented)
     static testNodeMaskNotExterior(node: HalfEdge): boolean;
     static transverseIntersectionFractions(nodeA0: HalfEdge, nodeB0: HalfEdge, result?: Vector2d): Vector2d | undefined;
     vectorToFaceSuccessor(result?: Vector3d): Vector3d;
@@ -1788,6 +1798,8 @@ export class HalfEdgeGraph {
     reverseMask(mask: HalfEdgeMask): void;
     setMask(mask: HalfEdgeMask): void;
     splitEdge(base: undefined | HalfEdge, xA?: number, yA?: number, zA?: number, iA?: number): HalfEdge;
+    splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge;
+    transformInPlace(transform: Transform): void;
 }
 
 // @internal
@@ -2494,6 +2506,7 @@ export class Matrix3d implements BeJSONFunctions {
     static xyzPlusMatrixTimesWeightedCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
     static xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, w: number, result?: Float64Array): Float64Array;
     static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d;
+    static xyzPlusMatrixTimesXYZInPlace(origin: XYZ, matrix: Matrix3d, vector: WritableXYAndZ): void;
 }
 
 // @public
@@ -3175,6 +3188,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     claimPolyface(compress?: boolean): IndexedPolyface;
     static create(options?: StrokeOptions): PolyfaceBuilder;
     endFace(): boolean;
+    findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
+    // @deprecated (undocumented)
     findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
     findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
@@ -3845,6 +3860,7 @@ export class SmallSystem {
     static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined;
     static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined;
     static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
+    static lineSegmentXYUVTransverseIntersectionUnbounded(ax0: number, ay0: number, ux: number, uy: number, bx0: number, by0: number, vx: number, vy: number, result: Vector2d): boolean;
     static ray3dXYZUVWClosestApproachUnbounded(ax: number, ay: number, az: number, au: number, av: number, aw: number, bx: number, by: number, bz: number, bu: number, bv: number, bw: number, result: Vector2d): boolean;
 }
 
@@ -4075,6 +4091,7 @@ export class Transform implements BeJSONFunctions {
     multiplyPoint2dArray(source: Point2d[], result?: Point2d[]): Point2d[];
     multiplyPoint3d(point: XYAndZ, result?: Point3d): Point3d;
     multiplyPoint3dArray(source: Point3d[], result?: Point3d[]): Point3d[];
+    multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]): void;
     multiplyPoint3dArrayInPlace(points: Point3d[]): void;
     multiplyRange(range: Range3d, result?: Range3d): Range3d;
     multiplyTransformMatrix3d(other: Matrix3d, result?: Transform): Transform;
@@ -4082,6 +4099,7 @@ export class Transform implements BeJSONFunctions {
     multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
     multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d;
     multiplyVectorXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
+    multiplyXYAndZInPlace(point: XYAndZ): void;
     multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d;
     multiplyXYZToFloat64Array(x: number, y: number, z: number, result?: Float64Array): Float64Array;
     multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
@@ -4165,11 +4183,13 @@ export class TransitionSpiral3d extends CurvePrimitive {
 // @internal
 export class Triangulator {
     static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
+    static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, maskForBothSides: HalfEdgeMask, maskForOtherSide: HalfEdgeMask): HalfEdge | undefined;
     static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
     static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph;
     static flipTriangles(graph: HalfEdgeGraph): void;
-    triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
-    }
+    static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
+    static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean;
+}
 
 // @internal
 export class TriDiagonalSystem {
@@ -4454,7 +4474,7 @@ export interface WritableXAndY {
 }
 
 // @public
-export interface WritableXYAndZ extends XAndY, WriteableHasZ {
+export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {
 }
 
 // @public

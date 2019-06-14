@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "(imodeljs-markup merge)",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Earlin.Lutz@bentley.com"
+}

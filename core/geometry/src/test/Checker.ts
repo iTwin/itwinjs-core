@@ -40,7 +40,7 @@ export class Checker {
     checkpoint: false,
     flatbufferRoundTrip: false,
     bsplineEvaluation: false,
-    tridiagonalsolver: false,
+    tridiagonalSolver: false,
     gaussQuadrature: false,
     quarticRoots: false,
     cubicRoots: false,

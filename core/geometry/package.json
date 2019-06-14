@@ -39,7 +39,11 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^1.1.0-dev.11"
+  },
   "devDependencies": {
+    "@bentley/bentleyjs-core": "1.1.0-dev.11",
     "@bentley/build-tools": "1.1.0-dev.11",
     "@bentley/webpack-tools": "1.1.0-dev.11",
     "@types/chai": "^4.1.4",

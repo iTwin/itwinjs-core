@@ -27,7 +27,7 @@ export interface WriteableHasZ {
  * interface for class with `x`, `y`, `z` as number property.
  * @public
  */
-export interface WritableXYAndZ extends XAndY, WriteableHasZ {
+export interface WritableXYAndZ extends WritableXAndY, WriteableHasZ {
 }
 /**
  * interface for class with named properties `low` and `high`, both being `WriteableXAndY`

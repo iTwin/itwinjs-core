@@ -256,6 +256,11 @@ export class Transform implements BeJSONFunctions {
     return Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, result);
   }
 
+  /** Transform the input object with x,y,z members */
+  public multiplyXYAndZInPlace(point: XYAndZ) {
+    return Matrix3d.xyzPlusMatrixTimesXYZInPlace(this._origin, this._matrix, point);
+  }
+
   /** Transform the input point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d {
     return Matrix3d.xyzPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
@@ -306,6 +311,11 @@ export class Transform implements BeJSONFunctions {
       Matrix3d.xyzPlusMatrixTimesXYZ(this._origin, this._matrix, point, point);
   }
 
+  /** for each point:  replace point by Transform*point */
+  public multiplyPoint3dArrayArrayInPlace(chains: Point3d[][]) {
+    for (const chain of chains)
+      this.multiplyPoint3dArrayInPlace(chain);
+  }
   /** Return product of the transform's inverse times a point. */
   public multiplyInversePoint3d(point: XYAndZ, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(
@@ -497,22 +507,22 @@ export class Transform implements BeJSONFunctions {
   /** transform each of the 8 corners of a range. Return the range of the transformed corers */
   public multiplyRange(range: Range3d, result?: Range3d): Range3d {
     // snag current values to allow aliasing.
-    const lowx = range.low.x;
-    const lowy = range.low.y;
-    const lowz = range.low.z;
-    const highx = range.high.x;
-    const highy = range.high.y;
-    const highz = range.high.z;
+    const lowX = range.low.x;
+    const lowY = range.low.y;
+    const lowZ = range.low.z;
+    const highX = range.high.x;
+    const highY = range.high.y;
+    const highZ = range.high.z;
     result = Range3d.createNull(result);
-    result.extendTransformedXYZ(this, lowx, lowy, lowz);
-    result.extendTransformedXYZ(this, highx, lowy, lowz);
-    result.extendTransformedXYZ(this, lowx, highy, lowz);
-    result.extendTransformedXYZ(this, highx, highy, lowz);
+    result.extendTransformedXYZ(this, lowX, lowY, lowZ);
+    result.extendTransformedXYZ(this, highX, lowY, lowZ);
+    result.extendTransformedXYZ(this, lowX, highY, lowZ);
+    result.extendTransformedXYZ(this, highX, highY, lowZ);
 
-    result.extendTransformedXYZ(this, lowx, lowy, highz);
-    result.extendTransformedXYZ(this, highx, lowy, highz);
-    result.extendTransformedXYZ(this, lowx, highy, highz);
-    result.extendTransformedXYZ(this, highx, highy, highz);
+    result.extendTransformedXYZ(this, lowX, lowY, highZ);
+    result.extendTransformedXYZ(this, highX, lowY, highZ);
+    result.extendTransformedXYZ(this, lowX, highY, highZ);
+    result.extendTransformedXYZ(this, highX, highY, highZ);
     return result;
   }
   /**

@@ -106,7 +106,6 @@ class StretchHandle extends ModifyHandle {
     let diagVec = diag.scaleToLength(diff.dotProduct(diag)); // projected distance along diagonal
     if (diagVec === undefined)
       diagVec = Vector2d.createZero();
-
     // if the shift key is down, don't preserve aspect ratio
     const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;

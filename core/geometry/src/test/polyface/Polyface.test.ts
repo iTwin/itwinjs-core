@@ -33,7 +33,7 @@ import { Cone } from "../../solid/Cone";
 import { Sphere } from "../../solid/Sphere";
 /* tslint:disable:no-console */
 
-// @param longEdgeIsHidden true if any edge longer than1/3 of face perimiter is expected to be hidden
+// @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
 function exercisePolyface(ck: Checker, polyface: Polyface,
   longEdgeIsHidden: boolean) {
   const twoSidedA = polyface.twoSided;
@@ -58,7 +58,7 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
   // visitor.moveToReadIndex(0);
   let facetIndex = 0;
   for (; visitor.moveToNextFacet(); facetIndex++) {
-    // make sure visitors mvoe together ..
+    // make sure visitors move together ..
     ck.testTrue(visitor1.moveToNextFacet(), "wrapped visitor tracks unwrapped");
     const readIndex = visitor.currentReadIndex();
     ck.testExactNumber(readIndex, visitor1.currentReadIndex(), "current read index");
@@ -133,7 +133,7 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
  * NOTE: Currently, face data is only recorded for facets when explicitly telling
  * the builder to do so. Therefore, if every facet is not a part of a face by manually
  * calling PolyfaceBuilder.endFace(), the test will fail. In the future, faces may be
- * moreso automatically claimed depending on the polyface built.
+ * automatically claimed depending on the polyface built.
  */
 function verifyFaceData(ck: Checker, polyface: IndexedPolyface, shouldCheckParamDistance: boolean = false) {
   if (polyface.data.face.length === 0) {
@@ -406,7 +406,7 @@ describe("Polyface.Facets", () => {
   optionsPNE.maxEdgeLength = 0.5;
 
   const bigYStep = 800.0;       // step between starts for different solid types
-  const optionYStep = 100.0;    // steps between starts for option vairants of same solid type
+  const optionYStep = 100.0;    // steps between starts for option variants of same solid type
   const y0OpenSweeps = 0.0;
   const y0ClosedSampler = y0OpenSweeps + bigYStep;
   const y0Box = y0ClosedSampler + bigYStep;
@@ -464,12 +464,7 @@ describe("Polyface.Facets", () => {
     const closedSolids = Sample.createClosedSolidSampler(true);
     writeAllMeshes(closedSolids, "ClosedSweeps", allOptions, y0ClosedSampler, optionYStep);
   });
-  /*
-  it.only("SamplerA", () => {
-    const geometry = Sample.createRevolutionLsegArcLstr(false);
-    writeAllMeshes(geometry, "SamplerA", allOptions, 0, optionYStep);
-  });
-*/
+
 });
 
 describe("Polyface.Faces", () => {
@@ -594,7 +589,7 @@ describe("Polyface.Faces", () => {
     */
     expect(ck.getNumErrors()).equals(0);
   });
-
+  // cspell:word dgnjs
   it.skip("Solid primitive param verification with native", () => {
     const ck = new Checker();
     const options = new StrokeOptions();
@@ -636,7 +631,7 @@ describe("Polyface.Faces", () => {
   });
 });
 
-it("facets from sweep contour", () => {
+it("PartialSawToothTriangulation", () => {
   const ck = new Checker();
 
   // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
@@ -649,7 +644,11 @@ it("facets from sweep contour", () => {
     Point3d.create(1, 1, 0),
     Point3d.create(1, 2, 0),
     Point3d.create(0, 2, 0)];
+  const allGeometry: GeometryQuery[] = [];
+  let x0 = 0.0;
+  const dy = 10.0;
   for (const numPoints of [3, 5, 6, 7, 8]) {
+    let y0 = 0.0;
     const polygonPoints = fullSawtooth.slice(0, numPoints);
     const loop = Loop.createPolygon(polygonPoints);
     const sweepContour = SweepContour.createForLinearSweep(loop);
@@ -665,7 +664,11 @@ it("facets from sweep contour", () => {
       const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
       console.log(prettyPrint(jsPolyface));
     }
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(polygonPoints), x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0 += dy);
+    x0 += dy;
   }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PartialSawToothTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });
 
@@ -714,7 +717,7 @@ it("facets for ACS", () => {
     }
     counter0++;
   }
-  GeometryCoreTestIO.saveGeometry(savedMeshes, "Polyface", "ACSArrows");
+  GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "ACSArrows");
   expect(ck.getNumErrors()).equals(0);
 });
 
@@ -741,7 +744,7 @@ it("facets from sweep contour with holes", () => {
   const polyface = builder.claimPolyface(true);
   polyface.tryTranslateInPlace(0, 10, 0);
   allGeometry.push(polyface);
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ParityRegion");
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "ParityRegion");
   expect(ck.getNumErrors()).equals(0);
 
 });
@@ -781,11 +784,11 @@ function createMeshByUVSurface(surface: UVSurface, numXEdge: number, numYEdge: n
   return builder.claimPolyface();
 }
 
-it("LargeMeshComporession", () => {
+it("LargeMeshCompression", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   allGeometry.push(createGridMeshByCoordinates(100, 100, 0.0, false, false, false));
-  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "LargeMeshComporession");
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "LargeMeshCompression");
   expect(ck.getNumErrors()).equals(0);
 });
 

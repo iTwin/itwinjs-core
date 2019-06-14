@@ -6,12 +6,24 @@
 /** @module Topology */
 
 import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { Range3d } from "../geometry3d/Range";
+import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
+import { SmallSystem } from "../numerics/Polynomials";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+
+export class GraphSplitData {
+  public numUpEdge = 0;
+  public numIntersectionTest = 0;
+  public numSplit = 0;
+  public numPopOut = 0;
+  public numA0B0 = 0;
+  public numA0B1 = 0;
+  public constructor() {
+  }
+}
 
 /**
  * * Assorted methods used in algorithms on HalfEdgeGraph.
@@ -21,7 +33,7 @@ export class HalfEdgeGraphOps {
 
   // SORTING FUNCTIONS (compare methods used by sort() in larger algorithms) -----------------------------------------------------------
 
-  /** Compare function for sorting X, Y, and (optional) sortAngle components of ndoes. */
+  /** Compare function for sorting X, Y, and (optional) sortAngle components of nodes. */
   public static compareNodeXYTheta(a: HalfEdge, b: HalfEdge) {
     // Check x's
     if (!Geometry.isSameCoordinate(a.x, b.x))
@@ -44,7 +56,7 @@ export class HalfEdgeGraphOps {
     }
     return 0;
   }
-  /** Compare function for sorting "downward" with primary y compare, secondary  x compare. */
+  /** Compare function for sorting with primary y compare, secondary  x compare. */
   public static compareNodesYXUp(a: HalfEdge, b: HalfEdge) {
     // Check y's
     // if (!Geometry.isSameCoordinate(a.y, b.y))
@@ -78,77 +90,8 @@ export class HalfEdgeGraphOps {
   public static crossProductToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
     return Geometry.crossProductXYXY(targetA.x - base.x, targetA.y - base.y, targetB.x - base.x, targetB.y - base.y);
   }
-  /** Compare function for sorting the "event queue" when searching for crossings of line segments in an array of segments (x increasing) */
-  private static eventCompareCrossings(a: any, b: any): number {
-    if (a.leftPoint.x < b.leftPoint.x)
-      return -1;
-    else if (a.leftPoint.x > b.leftPoint.x)
-      return 1;
-    return 0;
-  }
 
   // ---------------------------------------------------------------------------------------------------------------------
-
-  // QUERY FUNCTIONS (methods to grab specific extremities of a segment or node connection) -----------------------------------------
-
-  /** Returns the greatest y-value of a segment */
-  private static getHighValueOfSegment(seg: LineSegment3d): number {
-    if (seg.point0Ref.y > seg.point1Ref.y)
-      return seg.point0Ref.y;
-    return seg.point1Ref.y;
-  }
-
-  /** Returns the lowest y-value of a segment */
-  private static getLowValueOfSegment(seg: LineSegment3d): number {
-    if (seg.point0Ref.y < seg.point1Ref.y)
-      return seg.point0Ref.y;
-    return seg.point1Ref.y;
-  }
-
-  /** Returns the lowest x-value of a segment */
-  private static getLeftValueOfSegment(seg: LineSegment3d): number {
-    if (seg.point0Ref.x < seg.point1Ref.x)
-      return seg.point0Ref.x;
-    return seg.point1Ref.x;
-  }
-
-  /** Returns the greatest x-value of a segment */
-  private static getRightValueOfSegment(seg: LineSegment3d): number {
-    if (seg.point0Ref.x > seg.point1Ref.x)
-      return seg.point0Ref.x;
-    return seg.point1Ref.x;
-  }
-
-  /** Returns a reference to the point of a segment that lies farther left along the x-axis (if same x, use smaller y value) */
-  private static getLeftmostPointOfSegment(seg: LineSegment3d): Point3d {
-    if (seg.point0Ref.x < seg.point1Ref.x)
-      return seg.point0Ref;
-    else if (seg.point1Ref.x < seg.point0Ref.x)
-      return seg.point1Ref;
-    // Resort to y values to avoid outputting same endpoints
-    if (seg.point0Ref.y < seg.point1Ref.y)
-      return seg.point0Ref;
-    else if (seg.point1Ref.y < seg.point0Ref.y)
-      return seg.point1Ref;
-
-    return seg.point0Ref;
-  }
-
-  /** Returns a reference to the point of a segment that lies farther right along the x-axis (if same x, use greater y value) */
-  private static getRightmostPointOfSegment(seg: LineSegment3d): Point3d {
-    if (seg.point0Ref.x > seg.point1Ref.x)
-      return seg.point0Ref;
-    else if (seg.point1Ref.x > seg.point0Ref.x)
-      return seg.point1Ref;
-    // Resort to y values to avoid outputting same endpoints
-    if (seg.point0Ref.y > seg.point1Ref.y)
-      return seg.point0Ref;
-    else if (seg.point1Ref.y > seg.point0Ref.y)
-      return seg.point1Ref;
-
-    return seg.point1Ref;
-  }
-
   // ----------------------------------------------------------------------------------------------------------------------
 
   public static graphRange(graph: HalfEdgeGraph): Range3d {
@@ -181,115 +124,6 @@ export class HalfEdgeGraphOps {
     }
 
     return result;
-  }
-
-  /** Given two segments, uses the equations of the two representative lines and the determinant to give a point of intersection;
-   *  Note that when point is found, it may fall outside bounds of segments. Therefore, extra check for in bounds is necessary.
-   */
-  private static getIntersectionOfSegments(seg1: LineSegment3d, seg2: LineSegment3d, checkInBounds: boolean): Point3d | undefined {
-    const a1 = seg1.point1Ref.y - seg1.point0Ref.y;
-    const b1 = seg1.point0Ref.x - seg1.point1Ref.x;
-    const c1 = a1 * (seg1.point0Ref.x) + b1 * (seg1.point0Ref.y);
-
-    const a2 = seg2.point1Ref.y - seg2.point0Ref.y;
-    const b2 = seg2.point0Ref.x - seg2.point1Ref.x;
-    const c2 = a2 * (seg2.point0Ref.x) + b2 * (seg2.point0Ref.y);
-
-    const det = a1 * b2 - a2 * b1;
-
-    if (det === 0) {
-      return undefined;
-    }
-
-    const x = (b2 * c1 - b1 * c2) / det;
-    const y = (a1 * c2 - a2 * c1) / det;
-    const intersection = Point3d.create(x, y);
-
-    if (checkInBounds) {
-      // Ensure the point is within bounds of both segments
-      if ((intersection.x >= HalfEdgeGraphOps.getLeftValueOfSegment(seg1) && intersection.x <= HalfEdgeGraphOps.getRightValueOfSegment(seg1) &&
-        intersection.y >= HalfEdgeGraphOps.getLowValueOfSegment(seg1) && intersection.y <= HalfEdgeGraphOps.getHighValueOfSegment(seg1))) {
-        if (intersection.x >= HalfEdgeGraphOps.getLeftValueOfSegment(seg2) && intersection.x <= HalfEdgeGraphOps.getRightValueOfSegment(seg2) &&
-          intersection.y >= HalfEdgeGraphOps.getLowValueOfSegment(seg2) && intersection.y <= HalfEdgeGraphOps.getHighValueOfSegment(seg2)) {
-          return intersection;
-        } else {
-          return undefined;
-        }
-      }
-    }
-    return intersection;
-  }
-
-  /**
-   * sorts a number array and filters out 0's, 1's, and duplicates...
-   * useful when trying to simplify the found intersections of each segment in an array
-   */
-  public static sortAndFilterCrossings(arr: number[]) {
-    if (arr.length === 0) return arr;
-    arr.sort(GrowableFloat64Array.compare);
-    let r = 0;
-    for (let i = 1; i < arr.length; i++) {
-      if (!Geometry.isSameCoordinate(arr[r], arr[i])) {
-        arr[++r] = arr[i]; // copy-in next unique number
-      }
-    }
-    arr.length = r + 1;
-    return arr;
-  }
-
-  /**
-   * Returns an array for each index of the segments array given, which holds the fractional moments of intersection along that segment
-   *
-   * *  Creates a queue array of left-most segment points, paired with a link back to its original index into the segment array given
-   * *  For each 'event' in the queue, check its corresponding segment for intersections with segments whose left-most points
-   *      appear before this event's right-most point
-   */
-  public static findCrossings(segments: LineSegment3d[]): number[][] {
-    const queue: Array<{ leftPoint: Point3d, rightPoint: Point3d, segIdx: number }> = [];
-    const crossings: number[][] = [];
-
-    for (let i = 0; i < segments.length; i++) {
-      queue.push({
-        leftPoint: HalfEdgeGraphOps.getLeftmostPointOfSegment(segments[i]),
-        rightPoint: HalfEdgeGraphOps.getRightmostPointOfSegment(segments[i]),
-        segIdx: i,
-      });
-    }
-
-    // Sort the eQueue of points from left to right
-    queue.sort(HalfEdgeGraphOps.eventCompareCrossings);
-
-    for (let i = 0; i < queue.length; i++) {
-      const iSegIdx = queue[i].segIdx;
-
-      if (!crossings[iSegIdx]) // If index into crossings does not exist yet for segment, create it
-        crossings[iSegIdx] = [];
-
-      // Only check intersections of segments in queue who's left endpoints are before this segment's right
-      // endpoint pair
-      for (let j = i + 1; j < queue.length; j++) {
-        if (queue[j].leftPoint.x > queue[i].rightPoint.x)
-          break;
-
-        const jSegIdx = queue[j].segIdx;
-        const iSeg = segments[iSegIdx];
-        const jSeg = segments[jSegIdx];
-        const intersection = HalfEdgeGraphOps.getIntersectionOfSegments(iSeg, jSeg, true);
-
-        if (intersection !== undefined) {
-          const fractionForISeg = iSeg.point0Ref.distance(intersection) / iSeg.curveLength();
-          const fractionForJSeg = jSeg.point0Ref.distance(intersection) / jSeg.curveLength();
-          if (fractionForISeg > 0 && fractionForISeg < 1 && fractionForJSeg > 0 && fractionForJSeg < 1) {
-            if (!crossings[jSegIdx]) // If array does not exist for other (j) segment of intersection yet, create it
-              crossings[jSegIdx] = [];
-
-            crossings[iSegIdx].push(fractionForISeg);
-            crossings[jSegIdx].push(fractionForJSeg);
-          }
-        }
-      }
-    }
-    return crossings;
   }
 
   /**
@@ -351,7 +185,7 @@ export class HalfEdgeGraphMerge {
    * * lexical sort of the array.
    * * twist all vertices together.
    * * This effectively creates valid face loops for a planar subdivision if there are no edge crossings.
-   * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topoogy.
+   * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
    */
   public static clusterAndMergeXYTheta(graph: HalfEdgeGraph) {
     const allNodes = graph.allHalfEdges;
@@ -416,7 +250,88 @@ export class HalfEdgeGraphMerge {
         k0 = k1 + 1;
       }
     }
+  }
 
+  private static buildVerticalSweepPriorityQueue(graph: HalfEdgeGraph): HalfEdgePriorityQueueWithPartnerArray {
+    const sweepHeap = new HalfEdgePriorityQueueWithPartnerArray();
+    for (const p of graph.allHalfEdges) {
+
+      if (HalfEdgeGraphOps.compareNodesYXUp(p, p.faceSuccessor) < 0) {
+        sweepHeap.priorityQueue.push(p);
+      }
+    }
+    return sweepHeap;
+  }
+  private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
+    const nodeA1 = nodeA0.faceSuccessor;
+    const ax0 = nodeA0.x;
+    const ay0 = nodeA0.y;
+    const ux = nodeA1.x - ax0;
+    const uy = nodeA1.y - ay0;
+    const nodeB1 = nodeB0.faceSuccessor;
+    const bx0 = nodeB0.x;
+    const by0 = nodeB0.y;
+    const vx = nodeB1.x - bx0;
+    const vy = nodeB1.y - by0;
+    if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy,
+      bx0, by0, vx, vy, fractions)) {
+      pointA.x = ax0 + fractions.x * ux;
+      pointA.y = ay0 + fractions.x * uy;
+      pointB.x = bx0 + fractions.y * vx;
+      pointB.y = by0 + fractions.y * vy;
+      return Geometry.isIn01(fractions.x) && Geometry.isIn01(fractions.y);
+    }
+    return false;
+  }
+  /**
+   * Split edges at intersections.
+   * * This is a large operation.
+   * @param graph
+   */
+  public static splitIntersectingEdges(graph: HalfEdgeGraph): GraphSplitData {
+    const data = new GraphSplitData();
+    const sweepHeap = this.buildVerticalSweepPriorityQueue(graph);
+    let nodeA0, nodeB1;
+    const smallFraction = 1.0e-8;
+    const largeFraction = 1.0 - smallFraction;
+    let i;
+    const fractions = Vector2d.create();
+    const pointA = Point2d.create();
+    const pointB = Point2d.create();
+    let nodeB0;
+    while (undefined !== (nodeA0 = sweepHeap.priorityQueue.pop())) {
+      data.numUpEdge++;
+      const n0 = sweepHeap.activeEdges.length;
+      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y);
+      data.numPopOut += n0 - sweepHeap.activeEdges.length;
+      for (i = 0; i < sweepHeap.activeEdges.length; i++) {
+        nodeB0 = sweepHeap.activeEdges[i];
+        nodeB1 = nodeB0.faceSuccessor;
+        // const nodeB1 = nodeB0.faceSuccessor;
+        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y)) {
+          data.numA0B0++;
+        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y)) {
+          data.numA0B1++;
+        } else {
+          data.numIntersectionTest++;
+          if (this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, fractions, pointA, pointB)) {
+            if (fractions.x > smallFraction && fractions.x < largeFraction) {
+              const nodeC0 = graph.splitEdgeAtFraction(nodeA0, fractions.x);
+              sweepHeap.priorityQueue.push(nodeC0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              data.numSplit++;
+            }
+            if (fractions.y > smallFraction && fractions.y < largeFraction) {
+              const nodeD0 = graph.splitEdgeAtFraction(nodeB0, fractions.y);
+              sweepHeap.priorityQueue.push(nodeD0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              data.numSplit++;
+            }
+            // existing nodeA0 and its shortened edge remain for further intersections
+          }
+        }
+      }
+      sweepHeap.activeEdges.push(nodeA0);
+    }
+    return data;
   }
 
   /**
@@ -431,51 +346,9 @@ export class HalfEdgeGraphMerge {
   public static formGraphFromSegments(lineSegments: LineSegment3d[]): HalfEdgeGraph {
     // Structure of an index of the array: { xyTheta: Point3d, node: Node }
     const graph = new HalfEdgeGraph();
-    const segments: LineSegment3d[] = [];
-
-    // Obtain an array of all of the fractional intersections for each segment... remove duplicates and endpoints
-    const intersectArray = HalfEdgeGraphOps.findCrossings(lineSegments);
-    for (const item of intersectArray) {
-      // Get rid of duplicate intersection findings
-      HalfEdgeGraphOps.sortAndFilterCrossings(item);
-    }
-
-    // Create new segment array that contains the split segments
-    for (let i = 0; i < intersectArray.length; i++) {
-      if (intersectArray[i].length === 0) {
-        segments.push(lineSegments[i]);
-        continue;
-      }
-
-      let newStart = 0;
-      for (const f of intersectArray[i]) {
-        segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
-          lineSegments[i].fractionToPoint(f)));
-        newStart = f;
-      }
-      // Add last segment, which is from last element of break array to end of original segment
-      segments.push(LineSegment3d.create(lineSegments[i].fractionToPoint(newStart),
-        lineSegments[i].fractionToPoint(1)));
-    }
-
-    const arr = HalfEdgeGraphOps.segmentArrayToGraphEdges(segments, graph, HalfEdgeMask.BOUNDARY_EDGE);
-    HalfEdgeGraphOps.setXYSortAnglesInGraph(graph);
-
-    // Sort lexically
-    arr.sort(HalfEdgeGraphOps.compareNodeXYTheta);
-    let lastNode = 0;
-
-    // Connect nodes at vertices
-    for (let i = 1; i <= arr.length; i++) {
-      if (i === arr.length || !Geometry.isSameCoordinate(arr[i].x, arr[lastNode].x) ||
-        !Geometry.isSameCoordinate(arr[i].y, arr[lastNode].y)) {
-        // pinch matching vertices
-        for (let j = lastNode; j < i - 1; j++) {
-          HalfEdge.pinch(arr[j], arr[j + 1]);
-        }
-        lastNode = i;
-      }
-    }
+    HalfEdgeGraphOps.segmentArrayToGraphEdges(lineSegments, graph, HalfEdgeMask.BOUNDARY_EDGE);
+    this.splitIntersectingEdges(graph);
+    this.clusterAndMergeXYTheta(graph);
 
     return graph;
   }

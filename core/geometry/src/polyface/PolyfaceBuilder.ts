@@ -5,7 +5,6 @@
 
 /** @module Polyface */
 
-// import { Geometry, AxisOrder, Angle, AngleSweep, BSIJSONValues } from "./Geometry";
 import { IndexedPolyface } from "./Polyface";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point2d } from "../geometry3d/Point2dVector2d";
@@ -144,7 +143,7 @@ export class UVSurfaceOps {
    * * evaluate `numEdge+1` points at surface uv parameters interpolated between (u0,v0) and (u1,v1)
    * * accumulate the xyz in a linestring.
    * * If xyzToUV is given, also accumulate transformed values as surfaceUV
-   * * use xyzToUserUV transform to convert xyz to uv stored in the linestring (this uv is typically different from surface uv -- e.g. torus cap plane coordintes)
+   * * use xyzToUserUV transform to convert xyz to uv stored in the linestring (this uv is typically different from surface uv -- e.g. torus cap plane coordinates)
    * @param surface
    * @param u0 u coordinate at start of parameter space line
    * @param v0 v coordinate at end of parameter space line
@@ -189,18 +188,18 @@ export class UVSurfaceOps {
  * * Simple construction for strongly typed GeometryQuery objects:
  *
  *  * Create a builder with `builder = PolyfaceBuilder.create()`
- *  * Add GeemotryQuery objects:
+ *  * Add GeometryQuery objects:
  *
  *    * `builder.addGeometryQuery(g: GeometryQuery)`
  *    * `builder.addCone(cone: Cone)`
  *    * `builder.addTorusPipe(surface: TorusPipe)`
  *    * `builder.addLinearSweepLineStrings(surface: LinearSweep)`
- *    * `builder.addRotationalSweep(surface: RotatationalSweep)`
+ *    * `builder.addRotationalSweep(surface: RotationalSweep)`
  *    * `builder.addLinearSweep(surface: LinearSweep)`
  *    * `builder.addRuledSweep(surface: RuledSweep)`
  *    * `builder.addSphere(sphere: Sphere)`
  *    * `builder.addBox(box: Box)`
- *    * `buidler.addIndexedPolyface(polyface)`
+ *    * `builder.addIndexedPolyface(polyface)`
  *  *  Extract with `builder.claimPolyface (true)`
  *
  * * Simple construction for ephemeral constructive data:
@@ -210,11 +209,11 @@ export class UVSurfaceOps {
  *    * `builder.addBetweenLineStrings (linestringA, linestringB, addClosure)`
  *    * `builder.addBetweenTransformedLineStrings (curves, transformA, transformB, addClosure)`
  *    * `builder.addBetweenStroked (curveA, curveB)`
- *    * `builder.addLinearSweepLineStrigns (contour, vector)`
+ *    * `builder.addLinearSweepLineStrings (contour, vector)`
  *    * `builder.addPolygon (points, numPointsToUse)`
  *    * `builder.addTransformedUnitBox (transform)`
  *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
- *    * `builder.addTrianglesInUnchedkedPolygon (linestring, toggle)`
+ *    * `builder.addTrianglesInUncheckedPolygon (linestring, toggle)`
  *    * `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
  *    * `builder.addGraph(Graph, acceptFaceFunction)`
  *  *  Extract with `builder.claimPolyface(true)`
@@ -224,7 +223,7 @@ export class UVSurfaceOps {
  *  * Add GeometryQuery objects
  *    * `builder.findOrAddPoint(point)`
  *    * `builder.findOrAddPointInLineString (linestring, index)`
- *    * `builder.findorAddTransformedPointInLineString(linestring, index, transform)`
+ *    * `builder.findOrAddTransformedPointInLineString(linestring, index, transform)`
  *    * `builder.findOrAddPointXYZ(x,y,z)`
  *    * `builder.addTriangle (point0, point1, point2)`
  *    * `builder.addQuad (point0, point1, point2, point3)`
@@ -350,14 +349,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new point or (if known) return indxex of a prior point with the same coordinates.
+   * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
    */
   public findOrAddPoint(xyz: Point3d): number {
     return this._polyface.addPoint(xyz);
   }
 
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new param or (if known) return indxex of a prior param with the same coordinates.
+   * Announce point coordinates.  The implementation is free to either create a new param or (if known) return index of a prior param with the same coordinates.
    */
   public findOrAddParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
@@ -366,7 +365,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private static _workVectorFindOrAdd = Vector3d.create();
   private static _workUVFindOrAdd = Point2d.create();
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new point or (if knonw) return indxex of a prior point with the same coordinates.
+   * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
    * @returns Returns the point index in the Polyface.
    * @param index Index of the point in the linestring.
    */
@@ -381,7 +380,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new point or (if knonw) return indxex of a prior point with the same coordinates.
+   * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
    * @returns Returns the point index in the Polyface.
    * @param index Index of the point in the linestring.
    */
@@ -396,7 +395,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Announce param coordinates.  The implemetation is free to either create a new param or (if knonw) return indxex of a prior point with the same coordinates.
+   * Announce param coordinates.  The implementation is free to either create a new param or (if known) return index of a prior point with the same coordinates.
    * @returns Returns the point index in the Polyface.
    * @param index Index of the param in the linestring.
    */
@@ -410,7 +409,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Announce param coordinates, taking u from ls.fractions and v from parameter.  The implemetation is free to either create a new param or (if knonw) return indxex of a prior point with the same coordinates.
+   * Announce param coordinates, taking u from ls.fractions and v from parameter.  The implementation is free to either create a new param or (if known) return index of a prior point with the same coordinates.
    * @returns Returns the point index in the Polyface.
    * @param index Index of the point in the linestring.
    */
@@ -420,12 +419,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /**
-   * Announce normal coordinates found at index in the linestring's surfaceNormal array
+   * Announce normal coordinates found at index in the surfaceNormal array stored on the linestring
    * @returns Returns the point index in the Polyface.
    * @param index Index of the point in the linestring.
    * @param priorIndex possible prior normal index to reuse
    */
-  public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
+  public findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
     const linestringNormals = ls.packedSurfaceNormals;
     if (linestringNormals) {
       const q = linestringNormals.getVector3dAtCheckedVectorIndex(index, PolyfaceBuilder._workVectorFindOrAdd);
@@ -438,9 +437,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
 
   }
+  // cspell:word Normaln
+  /**
+   * @deprecated
+   * This is a misspelling of findOrAddNormalInLineString
+   */
+  public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
+    return this.findOrAddNormalInLineString(ls, index, transform, priorIndexA, priorIndexB);
+  }
 
   /**
-   * Announce point coordinates.  The implemetation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
+   * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
    */
   public findOrAddPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
@@ -556,7 +563,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
   /** Announce a single quad facet's point indexes.
    *
-   * * The actual quad may be reversed or trianglulated based on builder setup.
+   * * The actual quad may be reversed or triangulated based on builder setup.
    * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
    * *  indexB0 and indexB1 are in the forward order at the "B" end of the quad.
    */
@@ -667,7 +674,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
   /** Announce a single triangle facet's point indexes.
    *
-   * * The actual quad may be reversed or trianglulated based on builder setup.
+   * * The actual quad may be reversed or triangulated based on builder setup.
    * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
    * *  indexB0 and indexB1 are in the forward order at the "B" end of hte quad.
    */
@@ -732,7 +739,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
 
   }
-  /** Add facets betwee lineStrings with matched point counts.
+  /** Add facets between lineStrings with matched point counts.
    * * surface normals are computed from (a) curve tangents in the linestrings and (b)rule line between linestrings.
    * * Facets are announced to addIndexedQuad.
    * * addIndexedQuad is free to apply reversal or triangulation options.
@@ -779,10 +786,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addSectorQuadA01B01(sectorA0, sectorA00, sectorB0, sectorB00);
   }
 
-  /** Add facets betwee lineStrings with matched point counts.
-   * * point indices prestored
-   * * normal indices prestored
-   * * uv indices prestored
+  /** Add facets between lineStrings with matched point counts.
+   * * point indices pre-stored
+   * * normal indices pre-stored
+   * * uv indices pre-stored
    */
   public addBetweenLineStringsWithStoredIndices(lineStringA: LineString3d, lineStringB: LineString3d) {
     const pointA = lineStringA.pointIndices!;
@@ -813,7 +820,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
   }
 
-  /** Add facets betwee lineStrings with matched point counts.
+  /** Add facets between lineStrings with matched point counts.
    *
    * * Facets are announced to addIndexedQuad.
    * * addIndexedQuad is free to apply reversal or triangulation options.
@@ -839,7 +846,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         this.addIndexedQuadPointIndexes(indexA0, indexA00, indexB0, indexB00);
     } else {
       const children = curves.children;
-      // just send the children individually -- final compres will fix things??
+      // just send the children individually -- final s will fix things??
       if (children)
         for (const c of children) {
           this.addBetweenTransformedLineStrings(c as AnyCurve, transformA, transformB);
@@ -1076,18 +1083,18 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     }
     if (this._options.needNormals && ls.packedSurfaceNormals !== undefined) {
       const normalIndices = ls.ensureEmptyNormalIndices();
-      const normalIndex0 = this.findOrAddNormalnLineString(ls, 0, transform);
+      const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
       normalIndices.push(normalIndex0!);
       let normalIndexA = normalIndex0;
       let normalIndexB;
       if (n > 1) {
         for (let i = 1; i + 1 < n; i++) {
-          normalIndexB = this.findOrAddNormalnLineString(ls, i, transform, normalIndexA);
+          normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
           normalIndices.push(normalIndexB!);
           normalIndexA = normalIndexB;
         }
         // assume last point can only repeat back to zero ...
-        normalIndexB = this.findOrAddNormalnLineString(ls, n - 1, transform, normalIndex0, normalIndexA);
+        normalIndexB = this.findOrAddNormalInLineString(ls, n - 1, transform, normalIndex0, normalIndexA);
         normalIndices.push(normalIndexB!);
       }
     }
@@ -1343,7 +1350,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
   /** Double dispatch handler for RuledSweep */
   public handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
-  /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandleer(this)` */
+  /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandler(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
   /**
@@ -1384,7 +1391,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    *
-   * * For each ndoe in `faces`
+   * * For each node in `faces`
    *  * add all of its vertices to the polyface
    *  * add point indices to form a new facet.
    *    * (Note: no normal or param indices are added)

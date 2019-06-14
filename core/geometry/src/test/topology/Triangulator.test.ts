@@ -24,6 +24,8 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GraphChecker } from "./Graph.test";
 import { HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
@@ -146,7 +148,7 @@ describe("Triangulation", () => {
 
         ls1.tryTranslateInPlace(x0, y0);
         y0 += 3 + 4 * numPhase;
-        GeometryCoreTestIO.saveGeometry([ls1, ls, pfA, pfB], "Graph", name);
+        GeometryCoreTestIO.saveGeometry([ls1, ls, pfA, pfB], "Triangulation", name);
       }
       degreeCount++;
     }
@@ -339,7 +341,7 @@ describe("Triangulation", () => {
       baseVectorA.y = 0.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateFractals");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulateFractals");
   });
   /* These cases had problems -- but maybe only due to bad input?
     it.only("ProblemTriangulation", () => {
@@ -455,10 +457,11 @@ describe("Triangulation", () => {
       }
       x0 += 4.0;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulationWithColinearVertices");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationWithColinearVertices");
   });
   // public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false) {
   it("PieCuts", () => {
+    const ck = new Checker();
 
     const numThetaSkip = 3;
     const allGeometry = [];
@@ -472,20 +475,27 @@ describe("Triangulation", () => {
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 2, 8, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-10, 270), 2, 8, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-30, 200), 5, 12, false),
       Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
     ]) {
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
       const range = Range3d.createArray(points);
+      const expectedTriangleCount = points.length - 2;   // we know that the point array is unclosed !!!
       const dx = range.xLength();
       const dy = range.yLength();
       const ex = x0 - range.low.x;
+      const polygonArea = PolygonOps.areaXY (points);
       x0 += r;
       for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
         const pointsB = rotateArray(points, rotation);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
+        const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
+        ck.testExactNumber (1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
+        ck.testExactNumber (0, faceSummary.numZero, " no slivers");
+        ck.testExactNumber (expectedTriangleCount, faceSummary.numPositive, "triangle count");
+        ck.testCoordinate (polygonArea, faceSummary.positiveSum, "positive area sum");
         const ls = LineString3d.create(points);
         ls.tryTranslateInPlace(ex, 0);
         allGeometry.push(ls);
@@ -502,6 +512,7 @@ describe("Triangulation", () => {
       }
       x0 += 2.0 * dx;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "PieCuts");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PieCuts");
+    expect(ck.getNumErrors()).equals(0);
   });
 });
