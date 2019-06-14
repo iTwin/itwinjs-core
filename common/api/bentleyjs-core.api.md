@@ -7,6 +7,14 @@
 // @beta
 export function assert(condition: boolean, msg?: string): void;
 
+// @alpha
+export class AsyncMutex {
+    lock(): Promise<AsyncMutexUnlockFnType>;
+    }
+
+// @alpha
+export type AsyncMutexUnlockFnType = () => void;
+
 // @beta
 export enum AuthStatus {
     // (undocumented)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Introduced AsyncMutex - a utility to run async blocks of code in sequence. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

@@ -3143,12 +3143,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 }
 
 // @internal
-export class Mutex {
-    // (undocumented)
-    lock(): Promise<UnlockFnType>;
-    }
-
-// @internal
 export enum NativeLoggerCategory {
     // (undocumented)
     BeSQLite = "BeSQLite",
@@ -3892,9 +3886,6 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     // (undocumented)
     recipe?: RelatedElement;
 }
-
-// @internal
-export type UnlockFnType = () => void;
 
 // @public
 export class UrlLink extends LinkElement {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Introduced AsyncMutex - a utility to run async blocks of code in sequence. ",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Ramanujam.Raman@bentley.com"
+}

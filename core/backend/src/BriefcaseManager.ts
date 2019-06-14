@@ -11,7 +11,10 @@ import {
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankClient";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
-import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus } from "@bentley/bentleyjs-core";
+import {
+  ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex,
+} from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
@@ -223,42 +226,6 @@ export class BriefcaseEntry {
     this.isOpen = nativeDb.isOpen();
   }
 
-}
-
-/**
- * Type of method to unlock the held mutex
- * @see [[Mutex]]
- * @internal
- */
-export type UnlockFnType = () => void;
-
-/**
- * Utility to ensure a block of async code executes atomically.
- * Even if JavaScript precludes the possibility of race conditions between threads, there is potential for
- * race conditions with async code. This utility is needed in cases where a blocks of async code needs to run
- * to completion before another block is started.
- * This utility was based on this article: https://spin.atomicobject.com/2018/09/10/javascript-concurrency/
- * @internal
- */
-export class Mutex {
-  private _mutex = Promise.resolve();
-
-  public async lock(): Promise<UnlockFnType> {
-    /**
-     * Note: The promise returned by this method will resolve (with the unlock function, which is actually the
-     * mutex’s then’s resolve function) once any previous mutexes have finished and called their
-     * respective unlock function that was yielded over their promise.
-     */
-    let begin: (unlock: UnlockFnType) => void = (_unlock) => { };
-
-    this._mutex = this._mutex.then(async (): Promise<void> => {
-      return new Promise(begin);
-    });
-
-    return new Promise((res) => {
-      begin = res;
-    });
-  }
 }
 
 /** In-memory cache of briefcases
@@ -538,7 +505,7 @@ export class BriefcaseManager {
     return +changeSet.index!;
   }
 
-  private static _mutex = new Mutex();
+  private static _asyncMutex = new AsyncMutex();
 
   /** Open a briefcase */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
@@ -550,7 +517,7 @@ export class BriefcaseManager {
     if (openParams.openMode === OpenMode.Readonly)
       return this.openFixedVersion(requestContext, contextId, iModelId, changeSetId);
 
-    const unlock = await this._mutex.lock();
+    const unlock = await this._asyncMutex.lock();
     try {
       // Note: It's important that the code below is called only once at a time - see docs with the method for more info
       return await this.openPullAndPush(requestContext, contextId, iModelId, changeSetId);
