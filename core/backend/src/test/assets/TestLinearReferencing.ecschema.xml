@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestLinearReferencing" alias="testLR" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECSchemaReference name="LinearReferencing" version="02.00" alias="lr"/>
+
+    <ECEntityClass typeName="TestLinearElement" description="A test class that acts as the LinearElement in this test domain for Linear-Referencing purposes.">
+        <BaseClass>bis:SpatialLocationElement</BaseClass>
+        <BaseClass>lr:ILinearElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestLinearFeature" description="A test class that acts as a source of LinearElements in this test domain for Linear-Referencing purposes.">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <BaseClass>lr:ILinearElementSource</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestLinearlyLocatedAttribution" description="A test class that represents an attribution element carrying a value that only applies to a portion of a test linear feature.">
+        <BaseClass>lr:LinearlyLocatedAttribution</BaseClass>
+        <ECProperty propertyName="TestProperty" typeName="int"/>
+    </ECEntityClass>
+</ECSchema>

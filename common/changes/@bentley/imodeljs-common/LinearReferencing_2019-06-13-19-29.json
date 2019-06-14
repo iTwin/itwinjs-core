@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Initial implementation of the LinearReferencing typescript domain",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "diego.diaz@bentley.com"
+}

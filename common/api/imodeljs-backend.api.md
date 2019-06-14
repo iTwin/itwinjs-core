@@ -44,6 +44,7 @@ import { DefinitionElementProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
+import { DistanceExpressionProps } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -84,6 +85,12 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
+import { LinearLocationElementProps } from '@bentley/imodeljs-common';
+import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
+import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
+import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
+import { LinearlyReferencedFromToLocationAspectProps } from '@bentley/imodeljs-common';
+import { LinearlyReferencedFromToLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodeljs-clients';
@@ -109,6 +116,7 @@ import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
 import { Readable } from 'stream';
+import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
 import { RepositoryStatus } from '@bentley/bentleyjs-core';
@@ -295,6 +303,7 @@ export enum BackendLoggerCategory {
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     // @alpha
     IModelTransformer = "imodeljs-backend.IModelTransformer",
+    LinearReferencing = "imodeljs-backend.LinearReferencing",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
     Schemas = "imodeljs-backend.Schemas"
@@ -614,6 +623,14 @@ export class CodeSpecs {
 }
 
 // @beta
+export enum ComparisonOption {
+    // (undocumented)
+    Exclusive = 1,
+    // (undocumented)
+    Inclusive = 0
+}
+
+// @beta
 export class ConcurrencyControl {
     constructor(_iModel: IModelDb);
     abandonRequest(): void;
@@ -851,6 +868,23 @@ export interface DisplayStyleCreationOptions {
     scheduleScript?: object;
     // (undocumented)
     viewFlags?: ViewFlags;
+}
+
+// @beta
+export class DistanceExpression implements DistanceExpressionProps {
+    constructor(props: DistanceExpressionProps);
+    // (undocumented)
+    distanceAlongFromReferent?: number;
+    // (undocumented)
+    distanceAlongFromStart: number;
+    // (undocumented)
+    static fromJSON(json: DistanceExpressionProps): DistanceExpression;
+    // (undocumented)
+    lateralOffsetFromLinearElement?: number;
+    // (undocumented)
+    toJSON(): DistanceExpressionProps;
+    // (undocumented)
+    verticalOffsetFromLinearElement?: number;
 }
 
 // @public
@@ -2737,6 +2771,134 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
     enabled: boolean;
 }
 
+// @beta
+export class LinearElement {
+    static queryLinearLocations(iModel: IModelDb, linearElementId: Id64String, queryParams: QueryParams): LinearLocationReference[];
+}
+
+// @beta
+export class LinearLocation extends LinearLocationElement {
+    constructor(props: LinearLocationElement, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearLocationElementProps {
+    constructor(props: LinearLocationElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    linearElement: RelatedElement;
+    // (undocumented)
+    locatedElement?: RelatedElement;
+}
+
+// @beta (undocumented)
+export class LinearLocationReference {
+    constructor(startDistanceAlong: number, stopDistanceAlong: number, linearlyLocatedId: Id64String, linearlyLocatedClassFullName: string, locationAspectId: Id64String);
+    // (undocumented)
+    readonly linearlyLocatedClassFullName: string;
+    // (undocumented)
+    readonly linearlyLocatedId: Id64String;
+    // (undocumented)
+    readonly locationAspectId: Id64String;
+    // (undocumented)
+    readonly startDistanceAlong: number;
+    // (undocumented)
+    readonly stopDistanceAlong: number;
+}
+
+// @beta
+export class LinearlyLocated {
+    static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps | undefined;
+    static getAtLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocationProps[];
+    static getFromToLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps | undefined;
+    static getFromToLocations(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedFromToLocationProps[];
+    static insertAt(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
+    static insertFromTo(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps): Id64String;
+    static updateAtLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedAtLocationAspectProps): void;
+    static updateFromToLocation(iModel: IModelDb, linearLocationProps: LinearlyReferencedFromToLocationAspectProps): void;
+}
+
+// @beta
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
+    constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
+    // (undocumented)
+    attributedElement?: RelatedElement;
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    linearElement: RelatedElement;
+}
+
+// @beta
+export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation implements LinearlyReferencedAtLocationAspectProps {
+    constructor(props: LinearlyReferencedAtLocationAspectProps, iModel: IModelDb);
+    // (undocumented)
+    atPosition: DistanceExpression;
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    element: RelatedElement;
+    // (undocumented)
+    fromReferent?: Id64String;
+}
+
+// @beta
+export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
+    constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    element: RelatedElement;
+    // (undocumented)
+    fromPosition: DistanceExpression;
+    // (undocumented)
+    fromPositionFromReferent?: Id64String;
+    // (undocumented)
+    toPosition: DistanceExpression;
+    // (undocumented)
+    toPositionFromReferent?: Id64String;
+}
+
+// @beta
+export class LinearlyReferencedLocation extends ElementMultiAspect {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export enum LinearlyReferencedLocationType {
+    // (undocumented)
+    Any = 2,
+    // (undocumented)
+    At = 0,
+    // (undocumented)
+    FromTo = 1
+}
+
+// @beta
+export abstract class LinearPhysicalElement extends PhysicalElement implements LinearLocationElementProps {
+    constructor(props: LinearLocationElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    linearElement: RelatedElement;
+    // (undocumented)
+    locatedElement?: RelatedElement;
+}
+
+// @beta
+export class LinearReferencingSchema extends Schema {
+    // (undocumented)
+    static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
+    // (undocumented)
+    static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaName: string;
+}
+
 // @public
 export class LineStyle extends DefinitionElement implements LineStyleProps {
     // @internal
@@ -3111,11 +3273,46 @@ export class Platform {
     static readonly platformName: string;
 }
 
+// @beta (undocumented)
+export class QueryParams {
+    constructor(fromDistanceAlong?: number | undefined, fromComparisonOption?: ComparisonOption | undefined, toDistanceAlong?: number | undefined, toComparisonOption?: ComparisonOption | undefined, linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined, linearlyLocatedClassFullNames?: string[] | undefined);
+    // (undocumented)
+    fromComparisonOption?: ComparisonOption | undefined;
+    // (undocumented)
+    fromDistanceAlong?: number | undefined;
+    // (undocumented)
+    linearlyLocatedClassFullNames?: string[] | undefined;
+    // (undocumented)
+    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined;
+    // (undocumented)
+    toComparisonOption?: ComparisonOption | undefined;
+    // (undocumented)
+    toDistanceAlong?: number | undefined;
+}
+
 // @internal
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
     static readonly className: string;
+}
+
+// @beta
+export class Referent extends ReferentElement {
+    constructor(props: ReferentElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
+    constructor(props: ReferentElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+    // (undocumented)
+    linearElement: RelatedElement;
+    // (undocumented)
+    referencedElement?: RelatedElement;
 }
 
 // @public

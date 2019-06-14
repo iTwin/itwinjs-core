@@ -38,6 +38,7 @@ beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
 beta;CloudStorageUploadOptions
 public;CodeSpecs
+beta;ComparisonOption
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;CrashReportingConfig
@@ -57,6 +58,7 @@ public;class DisplayStyle
 public;DisplayStyle2d 
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions
+beta;DistanceExpression 
 public;class Document 
 internal;class DocumentCarrier 
 public;DocumentListModel 
@@ -150,6 +152,18 @@ beta;InstanceChange
 public;KeepBriefcase
 public;KnownLocations
 internal;LightLocation 
+beta;LinearElement
+beta;LinearLocation 
+beta;class LinearLocationElement 
+beta;LinearLocationReference
+beta;LinearlyLocated
+beta;class LinearlyLocatedAttribution 
+beta;LinearlyReferencedAtLocation 
+beta;LinearlyReferencedFromToLocation 
+beta;LinearlyReferencedLocation 
+beta;LinearlyReferencedLocationType
+beta;class LinearPhysicalElement 
+beta;LinearReferencingSchema 
 public;LineStyle 
 public;LineStyleDefinition
 public;class LinkElement 
@@ -172,7 +186,10 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
+beta;QueryParams
 internal;class RecipeDefinitionElement 
+beta;Referent 
+beta;class ReferentElement 
 public;Relationship 
 public;RelationshipProps 
 public;Relationships

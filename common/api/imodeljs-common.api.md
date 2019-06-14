@@ -1268,6 +1268,18 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
 }
 
 // @beta
+export interface DistanceExpressionProps {
+    // (undocumented)
+    distanceAlongFromReferent?: number;
+    // (undocumented)
+    distanceAlongFromStart: number;
+    // (undocumented)
+    lateralOffsetFromLinearElement?: number;
+    // (undocumented)
+    verticalOffsetFromLinearElement?: number;
+}
+
+// @beta
 export type DPoint2dProps = number[];
 
 // @public
@@ -2287,6 +2299,28 @@ export interface HttpServerResponse extends Writable {
     status(code: number): HttpServerResponse;
 }
 
+// @beta
+export interface ILinearElementProps extends GeometricElement3dProps {
+    // (undocumented)
+    lengthValue: number;
+    // (undocumented)
+    source: RelatedElementProps;
+    // (undocumented)
+    startValue: number;
+}
+
+// @beta
+export interface ILinearLocationElementProps {
+    // (undocumented)
+    locatedElement?: RelatedElementProps;
+}
+
+// @beta
+export interface ILinearlyLocatedAttributionProps {
+    // (undocumented)
+    attributedElement?: RelatedElementProps;
+}
+
 // @public
 export class ImageBuffer {
     // @internal
@@ -2531,6 +2565,12 @@ export const INSTANCE: unique symbol;
 // @internal (undocumented)
 export const interop: any;
 
+// @beta
+export interface IReferentProps {
+    // (undocumented)
+    referencedElement?: RelatedElementProps;
+}
+
 // @public
 export function isPowerOfTwo(num: number): boolean;
 
@@ -2628,6 +2668,42 @@ export enum LightType {
     Solar = 1,
     // (undocumented)
     Spot = 6
+}
+
+// @beta
+export interface LinearLocationElementProps extends GeometricElement3dProps, ILinearLocationElementProps {
+}
+
+// @beta
+export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
+}
+
+// @beta
+export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
+}
+
+// @beta
+export interface LinearlyReferencedAtLocationProps {
+    // (undocumented)
+    atPosition: DistanceExpressionProps;
+    // (undocumented)
+    fromReferent?: Id64String;
+}
+
+// @beta
+export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {
+}
+
+// @beta
+export interface LinearlyReferencedFromToLocationProps {
+    // (undocumented)
+    fromPosition: DistanceExpressionProps;
+    // (undocumented)
+    fromPositionFromReferent?: Id64String;
+    // (undocumented)
+    toPosition: DistanceExpressionProps;
+    // (undocumented)
+    toPositionFromReferent?: Id64String;
 }
 
 // @public
@@ -3539,6 +3615,10 @@ export interface ReadableFormData extends Readable {
     getHeaders(): {
         [key: string]: any;
     };
+}
+
+// @beta
+export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
 }
 
 // @internal (undocumented)

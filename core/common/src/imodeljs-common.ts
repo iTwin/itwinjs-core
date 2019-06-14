@@ -37,6 +37,7 @@ export * from "./RenderSchedule";
 export * from "./ChangedElements";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
+export * from "./domains/LinearReferencingElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";
