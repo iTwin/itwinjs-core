@@ -1331,7 +1331,9 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 export interface ExportGraphicsInfo {
     color: number;
     elementId: Id64String;
+    materialId?: Id64String;
     mesh: ExportGraphicsMesh;
+    subCategory: Id64String;
     textureId?: Id64String;
 }
 
