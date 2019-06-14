@@ -92,6 +92,18 @@ export interface WebGLRenderCompatibilityInfo {
    */
   missingOptionalFeatures: WebGLFeature[];
   /**
+   * An string containing the user agent of the browser that is being used.
+   */
+  userAgent: string;
+  /**
+   * An string containing the renderer that is being used in the underlying graphics driver.
+   */
+  unmaskedRenderer?: string;
+  /**
+   * An string containing the vendor that is being used in the underlying graphics driver.
+   */
+  unmaskedVendor?: string;
+  /**
    * Possible supplemental details describing why a context could not be created (due to performance caveat or other reason).
    */
   contextErrorMessage?: string;

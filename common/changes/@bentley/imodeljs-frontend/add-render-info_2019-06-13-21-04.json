@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added userAgent, renderer, and vendor to WebGLRenderCompatibilityInfo",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Heather.Neely@bentley.com"
+}

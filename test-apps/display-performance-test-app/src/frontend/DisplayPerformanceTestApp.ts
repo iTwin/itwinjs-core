@@ -80,6 +80,21 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
   return combined;
 }
 
+function getBrowserName(userAgent: string) {
+  const lowUserAgent = userAgent.toLowerCase();
+  if (lowUserAgent.includes("electron"))
+    return "Electron";
+  if (lowUserAgent.includes("firefox"))
+    return "FireFox";
+  if (lowUserAgent.includes("edge"))
+    return "Edge";
+  if (lowUserAgent.includes("chrome") && !userAgent.includes("chromium"))
+    return "Chrome";
+  if (lowUserAgent.includes("safari") && !userAgent.includes("chrome") && !userAgent.includes("chromium"))
+    return "Safari";
+  return "Unknown";
+}
+
 class DisplayPerfTestApp {
   public static startup(opts?: IModelAppOptions) {
     opts = opts ? opts : {};
@@ -983,10 +998,21 @@ async function main() {
   const topdiv = document.getElementById("topdiv")!;
   topdiv.style.display = "block";
   topdiv.innerText = "Tests Completed.";
-
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
-  await DisplayPerfRpcInterface.getClient().finishCsv(jsonData.outputPath, jsonData.outputName);
+  // Add render settings to the csv file
+  let renderData = "\"End of Tests-----------\r\n";
+  const renderComp = IModelApp.queryRenderCompatibility();
+  if (renderComp.userAgent) {
+    renderData += "Browser: " + getBrowserName(renderComp.userAgent) + "\r\n";
+    renderData += "User Agent: " + renderComp.userAgent + "\r\n";
+  }
+  if (renderComp.unmaskedRenderer) renderData += "Unmasked Renderer: " + renderComp.unmaskedRenderer + "\r\n";
+  if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
+  if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
+  if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
+  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName);
+
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
   IModelApp.shutdown();
 }

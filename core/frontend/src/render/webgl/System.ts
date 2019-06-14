@@ -254,12 +254,19 @@ export class Capabilities {
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
 
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
+    const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
+
     this.debugPrint(gl, missingRequiredFeatures, missingOptionalFeatures);
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),
       missingRequiredFeatures,
       missingOptionalFeatures,
+      unmaskedRenderer,
+      unmaskedVendor,
+      userAgent: navigator.userAgent,
     };
   }
 
@@ -564,7 +571,7 @@ export class System extends RenderSystem {
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
     const canvas = document.createElement("canvas") as HTMLCanvasElement;
     if (null === canvas)
-      return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [] };
+      return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
 
     let errorMessage: string | undefined;
     canvas.addEventListener("webglcontextcreationerror", (event) => {
@@ -577,7 +584,7 @@ export class System extends RenderSystem {
       hasMajorPerformanceCaveat = true;
       context = System.createContext(canvas); // try to create context without black-listed GPU
       if (undefined === context)
-        return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [] };
+        return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
     }
 
     const capabilities = new Capabilities();

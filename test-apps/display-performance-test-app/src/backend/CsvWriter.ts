@@ -136,11 +136,11 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
   }
 }
 
-export function addEndOfTestToCsvFile(file: string) {
+export function addEndOfTestToCsvFile(data: string, file: string) {
   let fd;
   try {
     fd = fs.openSync(file, "a");
-    fs.appendFileSync(fd, "End of Tests-----------\r\n", "utf8");
+    fs.appendFileSync(fd, data, "utf8");
   } catch (err) {
     /* Handle the error */
   } finally {

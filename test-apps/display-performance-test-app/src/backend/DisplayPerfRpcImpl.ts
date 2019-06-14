@@ -67,11 +67,11 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     fs.writeFileSync(fileName, buf);
   }
 
-  public async finishCsv(outputPath?: string, outputName?: string) {
+  public async finishCsv(output: string, outputPath?: string, outputName?: string) {
     if (outputPath !== undefined && outputName !== undefined) {
       let outputFile = this.createFullFilePath(outputPath, outputName);
       outputFile = outputFile ? outputFile : "";
-      addEndOfTestToCsvFile(outputFile);
+      addEndOfTestToCsvFile(output, outputFile);
     }
   }
 
