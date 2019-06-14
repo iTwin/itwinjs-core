@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "insertElement will never return Id64.invalid, throws error instead",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "keith.bentley@bentley.com"
+}

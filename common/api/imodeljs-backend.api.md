@@ -1208,22 +1208,22 @@ export class Element extends Entity implements ElementProps {
         [key: string]: any;
     };
     readonly model: Id64String;
-    // (undocumented)
-    static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
-    // (undocumented)
-    static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
-    // (undocumented)
-    static onDelete(_props: ElementProps, _iModel: IModelDb): IModelStatus;
-    // (undocumented)
-    static onDeleted(_props: ElementProps, _iModel: IModelDb): void;
-    // (undocumented)
-    static onInsert(_props: ElementProps, _iModel: IModelDb): IModelStatus;
-    // (undocumented)
-    static onInserted(_props: ElementProps, _iModel: IModelDb): void;
-    // (undocumented)
-    static onUpdate(_props: ElementProps, _iModel: IModelDb): IModelStatus;
-    // (undocumented)
-    static onUpdated(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta (undocumented)
+    protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @beta (undocumented)
+    protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void;
+    // @beta
+    protected static onDelete(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInsert(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInserted(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void;
     parent?: RelatedElement;
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
@@ -1722,8 +1722,6 @@ export class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal
     readonly nativeDb: IModelJsNative.DgnDb;
-    // @internal
-    newNotOpenError(): IModelError;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -3108,18 +3106,18 @@ export class Model extends Entity implements ModelProps {
     readonly modeledElement: RelatedElement;
     // (undocumented)
     readonly name: string;
-    // (undocumented)
-    static onDelete(_props: ModelProps): IModelStatus;
-    // (undocumented)
-    static onDeleted(_props: ModelProps): void;
-    // (undocumented)
-    static onInsert(_props: ModelProps): IModelStatus;
-    // (undocumented)
-    static onInserted(_id: string): void;
-    // (undocumented)
-    static onUpdate(_props: ModelProps): IModelStatus;
-    // (undocumented)
-    static onUpdated(_props: ModelProps): void;
+    // @beta
+    protected static onDelete(_props: ModelProps): void;
+    // @beta
+    protected static onDeleted(_props: ModelProps): void;
+    // @beta
+    protected static onInsert(_props: ModelProps): void;
+    // @beta
+    protected static onInserted(_id: string): void;
+    // @beta
+    protected static onUpdate(_props: ModelProps): void;
+    // @beta
+    protected static onUpdated(_props: ModelProps): void;
     // (undocumented)
     readonly parentModel: Id64String;
     removeUserProperties(nameSpace: string): void;
