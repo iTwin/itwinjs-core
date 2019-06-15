@@ -708,7 +708,7 @@ export class BriefcaseManager {
     try {
       // Download checkpoint
       let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-      checkpointQuery = (briefcase.openParams.syncMode === SyncMode.FixedVersion) ? checkpointQuery.nearestCheckpoint(briefcase.targetChangeSetId) : checkpointQuery.precedingCheckpoint(briefcase.targetChangeSetId);
+      checkpointQuery = checkpointQuery.precedingCheckpoint(briefcase.targetChangeSetId);
       const checkpoints: Checkpoint[] = await BriefcaseManager.imodelClient.checkpoints.get(requestContext, briefcase.iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length === 0)

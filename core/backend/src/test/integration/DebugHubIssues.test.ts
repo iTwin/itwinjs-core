@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
+import { OpenMode, GuidString, PerfLogger, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
@@ -23,6 +23,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   before(async () => {
     IModelTestUtils.setupLogging();
+    Logger.setLevel("HubUtility", LogLevel.Info);
+    Logger.setLevel("DgnCore", LogLevel.Info);
+    Logger.setLevel("Changeset", LogLevel.Info);
     await RequestHost.initialize();
     RequestGlobalOptions.timeout = {
       response: 10000000,
@@ -367,14 +370,14 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
 
-  it.skip("should be able to open ReadOnlyTest model", async () => {
-    const projectName = "iModelJsIntegrationTest";
-    const iModelName = "ReadOnlyTest";
+  it.skip("should be able to open HS2-SL-08 model", async () => {
+    const projectName = "DesignReviewTestDatasets";
+    const iModelName = "HS2-SL-08";
 
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.asOfChangeSet("b5c7e45a6c6266e46fbbb9f4f17286373d95d4e5"));
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -382,21 +385,24 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to validate change set operations", async () => {
-    const projectName = "iModelJsIntegrationTest";
-    const iModelName = "ReadOnlyTest";
+    const projectName = "DesignReviewTestDatasets";
+    const iModelName = "HS2-SL-08";
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
-
-    const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
-    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.validateAllChangeSetOperations(requestContext, myProjectId, myIModelId, iModelDir);
   });
 
+  it.skip("should be able to validate change set operations on a previously downloaded iModel", async () => {
+    const iModelName = "HS2-SL-08";
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    HubUtility.validateAllChangeSetOperationsOnDisk(iModelDir);
+  });
+
   it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
-    const projectName = "UKRail_EWR2";
-    const iModelName = "EWR_2E";
+    const projectName = "DesignReviewTestDatasets";
+    const iModelName = "HS2-SL-08";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
