@@ -111,7 +111,6 @@ describe("BriefcaseManager (#integration)", () => {
       const pathname = iModel.briefcase.pathname;
       assert.isTrue(IModelJsFs.existsSync(pathname));
       await iModel.close(requestContext, KeepBriefcase.No);
-      assert.equal(iModel.briefcase, undefined);
       assert.isFalse(IModelJsFs.existsSync(pathname));
       assert.isTrue(onBeforeCloseCalled);
     } finally {
@@ -137,13 +136,11 @@ describe("BriefcaseManager (#integration)", () => {
     const briefcase2 = iModel2.briefcase;
     const pathname2 = briefcase2.pathname;
     await iModel2.close(requestContext);
-    assert.equal(iModel2.briefcase, undefined);
     assert.isTrue(IModelJsFs.existsSync(pathname2));
 
     const briefcase3 = iModel3.briefcase;
     const pathname3 = briefcase3.pathname;
     await iModel3.close(requestContext);
-    assert.equal(iModel3.briefcase, undefined);
     assert.isTrue(IModelJsFs.existsSync(pathname3));
 
     const iModel4: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
