@@ -142,7 +142,7 @@
     "classnames": "^2.2.5",
     "immutable": "^3.8.2",
     "lodash": "^4.17.10",
-    "oidc-client": "^1.5.2",
+    "oidc-client": "1.7.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-dnd": "^5.0.0",

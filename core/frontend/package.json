@@ -99,7 +99,7 @@
   "dependencies": {
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
-    "oidc-client": "^1.5.2",
+    "oidc-client": "1.7.1",
     "semver": "^5.5.0"
   },
   "nyc": {
