@@ -101,6 +101,24 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
   }
 
+  private createEsvFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 !== dotIndex)
+      return fileName.substring(0, dotIndex) + "_ESV.json";
+    return fileName + ".sv";
+  }
+
+  public async readExternalSavedViews(bimfileName: string): Promise<string> {
+    const esvFileName = this.createEsvFilename(bimfileName);
+    if (!fs.existsSync(esvFileName)) {
+      return "";
+    }
+    const jsonStr = fs.readFileSync(esvFileName).toString();
+    if (undefined === jsonStr)
+      return "";
+    return jsonStr;
+  }
+
 }
 
 /** Auto-register the impl when this file is included. */

@@ -3,7 +3,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -11,7 +11,7 @@ import {
   SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
+  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -275,6 +275,8 @@ function getViewFlagsString(): string {
         if (value) vfString += "+" + key;
     }
   }
+  if (undefined !== activeViewState.selectedElements)
+    vfString += "+selEl";
   return vfString;
 }
 
@@ -443,12 +445,14 @@ class DefaultConfigs {
   public iModelHubProject?: string;
   public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
+  public extViewName?: string;
+  public viewStatePropsString?: string;
+  public selectedElements?: Id64Arg;
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public renderOptions?: RenderSystem.Options;
   public tileProps?: TileAdmin.Props;
-  public aoEnabled = false;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
@@ -473,6 +477,7 @@ class DefaultConfigs {
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
       if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
+      if (prevConfigs.viewStatePropsString) this.viewStatePropsString = prevConfigs.viewStatePropsString;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
@@ -489,13 +494,22 @@ class DefaultConfigs {
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
     if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
-    if (jsonData.viewName) this.viewName = jsonData.viewName;
+    if (jsonData.viewName) {
+      this.viewName = jsonData.viewName;
+      this.viewStatePropsString = undefined;
+    }
+    if (jsonData.viewString) {
+      // If there is a viewString, put its name in the viewName property so that it gets used in the filename, etc.
+      this.viewName = jsonData.viewString._name;
+      this.viewStatePropsString = jsonData.viewString._viewStatePropsString;
+      if (undefined !== jsonData.viewString._selectedElements)
+        this.selectedElements = JSON.parse(jsonData.viewString._selectedElements) as Id64Arg;
+    }
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
     this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
-    this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
     debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
     debugPrint("numRendersToTime: " + this.numRendersToTime);
@@ -583,6 +597,8 @@ class SimpleViewState {
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
   public oidcClient?: OidcBrowserClient;
+  public externalSavedViews?: any[];
+  public selectedElements?: Id64Arg;
   constructor() { }
 }
 
@@ -666,6 +682,10 @@ async function loadIModel(testConfig: DefaultConfigs) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
     }
+    const esvString = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(testConfig.iModelFile!);
+    if (undefined !== esvString && "" !== esvString) {
+      activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+    }
   }
 
   // Open an iModel from the iModelHub
@@ -687,7 +707,13 @@ async function loadIModel(testConfig: DefaultConfigs) {
   }
 
   // open the specified view
-  await loadView(activeViewState, testConfig.viewName!);
+  if (undefined === testConfig.viewStatePropsString) {
+    await loadView(activeViewState, testConfig.viewName!);
+  } else if (undefined !== testConfig.extViewName) {
+    await loadExternalView(activeViewState, testConfig.extViewName);
+  } else {
+    await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements);
+  }
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -703,7 +729,6 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Set the viewFlags (including the render mode)
   if (undefined !== activeViewState.viewState) {
-    activeViewState.viewState.displayStyle.viewFlags.ambientOcclusion = testConfig.aoEnabled;
     if (testConfig.viewFlags) {
       // Use the testConfig.viewFlags data for each property in ViewFlags if it exists; otherwise, keep using the viewState's ViewFlags info
       for (const [key] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
@@ -717,6 +742,13 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Load all tiles
   await waitForTilesToLoad(testConfig.iModelLocation);
+
+  // Set the selected Elements (if there are any)
+  if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
+    iModCon!.selectionSet.add(activeViewState.selectedElements);
+    theViewport!.markSelectionSetDirty();
+    theViewport!.renderFrame();
+  }
 }
 
 async function closeIModel(isSnapshot: boolean) {
@@ -958,8 +990,51 @@ async function loadView(state: SimpleViewState, viewName: string) {
   if (1 === viewIds.size)
     state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
 
+  if (undefined === state.viewState) {
+    // Could not find it in the file, so look through the external saved views for this file.
+    // This will allow us to use the 'viewName' property in the config file for either type of saved view
+    // unless there is one named the same in both lists (which is not being prevented anymore when creating them).
+    await loadExternalView(state, viewName);
+    return;
+  }
+
   if (undefined === state.viewState)
     debugPrint("Error: failed to load view by name");
+}
+
+// selects the configured view from the external saved views list.
+async function loadExternalView(state: SimpleViewState, extViewName: string) {
+  if (undefined !== state.externalSavedViews) {
+    for (const namedExternalSavedView of state.externalSavedViews) {
+      if (extViewName === namedExternalSavedView._name) {
+        let se;
+        if (undefined !== namedExternalSavedView._selectedElements)
+          se = JSON.parse(namedExternalSavedView._selectedElements) as Id64Arg;
+        await loadViewString(state, namedExternalSavedView._viewStatePropsString, se);
+        return;
+      }
+    }
+  }
+
+  if (undefined === state.viewState)
+    debugPrint("Error: failed to load view by name");
+}
+
+// selects the configured view from a viewStateProperties string.
+async function loadViewString(state: SimpleViewState, viewStatePropsString: string, selectedElements: Id64Arg | undefined) {
+  const vsp = JSON.parse(viewStatePropsString);
+  const className = vsp.viewDefinitionProps.classFullName;
+  const ctor = await state.iModelConnection!.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
+  if (undefined === ctor) {
+    debugPrint("Could not create ViewState from viewString");
+    state.viewState = undefined;
+  } else {
+    state.viewState = ctor.createFromProps(vsp, state.iModelConnection!);
+    if (undefined !== state.viewState) {
+      await state.viewState.load(); // make sure any attachments are loaded
+      state.selectedElements = selectedElements;
+    }
+  }
 }
 
 async function testModel(configs: DefaultConfigs, modelData: any) {

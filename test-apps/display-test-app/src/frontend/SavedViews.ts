@@ -22,6 +22,7 @@ import {
   createRadioBox,
   RadioBoxEntry,
 } from "@bentley/frontend-devtools";
+import { Id64Arg } from "@bentley/bentleyjs-core";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
 import { ToolBarDropDown } from "./ToolBar";
@@ -172,6 +173,13 @@ export class SavedViewPicker extends ToolBarDropDown {
     const viewState = ctor.createFromProps(vsp, this._vp.view.iModel)!;
     await viewState.load(); // make sure any attachments are loaded
     await this._viewer.setView(viewState);
+    const selectedElementsString = this._selectedView.selectedElements;
+    if (undefined !== selectedElementsString) {
+      const selectedElements = JSON.parse(selectedElementsString) as Id64Arg;
+      this._imodel.selectionSet.emptyAll();
+      this._imodel.selectionSet.add(selectedElements);
+      this._vp.renderFrame();
+    }
   }
 
   private async deleteView(): Promise<void> {
@@ -218,13 +226,19 @@ export class SavedViewPicker extends ToolBarDropDown {
         scale: 1,
       };
       props.sheetProps = sp;
-      // Copy the sheet attachment ids
+      // Copy the sheet attachment ids.
       props.sheetAttachments = [];
       sheetViewState.attachmentIds.forEach((idProp) => props.sheetAttachments!.push(idProp));
     }
 
     const json = JSON.stringify(props);
-    const nvsp = new NamedViewStatePropsString(newName, json);
+    let selectedElementsString;
+    if (this._imodel.selectionSet.size > 0) {
+      const seList: string[] = [];
+      this._imodel.selectionSet.elements.forEach((id) => { seList.push(id); });
+      selectedElementsString = JSON.stringify(seList);
+    }
+    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString);
     this._views.insert(nvsp);
     this.populateFromViewList();
 
