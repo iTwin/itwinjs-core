@@ -28,6 +28,7 @@ import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
 import { ModelSelectorState } from "../ModelSelectorState";
 import { CategorySelectorState } from "../CategorySelectorState";
+import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
 
 // tslint:disable:no-const-enum
 
@@ -301,6 +302,19 @@ export abstract class RenderSolarShadowMap implements IDisposable {
   /** @internal */
   public abstract collectGraphics(sceneContext: SceneContext): void;
 }
+
+/** An opaque representation of a texture draped on geometry within a [[Viewport]].
+ * @internal
+ */
+export abstract class RenderTextureDrape implements IDisposable {
+  public abstract dispose(): void;
+
+  /** @internal */
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+  public abstract collectGraphics(context: SceneContext): void;
+}
+/** @internal */
+export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
  * @beta
@@ -774,13 +788,13 @@ export abstract class RenderTarget implements IDisposable {
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
   public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
-
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public dispose(): void { }
   public reset(): void { }
   public abstract changeScene(scene: GraphicList): void;
-  public abstract changeBackgroundMap(_scene: GraphicList): void;
+  public changeBackgroundMap(_scene: GraphicList): void { }
+  public changeTextureDrapes(_drapes: TextureDrapeMap): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
   public abstract changeDynamics(dynamics?: GraphicList): void;
@@ -960,6 +974,8 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
   /** @internal */
+  public createBackgroundMapDrape(_drapedModel: TileTreeModelState, _provider: TiledGraphicsProvider.Provider): RenderTextureDrape | undefined { return undefined; }
+  /** @internal */
   public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
@@ -1012,7 +1028,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier, drape?: RenderTextureDrape): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal

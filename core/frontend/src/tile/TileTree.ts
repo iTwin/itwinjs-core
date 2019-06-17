@@ -41,7 +41,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch, RenderClipVolume, RenderGraphic, RenderMemory, RenderPlanarClassifier } from "../render/System";
+import { GraphicBranch, RenderClipVolume, RenderGraphic, RenderMemory, RenderPlanarClassifier, RenderTextureDrape } from "../render/System";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { ViewFrustum } from "../Viewport";
@@ -677,6 +677,7 @@ export namespace Tile {
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
     public planarClassifier?: RenderPlanarClassifier;
+    public drape?: RenderTextureDrape;
     public readonly viewClip?: ClipVector;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
@@ -700,6 +701,7 @@ export namespace Tile {
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 
       this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
+      this.drape = context.getTextureDrape(root.modelId);
 
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
       if (IModelApp.renderSystem.options.cullAgainstActiveVolume && context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
@@ -722,7 +724,7 @@ export namespace Tile {
       if (this.graphics.isEmpty)
         return;
 
-      const branch = this.context.createGraphicBranch(this.graphics, this.location, this.clipVolume, this.planarClassifier);
+      const branch = this.context.createGraphicBranch(this.graphics, this.location, this.clipVolume, this.planarClassifier, this.drape);
 
       this.context.outputGraphic(branch);
     }
@@ -900,12 +902,14 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
   private static _scratchFrustum = new Frustum();
   private static _scratchPoint4d = Point4d.createZero();
-  private extendRangeForTile(range: Range3d, tile: Tile, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes) {
-    const box = Frustum.fromRange(tile.range, TileTree._scratchFrustum);
+  private extendRangeForTileContent(range: Range3d, tile: Tile, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes) {
+    if (tile.isEmpty || tile.contentRange.isNull)
+      return;
+    const box = Frustum.fromRange(tile.contentRange, TileTree._scratchFrustum);
     box.transformBy(treeTransform, box);
     if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
       return;
-    if (tile.children === undefined) {
+    if (tile.children === undefined) { //  || !tile.childrenAreLoaded) {
       for (const boxPoint of box.points) {
         matrix.multiplyPoint3d(boxPoint, 1, TileTree._scratchPoint4d);
         if (TileTree._scratchPoint4d.w > .0001)
@@ -913,13 +917,13 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
       }
     } else {
       for (const child of tile.children)
-        this.extendRangeForTile(range, child, matrix, treeTransform, frustumPlanes);
+        this.extendRangeForTileContent(range, child, matrix, treeTransform, frustumPlanes);
     }
   }
 
   /* extend range to include transformed range of this tile tree */
   public accumlateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
-    this.extendRangeForTile(range, this.rootTile, matrix, this.location, frustumPlanes);
+    this.extendRangeForTileContent(range, this.rootTile, matrix, this.location, frustumPlanes);
   }
 }
 
@@ -969,16 +973,16 @@ export abstract class TileLoader {
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:
-        return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
+        return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled, this.getBatchIdMap());
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled, this.getBatchIdMap());
         break;
       case TileIO.Format.IModel:
         reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
       case TileIO.Format.I3dm:
-        reader = I3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        reader = I3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
         break;
       case TileIO.Format.Cmpt:
         const header = new CompositeTileIO.Header(streamBuffer);
@@ -1075,6 +1079,7 @@ export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   public edgesOmitted: boolean = false;
+  public doDrapeBackgroundMap: boolean = false;
   public classifierExpansion: number = 0;
   public animationId?: Id64String;
   public get iModel() { return this._iModel; }

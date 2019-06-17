@@ -1124,7 +1124,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
     // (undocumented)
-    getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
+    getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
     // (undocumented)
     readonly groundBias: number;
     // (undocumented)
@@ -1583,6 +1583,8 @@ export class ContextRealityModelState implements TileTreeModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
     // (undocumented)
     protected _batchedIdMap: BatchedTileIdMap;
+    // (undocumented)
+    readonly doDrapeBackgroundMap: boolean;
     static findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     static findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
     // (undocumented)
@@ -2627,6 +2629,8 @@ export abstract class GeometricModelState extends ModelState {
     protected _classifierTileTreeState: TileTreeState;
     // @internal (undocumented)
     static readonly className: string;
+    // @internal (undocumented)
+    readonly doDrapeBackgroundMap: boolean;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
@@ -3826,8 +3830,6 @@ export namespace MockRender {
         // (undocumented)
         readonly cameraFrustumNearScaleLimit: number;
         // (undocumented)
-        changeBackgroundMap(_backgroundMap: GraphicList): void;
-        // (undocumented)
         changeDecorations(_decs: Decorations): void;
         // (undocumented)
         changeDynamics(_dynamics?: GraphicList): void;
@@ -3991,8 +3993,6 @@ export class NullTarget extends RenderTarget {
     animationFraction: number;
     // (undocumented)
     readonly cameraFrustumNearScaleLimit: number;
-    // (undocumented)
-    changeBackgroundMap(): void;
     // (undocumented)
     changeDecorations(): void;
     // (undocumented)
@@ -4661,7 +4661,7 @@ export class RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     createBranch(branch: GraphicBranch, location: Transform): RenderGraphic;
     // @internal (undocumented)
-    createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier, drape?: RenderTextureDrape): RenderGraphic;
     // @internal (undocumented)
     protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
@@ -4906,13 +4906,15 @@ export abstract class RenderSystem implements IDisposable {
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
     addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection): void;
+    // @internal (undocumented)
+    createBackgroundMapDrape(_drapedModel: TileTreeModelState, _provider: TiledGraphicsProvider.Provider): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     // @internal (undocumented)
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
-    abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier): RenderGraphic;
+    abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier, drape?: RenderTextureDrape): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     // @internal (undocumented)
@@ -5000,7 +5002,7 @@ export abstract class RenderTarget implements IDisposable {
     // (undocumented)
     abstract readonly cameraFrustumNearScaleLimit: number;
     // (undocumented)
-    abstract changeBackgroundMap(_scene: GraphicList): void;
+    changeBackgroundMap(_scene: GraphicList): void;
     // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
@@ -5013,6 +5015,8 @@ export abstract class RenderTarget implements IDisposable {
     abstract changeScene(scene: GraphicList): void;
     // (undocumented)
     changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void;
+    // (undocumented)
+    changeTextureDrapes(_drapes: TextureDrapeMap): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
     static depthFromDisplayPriority(priority: number): number;
@@ -5054,6 +5058,16 @@ export abstract class RenderTarget implements IDisposable {
     abstract readonly viewRect: ViewRect;
     // (undocumented)
     abstract readonly wantInvertBlackBackground: boolean;
+}
+
+// @internal
+export abstract class RenderTextureDrape implements IDisposable {
+    // (undocumented)
+    abstract collectGraphics(context: SceneContext): void;
+    // (undocumented)
+    abstract collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    abstract dispose(): void;
 }
 
 // @public
@@ -5147,6 +5161,8 @@ export class SavedState {
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
+    addBackgroundDrapedModel(model: TileTreeModelState): RenderTextureDrape | undefined;
+    // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
     extendedFrustumPlane?: Plane3dByOriginAndUnitNormal;
@@ -5154,6 +5170,8 @@ export class SceneContext extends RenderContext {
     getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
+    // (undocumented)
+    getTextureDrape(modelId: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     readonly graphics: RenderGraphic[];
     // (undocumented)
@@ -5167,13 +5185,19 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     outputGraphic(graphic: RenderGraphic): void;
     // (undocumented)
-    planarClassifiers?: PlanarClassifierMap;
+    planarClassifiers: Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
     // (undocumented)
+    setBackgroundMapProvider(provider: TiledGraphicsProvider.Provider): void;
+    // (undocumented)
     setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier): void;
     // (undocumented)
+    setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape): void;
+    // (undocumented)
     solarShadowMap?: RenderSolarShadowMap;
+    // (undocumented)
+    textureDrapes: Map<string, RenderTextureDrape>;
     // (undocumented)
     tiledGraphicsProviderType: TiledGraphicsProvider.Type | undefined;
     // (undocumented)
@@ -5677,6 +5701,8 @@ export class SpatialViewState extends ViewState3d {
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined;
     // @internal (undocumented)
     createSolarShadowMap(context: SceneContext): void;
+    // @internal (undocumented)
+    createTextureDrapes(context: SceneContext): void;
     // (undocumented)
     readonly defaultExtentLimits: {
         min: number;
@@ -5933,6 +5959,10 @@ export class SyncFlags {
 export abstract class Target extends RenderTarget {
     protected constructor(rect?: ViewRect);
     // (undocumented)
+    readonly activePlanarClassifiers: PlanarClassifiers;
+    // (undocumented)
+    readonly activeTextureDrapes: TextureDrapes;
+    // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
     readonly ambientLight: Float32Array;
@@ -5946,6 +5976,8 @@ export abstract class Target extends RenderTarget {
     animationBranches: AnimationBranchStates | undefined;
     // (undocumented)
     protected abstract _assignDC(): boolean;
+    // (undocumented)
+    readonly backgroundMapDrape: BackgroundMapDrape | undefined;
     // (undocumented)
     readonly batchState: BatchState;
     // (undocumented)
@@ -5972,6 +6004,8 @@ export abstract class Target extends RenderTarget {
     changeScene(scene: GraphicList): void;
     // (undocumented)
     changeSolarShadowMap(solarShadowMap?: RenderSolarShadowMap): void;
+    // (undocumented)
+    changeTextureDrapes(textureDrapes: TextureDrapeMap): void;
     // (undocumented)
     readonly clipDef: ClipDef;
     // (undocumented)
@@ -6014,6 +6048,8 @@ export abstract class Target extends RenderTarget {
     drawPlanarClassifiers(): void;
     // (undocumented)
     drawSolarShadowMap(): void;
+    // (undocumented)
+    drawTextureDrapes(): void;
     // (undocumented)
     readonly dynamics: GraphicList | undefined;
     // (undocumented)
@@ -6086,8 +6122,6 @@ export abstract class Target extends RenderTarget {
     performanceMetrics?: PerformanceMetrics;
     // (undocumented)
     plan?: RenderPlan;
-    // (undocumented)
-    readonly planarClassifiers: PlanarClassifiers;
     // (undocumented)
     readonly planFraction: number;
     // (undocumented)
@@ -6206,6 +6240,21 @@ export abstract class TerrainProvider implements TiledGraphicsProvider.Provider 
     abstract getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined;
     // (undocumented)
     onInitialized(): void;
+}
+
+// @internal (undocumented)
+export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
+
+// @internal
+export class TextureDrapes {
+    // (undocumented)
+    readonly drape: TextureDrape | undefined;
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    pop(): void;
+    // (undocumented)
+    push(texture: TextureDrape): void;
 }
 
 // @internal
@@ -6385,6 +6434,8 @@ export namespace Tile {
         clipVolume?: RenderClipVolume;
         // (undocumented)
         readonly context: SceneContext;
+        // (undocumented)
+        drape?: RenderTextureDrape;
         // (undocumented)
         drawGraphics(): void;
         // (undocumented)
@@ -6707,6 +6758,8 @@ export namespace TileTree {
 
 // @alpha
 export interface TileTreeModelState {
+    // @internal (undocumented)
+    readonly doDrapeBackgroundMap?: boolean;
     getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // @internal (undocumented)
     readonly iModel: IModelConnection;
@@ -6733,6 +6786,8 @@ export class TileTreeState {
     classifierExpansion: number;
     // (undocumented)
     clearTileTree(): void;
+    // (undocumented)
+    doDrapeBackgroundMap: boolean;
     // (undocumented)
     edgesOmitted: boolean;
     // (undocumented)
@@ -8178,6 +8233,8 @@ export abstract class ViewState extends ElementState {
     createScene(context: SceneContext): void;
     // @internal (undocumented)
     createSolarShadowMap(_context: SceneContext): void;
+    // @internal (undocumented)
+    createTextureDrapes(_context: SceneContext): void;
     // @internal
     decorate(context: DecorateContext): void;
     abstract readonly defaultExtentLimits: ExtentLimits;

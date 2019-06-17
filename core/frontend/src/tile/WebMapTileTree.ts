@@ -954,10 +954,7 @@ export class BackgroundMapProvider extends BaseTiledMapProvider implements Tiled
     }
   }
 
-  public getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined {
-    if (!viewport.viewFlags.backgroundMap || undefined === viewport.displayStyle.backgroundMapPlane)
-      return undefined;
-
+  public getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined {
     this.loadTileTree();
     return (undefined === this._tileTree) ? undefined : { tileTree: this._tileTree, plane: this.getPlane() };
   }

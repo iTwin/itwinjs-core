@@ -11,6 +11,7 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { Branch, Batch } from "./Graphic";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { PlanarClassifier } from "./PlanarClassifier";
+import { TextureDrape } from "./TextureDrape";
 
 /**
  * Represents a branch node in the scene graph, with associated view flags and transform to be applied to
@@ -23,12 +24,13 @@ export class BranchState {
   public symbologyOverrides: FeatureSymbology.Overrides;
   public readonly clipVolume?: ClipPlanesVolume | ClipMaskVolume;
   public readonly planarClassifier?: PlanarClassifier;
+  public readonly textureDrape?: TextureDrape;
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
     const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
-    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier);
+    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier, branch.textureDrape);
   }
 
   public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume, planarClassifier?: PlanarClassifier) {
@@ -48,12 +50,13 @@ export class BranchState {
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
-  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier) {
+  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, textureDrape?: TextureDrape) {
     this._viewFlags = flags;
     this.transform = transform;
     this.symbologyOverrides = ovrs;
     this.clipVolume = clip;
     this.planarClassifier = planarClassifier;
+    this.textureDrape = textureDrape;
   }
 }
 

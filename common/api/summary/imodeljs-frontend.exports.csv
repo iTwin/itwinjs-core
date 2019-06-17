@@ -248,6 +248,7 @@ public;class RenderSystem
 public;RenderSystem
 beta;Options
 internal;class RenderTarget 
+internal;class RenderTextureDrape 
 public;RotateViewTool 
 alpha;RotationMode
 internal;RoundOff
@@ -316,6 +317,8 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;class TerrainProvider 
+internal;TextureDrapeMap = Map
+internal;TextureDrapes
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 

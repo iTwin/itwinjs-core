@@ -295,7 +295,6 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public abstract onRenderFrame(_viewport: Viewport): void;
-
   /** Returns true if this view displays the contents of a [[Model]] specified by Id. */
   public abstract viewsModel(modelId: Id64String): boolean;
 
@@ -340,7 +339,8 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public createBackgroundMap(context: SceneContext): void {
     const backgroundMapProvider = this.displayStyle.backgroundMap;
-    if (undefined !== backgroundMapProvider)
+    context.setBackgroundMapProvider(backgroundMapProvider);    // May be required for draping, even if background map view flag is off.
+    if (this.viewFlags.backgroundMap && undefined !== backgroundMapProvider)
       this.createGraphicsFromProvider(context, backgroundMapProvider, TiledGraphicsProvider.Type.BackgroundMap);
   }
   /** @internal */
@@ -372,6 +372,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public createSolarShadowMap(_context: SceneContext): void { }
+
+  /** @internal */
+  public createTextureDrapes(_context: SceneContext): void { }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @internal
@@ -933,8 +936,12 @@ export abstract class ViewState extends ElementState {
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
     const animId = undefined !== this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined;
     model.loadTree(context.viewFlags.edgesRequired(), animId);
-    if (undefined !== model.tileTree)
+    if (undefined !== model.tileTree) {
+      if (model.doDrapeBackgroundMap)
+        context.addBackgroundDrapedModel(model);
+
       model.tileTree.drawScene(context);
+    }
   }
 
   /** Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
@@ -1589,6 +1596,8 @@ export class SpatialViewState extends ViewState3d {
       }
     }
   }
+  /** @internal */
+  public createTextureDrapes(context: SceneContext): void { context.textureDrapes.forEach((drape) => drape.collectGraphics(context)); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.

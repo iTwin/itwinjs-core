@@ -90,6 +90,8 @@ export interface TileTreeModelState {
   /** @internal */
   readonly jsonProperties: { [key: string]: any };
   /** @internal */
+  readonly doDrapeBackgroundMap?: boolean;
+  /** @internal */
   readonly iModel: IModelConnection;
   /** If no attempt has yet been made to load the tile tree, enqueue it for asynchronous loading.
    * @param edgesRequired If true, the loaded tile tree will include graphics for edges of surfaces.
@@ -99,6 +101,7 @@ export interface TileTreeModelState {
    * @see [[TileTreeModelState.loadStatus]] to query the current state of the tile tree's loading operation.
    * @internal
    */
+
   loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
   /**
    * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
@@ -139,8 +142,12 @@ export abstract class GeometricModelState extends ModelState /* implements TileT
 
   /** @internal */
   public get isGeometricModel(): boolean { return true; }
+
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
+
+  /** @internal  */
+  public get doDrapeBackgroundMap() { return this._tileTreeState.doDrapeBackgroundMap; }
 
   /** @internal */
   public loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus {

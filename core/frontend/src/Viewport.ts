@@ -2569,15 +2569,17 @@ export abstract class Viewport implements IDisposable {
         this.numSelectedTiles = this.numReadyTiles = 0;
         const context = this.createSceneContext();
         view.createClassification(context);
-        view.createScene(context);
         view.createBackgroundMap(context);
+        view.createScene(context);
         view.createProviderGraphics(context);
         view.createSolarShadowMap(context);
+        view.createTextureDrapes(context);
         context.requestMissingTiles();
         target.changeScene(context.graphics);
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
         target.changeSolarShadowMap(context.solarShadowMap);
+        target.changeTextureDrapes(context.textureDrapes);
 
         isRedrawNeeded = true;
       }

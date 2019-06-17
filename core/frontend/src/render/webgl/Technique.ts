@@ -535,7 +535,7 @@ export class Techniques implements IDisposable {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
           const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap !== undefined && target.solarShadowMap.isReady;   // TBD - Avoid shadows for pick?
-          flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, target.planarClassifiers.isValid ? IsClassified.Yes : IsClassified.No, shadowable ? IsShadowable.Yes : IsShadowable.No);
+          flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, (target.activePlanarClassifiers.isValid || target.activeTextureDrapes.isValid) ? IsClassified.Yes : IsClassified.No, shadowable ? IsShadowable.Yes : IsShadowable.No);
           flags.setAnimated(command.hasAnimation);
           flags.setInstanced(command.isInstanced);
           const tech = this.getTechnique(techniqueId);

@@ -57,11 +57,14 @@ import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { PlanarClassifier } from "./PlanarClassifier";
+import { TextureDrape } from "./TextureDrape";
 import { TileTreeModelState } from "../../ModelState";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
 import { ModelSelectorState } from "../../ModelSelectorState";
 import { CategorySelectorState } from "../../CategorySelectorState";
+import { TiledGraphicsProvider } from "../../TiledGraphicsProvider";
+import { BackgroundMapDrape } from "./BackgroundMapDrape";
 
 // tslint:disable:no-const-enum
 
@@ -655,7 +658,7 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, drape?: TextureDrape): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier, drape); }
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
@@ -772,7 +775,7 @@ export class System extends RenderSystem {
   public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
   public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
   public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
-  /** Solar Shadow Map */
+  public createBackgroundMapDrape(drapedModel: TileTreeModelState, drapeProvider: TiledGraphicsProvider.Provider) { return BackgroundMapDrape.create(drapedModel, drapeProvider); }
   public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {

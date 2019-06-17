@@ -60,6 +60,13 @@ export class RealityModelTileUtils {
 }
 
 /** @internal */
+enum SMTextureType {
+  None = 0, // no textures
+  Embedded = 1, // textures are available and stored in the nodes
+  Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
+}
+
+/** @internal */
 class RealityModelTileTreeProps implements TileTreeProps {
   private _featureMap = new Map<string, { id: Id64String, properties: any }>();
   public id: string = "";
@@ -67,11 +74,12 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  public maxTilesToSkip = 1;    // Skip only one level in HLOD tree -- This matches the BIM tiles.  If our tiles loaded faster we could increase this.
+  public doDrapeBackgroundMap: boolean = false;
   constructor(json: any, public client: RealityModelTileClient, tilesetTransform: Transform) {
     this.tilesetJson = json.root;
     this.rootTile = new RealityModelTileProps(json.root, "");
     this.location = tilesetTransform.toJSON();
+    this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
   }
@@ -198,10 +206,10 @@ class RealityModelTileLoader extends TileLoader {
 
 /** @internal */
 export class RealityModelTileTree {
-
   public static loadRealityModelTileTree(url: string, tilesetToDb: any, tileTreeState: TileTreeState, batchedTileIdMap?: BatchedTileIdMap): void {
     this.getTileTreeProps(url, tilesetToDb, tileTreeState.iModel).then((tileTreeProps: RealityModelTileTreeProps) => {
       tileTreeState.setTileTree(tileTreeProps, new RealityModelTileLoader(tileTreeProps, batchedTileIdMap));
+      tileTreeState.doDrapeBackgroundMap = tileTreeProps.doDrapeBackgroundMap;
       IModelApp.viewManager.onNewTilesReady();
     }).catch((_err) => tileTreeState.loadStatus = TileTree.LoadStatus.NotFound);
   }

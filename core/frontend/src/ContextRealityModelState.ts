@@ -38,6 +38,7 @@ export class ContextRealityModelState implements TileTreeModelState {
   public get treeModelId(): Id64String { return this._modelId; }
   public get jsonProperties() { return this._jsonProperties; }
   public get iModel() { return this._iModel; }
+  public get doDrapeBackgroundMap() { return this._tileTreeState.doDrapeBackgroundMap; }
   public loadTree(_edgesRequired: boolean, _animationId?: Id64String): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
