@@ -486,16 +486,16 @@ describe("Triangulation", () => {
       const dx = range.xLength();
       const dy = range.yLength();
       const ex = x0 - range.low.x;
-      const polygonArea = PolygonOps.areaXY (points);
+      const polygonArea = PolygonOps.areaXY(points);
       x0 += r;
       for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
         const pointsB = rotateArray(points, rotation);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
         const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
-        ck.testExactNumber (1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
-        ck.testExactNumber (0, faceSummary.numZero, " no slivers");
-        ck.testExactNumber (expectedTriangleCount, faceSummary.numPositive, "triangle count");
-        ck.testCoordinate (polygonArea, faceSummary.positiveSum, "positive area sum");
+        ck.testExactNumber(1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
+        ck.testExactNumber(0, faceSummary.numZero, " no slivers");
+        ck.testExactNumber(expectedTriangleCount, faceSummary.numPositive, "triangle count");
+        ck.testCoordinate(polygonArea, faceSummary.positiveSum, "positive area sum");
         const ls = LineString3d.create(points);
         ls.tryTranslateInPlace(ex, 0);
         allGeometry.push(ls);
@@ -513,6 +513,32 @@ describe("Triangulation", () => {
       x0 += 2.0 * dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PieCuts");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("FacetsInCircle", () => {
+    const ck = new Checker();
+    const savedMeshes: GeometryQuery[] = [];
+    let x0 = 0;
+    for (const r of [1.0, 3.234242342]) {
+      let y0 = 0;
+      for (const n of [4, 7, 16, 19]) {
+        const points = [];
+        for (let i = 0; i < n; i++) {
+          const angle = Angle.createDegrees(i * 360 / n);
+          points.push(Point3d.create(r * angle.cos(), r * angle.sin()));
+        }
+        points.push(points[0].clone());
+        x0 += 2.0 * r;
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+        ck.testExactNumber(n - 1, graph.countFaceLoops());
+        if (graph)
+          GeometryCoreTestIO.captureGeometry(savedMeshes, PolyfaceBuilder.graphToPolyface(graph), x0, y0, 0);
+        y0 += 2.0 * r;
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "Circles");
     expect(ck.getNumErrors()).equals(0);
   });
 });

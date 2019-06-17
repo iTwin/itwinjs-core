@@ -95,8 +95,12 @@ export class Triangulator {
     const nodeArray = graph.allHalfEdges;
     graph.clearMask(HalfEdgeMask.VISITED);
     let foundNonVisited = false;
-
-    for (let i = 0; i < nodeArray.length; i++) {
+    const smallDeterminant = 1.0e-15;
+    const maxFlip = 10.0 * nodeArray.length;
+    let numFlip = 0;
+    const numNode = nodeArray.length;
+    const barrierMasks = HalfEdgeMask.EXTERIOR | HalfEdgeMask.PRIMARY_EDGE | HalfEdgeMask.BOUNDARY_EDGE;
+    for (let i = 0; i < numNode && numFlip < maxFlip; i++) {
       const node = nodeArray[i];
 
       // HalfEdge has already been visited or is exterior node
@@ -104,13 +108,14 @@ export class Triangulator {
         continue;
 
       node.setMask(HalfEdgeMask.VISITED);
+      node.edgeMate.setMask(HalfEdgeMask.VISITED);
 
-      if (node.edgeMate === undefined || node.isMaskSet(HalfEdgeMask.EXTERIOR) || node.isMaskSet(HalfEdgeMask.PRIMARY_EDGE)) // Flip not allowed
+      if (node.edgeMate === undefined || node.isMaskSet(barrierMasks)) // Flip not allowed
         continue;
 
       foundNonVisited = true;
-      const incircle = Triangulator.computeInCircleDeterminant(node, false);
-      if (incircle !== undefined && incircle > 0.0) {
+      const incircle = Triangulator.computeInCircleDeterminant(node, true);
+      if (incircle !== undefined && incircle > smallDeterminant) {
         // Mark all nodes involved in flip as needing to be buffer (other than alpha and beta node we started with)
         node.facePredecessor.clearMask(HalfEdgeMask.VISITED);
         node.faceSuccessor.clearMask(HalfEdgeMask.VISITED);
@@ -118,6 +123,7 @@ export class Triangulator {
         node.edgeMate.faceSuccessor.clearMask(HalfEdgeMask.VISITED);
         // Flip the triangles
         Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
+        numFlip++;
       }
 
       // If at the end of the loop, check if we found an unvisited node we tried to flip.. if so, restart loop
@@ -461,7 +467,7 @@ export class Triangulator {
   private static eliminateHole(graph: HalfEdgeGraph, hole: HalfEdge, outerNode: HalfEdge) {
     const outerNodeA = Triangulator.findHoleBridge(hole, outerNode);
     if (outerNodeA) {
-        Triangulator.splitPolygon(graph, outerNodeA, hole);
+      Triangulator.splitPolygon(graph, outerNodeA, hole);
     }
   }
   // cspell:word Eberly
