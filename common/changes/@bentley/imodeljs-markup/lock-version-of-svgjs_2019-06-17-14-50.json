@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "lock to version 3.0.13 of svg.js package",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "keith.bentley@bentley.com"
+}

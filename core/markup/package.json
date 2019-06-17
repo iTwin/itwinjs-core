@@ -47,7 +47,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@svgdotjs/svg.js": "~3.0.12"
+    "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^1.1.0-dev.13",
