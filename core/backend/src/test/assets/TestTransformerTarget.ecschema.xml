@@ -5,8 +5,10 @@
 
     <ECEntityClass typeName="TargetPhysicalElement" modifier="Sealed">
         <BaseClass>bis:PhysicalElement</BaseClass>
-        <ECProperty propertyName="TargetString" typeName="string"/>
-        <ECProperty propertyName="TargetDouble" typeName="double"/>
+        <ECProperty propertyName="TargetString" typeName="string" description="A string property that only exists in the target schema"/>
+        <ECProperty propertyName="TargetDouble" typeName="double" description="A double property that only exists in the target schema"/>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists in both schemas"/>
+        <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
     </ECEntityClass>
 
 </ECSchema>

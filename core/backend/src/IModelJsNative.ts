@@ -398,6 +398,7 @@ export declare namespace IModelJsNative {
   export class ImportContext implements IDisposable {
     constructor(sourceDb: DgnDb, targetDb: DgnDb);
     public dispose(): void;
+    public addClass(sourceClassFullName: string, targetClassFullName: string): BentleyStatus;
     public addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
     public addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
     public findCodeSpecId(sourceId: Id64String): Id64String;

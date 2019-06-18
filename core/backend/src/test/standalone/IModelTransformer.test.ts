@@ -16,7 +16,7 @@ import {
   AuxCoordSystem2d, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
+  PhysicalElement, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -34,6 +34,7 @@ class TestIModelTransformer extends IModelTransformer {
     super(sourceDb, targetDb);
     this.initExclusions();
     this.initCategoryRemapping();
+    this.initClassRemapping();
   }
 
   /** Initialize some sample exclusion rules for testing */
@@ -54,6 +55,11 @@ class TestIModelTransformer extends IModelTransformer {
     this.addExcludedElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
+  /** Initialize some class remapping rules for testing */
+  private initClassRemapping(): void {
+    this.addClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
+  }
+
   /** Override insertElement to count calls */
   protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
     this.numInsertElementCalls++;
@@ -70,8 +76,7 @@ class TestIModelTransformer extends IModelTransformer {
   protected excludeElement(sourceElement: Element): boolean {
     const excluded: boolean =
       super.excludeElement(sourceElement) ||
-      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ||
-      sourceElement.classFullName.startsWith("TestTransformerSource");
+      sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
 
     if (excluded) { this.numExcludedElementCalls++; }
     return excluded;
@@ -101,6 +106,10 @@ class TestIModelTransformer extends IModelTransformer {
     for (const targetElementProps of transformedElementProps) {
       if (!targetElementProps.federationGuid) {
         targetElementProps.federationGuid = Guid.createValue();
+      }
+      if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
+        targetElementProps.targetString = sourceElement.sourceString;
+        targetElementProps.targetDouble = sourceElement.sourceDouble;
       }
     }
     return transformedElementProps;
@@ -249,14 +258,19 @@ class TestDataManager {
     const sourcePhysicalElementProps: GeometricElement3dProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
-      category: spatialCategoryId,
+      category: sourcePhysicalCategoryId,
       code: Code.createEmpty(),
-      userLabel: "SourcePhysicalElement1",
+      userLabel: "PhysicalElement1",
       geom: TestDataManager.createBox(Point3d.create(2, 2, 2)),
       placement: {
         origin: Point3d.create(4, 4, 4),
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
+      sourceString: "S1",
+      sourceDouble: 1.1,
+      commonString: "Common",
+      commonDouble: 7.3,
+      extraString: "Extra",
     };
     const sourcePhysicalElementId: Id64String = this.sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
@@ -391,15 +405,25 @@ class TestDataManager {
     assert.equal(viewProps.modelSelectorId, modelSelectorId);
     // AuxCoordSystem2d
     assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")));
-    // Generic:PhysicalObject
+    // PhysicalElement
     const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject2");
+    const physicalElementId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalElement1");
     this.assertTargetElement(physicalObjectId1);
     this.assertTargetElement(physicalObjectId2);
+    this.assertTargetElement(physicalElementId1);
     const physicalObject1: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
     const physicalObject2: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
+    const physicalElement1: PhysicalElement = this.targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
+    assert.equal(physicalElement1.targetString, "S1", "Property should have been remapped by transformElement override");
+    assert.equal(physicalElement1.targetDouble, 1.1, "Property should have been remapped by transformElement override");
+    assert.equal(physicalElement1.commonString, "Common", "Property should have been automatically remapped (same name)");
+    assert.equal(physicalElement1.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.notExists(physicalElement1.extraString, "Property should have been dropped during transformation");
   }
 
   public static queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -505,6 +529,7 @@ describe("IModelTransformer", () => {
     assert.equal(id2, remapTester.findCodeSpecId(id1));
     remapTester.addElementId(id1, id2);
     assert.equal(id2, remapTester.findElementId(id1));
+    remapTester.addClass(Element.classFullName, Element.classFullName);
     remapTester.dispose();
   });
 

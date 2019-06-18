@@ -47,6 +47,11 @@ export class IModelTransformer {
     this._importContext.addCodeSpecId(sourceId, targetId);
   }
 
+  /** Add a mapping of a source class to a target class. */
+  public addClass(sourceClassFullName: string, targetClassFullName: string): void {
+    this._importContext.addClass(sourceClassFullName, targetClassFullName);
+  }
+
   /** Look up a target CodeSpecId from the source CodeSpecId using the import context mapping.
    * @returns the target CodeSpecId
    */

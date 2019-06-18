@@ -5,8 +5,11 @@
 
     <ECEntityClass typeName="SourcePhysicalElement" modifier="Sealed">
         <BaseClass>bis:PhysicalElement</BaseClass>
-        <ECProperty propertyName="SourceString" typeName="string"/>
-        <ECProperty propertyName="SourceDouble" typeName="double"/>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists in both schemas"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
+        <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be dropped"/>
     </ECEntityClass>
 
 </ECSchema>

@@ -2501,6 +2501,8 @@ export namespace IModelJsNative {
     export class ImportContext implements IDisposable {
         constructor(sourceDb: DgnDb, targetDb: DgnDb);
         // (undocumented)
+        addClass(sourceClassFullName: string, targetClassFullName: string): BentleyStatus;
+        // (undocumented)
         addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
         // (undocumented)
         addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
@@ -2616,6 +2618,7 @@ export namespace IModelJsNative {
 // @alpha (undocumented)
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    addClass(sourceClassFullName: string, targetClassFullName: string): void;
     addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
     addElementId(sourceId: Id64String, targetId: Id64String): void;
     addExcludedElement(sourceElementId: Id64String): void;
