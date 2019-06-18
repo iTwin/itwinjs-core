@@ -56,8 +56,8 @@ describe("ElementAspectPerfomance", () => {
     IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     const userCredentials: ImsUserCredentials = {
-      email: configData.username,
-      password: configData.password,
+      email: Config.App.getString("imjs_test_regular_user_name"),
+      password: Config.App.getString("imjs_test_regular_user_password"),
     };
     requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
     imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());

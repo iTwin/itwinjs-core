@@ -1,8 +1,6 @@
 {
-  "username": "",
-  "password": "",
-  "projectId": "",
-  "imodelId": "",
-  "imodelPushId": "",
-  "aspectIModelId": ""
+  "projectId": "23383876-c4a1-4c6b-9dc4-f3f2cf828606",
+  "imodelId": "2d391981-83d1-4600-97ff-30e3f7e488ae",
+  "imodelPushId": "eea89301-1901-40b2-a622-234a298f52c4",
+  "aspectIModelId": "789a93cd-762a-4f66-81d0-9fa008324c60"
 }
