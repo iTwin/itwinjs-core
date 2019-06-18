@@ -33,13 +33,25 @@ class TestIModelTransformer extends IModelTransformer {
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb);
     this.initExclusions();
+    this.initCategoryRemapping();
   }
 
   /** Initialize some sample exclusion rules for testing */
   private initExclusions(): void {
     super.excludeCodeSpec("CodeSpec2");
-    super.excludeElementClass(AuxCoordSystem2d.classFullName);
+    super.addExcludedElementClass(AuxCoordSystem2d.classFullName);
     super.excludeSubject("/Only in Source");
+  }
+
+  /** Initialize some category remapping rules for testing */
+  private initCategoryRemapping(): void {
+    const subjectId = this._sourceDb.elements.queryElementIdByCode(Subject.createCode(this._sourceDb, IModel.rootSubjectId, "Subject"))!;
+    const definitionModelId = this._sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this._sourceDb, subjectId, "Definition"))!;
+    const sourceCategoryId = this._sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._sourceDb, definitionModelId, "SourcePhysicalCategory"))!;
+    const targetCategoryId = this._targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
+    assert.isTrue(Id64.isValidId64(subjectId) && Id64.isValidId64(definitionModelId) && Id64.isValidId64(sourceCategoryId) && Id64.isValidId64(targetCategoryId));
+    this.addElementId(sourceCategoryId, targetCategoryId);
+    this.addExcludedElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
   /** Override insertElement to count calls */
@@ -129,6 +141,8 @@ class TestDataManager {
     Subject.insert(this.targetDb, subjectId, "S2");
     Subject.insert(this.targetDb, subjectId, "S3");
     Subject.insert(this.targetDb, subjectId, "S4");
+    const targetPhysicalCategoryId = TestDataManager.insertSpatialCategory(this.targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
+    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
   }
 
   public async createSourceDb(): Promise<void> {
@@ -176,19 +190,15 @@ class TestDataManager {
     // Create DefinitionElements
     const modelSelectorId = ModelSelector.insert(this.sourceDb, definitionModelId, "PhysicalModels", [physicalModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
-    const defaultAppearance: SubCategoryAppearance.Props = {
-      color: ColorDef.green,
-      transp: 0,
-      invisible: false,
-    };
-    defaultAppearance.color = ColorDef.green;
-    const spatialCategoryId = SpatialCategory.insert(this.sourceDb, definitionModelId, "SpatialCategory", defaultAppearance);
+    const spatialCategoryId = TestDataManager.insertSpatialCategory(this.sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const sourcePhysicalCategoryId = TestDataManager.insertSpatialCategory(this.sourceDb, definitionModelId, "SourcePhysicalCategory", ColorDef.blue);
+    assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
     const subCategoryId = SubCategory.insert(this.sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue });
     assert.isTrue(Id64.isValidId64(subCategoryId));
     const drawingCategoryId = DrawingCategory.insert(this.sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
-    const spatialCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
+    const spatialCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = CategorySelector.insert(this.sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
@@ -212,7 +222,7 @@ class TestDataManager {
       userLabel: "PhysicalObject1",
       geom: TestDataManager.createBox(Point3d.create(1, 1, 1)),
       placement: {
-        origin: Point3d.create(2, 2, 2),
+        origin: Point3d.create(1, 1, 1),
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
@@ -222,6 +232,20 @@ class TestDataManager {
     const hash2: string = this.sourceDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
     assert.exists(hash1);
     assert.equal(hash1, hash2);
+    const physicalObjectProps2: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject2",
+      geom: TestDataManager.createBox(Point3d.create(2, 2, 2)),
+      placement: {
+        origin: Point3d.create(2, 2, 2),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId2: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps2);
+    assert.isTrue(Id64.isValidId64(physicalObjectId2));
     const sourcePhysicalElementProps: GeometricElement3dProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
@@ -272,6 +296,15 @@ class TestDataManager {
     return geometryStreamBuilder.geometryStream;
   }
 
+  public static insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
+    const appearance: SubCategoryAppearance.Props = {
+      color,
+      transp: 0,
+      invisible: false,
+    };
+    return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
+  }
+
   public static createRectangle(size: Point2d): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     geometryStreamBuilder.appendGeometry(LineString3d.createPoints([
@@ -318,6 +351,9 @@ class TestDataManager {
     const spatialCategoryProps = this.targetDb.elements.getElementProps(spatialCategoryId);
     assert.equal(definitionModelId, spatialCategoryProps.model);
     assert.equal(definitionModelId, spatialCategoryProps.code.scope);
+    assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, definitionModelId, "SourcePhysicalCategory")), "Should have been remapped");
+    const targetPhysicalCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
+    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
     // SubCategory
     const subCategoryId = this.targetDb.elements.queryElementIdByCode(SubCategory.createCode(this.targetDb, spatialCategoryId, "SubCategory"))!;
     this.assertTargetElement(subCategoryId);
@@ -332,6 +368,7 @@ class TestDataManager {
     this.assertTargetElement(spatialCategorySelectorId);
     const spatialCategorySelectorProps = this.targetDb.elements.getElementProps<CategorySelectorProps>(spatialCategorySelectorId);
     assert.isTrue(spatialCategorySelectorProps.categories.includes(spatialCategoryId));
+    assert.isTrue(spatialCategorySelectorProps.categories.includes(targetPhysicalCategoryId), "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     // Drawing CategorySelector
     const drawingCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "DrawingCategories"))!;
     this.assertTargetElement(drawingCategorySelectorId);
@@ -354,6 +391,22 @@ class TestDataManager {
     assert.equal(viewProps.modelSelectorId, modelSelectorId);
     // AuxCoordSystem2d
     assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")));
+    // Generic:PhysicalObject
+    const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
+    const physicalObjectId2: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject2");
+    this.assertTargetElement(physicalObjectId1);
+    this.assertTargetElement(physicalObjectId2);
+    const physicalObject1: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
+    const physicalObject2: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
+    assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
+    assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+  }
+
+  public static queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
+    return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=?`, (statement: ECSqlStatement): Id64String => {
+      statement.bindString(1, userLabel);
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
   }
 
   public assertTargetElement(targetElementId: Id64String): void {
@@ -445,7 +498,7 @@ describe("IModelTransformer", () => {
   }
 
   it("should map Ids", async () => {
-    const remapTester = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.sourceDb); // something to satisfy constructor, not actually going to import
+    const remapTester = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb); // something to satisfy constructor, not actually going to import
     const id1 = "0xa";
     const id2 = "0xb";
     remapTester.addCodeSpecId(id1, id2);

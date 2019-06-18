@@ -24,6 +24,7 @@ export class IModelTransformer {
   protected _excludedCodeSpecNames = new Set<string>();
   protected _excludedCodeSpecIds = new Set<Id64String>();
   protected _excludedElementIds = new Set<Id64String>();
+  protected _excludedElementCategoryIds = new Set<Id64String>();
   protected _excludedElementClassNames = new Set<string>();
 
   /** Construct a new IModelImporter
@@ -86,11 +87,20 @@ export class IModelTransformer {
     }
   }
 
-  public excludeElementId(elementId: Id64String): void {
-    this._excludedElementIds.add(elementId);
+  /** Add a rule to exclude a specific Element.
+   * @param sourceElementId The Id of the Element from the source iModel.
+   */
+  public addExcludedElement(sourceElementId: Id64String): void {
+    this._excludedElementIds.add(sourceElementId);
   }
 
-  public excludeElementClass(classFullName: string): void {
+  /** Add a rule to exclude all Elements of a specified Category. */
+  public addExcludedElementCategory(categoryId: Id64String): void {
+    this._excludedElementCategoryIds.add(categoryId);
+  }
+
+  /** Add a rule to exclude all Elements of a specified class. */
+  public addExcludedElementClass(classFullName: string): void {
     this._excludedElementClassNames.add(classFullName);
   }
 
@@ -174,18 +184,15 @@ export class IModelTransformer {
     }
     if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
       Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
-      this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
       return true;
     }
     if (this._excludedCodeSpecIds.has(sourceElement.code.spec)) {
       Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by CodeSpec [${sourceElement.code.spec}]`);
-      this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
       return true;
     }
     if (sourceElement.category) {
-      if (this._excludedElementIds.has(sourceElement.category)) {
+      if (this._excludedElementCategoryIds.has(sourceElement.category)) {
         Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Category [${sourceElement.category}]`);
-        this.excludeElementId(sourceElement.id); // remember exclusion in case we encounter this sourceElement again
         return true;
       }
     }
@@ -242,11 +249,9 @@ export class IModelTransformer {
     const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
-      if ((ExternalSourceAspect.Kind.Element === sourceAspect.kind) && (sourceAspect.scope.id === targetScopeElementId)) {
+      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
         const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
-        if ((lastModifiedTime === sourceAspect.version) || (sourceElement.computeHash() === sourceAspect.checksum)) {
-          return false;
-        }
+        return (lastModifiedTime !== sourceAspect.version) || (sourceElement.computeHash() !== sourceAspect.checksum);
       }
     }
     return true;

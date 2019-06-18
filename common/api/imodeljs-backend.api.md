@@ -2616,6 +2616,9 @@ export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
     addElementId(sourceId: Id64String, targetId: Id64String): void;
+    addExcludedElement(sourceElementId: Id64String): void;
+    addExcludedElementCategory(categoryId: Id64String): void;
+    addExcludedElementClass(classFullName: string): void;
     dispose(): void;
     // (undocumented)
     excludeCodeSpec(codeSpecName: string): void;
@@ -2624,14 +2627,12 @@ export class IModelTransformer {
     // (undocumented)
     protected _excludedCodeSpecNames: Set<string>;
     // (undocumented)
+    protected _excludedElementCategoryIds: Set<string>;
+    // (undocumented)
     protected _excludedElementClassNames: Set<string>;
     // (undocumented)
     protected _excludedElementIds: Set<string>;
     protected excludeElement(sourceElement: Element): boolean;
-    // (undocumented)
-    excludeElementClass(classFullName: string): void;
-    // (undocumented)
-    excludeElementId(elementId: Id64String): void;
     // (undocumented)
     excludeSubject(subjectPath: string): void;
     findCodeSpecId(sourceId: Id64String): Id64String;
