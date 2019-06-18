@@ -187,7 +187,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       return Promise.reject(new Error("no thumbnail"));
 
     const val = new Uint8Array(thumbnail.image.length + 8); // allocate a new buffer 8 bytes larger than the image size
-    new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 8 bytes.
+    new Uint16Array(val.buffer, 0, 8).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 8 bytes.
     new Uint8Array(val.buffer, 8).set(thumbnail.image); // put the image data at offset 8 after metadata
     return val;
   }

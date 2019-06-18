@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix crash in getViewThumbnail for odd number of bytes ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "keith.bentley@bentley.com"
+}
