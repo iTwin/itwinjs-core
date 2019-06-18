@@ -25,6 +25,7 @@ import {
   Vector3d,
   Matrix4d,
   Point4d,
+  Range1d,
 } from "@bentley/geometry-core";
 import {
   BatchType,
@@ -345,14 +346,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       else
         return Tile.Visibility.Visible; // it's a leaf node
     }
+    const pixelSize = args.getPixelSize(this);
+    const maxSize = this.maximumSize * args.tileSizeModifier;
 
-    const radius = args.getTileRadius(this); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
-    const center = args.getTileCenter(this);
-
-    const pixelSizeAtPt = args.getPixelSizeAtPoint(center);
-    const pixelSize = 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
-
-    if (pixelSize > this.maximumSize * args.tileSizeModifier)
+    if (pixelSize > maxSize)
       return Tile.Visibility.TooCoarse;
     else if (hasContentRange && this.isContentCulled(args))
       return Tile.Visibility.OutsideFrustum;
@@ -684,6 +681,37 @@ export namespace Tile {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
     }
 
+    private static _scratchTileToView = Matrix4d.createIdentity();
+    private static _scratchTileToWorld = Matrix4d.createIdentity();
+    private static _scratchViewCorner = Point4d.createZero();
+    public getPixelSize(tile: Tile) {
+      if (tile.root.isBackgroundMap) {
+        /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
+        const rangeCorners = tile.contentRange.corners();
+        const worldToView = this.viewFrustum ? this.viewFrustum.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
+        Matrix4d.createTransform(this.location, DrawArgs._scratchTileToWorld);
+        DrawArgs._scratchTileToWorld.multiplyMatrixMatrix(worldToView.transform0, DrawArgs._scratchTileToView);
+        const xRange = Range1d.createNull(), yRange = Range1d.createNull();
+        let behindEye = false;
+        for (const corner of rangeCorners) {
+          const viewCorner = DrawArgs._scratchTileToView.multiplyPoint3d(corner, 1, DrawArgs._scratchViewCorner);
+          if (viewCorner.w < 0.0) {
+            behindEye = true;
+            break;
+          }
+          xRange.extendX(viewCorner.x / viewCorner.w);
+          yRange.extendX(viewCorner.y / viewCorner.w);
+        }
+        if (!behindEye)
+          return xRange.isNull ? 1.0E-3 : Math.sqrt(xRange.length() * yRange.length());
+      }
+      const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
+      const center = this.getTileCenter(tile);
+
+      const pixelSizeAtPt = this.getPixelSizeAtPoint(center);
+      return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
+    }
+
     public get frustumPlanes(): FrustumPlanes {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
@@ -835,6 +863,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
+  public readonly isBackgroundMap?: boolean;
   // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -844,6 +873,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
+    this.isBackgroundMap = props.isBackgroundMap;
     this.expirationTime = IModelApp.tileAdmin.tileExpirationTime;
 
     if (undefined !== props.clipVector)

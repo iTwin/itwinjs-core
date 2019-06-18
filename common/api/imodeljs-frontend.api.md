@@ -6441,6 +6441,8 @@ export namespace Tile {
         // (undocumented)
         readonly frustumPlanes: FrustumPlanes;
         // (undocumented)
+        getPixelSize(tile: Tile): number;
+        // (undocumented)
         getPixelSizeAtPoint(inPoint?: Point3d): number;
         // (undocumented)
         getTileCenter(tile: Tile): Point3d;
@@ -6690,6 +6692,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     readonly is2d: boolean;
     // (undocumented)
     readonly is3d: boolean;
+    // (undocumented)
+    readonly isBackgroundMap?: boolean;
     // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refine tile selection for map tiles",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

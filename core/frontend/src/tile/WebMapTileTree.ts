@@ -302,7 +302,7 @@ class WebMapTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public yAxisUp = true;
   public isBackgroundMap = true;
-  public maxTilesToSkip = 4;
+  public maxTilesToSkip = 10;
   public constructor(groundBias: number) {
     const corners: Point3d[] = [];
     corners[0] = new Point3d(-10000000, -10000000, groundBias);
@@ -320,7 +320,6 @@ class WebMapTileProps implements TileProps {
   public readonly range: Range3dProps;
   public readonly contentRange?: Range3dProps;  // not used for WebMap tiles.
   public readonly maximumSize: number;
-  public readonly sizeMultiplier: number = 1.0;
   public readonly isLeaf: boolean = false;
   public readonly corners: Point3d[];
 
