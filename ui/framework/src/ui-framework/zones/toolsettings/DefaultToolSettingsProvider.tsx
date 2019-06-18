@@ -390,9 +390,12 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   }
 
   public onInitialize(): void {
-    // reload the data so it matches current values from tool
+    // reload the data so it matches current values from tool and use it to refresh the toolSettingNode object reference.
     this.rows.length = 0;
-    this.getGridSpecsFromToolSettingProperties();
+    if (this.getGridSpecsFromToolSettingProperties())
+      this.toolSettingsNode = <DefaultToolSettings rows={this.rows} numCols={this._numCols} valueMap={this.valueMap} labelMap={this.labelMap} toolId={FrontstageManager.activeToolId} />;
+    else
+      this.toolSettingsNode = null;
   }
 }
 

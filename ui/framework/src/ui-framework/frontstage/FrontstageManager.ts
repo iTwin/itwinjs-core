@@ -283,11 +283,8 @@ export class FrontstageManager {
 
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
-    // istanbul ignore else
-    if (FrontstageManager.activeToolId !== toolId) {
-      FrontstageManager._activeToolId = toolId;
-      FrontstageManager.onToolActivatedEvent.emit({ toolId });
-    }
+    FrontstageManager._activeToolId = toolId;
+    FrontstageManager.onToolActivatedEvent.emit({ toolId });
   }
 
   /** Gets the active tool's [[ToolInformation]] */

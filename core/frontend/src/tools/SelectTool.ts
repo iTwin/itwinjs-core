@@ -586,6 +586,7 @@ export class SelectionTool extends PrimitiveTool {
     // Make sure a mode of SelectionMode.Remove is valid
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
       this.selectionMode = SelectionMode.Replace;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
     }
 
     const toolSettings = new Array<ToolSettingsPropertyRecord>();

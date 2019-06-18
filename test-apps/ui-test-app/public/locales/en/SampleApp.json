@@ -136,7 +136,8 @@
     "viewportDialog": "Viewport Dialog",
     "openNestedAnimationStage": "Open Stage to Play Animations",
     "reduceWidgetOpacity": "Reduce Widget Opacity",
-    "defaultWidgetOpacity": "Default Widget Opacity"
+    "defaultWidgetOpacity": "Default Widget Opacity",
+    "clearSelection": "Clear Selection"
   },
   "tools": {
     "ToolWithSettings": {
