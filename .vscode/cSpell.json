@@ -183,6 +183,7 @@
         "ruleset",
         "rulesets",
         "selectable",
+        "Serializable",
         "skybox",
         "snappable",
         "Strokable",

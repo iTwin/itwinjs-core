@@ -39,7 +39,7 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
               <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
             </tr>
             <tr>
-              <td><NumericInput className="numeric-input" min={1} max={100} strict placeholder="Enter numeric value" /></td>
+              <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter numeric value" /></td>
               <td>&nbsp;</td>
             </tr>
           </table>

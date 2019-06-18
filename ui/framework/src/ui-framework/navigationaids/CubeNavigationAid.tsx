@@ -24,10 +24,13 @@ import { ContentControl } from "../content/ContentControl";
  * @alpha
  */
 export class CubeNavigationAidControl extends NavigationAidControl {
+  public static navigationAidId = "CubeNavigationAid";
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     this.reactElement = <CubeNavigationAid iModelConnection={options.imodel} />;
   }
+
   public getSize(): string | undefined { return "96px"; }
 }
 
@@ -375,8 +378,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _onMouseUp = () => {
-    this.setState({ dragging: false });
-    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
+    if (this.state.dragging) {
+      this.setState({ dragging: false });
+      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
+    }
+
     // remove so event only triggers after this.onMouseStartDrag
     window.removeEventListener("mousemove", this._onMouseMove);
     window.removeEventListener("mouseup", this._onMouseUp);
@@ -401,8 +407,12 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
       return;
-    this.setState({ dragging: false });
-    ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
+
+    if (this.state.dragging) {
+      this.setState({ dragging: false });
+      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, CubeNavigationAid._getMatrixFace(this.state.endRotMatrix), true);
+    }
+
     window.removeEventListener("touchmove", this._onTouchMove);
     window.removeEventListener("touchend", this._onTouchEnd);
   }

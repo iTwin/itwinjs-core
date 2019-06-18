@@ -49,6 +49,7 @@
     "Polylines",
     "Renormalize",
     "Resizer",
+    "Serializable",
     "Strokable",
     "Svgs",
     "Topo",

@@ -63,6 +63,7 @@ public;ConfigurableUiElement
 public;ConfigurableUiManager
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, _action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
+beta;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
@@ -235,6 +236,10 @@ public;ReducerActions
 public;ReducerMapActions
 internal;RotationData
 internal;RULESET: Ruleset
+beta;SavedView
+beta;SavedViewLayout
+beta;SavedViewLayoutProps
+beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
 public;SelectionInfoField: any
 public;SelectionScopeField: any
@@ -327,6 +332,7 @@ beta;UiVisibilityChangedEvent
 beta;UiVisibilityEventArgs
 alpha;ValidationTextbox 
 internal;VersionInfo
+beta;ViewLayout
 public;ViewportContentControl 
 beta;ViewSelector 
 beta;ViewSelectorChangedEvent 

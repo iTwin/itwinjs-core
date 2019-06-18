@@ -11,6 +11,7 @@ import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonProps } from '@bentley/ui-core';
@@ -18,13 +19,16 @@ import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
+import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { DropTarget } from '@bentley/ui-ninezone';
+import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
@@ -36,6 +40,7 @@ import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
+import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NineZoneProps } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
@@ -60,6 +65,7 @@ import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-ninezone';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -77,6 +83,7 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
+import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
@@ -623,6 +630,8 @@ export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
+    // @internal
+    static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
     static loadContentGroup(groupProps: ContentGroupProps): void;
@@ -651,6 +660,9 @@ export interface ConfigurableUiState {
     // (undocumented)
     widgetOpacity: number;
 }
+
+// @beta
+export type ContentCallback = (content: ContentProps) => void;
 
 // @public
 export class ContentControl extends ConfigurableUiControl {
@@ -682,21 +694,21 @@ export class ContentGroup {
     clearContentControls(): void;
     // (undocumented)
     contentPropsList: ContentProps[];
-    // (undocumented)
     getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined;
-    // (undocumented)
+    getContentControlById(id: string): ContentControl | undefined;
     getContentControls(): ContentControl[];
-    // (undocumented)
     getContentNodes(): React_2.ReactNode[];
-    // (undocumented)
     getControlFromElement(node: React_2.ReactNode): ContentControl | undefined;
+    // @internal
+    getViewports(): Array<ScreenViewport | undefined>;
     // (undocumented)
     groupId: string;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
-    // (undocumented)
     refreshContentNodes(): void;
-    }
+    // @beta
+    toJSON(contentCallback?: ContentCallback): ContentGroupProps;
+}
 
 // @public
 export class ContentGroupManager {
@@ -754,47 +766,35 @@ export interface ContentLayoutComponentProps extends CommonProps {
 // @public
 export class ContentLayoutDef {
     constructor(layoutProps: ContentLayoutProps);
-    // (undocumented)
+    // @internal (undocumented)
+    static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
     descriptionKey: string;
-    // (undocumented)
-    fillLayoutContainer(content: React_2.ReactNode[], resizable: boolean): React_2.ReactNode | undefined;
-    // (undocumented)
+    fillLayoutContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode | undefined;
     getUsedContentIndexes(): number[];
-    // (undocumented)
     id: string;
-    // (undocumented)
     priority: number;
     // (undocumented)
     readonly rootSplit: LayoutSplit | undefined;
-    }
+    // @beta
+    toJSON(): ContentLayoutProps;
+}
 
 // @public
 export class ContentLayoutManager {
-    // (undocumented)
+    static readonly activeContentGroup: ContentGroup | undefined;
     static readonly activeLayout: ContentLayoutDef | undefined;
-    // (undocumented)
-    static addLayout(layoutId: string, layout: ContentLayoutDef): void;
-    // (undocumented)
-    static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
-    // (undocumented)
+    static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
     static findLayout(layoutId: string): ContentLayoutDef | undefined;
-    // (undocumented)
     static loadLayout(layoutProps: ContentLayoutProps): void;
-    // (undocumented)
     static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
-    // (undocumented)
     static refreshActiveLayout(): void;
-    // (undocumented)
-    static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup): void;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
 }
 
 // @public
 export interface ContentLayoutProps extends LayoutFragmentProps {
-    // (undocumented)
     descriptionKey?: string;
-    // (undocumented)
     id?: string;
-    // (undocumented)
     priority?: number;
 }
 
@@ -880,6 +880,8 @@ export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -1100,6 +1102,8 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -1408,6 +1412,8 @@ export class FrontstageDef {
     // (undocumented)
     contentGroupId: string;
     // (undocumented)
+    contentLayoutDef?: ContentLayoutDef;
+    // (undocumented)
     contextToolbarEnabled: boolean;
     // (undocumented)
     defaultContentId: string;
@@ -1443,7 +1449,11 @@ export class FrontstageDef {
     readonly panelDefs: StagePanelDef[];
     // @alpha (undocumented)
     rightPanel?: StagePanelDef;
+    // (undocumented)
+    setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
+    // (undocumented)
+    setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
     startDefaultTool(): void;
     // (undocumented)
     topCenter?: ZoneDef;
@@ -1517,6 +1527,7 @@ export class FrontstageManager {
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
     static setActiveFrontstage(frontstageId: string): Promise<void>;
     static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
     static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     static setActiveToolId(toolId: string): void;
     static setWidgetState(widgetId: string, state: WidgetState): boolean;
@@ -1988,43 +1999,34 @@ export interface LabelProps {
 
 // @public
 export interface LayoutFragmentProps {
-    // (undocumented)
     horizontalSplit?: LayoutHorizontalSplitProps;
-    // (undocumented)
     verticalSplit?: LayoutVerticalSplitProps;
 }
 
 // @public
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
-    // (undocumented)
     bottom: LayoutFragmentProps | number;
-    // (undocumented)
     top: LayoutFragmentProps | number;
 }
 
 // @public
 export interface LayoutSplit {
     // (undocumented)
-    createContentContainer(content: React_2.ReactNode[], resizable: boolean): React_2.ReactNode;
+    createContentContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode;
     // (undocumented)
     isLocked: boolean;
 }
 
 // @public
 export interface LayoutSplitPropsBase {
-    // (undocumented)
     id?: string;
-    // (undocumented)
     lock?: boolean;
-    // (undocumented)
     percentage: number;
 }
 
 // @public
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
-    // (undocumented)
     left: LayoutFragmentProps | number;
-    // (undocumented)
     right: LayoutFragmentProps | number;
 }
 
@@ -2540,6 +2542,51 @@ export interface RotationData {
 // @internal (undocumented)
 export const RULESET: Ruleset;
 
+// @beta
+export class SavedView {
+    static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: SavedViewProps): boolean;
+    static emphasizeElementsToProps(vp: ScreenViewport, savedViewProps: SavedViewProps): void;
+    static viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: SavedViewProps): Promise<ViewState | undefined>;
+    static viewStateToProps(viewState: ViewState): SavedViewProps;
+}
+
+// @beta
+export class SavedViewLayout {
+    static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: SavedViewLayoutProps): boolean;
+    static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements?: boolean, contentCallback?: ContentCallback): SavedViewLayoutProps;
+    static viewStatesFromProps(iModelConnection: IModelConnection, savedProps: SavedViewLayoutProps): Promise<Array<ViewState | undefined>>;
+}
+
+// @beta
+export interface SavedViewLayoutProps {
+    // (undocumented)
+    contentGroupProps: ContentGroupProps;
+    // (undocumented)
+    contentLayoutProps: ContentLayoutProps;
+    // (undocumented)
+    savedViews: SavedViewProps[];
+}
+
+// @beta
+export interface SavedViewProps {
+    // (undocumented)
+    bisBaseClass: string;
+    // (undocumented)
+    categorySelectorProps: CategorySelectorProps;
+    // (undocumented)
+    displayStyleProps: DisplayStyleProps;
+    // (undocumented)
+    emphasizeElementsProps?: EmphasizeElementsProps;
+    // (undocumented)
+    modelSelectorProps?: ModelSelectorProps;
+    // (undocumented)
+    sheetAttachments?: Id64Array;
+    // (undocumented)
+    sheetProps?: SheetProps;
+    // (undocumented)
+    viewDefinitionProps: ViewDefinitionProps;
+}
+
 // @alpha
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -2647,6 +2694,8 @@ export class SheetNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -2869,6 +2918,8 @@ export class StandardRotationNavigationAid extends React_2.Component<CommonProps
 // @alpha
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @public
@@ -3452,6 +3503,16 @@ export interface VersionInfo {
     smallThumbnail?: string;
     // (undocumented)
     userCreated?: string;
+}
+
+// @beta
+export interface ViewLayout {
+    // (undocumented)
+    contentGroup: ContentGroup;
+    // (undocumented)
+    contentLayoutDef: ContentLayoutDef;
+    // (undocumented)
+    viewStates: Array<ViewState | undefined>;
 }
 
 // @public

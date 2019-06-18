@@ -25,10 +25,13 @@ import { CommonProps } from "@bentley/ui-core";
  * @alpha
  */
 export class DrawingNavigationAidControl extends NavigationAidControl {
+  public static navigationAidId = "DrawingNavigationAid";
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     this.reactElement = <DrawingNavigationAid iModelConnection={options.imodel} />;
   }
+
   public getSize(): string | undefined { return "96px"; }
 }
 

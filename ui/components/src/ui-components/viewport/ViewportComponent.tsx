@@ -97,11 +97,11 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       this.props.viewportRef(this._vp);
 
     ViewportComponentEvents.initialize();
-    ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent, this);
-    ViewportComponentEvents.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
-    ViewportComponentEvents.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
+    ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent);
+    ViewportComponentEvents.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
+    ViewportComponentEvents.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent);
 
-    this._vp.onViewChanged.addListener(this._handleViewChanged, this);
+    this._vp.onViewChanged.addListener(this._handleViewChanged);
     this._viewClassFullName = this._vp.view.classFullName;
     this.setState({ viewId: this._vp.view.id });
   }
@@ -113,12 +113,12 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     if (this._vp) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       viewManager.dropViewport(this._vp, true);
-      this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
+      this._vp.onViewChanged.removeListener(this._handleViewChanged);
     }
 
-    ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(this._handleDrawingViewportChangeEvent, this);
-    ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
-    ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
+    ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(this._handleDrawingViewportChangeEvent);
+    ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
+    ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
   public async componentDidUpdate(prevProps: ViewportProps) {

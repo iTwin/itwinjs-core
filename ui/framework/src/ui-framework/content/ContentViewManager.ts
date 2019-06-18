@@ -8,7 +8,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentControl } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
-import { ContentLayoutManager } from "./ContentLayout";
+import { ContentLayoutManager } from "./ContentLayoutManager";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -97,7 +97,7 @@ export class ContentViewManager {
 
         // istanbul ignore else
         if (activeContentGroup) {
-          const oldContentControl = activeContentGroup.getControlFromElement(oldContent);
+          const oldContentControl = oldContent ? activeContentGroup.getControlFromElement(oldContent) : undefined;
           const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
 
           // istanbul ignore else

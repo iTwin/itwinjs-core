@@ -161,7 +161,7 @@ class FrontstageToolWidget extends React.Component {
         if (activeFrontstageDef) {
           const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
           if (contentLayout && activeFrontstageDef.contentGroup) {
-            ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           }
         }
       },

@@ -7,6 +7,8 @@
 import * as React from "react";
 
 import { UiError } from "@bentley/ui-core";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { Logger } from "@bentley/bentleyjs-core";
 
 import { ContentControl } from "./ContentControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -21,7 +23,7 @@ export interface ContentProps {
   id?: string;
   /** The class name or [[ConfigurableUiControlConstructor]] of the content control */
   classId: string | ConfigurableUiControlConstructor;
-  /** Optional application data passed down the the Content View */
+  /** Optional application data passed down to the Content View */
   applicationData?: any;
 }
 
@@ -35,7 +37,12 @@ export interface ContentGroupProps {
   contents: ContentProps[];
 }
 
-/** ContentGroup class. ContentGroups define content displayed in content views that are laid out using a [[ContentLayout]].
+/** Callback to process content properties during toJSON method
+ * @beta
+ */
+export type ContentCallback = (content: ContentProps) => void;
+
+/** ContentGroup class. Content Groups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
  */
 export class ContentGroup {
@@ -44,7 +51,7 @@ export class ContentGroup {
   public groupId: string;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
-  private _contentSetMap = new Map<React.ReactNode, ContentControl>();
+  private _contentSetMap = new Map<string, ContentControl>();
 
   constructor(groupProps: ContentGroupProps) {
     if (groupProps.id !== undefined)
@@ -57,6 +64,7 @@ export class ContentGroup {
     this.contentPropsList = groupProps.contents;
   }
 
+  /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
   public getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined {
     let id: string;
     if (contentProps.id !== undefined)
@@ -92,6 +100,12 @@ export class ContentGroup {
     return this._contentControls.get(id);
   }
 
+  /** Gets a [[ContentControl]] from the Content Group with a given ID. */
+  public getContentControlById(id: string): ContentControl | undefined {
+    return this._contentControls.get(id);
+  }
+
+  /** Gets the React nodes representing the Content Views in this Content Group. */
   public getContentNodes(): React.ReactNode[] {
     const contentNodes: React.ReactNode[] = new Array<React.ReactNode>();
 
@@ -101,24 +115,31 @@ export class ContentGroup {
       const control = this.getContentControl(contentProps, index);
       if (control) {
         contentNodes.push(control.reactElement);
-        this._contentSetMap.set(control.reactElement, control);
+        this._contentSetMap.set(control.controlId, control);
       }
     });
 
     return contentNodes;
   }
 
+  /** Gets the [[ContentControl]] associated with a given React node representing a Content View. */
   public getControlFromElement(node: React.ReactNode): ContentControl | undefined {
     if (this._contentSetMap.size === 0)
       this.getContentNodes();
 
-    return this._contentSetMap.get(node);
+    if (node && (node as React.ReactElement<any>).key)
+      return this._contentSetMap.get((node as React.ReactElement<any>).key as string);
+
+    Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
+    return undefined;
   }
 
+  /** Refreshes the React nodes representing the Content Views in this Content Group.. */
   public refreshContentNodes() {
     this._contentSetMap.clear();
   }
 
+  /** Gets an array of the content controls representing the Content Views. */
   public getContentControls(): ContentControl[] {
     const contentControls: ContentControl[] = new Array<ContentControl>();
 
@@ -143,6 +164,49 @@ export class ContentGroup {
   /** Clears the map of content controls. */
   public clearContentControls(): void {
     this._contentControls.clear();
+  }
+
+  /** Creates [[ContentGroupProps]] for JSON purposes
+   * @beta
+   */
+  public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
+    const contentGroupProps: ContentGroupProps = {
+      id: this.groupId,
+      contents: this.contentPropsList,
+    };
+
+    contentGroupProps.contents.forEach((content: ContentProps, index: number) => {
+      if (typeof content.classId !== "string") {
+        const classId = ConfigurableUiManager.getConstructorClassId(content.classId);
+        if (classId !== undefined)
+          content.classId = classId;
+        else
+          throw new UiError(UiFramework.loggerCategory(this), `toJSON: ContentControl at index ${index} is NOT registered with a string id`);
+
+        if (contentCallback)
+          contentCallback(content);
+      }
+    });
+
+    return contentGroupProps;
+  }
+
+  /** Gets Viewports from Viewport Content Controls
+   * @internal
+   */
+  public getViewports(): Array<ScreenViewport | undefined> {
+    const contentControls = this.getContentControls();
+    const viewports = new Array<ScreenViewport | undefined>();
+
+    contentControls.forEach((control: ContentControl) => {
+      if (control.isViewport && control.viewport) {
+        viewports.push(control.viewport);
+      } else {
+        viewports.push(undefined);
+      }
+    });
+
+    return viewports;
   }
 
 }

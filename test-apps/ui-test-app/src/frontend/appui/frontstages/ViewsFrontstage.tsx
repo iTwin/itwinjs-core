@@ -49,6 +49,9 @@ import {
   ConditionalItemDef,
   PopupButton,
   CustomItemDef,
+  ContentLayoutManager,
+  SavedViewLayout,
+  SavedViewLayoutProps,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -79,6 +82,7 @@ import { SvgSprite } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static savedViewLayoutProps: string;
 
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
@@ -400,6 +404,53 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _saveContentLayout() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", execute: () => {
+        if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+          const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+            (contentProps: ContentProps) => {
+              if (contentProps.applicationData)
+                delete contentProps.applicationData;
+            });
+          const serialized = JSON.stringify(savedViewLayoutProps);
+          // tslint:disable-next-line: no-console
+          console.log("SavedViewLayoutProps: ", serialized);
+
+          ViewsFrontstage.savedViewLayoutProps = serialized;
+        }
+      },
+    });
+  }
+
+  private get _restoreContentLayout() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", execute: async () => {
+        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
+          // Parse SavedViewLayoutProps
+          const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
+          // Create ContentLayoutDef
+          const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
+          // Create ViewStates
+          const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+
+          // Add applicationData to the ContentProps
+          savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
+            contentProps.applicationData = { viewState: viewStates[index], iModelConnection, rulesetId: "Items" };
+          });
+          const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
+
+          // activate the layout
+          await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
+
+          // emphasize the elements
+          SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+        }
+      },
+    });
+  }
+
   /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
@@ -496,7 +547,7 @@ class FrontstageToolWidget extends React.Component {
       new GroupItemDef({
         labelKey: "SampleApp:buttons.anotherGroup",
         iconSpec: "icon-placeholder",
-        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef],
+        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef, this._saveContentLayout, this._restoreContentLayout],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
       }),

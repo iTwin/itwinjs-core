@@ -23,6 +23,8 @@ const NZ_ContainedTray = withContainIn(NZ_Tray);
  * @alpha
  */
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
+  public static navigationAidId = "StandardRotationNavigationAid";
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     this.reactElement = <StandardRotationNavigationAid />;

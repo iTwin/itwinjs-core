@@ -6,8 +6,11 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+
+import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
 import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";
+
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -265,18 +268,26 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   // This uses ConfigurableUi to render the content
-  private doContentLayoutRender(): any {
+  private doContentLayoutRender(): React.ReactNode {
+    let contentLayout: React.ReactNode;
+
     // istanbul ignore else
     if (this.props.runtimeProps && this.props.runtimeProps.frontstageDef) {
       const frontstageDef = this.props.runtimeProps.frontstageDef;
-      return (
-        <ContentLayout
-          contentLayout={frontstageDef.defaultLayout!}
-          contentGroup={frontstageDef.contentGroup!}
-          isInFooterMode={frontstageDef.isInFooterMode}
-        />
-      );
+
+      if (frontstageDef.contentLayoutDef && frontstageDef.contentGroup)
+        contentLayout = (
+          <ContentLayout
+            contentLayout={frontstageDef.contentLayoutDef}
+            contentGroup={frontstageDef.contentGroup}
+            isInFooterMode={frontstageDef.isInFooterMode}
+          />
+        );
+      else
+        Logger.logError(UiFramework.loggerCategory(this), `FrontstageDef.contentLayoutDef and FrontstageDef.contentGroup are required for <ContentLayout> component`);
     }
+
+    return contentLayout;
   }
 
   private cloneStagePanelElement(panelDef: StagePanelDef | undefined): React.ReactNode {

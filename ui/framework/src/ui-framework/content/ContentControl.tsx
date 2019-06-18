@@ -40,6 +40,7 @@ export interface SupportsViewSelectorChange {
  */
 export class ContentControl extends ConfigurableUiControl {
   private _reactElement: React.ReactNode;
+  private _keyAdded = false;
 
   /** Creates an instance of ContentControl.
    * @param info         An object that the subclass must pass to this base class.
@@ -65,9 +66,18 @@ export class ContentControl extends ConfigurableUiControl {
   /** Returns the ScreenViewport if isViewport is true */
   public get viewport(): ScreenViewport | undefined { return undefined; }
 
-  /** Gets the React element associated with this control */
-  public get reactElement(): React.ReactNode { return this._reactElement; }
-  /** Sets the React element associated with this control */
+  /** Gets the React element associated with this control. */
+  public get reactElement(): React.ReactNode {
+    if (!this._keyAdded && React.isValidElement(this._reactElement)) {
+      if (!(this._reactElement as React.ReactElement<any>).key)
+        this._reactElement = React.cloneElement(this._reactElement, { key: this.controlId });
+      this._keyAdded = true;
+    }
+
+    return this._reactElement;
+  }
+
+  /** Sets the React element associated with this control. */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
 
   /** Get the NavigationAidControl associated with this ContentControl */

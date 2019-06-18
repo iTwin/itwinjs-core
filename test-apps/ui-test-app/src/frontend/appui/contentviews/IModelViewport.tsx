@@ -49,8 +49,8 @@ export class IModelViewportControl extends ViewportContentControl {
 
     this._options = options;
 
-    if (options.viewId) {
-      this.reactElement = this.getReactElement(options.iModelConnection, options.viewId);
+    if (options.viewId || options.viewState) {
+      this.reactElement = this.getReactElement(options.iModelConnection, options.viewId, options.viewState);
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
       this.setIsReady();
@@ -60,7 +60,7 @@ export class IModelViewportControl extends ViewportContentControl {
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> {
-    if (this._options.viewId)
+    if (this._options.viewId || this._options.viewState)
       return super.isReady;
     else
       return Promise.resolve();
@@ -80,7 +80,7 @@ export class IModelViewportControl extends ViewportContentControl {
 
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {
-    if (this._options.viewId)
+    if (this._options.viewId || this._options.viewState)
       return super.navigationAidControl;
     else
       return "StandardRotationNavigationAid";
@@ -106,7 +106,7 @@ export class IModelViewportControl extends ViewportContentControl {
 
 }
 
-// This is used for fake viewports (those with no ViewId)
+// This is used for fake viewports (those with no ViewId or ViewState)
 interface MockIModelViewportProps {
   bgColor: string;
 }

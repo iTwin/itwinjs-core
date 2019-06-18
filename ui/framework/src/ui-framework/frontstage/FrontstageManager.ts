@@ -12,14 +12,14 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
-import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
+import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
+import { ContentGroup } from "../content/ContentGroup";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -253,6 +253,7 @@ export class FrontstageManager {
 
     if (frontstageDef) {
       frontstageDef.onActivated();
+
       FrontstageManager.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
 
       await frontstageDef.waitUntilReady();
@@ -263,13 +264,7 @@ export class FrontstageManager {
 
       frontstageDef.startDefaultTool();
 
-      // istanbul ignore else
-      if (frontstageDef.contentControls.length >= 0) {
-        // TODO: get content control to activate from state info
-        const contentControl = frontstageDef.contentControls[0];
-        if (contentControl)
-          ContentViewManager.setActiveContent(contentControl.reactElement, true);
-      }
+      frontstageDef.setActiveContent();
     }
     FrontstageManager._isLoading = false;
   }
@@ -316,6 +311,25 @@ export class FrontstageManager {
       return toolUiProvider.toolAssistanceNode;
 
     return undefined;
+  }
+
+  /** Sets the active layout, content group and active content.
+   * @param contentLayoutDef  Content layout to make active
+   * @param contentGroup  Content Group to make active
+   */
+  public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      FrontstageManager._isLoading = false;
+
+      activeFrontstageDef.setContentLayoutAndGroup(contentLayoutDef, contentGroup);
+      FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: contentLayoutDef, contentGroup });
+
+      await activeFrontstageDef.waitUntilReady();
+      FrontstageManager._isLoading = false;
+
+      activeFrontstageDef.setActiveContent();
+    }
   }
 
   /** Opens a modal Frontstage. Modal Frontstages can be stacked.

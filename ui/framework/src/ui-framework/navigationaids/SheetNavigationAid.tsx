@@ -24,10 +24,13 @@ import "./SheetNavigationAid.scss";
  * @alpha
  */
 export class SheetNavigationAidControl extends NavigationAidControl {
+  public static navigationAidId = "SheetNavigationAid";
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     this.reactElement = <SheetNavigationAid iModelConnection={options.imodel} />;
   }
+
   public getSize(): string | undefined { return "96px"; }
 }
 

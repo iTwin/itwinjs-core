@@ -137,7 +137,9 @@
     "openNestedAnimationStage": "Open Stage to Play Animations",
     "reduceWidgetOpacity": "Reduce Widget Opacity",
     "defaultWidgetOpacity": "Default Widget Opacity",
-    "clearSelection": "Clear Selection"
+    "clearSelection": "Clear Selection",
+    "saveContentLayout": "Save Content Layout",
+    "restoreContentLayout": "Restore Content Layout"
   },
   "tools": {
     "ToolWithSettings": {
