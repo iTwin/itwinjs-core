@@ -438,6 +438,8 @@ export class Category extends DefinitionElement implements CategoryProps {
     constructor(props: CategoryProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    description?: string;
     myDefaultSubCategoryId(): Id64String;
     // (undocumented)
     rank: Rank;

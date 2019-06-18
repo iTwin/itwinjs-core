@@ -1,5 +1,4 @@
-
-## Documentation Overview
+# Documentation Overview
 
 This website is organized into sections by tabs at the top of each page.
 
@@ -49,6 +48,7 @@ The iModel.js library requires a JavaScript engine with es2017 support.
 * [App backend development](./backend/index)
 * [Classes packages by both frontends and backends](./common/index)
 * [iModelHub](./iModelHub/index)
+* [GeoLocation in IModels](./GeoLocation.md)
 * [ECSQL](./ECSQL.md)
 * [Change Summaries](./ChangeSummaries.md)
 * [Remote Procedure Call (RPC) Interfaces](./RpcInterface)

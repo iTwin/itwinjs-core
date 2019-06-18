@@ -415,7 +415,7 @@ export class IModelDb extends IModel {
   public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
-  public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
+  public getBriefcaseId(): BriefcaseId { return new BriefcaseId(!this.isOpen ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
 
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSQL statement to prepare
@@ -439,7 +439,7 @@ export class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Check if the connection to briefcase is valid or not
+  /** Check if the connection to the briefcase is valid or not
    * @internal
    */
   public get isOpen(): boolean { return undefined !== this._briefcase; }

@@ -97,6 +97,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   /** @internal */
   public static get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
+  public description?: string;
 
   /** @internal */
   public constructor(props: CategoryProps, iModel: IModelDb) {

@@ -28,7 +28,7 @@
  * Extending longitudes to the east-west wandering of the international date line allows longitudes up to 10 degrees in either direction.  Hence actual metric positions on equator might be considered limited to about 21,150,694.
  * this range fits in 25 (rather than 26) bits
 
- ## Where in the world ... meters from Greenwich ...
+## Where in the world ... meters from Greenwich ...
 
 | Location | Longitude | ECGC Coordinates |
 |---------------|-------------------|--------------|

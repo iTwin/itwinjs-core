@@ -78,6 +78,7 @@ export interface EcefLocationProps {
 }
 
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
  * @public
  */
 export class EcefLocation implements EcefLocationProps {
@@ -156,6 +157,7 @@ export interface FilePropertyProps {
 }
 
 /** Represents an iModel in JavaScript.
+ * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
  * @public
  */
 export abstract class IModel implements IModelProps {

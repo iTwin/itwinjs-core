@@ -6,6 +6,7 @@ tableRowAnchors: true
 
 |Term | Definition
 |------------|------------|--------|--------|-------|
+|**AABB**|[Axis Aligned Bounding Box](https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box).
 |**ACS**|Auxiliary Coordinate System. Views may choose to use an Auxiliary Coordinate System to show coordinate information with a different orientation and units.
 |**Backend**|The part of an iModel.js app that is concerned with accessing data in a briefcase. See [frontends and backends](https://en.wikipedia.org/wiki/Front_and_back_ends). See [learning about backend code](./backend/index.md).
 |**BIS**|Base Infrastructure Schema. Defines the hierarchy and organization of information about an infrastructure asset. BIS is relevant outside of iModels, but all information stored in an iModel conforms to BIS.
