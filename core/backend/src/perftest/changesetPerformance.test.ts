@@ -306,8 +306,8 @@ describe("ImodelChangesetPerformance", async () => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
     const userCredentials: ImsUserCredentials = {
-      email: configData.username,
-      password: configData.password,
+      email: Config.App.getString("imjs_test_regular_user_name"),
+      password: Config.App.getString("imjs_test_regular_user_password"),
     };
     requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
   });
