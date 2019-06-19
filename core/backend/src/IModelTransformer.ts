@@ -42,25 +42,68 @@ export class IModelTransformer {
     this._importContext.dispose();
   }
 
-  /** Add a mapping of source CodeSpecId to target CodeSpecId to the import context. */
-  public addCodeSpecId(sourceId: Id64String, targetId: Id64String): void {
-    this._importContext.addCodeSpecId(sourceId, targetId);
+  /** Add a rule that remaps the specified source CodeSpec to the specified target CodeSpec.
+   * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.
+   * @param targetCodeSpecName The name of the CodeSpec from the target iModel.
+   */
+  public remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void {
+    const sourceCodeSpec: CodeSpec = this._sourceDb.codeSpecs.getByName(sourceCodeSpecName);
+    const targetCodeSpec: CodeSpec = this._targetDb.codeSpecs.getByName(targetCodeSpecName);
+    this._importContext.addCodeSpecId(sourceCodeSpec.id, targetCodeSpec.id);
   }
 
-  /** Add a mapping of a source class to a target class. */
-  public addClass(sourceClassFullName: string, targetClassFullName: string): void {
+  /** Add a rule that remaps the specified source class to the specified target class. */
+  public remapElementClass(sourceClassFullName: string, targetClassFullName: string): void {
     this._importContext.addClass(sourceClassFullName, targetClassFullName);
   }
 
-  /** Look up a target CodeSpecId from the source CodeSpecId using the import context mapping.
+  /** Add a rule that remaps the specified source Element to the specified target Element. */
+  public remapElement(sourceId: Id64String, targetId: Id64String): void {
+    this._importContext.addElementId(sourceId, targetId);
+  }
+
+  /** Look up a target CodeSpecId from the source CodeSpecId.
    * @returns the target CodeSpecId
    */
-  public findCodeSpecId(sourceId: Id64String): Id64String {
+  public findTargetCodeSpecId(sourceId: Id64String): Id64String {
     return this._importContext.findCodeSpecId(sourceId);
   }
 
-  public excludeCodeSpec(codeSpecName: string): void {
-    this._excludedCodeSpecNames.add(codeSpecName);
+  /** Look up a target ElementId from the source ElementId.
+   * @returns the target ElementId
+   */
+  public findTargetElementId(sourceElementId: Id64String): Id64String {
+    return this._importContext.findElementId(sourceElementId);
+  }
+
+  /** Add a rule to exclude a CodeSpec */
+  public excludeCodeSpec(sourceCodeSpecName: string): void {
+    this._excludedCodeSpecNames.add(sourceCodeSpecName);
+  }
+
+  /** Add a rule to exclude a specific Element.
+   * @param sourceElementId The Id of the Element from the source iModel.
+   */
+  public excludeElement(sourceElementId: Id64String): void {
+    this._excludedElementIds.add(sourceElementId);
+  }
+
+  /** Add a rule to exclude a Subject based on its path */
+  public excludeSubject(subjectPath: string): void {
+    const subjectId: Id64String | undefined = IModelTransformer.resolveSubjectId(this._sourceDb, subjectPath);
+    if (subjectId && Id64.isValidId64(subjectId)) {
+      this._excludedElementIds.add(subjectId);
+    }
+  }
+
+  /** Add a rule to exclude all Elements of a specified Category. */
+  public excludeElementCategory(sourceCategoryId: Id64String): void {
+    this._excludedElementCategoryIds.add(sourceCategoryId);
+  }
+
+  /** Add a rule to exclude all Elements of a specified class. */
+  public excludeElementClass(sourceClassFullName: string): void {
+    this._excludedElementClassNames.add(sourceClassFullName);
   }
 
   public importCodeSpecs(): void {
@@ -92,35 +135,6 @@ export class IModelTransformer {
     }
   }
 
-  /** Add a rule to exclude a specific Element.
-   * @param sourceElementId The Id of the Element from the source iModel.
-   */
-  public addExcludedElement(sourceElementId: Id64String): void {
-    this._excludedElementIds.add(sourceElementId);
-  }
-
-  /** Add a rule to exclude all Elements of a specified Category. */
-  public addExcludedElementCategory(categoryId: Id64String): void {
-    this._excludedElementCategoryIds.add(categoryId);
-  }
-
-  /** Add a rule to exclude all Elements of a specified class. */
-  public addExcludedElementClass(classFullName: string): void {
-    this._excludedElementClassNames.add(classFullName);
-  }
-
-  /** Add a mapping of source ElementId to target ElementId to the import context. */
-  public addElementId(sourceId: Id64String, targetId: Id64String): void {
-    this._importContext.addElementId(sourceId, targetId);
-  }
-
-  /** Look up a target ElementId from the source ElementId using the import context mapping.
-   * @returns the target ElementId
-   */
-  public findElementId(sourceId: Id64String): Id64String {
-    return this._importContext.findElementId(sourceId);
-  }
-
   public static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined {
     let subjectId: Id64String | undefined = IModel.rootSubjectId;
     const subjectNames: string[] = subjectPath.split("/");
@@ -135,13 +149,6 @@ export class IModelTransformer {
       }
     }
     return subjectId;
-  }
-
-  public excludeSubject(subjectPath: string): void {
-    const subjectId: Id64String | undefined = IModelTransformer.resolveSubjectId(this._sourceDb, subjectPath);
-    if (subjectId && Id64.isValidId64(subjectId)) {
-      this._excludedElementIds.add(subjectId);
-    }
   }
 
   public initFromExternalSourceAspects(): void {
@@ -172,27 +179,38 @@ export class IModelTransformer {
     this.importRelationships();
   }
 
-  /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel. */
+  /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel.
+   * @param _sourceElement The sourceElement that was processed
+   * @param _targetElementIds An array of ElementIds that identify the Elements that were inserted into the target iModel because of processing the source Element.
+   * @note A subclass can override this method to be notified after Elements have been inserted. This can be used to establish relationships or for other operations that require knowing ElementIds.
+   */
   protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void { }
 
-  /** Called after processing a source Element when that processing caused an Element or Elements to be updated in the target iModel. */
+  /** Called after processing a source Element when that processing caused an Element or Elements to be updated in the target iModel.
+   * @param _sourceElement The sourceElement that was processed
+   * @param _targetElementIds An array of ElementIds that identify the Elements that were updated in the target iModel because of processing the source Element.
+   * @note A subclass can override this method to be notified after Elements have been updated. This can be used to establish relationships or for other operations that require knowing ElementIds.
+   */
   protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void { }
 
-  /** Called after processing a source Element when that processing caused an Element to be excluded from the target iModel. */
+  /** Called after processing a source Element when that processing caused an Element to be excluded from the target iModel.
+   * @param _sourceElement The source Element that was excluded from transformation.
+   * @note A subclass can override this method to be notified after Elements have been excluded.
+   */
   protected onElementExcluded(_sourceElement: Element): void { }
 
-  /** Returns true if the specified sourceElement should be excluded from the target iModel. */
-  protected excludeElement(sourceElement: Element): boolean {
+  /** Returns true if the specified sourceElement should be excluded from the target iModel.
+   * @param sourceElement The Element from the source iModel to consider
+   * @returns `true` if sourceElement should be excluded from the target iModel or `false` if sourceElement should be transformed into the target iModel.
+   * @note A subclass can override this method to provide custom Element exclusion behavior.
+   */
+  protected shouldExcludeElement(sourceElement: Element): boolean {
     if (this._excludedElementIds.has(sourceElement.id)) {
       Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Id`);
       return true;
     }
     if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
       Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
-      return true;
-    }
-    if (this._excludedCodeSpecIds.has(sourceElement.code.spec)) {
-      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by CodeSpec [${sourceElement.code.spec}]`);
       return true;
     }
     if (sourceElement.category) {
@@ -208,6 +226,7 @@ export class IModelTransformer {
    * The most common case is 1 sourceElement transformed to 1 targetElement, but there are cases where a single sourceElement is transformed into multiple target Elements.
    * @param sourceElement The Element from the source iModel to transform.
    * @returns An array of ElementProps for the target iModel.
+   * @note A subclass can override this method to provide custom transform behavior.
    */
   protected transformElement(sourceElement: Element): ElementProps[] {
     const array: ElementProps[] = [];
@@ -220,13 +239,14 @@ export class IModelTransformer {
   /** Insert the transformed Element into the target iModel.
    * @param targetElementProps The ElementProps for the Element that will be inserted into the target iModel.
    * @param sourceAspectProps The ExternalSourceAspect owned by the target Element that will track the source Element.
+   * @note A subclass can override this method to provide custom insert behavior.
    */
   protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
     if (!Id64.isValidId64(sourceAspectProps.identifier)) {
       throw new IModelError(IModelStatus.InvalidId, "ExternalSourceAspect.identifier not provided", Logger.logError, loggerCategory);
     }
     const targetElementId: Id64String = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
-    this.addElementId(sourceAspectProps.identifier, targetElementId);
+    this.remapElement(sourceAspectProps.identifier, targetElementId);
     Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
     sourceAspectProps.element.id = targetElementId;
     this._targetDb.elements.insertAspect(sourceAspectProps);
@@ -235,6 +255,7 @@ export class IModelTransformer {
   /** Transform the specified sourceElement and update result into the target iModel.
    * @param targetElementId The Element in the target iModel to update
    * @param sourceAspectProps The ExternalSourceAspect owned by the target Element that will track the source Element.
+   * @note A subclass can override this method to provide custom update behavior.
    */
   protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
     if (!targetElementProps.id) {
@@ -249,6 +270,7 @@ export class IModelTransformer {
    * @param sourceElement The Element from the source iModel
    * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    * @param targetElementId The Element from the target iModel to compare against.
+   * @note A subclass can override this method to provide custom change detection behavior.
    */
   protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean {
     const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
@@ -268,11 +290,11 @@ export class IModelTransformer {
    */
   public importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
-    if (this.excludeElement(sourceElement)) {
+    if (this.shouldExcludeElement(sourceElement)) {
       this.onElementExcluded(sourceElement);
       return; // excluding an element will also exclude its children or sub-models
     }
-    let targetElementId: Id64String | undefined = this.findElementId(sourceElementId);
+    let targetElementId: Id64String | undefined = this.findTargetElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
         const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
@@ -298,7 +320,7 @@ export class IModelTransformer {
         }
       } else if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
         if (transformedElementProps.length > 0) {
-          this.addElementId(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+          this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
           transformedElementProps[0].id = targetElementId;
           const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
           for (const targetElementProps of transformedElementProps) {
@@ -332,7 +354,7 @@ export class IModelTransformer {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modeledElementId: Id64String = statement.getRow().id;
         const modeledElement: Element = this._sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: true });
-        if (this.excludeElement(modeledElement)) {
+        if (this.shouldExcludeElement(modeledElement)) {
           this.onElementExcluded(modeledElement);
         } else {
           this.importModel(modeledElementId);
@@ -346,7 +368,7 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   public importModel(sourceModeledElementId: Id64String): void {
-    const targetModeledElementId = this.findElementId(sourceModeledElementId);
+    const targetModeledElementId = this.findTargetElementId(sourceModeledElementId);
     try {
       if (this._targetDb.models.getModelProps(targetModeledElementId)) {
         return; // already imported
@@ -356,7 +378,7 @@ export class IModelTransformer {
       const modelProps = this._sourceDb.models.getModelProps(sourceModeledElementId);
       modelProps.modeledElement.id = targetModeledElementId;
       modelProps.id = targetModeledElementId;
-      modelProps.parentModel = this.findElementId(modelProps.parentModel!);
+      modelProps.parentModel = this.findTargetElementId(modelProps.parentModel!);
       this._targetDb.models.insertModel(modelProps);
     }
   }
@@ -382,8 +404,8 @@ export class IModelTransformer {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
         const relationshipProps = this._sourceDb.relationships.getInstanceProps<RelationshipProps>(ElementRefersToElements.classFullName, row.id);
-        relationshipProps.sourceId = this.findElementId(relationshipProps.sourceId);
-        relationshipProps.targetId = this.findElementId(relationshipProps.targetId);
+        relationshipProps.sourceId = this.findTargetElementId(relationshipProps.sourceId);
+        relationshipProps.targetId = this.findTargetElementId(relationshipProps.targetId);
         if (Id64.isValidId64(relationshipProps.sourceId) && Id64.isValidId64(relationshipProps.targetId)) {
           try {
             // check for an existing relationship

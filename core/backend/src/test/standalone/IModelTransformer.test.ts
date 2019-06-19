@@ -7,7 +7,7 @@ import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, S
 import {
   AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
+  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as hash from "object-hash";
@@ -33,15 +33,21 @@ class TestIModelTransformer extends IModelTransformer {
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb);
     this.initExclusions();
+    this.initCodeSpecRemapping();
     this.initCategoryRemapping();
     this.initClassRemapping();
   }
 
   /** Initialize some sample exclusion rules for testing */
   private initExclusions(): void {
-    super.excludeCodeSpec("CodeSpec2");
-    super.addExcludedElementClass(AuxCoordSystem2d.classFullName);
+    super.excludeCodeSpec("ExtraCodeSpec");
+    super.excludeElementClass(AuxCoordSystem2d.classFullName);
     super.excludeSubject("/Only in Source");
+  }
+
+  /** Initialize some CodeSpec remapping rules for testing */
+  private initCodeSpecRemapping(): void {
+    this.remapCodeSpec("SourceCodeSpec", "TargetCodeSpec");
   }
 
   /** Initialize some category remapping rules for testing */
@@ -51,13 +57,13 @@ class TestIModelTransformer extends IModelTransformer {
     const sourceCategoryId = this._sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._sourceDb, definitionModelId, "SourcePhysicalCategory"))!;
     const targetCategoryId = this._targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
     assert.isTrue(Id64.isValidId64(subjectId) && Id64.isValidId64(definitionModelId) && Id64.isValidId64(sourceCategoryId) && Id64.isValidId64(targetCategoryId));
-    this.addElementId(sourceCategoryId, targetCategoryId);
-    this.addExcludedElement(sourceCategoryId); // Don't process a specifically remapped element
+    this.remapElement(sourceCategoryId, targetCategoryId);
+    this.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
   /** Initialize some class remapping rules for testing */
   private initClassRemapping(): void {
-    this.addClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
+    this.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
   }
 
   /** Override insertElement to count calls */
@@ -72,10 +78,10 @@ class TestIModelTransformer extends IModelTransformer {
     super.updateElement(targetElementProps, sourceAspectProps);
   }
 
-  /** Override excludeElement to count calls and exclude all Element from the Functional schema */
-  protected excludeElement(sourceElement: Element): boolean {
+  /** Override shouldExcludeElement to count calls and exclude all Element from the Functional schema */
+  protected shouldExcludeElement(sourceElement: Element): boolean {
     const excluded: boolean =
-      super.excludeElement(sourceElement) ||
+      super.shouldExcludeElement(sourceElement) ||
       sourceElement.classFullName.startsWith(FunctionalSchema.schemaName);
 
     if (excluded) { this.numExcludedElementCalls++; }
@@ -144,6 +150,9 @@ class TestDataManager {
     const requestContext = new BackendRequestContext();
     const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
     await this.targetDb.importSchema(requestContext, targetSchemaFileName);
+    // Insert a target-only CodeSpec to test remapping
+    const targetCodeSpecId: Id64String = this.targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
+    assert.isTrue(Id64.isValidId64(targetCodeSpecId));
     // Insert some elements to avoid getting same IDs for sourceDb and targetDb
     const subjectId = Subject.insert(this.targetDb, IModel.rootSubjectId, "Only in Target");
     Subject.insert(this.targetDb, subjectId, "S1");
@@ -173,8 +182,8 @@ class TestDataManager {
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     this.sourceDb.updateProjectExtents(projectExtents);
     // Create CodeSpecs
-    const codeSpecId1: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId2: Id64String = this.sourceDb.codeSpecs.insert("CodeSpec2", CodeScopeSpec.Type.ParentElement);
+    const codeSpecId1: Id64String = this.sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
+    const codeSpecId2: Id64String = this.sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
     // Create RepositoryModel structure
@@ -333,8 +342,9 @@ class TestDataManager {
 
   public assertTargetDbContents(): void {
     // CodeSpec
-    assert.isTrue(this.targetDb.codeSpecs.hasName("CodeSpec1"));
-    assert.isFalse(this.targetDb.codeSpecs.hasName("CodeSpec2"));
+    assert.isTrue(this.targetDb.codeSpecs.hasName("TargetCodeSpec"));
+    assert.isFalse(this.targetDb.codeSpecs.hasName("SourceCodeSpec"));
+    assert.isFalse(this.targetDb.codeSpecs.hasName("ExtraCodeSpec"));
     // Font
     if (Platform.platformName.startsWith("win")) {
       assert.exists(this.targetDb.fontMap.getFont("Arial"));
@@ -521,16 +531,13 @@ describe("IModelTransformer", () => {
     return hash1 === hash2;
   }
 
-  it("should map Ids", async () => {
-    const remapTester = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb); // something to satisfy constructor, not actually going to import
-    const id1 = "0xa";
-    const id2 = "0xb";
-    remapTester.addCodeSpecId(id1, id2);
-    assert.equal(id2, remapTester.findCodeSpecId(id1));
-    remapTester.addElementId(id1, id2);
-    assert.equal(id2, remapTester.findElementId(id1));
-    remapTester.addClass(Element.classFullName, Element.classFullName);
-    remapTester.dispose();
+  it("should remap", async () => {
+    const transformer = new IModelTransformer(testDataManager.sourceDb, testDataManager.targetDb); // something to satisfy constructor, not actually going to import
+    assert.doesNotThrow(() => transformer.remapCodeSpec(BisCodeSpec.nullCodeSpec, BisCodeSpec.nullCodeSpec));
+    assert.doesNotThrow(() => transformer.remapElementClass(Element.classFullName, Element.classFullName));
+    assert.doesNotThrow(() => transformer.remapElement(IModel.rootSubjectId, IModel.rootSubjectId));
+    assert.equal(IModel.rootSubjectId, transformer.findTargetElementId(IModel.rootSubjectId));
+    transformer.dispose();
   });
 
   it("test object-hash", async () => {

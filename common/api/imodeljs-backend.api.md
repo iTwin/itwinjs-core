@@ -2618,15 +2618,8 @@ export namespace IModelJsNative {
 // @alpha (undocumented)
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
-    addClass(sourceClassFullName: string, targetClassFullName: string): void;
-    addCodeSpecId(sourceId: Id64String, targetId: Id64String): void;
-    addElementId(sourceId: Id64String, targetId: Id64String): void;
-    addExcludedElement(sourceElementId: Id64String): void;
-    addExcludedElementCategory(categoryId: Id64String): void;
-    addExcludedElementClass(classFullName: string): void;
     dispose(): void;
-    // (undocumented)
-    excludeCodeSpec(codeSpecName: string): void;
+    excludeCodeSpec(sourceCodeSpecName: string): void;
     // (undocumented)
     protected _excludedCodeSpecIds: Set<string>;
     // (undocumented)
@@ -2637,11 +2630,12 @@ export class IModelTransformer {
     protected _excludedElementClassNames: Set<string>;
     // (undocumented)
     protected _excludedElementIds: Set<string>;
-    protected excludeElement(sourceElement: Element): boolean;
-    // (undocumented)
+    excludeElement(sourceElementId: Id64String): void;
+    excludeElementCategory(sourceCategoryId: Id64String): void;
+    excludeElementClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
-    findCodeSpecId(sourceId: Id64String): Id64String;
-    findElementId(sourceId: Id64String): Id64String;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
     protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
     // (undocumented)
     importAll(): void;
@@ -2664,8 +2658,12 @@ export class IModelTransformer {
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected shouldExcludeElement(sourceElement: Element): boolean;
     // (undocumented)
     protected _sourceDb: IModelDb;
     // (undocumented)
