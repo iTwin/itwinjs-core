@@ -13,7 +13,6 @@ containsMetadata: 'AvailableScopes'
 | organization             | Required to get the user’s organization information                                          |
 | context-registry-service | Required to access the Context Registry, the service that allows access to a CONNECT project |
 | imodelhub                | Required to access the iModelHub, the service that allows access to the iModels              |
-| reality-data:read        | Required for read access to reality data                                                     |
 | imodeljs-router          |                                                                                              |
 | visible-api-scope        |                                                                                              |
 | urlps-third-party        | Third party access to ULAS logging                                                           |

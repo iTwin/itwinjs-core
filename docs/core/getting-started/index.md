@@ -46,11 +46,18 @@ An interactive application obtains information from an iModel and presents that 
 iModel agents and services are apps that have no interactive user interface.
 
 ## 4. Create a Sample Project
-Once you have a registered application, you will need content to work with. To get you started, Bentley can supply some example content using our “iModel Testdrive” organization. From the registration page you can create a new project and give access to other developers.
+Once you have a registered application, you will need an iModel. Our registration process makes it easy to create a new project in our “iModel Test Drive” organization, populate it with content, and give access to other developers.
 
-**[Register Here](./registration-dashboard?tab=1)**
+The content can be either:
+- **Bentley supplied example content** – Recommended if you are just starting out. Simply select an example from the Project Registration page.
 
-_Note: The “iModel Testdrive” organization is intended for developer testing only.  See [this page](invalidlink) for information about administering a CONNECT project in your own organization._
+OR
+
+- **You can use your own** – Follow [these steps](https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view ) to format your content into a ‘Snapshot iModel’ (.bim) before proceeding to the Project Registration page below.
+
+**[Register Project Here](./registration-dashboard?tab=1)**
+
+_Note: The “iModel Testdrive” organization is intended for developer testing only.  See [this page](https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537) for information about administering a CONNECT project in your own organization._
 
 
 ## 5. Get the Sample Code
