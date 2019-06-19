@@ -12,7 +12,13 @@ describe("Checkbox", () => {
   it("renders", () => {
     const checkbox = render(<Checkbox />);
 
-    expect(checkbox.container.innerHTML).to.matchSnapshot();
+    expect(checkbox.container.querySelector("input[type='checkbox']")).not.to.be.null;
+  });
+
+  it("renders with id", () => {
+    const checkbox = render(<Checkbox id="test" />);
+
+    expect(checkbox.container.querySelector("#test")).not.to.be.null;
   });
 
   it("renders with label", () => {

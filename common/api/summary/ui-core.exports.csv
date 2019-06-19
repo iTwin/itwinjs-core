@@ -9,7 +9,7 @@ public;ButtonProps
 public;ButtonSize
 public;ButtonType
 public;Centered: React.FunctionComponent
-public;Checkbox: React.FunctionComponent
+public;Checkbox 
 public;CheckBoxInfo
 public;CheckboxProps 
 public;CheckBoxState

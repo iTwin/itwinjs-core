@@ -93,7 +93,11 @@ export enum ButtonType {
 export const Centered: React.FunctionComponent<CommonDivProps>;
 
 // @public
-export const Checkbox: React.FunctionComponent<CheckboxProps>;
+export class Checkbox extends React.Component<CheckboxProps> {
+    constructor(props: CheckboxProps);
+    // @internal (undocumented)
+    render(): JSX.Element;
+}
 
 // @public
 export interface CheckBoxInfo {

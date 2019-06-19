@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#137898 - It is not possible to turn on/off checkbox by clicking on label",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}
