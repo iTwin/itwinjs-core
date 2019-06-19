@@ -9,7 +9,7 @@ import { ECSqlStatement, ECSqlInsertResult, ECSqlValue, ECEnumValue } from "../.
 import { NavigationValue, QueryResponseStatus } from "@bentley/imodeljs-common";
 import { ECDb } from "../../ECDb";
 import { IModelDb } from "../../IModelDb";
-import { DbResult, Id64String, Id64, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Id64, using, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { XAndY, XYAndZ, Point2d, Point3d, Range3d } from "@bentley/geometry-core";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -227,7 +227,31 @@ describe("ECSqlStatement", () => {
         } catch (e) { assert.isNotNull(e); }
       });
   });
-
+  it("Bind BeGuid", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="guid" typeName="binary" extendedTypeName="BeGuid"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        const maxRows = 10;
+        const guids: GuidString[] = [];
+        for (let i = 0; i < maxRows; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(guid) values(?)`, async (stmt: ECSqlStatement) => {
+            guids.push(Guid.createValue());
+            stmt.bindGuid(1, guids[i]);
+            return stmt.stepForInsert();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        ecdb.saveChanges();
+        let k = 0;
+        assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo ORDER BY ECInstanceId", [], undefined, (row: any) => {
+          assert.equal(row.guid, guids[k++]);
+        }), maxRows);
+      });
+  });
   it("Bind Ids", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
 
