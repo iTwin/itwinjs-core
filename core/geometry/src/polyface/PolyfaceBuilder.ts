@@ -1370,7 +1370,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     graph.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {
-        if (acceptFaceFunction(seed)) {
+        if (acceptFaceFunction(seed) && seed.countEdgesAroundFace () > 2) {
           let node = seed;
           do {
             index = this.findOrAddPointXYZ(node.x, node.y, node.z);

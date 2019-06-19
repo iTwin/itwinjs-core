@@ -26,6 +26,10 @@ import { GraphChecker } from "./Graph.test";
 import { HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { SweepContour } from "../../solid/SweepContour";
+import { prettyPrint } from "../testFunctions";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
@@ -116,11 +120,13 @@ describe("Triangulation", () => {
 
   it("SquareWaves", () => {
     let degreeCount = 0;
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
     for (const degrees of [0, 10, 30, 95, -20]) {
       let y0 = 0.0;
       for (const numPhase of [1, 3, 7, 15]) {
-        const x0 = 4.0 + 6.0 * numPhase * degreeCount;
         const name = "SquareWave" + degreeCount + "." + numPhase;
+        degreeCount++;
         const pointA = Point3d.create(1.5 * numPhase, 0, 0);
         const yShiftVector = Vector3d.create(0, 2, 0);
         const rotation = Transform.createFixedPointAndMatrix(
@@ -147,12 +153,12 @@ describe("Triangulation", () => {
         // pfC.tryTranslateInPlace(x0 + 4 * yShiftVector.x, y0 + 4 * yShiftVector.y, 0);
 
         ls1.tryTranslateInPlace(x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, [ls1, ls, pfA, pfB], x0, y0);
         y0 += 3 + 4 * numPhase;
-        GeometryCoreTestIO.saveGeometry([ls1, ls, pfA, pfB], "Triangulation", name);
       }
-      degreeCount++;
+      x0 += 100.0;
     }
-    ck.checkpoint("SquareWaves");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "SquareWaves");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -541,4 +547,75 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "Circles");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("DegeneratePolygons", () => {
+    const ck = new Checker();
+    for (const points of [
+      [{ x: 5.36, y: 8.85, z: 23.78 },
+      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+      { x: 5.36, y: 8.85, z: 23.78 },
+      { x: 5.36, y: 8.85, z: 23.78 }],
+      [{ x: 0, y: 0, z: 0 },
+      { x: 3.4621419875139443, y: -2.0064530227179844, z: 0 },
+      { x: 0, y: 0, z: 0 }],
+      [{ x: 0, y: 0, z: 0 },
+      { x: 2.9577539019415324, y: -0.8576720613542541, z: 0 },
+      { x: 8.881784197001252e-16, y: 0, z: 0 }],
+    ]) {
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      if (graph) {
+        const polyface = PolyfaceBuilder.graphToPolyface(graph);
+        ck.testExactNumber(polyface.facetCount, 0, "degenerate triangle produced no facets.");
+      }
+    }
+  });
+  it("facets for ACS", () => {
+    const ck = new Checker();
+    const savedMeshes = [];
+    let counter0 = 0;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
+      const basePoints = [
+        Point3d.create(0, 1, 0),
+        Point3d.create(4, 1, 0),
+        Point3d.create(a, 0, 0),
+        Point3d.create(6, 2, 0),
+        Point3d.create(a, 4, 0),
+        Point3d.create(4, 3, 0),
+        Point3d.create(0, 3, 0)];
+      let counter1 = 0;
+      const needParams = true;
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        const arrowPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          arrowPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+        const loop = Loop.createPolygon(arrowPoints);
+        const sweepContour = SweepContour.createForLinearSweep(loop);
+
+        const options = new StrokeOptions();
+        options.needParams = false;
+        options.needParams = needParams;
+        const builder = PolyfaceBuilder.create(options);
+
+        sweepContour!.emitFacets(builder, false);
+        const polyface = builder.claimPolyface(true);
+        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1 + " needParams" + needParams)
+          || Checker.noisy.ACSArrows) {
+          console.log(" Triangulation From Start index " + startIndex, " (needParams " + needParams + ")");
+          console.log("   arrow parameter " + a);
+          console.log("    Facet Count " + polyface.facetCount, " case " + counter0 + "." + counter1);
+          console.log(prettyPrint(arrowPoints));
+          const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+          console.log(prettyPrint(jsPolyface));
+        }
+        polyface.tryTranslateInPlace(counter1 * 10, counter0 * 10, 0);
+        savedMeshes.push(polyface);
+        counter1++;
+      }
+      counter0++;
+    }
+    GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "ACSArrows");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

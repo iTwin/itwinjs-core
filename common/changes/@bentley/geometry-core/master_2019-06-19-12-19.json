@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add quick-exit completion tests in earcut triangulation",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

@@ -209,7 +209,7 @@ export class Triangulator {
     const graph = new HalfEdgeGraph();
     const startingNode = Triangulator.createFaceLoopFromCoordinates(graph, data, true, true);
 
-    if (!startingNode) return graph;
+    if (!startingNode || graph.countNodes() < 6) return graph;
 
     Triangulator.triangulateSingleFace(graph, startingNode);
     Triangulator.flipTriangles(graph);
@@ -399,12 +399,22 @@ export class Triangulator {
     if (!ear) return;
 
     let next;
-
+    let next2;
+    let maxCandidate = ear.countEdgesAroundFace() - 2;
+    let numCandidate = 0;
+    ear.clearMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
     // iterate through ears, slicing them one by one
     while (!ear.isMaskSet(HalfEdgeMask.TRIANGULATED_FACE)) {
       next = ear.faceSuccessor;
-
+      next2 = next.faceSuccessor;
+      if (next === ear || next2 === ear || next2.faceSuccessor === ear)
+        break;
+      if (++numCandidate > maxCandidate)
+        break;
       if (Triangulator.isEar(ear)) {
+        maxCandidate--;
+        numCandidate = 0;
+
         // skipping the next vertices leads to less sliver triangles
 
         // If we already have a separated triangle, do not join
@@ -414,9 +424,7 @@ export class Triangulator {
           ear = ear.faceSuccessor.edgeMate.faceSuccessor;
           // another step?   Nate's 2017 code went one more.
         } else {
-          ear.setMask(HalfEdgeMask.TRIANGULATED_FACE);
-          ear.faceSuccessor.setMask(HalfEdgeMask.TRIANGULATED_FACE);
-          ear.facePredecessor.setMask(HalfEdgeMask.TRIANGULATED_FACE);
+          ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
           ear = next.faceSuccessor;
         }
         continue;
