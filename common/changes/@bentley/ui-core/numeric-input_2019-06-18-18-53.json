@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Copied source from react-numeric-input and converted to TypeScript for internal control",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

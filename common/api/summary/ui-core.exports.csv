@@ -118,6 +118,9 @@ beta;RadialMenu
 beta;RadialMenuProps 
 public;Radio 
 public;RadioProps 
+internal;ReactNumericInput 
+alpha;ReactNumericInputProps 
+internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 

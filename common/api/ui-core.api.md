@@ -11,7 +11,6 @@ import { I18N } from '@bentley/imodeljs-i18n';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
-import * as ReactNumericInput from 'react-numeric-input';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
 // @internal
@@ -908,51 +907,9 @@ export class NumericInput extends React.Component<NumericInputProps> {
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
 // @alpha (undocumented)
-export interface NumericInputProps extends Omit<ReactNumericInput.NumericInputProps, "min" | "max" | "step" | "precision" | "defaultValue" | "onInvalid" | "style" | "nostyle" | "mobile">, CommonProps {
-    // (undocumented)
-    componentClass?: string;
-    // (undocumented)
-    defaultValue?: number | string;
-    // (undocumented)
-    format?: ((value: number | null) => string);
-    // (undocumented)
-    max?: BoundsFunctionProp;
-    // (undocumented)
-    maxLength?: number;
-    // (undocumented)
-    min?: BoundsFunctionProp;
-    // (undocumented)
-    mobile?: boolean | "auto" | (() => boolean);
-    // (undocumented)
-    noValidate?: boolean | string;
-    // (undocumented)
-    onBlur?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onChange?: ((value: number | null, stringValue: string, input: HTMLInputElement) => void);
-    // (undocumented)
-    onFocus?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onInput?: React.FormEventHandler<HTMLInputElement>;
-    // (undocumented)
-    onInvalid?: ((error: string, value: number | null, stringValue: string) => void);
-    // (undocumented)
-    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onSelect?: React.ReactEventHandler<HTMLInputElement>;
-    // (undocumented)
-    onValid?: ((value: number | null, stringValue: string) => void);
-    // (undocumented)
-    parse?: ((stringValue: string) => number | null);
-    // (undocumented)
-    precision?: number | (() => number | null | undefined);
-    // (undocumented)
-    snap?: boolean;
+export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
     // (undocumented)
     step?: StepFunctionProp;
-    // (undocumented)
-    strict: boolean;
-    // (undocumented)
-    value?: number | string;
 }
 
 // @public
@@ -1093,6 +1050,88 @@ export class Radio extends React.PureComponent<RadioProps> {
 // @public
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
+
+// @internal (undocumented)
+export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
+    constructor(props: ReactNumericInputProps);
+    componentDidMount(): void;
+    componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
+    componentWillReceiveProps(props: ReactNumericInputProps): void;
+    componentWillUnmount(): void;
+    componentWillUpdate(): void;
+    static defaultProps: {
+        step: number;
+        min: number;
+        max: number;
+        precision: null;
+        parse: null;
+        format: null;
+        mobile: string;
+        strict: boolean;
+        componentClass: string;
+        style: {};
+    };
+    static DELAY: number;
+    static DIRECTION_DOWN: string;
+    static DIRECTION_UP: string;
+    // (undocumented)
+    refsInput: HTMLInputElement | undefined;
+    render(): JSX.Element;
+    static SPEED: number;
+    }
+
+// @alpha (undocumented)
+export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
+    // (undocumented)
+    componentClass?: string;
+    // (undocumented)
+    defaultValue?: number | string;
+    // (undocumented)
+    format?: ((value: number | null, strValue: string) => string);
+    // (undocumented)
+    max?: BoundsFunctionProp;
+    // (undocumented)
+    maxLength?: number;
+    // (undocumented)
+    min?: BoundsFunctionProp;
+    // (undocumented)
+    mobile?: boolean | "auto" | (() => boolean);
+    // (undocumented)
+    noStyle?: boolean;
+    // (undocumented)
+    noValidate?: boolean | string;
+    // (undocumented)
+    onBlur?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onChange?: ((value: number | null, stringValue: string, input: HTMLInputElement) => void);
+    // (undocumented)
+    onFocus?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onInput?: React.FormEventHandler<HTMLInputElement>;
+    // (undocumented)
+    onInvalid?: ((error: string, value: number | null, stringValue: string) => void);
+    // (undocumented)
+    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement | HTMLInputElement>;
+    // (undocumented)
+    onSelect?: React.ReactEventHandler<HTMLInputElement>;
+    // (undocumented)
+    onValid?: ((value: number | null, stringValue: string) => void);
+    // (undocumented)
+    parse?: ((value: string) => number | null);
+    // (undocumented)
+    precision?: number | (() => number | null | undefined);
+    // (undocumented)
+    snap?: boolean;
+    // @internal (undocumented)
+    step?: ReactStepFunctionProp;
+    // (undocumented)
+    strict: boolean;
+    // (undocumented)
+    value?: number | string;
+}
+
+// @internal (undocumented)
+export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
 // @public
 export const ScrollView: React.FunctionComponent<CommonDivProps>;

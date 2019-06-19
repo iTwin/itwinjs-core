@@ -5,7 +5,7 @@ exports[`NumericInput should render correctly 1`] = `
   className="core-numeric-input"
   data-testid="core-numeric-input"
 >
-  <NumericInput
+  <ReactNumericInput
     componentClass="input"
     format={null}
     max={9007199254740991}

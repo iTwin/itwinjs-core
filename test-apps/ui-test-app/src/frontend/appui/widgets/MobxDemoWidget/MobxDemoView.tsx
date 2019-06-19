@@ -34,14 +34,16 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
 
         <form onSubmit={addBird}>
           <table>
-            <tr>
-              <td><Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" /></td>
-              <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
-            </tr>
-            <tr>
-              <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter numeric value" /></td>
-              <td>&nbsp;</td>
-            </tr>
+            <tbody>
+              <tr>
+                <td><Input placeholder="Enter bird" value={birdName} onChange={setBirdName} className="bird-name" /></td>
+                <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
+              </tr>
+              <tr>
+                <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter numeric value" /></td>
+                <td>&nbsp;</td>
+              </tr>
+            </tbody>
           </table>
         </form>
 
