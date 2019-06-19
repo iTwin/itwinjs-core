@@ -26,6 +26,7 @@ import { Id64Arg } from "@bentley/bentleyjs-core";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedVSPSList";
 import { ToolBarDropDown } from "./ToolBar";
+import { Provider } from "./FeatureOverrides";
 
 export interface ApplySavedView {
   setView(view: ViewState): Promise<void>;
@@ -72,6 +73,9 @@ export class SavedViewPicker extends ToolBarDropDown {
     } else {
       return undefined;
     }
+    // Make sure that any feature overrides are cleared.
+    // Note: this is only really necessary if FeatureOverridesPanel has not been opened yet and we have recalled a view that has saved feature overrides
+    Provider.remove(this._vp);
   }
 
   public async populate(): Promise<void> {
@@ -173,6 +177,16 @@ export class SavedViewPicker extends ToolBarDropDown {
     const viewState = ctor.createFromProps(vsp, this._vp.view.iModel)!;
     await viewState.load(); // make sure any attachments are loaded
     await this._viewer.setView(viewState);
+
+    const overrideElementsString = this._selectedView.overrideElements;
+    if (undefined !== overrideElementsString) {
+      const overrideElements = JSON.parse(overrideElementsString) as any[];
+      const provider = Provider.getOrCreate(this._vp);
+      if (undefined !== provider && undefined !== overrideElements) {
+        provider.overrideElementsByArray(overrideElements);
+      }
+    }
+
     const selectedElementsString = this._selectedView.selectedElements;
     if (undefined !== selectedElementsString) {
       const selectedElements = JSON.parse(selectedElementsString) as Id64Arg;
@@ -238,7 +252,13 @@ export class SavedViewPicker extends ToolBarDropDown {
       this._imodel.selectionSet.elements.forEach((id) => { seList.push(id); });
       selectedElementsString = JSON.stringify(seList);
     }
-    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString);
+    let overrideElementsString;
+    const provider = Provider.getOrCreate(this._vp);
+    if (undefined !== provider) {
+      const overrideElements = provider.toJSON();
+      overrideElementsString = JSON.stringify(overrideElements);
+    }
+    const nvsp = new NamedViewStatePropsString(newName, json, selectedElementsString, overrideElementsString);
     this._views.insert(nvsp);
     this.populateFromViewList();
 

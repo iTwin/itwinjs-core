@@ -3,7 +3,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64Arg, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -13,6 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  FeatureOverrideProvider, FeatureSymbology,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -275,6 +276,8 @@ function getViewFlagsString(): string {
         if (value) vfString += "+" + key;
     }
   }
+  if (undefined !== activeViewState.overrideElements)
+    vfString += "+ovrEl";
   if (undefined !== activeViewState.selectedElements)
     vfString += "+selEl";
   return vfString;
@@ -447,6 +450,7 @@ class DefaultConfigs {
   public viewName?: string;
   public extViewName?: string;
   public viewStatePropsString?: string;
+  public overrideElements?: any[];
   public selectedElements?: Id64Arg;
   public testType?: string;
   public displayStyle?: string;
@@ -502,6 +506,8 @@ class DefaultConfigs {
       // If there is a viewString, put its name in the viewName property so that it gets used in the filename, etc.
       this.viewName = jsonData.viewString._name;
       this.viewStatePropsString = jsonData.viewString._viewStatePropsString;
+      if (undefined !== jsonData.viewString._overrideElements)
+        this.overrideElements = JSON.parse(jsonData.viewString._overrideElements) as any[];
       if (undefined !== jsonData.viewString._selectedElements)
         this.selectedElements = JSON.parse(jsonData.viewString._selectedElements) as Id64Arg;
     }
@@ -598,8 +604,65 @@ class SimpleViewState {
   public projectConfig?: ConnectProjectConfiguration;
   public oidcClient?: OidcBrowserClient;
   public externalSavedViews?: any[];
+  public overrideElements?: any[];
   public selectedElements?: Id64Arg;
   constructor() { }
+}
+
+class FOProvider implements FeatureOverrideProvider {
+  private readonly _elementOvrs = new Map<Id64String, FeatureSymbology.Appearance>();
+  private _defaultOvrs: FeatureSymbology.Appearance | undefined;
+  private readonly _vp: Viewport;
+
+  private constructor(vp: Viewport) { this._vp = vp; }
+
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
+    this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
+    if (undefined !== this._defaultOvrs)
+      ovrs.setDefaultOverrides(this._defaultOvrs);
+  }
+
+  public overrideElementsByArray(elementOvrs: any[]): void {
+    elementOvrs.forEach((eo) => {
+      const fsa = FeatureSymbology.Appearance.fromJSON(JSON.parse(eo.fsa) as FeatureSymbology.AppearanceProps);
+      if (eo.id === "-default-")
+        this.defaults = fsa;
+      else
+        this._elementOvrs.set(eo.id, fsa);
+    });
+    this.sync();
+  }
+
+  public clear(): void {
+    this._elementOvrs.clear();
+    this._defaultOvrs = undefined;
+    this.sync();
+  }
+
+  public set defaults(value: FeatureSymbology.Appearance | undefined) {
+    this._defaultOvrs = value;
+    this.sync();
+  }
+
+  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
+
+  public static get(vp: Viewport): FOProvider | undefined {
+    return vp.featureOverrideProvider instanceof FOProvider ? vp.featureOverrideProvider : undefined;
+  }
+
+  public static remove(vp: Viewport): void {
+    if (undefined !== this.get(vp))
+      vp.featureOverrideProvider = undefined;
+  }
+
+  public static getOrCreate(vp: Viewport): FOProvider {
+    let provider = this.get(vp);
+    if (undefined === provider) {
+      provider = new FOProvider(vp);
+      vp.featureOverrideProvider = provider;
+    }
+    return provider;
+  }
 }
 
 let theViewport: ScreenViewport | undefined;
@@ -712,7 +775,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
   } else if (undefined !== testConfig.extViewName) {
     await loadExternalView(activeViewState, testConfig.extViewName);
   } else {
-    await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements);
+    await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements, testConfig.overrideElements);
   }
 
   // now connect the view to the canvas
@@ -740,10 +803,20 @@ async function loadIModel(testConfig: DefaultConfigs) {
     }
   }
 
+  // Set the overrides for elements (if there are any)
+  if (undefined !== iModCon && undefined !== activeViewState.overrideElements) {
+    // Hook up the feature override provider and set up the overrides in it from the ViewState.
+    // Note that we do not have to unhook it or clear out the feature overrides if there are none since the viewport is created from scratch each time.
+    const provider = FOProvider.getOrCreate(theViewport!);
+    if (undefined !== provider && undefined !== activeViewState.overrideElements) {
+      provider.overrideElementsByArray(activeViewState.overrideElements);
+    }
+  }
+
   // Load all tiles
   await waitForTilesToLoad(testConfig.iModelLocation);
 
-  // Set the selected Elements (if there are any)
+  // Set the selected elements (if there are any)
   if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
     iModCon!.selectionSet.add(activeViewState.selectedElements);
     theViewport!.markSelectionSetDirty();
@@ -1007,10 +1080,13 @@ async function loadExternalView(state: SimpleViewState, extViewName: string) {
   if (undefined !== state.externalSavedViews) {
     for (const namedExternalSavedView of state.externalSavedViews) {
       if (extViewName === namedExternalSavedView._name) {
+        let oe;
+        if (undefined !== namedExternalSavedView._overrideElements)
+          oe = JSON.parse(namedExternalSavedView._overrideElements) as any[];
         let se;
         if (undefined !== namedExternalSavedView._selectedElements)
           se = JSON.parse(namedExternalSavedView._selectedElements) as Id64Arg;
-        await loadViewString(state, namedExternalSavedView._viewStatePropsString, se);
+        await loadViewString(state, namedExternalSavedView._viewStatePropsString, se, oe);
         return;
       }
     }
@@ -1021,7 +1097,7 @@ async function loadExternalView(state: SimpleViewState, extViewName: string) {
 }
 
 // selects the configured view from a viewStateProperties string.
-async function loadViewString(state: SimpleViewState, viewStatePropsString: string, selectedElements: Id64Arg | undefined) {
+async function loadViewString(state: SimpleViewState, viewStatePropsString: string, selectedElements: Id64Arg | undefined, overrideElements: any[] | undefined) {
   const vsp = JSON.parse(viewStatePropsString);
   const className = vsp.viewDefinitionProps.classFullName;
   const ctor = await state.iModelConnection!.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
@@ -1032,6 +1108,7 @@ async function loadViewString(state: SimpleViewState, viewStatePropsString: stri
     state.viewState = ctor.createFromProps(vsp, state.iModelConnection!);
     if (undefined !== state.viewState) {
       await state.viewState.load(); // make sure any attachments are loaded
+      state.overrideElements = overrideElements;
       state.selectedElements = selectedElements;
     }
   }

@@ -12,16 +12,19 @@ export class NamedViewStatePropsString {
   private _name: string;
   private _viewStatePropsString: string;
   private _selectedElements?: string;
+  private _overrideElements?: string;
 
-  public constructor(name: string, viewState: string, selectedElements?: string) {
+  public constructor(name: string, viewState: string, selectedElements?: string, overrideElements?: string) {
     this._name = name;
     this._viewStatePropsString = viewState;
     this._selectedElements = selectedElements;
+    this._overrideElements = overrideElements;
   }
 
   public get name(): string { return this._name; }
   public get viewStatePropsString(): string { return this._viewStatePropsString; }
   public get selectedElements(): string | undefined { return this._selectedElements; }
+  public get overrideElements(): string | undefined { return this._overrideElements; }
 }
 
 export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
@@ -83,7 +86,7 @@ export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
     if (undefined !== esvString && "" !== esvString) {
       const namedVSPs = JSON.parse(esvString) as any[];
       for (const obj of namedVSPs) {
-        const esvProps: NamedViewStatePropsString = new NamedViewStatePropsString(obj._name, obj._viewStatePropsString, obj._selectedElements);
+        const esvProps: NamedViewStatePropsString = new NamedViewStatePropsString(obj._name, obj._viewStatePropsString, obj._selectedElements, obj._overrideElements);
         this.insert(esvProps);
       }
     }
