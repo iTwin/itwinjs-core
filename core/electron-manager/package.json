@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "1.1.0-dev.15",
+  "version": "1.1.0-dev.16",
   "description": "iModel.js electron utilities",
   "main": "lib/ElectronManager.js",
   "typings": "lib/ElectronManager",
@@ -38,7 +38,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "1.1.0-dev.15",
+    "@bentley/build-tools": "1.1.0-dev.16",
     "@types/node": "10.14.1",
     "electron": "^4.1.0",
     "rimraf": "^2.6.2",
