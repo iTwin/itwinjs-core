@@ -4,21 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  TileTreeModelState,
+  IModelApp,
   RenderMemory,
+  TileTree,
   Viewport,
 } from "@bentley/imodeljs-frontend";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { createComboBox, ComboBoxEntry } from "./ComboBox";
 
-function collectTileTreeMemory(stats: RenderMemory.Statistics, model: TileTreeModelState): void {
-  const tree = model.tileTree;
+function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.Owner): void {
+  const tree = owner.tileTree;
   if (undefined !== tree)
     tree.collectStatistics(stats);
 }
 
 type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => void;
-type PurgeMem = (vp: Viewport) => void;
+type PurgeMem = (olderThan?: BeTimePoint) => void;
 
 const enum MemIndex {
   None = -1,
@@ -36,18 +37,14 @@ const memLabels = [
 ];
 
 const calcMem: CalcMem[] = [
-  (stats, vp) => vp.view.forEachTileTreeModel((model) => collectTileTreeMemory(stats, model)),
-  (stats, vp) => vp.view.iModel.models.loaded.forEach((model, _id) => {
-    const geomModel = model.asGeometricModel;
-    if (undefined !== geomModel)
-      collectTileTreeMemory(stats, geomModel);
-  }),
+  (stats, vp) => vp.collectStatistics(stats),
+  (stats, vp) => vp.view.iModel.tiles.forEachTreeOwner((owner) => collectTileTreeMemory(stats, owner)),
 ];
 
 // ###TODO...
 const purgeMem: Array<PurgeMem | undefined> = [
   undefined,
-  (_vp) => undefined,
+  (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
 ];
 
 function formatMemory(numBytes: number): string {
@@ -170,7 +167,7 @@ export class MemoryTracker {
 
     const button = document.createElement("button");
     button.innerText = "Purge";
-    button.click = () => this.purge();
+    button.addEventListener("click", () => this.purge());
 
     div.appendChild(button);
     parent.appendChild(div);
@@ -228,7 +225,8 @@ export class MemoryTracker {
   private purge(): void {
     const purge = purgeMem[this._memIndex];
     if (undefined !== purge) {
-      purge(this._vp);
+      purge();
+      this._vp.invalidateScene(); // to trigger reloading of tiles we actually do want to continue drawing
       this.update();
     }
   }

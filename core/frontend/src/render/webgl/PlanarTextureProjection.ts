@@ -6,7 +6,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Target } from "./Target";
 import { Matrix4 } from "./Matrix";
-import { TileTreeModelState } from "../../ModelState";
+import { TileTree } from "../../tile/TileTree";
 import { Frustum, Npc, FrustumPlanes, RenderMode } from "@bentley/imodeljs-common";
 import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
@@ -17,7 +17,7 @@ export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
   private static _scratchFrustum = new Frustum();
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, texturedModel: TileTreeModelState, viewState: ViewState3d): { textureFrustum?: Frustum, projectionMatrix?: Matrix4 } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d): { textureFrustum?: Frustum, projectionMatrix?: Matrix4 } {
     const textureZ = texturePlane.getNormalRef();
     const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -36,6 +36,7 @@ export class PlanarTextureProjection {
       textureX.normalizeInPlace();
       textureY = textureZ.crossProduct(textureX).normalize()!;
     }
+
     const frustumX = textureZ, frustumY = textureX, frustumZ = textureY;
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
     const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
@@ -44,13 +45,11 @@ export class PlanarTextureProjection {
     const viewFrustumFrustum = viewFrustum.getFrustum();
     const viewMap = viewFrustumFrustum.toMap4d()!;
     const viewPlanes = new FrustumPlanes(viewFrustumFrustum);
-    if (texturedModel && texturedModel.tileTree) {
-      const tileRange = Range3d.createNull();
-      texturedModel.tileTree.accumlateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
-      if (undefined === tileRange)
-        return {};
-      npcRange = npcRange.intersect(tileRange);
-    }
+
+    const tileRange = Range3d.createNull();
+    tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
+    npcRange = npcRange.intersect(tileRange);
+
     PlanarTextureProjection._scratchFrustum.initFromRange(npcRange);
     viewMap.transform1.multiplyPoint3dArrayQuietNormalize(PlanarTextureProjection._scratchFrustum.points);
     const range = Range3d.createTransformedArray(textureTransform, PlanarTextureProjection._scratchFrustum.points);

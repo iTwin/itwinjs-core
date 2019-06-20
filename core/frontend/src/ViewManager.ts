@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { BentleyStatus, BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent } from "@bentley/bentleyjs-core";
+import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -11,7 +12,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { TileTree } from "./tile/TileTree";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -290,6 +291,32 @@ export class ViewManager {
           break;
 
     this.onFinishRender.raiseEvent();
+  }
+
+  /** Purge TileTrees that haven't been drawn since the specified time point and are not currently in use by any ScreenViewport.
+   * @internal
+   */
+  public purgeTileTrees(olderThan: BeTimePoint): void {
+    const viewportsByIModel = new Map<IModelConnection, ScreenViewport[]>();
+    for (const vp of this._viewports) {
+      let viewports = viewportsByIModel.get(vp.iModel);
+      if (undefined === viewports) {
+        viewports = [];
+        viewportsByIModel.set(vp.iModel, viewports);
+      }
+
+      viewports.push(vp);
+    }
+
+    for (const entry of viewportsByIModel) {
+      const iModel = entry[0];
+      const viewports = entry[1];
+      const trees = new Set<TileTree>();
+      for (const viewport of viewports)
+        viewport.discloseTileTrees(trees);
+
+      iModel.tiles.purge(olderThan, trees);
+    }
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.

@@ -26,14 +26,15 @@ import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapProvider } from "./tile/WebMapTileTree";
-import { TileTreeModelState } from "./ModelState";
+import { BackgroundMapTileTreeReference } from "./tile/WebMapTileTree";
+import { TileTree } from "./tile/TileTree";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport } from "./Viewport";
-import { SpatialClassification } from "./SpatialClassification";
+import { DecorateContext } from "./ViewContext";
 import { calculateSolarDirection } from "./SolarCalculate";
+import { IModelApp } from "./IModelApp";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -44,8 +45,8 @@ import { calculateSolarDirection } from "./SolarCalculate";
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static get className() { return "DisplayStyle"; }
-  private _backgroundMap: BackgroundMapProvider;
-  private _contextRealityModels: ContextRealityModelState[];
+  private readonly _backgroundMap: BackgroundMapTileTreeReference;
+  private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
 
@@ -61,8 +62,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    this._backgroundMap = new BackgroundMapProvider(BackgroundMapSettings.fromJSON(mapProps), iModel);
-    this._contextRealityModels = [];
+    this._backgroundMap = new BackgroundMapTileTreeReference(BackgroundMapSettings.fromJSON(mapProps), iModel);
 
     if (styles) {
       if (styles.contextRealityModels)
@@ -90,20 +90,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.changeBackgroundMapProps(BackgroundMapSettings.fromJSON(mapProps));
   }
 
+  /** @internal */
+  public get backgroundMap(): BackgroundMapTileTreeReference { return this._backgroundMap; }
+
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
    * @beta
    */
-  public get backgroundMapSettings(): BackgroundMapSettings { return this.backgroundMap.settings; }
+  public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   /** @beta */
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
-    if (settings.equals(this.backgroundMap.settings))
-      return;
-
-    this.backgroundMap.dispose();
-    this._backgroundMap = new BackgroundMapProvider(settings, this.iModel);
-    this.settings.backgroundMap = settings;
+    this._backgroundMap.settings = settings;
   }
 
   /** Modify a subset of the background map display settings.
@@ -122,20 +120,23 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachContextRealityModel(func: (model: TileTreeModelState) => void): void {
-    for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
+  public forEachRealityModel(func: (model: ContextRealityModelState) => void): void {
+    for (const model of this._contextRealityModels)
+      func(model);
   }
 
   /** @internal */
-  public async loadContextRealityModels(): Promise<void> {
-    const classifierIds = new Set<Id64String>();
-    for (const contextRealityModel of this._contextRealityModels) {
-      const classifier = SpatialClassification.getClassifierProps(contextRealityModel);
-      if (undefined !== classifier)
-        classifierIds.add(classifier.modelId);
-    }
-    return SpatialClassification.loadClassifiers(classifierIds, this.iModel);
+  public forEachRealityTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+    this.forEachRealityModel((model) => func(model.treeRef));
   }
+
+  /** @internal */
+  public forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+    this.forEachRealityTileTreeRef(func);
+    if (this.viewFlags.backgroundMap)
+      func(this._backgroundMap);
+  }
+
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
    * @param other The display style to which to compare.
    * @returns true if the specified display style is logically equivalent to this display style - i.e., both styles have the same values for all of their settings.
@@ -146,9 +147,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     else
       return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
-
-  /** @internal */
-  public get backgroundMap(): BackgroundMapProvider { return this._backgroundMap; }
 
   /** The name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
@@ -176,37 +174,41 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
-  /** Note - do not push or remove members from contextRealityModelsProperty - use add/remove so that the json properties are kept in synch properly.
-   * @internal
-   */
-  public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }
   /** @internal */
-  public set contextRealityModels(contextRealityModels: ContextRealityModelState[]) { this._contextRealityModels = contextRealityModels; }
-  /** @internal */
-  public addContextRealityModel(contextRealityModel: ContextRealityModelProps, iModel: IModelConnection) {
-    this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, iModel));
-    if (undefined === this.jsonProperties.contextRealityModels)
-      this.jsonProperties.contextRealityModels = [];
+  public attachRealityModel(props: ContextRealityModelProps): void {
+    // ###TODO check if url+name already present...or do we allow same to be attached multiple times?
+    if (undefined === this.jsonProperties.styles)
+      this.jsonProperties.styles = { };
 
-    this.jsonProperties.contextRealityModels.push(contextRealityModel);
+    if (undefined === this.jsonProperties.styles.contextRealityModels)
+      this.jsonProperties.styles.contextRealityModels = [];
+
+    this.jsonProperties.styles.contextRealityModels.push(props);
+    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel));
   }
+
   /** @internal */
-  public removeContextRealityModel(index: number) {
-    if (index >= this._contextRealityModels.length || !Array.isArray(this.jsonProperties.contextRealityModels) || index >= this.jsonProperties.contextRealityModels.length) {
-      assert(false);
+  public detachRealityModelByNameAndUrl(name: string, url: string): void {
+    const index = this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
+    if (-1 !== index)
+      this.detachRealityModelByIndex(index);
+  }
+
+  /** @internal */
+  public detachRealityModelByIndex(index: number): void {
+    const styles = this.jsonProperties.styles;
+    const props = undefined !== styles ? styles.contextRealityModels : undefined;
+    if (!Array.isArray(props) || index >= this._contextRealityModels.length || index >= props.length)
       return;
-    }
+
+    assert(this._contextRealityModels[index].url === props[index].tilesetUrl);
+    props.splice(index, 1);
     this._contextRealityModels.splice(index, 1);
-    this.jsonProperties.contextRealityModels.splice(index, 1);
   }
 
   /** @internal */
-  public containsContextRealityModel(contextRealityModel: ContextRealityModelState) {
-    for (const curr of this._contextRealityModels)
-      if (curr.matches(contextRealityModel))
-        return true;
-
-    return false;
+  public hasAttachedRealityModel(name: string, url: string): boolean {
+    return -1 !== this._contextRealityModels.findIndex((x) => x.matchesNameAndUrl(name, url));
   }
 
   /** The ViewFlags associated with this style.
@@ -227,7 +229,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
 
   /** @internal */
-  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.backgroundMap.getPlane() : undefined; }
+  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this._backgroundMap.plane : undefined; }
 
   /** Returns true if this is a 3d display style. */
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
@@ -258,6 +260,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[overrideSubCategory]]
    */
   public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
+
+  /** @internal */
+  public decorate(context: DecorateContext): void {
+    if (this.viewFlags.backgroundMap)
+      this._backgroundMap.decorate(context);
+  }
+
+  /** @internal */
+  public get wantShadows(): boolean {
+    return this.is3d() && this.viewFlags.shadows && !!IModelApp.renderSystem.options.displaySolarShadows;
+  }
 }
 
 /** A display style that can be applied to 2d views.

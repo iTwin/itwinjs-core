@@ -4,6 +4,7 @@
     "await-promise": false,
     "completed-docs": false,
     "no-floating-promises": false,
-    "promise-function-async": false
+    "promise-function-async": false,
+    "require-basic-rpc-values": false
   }
 }

@@ -156,13 +156,12 @@ export class ViewportSelectionHandler implements IDisposable {
       const ids = await Presentation.selection.getHiliteSet(this._imodel);
       using(Presentation.selection.suspendIModelToolSelectionSync(this._imodel), (_) => {
         imodel.hilited.clear();
+        imodel.selectionSet.emptyAll();
         if (ids.models && ids.models.length) {
           imodel.hilited.models.addIds(ids.models);
-          imodel.selectionSet.emptyAll();
         }
         if (ids.subCategories && ids.subCategories.length) {
           imodel.hilited.subcategories.addIds(ids.subCategories);
-          imodel.selectionSet.emptyAll();
         }
         if (ids.elements && ids.elements.length) {
           imodel.hilited.elements.addIds(ids.elements);

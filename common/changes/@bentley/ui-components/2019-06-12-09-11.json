@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tree: Add ability to check or uncheck multiple selected nodes' checkboxes all at once.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Robert.Lukasonok@bentley.com"
+}

@@ -12,14 +12,14 @@ import { Target } from "./Target";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Matrix4 } from "./Matrix";
 import { SceneContext } from "../../ViewContext";
-import { TileTreeModelState } from "../../ModelState";
-import { TileTree, Tile } from "../../tile/TileTree";
+import { TileTree } from "../../tile/TileTree";
+import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, ColorDef, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
-import { getDrawParams } from "./SceneCompositor";
+import { getDrawParams } from "./ScratchDrawParams";
 import { BatchState, BranchStack } from "./BranchState";
 import { Batch, Branch } from "./Graphic";
 import { RenderState } from "./RenderState";
@@ -67,20 +67,20 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
   private _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  private constructor(private _classifierProperties: SpatialClassificationProps.Properties) { super(); }
+  private constructor(private _classifier: SpatialClassificationProps.Classifier) { super(); }
   public get hiliteTexture(): Texture | undefined { return this._hiliteTexture; }
   public get combinedTexture(): Texture | undefined { return this._combinedTexture; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
-  public get properties(): SpatialClassificationProps.Properties { return this._classifierProperties; }
+  public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
-  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifierProperties.flags.inside; }
-  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifierProperties.flags.outside; }
+  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.inside; }
+  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier.flags.outside; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
 
-  public static create(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): PlanarClassifier {
+  public static create(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): PlanarClassifier {
     const classifier = new PlanarClassifier(properties);
-    classifier.collectGraphics(sceneContext, classifiedModel, tileTree);
+    classifier.collectGraphics(sceneContext, classifiedTree, tileTree);
     return classifier;
   }
 
@@ -126,7 +126,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedModel: TileTreeModelState, tileTree: TileTree) {
+  public collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree) {
     if (undefined === context.viewFrustum)
       return;
 
@@ -134,7 +134,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === viewState)
       return;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedModel, viewState);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState);
     if (!projection.textureFrustum || !projection.projectionMatrix)
       return;
 
@@ -144,6 +144,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawArgs = PlanarClassifierDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum));
     tileTree.draw(drawArgs);
   }
+
   public draw(target: Target) {
     if (undefined === this._frustum) {
       assert(false);
@@ -173,6 +174,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         assert(false, "Failed to create planar classifier texture");
         return;
       }
+
       this._colorTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
       this._featureTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), featureTextureHandle);
       this._combinedTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), combinedTextureHandle);
@@ -184,6 +186,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       }
       this._combinedFbo = FrameBuffer.create([combinedTextureHandle]);
     }
+
     if (undefined === this._fbo || (!useMRT && undefined === this._featureFbo)) {
       assert(false, "unable to create frame buffer objects");
       return;
@@ -247,6 +250,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
       });
     }
+
     // Create combined texture with color followed by featureIds.
     system.frameBufferStack.execute(this._combinedFbo!, true, () => {
       gl.clearColor(0, 0, 0, 0);
@@ -271,6 +275,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         target.techniques.execute(target, hiliteCommands, RenderPass.Hilite);
       });
     }
+
     // Create combined texture with color followed by featureIds.  We do this to conserve texture units - could use color and feature textures directly otherwise.
     System.instance.context.viewport(0, 0, this._width, 2 * this._height);
     system.frameBufferStack.execute(this._combinedFbo!, true, () => {

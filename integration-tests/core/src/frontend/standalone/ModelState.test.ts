@@ -13,15 +13,18 @@ const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backe
 describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
+  let imodel3: IModelConnection;
   before(async () => {
     MockRender.App.startup();
     imodel2 = await IModelConnection.openSnapshot(iModelLocation + "mirukuru.ibim");
     imodel = await IModelConnection.openSnapshot(iModelLocation + "CompatibilityTestSeed.bim");
+    imodel3 = await IModelConnection.openSnapshot(iModelLocation + "test.bim");
   });
 
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
     if (imodel2) await imodel2.closeSnapshot();
+    if (imodel3) await imodel3.closeSnapshot();
     MockRender.App.shutdown();
   });
 
@@ -125,7 +128,22 @@ describe("ModelState", () => {
   });
 
   it("view thumbnails", async () => {
-    const thumbnail = await imodel2.views.getThumbnail("0x24");
+    let thumbnail = await imodel3.views.getThumbnail("0x34");
+    assert.equal(thumbnail.format, "png", "thumbnail format");
+    assert.equal(thumbnail.height, 768, "thumbnail height");
+    assert.equal(thumbnail.width, 768, "thumbnail width");
+    assert.equal(thumbnail.image.length, 19086, "thumbnail length");
+    const image = thumbnail.image;
+    assert.equal(image[0], 0x89);
+    assert.equal(image[1], 0x50);
+    assert.equal(image[2], 0x4E);
+    assert.equal(image[3], 0x47);
+    assert.equal(image[4], 0x0D);
+    assert.equal(image[5], 0x0A);
+    assert.equal(image[6], 0x1A);
+    assert.equal(image[7], 0x0A);
+
+    thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
     assert.equal(thumbnail.width, 768);
@@ -133,17 +151,10 @@ describe("ModelState", () => {
     assert.equal(thumbnail.image[3], 224);
     assert.equal(thumbnail.image[18061], 217);
 
-    try {
-      await imodel2.views.getThumbnail("0x25");
-    } catch (_err) {
-      return;
-    } // thumbnail doesn't exist
-    assert.fail("getThumbnail should not return");
-
     // thumbnail.format = "png";
     // thumbnail.height = 100;
     // thumbnail.width = 200;
-    // thumbnail.image = new Uint8Array(300);
+    // thumbnail.image = new Uint8Array(301); // try with odd number of bytes
     // thumbnail.image.fill(33);
 
     // await imodel2.views.saveThumbnail("0x24", thumbnail);
@@ -151,7 +162,14 @@ describe("ModelState", () => {
     // assert.equal(thumbnail2.format, "png");
     // assert.equal(thumbnail2.height, 100);
     // assert.equal(thumbnail2.width, 200);
-    // assert.equal(thumbnail2.image.length, 300);
+    // assert.equal(thumbnail2.image.length, 301);
     // assert.equal(thumbnail2.image[3], 33);
+
+    try {
+      await imodel2.views.getThumbnail("0x25");
+    } catch (_err) {
+      return;
+    } // thumbnail doesn't exist
+    assert.fail("getThumbnail should not return");
   });
 });

@@ -674,8 +674,6 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       else
         displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
 
-      // ###TODO: Is there such a concept as "2d reality models"???
-      promises.push(displayStyle.loadContextRealityModels());
       displayStyles.set(displayStyleProp.id!, displayStyle);
     }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -342,6 +342,8 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _modifierKey = BeModifierKeys.None;
+  private static _tileTreePurgeTime?: BeTimePoint;
+  private static _tileTreePurgeInterval?: BeDuration;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @internal
@@ -431,6 +433,12 @@ export class ToolAdmin {
   public startEventLoop() {
     if (!ToolAdmin._wantEventLoop) {
       ToolAdmin._wantEventLoop = true;
+      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
+      if (undefined !== treeExpirationTime) {
+        ToolAdmin._tileTreePurgeInterval = treeExpirationTime;
+        ToolAdmin._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
+      }
+
       requestAnimationFrame(ToolAdmin.eventLoop);
     }
   }
@@ -716,6 +724,12 @@ export class ToolAdmin {
 
     IModelApp.viewManager.renderLoop();
     IModelApp.tileAdmin.process();
+
+    if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
+      const now = BeTimePoint.now();
+      ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
+      IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+    }
 
     requestAnimationFrame(ToolAdmin.eventLoop);
   }

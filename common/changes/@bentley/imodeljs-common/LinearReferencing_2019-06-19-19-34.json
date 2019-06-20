@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adding domain classes for all relationships in the LinearReferencing schema.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "diego.diaz@bentley.com"
+}

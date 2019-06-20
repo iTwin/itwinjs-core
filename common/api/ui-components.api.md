@@ -28,6 +28,7 @@ import * as Inspire from 'inspire-tree';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
+import { Observable } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
@@ -40,7 +41,7 @@ import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
 import { PropertyValue } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid = require('react-data-grid');
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -243,6 +244,7 @@ export class BeInspireTree<TNodePayload> {
     deselectAll(muteEvents?: boolean): void;
     expanded(): BeInspireTreeNodes<TNodePayload>;
     flatten(): BeInspireTreeNodes<TNodePayload>;
+    getVisibleNodesBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>): Array<BeInspireTreeNode<TNodePayload>>;
     // @internal (undocumented)
     loadNodes(): Promise<void>;
     mute(events: BeInspireTreeEvent[]): EventsMuteContext;

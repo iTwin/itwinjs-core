@@ -4,7 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  BeEvent,
+  BentleyStatus,
+  BeTimePoint,
+  DbResult,
+  Dictionary,
+  dispose,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+  Logger,
+  OpenMode,
+  TransientIdSequence,
+} from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
@@ -21,7 +36,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTreeState } from "./tile/TileTree";
+import { TileTree } from "./tile/TileTree";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -90,21 +105,6 @@ export class IModelConnection extends IModel {
    */
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON()))));
-  }
-  /** The set of Context Reality Model tile trees for this IModelConnection.
-   * @internal
-   */
-  private _contextRealityModelTileTrees = new Map<string, TileTreeState>();
-  /** Get the context reality model tile tree for a URL.
-   * @internal
-   */
-  public getContextRealityModelTileTree(url: string): TileTreeState {
-    const found = this._contextRealityModelTileTrees.get(url);
-    if (found !== undefined)
-      return found;
-    const tileTree = new TileTreeState(this, true, this.transientIds.next);
-    this._contextRealityModelTileTrees.set(url, tileTree);
-    return tileTree;
   }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
@@ -280,7 +280,7 @@ export class IModelConnection extends IModel {
 
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
-    this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+    this.tiles.dispose();
 
     requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't await-ed right away.
@@ -310,7 +310,7 @@ export class IModelConnection extends IModel {
       return;
 
     IModelConnection.onClose.raiseEvent(this);
-    this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+    this.tiles.dispose();
     try {
       await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
     } finally {
@@ -673,13 +673,6 @@ export namespace IModelConnection {
         yield modelProps;
       }
     }
-
-    /** Code to run when the IModelConnection has closed. */
-    public onIModelConnectionClose() {
-      this.loaded.forEach((value: ModelState) => {
-        value.onIModelConnectionClose();
-      });
-    }
   }
 
   /** The collection of Elements for an [[IModelConnection]]. */
@@ -822,12 +815,16 @@ export namespace IModelConnection {
     /** Get a thumbnail for a view.
      * @param viewId The id of the view of the thumbnail.
      * @returns A Promise of the ThumbnailProps.
-     * @throws `Error` exception if no thumbnail exists.
+     * @throws Error if invalid thumbnail.
      */
     public async getThumbnail(viewId: Id64String): Promise<ThumbnailProps> {
       const val = await IModelReadRpcInterface.getClient().getViewThumbnail(this._iModel.iModelToken.toJSON(), viewId.toString());
-      const intVals = new Uint16Array(val.buffer);
-      return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 8, intVals[0]) };
+      const intVals = new Uint32Array(val.buffer, 0, 4);
+
+      if (intVals[1] !== ImageSourceFormat.Jpeg && intVals[1] !== ImageSourceFormat.Png)
+        return Promise.reject(new Error("Invalid thumbnail"));
+
+      return { format: intVals[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intVals[2], height: intVals[3], image: new Uint8Array(val.buffer, 16, intVals[0]) };
     }
 
     /** Save a thumbnail for a view.
@@ -837,13 +834,12 @@ export namespace IModelConnection {
      * @throws `Error` exception if the thumbnail wasn't successfully saved.
      */
     public async saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void> {
-      const id = Id64.fromString(viewId.toString());
-      const val = new Uint8Array(thumbnail.image.length + 16);  // include the viewId and metadata in the binary transfer by allocating a new buffer 16 bytes larger than the image size
-      new Uint16Array(val.buffer).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
-      const low32 = Id64.getLowerUint32(id);
-      const high32 = Id64.getUpperUint32(id);
-      new Uint32Array(val.buffer, 8).set([low32, high32]); // viewId is 8 bytes starting at offset 8
-      new Uint8Array(val.buffer, 16).set(thumbnail.image); // image data at offset 16
+      const val = new Uint8Array(thumbnail.image.length + 24);  // include the viewId and metadata in the binary transfer by allocating a new buffer 24 bytes larger than the image size
+      new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
+      const low32 = Id64.getLowerUint32(viewId);
+      const high32 = Id64.getUpperUint32(viewId);
+      new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
+      val.set(thumbnail.image, 24); // image data at offset 24
       return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken.toJSON(), val);
     }
   }
@@ -853,8 +849,111 @@ export namespace IModelConnection {
    */
   export class Tiles {
     private _iModel: IModelConnection;
+    private readonly _treesBySupplier = new Map<TileTree.Supplier, Dictionary<any, TreeOwner>>();
+
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
-    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
+
+    public dispose(): void {
+      for (const supplier of this._treesBySupplier)
+        supplier[1].forEach((_key, value) => value.dispose());
+
+      this._treesBySupplier.clear();
+    }
+
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> {
+      return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
+    }
+
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> {
+      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId);
+    }
+
+    public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {
+      let trees = this._treesBySupplier.get(supplier);
+      if (undefined === trees) {
+        trees = new Dictionary<any, TreeOwner>((lhs, rhs) => supplier.compareTileTreeIds(lhs, rhs));
+        this._treesBySupplier.set(supplier, trees);
+      }
+
+      let tree = trees.get(id);
+      if (undefined === tree) {
+        tree = new TreeOwner(id, supplier, this._iModel);
+        trees.set(id, tree);
+      }
+
+      return tree;
+    }
+
+    public dropSupplier(supplier: TileTree.Supplier): void {
+      const trees = this._treesBySupplier.get(supplier);
+      if (undefined === trees)
+        return;
+
+      trees.forEach((_key, value) => value.dispose());
+      this._treesBySupplier.delete(supplier);
+    }
+
+    public forEachTreeOwner(func: (owner: TileTree.Owner) => void): void {
+      for (const dict of this._treesBySupplier.values())
+        dict.forEach((_key, value) => func(value));
+    }
+
+    /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
+    public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
+      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTree.References exist pointing to a given Owner.
+      for (const entry of this._treesBySupplier) {
+        const dict = entry[1];
+        dict.forEach((_treeId, owner) => {
+          const tree = owner.tileTree;
+          if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
+            if (undefined === exclude || !exclude.has(tree))
+              owner.dispose();
+        });
+      }
+    }
+  }
+}
+
+class TreeOwner implements TileTree.Owner {
+  private _tileTree?: TileTree;
+  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  public readonly load: () => TileTree | undefined;
+  public readonly id: any;
+
+  public get tileTree(): TileTree | undefined { return this._tileTree; }
+  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+
+  public constructor(id: any, supplier: TileTree.Supplier, iModel: IModelConnection) {
+    this.id = id;
+    this.load = () => {
+      this._load(supplier, iModel); // tslint:disable-line no-floating-promises
+      return this.tileTree;
+    };
+  }
+
+  public dispose(): void {
+    this._tileTree = dispose(this._tileTree);
+    this._loadStatus = TileTree.LoadStatus.NotLoaded;
+  }
+
+  private async _load(supplier: TileTree.Supplier, iModel: IModelConnection): Promise<void> {
+    if (TileTree.LoadStatus.NotLoaded !== this.loadStatus)
+      return;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+    let tree: TileTree | undefined;
+    let newStatus: TileTree.LoadStatus;
+    try {
+      tree = await supplier.createTileTree(this.id, iModel);
+      newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTree.LoadStatus.Loaded : TileTree.LoadStatus.NotFound;
+    } catch (err) {
+      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.NotFound;
+    }
+
+    if (TileTree.LoadStatus.Loading === this._loadStatus) {
+      this._tileTree = tree;
+      this._loadStatus = newStatus;
+      IModelApp.viewManager.onNewTilesReady();
+    }
   }
 }

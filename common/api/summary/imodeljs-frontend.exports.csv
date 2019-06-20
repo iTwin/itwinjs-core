@@ -23,10 +23,9 @@ public;AuxCoordSystem2dState
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
-internal;BackgroundMapProvider 
+internal;BackgroundMapTileTreeReference 
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
-internal;class BaseTiledMapProvider 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -53,7 +52,6 @@ beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
 alpha;CheckBoxIconsEditorParams 
-beta;enum ClassifierType
 alpha;ClipEventType
 alpha;ClipOrientation
 beta;enum ClippingType
@@ -63,11 +61,13 @@ public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
 internal;ContextMode
-internal;ContextRealityModelState 
+internal;ContextRealityModelState
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -106,6 +106,8 @@ public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider
 internal;FeatureOverrideType
 public;FeatureSymbology
+alpha;findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise
+alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
@@ -175,6 +177,8 @@ public;LocateResponse
 internal;LockedStates
 public;LookViewTool 
 alpha;ManipulatorToolEvent
+internal;MapImageryTileTreeReference 
+internal;class MapTileTreeReference 
 public;MarginPercent
 public;Marker 
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
@@ -205,7 +209,6 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-internal;OverlayMapProvider 
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PanViewTool 
@@ -235,7 +238,6 @@ beta;QuantityType
 alpha;RangeEditorParams 
 public;RelativePosition
 public;RemoveMe
-beta;RenderClassifierModel
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -285,17 +287,7 @@ public;SnapDetail
 public;SnapHeat
 public;SnapMode
 public;SnapStatus
-beta;SpatialClassification
-internal;addModelClassifierToScene(classifiedModel: TileTreeModelState, context: SceneContext): void
-alpha;addSpatialClassifier(model: TileTreeModelState, classifier: SpatialClassificationProps.PropertiesProps): void
-internal;createClassifier(id: Id64String, iModel: IModelConnection): Promise
-alpha;getActiveSpatialClassifier(model: TileTreeModelState): number
-internal;getClassifierProps(model: TileTreeModelState): SpatialClassificationProps.Properties | undefined
-alpha;getSpatialClassifier(model: TileTreeModelState, index: number): SpatialClassificationProps.Properties | undefined
-internal;loadClassifiers(classifierIdArg: Id64Arg, iModel: IModelConnection): Promise
-internal;loadModelClassifiers(modelIdArg: Id64Arg, iModel: IModelConnection): Promise
-alpha;setActiveSpatialClassifier(model: TileTreeModelState, classifierIndex: number, active: boolean): Promise
-alpha;setSpatialClassifier(model: TileTreeModelState, index: number, classifier: SpatialClassificationProps.Properties): void
+beta;SpatialClassifiers
 public;SpatialLocationModelState 
 public;SpatialModelState 
 public;SpatialViewState 
@@ -330,8 +322,6 @@ internal;TiledGraphicsProvider
 internal;class TileLoader
 internal;TileTree 
 internal;TileTree
-alpha;TileTreeModelState
-internal;TileTreeState
 public;Tool
 public;ToolAdmin
 public;ToolList = ToolType[]

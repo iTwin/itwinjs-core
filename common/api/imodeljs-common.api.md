@@ -1113,7 +1113,7 @@ export enum CommonLoggerCategory {
 // @public
 export interface ContextRealityModelProps {
     // @beta (undocumented)
-    classifiers?: SpatialClassificationProps.PropertiesProps[];
+    classifiers?: SpatialClassificationProps.Properties[];
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -2310,12 +2310,6 @@ export interface ILinearElementProps extends GeometricElement3dProps {
 }
 
 // @beta
-export interface ILinearLocationElementProps {
-    // (undocumented)
-    locatedElement?: RelatedElementProps;
-}
-
-// @beta
 export interface ILinearlyLocatedAttributionProps {
     // (undocumented)
     attributedElement?: RelatedElementProps;
@@ -2671,10 +2665,6 @@ export enum LightType {
 }
 
 // @beta
-export interface LinearLocationElementProps extends GeometricElement3dProps, ILinearLocationElementProps {
-}
-
-// @beta
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
 }
 
@@ -2687,7 +2677,7 @@ export interface LinearlyReferencedAtLocationProps {
     // (undocumented)
     atPosition: DistanceExpressionProps;
     // (undocumented)
-    fromReferent?: Id64String;
+    fromReferent?: RelatedElementProps;
 }
 
 // @beta
@@ -2699,11 +2689,11 @@ export interface LinearlyReferencedFromToLocationProps {
     // (undocumented)
     fromPosition: DistanceExpressionProps;
     // (undocumented)
-    fromPositionFromReferent?: Id64String;
+    fromPositionFromReferent?: RelatedElementProps;
     // (undocumented)
     toPosition: DistanceExpressionProps;
     // (undocumented)
-    toPositionFromReferent?: Id64String;
+    toPositionFromReferent?: RelatedElementProps;
 }
 
 // @public
@@ -4639,6 +4629,12 @@ export namespace SolarShadows {
 
 // @beta
 export namespace SpatialClassificationProps {
+    export interface Classifier {
+        expand: number;
+        flags: FlagsProps;
+        modelId: Id64String;
+        name: string;
+    }
     export enum Display {
         Dimmed = 2,
         ElementColor = 4,
@@ -4667,28 +4663,9 @@ export namespace SpatialClassificationProps {
         // (undocumented)
         type: number;
     }
-    export class Properties implements PropertiesProps {
-        constructor(props: PropertiesProps);
-        // (undocumented)
-        expand: number;
-        // (undocumented)
-        flags: Flags;
+    export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-        // (undocumented)
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export interface PropertiesProps {
-        expand: number;
-        // (undocumented)
-        flags: FlagsProps;
-        // (undocumented)
-        isActive: boolean;
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
     }
     export enum Type {
         // (undocumented)

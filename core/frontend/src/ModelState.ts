@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ModelState */
 
-import { dispose, Id64, Id64String, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
+import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement, TileTreeProps } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
-import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
-import { RealityModelTileTree } from "./tile/RealityModelTileTree";
-import { TileTree, TileTreeState } from "./tile/TileTree";
+import { createRealityTileTreeReference } from "./tile/RealityModelTileTree";
+import { TileTree } from "./tile/TileTree";
 import { HitDetail } from "./HitDetail";
+import { ViewState } from "./ViewState";
+import { SpatialClassifiers } from "./SpatialClassification";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -58,11 +59,9 @@ export class ModelState extends EntityState implements ModelProps {
   public get asGeometricModel3d(): GeometricModel3dState | undefined { return undefined; }
   /** Attempts to cast this model to a 2d geometric model. */
   public get asGeometricModel2d(): GeometricModel2dState | undefined { return undefined; }
+  /** Attempts to cast this model to a spatial model. */
+  public get asSpatialModel(): SpatialModelState | undefined { return undefined; }
 
-  /** Executes just before the containing IModelConnection is closed to perform any necessary cleanup.
-   * @internal
-   */
-  public onIModelConnectionClose() { }
   /**
    * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
    * @alpha
@@ -70,59 +69,15 @@ export class ModelState extends EntityState implements ModelProps {
   public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
 }
 
-/** Interface adopted by an object which can supply a tile tree for display within a [[ViewState]].
- * Typically tile trees are obtained from geometric models, but they may also originate from display style settings
- * such as a background map provider or a set of "context" reality models not directly embedded into the iModel.
- * An application typically does not interact directly with tile trees; instead it interacts with a [[ViewState]] or [[Viewport]] which
- * coordinates with tile trees on its behalf.
- * @alpha
- */
-export interface TileTreeModelState {
-  /** If the tile tree is loaded, returns it.
-   * @see [[load]]
-   * @internal
-   */
-  readonly tileTree: TileTree | undefined;
-  /** @internal */
-  readonly loadStatus: TileTree.LoadStatus;
-  /** @internal */
-  readonly treeModelId: Id64String; // Model Id, or transient Id if not a model (context reality model)
-  /** @internal */
-  readonly jsonProperties: { [key: string]: any };
-  /** @internal */
-  readonly doDrapeBackgroundMap?: boolean;
-  /** @internal */
-  readonly iModel: IModelConnection;
-  /** If no attempt has yet been made to load the tile tree, enqueue it for asynchronous loading.
-   * @param edgesRequired If true, the loaded tile tree will include graphics for edges of surfaces.
-   * @param animationId The Id of the source animation node, if any.
-   * @returns The current load status of the tile tree.
-   * @note This function is *not* asynchronous, but may trigger an internal asynchronous operation.
-   * @see [[TileTreeModelState.loadStatus]] to query the current state of the tile tree's loading operation.
-   * @internal
-   */
-
-  loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus;
-  /**
-   * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
-   * @alpha
-   */
-  getToolTip(hit: HitDetail): HTMLElement | string | undefined;
-}
-
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
  */
-export abstract class GeometricModelState extends ModelState /* implements TileTreeModelState */ {
+export abstract class GeometricModelState extends ModelState {
   /** @internal */
   public static get className() { return "GeometricModel"; }
 
   private _modelRange?: Range3d;
-  /** @internal */
-  protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
-  /** @internal */
-  protected _classifierTileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
@@ -132,105 +87,11 @@ export abstract class GeometricModelState extends ModelState /* implements TileT
   public get is2d(): boolean { return !this.is3d; }
 
   /** @internal */
-  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-  /** @internal */
-  public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
-
-  /** @internal */
-  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
-  public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
-
-  /** @internal */
   public get isGeometricModel(): boolean { return true; }
-
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
 
-  /** @internal  */
-  public get doDrapeBackgroundMap() { return this._tileTreeState.doDrapeBackgroundMap; }
-
   /** @internal */
-  public loadTree(edgesRequired: boolean, animationId?: Id64String): TileTree.LoadStatus {
-    // If this is a reality model, its tile tree is obtained from reality data service URL.
-    if (undefined !== this.jsonProperties.tilesetUrl) {
-      if (TileTree.LoadStatus.NotLoaded === this.loadStatus) {
-        this.loadStatus = TileTree.LoadStatus.Loading;
-        RealityModelTileTree.loadRealityModelTileTree(this.jsonProperties.tilesetUrl, this.jsonProperties.tilesetToDbTransform, this._tileTreeState);
-      }
-
-      return this.loadStatus;
-    }
-
-    return this.loadTileTree({ type: BatchType.Primary, edgesRequired, animationId });
-  }
-
-  /** @internal */
-  public loadClassifierTileTree(type: BatchType.PlanarClassifier | BatchType.VolumeClassifier, expansion: number): TileTree.LoadStatus {
-    return this.loadTileTree({ type, expansion });
-  }
-
-  /** @internal */
-  public loadTileTree(treeId: IModelTile.TreeId): TileTree.LoadStatus {
-    // Determine which tree we want, and invalidate if incompatible with supplied options.
-    let state: TileTreeState;
-    let allowInstancing = false;
-    let batchType: BatchType;
-    let edgesRequired = false;
-    let animationId: Id64String | undefined;
-    if (treeId.type === BatchType.Primary) {
-      batchType = BatchType.Primary;
-      edgesRequired = treeId.edgesRequired;
-      animationId = treeId.animationId;
-      state = this._tileTreeState;
-      if ((edgesRequired && state.edgesOmitted) || animationId !== state.animationId)
-        state.clearTileTree();
-
-      if (undefined === treeId.animationId)
-        allowInstancing = true;
-    } else {
-      state = this._classifierTileTreeState;
-      batchType = treeId.type;
-      if (state.classifierExpansion !== treeId.expansion) {
-        state.clearTileTree();
-        state.classifierExpansion = treeId.expansion;
-      }
-    }
-
-    // If we've already tried to load, return current status.
-    if (TileTree.LoadStatus.NotLoaded !== state.loadStatus)
-      return state.loadStatus;
-
-    // Enqueue the tree for loading.
-    state.loadStatus = TileTree.LoadStatus.Loading;
-
-    const id = IModelTile.treeIdToString(this.id, treeId);
-    this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {
-      const loader = new IModelTile.Loader(this.iModel, result.formatVersion, batchType, edgesRequired, allowInstancing);
-      result.rootTile.contentId = loader.rootContentId;
-      state.setTileTree(result, loader);
-
-      state.edgesOmitted = !edgesRequired;
-      state.animationId = animationId;
-
-      IModelApp.viewManager.onNewTilesReady();
-    }).catch((err) => {
-      // Retry in case of timeout; otherwise fail.
-      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout)
-        state.loadStatus = TileTree.LoadStatus.NotLoaded;
-      else
-        state.loadStatus = TileTree.LoadStatus.NotFound;
-
-      IModelApp.viewManager.onNewTilesReady();
-    });
-
-    return state.loadStatus;
-  }
-
-  /** @internal */
-  public onIModelConnectionClose() {
-    dispose(this._tileTreeState.tileTree);  // we do not track if we are disposed...catch this at the tileTree level
-    super.onIModelConnectionClose();
-  }
 
   /** Query for the union of the ranges of all the elements in this GeometricModel. */
   public async queryModelRange(): Promise<Range3d> {
@@ -239,6 +100,98 @@ export abstract class GeometricModelState extends ModelState /* implements TileT
       this._modelRange = Range3d.fromJSON(ranges[0]);
     }
     return this._modelRange!;
+  }
+
+  /** @internal */
+  public createTileTreeReference(view: ViewState): TileTree.Reference {
+    // If this is a reality model, its tile tree is obtained from reality data service URL.
+    const url = this.jsonProperties.tilesetUrl;
+    if (undefined !== url) {
+      const spatialModel = this.asSpatialModel;
+      return createRealityTileTreeReference({
+        url,
+        iModel: this.iModel,
+        modelId: this.id,
+        tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+      });
+    }
+
+    return new PrimaryTreeReference(view, this);
+  }
+}
+
+interface PrimaryTreeId {
+  treeId: IModelTile.PrimaryTreeId;
+  modelId: Id64String;
+  is3d: boolean;
+}
+
+class PrimaryTreeSupplier implements TileTree.Supplier {
+  public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
+    let cmp = compareStrings(lhs.modelId, rhs.modelId);
+    if (0 === cmp) {
+      cmp = compareBooleans(lhs.is3d, rhs.is3d);
+      if (0 === cmp) {
+        cmp = IModelTile.compareTreeIds(lhs.treeId, rhs.treeId);
+      }
+    }
+
+    return cmp;
+  }
+
+  public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    const treeId = id.treeId;
+    const idStr = IModelTile.treeIdToString(id.modelId, treeId);
+    const props = await iModel.tiles.getTileTreeProps(idStr);
+
+    const allowInstancing = undefined === treeId.animationId;
+    const edgesRequired = treeId.edgesRequired;
+
+    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing);
+    props.rootTile.contentId = loader.rootContentId;
+    const params = TileTree.paramsFromJSON(props, iModel, id.is3d, loader, id.modelId);
+    return new TileTree(params);
+  }
+
+  public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTree.Owner {
+    return iModel.tiles.getTileTreeOwner(id, this);
+  }
+}
+
+const primaryTreeSupplier = new PrimaryTreeSupplier();
+
+class PrimaryTreeReference extends TileTree.Reference {
+  private readonly _view: ViewState;
+  private readonly _id: PrimaryTreeId;
+  private _owner: TileTree.Owner;
+
+  public constructor(view: ViewState, model: GeometricModelState) {
+    super();
+    this._view = view;
+    this._id = {
+      modelId: model.id,
+      is3d: model.is3d,
+      treeId: PrimaryTreeReference.createTreeId(view, model.id),
+    };
+    this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
+  }
+
+  public get treeOwner(): TileTree.Owner {
+    const newId = PrimaryTreeReference.createTreeId(this._view, this._id.modelId);
+    if (0 !== IModelTile.compareTreeIds(newId, this._id.treeId)) {
+      this._id.treeId = newId;
+      this._owner = primaryTreeSupplier.getOwner(this._id, this._view.iModel);
+    }
+
+    return this._owner;
+  }
+
+  private static createTreeId(view: ViewState, modelId: Id64String): IModelTile.PrimaryTreeId {
+    const script = view.scheduleScript;
+    const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
+    const edgesRequired = view.viewFlags.edgesRequired();
+    return { type: BatchType.Primary, edgesRequired, animationId };
   }
 }
 
@@ -292,8 +245,21 @@ export class SheetModelState extends GeometricModel2dState {
  * @public
  */
 export class SpatialModelState extends GeometricModel3dState {
+  /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it.
+   * @beta
+   */
+  public readonly classifiers?: SpatialClassifiers;
+
   /** @internal */
   public static get className() { return "SpatialModel"; }
+  /** @internal */
+  public get asSpatialModel(): SpatialModelState { return this; }
+
+  public constructor(props: ModelProps, iModel: IModelConnection) {
+    super(props, iModel);
+    if (undefined !== this.jsonProperties.tilesetUrl)
+      this.classifiers = new SpatialClassifiers(this.jsonProperties);
+  }
 }
 
 /** Represents the front-end state of a [PhysicalModel]($backend).

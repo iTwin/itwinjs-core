@@ -21,7 +21,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, TileTreeModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -29,8 +29,6 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport, ViewFrustum } from "./Viewport";
-import { SpatialClassification } from "./SpatialClassification";
-import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -239,11 +237,12 @@ export abstract class ViewState extends ElementState {
   /** @internal */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
-    this.forEachTileTreeModel((model) => {
+    this.forEachTileTreeRef((ref) => {
       // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
-      if (model.loadStatus < TileTree.LoadStatus.Loaded)
+      if (ref.treeOwner.loadStatus < TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
+
     return allLoaded;
   }
 
@@ -321,68 +320,45 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
+  /** Execute a function against the [[TileTree.Reference]] associated with each viewed model.
+   * @internal
+   */
+  public abstract forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void;
+
+  /** Execute a function against each [[TileTree.Reference]] associated with this view.
+   * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
+   * @internal
+   */
+  /** @internal */
+  public forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void {
+    this.forEachModelTreeRef(func);
+    this.displayStyle.forEachTileTreeRef(func);
+  }
+
+  /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
+   * @internal
+   */
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    this.forEachTileTreeRef((ref) => ref.discloseTileTrees(trees));
+  }
+
   /** @internal */
   public abstract saveForUndo(): ViewStateUndo;
 
   /** @internal */
   public abstract setFromUndo(props: ViewStateUndo): void;
 
-  /** Execute a function on each viewed model
-   * @alpha
-   */
-  public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void { this.forEachModel((model: GeometricModelState) => func(model)); }
   /** @internal */
   public createScene(context: SceneContext): void {
-    this.forEachTileTreeModel((model: TileTreeModelState) => this.addModelToScene(model, context));
+    this.forEachTileTreeRef((ref: TileTree.Reference) => ref.addToScene(context));
   }
-
-  /** @internal */
-  public createBackgroundMap(context: SceneContext): void {
-    const backgroundMapProvider = this.displayStyle.backgroundMap;
-    context.setBackgroundMapProvider(backgroundMapProvider);    // May be required for draping, even if background map view flag is off.
-    if (this.viewFlags.backgroundMap && undefined !== backgroundMapProvider)
-      this.createGraphicsFromProvider(context, backgroundMapProvider, TiledGraphicsProvider.Type.BackgroundMap);
-  }
-  /** @internal */
-  private createGraphicsFromProvider(context: SceneContext, provider: TiledGraphicsProvider.Provider, type: TiledGraphicsProvider.Type) {
-    const tree = provider.getTileTree(context.viewport);
-    if (tree !== undefined) {
-      context.tiledGraphicsProviderType = type;
-      context.extendedFrustumPlane = tree.plane;
-      tree.tileTree.drawScene(context);
-      context.extendedFrustumPlane = undefined;
-      context.tiledGraphicsProviderType = undefined;
-    }
-  }
-  /** @internal */
-  public createProviderGraphics(context: SceneContext): void {
-    for (let type = TiledGraphicsProvider.Type.Geometry; type <= TiledGraphicsProvider.Type.Overlay; type++) {
-      const providers = context.viewport.getTiledGraphicsProviders(type);
-      if (providers !== undefined) {
-        for (const provider of providers)
-          this.createGraphicsFromProvider(context, provider, type);
-      }
-    }
-  }
-
-  /** @internal */
-  public createClassification(context: SceneContext): void {
-    this.forEachTileTreeModel((model: TileTreeModelState) => SpatialClassification.addModelClassifierToScene(model, context));
-  }
-
-  /** @internal */
-  public createSolarShadowMap(_context: SceneContext): void { }
-
-  /** @internal */
-  public createTextureDrapes(_context: SceneContext): void { }
 
   /** Add view-specific decorations. The base implementation draws the grid. Subclasses must invoke super.decorate()
    * @internal
    */
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
-    if (undefined !== this.displayStyle.backgroundMapPlane)
-      this.displayStyle.backgroundMap.decorate(context);
+    this.displayStyle.decorate(context);
   }
 
   /** @internal */
@@ -933,17 +909,6 @@ export abstract class ViewState extends ElementState {
     this.verifyFocusPlane(); // changes delta/origin
   }
 
-  private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
-    const animId = undefined !== this.scheduleScript ? this.scheduleScript.getModelAnimationId(model.treeModelId) : undefined;
-    model.loadTree(context.viewFlags.edgesRequired(), animId);
-    if (undefined !== model.tileTree) {
-      if (model.doDrapeBackgroundMap)
-        context.addBackgroundDrapedModel(model);
-
-      model.tileTree.drawScene(context);
-    }
-  }
-
   /** Set the rotation of this ViewState to the supplied rotation, by rotating it about a point.
    * @param rotation The new rotation matrix for this ViewState.
    * @param point The point to rotate about. If undefined, use the [[getTargetPoint]].
@@ -1492,6 +1457,56 @@ export abstract class ViewState3d extends ViewState {
   }
 }
 
+/** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a [[TileTree.Reference]].
+ * @internal
+ */
+class SpatialModelTileTrees {
+  private _allLoaded = false;
+  private readonly _view: SpatialViewState;
+  private _treeRefs = new Map<Id64String, TileTree.Reference>();
+  private _swapTreeRefs = new Map<Id64String, TileTree.Reference>();
+
+  public constructor(view: SpatialViewState) {
+    this._view = view;
+  }
+
+  public markDirty(): void {
+    this._allLoaded = false;
+  }
+
+  private load(): void {
+    if (this._allLoaded)
+      return;
+
+    this._allLoaded = true;
+
+    const prev = this._treeRefs;
+    const cur = this._swapTreeRefs;
+    this._treeRefs = cur;
+    this._swapTreeRefs = prev;
+    cur.clear();
+
+    for (const modelId of this._view.modelSelector.models) {
+      const existing = prev.get(modelId);
+      if (undefined !== existing) {
+        cur.set(modelId, existing);
+        continue;
+      }
+
+      const model = this._view.iModel.models.getLoaded(modelId);
+      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
+      if (undefined !== model3d)
+        cur.set(modelId, model3d.createTileTreeReference(this._view));
+    }
+  }
+
+  public forEach(func: (treeRef: TileTree.Reference) => void): void {
+    this.load();
+    for (const value of this._treeRefs.values())
+      func(value);
+  }
+}
+
 /** Defines a view of one or more SpatialModels.
  * The list of viewed models is stored by the ModelSelector.
  * @public
@@ -1500,6 +1515,7 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public static get className() { return "SpatialViewDefinition"; }
   public modelSelector: ModelSelectorState;
+  private readonly _treeRefs: SpatialModelTileTrees;
 
   public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
@@ -1513,9 +1529,10 @@ export class SpatialViewState extends ViewState3d {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
     super(props, iModel, arg3, displayStyle);
     this.modelSelector = modelSelector;
-    if (arg3 instanceof SpatialViewState) { // from clone
+    if (arg3 instanceof SpatialViewState) // from clone
       this.modelSelector = arg3.modelSelector.clone();
-    }
+
+    this._treeRefs = new SpatialModelTileTrees(this);
   }
 
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
@@ -1523,18 +1540,16 @@ export class SpatialViewState extends ViewState3d {
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
   public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
 
+  /** @internal */
+  public markModelSelectorChanged(): void {
+    this._treeRefs.markDirty();
+  }
+
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new Range3d();
-    this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality models this should cal forEachSpatialTileTreeModel...
-      const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined) {
-        const contentRange = tileTree.rootTile.computeWorldContentRange();
-        assert(!contentRange.isNull);
-        // NO - silly iModels with attached reality data outside extents. assert(contentRange.intersectsRange(this.iModel.projectExtents));
-
-        range.extendRange(contentRange);
-      }
+    this.forEachTileTreeRef((ref) => {
+      ref.unionFitRange(range);
     });
 
     if (range.isNull)
@@ -1559,7 +1574,6 @@ export class SpatialViewState extends ViewState3d {
   }
   public async load(): Promise<void> {
     await super.load();
-    await this.displayStyle.loadContextRealityModels();
     return this.modelSelector.load();
   }
   public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
@@ -1576,28 +1590,31 @@ export class SpatialViewState extends ViewState3d {
     }
   }
 
-  /** @alpha */
-  public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
-    this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
-    this.forEachModel((model: TileTreeModelState) => func(model));
+  /** @internal */
+  public forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void {
+    this._treeRefs.forEach(func);
   }
 
   /** @internal */
-  public createSolarShadowMap(context: SceneContext): void {
+  public createScene(context: SceneContext): void {
+    super.createScene(context);
+    this.createSolarShadowMap(context);
+    context.textureDrapes.forEach((drape) => drape.collectGraphics(context));
+  }
+
+  private createSolarShadowMap(context: SceneContext): void {
     context.solarShadowMap = undefined;
     const displayStyle = this.getDisplayStyle3d();
-    if (IModelApp.renderSystem.options.displaySolarShadows && this.viewFlags.shadows && displayStyle !== undefined) {
+    if (undefined !== displayStyle && displayStyle.wantShadows) {
       const backgroundMapPlane = this.displayStyle.backgroundMapPlane;
       const viewFrustum = (undefined === backgroundMapPlane) ? context.viewFrustum : ViewFrustum.createFromViewportAndPlane(context.viewport, backgroundMapPlane);
       const solarDirection = displayStyle.sunDirection ? displayStyle.sunDirection : Vector3d.create(-1, -1, -1).normalize();
       if (undefined !== viewFrustum) {
-        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this.modelSelector, this.categorySelector, this.iModel);
+        context.solarShadowMap = IModelApp.renderSystem.getSolarShadowMap(viewFrustum.getFrustum(), solarDirection!, displayStyle.settings.solarShadowsSettings, this);
         context.solarShadowMap!.collectGraphics(context);
       }
     }
   }
-  /** @internal */
-  public createTextureDrapes(context: SceneContext): void { context.textureDrapes.forEach((drape) => drape.collectGraphics(context)); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
@@ -1623,6 +1640,19 @@ export abstract class ViewState2d extends ViewState {
   public readonly angle: Angle;
   public readonly baseModelId: Id64String;
   private _viewedExtents?: AxisAlignedBox3d;
+  /** @internal */
+  protected _treeRef?: TileTree.Reference;
+
+  /** @internal */
+  protected get _tileTreeRef(): TileTree.Reference | undefined {
+    if (undefined === this._treeRef) {
+      const model = this.getViewedModel();
+      if (undefined !== model)
+        this._treeRef = model.createTileTreeReference(this);
+    }
+
+    return this._treeRef;
+  }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
     super(props, iModel, categories, displayStyle);
@@ -1663,10 +1693,11 @@ export abstract class ViewState2d extends ViewState {
   public computeFitRange(): Range3d { return this.getViewedExtents(); }
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
-      const model = this.iModel.models.getLoaded(this.baseModelId) as GeometricModelState;
-      if (undefined !== model && model.isGeometricModel && undefined !== model.tileTree) {
-        this._viewedExtents = Range3d.create(model.tileTree.range.low, model.tileTree.range.high);
-        model.tileTree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
+      const treeRef = this._tileTreeRef;
+      const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
+      if (undefined !== tree) {
+        this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
+        tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
       }
     }
 
@@ -1693,6 +1724,14 @@ export abstract class ViewState2d extends ViewState {
     if (undefined !== model2d)
       func(model2d);
   }
+
+  /** @internal */
+  public forEachModelTreeRef(func: (ref: TileTree.Reference) => void): void {
+    const ref = this._tileTreeRef;
+    if (undefined !== ref)
+      func(ref);
+  }
+
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
@@ -1716,12 +1755,13 @@ export class DrawingViewState extends ViewState2d {
     if (undefined !== this._modelLimits)
       return this._modelLimits;
 
-    const model = this.getViewedModel();
-    const tree = undefined !== model ? model.tileTree : undefined;
-    if (undefined === tree)
-      return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
+    const treeRef = this._tileTreeRef;
+    const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
+    if (undefined !== tree) {
+      this._modelLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+      return this._modelLimits;
+    }
 
-    this._modelLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
-    return this._modelLimits;
+    return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
   }
 }

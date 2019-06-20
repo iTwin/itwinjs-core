@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { RgbColor, LinePixels, GeometryClass } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, RgbColor, LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 
 describe("FeatureSymbology.Appearance", () => {
   it("default constructor works as expected", () => {
@@ -155,6 +155,48 @@ describe("FeatureSymbology.Overrides", () => {
     const app = FeatureSymbology.Appearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
     assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");
+  });
+
+  it("should not apply default overrides if appearance explicitly specified", () => {
+    // 1: Register an Appearance which overrides color.
+    // 2: Register an Appearance which overrides nothing.
+    // 3: Do not register an Appearance.
+    const cat1 = "0x1", cat2 = "0x2", cat3 = "0x3";
+    const mod1 = "0x4", mod2 = "0x5", mod3 = "0x6";
+    const el1 = "0x7", el2 = "0x8", el3 = "0x9";
+
+    const ovrs = new Overrides();
+    ovrs.setVisibleSubCategory(cat1);
+    ovrs.setVisibleSubCategory(cat2);
+    ovrs.setVisibleSubCategory(cat3);
+
+    const app = FeatureSymbology.Appearance.fromRgb(ColorDef.green);
+    const noApp = FeatureSymbology.Appearance.fromJSON();
+    const defApp = FeatureSymbology.Appearance.fromRgb(ColorDef.red);
+    ovrs.setDefaultOverrides(defApp);
+
+    ovrs.overrideElement(el1, app);
+    ovrs.overrideModel(mod1, app);
+    ovrs.overrideSubCategory(cat1, app);
+    ovrs.overrideElement(el2, noApp);
+    ovrs.overrideModel(mod2, noApp);
+    ovrs.overrideSubCategory(cat2, noApp);
+
+    const expectAppearance = (elem: Id64String, model: Id64String, subcat: Id64String, expectedAppearance: FeatureSymbology.Appearance) => {
+      const feature = new Feature(elem, subcat, GeometryClass.Primary);
+      const appearance = ovrs.getFeatureAppearance(feature, model);
+      expect(JSON.stringify(appearance)).to.equal(JSON.stringify(expectedAppearance));
+    };
+
+    expectAppearance(el1, mod3, cat3, app);
+    expectAppearance(el2, mod3, cat3, noApp);
+    expectAppearance(el3, mod3, cat3, defApp);
+
+    expectAppearance(el3, mod1, cat3, app);
+    expectAppearance(el3, mod2, cat3, noApp);
+
+    expectAppearance(el3, mod3, cat1, app);
+    expectAppearance(el3, mod3, cat2, noApp);
   });
 
   it("overrides subcategory visibility per model", () => {

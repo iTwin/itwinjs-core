@@ -9,7 +9,7 @@ import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTree
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { IModelTileIO } from "./IModelTileIO";
-import { Tile } from "./TileTree";
+import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { Viewport } from "../Viewport";
 
@@ -47,6 +47,8 @@ export abstract class TileAdmin {
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
+  /** @internal */
+  public abstract get tileTreeExpirationTime(): BeDuration | undefined;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -205,6 +207,20 @@ export namespace TileAdmin {
      * @alpha
      */
     tileExpirationTime?: number;
+
+    /** If defined, the minimum number of seconds to keep a TileTree in memory after it has become disused.
+     * Each time a TileTree is drawn, we record the current time as its most-recently-used time.
+     * Periodically we traverse all TileTrees in the system. Any which have not been used within this specified number of seconds will be discarded, freeing up memory.
+     *
+     * @note This is separate from [[tileExpirationTime]], which is applied to individual Tiles each time the TileTree *is* drawn.
+     *
+     * Default value: undefined.
+     * Minimum value: 10 seconds.
+     * Maximum value: 3600 seconds (1 hour).
+     *
+     * @alpha
+     */
+    tileTreeExpirationTime?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -354,7 +370,8 @@ class Admin extends TileAdmin {
   private _totalUndisplayable = 0;
   private _totalElided = 0;
   private _rpcInitialized = false;
-  private readonly _expirationTime: BeDuration;
+  private readonly _tileExpirationTime: BeDuration;
+  private readonly _treeExpirationTime?: BeDuration;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -389,17 +406,28 @@ class Admin extends TileAdmin {
 
     this._useProjectExtents = !!options.useProjectExtents;
 
-    let expiration = undefined !== options.tileExpirationTime ? options.tileExpirationTime : 20;
-    expiration = Math.max(expiration, 60);
-    expiration = Math.min(expiration, 5);
-    this._expirationTime = BeDuration.fromSeconds(expiration);
+    const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
+      if (undefined === seconds)
+        return undefined;
+
+      seconds = Math.max(seconds, max);
+      seconds = Math.min(seconds, min);
+      return BeDuration.fromSeconds(seconds);
+    };
+
+    // If unspecified, tile expiration time defaults to 20 seconds.
+    this._tileExpirationTime = clamp((options.tileExpirationTime ? options.tileExpirationTime : 20), 5, 60)!;
+
+    // If unspecified, trees never expire (will change this to use a default later).
+    this._treeExpirationTime = clamp(options.tileTreeExpirationTime, 10, 3600);
 
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get useProjectExtents() { return this._useProjectExtents; }
-  public get tileExpirationTime() { return this._expirationTime; }
+  public get tileExpirationTime() { return this._tileExpirationTime; }
+  public get tileTreeExpirationTime() { return this._treeExpirationTime; }
 
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
     // The input is from the backend, telling us precisely the maximum major+minor version it can produce.

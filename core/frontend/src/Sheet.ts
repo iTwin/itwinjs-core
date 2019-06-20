@@ -18,7 +18,8 @@ import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
-import { Tile, TileLoader, TileTree } from "./tile/TileTree";
+import { Tile } from "./tile/Tile";
+import { TileLoader, TileTree } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
@@ -671,10 +672,15 @@ export namespace Attachments {
       if (!viewedModel)
         return State.Empty;
 
-      switch (viewedModel.loadTree(true)) {
+      if (undefined === attachment.treeRef)
+        attachment.treeRef = viewedModel.createTileTreeReference(view);
+
+      const owner = attachment.treeRef.treeOwner;
+      const tree = owner.load();
+      switch (owner.loadStatus) {
         case TileTree.LoadStatus.Loaded:
-          assert(undefined !== viewedModel.tileTree);
-          attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
+          assert(undefined !== tree);
+          attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, tree!);
           return State.Ready;
         case TileTree.LoadStatus.Loading:
           return State.Loading;
@@ -877,6 +883,13 @@ export namespace Attachments {
       return view.getExtents().x / placement.bbox.xLength();
     }
 
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      // ###TODO: An Attachment.Tree is *NOT* owned by a TileTree.Owner. It should be.
+      // We disclose it for purposese of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
+      if (undefined !== this._tree)
+        trees.add(this._tree);
+    }
+
     /** Given a view and an origin point, compute a placement for an attachment. */
     private static computePlacement(view: ViewState, origin: Point2d, scale: number): Placement2d {
       const viewExtents = view.getExtents();
@@ -941,6 +954,14 @@ export namespace Attachments {
 
   /** @internal */
   export class Attachment2d extends Attachment {
+    public treeRef?: TileTree.Reference;
+
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      super.discloseTileTrees(trees);
+      if (undefined !== this.treeRef)
+        this.treeRef.discloseTileTrees(trees);
+    }
+
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
@@ -964,6 +985,13 @@ export namespace Attachments {
     }
 
     public get is2d(): boolean { return false; }
+
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      super.discloseTileTrees(trees);
+      const tree = this._tree as Tree3d;
+      if (undefined !== tree)
+        tree.viewport.discloseTileTrees(trees);
+    }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this._states.length ? this._states[depth] : State.NotLoaded; }
@@ -1079,6 +1107,16 @@ export class SheetViewState extends ViewState2d {
   private _attachmentIds: Id64Array;
   private _attachments: Attachments.AttachmentList;
   private _all3dAttachmentTilesLoaded: boolean = true;
+
+  /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
+   * @internal
+   */
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    super.discloseTileTrees(trees);
+    for (const attachment of this._attachments.list) {
+      attachment.discloseTileTrees(trees);
+    }
+  }
 
   /** @internal */
   public get attachmentIds() { return this._attachmentIds; }

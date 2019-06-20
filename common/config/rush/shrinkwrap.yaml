@@ -246,6 +246,7 @@ dependencies:
   request-promise-native: 1.0.7
   resize-observer-polyfill: 1.5.1
   rimraf: 2.6.3
+  rxjs: 6.5.2
   sass-loader: 7.1.0
   save: 2.4.0
   semver: 5.7.0
@@ -15178,6 +15179,7 @@ packages:
       react-virtualized: /react-virtualized/9.21.1/react-dom@16.8.6+react@16.8.6
       resize-observer-polyfill: 1.5.1
       rimraf: 2.6.3
+      rxjs: 6.5.2
       sinon: 7.3.2
       sinon-chai: /sinon-chai/3.3.0/chai@4.2.0+sinon@7.3.2
       ts-key-enum: 2.0.0
@@ -15803,6 +15805,7 @@ specifiers:
   request-promise-native: ^1.0.5
   resize-observer-polyfill: ^1.5.0
   rimraf: ^2.6.2
+  rxjs: ^6.4.0
   sass-loader: ^7.1.0
   save: ^2.3.3
   semver: ^5.5.0
