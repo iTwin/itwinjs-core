@@ -343,7 +343,7 @@ export interface ContextRealityModelProps {
   name?: string;
   description?: string;
   /** @beta */
-  classifiers?: SpatialClassificationProps.PropertiesProps[];
+  classifiers?: SpatialClassificationProps.Properties[];
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].

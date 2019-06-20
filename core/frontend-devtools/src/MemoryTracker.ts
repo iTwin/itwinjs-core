@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  TileTreeModelState,
+  TileTree,
   RenderMemory,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { assert } from "@bentley/bentleyjs-core";
 import { createComboBox, ComboBoxEntry } from "./ComboBox";
 
-function collectTileTreeMemory(stats: RenderMemory.Statistics, model: TileTreeModelState): void {
-  const tree = model.tileTree;
+function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.Owner): void {
+  const tree = owner.tileTree;
   if (undefined !== tree)
     tree.collectStatistics(stats);
 }
@@ -36,12 +36,8 @@ const memLabels = [
 ];
 
 const calcMem: CalcMem[] = [
-  (stats, vp) => vp.view.forEachTileTreeModel((model) => collectTileTreeMemory(stats, model)),
-  (stats, vp) => vp.view.iModel.models.loaded.forEach((model, _id) => {
-    const geomModel = model.asGeometricModel;
-    if (undefined !== geomModel)
-      collectTileTreeMemory(stats, geomModel);
-  }),
+  (stats, vp) => vp.collectStatistics(stats),
+  (stats, vp) => vp.view.iModel.tiles.forEachTreeOwner((owner) => collectTileTreeMemory(stats, owner)),
 ];
 
 // ###TODO...

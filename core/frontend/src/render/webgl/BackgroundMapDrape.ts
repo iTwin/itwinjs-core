@@ -10,19 +10,19 @@ import { RenderClipVolume, RenderGraphic } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
-import { TileTree, Tile } from "../../tile/TileTree";
+import { TileTree } from "../../tile/TileTree";
+import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d } from "@bentley/geometry-core";
+import { Transform, Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
 import { FloatRgba } from "./FloatRGBA";
 import { ViewState3d } from "../../ViewState";
-import { TiledGraphicsProvider } from "../../TiledGraphicsProvider";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
-import { TileTreeModelState } from "../../ModelState";
+import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 
 class BackgroundMapDrapeDrawArgs extends Tile.DrawArgs {
   constructor(private _drapePlanes: FrustumPlanes, private _terrainDrape: BackgroundMapDrape, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
@@ -49,23 +49,26 @@ export class BackgroundMapDrape extends TextureDrape {
   private _frustum?: Frustum;
   private _width = 0;
   private _height = 0;
-  private _drapeProvider: TiledGraphicsProvider.Provider;
-  private _drapedModel: TileTreeModelState;
+  private _mapTree: BackgroundMapTileTreeReference;
+  private _drapedTree: TileTree;
   private static _postProjectionMatrix = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, -1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
 
-  private constructor(drapedModel: TileTreeModelState, drapeProvider: TiledGraphicsProvider.Provider) {
+  private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
-    this._drapeProvider = drapeProvider;
-    this._drapedModel = drapedModel;
+    this._drapedTree = drapedTree;
+    this._mapTree = mapTree;
   }
 
   public dispose() {
     super.dispose();
     this._fbo = dispose(this._fbo);
   }
+
   public addGraphic(graphic: RenderGraphic) { this._graphics!.push(graphic); }
 
-  public static create(drapedModel: TileTreeModelState, drapeProvider: TiledGraphicsProvider.Provider): BackgroundMapDrape { return new BackgroundMapDrape(drapedModel, drapeProvider); }
+  public static create(draped: TileTree, map: BackgroundMapTileTreeReference): BackgroundMapDrape {
+    return new BackgroundMapDrape(draped, map);
+  }
 
   public collectGraphics(context: SceneContext) {
     this._graphics = [];
@@ -76,21 +79,22 @@ export class BackgroundMapDrape extends TextureDrape {
     if (undefined === viewState)
       return;
 
-    const tileTree = this._drapeProvider.getTileTree(context.viewport);
+    const tileTree = this._mapTree.treeOwner.load();
     if (undefined === tileTree)
       return;
 
-    const plane = tileTree.plane ? tileTree.plane : Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1));
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedModel, viewState);
+    const plane = this._mapTree.plane;
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, viewState);
     if (!projection.textureFrustum || !projection.projectionMatrix)
       return;
 
     this._frustum = projection.textureFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
-    const drawArgs = BackgroundMapDrapeDrawArgs.create(context, this, tileTree.tileTree, new FrustumPlanes(this._frustum));
-    tileTree.tileTree.draw(drawArgs);
+    const drawArgs = BackgroundMapDrapeDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum));
+    tileTree.draw(drawArgs);
   }
+
   public draw(target: Target) {
     if (undefined === this._frustum || undefined === this._graphics || this._graphics.length === 0)
       return;

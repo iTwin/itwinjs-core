@@ -8,20 +8,18 @@ import {
   CartographicRange,
 } from "@bentley/imodeljs-common";
 import {
-  ContextRealityModelState,
+  findAvailableRealityModels,
   SpatialViewState,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 import { createCheckBox } from "@bentley/frontend-devtools";
 
-// ###TODO: Why not just append these to the contents of the model picker?
 export class RealityModelPicker extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _parent: HTMLElement;
-  private readonly _models: ContextRealityModelState[] = [];
-  private readonly _availableModels: Promise<ContextRealityModelProps[]>;
+  private _available: ContextRealityModelProps[] = [];
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     super();
@@ -29,74 +27,65 @@ export class RealityModelPicker extends ToolBarDropDown {
     this._vp = vp;
     this._parent = parent;
 
-    if (this._vp.iModel.ecefLocation) {
-      const modelCartographicRange = new CartographicRange(this._vp.iModel.projectExtents, this._vp.iModel.ecefLocation.getTransform());
-
-      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", modelCartographicRange);
-    } else {
-      this._availableModels = ContextRealityModelState.findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", undefined);
-    }
-
     this._element = document.createElement("div");
     this._element.className = "scrollingToolMenu";
     this._element.style.display = "block";
 
     parent.appendChild(this._element);
+
+    const clearContextRealityModels = false; // for testing...
+    if (clearContextRealityModels && vp.view.isSpatialView()) {
+      let numModels = 0;
+      vp.view.getDisplayStyle3d().forEachRealityModel((_) => ++numModels);
+
+      for (let i = 0; i < numModels; i++)
+        vp.view.getDisplayStyle3d().detachRealityModelByIndex(0);
+
+      vp.invalidateScene();
+    }
   }
 
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
+  public get isOpen() { return "none" !== this._element.style.display; }
+  protected _open() { this._element.style.display = "block"; }
+  protected _close() { this._element.style.display = "none"; }
   public get onViewChanged(): Promise<void> { return this.populate(); }
 
   public async populate(): Promise<void> {
-    this._models.length = 0;
+    this._available.length = 0;
     while (this._element.hasChildNodes())
       this._element.removeChild(this._element.firstChild!);
 
-    let visible = this._vp.view.isSpatialView() && (await this._availableModels).length > 0;
-    if (visible) {
-      await this.populateModels();
-      visible = this._models.length > 0;
+    const view = this._vp.view;
+    const ecef = this._vp.iModel.ecefLocation;
+    if (!view.isSpatialView() || undefined === ecef) {
+      this._parent.style.display = "none";
+      return Promise.resolve();
     }
 
-    this._parent.style.display = visible ? "block" : "none";
-    if (!visible)
-      return Promise.resolve();
-
-    const view = this._vp.view as SpatialViewState;
-    for (const model of this._models) {
+    const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
+    this._available = await findAvailableRealityModels("fb1696c8-c074-4c76-a539-a5546e048cc6", range);
+    for (const entry of this._available) {
+      const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
       createCheckBox({
-        name: model.name,
-        id: model.url,
+        name,
+        id: entry.tilesetUrl,
         parent: this._element,
-        isChecked: view.displayStyle.containsContextRealityModel(model),
-        handler: (checkbox) => this.toggle(model, checkbox.checked),
+        isChecked: view.displayStyle.hasAttachedRealityModel(name, entry.tilesetUrl),
+        handler: (checkbox) => this.toggle(entry, checkbox.checked),
       });
     }
+
+    const visible = this._available.length > 0;
+    this._parent.style.display = visible ? "block" : "none";
   }
 
-  private async populateModels(): Promise<void> {
-    for (const props of await this._availableModels) {
-      try {
-        const model = new ContextRealityModelState(props, this._vp.iModel);
-        if (await model.intersectsProjectExtents())
-          this._models.push(model);
-      } catch (e) {
-      }
-    }
-  }
-
-  private toggle(model: ContextRealityModelState, enabled: boolean): void {
+  private toggle(entry: ContextRealityModelProps, enabled: boolean): void {
     const view = this._vp.view as SpatialViewState;
-    const currentModels = view.displayStyle.contextRealityModels;
-    if (enabled) {
-      currentModels.push(model);
-    } else {
-      const index = currentModels.indexOf(model);
-      if (-1 !== index)
-        currentModels.splice(index, 1);
-    }
+    const style = view.getDisplayStyle3d();
+    if (enabled)
+      style.attachRealityModel(entry);
+    else
+      style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
 
     this._vp.invalidateScene();
   }

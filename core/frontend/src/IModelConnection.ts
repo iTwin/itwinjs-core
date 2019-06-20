@@ -4,7 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { assert, BeEvent, BentleyStatus, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence, DbResult } from "@bentley/bentleyjs-core";
+import {
+  assert,
+  BeEvent,
+  BentleyStatus,
+  DbResult,
+  Dictionary,
+  dispose,
+  Id64,
+  Id64Arg,
+  Id64Set,
+  Id64String,
+  Logger,
+  OpenMode,
+  TransientIdSequence,
+} from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
@@ -21,7 +35,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTreeState } from "./tile/TileTree";
+import { TileTree } from "./tile/TileTree";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -90,21 +104,6 @@ export class IModelConnection extends IModel {
    */
   public async loadFontMap(): Promise<FontMap> {
     return this.fontMap || (this.fontMap = new FontMap(JSON.parse(await IModelReadRpcInterface.getClient().readFontJson(this.iModelToken.toJSON()))));
-  }
-  /** The set of Context Reality Model tile trees for this IModelConnection.
-   * @internal
-   */
-  private _contextRealityModelTileTrees = new Map<string, TileTreeState>();
-  /** Get the context reality model tile tree for a URL.
-   * @internal
-   */
-  public getContextRealityModelTileTree(url: string): TileTreeState {
-    const found = this._contextRealityModelTileTrees.get(url);
-    if (found !== undefined)
-      return found;
-    const tileTree = new TileTreeState(this, true, this.transientIds.next);
-    this._contextRealityModelTileTrees.set(url, tileTree);
-    return tileTree;
   }
 
   /** Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
@@ -853,8 +852,97 @@ export namespace IModelConnection {
    */
   export class Tiles {
     private _iModel: IModelConnection;
+    private readonly _treesBySupplier = new Map<TileTree.Supplier, Dictionary<any, TreeOwner>>();
+
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
-    public async getTileTreeProps(id: string): Promise<TileTreeProps> { return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id); }
-    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> { return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId); }
+
+    public dispose(): void {
+      for (const supplier of this._treesBySupplier)
+        supplier[1].forEach((_key, value) => value.dispose());
+
+      this._treesBySupplier.clear();
+    }
+
+    public async getTileTreeProps(id: string): Promise<TileTreeProps> {
+      return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
+    }
+
+    public async getTileContent(treeId: string, contentId: string): Promise<Uint8Array> {
+      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId);
+    }
+
+    public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {
+      let trees = this._treesBySupplier.get(supplier);
+      if (undefined === trees) {
+        trees = new Dictionary<any, TreeOwner>((lhs, rhs) => supplier.compareTileTreeIds(lhs, rhs));
+        this._treesBySupplier.set(supplier, trees);
+      }
+
+      let tree = trees.get(id);
+      if (undefined === tree) {
+        tree = new TreeOwner(id, supplier, this._iModel);
+        trees.set(id, tree);
+      }
+
+      return tree;
+    }
+
+    public dropSupplier(supplier: TileTree.Supplier): void {
+      const trees = this._treesBySupplier.get(supplier);
+      if (undefined === trees)
+        return;
+
+      trees.forEach((_key, value) => value.dispose());
+      this._treesBySupplier.delete(supplier);
+    }
+
+    public forEachTreeOwner(func: (owner: TileTree.Owner) => void): void {
+      for (const dict of this._treesBySupplier.values())
+        dict.forEach((_key, value) => func(value));
+    }
+  }
+}
+
+class TreeOwner implements TileTree.Owner {
+  private _tileTree?: TileTree;
+  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
+  public readonly load: () => TileTree | undefined;
+  public readonly id: any;
+
+  public get tileTree(): TileTree | undefined { return this._tileTree; }
+  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+
+  public constructor(id: any, supplier: TileTree.Supplier, iModel: IModelConnection) {
+    this.id = id;
+    this.load = () => {
+      this._load(supplier, iModel); // tslint:disable-line no-floating-promises
+      return this.tileTree;
+    };
+  }
+
+  public dispose(): void {
+    this._tileTree = dispose(this._tileTree);
+    this._loadStatus = TileTree.LoadStatus.NotLoaded;
+  }
+
+  private async _load(supplier: TileTree.Supplier, iModel: IModelConnection): Promise<void> {
+    if (TileTree.LoadStatus.NotLoaded !== this.loadStatus)
+      return;
+
+    this._loadStatus = TileTree.LoadStatus.Loading;
+    let tree: TileTree | undefined;
+    let newStatus: TileTree.LoadStatus;
+    try {
+      tree = await supplier.createTileTree(this.id, iModel);
+      newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTree.LoadStatus.Loaded : TileTree.LoadStatus.NotFound;
+    } catch (err) {
+      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.NotFound;
+    }
+
+    if (TileTree.LoadStatus.Loading === this._loadStatus) {
+      this._tileTree = tree;
+      this._loadStatus = newStatus;
+      IModelApp.viewManager.onNewTilesReady();
+    }
   }
 }

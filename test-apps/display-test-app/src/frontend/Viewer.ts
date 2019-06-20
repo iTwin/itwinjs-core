@@ -22,8 +22,6 @@ import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
 
-// ###TODO: I think the picker populates correctly, but I have no way to test - and if no reality models are available,
-// the button doesn't disappear until you click on it. Revisit when Alain has something useful for us.
 const wantRealityModels = false;
 
 function saveImage(vp: Viewport) {

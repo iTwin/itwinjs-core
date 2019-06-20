@@ -22,15 +22,15 @@ import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
-import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
+import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { Tile } from "./tile/TileTree";
+import { Tile } from "./tile/Tile";
+import { TileTree } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
 import { ToolSettings } from "./tools/Tool";
-import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 
 /** An object which customizes the appearance of Features within a [[Viewport]].
  * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
@@ -43,6 +43,17 @@ import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
 export interface FeatureOverrideProvider {
   /** Add to the supplied `overrides` any symbology overrides to be applied to the specified `viewport`. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
+}
+
+/** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying a [[TileTree.Reference]] capable of loading and drawing the graphics.
+ * Typical use cases involve drawing cartographic imagery like weather, traffic conditions, etc.
+ * @see [[MapTileTreeReference]] and [[MapImageryTileTreeReference]] for examples of ways to create a TileTree reference.
+ * @see [[Viewport.addTiledGraphicsProvider]] and [[Viewport.dropTiledGraphicsProvider]].
+ * @internal
+ */
+export interface TiledGraphicsProvider {
+  /** Return the tile tree to be drawn in the specified Viewport. */
+  getTileTree(viewport: Viewport): TileTree.Reference | undefined;
 }
 
 /** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
@@ -1290,7 +1301,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawn?: Id64Set;
   private _alwaysDrawnExclusive: boolean = false;
   private _featureOverrideProvider?: FeatureOverrideProvider;
-  private _tiledGraphicsProviders?: Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>;
+  private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
   private _hilite = new Hilite.Settings();
 
   /** @internal */
@@ -1409,6 +1420,12 @@ export abstract class Viewport implements IDisposable {
    */
   public isSubCategoryVisible(id: Id64String): boolean { return this.view.isSubCategoryVisible(id); }
 
+  private invalidateSceneForCategoryChange(): void {
+    // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
+    if (this.sync.isValidScene && this.view.displayStyle.wantShadows)
+      this.invalidateScene();
+  }
+
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
    * Visibility of individual subcategories belonging to a category can be controlled separately through the use of [[SubCategoryOverride]]s.
    * By default, enabling display of a category does not affect display of subcategories thereof which have been overridden to be invisible.
@@ -1418,6 +1435,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories: boolean = false): void {
     this._changeFlags.setViewedCategories();
+    this.invalidateSceneForCategoryChange();
 
     if (!display) {
       this.view.categorySelector.dropCategories(categories);
@@ -1471,6 +1489,7 @@ export abstract class Viewport implements IDisposable {
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
     json.invisible = !display;
     this.overrideSubCategory(subCategoryId, SubCategoryOverride.fromJSON(json)); // will set the ChangeFlag appropriately
+    this.invalidateSceneForCategoryChange();
   }
 
   /** The settings controlling how a background map is displayed within a view.
@@ -1495,6 +1514,7 @@ export abstract class Viewport implements IDisposable {
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
+    this.invalidateScene();
   }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
@@ -1538,6 +1558,7 @@ export abstract class Viewport implements IDisposable {
 
     this.view.modelSelector.models.clear();
     this.view.modelSelector.addModels(modelIds);
+    this.view.markModelSelectorChanged();
 
     this._changeFlags.setViewedModels();
     this.invalidateScene();
@@ -1553,6 +1574,7 @@ export abstract class Viewport implements IDisposable {
   public async replaceViewedModels(modelIds: Id64Arg): Promise<void> {
     if (this.view.isSpatialView()) {
       this.view.modelSelector.models.clear();
+      this.view.markModelSelectorChanged();
       return this.addViewedModels(modelIds);
     }
   }
@@ -1577,6 +1599,7 @@ export abstract class Viewport implements IDisposable {
 
     if (this.view.modelSelector.models.size !== prevSize) {
       this._changeFlags.setViewedModels();
+      this.view.markModelSelectorChanged();
       this.invalidateScene();
     }
 
@@ -1655,12 +1678,14 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public getToolTip(hit: HitDetail): HTMLElement | string {
     let toolTip: string | HTMLElement = "";
-    if (this.displayStyle)
-      this.displayStyle.forEachContextRealityModel((model) => {
+    if (this.displayStyle) {
+      this.displayStyle.forEachRealityTileTreeRef((model) => {
         const thisToolTip = model.getToolTip(hit);
         if (thisToolTip !== undefined)
           toolTip = thisToolTip;
       });
+    }
+
     return toolTip;
   }
 
@@ -1797,31 +1822,29 @@ export abstract class Viewport implements IDisposable {
   public setFeatureOverrideProviderChanged(): void {
     this._changeFlags.setFeatureOverrideProvider();
   }
-  /** Add a TiledGraphicsProvider
-   * @internal
-   */
-  public addTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
-    if (undefined === this._tiledGraphicsProviders)
-      this._tiledGraphicsProviders = new Map<TiledGraphicsProvider.Type, TiledGraphicsProvider.ProviderSet>();
 
-    if (undefined === this._tiledGraphicsProviders.get(type))
-      this._tiledGraphicsProviders.set(type, new Set<TiledGraphicsProvider.Provider>());
-
-    this._tiledGraphicsProviders.get(type)!.add(provider);
+  /** @internal */
+  protected forEachTiledGraphicsProviderTree(func: (ref: TileTree.Reference) => void): void {
+    for (const provider of this._tiledGraphicsProviders) {
+      const ref = provider.getTileTree(this);
+      if (undefined !== ref)
+        func(ref);
+    }
   }
 
-  /** Remove a TiledGraphicsProvider
-   * @internal
-   */
-  public removeTiledGraphicsProvider(type: TiledGraphicsProvider.Type, provider: TiledGraphicsProvider.Provider) {
-    if (undefined !== this._tiledGraphicsProviders && undefined !== this._tiledGraphicsProviders.get(type))
-      this._tiledGraphicsProviders.get(type)!.delete(provider);
+  /** @internal */
+  public forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+    this.view.forEachTileTreeRef(func);
+    this.forEachTiledGraphicsProviderTree(func);
   }
-  /** Get the tiled graphics providers for given type
-   * @internal
-   */
-  public getTiledGraphicsProviders(type: TiledGraphicsProvider.Type): TiledGraphicsProvider.ProviderSet | undefined {
-    return this._tiledGraphicsProviders ? this._tiledGraphicsProviders.get(type) : undefined;
+
+  /** @internal */
+  public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
+    this._tiledGraphicsProviders.add(provider);
+  }
+  /** @internal */
+  public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
+    this._tiledGraphicsProviders.delete(provider);
   }
 
   /** @internal */
@@ -2568,13 +2591,11 @@ export abstract class Viewport implements IDisposable {
       if (!this._freezeScene) {
         this.numSelectedTiles = this.numReadyTiles = 0;
         const context = this.createSceneContext();
-        view.createClassification(context);
-        view.createBackgroundMap(context);
         view.createScene(context);
-        view.createProviderGraphics(context);
-        view.createSolarShadowMap(context);
-        view.createTextureDrapes(context);
+        this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));
+
         context.requestMissingTiles();
+
         target.changeScene(context.graphics);
         target.changeBackgroundMap(context.backgroundGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
@@ -2705,6 +2726,12 @@ export abstract class Viewport implements IDisposable {
       this.npcToWorld(npc, npc);
 
     return npc;
+  }
+
+  /** @internal */
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.forEachTileTreeRef((ref) => ref.collectStatistics(stats));
+    // ###TODO: Want to record memory used by RenderTarget?
   }
 }
 
@@ -2893,6 +2920,7 @@ export class ScreenViewport extends Viewport {
     ScreenViewport.removeAllChildren(this.decorationDiv);
     const context = new DecorateContext(this, decorations);
     this.view.decorate(context);
+    this.forEachTiledGraphicsProviderTree((ref) => ref.decorate(context));
 
     for (const decorator of IModelApp.viewManager.decorators)
       decorator.decorate(context);

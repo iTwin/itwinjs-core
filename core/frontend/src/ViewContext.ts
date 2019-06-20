@@ -4,17 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64String, assert } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, RenderSolarShadowMap, RenderTextureDrape } from "./render/System";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
 import { ViewState3d } from "./ViewState";
-import { Tile } from "./tile/TileTree";
+import { Tile } from "./tile/Tile";
+import { TileTree } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
-import { TiledGraphicsProvider } from "./TiledGraphicsProvider";
-import { TileTreeModelState } from "./ModelState";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -54,7 +53,7 @@ export class RenderContext {
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
   /** @internal */
-  public createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier, drape?: RenderTextureDrape): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, clip, planarClassifier, drape); }
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, clip, classifierOrDrape); }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -518,36 +517,32 @@ export class SceneContext extends RenderContext {
   public readonly backgroundGraphics: RenderGraphic[] = [];
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
-  public modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
-  public planarClassifiers = new Map<Id64String, RenderPlanarClassifier>();               // Classifier model id to planar classifier.
-  public textureDrapes = new Map<Id64String, RenderTextureDrape>();
+  public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
+  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
+  public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   public solarShadowMap?: RenderSolarShadowMap;
-  public extendedFrustumPlane?: Plane3dByOriginAndUnitNormal;
-  private _tiledGraphicsProviderType?: TiledGraphicsProvider.Type;
-  private _backgroundMapProvider?: TiledGraphicsProvider.Provider;
+  private _viewFrustum?: ViewFrustum;
+  private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
   }
+
   public get viewFrustum(): ViewFrustum | undefined {
-    return (undefined !== this.extendedFrustumPlane) ? ViewFrustum.createFromViewportAndPlane(this.viewport, this.extendedFrustumPlane) : this.viewport.viewFrustum;
+    return undefined !== this._viewFrustum ? this._viewFrustum : this.viewport.viewFrustum;
   }
 
   public outputGraphic(graphic: RenderGraphic): void {
-    if (this._tiledGraphicsProviderType !== undefined) {
-      switch (this._tiledGraphicsProviderType) {
-        case TiledGraphicsProvider.Type.BackgroundMap:
+    switch (this._graphicType) {
+      case TileTree.GraphicType.BackgroundMap:
           this.backgroundGraphics.push(graphic);
           break;
-        case TiledGraphicsProvider.Type.Overlay:
+      case TileTree.GraphicType.Overlay:
+        // ###TODO handle differently
+      default:
           this.graphics.push(graphic);
           break;
-        default:
-          assert(false, "currently unsupported graphics provider type");
       }
-    } else {
-      this.graphics.push(graphic);
-    }
   }
 
   public insertMissingTile(tile: Tile): void {
@@ -563,22 +558,39 @@ export class SceneContext extends RenderContext {
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
-  public set tiledGraphicsProviderType(providerType: TiledGraphicsProvider.Type | undefined) { this._tiledGraphicsProviderType = providerType; }
+
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined { return this.planarClassifiers.get(id); }
   public setPlanarClassifier(id: Id64String, planarClassifier: RenderPlanarClassifier) { this.planarClassifiers.set(id, planarClassifier); }
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
     return undefined === classifierId ? undefined : this.getPlanarClassifier(classifierId);
   }
+
   public getTextureDrape(modelId: Id64String) { return this.textureDrapes.get(modelId); }
   public setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape) { this.textureDrapes.set(modelId, textureDrape); }
-  public setBackgroundMapProvider(provider: TiledGraphicsProvider.Provider) { this._backgroundMapProvider = provider; }
-  public addBackgroundDrapedModel(model: TileTreeModelState): RenderTextureDrape | undefined {
-    let drape;
-    if (undefined !== this._backgroundMapProvider) {
-      if (undefined !== (drape = this.target.renderSystem.createBackgroundMapDrape(model, this._backgroundMapProvider)))
-        this.setTextureDrape(model.treeModelId, drape);
-    }
+  public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
+    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundMap);
+    if (undefined !== drape)
+      this.setTextureDrape(drapedTree.modelId, drape);
+
     return drape;
+  }
+
+  public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
+    const frust = undefined !== plane ? ViewFrustum.createFromViewportAndPlane(this.viewport, plane) : undefined;
+    this.withGraphicTypeAndFrustum(type, frust, func);
+  }
+
+  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewFrustum | undefined, func: () => void): void {
+    const prevType = this._graphicType;
+    const prevFrust = this._viewFrustum;
+
+    this._graphicType = type;
+    this._viewFrustum = frustum;
+
+    func();
+
+    this._graphicType = prevType;
+    this._viewFrustum = prevFrust;
   }
 }

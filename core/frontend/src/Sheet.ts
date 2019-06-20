@@ -18,7 +18,8 @@ import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
-import { Tile, TileLoader, TileTree } from "./tile/TileTree";
+import { Tile } from "./tile/Tile";
+import { TileLoader, TileTree } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
@@ -671,10 +672,15 @@ export namespace Attachments {
       if (!viewedModel)
         return State.Empty;
 
-      switch (viewedModel.loadTree(true)) {
+      if (undefined === attachment.treeRef)
+        attachment.treeRef = viewedModel.createTileTreeReference(view);
+
+      const owner = attachment.treeRef.treeOwner;
+      const tree = owner.load();
+      switch (owner.loadStatus) {
         case TileTree.LoadStatus.Loaded:
-          assert(undefined !== viewedModel.tileTree);
-          attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
+          assert(undefined !== tree);
+          attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, tree!);
           return State.Ready;
         case TileTree.LoadStatus.Loading:
           return State.Loading;
@@ -941,6 +947,8 @@ export namespace Attachments {
 
   /** @internal */
   export class Attachment2d extends Attachment {
+    public treeRef?: TileTree.Reference;
+
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }

@@ -9,7 +9,7 @@ import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTree
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { IModelTileIO } from "./IModelTileIO";
-import { Tile } from "./TileTree";
+import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { Viewport } from "../Viewport";
 

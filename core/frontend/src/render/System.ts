@@ -23,12 +23,10 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { TileTreeModelState } from "../ModelState";
 import { TileTree } from "../tile/TileTree";
 import { SceneContext } from "../ViewContext";
-import { ModelSelectorState } from "../ModelSelectorState";
-import { CategorySelectorState } from "../CategorySelectorState";
-import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
+import { SpatialViewState } from "../ViewState";
+import { BackgroundMapTileTreeReference } from "../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
 
@@ -323,23 +321,8 @@ export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
 }
 
-/** Describes the type of a RenderClassifierModel
- * @beta
- */
-export const enum ClassifierType {
-  Volume,
-  Planar,
-}
-
 /** @beta */
 export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
-
-/** Models that may be used as classifiers.  Detecting their type requires a range query.
- * @beta
- */
-export class RenderClassifierModel {
-  constructor(public readonly type: ClassifierType) { }
-}
 
 /** An array of [[RenderGraphic]]s.
  * @public
@@ -788,6 +771,7 @@ export abstract class RenderTarget implements IDisposable {
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
   public get solarShadowMap(): RenderSolarShadowMap | undefined { return undefined; }
+
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public dispose(): void { }
@@ -968,15 +952,11 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public getSpatialClassificationModel(_classifierModelId: Id64String, _iModel: IModelConnection): RenderClassifierModel | undefined { return undefined; }
+  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
   /** @internal */
-  public addSpatialClassificationModel(_modelId: Id64String, _classificationModel: RenderClassifierModel, _iModel: IModelConnection) { }
+  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
-  public createPlanarClassifier(_properties: SpatialClassificationProps.Properties, _tileTree: TileTree, _classifiedModel: TileTreeModelState, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
-  /** @internal */
-  public createBackgroundMapDrape(_drapedModel: TileTreeModelState, _provider: TiledGraphicsProvider.Provider): RenderTextureDrape | undefined { return undefined; }
-  /** @internal */
-  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _models: ModelSelectorState, _categories: CategorySelectorState, _imodel: IModelConnection): RenderSolarShadowMap | undefined { return undefined; }
+  public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
@@ -1028,7 +1008,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, planarClassifier?: RenderPlanarClassifier, drape?: RenderTextureDrape): RenderGraphic;
+  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal

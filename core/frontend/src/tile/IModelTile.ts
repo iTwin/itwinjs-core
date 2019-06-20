@@ -6,6 +6,8 @@
 
 import {
   assert,
+  compareNumbers,
+  compareStringsOrUndefined,
   Id64String,
 } from "@bentley/bentleyjs-core";
 import {
@@ -15,10 +17,10 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   Tile,
-  TileLoader,
   bisectRange2d,
   bisectRange3d,
-} from "./TileTree";
+} from "./Tile";
+import { TileLoader } from "./TileTree";
 import {
   TileRequest,
 } from "./TileRequest";
@@ -217,6 +219,23 @@ export namespace IModelTile {
     }
 
     return idStr + modelId;
+  }
+
+  /** @internal */
+  export function compareTreeIds(lhs: TreeId, rhs: TreeId): number {
+    // Sadly this comparison does not suffice for type inference to realize both lhs and rhs have same type.
+    if (lhs.type !== rhs.type)
+      return compareNumbers(lhs.type, rhs.type);
+
+    if (BatchType.Primary === lhs.type) {
+      const r = rhs as PrimaryTreeId;
+      if (lhs.edgesRequired !== r.edgesRequired)
+        return lhs.edgesRequired ? -1 : 1;
+
+      return compareStringsOrUndefined(lhs.animationId, r.animationId);
+    }
+
+    return compareNumbers(lhs.expansion, (rhs as ClassifierTreeId).expansion);
   }
 
   /** @internal */
