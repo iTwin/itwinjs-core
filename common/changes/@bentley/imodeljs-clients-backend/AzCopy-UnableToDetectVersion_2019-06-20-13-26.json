@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "AzCopy version detect issue fixed",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "khanaffan@gmail.com"
+}
