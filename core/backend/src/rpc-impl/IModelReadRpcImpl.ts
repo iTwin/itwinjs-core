@@ -179,16 +179,16 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
-  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in an 8-byte prefix header. */
+  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
   public async getViewThumbnail(tokenProps: IModelTokenProps, viewId: string): Promise<Uint8Array> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const thumbnail = IModelDb.find(iModelToken).views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       return Promise.reject(new Error("no thumbnail"));
 
-    const val = new Uint8Array(thumbnail.image.length + 8); // allocate a new buffer 8 bytes larger than the image size
-    new Uint16Array(val.buffer, 0, 8).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 8 bytes.
-    new Uint8Array(val.buffer, 8).set(thumbnail.image); // put the image data at offset 8 after metadata
+    const val = new Uint8Array(thumbnail.image.length + 16); // allocate a new buffer 16 bytes larger than the image size
+    new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]);    // Put the metadata in the first 16 bytes.
+    val.set(thumbnail.image, 16); // put the image data at offset 16 after metadata
     return val;
   }
 
