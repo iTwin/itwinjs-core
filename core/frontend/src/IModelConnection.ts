@@ -8,6 +8,7 @@ import {
   assert,
   BeEvent,
   BentleyStatus,
+  BeTimePoint,
   DbResult,
   Dictionary,
   dispose,
@@ -279,7 +280,7 @@ export class IModelConnection extends IModel {
 
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     IModelConnection.onClose.raiseEvent(this);
-    this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+    this.tiles.dispose();
 
     requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't await-ed right away.
@@ -309,7 +310,7 @@ export class IModelConnection extends IModel {
       return;
 
     IModelConnection.onClose.raiseEvent(this);
-    this.models.onIModelConnectionClose();  // free WebGL resources if rendering
+    this.tiles.dispose();
     try {
       await SnapshotIModelRpcInterface.getClient().closeSnapshot(this.iModelToken.toJSON());
     } finally {
@@ -672,13 +673,6 @@ export namespace IModelConnection {
         yield modelProps;
       }
     }
-
-    /** Code to run when the IModelConnection has closed. */
-    public onIModelConnectionClose() {
-      this.loaded.forEach((value: ModelState) => {
-        value.onIModelConnectionClose();
-      });
-    }
   }
 
   /** The collection of Elements for an [[IModelConnection]]. */
@@ -902,6 +896,20 @@ export namespace IModelConnection {
     public forEachTreeOwner(func: (owner: TileTree.Owner) => void): void {
       for (const dict of this._treesBySupplier.values())
         dict.forEach((_key, value) => func(value));
+    }
+
+    /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
+    public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
+      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTree.References exist pointing to a given Owner.
+      for (const entry of this._treesBySupplier) {
+        const dict = entry[1];
+        dict.forEach((_treeId, owner) => {
+          const tree = owner.tileTree;
+          if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
+            if (undefined === exclude || !exclude.has(tree))
+              owner.dispose();
+        });
+      }
     }
   }
 }

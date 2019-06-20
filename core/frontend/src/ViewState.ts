@@ -329,8 +329,17 @@ export abstract class ViewState extends ElementState {
    * @note This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @internal
    */
+  /** @internal */
   public forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void {
     this.forEachModelTreeRef(func);
+    this.displayStyle.forEachTileTreeRef(func);
+  }
+
+  /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
+   * @internal
+   */
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    this.forEachTileTreeRef((ref) => ref.discloseTileTrees(trees));
   }
 
   /** @internal */
@@ -1584,12 +1593,6 @@ export class SpatialViewState extends ViewState3d {
   /** @internal */
   public forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void {
     this._treeRefs.forEach(func);
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void {
-    this.forEachModelTreeRef(func);
-    this.displayStyle.forEachTileTreeRef(func);
   }
 
   /** @internal */

@@ -1838,6 +1838,14 @@ export abstract class Viewport implements IDisposable {
     this.forEachTiledGraphicsProviderTree(func);
   }
 
+  /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
+   * @internal
+   */
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    this.forEachTiledGraphicsProviderTree((ref) => ref.discloseTileTrees(trees));
+    this.view.discloseTileTrees(trees);
+  }
+
   /** @internal */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.add(provider);
@@ -2730,7 +2738,11 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    this.forEachTileTreeRef((ref) => ref.collectStatistics(stats));
+    const trees = new Set<TileTree>();
+    this.discloseTileTrees(trees);
+    for (const tree of trees)
+      tree.collectStatistics(stats);
+
     // ###TODO: Want to record memory used by RenderTarget?
   }
 }

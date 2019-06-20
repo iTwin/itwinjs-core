@@ -91,6 +91,7 @@ export class BatchedTileIdMap {
  * @internal
  */
 export class TileTree implements IDisposable, RenderMemory.Consumer {
+  private _lastSelected = BeTimePoint.now();
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
   public readonly location: Transform;
@@ -144,8 +145,12 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public get is2d(): boolean { return !this.is3d; }
   public get range(): ElementAlignedBox3d { return this._rootTile !== undefined ? this._rootTile.range : new Range3d(); }
 
+  /** The most recent time when tiles were selected for drawing. Used for purging least-recently-used tile trees to free up memory. */
+  public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
+
   public selectTilesForScene(context: SceneContext): Tile[] { return this.selectTiles(this.createDrawArgs(context)); }
   public selectTiles(args: Tile.DrawArgs): Tile[] {
+    this._lastSelected = BeTimePoint.now();
     const selected: Tile[] = [];
     if (undefined !== this._rootTile)
       this._rootTile.selectTiles(selected, args);
@@ -399,6 +404,16 @@ export namespace TileTree {
   export abstract class Reference implements RenderMemory.Consumer {
     /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed. */
     public abstract get treeOwner(): Owner;
+
+    /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
+     * Override this and call super if you have such auxiliary trees.
+     * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
+     */
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      const tree = this.treeOwner.tileTree;
+      if (undefined !== tree)
+        trees.add(tree);
+    }
 
     /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
     public addToScene(context: SceneContext): void {

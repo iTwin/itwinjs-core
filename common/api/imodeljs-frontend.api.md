@@ -856,6 +856,8 @@ export namespace Attachments {
         static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef;
         debugDrawBorder(context: SceneContext): void;
         // (undocumented)
+        discloseTileTrees(trees: Set<TileTree>): void;
+        // (undocumented)
         displayPriority: number;
         getOrCreateClip(transform?: Transform): ClipVector;
         // (undocumented)
@@ -877,6 +879,8 @@ export namespace Attachments {
     export class Attachment2d extends Attachment {
         constructor(props: ViewAttachmentProps, view: ViewState2d);
         // (undocumented)
+        discloseTileTrees(trees: Set<TileTree>): void;
+        // (undocumented)
         readonly is2d: boolean;
         // (undocumented)
         load(_sheetView: SheetViewState, _sceneContext: SceneContext): State;
@@ -886,6 +890,8 @@ export namespace Attachments {
     // (undocumented)
     export class Attachment3d extends Attachment {
         constructor(props: ViewAttachmentProps, view: ViewState3d);
+        // (undocumented)
+        discloseTileTrees(trees: Set<TileTree>): void;
         getState(depth: number): State;
         // (undocumented)
         readonly is2d: boolean;
@@ -3148,7 +3154,6 @@ export namespace IModelConnection {
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
         loaded: Map<string, ModelState>;
-        onIModelConnectionClose(): void;
         // @alpha
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
@@ -3170,6 +3175,7 @@ export namespace IModelConnection {
         getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner;
         // (undocumented)
         getTileTreeProps(id: string): Promise<TileTreeProps>;
+        purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void;
         }
     export class Views {
         // @internal
@@ -3870,8 +3876,6 @@ export class ModelState extends EntityState implements ModelProps {
     readonly modeledElement: RelatedElement;
     // (undocumented)
     readonly name: string;
-    // @internal
-    onIModelConnectionClose(): void;
     // (undocumented)
     parentModel: Id64String;
     toJSON(): ModelProps;
@@ -5433,6 +5437,8 @@ export class SheetViewState extends ViewState2d {
         max: number;
     };
     // @internal
+    discloseTileTrees(trees: Set<TileTree>): void;
+    // @internal
     load(): Promise<void>;
     // @internal
     markAttachment3dSceneIncomplete(): void;
@@ -5667,8 +5673,6 @@ export class SpatialViewState extends ViewState3d {
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void;
-    // @internal (undocumented)
-    forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // (undocumented)
@@ -6525,6 +6529,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract readonly tileExpirationTime: BeDuration;
     // @internal (undocumented)
+    abstract readonly tileTreeExpirationTime: BeDuration | undefined;
+    // @internal (undocumented)
     abstract readonly useProjectExtents: boolean;
 }
 
@@ -6538,6 +6544,7 @@ export namespace TileAdmin {
         maximumMajorTileFormatVersion?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
+        tileTreeExpirationTime?: number;
         // @internal
         useProjectExtents?: boolean;
     }
@@ -6633,6 +6640,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     readonly is3d: boolean;
     // (undocumented)
     readonly isBackgroundMap?: boolean;
+    readonly lastSelectedTime: BeTimePoint;
     // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)
@@ -6712,6 +6720,7 @@ export namespace TileTree {
         // (undocumented)
         collectStatistics(stats: RenderMemory.Statistics): void;
         decorate(_context: DecorateContext): void;
+        discloseTileTrees(trees: Set<TileTree>): void;
         getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
         abstract readonly treeOwner: Owner;
         unionFitRange(union: Range3d): void;
@@ -7744,6 +7753,8 @@ export class ViewManager {
     readonly onViewResume: BeUiEvent<ScreenViewport>;
     readonly onViewSuspend: BeUiEvent<ScreenViewport>;
     // @internal
+    purgeTileTrees(olderThan: BeTimePoint): void;
+    // @internal
     renderLoop(): void;
     // @internal (undocumented)
     readonly sceneInvalidated: boolean;
@@ -7900,6 +7911,8 @@ export abstract class Viewport implements IDisposable {
     // @internal
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
+    // @internal
+    discloseTileTrees(trees: Set<TileTree>): void;
     displayStyle: DisplayStyleState;
     // (undocumented)
     dispose(): void;
@@ -8154,6 +8167,8 @@ export abstract class ViewState extends ElementState {
     abstract readonly defaultExtentLimits: ExtentLimits;
     // (undocumented)
     description?: string;
+    // @internal
+    discloseTileTrees(trees: Set<TileTree>): void;
     displayStyle: DisplayStyleState;
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;
@@ -8162,7 +8177,7 @@ export abstract class ViewState extends ElementState {
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void;
-    // @internal
+    // @internal (undocumented)
     forEachTileTreeRef(func: (treeRef: TileTree.Reference) => void): void;
     getAspectRatio(): number;
     getAspectRatioSkew(): number;

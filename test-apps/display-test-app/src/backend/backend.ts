@@ -38,6 +38,14 @@ function setupStandaloneConfiguration() {
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
     configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+    const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
+    if (undefined !== treeExpiration)
+      try {
+        configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
+      } catch (_) {
+        //
+      }
+
     configuration.displaySolarShadows = true;
 
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;

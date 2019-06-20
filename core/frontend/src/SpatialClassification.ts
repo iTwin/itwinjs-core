@@ -73,6 +73,16 @@ class ClassifierTreeReference extends TileTree.Reference {
     return this._owner;
   }
 
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    // NB: We do NOT call super because we don't use our tree if no classifier is active.
+    this._classifiedTree.discloseTileTrees(trees);
+
+    const classifier = this._classifiers.active;
+    const classifierTree = undefined !== classifier ? this.treeOwner.tileTree : undefined;
+    if (undefined !== classifierTree)
+      trees.add(classifierTree);
+  }
+
   public addToScene(context: SceneContext): void {
     const classifiedTree = this._classifiedTree.treeOwner.tileTree;
     if (undefined === classifiedTree)

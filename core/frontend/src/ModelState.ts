@@ -62,10 +62,6 @@ export class ModelState extends EntityState implements ModelProps {
   /** Attempts to cast this model to a spatial model. */
   public get asSpatialModel(): SpatialModelState | undefined { return undefined; }
 
-  /** Executes just before the containing IModelConnection is closed to perform any necessary cleanup.
-   * @internal
-   */
-  public onIModelConnectionClose() { }
   /**
    * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
    * @alpha

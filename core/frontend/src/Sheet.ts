@@ -883,6 +883,13 @@ export namespace Attachments {
       return view.getExtents().x / placement.bbox.xLength();
     }
 
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      // ###TODO: An Attachment.Tree is *NOT* owned by a TileTree.Owner. It should be.
+      // We disclose it for purposese of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
+      if (undefined !== this._tree)
+        trees.add(this._tree);
+    }
+
     /** Given a view and an origin point, compute a placement for an attachment. */
     private static computePlacement(view: ViewState, origin: Point2d, scale: number): Placement2d {
       const viewExtents = view.getExtents();
@@ -949,6 +956,12 @@ export namespace Attachments {
   export class Attachment2d extends Attachment {
     public treeRef?: TileTree.Reference;
 
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      super.discloseTileTrees(trees);
+      if (undefined !== this.treeRef)
+        this.treeRef.discloseTileTrees(trees);
+    }
+
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
       super(props, view);
     }
@@ -972,6 +985,13 @@ export namespace Attachments {
     }
 
     public get is2d(): boolean { return false; }
+
+    public discloseTileTrees(trees: Set<TileTree>): void {
+      super.discloseTileTrees(trees);
+      const tree = this._tree as Tree3d;
+      if (undefined !== tree)
+        tree.viewport.discloseTileTrees(trees);
+    }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
     public getState(depth: number): State { return depth < this._states.length ? this._states[depth] : State.NotLoaded; }
@@ -1087,6 +1107,16 @@ export class SheetViewState extends ViewState2d {
   private _attachmentIds: Id64Array;
   private _attachments: Attachments.AttachmentList;
   private _all3dAttachmentTilesLoaded: boolean = true;
+
+  /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
+   * @internal
+   */
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    super.discloseTileTrees(trees);
+    for (const attachment of this._attachments.list) {
+      attachment.discloseTileTrees(trees);
+    }
+  }
 
   /** @internal */
   public get attachmentIds() { return this._attachmentIds; }

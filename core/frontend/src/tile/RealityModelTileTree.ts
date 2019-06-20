@@ -95,6 +95,7 @@ class RealityTreeReference extends TileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: TileTree.Reference;
+  private _mapDrapeTree?: TileTree.Reference;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super();
@@ -120,10 +121,23 @@ class RealityTreeReference extends TileTree.Reference {
       this._classifier.addToScene(context);
 
     const tree = this.treeOwner.tileTree;
-    if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap)
+    if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
+      // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
+      this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
       context.addBackgroundDrapedModel(tree);
+    }
 
     super.addToScene(context);
+  }
+
+  public discloseTileTrees(trees: Set<TileTree>): void {
+    super.discloseTileTrees(trees);
+
+    if (undefined !== this._classifier)
+      this._classifier.discloseTileTrees(trees);
+
+    if (undefined !== this._mapDrapeTree)
+      this._mapDrapeTree.discloseTileTrees(trees);
   }
 
   public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
