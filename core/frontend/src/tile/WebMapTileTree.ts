@@ -578,6 +578,12 @@ class BingAttribution {
   }
 }
 
+// in deployed applications, we can only make https requests, but the Bing Maps metadata request returns templates with "http:".
+// This function fixes those.
+function replaceHttpWithHttps(originalUrl: string) {
+  return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
+}
+
 // Our ImageryProvider for Bing Maps.
 class BingImageryProvider extends ImageryProvider {
   private _urlTemplate?: string;
@@ -724,7 +730,7 @@ class BingImageryProvider extends ImageryProvider {
     try {
       const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
-      this._logoUrl = bingResponseProps.brandLogoUri;
+      this._logoUrl = replaceHttpWithHttps(bingResponseProps.brandLogoUri);
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];
       const thisResourceProps = thisResourceSetProps.resources[0];
@@ -732,7 +738,7 @@ class BingImageryProvider extends ImageryProvider {
       this._zoomMax = thisResourceProps.zoomMax;
       this._tileHeight = thisResourceProps.imageHeight;
       this._tileWidth = thisResourceProps.imageWidth;
-      this._urlTemplate = thisResourceProps.imageUrl.replace("{culture}", "en-US"); // NEEDSWORK - get locale from somewhere.
+      this._urlTemplate = replaceHttpWithHttps(thisResourceProps.imageUrl.replace("{culture}", "en-US")); // NEEDSWORK - get locale from somewhere.
       this._urlSubdomains = thisResourceProps.imageUrlSubdomains;
       // read the list of Bing's data suppliers and the range of data they provide. Used in calculation of copyright message.
       this.readAttributions(thisResourceProps.imageryProviders);
@@ -740,8 +746,6 @@ class BingImageryProvider extends ImageryProvider {
       // read the Bing logo data, used in getCopyrightImage
       if (undefined !== this._logoUrl && 0 < this._logoUrl.length) {
         this._logoImage = new Image();
-        if (!this._logoUrl.includes("https"))
-          this._logoUrl = this._logoUrl.replace("http", "https");
         this._logoImage.src = this._logoUrl;
       }
 
@@ -897,7 +901,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
 
   // Determine if we have a usable GCS.
   const converter = iModel.geoServices.getConverter("WGS84");
-  const requestProps: XYZProps[] = [ { x: 0, y: 0, z: 0 } ];
+  const requestProps: XYZProps[] = [{ x: 0, y: 0, z: 0 }];
   let haveConverter = false;
   converter.getIModelCoordinatesFromGeoCoordinates(requestProps).then((responseProps) => {
     haveConverter = responseProps.iModelCoords.length === 1 && responseProps.iModelCoords[0].s !== GeoCoordStatus.NoGCSDefined;
