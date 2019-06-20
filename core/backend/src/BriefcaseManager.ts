@@ -761,6 +761,14 @@ export class BriefcaseManager {
         requestContext.enter();
         briefcase.openParams = backupOpenParams;
       }
+
+      // Reopen the iModel file if the briefcase hasn't been opened with the required OpenMode
+      if (briefcase.openParams.openMode !== OpenMode.ReadWrite) {
+        briefcase.nativeDb!.closeIModel();
+        res = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
+        if (DbResult.BE_SQLITE_OK !== res)
+          throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+      }
     } catch (error) {
       Logger.logError(loggerCategory, "Setting up a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
@@ -1181,6 +1189,9 @@ export class BriefcaseManager {
     return { changeSetId, changeSetIndex };
   }
 
+  /** Processes (merges, reverses, reinstates) change sets to get the briefcase to the specified target version.
+   * Note: The briefcase must have been opened ReadWrite, and the method keeps it in the same state.
+   */
   private static async processChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, targetChangeSetId: string, targetChangeSetIndex: number): Promise<void> {
     requestContext.enter();
     if (!briefcase.nativeDb || !briefcase.isOpen)

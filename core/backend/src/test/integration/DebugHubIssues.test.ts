@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, GuidString, PerfLogger, Logger, LogLevel, ChangeSetStatus, ChangeSetApplyOption } from "@bentley/bentleyjs-core";
+import { OpenMode, GuidString, Logger, LogLevel, ChangeSetStatus, ChangeSetApplyOption } from "@bentley/bentleyjs-core";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
@@ -49,39 +49,6 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     await iModel.close(requestContext);
-  });
-
-  it.skip("should be able to open checkpoints", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "OG_REF";
-
-    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
-
-    let versionName = "S1.P01.04";
-    // const iModel4: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.named(versionName));
-    // assert.exists(iModel4);
-    // assert(iModel4.openParams.openMode === OpenMode.Readonly);
-
-    versionName = "S1.P01.03";
-    const iModel3: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.named(versionName));
-    assert.exists(iModel3);
-    assert(iModel3.openParams.openMode === OpenMode.Readonly);
-
-    versionName = "S1.P01.02";
-    const iModel2: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.named(versionName));
-    assert.exists(iModel2);
-    assert(iModel2.openParams.openMode === OpenMode.Readonly);
-
-    versionName = "S1.P01.01";
-    const iModel1: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.named(versionName));
-    assert.exists(iModel1);
-    assert(iModel1.openParams.openMode === OpenMode.Readonly);
-
-    // await iModel4.close(requestContext);
-    await iModel3.close(requestContext);
-    await iModel2.close(requestContext);
-    await iModel1.close(requestContext);
   });
 
   it.skip("should be able to dump iModel links for test files", async () => {
@@ -133,8 +100,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to download and backup required test files from the Hub", async () => {
-    const projectName = "PenChemOSBL2";
-    const iModelName = "PenChemOSBL7";
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "ReadOnlyTest";
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
@@ -227,126 +194,6 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubUtility.deleteIModel(requestContext, "iModelJsTest", "imodeljs-clients Versions test 2");
   });
 
-  it.skip("should be able to download DesignReviewTestDatasets from the Hub", async () => {
-    const projectName = "DesignReviewTestDatasets";
-
-    let iModelName = "BSY_OG_UK_01 OG_REF";
-    let iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Coffs Harbour Bypass Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Coffs Harbour Bypass Dataset 2";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Mott Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Mott Dataset 2 - Section 6";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Mott Dataset 3 - Section 8";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Mott WP-137";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "OG_REF";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "PenChemOSBL7";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Retail Building";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Stadium Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Sweco Norway Dataset 1";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Sweco Norway Dataset 2 - Revit and MicroStation Bridge";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-
-    iModelName = "Sweco Norway Dataset 3 - 108 refs";
-    iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-  });
-
-  it.skip("should be able to upload DesignReviewTestDatasets from the Hub", async () => {
-    const projectName = "DesignReviewTestDatasets";
-
-    // const iModelName = "BSY_OG_UK_01 OG_REF";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "OG_REF";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Coffs Harbour Bypass Dataset 1";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    const iModelName = "Coffs Harbour Bypass Dataset 2";
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Mott Dataset 1";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Mott Dataset 2 - Section 6";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Mott Dataset 3 - Section 8";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Mott WP-137";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "PenChemOSBL7";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Retail Building";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Stadium Dataset 1";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Sweco Norway Dataset 1";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Sweco Norway Dataset 2 - Revit and MicroStation Bridge";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-
-    // const iModelName = "Sweco Norway Dataset 3 - 108 refs";
-    // const iModelDir = path.join(iModelRootDir, iModelName);
-    // await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-  });
-
   it.skip("should be able to download and backup required test files from the Hub", async () => {
     const projectName = "iModelJsIntegrationTest";
 
@@ -371,23 +218,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
   });
 
-  it.skip("should be able to open HS2-SL-08 model", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "HS2-SL-08";
-
-    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
-
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion(), IModelVersion.asOfChangeSet("b5c7e45a6c6266e46fbbb9f4f17286373d95d4e5"));
-    assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
-
-    await iModel.close(requestContext);
-  });
-
   it.skip("should be able to validate change set operations", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "HS2-SL-08";
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "ReadOnlyTest";
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
@@ -396,7 +229,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to apply specific change set to the briefcase on disk", async () => {
-    const iModelName = "HS2-SL-08";
+    const iModelName = "ReadOnlyTest";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
@@ -414,61 +247,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to validate change set operations on a previously downloaded iModel", async () => {
-    const iModelName = "HS2-SL-08";
+    const iModelName = "ReadOnlyTest";
     const iModelDir = path.join(iModelRootDir, iModelName);
     HubUtility.validateAllChangeSetOperationsOnDisk(iModelDir);
-  });
-
-  it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
-    const projectName = "DesignReviewTestDatasets";
-    const iModelName = "HS2-SL-08";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-  });
-
-  it.skip("should be able to download the seed files, change sets, for 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
-    const projectName = "1MWCCN01 - North Project";
-    const iModelName = "SECTION_08_IM01";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(requestContext, projectName, iModelName, iModelDir);
-  });
-
-  it.skip("should be able to open UKRail_EWR2 (EWR_2E) model", async () => {
-    const projectName = "UKRail_EWR2";
-    const iModelName = "EWR_2E";
-
-    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
-
-    const perfLogger = new PerfLogger("EWR_2E");
-
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
-    assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
-
-    perfLogger.dispose();
-
-    await iModel.close(requestContext);
-  });
-
-  it.skip("should be able to open 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
-    const projectName = "1MWCCN01 - North Project";
-    const iModelName = "SECTION_08_IM01";
-
-    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
-
-    const perfLogger = new PerfLogger("SECTION_08_IM01");
-
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
-    assert.exists(iModel);
-    assert(iModel.openParams.openMode === OpenMode.Readonly);
-
-    perfLogger.dispose();
-
-    await iModel.close(requestContext);
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
