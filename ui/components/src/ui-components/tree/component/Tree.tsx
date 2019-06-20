@@ -28,6 +28,8 @@ import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
   isTreeDataProviderInterface,
 } from "../TreeDataProvider";
+import { NodeEventManager } from "../NodeEventManager";
+import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
 import { TreeNodeProps, TreeNode } from "./Node";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 // selection-related imports
@@ -170,11 +172,8 @@ export interface TreeProps extends CommonProps {
   cellEditing?: EditableTreeProps;
 
   /**
-   * Describes nodes that should be checked. May be defined as:
-   * - an array of node ids
-   * - a callback that takes a node and returns a boolean
-   *
-   * **Note:** when set, this property overrides checkbox-related TreeNodeItem attributes
+   * Alternative source of truth for node checkbox information.
+   * > **Note:** when set, this property overrides checkbox-related TreeNodeItem attributes
    */
   checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
 
@@ -215,21 +214,14 @@ interface TreeState {
 
   currentlyEditedNode?: BeInspireTreeNode<TreeNodeItem>;
 
-  pendingSelectionChange?: {
-    range: [string, string];
-    counts: {
-      leftToLoad: number;
-      totalToLoad: number;
-      totalInSelection: number;
-    };
-    continue: () => void;
-  };
-
   /** @internal */
   highlightingEngine?: HighlightingEngine;
 
   /** @internal */
   cellEditingEngine?: CellEditingEngine;
+
+  nodeLoadingOrchestrator: NodeLoadingOrchestrator;
+  nodeEventManager: NodeEventManager;
 }
 
 /**
@@ -263,6 +255,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
     this._selectionHandler.onItemsDeselectedCallback = this._onNodesDeselected;
 
+    const model = Tree.createModel(props);
+    const nodeLoadingOrchestrator = Tree.createNodeLoadingOrchestrator(model, props);
+    const nodeEventManager = Tree.createNodeEventManager(nodeLoadingOrchestrator, model, props);
+
     this.state = {
       prev: {
         dataProvider: props.dataProvider,
@@ -270,8 +266,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         checkboxInfo: props.checkboxInfo,
         modelReady: false,
       },
-      model: Tree.createModel(props),
+      model,
       modelReady: false,
+      nodeLoadingOrchestrator,
+      nodeEventManager,
     };
   }
 
@@ -285,6 +283,74 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       pageSize: props.pageSize,
       disposeChildrenOnCollapse: props.disposeChildrenOnCollapse,
     });
+  }
+
+  private static createNodeLoadingOrchestrator(model: BeInspireTree<TreeNodeItem>, props: TreeProps) {
+    return new NodeLoadingOrchestrator(
+      model,
+      {
+        onLoadProgress: (loaded: number, total: number, cancel: () => void) => {
+          // istanbul ignore else
+          if (props.onSelectionLoadProgress) {
+            props.onSelectionLoadProgress(loaded, total, cancel);
+          }
+        },
+        onLoadCanceled: () => {
+          // istanbul ignore else
+          if (props.onSelectionLoadCanceled) {
+            props.onSelectionLoadCanceled();
+          }
+        },
+        onLoadFinished: () => {
+          // istanbul ignore else
+          if (props.onSelectionLoadFinished) {
+            props.onSelectionLoadFinished();
+          }
+        },
+      },
+    );
+  }
+
+  private static createNodeEventManager(nodeManager: NodeLoadingOrchestrator, model: BeInspireTree<TreeNodeItem>, props: TreeProps) {
+    function selectNodes(nodesToSelect: Array<BeInspireTreeNode<TreeNodeItem>>) {
+      using(model.mute([BeInspireTreeEvent.NodeSelected]), (_r) => {
+        nodesToSelect.forEach((node) => node.select());
+      });
+    }
+
+    return new NodeEventManager(
+      nodeManager,
+      {
+        onSelectionModified: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>, deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+          selectNodes(selectedNodes);
+
+          if (props.onNodesSelected && selectedNodes.length > 0)
+            props.onNodesSelected(selectedNodes.map(({ payload }) => payload!), false);
+
+          if (props.onNodesDeselected && deselectedNodes.length > 0)
+            props.onNodesDeselected(deselectedNodes.map(({ payload }) => payload!));
+        },
+        onSelectionReplaced: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+          selectNodes(selectedNodes);
+
+          if (props.onNodesSelected && selectedNodes.length > 0)
+            props.onNodesSelected(selectedNodes.map(({ payload }) => payload!), true);
+        },
+        onCheckboxStateChanged: (stateChanges) => {
+          for (const { node, newState } of stateChanges) {
+            if (newState === CheckBoxState.Off) {
+              node.uncheck();
+            } else {
+              node.check();
+            }
+          }
+
+          if (props.onCheckboxClick) {
+            props.onCheckboxClick(stateChanges.map(({ node, newState }) => ({ node: node.payload!, newState })));
+          }
+        },
+      },
+    );
   }
 
   /** @internal */
@@ -317,10 +383,16 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       derivedState.cellEditingEngine = props.cellEditing ? new CellEditingEngine(props.cellEditing) : undefined;
     }
 
+    if (selectedNodesChanged || providerChanged) {
+      state.nodeLoadingOrchestrator.cancelLoading();
+    }
+
     // in case provider changed, have to re-create `model` and reset `modelReady`
     if (providerChanged) {
       derivedState.model = Tree.createModel(props);
       derivedState.modelReady = false;
+      derivedState.nodeLoadingOrchestrator = Tree.createNodeLoadingOrchestrator(derivedState.model, props);
+      derivedState.nodeEventManager = Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props);
     } else {
       const modelBecameReady = (modelReadyChanged && state.modelReady);
       if (modelBecameReady || selectedNodesChanged) {
@@ -356,6 +428,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   /** @internal */
   public componentWillUnmount() {
+    this.state.nodeLoadingOrchestrator.cancelLoading();
+
     this.dropModelListeners(this.state.model);
     this.dropDataProviderListeners(this.props.dataProvider);
     if (this.state.cellEditingEngine)
@@ -388,8 +462,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public componentDidUpdate(prevProps: TreeProps, prevState: TreeState) {
     this._selectionHandler.selectionMode = this.props.selectionMode!;
 
-    if (this.props.selectedNodes !== prevProps.selectedNodes && this.state.pendingSelectionChange) {
-      this._cancelPendingSelectionChange();
+    if (this.props.selectedNodes !== prevProps.selectedNodes) {
+      this.state.nodeLoadingOrchestrator.cancelLoading();
     }
 
     if (this.props.nodeHighlightingProps && shallowDiffers(this.props.nodeHighlightingProps, prevProps.nodeHighlightingProps)) {
@@ -494,91 +568,24 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       this._treeRef.current.scrollToElement(scrollTo[0]);
   }
 
-  private static computeNodesLoadCounts(
-    curr: { leftToLoad: number, totalInSelection: number },
-    prev?: { leftToLoad: number, totalToLoad: number, totalInSelection: number },
-  ) {
-    if (!prev) {
-      return {
-        ...curr,
-        totalToLoad: curr.leftToLoad,
-      };
-    }
-    const totalIncrease = curr.totalInSelection - prev.totalInSelection;
-    return {
-      leftToLoad: curr.leftToLoad,
-      totalToLoad: prev.totalToLoad + totalIncrease,
-      totalInSelection: curr.totalInSelection,
-    };
-  }
-
-  private _onNodesSelected = (nodes: Array<BeInspireTreeNode<TreeNodeItem>>, replace: boolean) => {
-    if (!this.props.onNodesSelected)
-      return;
-
-    const rangeKey: [string, string] = (nodes.length > 1) ? [nodes[0].id!, nodes[nodes.length - 1].id!] : ["", ""];
-    const nodesLoaded: Array<BeInspireTreeNode<TreeNodeItem>> = [];
-    const nodesNotLoaded: Array<BeInspireTreeNode<TreeNodeItem>> = [];
-    nodes.forEach((n) => {
-      if (n.payload)
-        nodesLoaded.push(n);
-      else
-        nodesNotLoaded.push(n);
-    });
-
-    if (this.state.pendingSelectionChange) {
-      if (!_.isEqual(this.state.pendingSelectionChange.range, rangeKey)) {
-        // there is a pending selection change but ranges don't match - it means
-        // the selection has changed while loading and we should cancel pending
-        // selection change
-        this._cancelPendingSelectionChange();
-      } else if (nodesNotLoaded.length === 0) {
-        // there is a pending selection change with matching ranges and there
-        // are no more nodes to load - it means we're done loading
-        const loadTotal = this.state.pendingSelectionChange.counts.totalToLoad;
-        this.setState({ pendingSelectionChange: undefined }, () => {
-          this.reportPendingSelectionChangeProgress(loadTotal, loadTotal);
-          if (this.props.onSelectionLoadFinished)
-            this.props.onSelectionLoadFinished();
-        });
+  private _onNodesSelected = (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>, replace: boolean): void => {
+    // We don't know whether range or regular selection is happening.
+    // Assume that if there are nodes without payload then shift-click action
+    // happened and we are selecting a node range.
+    const rangeSelection: boolean = selectedNodes.some((node) => node.payload === undefined);
+    if (rangeSelection) {
+      this.state.nodeEventManager.selectNodesBetween(replace, selectedNodes[0], selectedNodes[selectedNodes.length - 1]);
+    } else {
+      if (replace) {
+        this.state.nodeEventManager.replaceSelection(selectedNodes);
+      } else {
+        this.state.nodeEventManager.modifySelection(selectedNodes, []);
       }
     }
-
-    if (nodesNotLoaded.length > 0) {
-      // found nodes that need to be loaded
-      this.setState((prev) => ({
-        pendingSelectionChange: {
-          range: rangeKey,
-          counts: Tree.computeNodesLoadCounts(
-            { leftToLoad: nodesNotLoaded.length, totalInSelection: nodes.length },
-            prev.pendingSelectionChange ? prev.pendingSelectionChange.counts : undefined,
-          ),
-          continue: () => this._onNodesSelected(this.state.model.selectBetween(nodes[0], nodes[nodes.length - 1]), true),
-        },
-      }), () => {
-        // request a page of nodes to be loaded
-        // note: this might result in multiple page loads because the nodes
-        // may be on different levels and the pages are not aligned
-        nodesNotLoaded.slice(0, this.props.pageSize!).forEach((n) => {
-          // tslint:disable-next-line: no-floating-promises
-          this.state.model.requestNodeLoad(toNode(n.getParent()), n.placeholderIndex!);
-        });
-        // report status
-        const totalToLoad = this.state.pendingSelectionChange!.counts.totalToLoad;
-        const loaded = totalToLoad - nodesNotLoaded.length;
-        this.reportPendingSelectionChangeProgress(loaded, totalToLoad);
-      });
-    }
-
-    // report currently loaded selection
-    this.props.onNodesSelected(nodesLoaded.map((n) => n.payload!), replace);
   }
 
-  private _onNodesDeselected = (nodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
-    if (!this.props.onNodesDeselected)
-      return;
-
-    this.props.onNodesDeselected(nodes.map((n) => n.payload!));
+  private _onNodesDeselected = (deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+    this.state.nodeEventManager.modifySelection([], deselectedNodes);
   }
 
   private _onNodeExpanded = (node: BeInspireTreeNode<TreeNodeItem>) => {
@@ -605,27 +612,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._nodesSelectionHandlers = undefined;
   }
 
-  private _cancelPendingSelectionChange = () => {
-    this.setState({ pendingSelectionChange: undefined });
-    if (this.props.onSelectionLoadCanceled)
-      this.props.onSelectionLoadCanceled();
-  }
-
-  private reportPendingSelectionChangeProgress(loaded: number, total: number) {
-    if (this.props.onSelectionLoadProgress)
-      this.props.onSelectionLoadProgress(loaded, total, this._cancelPendingSelectionChange);
-  }
-
   private onNodesLoaded(nodes: BeInspireTreeNodes<TreeNodeItem>) {
     // clear node selection handlers' cache
     this._nodesSelectionHandlers = undefined;
 
     // update the selection state of already loaded nodes
     this.state.model.updateNodesSelection(nodes, this.props.selectedNodes);
-    if (this.state.pendingSelectionChange) {
-      // continue loading selection
-      this.state.pendingSelectionChange.continue();
-    }
 
     if (this.props.checkboxInfo) {
       // tslint:disable-next-line: no-floating-promises
@@ -787,8 +779,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   };
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>, newState: CheckBoxState) => {
-    if (this.props.onCheckboxClick)
-      this.props.onCheckboxClick([{ node: node.payload!, newState }]);
+    this.state.nodeEventManager.setCheckboxState(node, newState);
   }
 
   // tslint:disable-next-line:naming-convention

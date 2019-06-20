@@ -139,6 +139,7 @@
     "react-dnd-test-backend": "^5.0.1",
     "react-virtualized": "^9.21.0",
     "resize-observer-polyfill": "^1.5.0",
+    "rxjs": "^6.5.2",
     "ts-key-enum": "^2.0.0"
   },
   "nyc": {

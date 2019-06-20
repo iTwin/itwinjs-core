@@ -687,6 +687,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
+      "name": "rxjs",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "sass-loader",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },

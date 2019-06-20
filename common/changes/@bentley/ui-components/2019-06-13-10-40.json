@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tree: Correct TreeProps.checkboxInfo documentation.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Robert.Lukasonok@bentley.com"
+}

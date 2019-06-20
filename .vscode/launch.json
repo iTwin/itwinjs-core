@@ -270,6 +270,10 @@
         "../mocha.opts",
         "--no-timeouts",
         "lib/test/**/*.test.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "node_modules/rxjs/**/*"
       ]
     },
     {
