@@ -2310,12 +2310,6 @@ export interface ILinearElementProps extends GeometricElement3dProps {
 }
 
 // @beta
-export interface ILinearLocationElementProps {
-    // (undocumented)
-    locatedElement?: RelatedElementProps;
-}
-
-// @beta
 export interface ILinearlyLocatedAttributionProps {
     // (undocumented)
     attributedElement?: RelatedElementProps;
@@ -2671,10 +2665,6 @@ export enum LightType {
 }
 
 // @beta
-export interface LinearLocationElementProps extends GeometricElement3dProps, ILinearLocationElementProps {
-}
-
-// @beta
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
 }
 
@@ -2687,7 +2677,7 @@ export interface LinearlyReferencedAtLocationProps {
     // (undocumented)
     atPosition: DistanceExpressionProps;
     // (undocumented)
-    fromReferent?: Id64String;
+    fromReferent?: RelatedElementProps;
 }
 
 // @beta
@@ -2699,11 +2689,11 @@ export interface LinearlyReferencedFromToLocationProps {
     // (undocumented)
     fromPosition: DistanceExpressionProps;
     // (undocumented)
-    fromPositionFromReferent?: Id64String;
+    fromPositionFromReferent?: RelatedElementProps;
     // (undocumented)
     toPosition: DistanceExpressionProps;
     // (undocumented)
-    toPositionFromReferent?: Id64String;
+    toPositionFromReferent?: RelatedElementProps;
 }
 
 // @public

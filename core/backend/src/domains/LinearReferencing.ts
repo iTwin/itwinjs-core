@@ -13,6 +13,8 @@ import { Schema, Schemas } from "../Schema";
 import { KnownLocations } from "../IModelHost";
 import * as path from "path";
 import * as elementsModule from "./LinearReferencingElements";
+import * as aspectsModule from "./LinearReferencingElementAspects";
+import * as relationshipsModule from "./LinearReferencingRelationships";
 
 /** Schema class for the LinearReferencing domain.
  * @beta
@@ -23,7 +25,10 @@ export class LinearReferencingSchema extends Schema {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
       Schemas.registerSchema(this);
+
       ClassRegistry.registerModule(elementsModule, this);
+      ClassRegistry.registerModule(aspectsModule, this);
+      ClassRegistry.registerModule(relationshipsModule, this);
     }
   }
 
@@ -37,6 +42,6 @@ export class LinearReferencingSchema extends Schema {
       requestContext.enter();
     }
 
-    await iModelDb.importSchema(requestContext, path.join(KnownLocations.nativeAssetsDir, "ECSchemas\\Domain\\LinearReferencing.ecschema.xml"));
+    await iModelDb.importSchema(requestContext, path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/LinearReferencing.ecschema.xml"));
   }
 }

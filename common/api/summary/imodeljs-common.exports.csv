@@ -140,7 +140,6 @@ public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "
 public;HttpServerRequest 
 public;HttpServerResponse 
 beta;ILinearElementProps 
-beta;ILinearLocationElementProps
 beta;ILinearlyLocatedAttributionProps
 public;ImageBuffer
 public;ImageBufferFormat
@@ -172,7 +171,6 @@ internal;Light
 internal;LightLocationProps 
 internal;LightProps
 internal;LightType
-beta;LinearLocationElementProps 
 beta;LinearlyLocatedAttributionProps 
 beta;LinearlyReferencedAtLocationAspectProps 
 beta;LinearlyReferencedAtLocationProps
