@@ -105,6 +105,7 @@ export declare namespace IModelJsNative {
     public addPendingChangeSet(changeSetId: string): DbResult;
     public appendBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest): void;
     public applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
+    public applyChangeSetsAsync(callback: (status: ChangeSetStatus) => void, dbname: string, dbGuid: GuidString, changeSetTokens: string, applyOption: ChangeSetApplyOption): void;
     public attachChangeCache(changeCachePath: string): DbResult;
     public beginMultiTxnOperation(): DbResult;
     public briefcaseManagerEndBulkOperation(): RepositoryStatus;
@@ -157,6 +158,7 @@ export declare namespace IModelJsNative {
     public getUndoString(): string;
     public hasFatalTxnError(): boolean;
     public hasUnsavedChanges(): boolean;
+    public hasSavedChanges(): boolean;
     public importFunctionalSchema(): DbResult;
     public importSchema(schemaPathname: string): DbResult;
     public inBulkOperation(): boolean;
@@ -167,6 +169,7 @@ export declare namespace IModelJsNative {
     public insertModel(modelProps: string): ErrorStatusOrResult<IModelStatus, string>;
     public isChangeCacheAttached(): boolean;
     public isOpen(): boolean;
+    public isReadonly(): boolean;
     public isRedoPossible(): boolean;
     public isTxnIdValid(txnId: TxnIdString): boolean;
     public isUndoPossible(): boolean;

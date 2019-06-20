@@ -616,7 +616,10 @@ export class BriefcaseManager {
         Logger.logError(loggerCategory, "Briefcase found is invalid (is not of required version). Deleting it to allow retries", () => briefcase.getDebugInfo());
         isValidBriefcase = false;
       } else {
-        Logger.logWarning(loggerCategory, "Briefcase found is not of required version. Ignoring required version", () => briefcase.getDebugInfo());
+        if (nativeDb.hasUnsavedChanges() || nativeDb.hasSavedChanges())
+          Logger.logWarning(loggerCategory, "Briefcase found with local changes, but is not of required version. Ignoring required version", () => briefcase.getDebugInfo());
+        else
+          isValidBriefcase = false; // Invalidate the briefcase to refetch it
       }
     }
     if (briefcase.briefcaseId !== briefcaseId) {
@@ -643,7 +646,9 @@ export class BriefcaseManager {
   private static async finishOpenBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
     requestContext.enter();
     try {
-      await this.initBriefcaseFromHub(requestContext, briefcase);
+      await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
+      requestContext.enter();
+      await this.initBriefcaseFileId(requestContext, briefcase);
       requestContext.enter();
     } catch (error) {
       Logger.logError(loggerCategory, "Opening up a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
@@ -652,25 +657,28 @@ export class BriefcaseManager {
     }
   }
 
-  private static async initBriefcaseFromHub(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
+  private static async initBriefcaseChangeSetIndexes(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
     requestContext.enter();
-
     briefcase.targetChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(requestContext, briefcase.iModelId, briefcase.targetChangeSetId);
     requestContext.enter();
-
     briefcase.parentChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(requestContext, briefcase.iModelId, briefcase.parentChangeSetId);
     requestContext.enter();
-
-    briefcase.reversedChangeSetIndex = (typeof briefcase.reversedChangeSetId === "undefined") ? undefined : await BriefcaseManager.getChangeSetIndexFromId(requestContext, briefcase.iModelId, briefcase.reversedChangeSetId);
-    requestContext.enter();
-
-    if (briefcase.briefcaseId !== BriefcaseId.Standalone) {
-      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+    if (typeof briefcase.reversedChangeSetId !== "undefined") {
+      briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(requestContext, briefcase.iModelId, briefcase.reversedChangeSetId);
       requestContext.enter();
-      if (hubBriefcases.length === 0)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase on the Hub (for the current user)`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
-      briefcase.fileId = hubBriefcases[0].fileId!.toString();
-    }
+    } else
+      briefcase.reversedChangeSetIndex = undefined;
+  }
+
+  private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
+    if (briefcase.briefcaseId === BriefcaseId.Standalone)
+      return;
+
+    const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
+    requestContext.enter();
+    if (hubBriefcases.length === 0)
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase on the Hub (for the current user)`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    briefcase.fileId = hubBriefcases[0].fileId!.toString();
   }
 
   private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, iModelName: string): BriefcaseEntry {
@@ -738,10 +746,11 @@ export class BriefcaseManager {
       res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to setup briefcase id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-
       perfLogger.dispose();
+
       briefcase.setNativeDb(nativeDb);
-      await this.initBriefcaseFromHub(requestContext, briefcase);
+      await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
+      requestContext.enter();
 
       // Apply change sets if necessary
       if (briefcase.currentChangeSetId !== briefcase.targetChangeSetId) {
@@ -751,14 +760,6 @@ export class BriefcaseManager {
         await BriefcaseManager.processChangeSets(requestContext, briefcase, briefcase.targetChangeSetId, briefcase.targetChangeSetIndex!);
         requestContext.enter();
         briefcase.openParams = backupOpenParams;
-      }
-
-      // Reopen the iModel file if the briefcase hasn't been opened with the required OpenMode
-      if (briefcase.openParams.openMode !== OpenMode.ReadWrite) {
-        briefcase.nativeDb!.closeIModel();
-        res = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
-        if (DbResult.BE_SQLITE_OK !== res)
-          throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
       }
     } catch (error) {
       Logger.logError(loggerCategory, "Setting up a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
@@ -1189,6 +1190,7 @@ export class BriefcaseManager {
     if (briefcase.openParams.isStandalone)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId, "Mismatch between briefcase and the native Db");
+
     // Determine the reinstates, reversals or merges required
     let reverseToId: string | undefined, reinstateToId: string | undefined, mergeToId: string | undefined;
     let reverseToIndex: number | undefined, reinstateToIndex: number | undefined, mergeToIndex: number | undefined;
@@ -1215,30 +1217,50 @@ export class BriefcaseManager {
         mergeToIndex = targetChangeSetIndex;
       }
     }
-
-    // Reverse, reinstate and merge as necessary
     if (typeof reverseToId === "undefined" && typeof reinstateToId === "undefined" && typeof mergeToId === "undefined")
       return;
-    const perfLogger = new PerfLogger("Processing change sets - applying change sets to meet requirements", () => ({}));
-    if (typeof reverseToId !== "undefined") {
-      Logger.logTrace(loggerCategory, "Started reversing changes to the briefcase", () => ({ reverseToId, ...briefcase.getDebugInfo() }));
-      await BriefcaseManager.applyChangeSets(requestContext, briefcase, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
+
+    // Close Db before processing change sets
+    if (briefcase.isOpen)
+      briefcase.onBeforeClose.raiseEvent(briefcase);
+    briefcase.nativeDb!.closeIModel();
+    briefcase.isOpen = false;
+
+    // Reverse, reinstate and merge as necessary
+    const perfLogger = new PerfLogger("Processing change sets", () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
+    try {
+      if (typeof reverseToId !== "undefined") {
+        Logger.logTrace(loggerCategory, "Started reversing changes to the briefcase", () => ({ reverseToId, ...briefcase.getDebugInfo() }));
+        await BriefcaseManager.applyChangeSets(requestContext, briefcase, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
+        requestContext.enter();
+        Logger.logTrace(loggerCategory, "Finished reversing changes to the briefcase", () => ({ reverseToId, ...briefcase.getDebugInfo() }));
+      }
+      if (typeof reinstateToId !== "undefined") {
+        Logger.logTrace(loggerCategory, "Started reinstating changes to the briefcase", () => ({ reinstateToId, ...briefcase.getDebugInfo() }));
+        await BriefcaseManager.applyChangeSets(requestContext, briefcase, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
+        requestContext.enter();
+        Logger.logTrace(loggerCategory, "Finished reinstating changes to the briefcase", () => ({ reinstateToId, ...briefcase.getDebugInfo() }));
+      }
+      if (typeof mergeToId !== "undefined") {
+        Logger.logTrace(loggerCategory, "Started merging changes to the briefcase", () => ({ mergeToId, ...briefcase.getDebugInfo() }));
+        await BriefcaseManager.applyChangeSets(requestContext, briefcase, mergeToId, mergeToIndex!, ChangeSetApplyOption.Merge);
+        requestContext.enter();
+        Logger.logTrace(loggerCategory, "Finished merging changes to the briefcase", () => ({ mergeToId, ...briefcase.getDebugInfo() }));
+      }
+    } finally {
+      perfLogger.dispose();
+
+      // Reopen Db after processing change sets
+      briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
+      briefcase.isOpen = true;
+      // TODO: Should we notify open handlers since we notify onBeforeClose?
+
+      // Setup all change set ids and indexes
+      briefcase.parentChangeSetId = briefcase.nativeDb.getParentChangeSetId();
+      briefcase.reversedChangeSetId = briefcase.nativeDb.getReversedChangeSetId();
+      await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
       requestContext.enter();
-      Logger.logTrace(loggerCategory, "Finished reversing changes to the briefcase", () => ({ reverseToId, ...briefcase.getDebugInfo() }));
     }
-    if (typeof reinstateToId !== "undefined") {
-      Logger.logTrace(loggerCategory, "Started reinstating changes to the briefcase", () => ({ reinstateToId, ...briefcase.getDebugInfo() }));
-      await BriefcaseManager.applyChangeSets(requestContext, briefcase, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "Finished reinstating changes to the briefcase", () => ({ reinstateToId, ...briefcase.getDebugInfo() }));
-    }
-    if (typeof mergeToId !== "undefined") {
-      Logger.logTrace(loggerCategory, "Started merging changes to the briefcase", () => ({ mergeToId, ...briefcase.getDebugInfo() }));
-      await BriefcaseManager.applyChangeSets(requestContext, briefcase, mergeToId, mergeToIndex!, ChangeSetApplyOption.Merge);
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, "Finished merging changes to the briefcase", () => ({ mergeToId, ...briefcase.getDebugInfo() }));
-    }
-    perfLogger.dispose();
   }
 
   private static async applyChangeSets(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
@@ -1249,6 +1271,7 @@ export class BriefcaseManager {
     if (targetChangeSetIndex === currentChangeSetIndex)
       return Promise.resolve(); // nothing to apply
 
+    // Download change sets
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
     let perfLogger = new PerfLogger("Processing change sets - downloading change sets", () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
     const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(requestContext, briefcase.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
@@ -1258,66 +1281,30 @@ export class BriefcaseManager {
     if (reverse)
       changeSets.reverse();
 
-    // Close Db before merge (if there are schema changes)
-    const containsSchemaChanges: boolean = changeSets.some((changeSet: ChangeSet) => changeSet.changesType === ChangesType.Schema);
-    if (containsSchemaChanges && briefcase.isOpen)
-      briefcase.onBeforeClose.raiseEvent(briefcase);
-
-    // Apply the changes (one by one to avoid hogging up the event loop)
+    // Gather the changeset tokens
+    const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);
-    for (const changeSet of changeSets) {
+    changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
       const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema);
+      changeSetTokens.push(changeSetToken);
+    });
 
-      perfLogger = new PerfLogger("Processing change sets - applying change set", () => ({ ...briefcase.getDebugInfo(), ...changeSetToken, fileSize: changeSet.fileSize }));
-
-      const changeSetTokens = new Array<ChangeSetToken>(changeSetToken);
-      const status: ChangeSetStatus = briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
-      if (ChangeSetStatus.Success !== status)
-        throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
-
-      perfLogger.dispose();
-    }
-
-    // Mark Db as reopened after merge (if there are schema changes)
-    if (containsSchemaChanges)
-      briefcase.isOpen = true;
-
-    const oldKey = briefcase.getKey();
-    switch (processOption) {
-      case ChangeSetApplyOption.Merge:
-        briefcase.parentChangeSetId = targetChangeSetId;
-        briefcase.parentChangeSetIndex = targetChangeSetIndex;
-        assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId);
-        break;
-      case ChangeSetApplyOption.Reinstate:
-        if (targetChangeSetIndex === briefcase.parentChangeSetIndex) {
-          briefcase.reversedChangeSetIndex = undefined;
-          briefcase.reversedChangeSetId = undefined;
-        } else {
-          briefcase.reversedChangeSetIndex = targetChangeSetIndex;
-          briefcase.reversedChangeSetId = targetChangeSetId;
-        }
-        assert(briefcase.nativeDb.getReversedChangeSetId() === briefcase.reversedChangeSetId);
-        break;
-      case ChangeSetApplyOption.Reverse:
-        briefcase.reversedChangeSetIndex = targetChangeSetIndex;
-        briefcase.reversedChangeSetId = targetChangeSetId;
-        assert(briefcase.nativeDb.getReversedChangeSetId() === briefcase.reversedChangeSetId);
-        break;
-      default:
-        assert(false, "Unknown change set process option");
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex })));
-    }
-
-    // Update cache if necessary
-    if (briefcase.openParams.syncMode === SyncMode.PullAndPush && this._cache.findBriefcaseByKey(oldKey)) {
-      this._cache.deleteBriefcaseByKey(oldKey);
-      this._cache.addBriefcase(briefcase);
-    }
+    // Apply change sets
+    perfLogger = new PerfLogger("Processing change sets - applying change sets", () => ({ ...briefcase.getDebugInfo() }));
+    const status: ChangeSetStatus = await this.applyChangeSetsToNativeDb(briefcase.nativeDb, briefcase.pathname, briefcase.iModelId, changeSetTokens, processOption);
+    if (ChangeSetStatus.Success !== status)
+      throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
+    perfLogger.dispose();
 
     briefcase.onChangesetApplied.raiseEvent();
+  }
+
+  private static async applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, dbname: string, dbGuid: GuidString, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
+    return new Promise((resolve, _reject) => {
+      nativeDb.applyChangeSetsAsync(resolve, dbname, dbGuid, JSON.stringify(changeSetTokens), processOption);
+    });
   }
 
   public static async reverseChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {

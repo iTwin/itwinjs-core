@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, GuidString, PerfLogger, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { OpenMode, GuidString, PerfLogger, Logger, LogLevel, ChangeSetStatus, ChangeSetApplyOption } from "@bentley/bentleyjs-core";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
@@ -15,6 +15,7 @@ import {
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
+import { ChangeSetToken } from "../../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -392,6 +393,24 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.validateAllChangeSetOperations(requestContext, myProjectId, myIModelId, iModelDir);
+  });
+
+  it.skip("should be able to apply specific change set to the briefcase on disk", async () => {
+    const iModelName = "HS2-SL-08";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
+    const iModel: IModelDb = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    assert.isDefined(iModel);
+
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+    const changeSet: ChangeSetToken | undefined = changeSets.find((val: ChangeSetToken) => val.index === 368);
+    assert.isDefined(changeSet);
+
+    BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSet!);
+
+    const status: ChangeSetStatus = HubUtility.applyStandaloneChangeSets(iModel, new Array<ChangeSetToken>(changeSet!), ChangeSetApplyOption.Reverse);
+    assert.equal(status, ChangeSetStatus.Success);
   });
 
   it.skip("should be able to validate change set operations on a previously downloaded iModel", async () => {
