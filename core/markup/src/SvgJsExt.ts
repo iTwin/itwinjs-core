@@ -21,6 +21,9 @@ declare module "@svgdotjs/svg.js" {
   function register(subclass: typeof MarkupElement, name?: string): void;
   function nodeOrNew(name: string, node: any): any;
 
+  interface Dom {
+    css(val: object): this;
+  }
   /** @public */
   interface Element {
     inSelection?: boolean;

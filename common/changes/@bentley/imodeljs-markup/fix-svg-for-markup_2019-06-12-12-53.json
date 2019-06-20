@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix for broken build from svg.js",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "38288322+imodeljs-admin@users.noreply.github.com"
+}
