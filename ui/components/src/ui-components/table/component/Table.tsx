@@ -6,9 +6,12 @@
 
 import { memoize } from "lodash";
 import * as React from "react";
-import ReactDataGrid from "react-data-grid";
 import ReactResizeDetector from "react-resize-detector";
 import classnames from "classnames";
+
+// Matches how react-data-grid is exported
+// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
+import ReactDataGrid = require("react-data-grid");
 
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";

@@ -41,7 +41,7 @@ import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
 import { PropertyValue } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid = require('react-data-grid');
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
