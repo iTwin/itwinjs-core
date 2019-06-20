@@ -212,6 +212,13 @@ export class SelectionTool extends PrimitiveTool {
     this.showPrompt(mode, method);
   }
 
+  protected processMiss(_ev: BeButtonEvent): boolean {
+    if (!this.iModel.selectionSet.isActive)
+      return false;
+    this.iModel.selectionSet.emptyAll();
+    return true;
+  }
+
   public updateSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
     let returnValue = false;
     switch (process) {
@@ -341,10 +348,8 @@ export class SelectionTool extends PrimitiveTool {
         contents.forEach((id) => { if (Id64.isTransient(id)) contents.delete(id); });
 
       if (0 === contents.size) {
-        if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev)) {
-          this.iModel.selectionSet.emptyAll();
+        if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))
           this.syncSelectionMode();
-        }
         return;
       }
 
@@ -434,10 +439,8 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
 
     if (SelectionMethod.Pick !== this.selectionMethod) {
-      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev)) {
-        this.iModel.selectionSet.emptyAll();
+      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))
         this.syncSelectionMode();
-      }
       if (InputSource.Touch !== ev.inputSource)
         this.selectByPointsStart(ev); // Require touch move and not tap to start crossing line/box selection...
       return EventHandled.Yes;
@@ -464,10 +467,8 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
     }
 
-    if (!ev.isControlKey && 0 !== this.iModel.selectionSet.size && this.wantSelectionClearOnMiss(ev)) {
-      this.iModel.selectionSet.emptyAll();
+    if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev) && this.processMiss(ev))
       this.syncSelectionMode();
-    }
 
     return EventHandled.Yes;
   }

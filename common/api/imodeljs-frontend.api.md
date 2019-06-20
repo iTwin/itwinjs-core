@@ -5343,6 +5343,8 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _points: Point3d[];
     // (undocumented)
+    protected processMiss(_ev: BeButtonEvent): boolean;
+    // (undocumented)
     processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean>;
     // (undocumented)
     requireWriteableTarget(): boolean;
