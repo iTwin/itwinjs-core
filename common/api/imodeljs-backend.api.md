@@ -1998,6 +1998,8 @@ export namespace IModelJsNative {
         // (undocumented)
         applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
         // (undocumented)
+        applyChangeSetsAsync(callback: (status: ChangeSetStatus) => void, dbname: string, dbGuid: GuidString, changeSetTokens: string, applyOption: ChangeSetApplyOption): void;
+        // (undocumented)
         attachChangeCache(changeCachePath: string): DbResult;
         // (undocumented)
         beginMultiTxnOperation(): DbResult;
@@ -2102,6 +2104,8 @@ export namespace IModelJsNative {
         // (undocumented)
         hasFatalTxnError(): boolean;
         // (undocumented)
+        hasSavedChanges(): boolean;
+        // (undocumented)
         hasUnsavedChanges(): boolean;
         // (undocumented)
         importFunctionalSchema(): DbResult;
@@ -2123,6 +2127,8 @@ export namespace IModelJsNative {
         isChangeCacheAttached(): boolean;
         // (undocumented)
         isOpen(): boolean;
+        // (undocumented)
+        isReadonly(): boolean;
         // (undocumented)
         isRedoPossible(): boolean;
         // (undocumented)
