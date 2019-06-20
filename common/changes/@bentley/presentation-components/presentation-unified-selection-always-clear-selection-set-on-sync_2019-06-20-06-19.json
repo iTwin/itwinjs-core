@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Always clear tool selection set when applying unified selection. If there're elements in logical selection, they're added to selection set afterwards.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -286,6 +286,7 @@ describe("ViewportSelectionHandler", () => {
       expect(hiliteSpies.elements).to.be.calledOnceWith([id]);
 
       // verify selection set was replaced
+      expect(selectionSetSpies.emptyAll).to.be.calledOnce;
       expect(selectionSetSpies.replace).to.be.calledOnce;
     });
 
