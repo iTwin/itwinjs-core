@@ -24,35 +24,43 @@ A schema must load and pass EC3.1 spec validation. **_XXXX NEED LINK_**
 
 #### BIS-002 <a name="BIS-002"></a>
 
-A schema's ECXML version must be at least, 3.1
+A schema's ECXML version must be at least, 3.1.
 
 - http://www.bentley.com/schemas/Bentley.ECXML.3.1
 
 #### BIS-003 <a name="BIS-003"></a>
 
-A schema may not reference any EC2 or EC3.0 schemas
+A schema may not reference any EC2 or EC3.0 schemas.
 
 #### BIS-004 <a name="BIS-004"></a>
 
 A schema must specify a three-part version number
-  - The version number must be in the format RR.WW.mm (that is, Read.Write.Minor)
-  - Each version component must be zero-padded to two digits (e.g. 01.02.00)
+  - The version number must be in the format RR.WW.mm (that is, Read.Write.Minor).
+  - Each version component must be zero-padded to two digits (e.g. 01.02.00).
 
-#### BIS-0 <a name="BIS-005"></a>
+#### BIS-005 <a name="BIS-005"></a>
 
-A schema reference must specify a three-part version number (in the same format described above)
+A schema reference must specify a three-part version number (in the same format described above).
 
 #### BIS-006 <a name="BIS-006"></a>
 
-If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
+If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute.
 
 #### BIS-007 <a name="BIS-007"></a>
 
-Classes within the same schema cannot have the same display label
+Classes within the same schema cannot have the same display label.
 
 #### BIS-008 <a name="BIS-008"></a>
 
-Classes may not use custom attributes that are deprecated
+Classes may not use custom attributes that are deprecated.
+
+#### BIS-009 <a name="BIS-009"></a>
+
+Classes not within the **BisCore**, **Functional**, or **Generic** schema cannot applied **bis:ClassHasHandler**.
+
+#### BIS-010 <a name="BIS-010"></a>
+
+An alias in the schema reference must be the same as the alias defined by the schema.
 
 ### Custom Attribute Classes
 
@@ -80,13 +88,13 @@ A mixin property cannot override an Entity property inherited from a base Entity
 
 #### BIS-604 <a name="BIS-604"></a>
 
-If any aspect (ECClass which derives from **ElementMultiAspect**) exists, there must be a relationship that derives from the **ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
+If any aspect (ECClass which derives from **bis:ElementMultiAspect**) exists, there must be a relationship that derives from the **bis:ElementOwnsMultiAspects** relationship with this class supported as a target constraint.
 
 - Treated as warning if the schema has the **CoreCA:DynamicSchema** CA applied.
 
 #### BIS-605 <a name="BIS-605"></a>
 
-If any aspect (ECClass which derives from **ElementUniqueAspect**) exists, there must be a relationship that derives from the **ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
+If any aspect (ECClass which derives from **bis:ElementUniqueAspect**) exists, there must be a relationship that derives from the **bis:ElementOwnsUniqueAspect** relationship with this class supported as a target constraint.
 
 - Treated as warning if the schema has the **CoreCA:DynamicSchema** CA applied.
 
@@ -117,7 +125,7 @@ Subclasses of **bis:Model** cannot have additional properties defined outside of
 
 #### BIS-610 <a name="BIS-610"></a>
 
-Entity classes may not subclass deprecated classes
+Entity classes may not subclass deprecated classes.
 
 ### KindOfQuantities
 
@@ -177,7 +185,7 @@ Relationship classes must not have an abstract constraint if there is only one c
 
 #### BIS-1504 <a name="BIS-1504"></a>
 
-Relationship classes must not have an **ElementAspect** target constraint (or source constraint if direction is backwards), unless they derive from **ElementOwnsUniqueAspect** or **ElementOwnsMultiAspect**
+Relationship classes must not have an **bis:ElementAspect** target constraint (or source constraint if direction is backwards), unless they derive from **bis:ElementOwnsUniqueAspect** or **bis:ElementOwnsMultiAspects**.
 
 #### BIS-1505 <a name="BIS-1505"></a>
 
