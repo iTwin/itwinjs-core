@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Apply selection scopes when using fence or line selection",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

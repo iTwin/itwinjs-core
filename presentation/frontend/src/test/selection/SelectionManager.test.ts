@@ -12,7 +12,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType, ElementLocateManager, HitDetail } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
 import { SelectionManager } from "../../presentation-frontend";
 import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
@@ -447,6 +447,15 @@ describe("SelectionManager", () => {
     beforeEach(() => {
       ss = new SelectionSet(imodelMock.object);
       imodelMock.setup((x) => x.selectionSet).returns(() => ss);
+
+      // hacks to avoid instantiating the whole core..
+      (IModelApp as any)._viewManager = {
+        onSelectionSetChanged: sinon.stub(),
+      };
+    });
+
+    afterEach(() => {
+      (IModelApp as any)._viewManager = undefined;
     });
 
     it("registers tool selection change listener once per imodel", () => {
@@ -479,7 +488,6 @@ describe("SelectionManager", () => {
     describe("syncing with imodel tool selection", () => {
 
       let syncer: ToolSelectionSyncHandler;
-      const locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
 
       const matchKeyset = (keys: KeySet) => sinon.match((value: KeySet) => {
         return (value instanceof KeySet)
@@ -494,12 +502,7 @@ describe("SelectionManager", () => {
       };
 
       beforeEach(() => {
-        // core globals...
-        (IModelApp as any)._locateManager = locateManagerMock.object;
-
-        locateManagerMock.reset();
-
-        syncer = new ToolSelectionSyncHandler(imodelMock.object, locateManagerMock.object, selectionManager);
+        syncer = new ToolSelectionSyncHandler(imodelMock.object, selectionManager);
       });
 
       describe("choosing scope", () => {
@@ -520,31 +523,6 @@ describe("SelectionManager", () => {
           scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
             .returns(async () => new KeySet([createRandomECInstanceKey()]))
             .verifiable();
-          ss.add(createRandomId());
-          await waitForPendingAsyncs(syncer);
-          scopesMock.verifyAll();
-          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(1);
-        });
-
-        it("uses \"element\" scope when doing multi selection", async () => {
-          scopesMock.setup((x) => x.activeScope).returns(() => "not element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
-            .returns(async () => new KeySet([createRandomECInstanceKey(), createRandomECInstanceKey()]))
-            .verifiable();
-          ss.add([createRandomId(), createRandomId()]);
-          await waitForPendingAsyncs(syncer);
-          scopesMock.verifyAll();
-          expect(selectionManager.getSelection(imodelMock.object).size).to.eq(2);
-        });
-
-        it("uses \"element\" scope when doing fence selection with 1 element", async () => {
-          scopesMock.setup((x) => x.activeScope).returns(() => "not element");
-          scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.isAny(), "element"))
-            .returns(async () => new KeySet([createRandomECInstanceKey()]))
-            .verifiable();
-          const locateHitMock = moq.Mock.ofType<HitDetail>();
-          locateHitMock.setup((x) => x.sourceId).returns(() => createRandomId());
-          locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
           ss.add(createRandomId());
           await waitForPendingAsyncs(syncer);
           scopesMock.verifyAll();
@@ -579,15 +557,6 @@ describe("SelectionManager", () => {
             .returns(async () => new KeySet());
           scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, moq.It.is((v) => equalId64Arg(v, [persistentElementId])), moq.It.isAnyString()))
             .returns(async () => new KeySet([scopedKey]));
-
-          const locateHitMock = moq.Mock.ofType<HitDetail>();
-          locateHitMock.setup((x) => x.sourceId).returns(() => persistentElementId);
-          locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
-
-          // hacks to avoid instantiating the whole core..
-          (IModelApp as any)._viewManager = {
-            onSelectionSetChanged: sinon.stub(),
-          };
         });
 
         it("ignores events with different imodel", async () => {
@@ -763,7 +732,6 @@ describe("SelectionManager", () => {
   describe("suspendIModelToolSelectionSync", () => {
 
     let ss: SelectionSet;
-    const locateManagerMock = moq.Mock.ofType<ElementLocateManager>();
 
     beforeEach(() => {
       ss = new SelectionSet(imodelMock.object);
@@ -771,11 +739,6 @@ describe("SelectionManager", () => {
 
       scopesMock.setup((x) => x.activeScope).returns(() => undefined);
       scopesMock.setup(async (x) => x.computeSelection(imodelMock.object, [], moq.It.isAnyString())).returns(async () => new KeySet());
-
-      const locateHitMock = moq.Mock.ofType<HitDetail>();
-      locateHitMock.setup((x) => x.sourceId).returns(() => createRandomId());
-      locateManagerMock.setup((x) => x.currHit).returns(() => locateHitMock.object);
-      (IModelApp as any)._locateManager = locateManagerMock.object; // core globals...
 
       selectionManager.setSyncWithIModelToolSelection(imodelMock.object, true);
     });
