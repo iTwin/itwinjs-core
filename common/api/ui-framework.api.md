@@ -2183,6 +2183,7 @@ export class MessageManager {
     static readonly onMessageAddedEvent: MessageAddedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
+    static setMaxCachedMessages(max: number): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
     }

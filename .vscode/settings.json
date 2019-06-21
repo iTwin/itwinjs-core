@@ -15,7 +15,7 @@
     "common/temp": true,
     "**/generated-docs": true,
     "**/package-deps.json": true,
-    "**/node_modules": false,
+    "**/node_modules": true,
     "**/out": true,
     "**/lib": true,
     "tools/build/mocha-reporter": true,

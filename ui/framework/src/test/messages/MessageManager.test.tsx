@@ -14,19 +14,22 @@ describe("MessageManager", () => {
   });
 
   it("maxCachedMessages handled correctly", () => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
-
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);
 
     for (let i = 0; i < 500; i++) {
+      const details = new NotifyMessageDetails(OutputMessagePriority.Debug, `A brief message - ${i}.`);
       MessageManager.addMessage(details);
     }
     expect(MessageManager.messages.length).to.eq(500);
 
-    MessageManager.addMessage(details);
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.Debug, `A brief message.`);
+    MessageManager.addMessage(details2);
     expect(MessageManager.messages.length).to.eq(376);
 
+    const newMax = 375;
+    MessageManager.setMaxCachedMessages(newMax);
+    expect(MessageManager.messages.length).to.be.lessThan(newMax);
   });
 
   it("getIconType should return proper icon type", () => {
@@ -41,6 +44,32 @@ describe("MessageManager", () => {
 
     details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.");
     expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Critical);
+  });
+
+  it("non-duplicate message should be added to Message Center", () => {
+    MessageManager.clearMessages();
+    expect(MessageManager.messages.length).to.eq(0);
+
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
+    MessageManager.addMessage(details1);
+    expect(MessageManager.messages.length).to.eq(1);
+
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.Error, "Another brief message.");
+    MessageManager.addMessage(details2);
+    expect(MessageManager.messages.length).to.eq(2);
+  });
+
+  it("duplicate message should not be added to Message Center", () => {
+    MessageManager.clearMessages();
+    expect(MessageManager.messages.length).to.eq(0);
+
+    const details1 = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
+    MessageManager.addMessage(details1);
+    expect(MessageManager.messages.length).to.eq(1);
+
+    const details2 = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.");
+    MessageManager.addMessage(details2);
+    expect(MessageManager.messages.length).to.eq(1);
   });
 
 });
