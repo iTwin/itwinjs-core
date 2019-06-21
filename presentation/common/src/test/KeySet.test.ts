@@ -748,6 +748,50 @@ describe("KeySet", () => {
 
   });
 
+  describe("forEach", () => {
+
+    it("calls callback for every key in set", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const set = new KeySet([...instanceKeys, ...nodeKeys]);
+      const callback = sinon.spy();
+      set.forEach(callback);
+      expect(callback.callCount).to.eq(4);
+      expect(callback).to.be.calledWith(instanceKeys[0]);
+      expect(callback).to.be.calledWith(instanceKeys[1]);
+      expect(callback).to.be.calledWith(nodeKeys[0]);
+      expect(callback).to.be.calledWith(nodeKeys[1]);
+    });
+
+  });
+
+  describe("forEachBatch", () => {
+
+    it("calls callback with itself when batch size smaller than set size", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const set = new KeySet([...instanceKeys, ...nodeKeys]);
+      const callback = sinon.spy();
+      set.forEachBatch(5, callback);
+      expect(callback.callCount).to.eq(1);
+      expect(callback).to.be.calledWith(set);
+    });
+
+    it("calls callback in batches", () => {
+      const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const nodeKeys = [createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()];
+      const set = new KeySet([...instanceKeys, ...nodeKeys]);
+      const callback = sinon.spy();
+      set.forEachBatch(3, callback);
+      expect(callback.callCount).to.eq(2);
+      expect(callback.firstCall.args[0].size).to.eq(3);
+      expect(callback.firstCall.args[1]).to.eq(0);
+      expect(callback.secondCall.args[0].size).to.eq(1);
+      expect(callback.secondCall.args[1]).to.eq(1);
+    });
+
+  });
+
   describe("serialization", () => {
 
     it("roundtrip", () => {

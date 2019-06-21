@@ -265,6 +265,9 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
     specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
 }
 
+// @alpha
+export const DEFAULT_KEYS_BATCH_SIZE = 5000;
+
 // @public
 export enum DefaultContentDisplayTypes {
     Grid = "Grid",
@@ -634,6 +637,8 @@ export class KeySet {
     add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet;
     clear(): KeySet;
     delete(value: Keys | Key): KeySet;
+    forEach(callback: (key: Key, index: number) => void): void;
+    forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void;
     // @internal
     static fromJSON(json: KeySetJSON): KeySet;
     readonly guid: GuidString;

@@ -11,6 +11,14 @@ import { EntityProps } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "./Error";
 
 /**
+ * Default keyset batch size for cases when it needs to be sent over HTTP. Sending
+ * keys in batches helps avoid HTTP413 error.
+ *
+ * @alpha
+ */
+export const DEFAULT_KEYS_BATCH_SIZE = 5000;
+
+/**
  * A single key that identifies something in iModel.js application
  * @public
  */
@@ -355,6 +363,39 @@ export class KeySet {
    */
   public get isEmpty(): boolean {
     return 0 === this.size;
+  }
+
+  /** Iterate over all keys in this keyset. */
+  public forEach(callback: (key: Key, index: number) => void) {
+    let index = 0;
+    this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
+      ids.forEach((id: Id64String) => callback({ className, id }, index++));
+    });
+    this._nodeKeys.forEach((serializedKey: string) => {
+      callback(NodeKey.fromJSON(JSON.parse(serializedKey)), index++);
+    });
+  }
+
+  /** Iterate over all keys in this keyset in batches */
+  public forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void) {
+    const size = this.size;
+    const count = Math.ceil(size / batchSize);
+    if (1 === count) {
+      callback(this, 0);
+      return;
+    }
+    let batch = new KeySet();
+    let batchIndex = 0;
+    let currBatchSize = 0;
+    this.forEach((key, index) => {
+      batch.add(key);
+      ++currBatchSize;
+      if (currBatchSize === batchSize || index === (size - 1)) {
+        callback(batch, batchIndex++);
+        batch = new KeySet();
+        currBatchSize = 0;
+      }
+    });
   }
 
   /**

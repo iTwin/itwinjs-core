@@ -35,6 +35,7 @@ public;ContentSpecificationTypes
 public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
+alpha;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;Descriptor 

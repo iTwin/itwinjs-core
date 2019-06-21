@@ -10,7 +10,7 @@ export {
   PropertyInfo, RelatedClassInfo, RelationshipPath,
 } from "./EC";
 export { PresentationError, PresentationStatus } from "./Error";
-export { KeySet, Keys, Key } from "./KeySet";
+export { KeySet, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./KeySet";
 export { PersistentKeysContainer } from "./PersistentKeysContainer";
 export {
   RequestOptions, HierarchyRequestOptions, ContentRequestOptions,
