@@ -2616,16 +2616,10 @@ export namespace IModelJsNative {
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     dispose(): void;
-    excludeCodeSpec(sourceCodeSpecName: string): void;
-    // (undocumented)
-    protected _excludedCodeSpecIds: Set<string>;
-    // (undocumented)
+    excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
-    // (undocumented)
     protected _excludedElementCategoryIds: Set<string>;
-    // (undocumented)
-    protected _excludedElementClassNames: Set<string>;
-    // (undocumented)
+    protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
     excludeElement(sourceElementId: Id64String): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
@@ -2634,36 +2628,28 @@ export class IModelTransformer {
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
     protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
-    // (undocumented)
     importAll(): void;
     importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
-    importCodeSpec(sourceId: Id64String): Id64String;
-    // (undocumented)
+    importCodeSpec(codeSpecName: string): void;
     importCodeSpecs(): void;
     importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
     importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
-    // (undocumented)
     importRelationships(): void;
-    // (undocumented)
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
-    // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldExcludeElement(sourceElement: Element): boolean;
-    // (undocumented)
     protected _sourceDb: IModelDb;
-    // (undocumented)
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;

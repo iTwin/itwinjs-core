@@ -13,7 +13,7 @@ import { assert } from "chai";
 import * as hash from "object-hash";
 import * as path from "path";
 import {
-  AuxCoordSystem2d, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
@@ -30,6 +30,8 @@ class TestIModelTransformer extends IModelTransformer {
   public numElementsUpdated = 0;
   public numElementsExcluded = 0;
 
+  public numCodeSpecsExcluded = 0;
+
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb);
     this.initExclusions();
@@ -41,7 +43,7 @@ class TestIModelTransformer extends IModelTransformer {
   /** Initialize some sample exclusion rules for testing */
   private initExclusions(): void {
     super.excludeCodeSpec("ExtraCodeSpec");
-    super.excludeElementClass(AuxCoordSystem2d.classFullName);
+    super.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
     super.excludeSubject("/Only in Source");
   }
 
@@ -88,19 +90,25 @@ class TestIModelTransformer extends IModelTransformer {
     return excluded;
   }
 
-  /** Count number of Elements inserted in this callback */
+  /** Count the number of CodeSpecs excluded in this callback */
+  protected onCodeSpecExcluded(codeSpecName: string): void {
+    this.numCodeSpecsExcluded++;
+    super.onCodeSpecExcluded(codeSpecName);
+  }
+
+  /** Count the number of Elements inserted in this callback */
   protected onElementInserted(sourceElement: Element, targetElementIds: Id64Array): void {
     this.numElementsInserted += targetElementIds.length;
     super.onElementInserted(sourceElement, targetElementIds);
   }
 
-  /** Count number of Elements updated in this callback */
+  /** Count the number of Elements updated in this callback */
   protected onElementUpdated(sourceElement: Element, targetElementIds: Id64Array): void {
     this.numElementsUpdated += targetElementIds.length;
     super.onElementUpdated(sourceElement, targetElementIds);
   }
 
-  /** Count number of Elements excluded in this callback */
+  /** Count the number of Elements excluded in this callback */
   protected onElementExcluded(sourceElement: Element): void {
     this.numElementsExcluded++;
     super.onElementExcluded(sourceElement);
@@ -414,7 +422,7 @@ class TestDataManager {
     assert.equal(viewProps.categorySelectorId, spatialCategorySelectorId);
     assert.equal(viewProps.modelSelectorId, modelSelectorId);
     // AuxCoordSystem2d
-    assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")));
+    assert.equal(undefined, this.targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(this.targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
     // PhysicalElement
     const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject2");
@@ -570,6 +578,7 @@ describe("IModelTransformer", () => {
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
+      assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
       assert.isAbove(transformer.numElementsUpdated, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
