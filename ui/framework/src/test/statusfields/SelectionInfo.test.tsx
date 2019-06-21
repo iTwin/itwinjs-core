@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 // import * as sinon from "sinon";
 import { Provider } from "react-redux";
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 
 import TestUtils from "../TestUtils";
 import {

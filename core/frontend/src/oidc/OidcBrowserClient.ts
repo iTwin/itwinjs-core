@@ -168,7 +168,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    * - Does not call any events if the user is loaded from storage
    * - Returned user may have expired - so it's up to the caller to check the expired state
    */
-  private async getUser(requestContext: ClientRequestContext): Promise<User> {
+  private async getUser(requestContext: ClientRequestContext): Promise<User | null> {
     requestContext.enter();
     assert(!!this._userManager, "OidcBrowserClient not initialized");
 
@@ -182,7 +182,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   private async nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<boolean> {
     // Load user from session/local storage
-    const user: User = await this.getUser(requestContext);
+    const user = await this.getUser(requestContext);
     if (user && !user.expired) {
       this._onUserLoaded(user); // Call only because getUser() doesn't call any events
       return true;

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import { expect } from "chai";
 import { Checkbox } from "../../../ui-core/inputs/checkbox/Checkbox";
 import { InputStatus } from "../../../ui-core/inputs/InputStatus";

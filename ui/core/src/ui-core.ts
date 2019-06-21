@@ -30,6 +30,8 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
+export * from "./ui-core/focustrap/FocusTrap";
+
 export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";

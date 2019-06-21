@@ -129,7 +129,7 @@ public;ItemStyleProvider:
 public;ITreeDataProvider
 public;ITreeImageLoader 
 public;LessGreaterOperatorProcessor
-beta;LineWeightSwatch: React.FunctionComponent
+beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
 public;LoadedBinaryImage 
 public;LoadedImage

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {

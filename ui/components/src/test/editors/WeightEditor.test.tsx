@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "react-testing-library";
+import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
 import sinon from "sinon";
 import { WeightEditor } from "../../ui-components/editors/WeightEditor";

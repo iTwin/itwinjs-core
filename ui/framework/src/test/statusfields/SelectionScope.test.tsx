@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { Presentation } from "@bentley/presentation-frontend";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 

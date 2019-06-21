@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import { CellEditingEngine, EditableTreeProps } from "../../ui-components/tree/CellEditingEngine";
 import { BeInspireTreeNode, BeInspireTree } from "../../ui-components/tree/component/BeInspireTree";
 import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";

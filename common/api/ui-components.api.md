@@ -1410,13 +1410,19 @@ export interface LessGreaterOperatorProcessor {
 }
 
 // @beta
-export const LineWeightSwatch: React.FunctionComponent<LineWeightSwatchProps>;
+export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
+    // @internal
+    constructor(props: LineWeightSwatchProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+}
 
 // @beta
 export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef?: ColorDef;
     disabled?: boolean;
-    focusRef?: React.Ref<HTMLButtonElement>;
     hideLabel?: boolean;
     onClick?: () => void;
     readonly?: boolean;
@@ -3028,6 +3034,8 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
     // @internal
     constructor(props: WeightPickerProps);
+    // (undocumented)
+    componentDidMount(): void;
     // (undocumented)
     static defaultProps: {
         weights: number[];

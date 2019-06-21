@@ -55,6 +55,7 @@ beta;Face
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
+beta;FocusTrap 
 internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string

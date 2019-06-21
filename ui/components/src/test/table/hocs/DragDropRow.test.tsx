@@ -6,7 +6,7 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import ReactTestUtils from "react-dom/test-utils";
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 

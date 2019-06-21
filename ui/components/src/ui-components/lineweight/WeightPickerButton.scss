@@ -16,26 +16,24 @@
   }
 }
 
-.components-weightpicker-popup {
+.components-weightpicker-popup-container {
   border: 1px solid $buic-inputs-border;
+  color: $buic-foreground-body;
+  background: $buic-background-control;
+  min-width: 100px;
+  padding: 0, 4px;
 
-  > .components-weightpicker-popup-container {
-      color: $buic-foreground-body;
-      background: $buic-background-control;
-      min-width: 100px;
+  >ul {
+    padding: 4px 0;
+    list-style: none;
+    margin: 0.5rem 0;
 
-      > ul {
-          padding: 4px 0;
-          margin: 0;
-          list-style: none;
+    >.components-weightpicker-swatch:hover {
+      background: $buic-row-hover;
+    }
 
-          > .components-weightpicker-swatch:hover {
-            background: $buic-row-hover;
-          }
-
-          > .components-weightpicker-swatch.active {
-            background: $buic-row-selection;
-          }
-      }
+    >.components-weightpicker-swatch.active {
+      background: $buic-row-selection;
+    }
   }
 }

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import sinon = require("sinon");
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 
 import {

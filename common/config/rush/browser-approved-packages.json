@@ -143,6 +143,14 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@testing-library/dom",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@testing-library/react",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -277,10 +285,6 @@
     {
       "name": "detect-port",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "dom-testing-library",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "dotenv",
@@ -649,10 +653,6 @@
     {
       "name": "react-test-renderer",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "react-testing-library",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-virtualized",

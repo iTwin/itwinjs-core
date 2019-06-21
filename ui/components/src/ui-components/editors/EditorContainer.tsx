@@ -146,12 +146,14 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private onPressEscape(e: React.KeyboardEvent): void {
-    e.stopPropagation();
+    if (this._editorRef && this._editorRef === document.activeElement)
+      e.stopPropagation();
     this._commitCancel();
   }
 
   private onPressEnter(e: React.KeyboardEvent): void {
-    e.stopPropagation();
+    if (this._editorRef && this._editorRef === document.activeElement)
+      e.stopPropagation();
     this._commit();   // tslint:disable-line: no-floating-promises
   }
 

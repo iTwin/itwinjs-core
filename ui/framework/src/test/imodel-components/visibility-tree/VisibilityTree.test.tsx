@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
 import * as sinon from "sinon";
-import { render, cleanup, waitForElement, within, fireEvent } from "react-testing-library";
+import { render, cleanup, waitForElement, within, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../../TestUtils";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";

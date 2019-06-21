@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import TestUtils from "../../../TestUtils";

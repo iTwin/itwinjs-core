@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent } from "react-testing-library"; // , waitForElement
+import { render, cleanup, fireEvent } from "@testing-library/react"; // , waitForElement
 import { expect } from "chai";
 import sinon from "sinon";
 import { AlphaSlider } from "../../ui-components/color/AlphaSlider";

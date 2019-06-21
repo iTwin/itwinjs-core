@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "react-testing-library";
+import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "@testing-library/react";
 import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { CheckBoxState } from "@bentley/ui-core";
