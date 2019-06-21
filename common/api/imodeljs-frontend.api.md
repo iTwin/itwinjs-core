@@ -1128,7 +1128,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
 // @internal
 export class BackgroundMapTileTreeReference extends MapTileTreeReference {
-    constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
+    constructor(settings: BackgroundMapSettings, iModel: IModelConnection, forDrape?: boolean);
     // (undocumented)
     protected readonly _graphicType: TileTree.GraphicType;
     // (undocumented)
@@ -1291,6 +1291,19 @@ export interface BeWheelEventProps extends BeButtonEventProps {
     // (undocumented)
     wheelDelta?: number;
 }
+
+// @internal (undocumented)
+export class BingElevationProvider {
+    constructor();
+    // (undocumented)
+    getGraphic(latLongRange: Range2d, corners: Point3d[], texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined>;
+    // (undocumented)
+    getHeights(range: Range2d): Promise<any>;
+    // (undocumented)
+    getRange(iModel: IModelConnection): Promise<Range1d>;
+    // (undocumented)
+    protected _requestContext: ClientRequestContext;
+    }
 
 // @internal (undocumented)
 export function bisectRange2d(range: Range3d, takeUpper: boolean): void;
@@ -1611,7 +1624,7 @@ export enum CoordSystem {
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference;
 
 // @internal (undocumented)
-export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined>;
+export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -1839,6 +1852,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     attachRealityModel(props: ContextRealityModelProps): void;
     backgroundColor: ColorDef;
+    // @internal (undocumented)
+    readonly backgroundDrapeMap: BackgroundMapTileTreeReference;
     // @internal (undocumented)
     readonly backgroundMap: BackgroundMapTileTreeReference;
     // @internal (undocumented)
@@ -2954,7 +2969,7 @@ export function imageElementFromImageSource(source: ImageSource): Promise<HTMLIm
 // @public
 export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
-// @internal
+// @internal (undocumented)
 export abstract class ImageryProvider {
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): string;
@@ -3421,7 +3436,9 @@ export enum ManipulatorToolEvent {
 
 // @internal
 export class MapImageryTileTreeReference extends MapTileTreeReference {
-    constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection, graphicType?: TileTree.GraphicType);
+    constructor(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection, graphicType?: TileTree.GraphicType);
+    // (undocumented)
+    applyTerrain: boolean;
     // (undocumented)
     graphicType: TileTree.GraphicType;
     // (undocumented)

@@ -36,6 +36,7 @@ public;BeTouchEvent
 public;BeTouchEventProps 
 public;BeWheelEvent 
 public;BeWheelEventProps 
+internal;BingElevationProvider
 internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
 beta;ButtonGroupEditorParams 
@@ -67,7 +68,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 

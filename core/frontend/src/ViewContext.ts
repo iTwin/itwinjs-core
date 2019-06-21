@@ -535,14 +535,14 @@ export class SceneContext extends RenderContext {
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
       case TileTree.GraphicType.BackgroundMap:
-          this.backgroundGraphics.push(graphic);
-          break;
+        this.backgroundGraphics.push(graphic);
+        break;
       case TileTree.GraphicType.Overlay:
-        // ###TODO handle differently
+      // ###TODO handle differently
       default:
-          this.graphics.push(graphic);
-          break;
-      }
+        this.graphics.push(graphic);
+        break;
+    }
   }
 
   public insertMissingTile(tile: Tile): void {
@@ -569,7 +569,7 @@ export class SceneContext extends RenderContext {
   public getTextureDrape(modelId: Id64String) { return this.textureDrapes.get(modelId); }
   public setTextureDrape(modelId: Id64String, textureDrape: RenderTextureDrape) { this.textureDrapes.set(modelId, textureDrape); }
   public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
-    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundMap);
+    const drape = this.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
     if (undefined !== drape)
       this.setTextureDrape(drapedTree.modelId, drape);
 

@@ -46,6 +46,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public static get className() { return "DisplayStyle"; }
   private readonly _backgroundMap: BackgroundMapTileTreeReference;
+  private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;       // We currently drape terrain models with the active map.  At some point the setting should perhaps move to that model itself and be removed from the display stye.
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
@@ -63,6 +64,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
     this._backgroundMap = new BackgroundMapTileTreeReference(BackgroundMapSettings.fromJSON(mapProps), iModel);
+    this._backgroundDrapeMap = new BackgroundMapTileTreeReference(BackgroundMapSettings.fromJSON(mapProps), iModel, true);    // The drape map can not also include terrain. -- drape and background map share trees if terrain not on.
 
     if (styles) {
       if (styles.contextRealityModels)
@@ -93,6 +95,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMap(): BackgroundMapTileTreeReference { return this._backgroundMap; }
 
+  /** @internal */
+  public get backgroundDrapeMap(): BackgroundMapTileTreeReference { return this._backgroundDrapeMap; }
+
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    * @note If this display style is associated with a [[Viewport]], prefer to use [[Viewport.backgroundMapSettings]] to change the settings to ensure the Viewport's display updates immediately.
@@ -102,6 +107,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @beta */
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this._backgroundMap.settings = settings;
+    this._backgroundDrapeMap.settings = settings;
     this.settings.backgroundMap = settings;
   }
 
@@ -179,7 +185,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public attachRealityModel(props: ContextRealityModelProps): void {
     // ###TODO check if url+name already present...or do we allow same to be attached multiple times?
     if (undefined === this.jsonProperties.styles)
-      this.jsonProperties.styles = { };
+      this.jsonProperties.styles = {};
 
     if (undefined === this.jsonProperties.styles.contextRealityModels)
       this.jsonProperties.styles.contextRealityModels = [];

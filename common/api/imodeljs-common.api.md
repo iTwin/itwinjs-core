@@ -283,6 +283,7 @@ export enum BackgroundFill {
 
 // @public
 export interface BackgroundMapProps {
+    applyTerrain?: boolean;
     groundBias?: number;
     providerData?: {
         mapType?: BackgroundMapType;
@@ -295,7 +296,8 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 // @beta
 export class BackgroundMapSettings {
-    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number);
+    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number, applyTerrain?: boolean);
+    readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
     // (undocumented)
     equals(other: BackgroundMapSettings): boolean;

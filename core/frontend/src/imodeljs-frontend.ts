@@ -55,6 +55,7 @@ export * from "./tile/TileAdmin";
 export * from "./tile/Tile";
 export * from "./tile/TileTree";
 export * from "./tile/WebMapTileTree";
+export * from "./tile/BingElevation";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";

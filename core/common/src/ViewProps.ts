@@ -158,6 +158,8 @@ export interface BackgroundMapProps {
     /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
     mapType?: BackgroundMapType;
   };
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  applyTerrain?: boolean;
 }
 
 /** The current set of supported background map providers.
@@ -175,10 +177,13 @@ export class BackgroundMapSettings {
   public readonly providerName: BackgroundMapProviderName;
   /** The type of map graphics to be drawn. */
   public readonly mapType: BackgroundMapType;
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  public readonly applyTerrain: boolean;
 
-  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0) {
+  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0, applyTerrain = false) {
     this.groundBias = groundBias;
     this.providerName = providerName;
+    this.applyTerrain = applyTerrain;
     switch (mapType) {
       case BackgroundMapType.Street:
       case BackgroundMapType.Aerial:
@@ -196,13 +201,14 @@ export class BackgroundMapSettings {
 
     const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
     const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    return new BackgroundMapSettings(providerName, mapType, json.groundBias);
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.applyTerrain);
   }
 
   public toJSON(): BackgroundMapProps {
     return {
       groundBias: this.groundBias,
       providerName: this.providerName,
+      applyTerrain: this.applyTerrain,
       providerData: { mapType: this.mapType },
     };
   }
@@ -213,7 +219,7 @@ export class BackgroundMapSettings {
   }
 
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType;
+    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType && this.applyTerrain === other.applyTerrain;
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -227,6 +233,7 @@ export class BackgroundMapSettings {
     const props = {
       providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
       groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
+      applyTerrain: undefined !== changedProps.applyTerrain ? changedProps.applyTerrain : this.applyTerrain,
       providerData: {
         mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
       },

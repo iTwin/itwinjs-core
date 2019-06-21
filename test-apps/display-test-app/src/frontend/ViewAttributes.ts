@@ -33,7 +33,7 @@ import {
   ColorInputProps,
   createNestedMenu,
   createNumericInput,
- } from "@bentley/frontend-devtools";
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
 import { isString } from "util";
@@ -585,6 +585,7 @@ export class ViewAttributes {
     groundBiasDiv.style.display = "block";
     groundBiasDiv.style.textAlign = "left";
     comboBoxesDiv.appendChild(groundBiasDiv);
+    const terrainCheckbox = this.addCheckbox("Terrain", (enabled: boolean) => { this.updateBackgroundMap({ applyTerrain: enabled }); }, comboBoxesDiv).checkbox;
 
     this._updates.push((view) => {
       const visible = isMapSupported(view);
@@ -599,6 +600,7 @@ export class ViewAttributes {
       providers.value = map.providerName;
       types.value = map.mapType.toString();
       groundBias.value = map.groundBias.toString();
+      terrainCheckbox.checked = map.applyTerrain;
     });
 
     div.appendChild(comboBoxesDiv);
