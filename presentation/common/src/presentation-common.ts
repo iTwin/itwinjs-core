@@ -32,6 +32,7 @@ export {
   Omit, Subtract, ValuesDictionary,
   getInstancesCount,
 } from "./Utils";
+export { AsyncTasksTracker } from "./AsyncTasks";
 
 /** @module UnifiedSelection */
 export { SelectionScope } from "./selection/SelectionScope";

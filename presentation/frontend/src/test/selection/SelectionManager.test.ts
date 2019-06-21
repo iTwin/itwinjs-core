@@ -10,7 +10,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey, createRandomSelectionScope, createRandomId, createRandomTransientId,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { waitForPendingAsyncs } from "../_helpers/PendingAsyncsHelper";
+import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";

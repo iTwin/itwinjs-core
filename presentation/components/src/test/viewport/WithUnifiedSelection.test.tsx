@@ -13,7 +13,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { waitForAllAsyncs } from "@bentley/presentation-frontend/lib/test/_helpers/PendingAsyncsHelper";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection, ViewState3d, NoRenderApp, HiliteSet as IModelHiliteSet, IModelApp, SelectionSet } from "@bentley/imodeljs-frontend";

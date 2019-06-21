@@ -5,9 +5,9 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { IDisposable, GuidString, Guid, using } from "@bentley/bentleyjs-core";
+import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, KeySet, Ruleset } from "@bentley/presentation-common";
+import { SelectionInfo, KeySet, Ruleset, AsyncTasksTracker } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
@@ -105,8 +105,7 @@ export class ViewportSelectionHandler implements IDisposable {
   private _imodel: IModelConnection;
   private _selectionHandler: SelectionHandler;
   private _lastPendingSelectionChange?: { info: SelectionInfo, selection: Readonly<KeySet> };
-  private _isInSelectedElementsRequest = false;
-  private _asyncsInProgress = new Set<GuidString>();
+  private _asyncsTracker = new AsyncTasksTracker();
 
   public constructor(imodel: IModelConnection) {
     this._imodel = imodel;
@@ -141,18 +140,15 @@ export class ViewportSelectionHandler implements IDisposable {
   }
 
   /** note: used only it tests */
-  public get pendingAsyncs() { return this._asyncsInProgress; }
+  public get pendingAsyncs() { return this._asyncsTracker.pendingAsyncs; }
 
   private async applyUnifiedSelection(imodel: IModelConnection, selectionInfo: SelectionInfo, selection: Readonly<KeySet>) {
-    if (this._isInSelectedElementsRequest) {
+    if (this._asyncsTracker.pendingAsyncs.size > 0) {
       this._lastPendingSelectionChange = { info: selectionInfo, selection };
       return;
     }
 
-    const asyncId = Guid.createValue();
-    this._asyncsInProgress.add(asyncId);
-    this._isInSelectedElementsRequest = true;
-    try {
+    await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
       const ids = await Presentation.selection.getHiliteSet(this._imodel);
       using(Presentation.selection.suspendIModelToolSelectionSync(this._imodel), (_) => {
         imodel.hilited.clear();
@@ -168,10 +164,7 @@ export class ViewportSelectionHandler implements IDisposable {
           imodel.selectionSet.replace(ids.elements);
         }
       });
-    } finally {
-      this._isInSelectedElementsRequest = false;
-      this._asyncsInProgress.delete(asyncId);
-    }
+    });
 
     if (this._lastPendingSelectionChange) {
       const change = this._lastPendingSelectionChange;

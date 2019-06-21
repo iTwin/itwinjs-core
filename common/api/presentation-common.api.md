@@ -36,6 +36,14 @@ export interface ArrayTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Array;
 }
 
+// @internal
+export class AsyncTasksTracker {
+    // (undocumented)
+    readonly pendingAsyncs: Set<string>;
+    // (undocumented)
+    trackAsyncTask(): IDisposable;
+}
+
 // @public
 export interface BaseNodeKey {
     pathFromRoot: string[];

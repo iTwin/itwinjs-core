@@ -3,6 +3,7 @@ Release Tag;API Item
 public;AllInstanceNodesSpecification 
 public;AllRelatedInstanceNodesSpecification 
 public;ArrayTypeDescription 
+internal;AsyncTasksTracker
 public;BaseNodeKey
 public;BaseTypeDescription
 public;CalculatedPropertiesSpecification

@@ -10,38 +10,36 @@ import * as sinon from "sinon";
 import { shallow, ShallowWrapper } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
 import { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../tree/WithFilteringSupport";
 import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { NodePathElement } from "@bentley/presentation-common";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = treeWithFilteringSupport(Tree);
+const FilteredTree = treeWithFilteringSupport(Tree);
 interface State {
   filteredDataProvider?: FilteredPresentationTreeDataProvider;
+  inProgress?: {
+    rulesetId: string;
+    imodel: IModelConnection;
+    filter: string;
+  };
 }
-
-const defaultState: State = {
-  filteredDataProvider: undefined,
-};
 
 describe("Tree withFilteringSupport", () => {
 
   let testRulesetId: string;
   let tree: ShallowWrapper<TreeWithFilteringSupportProps, State, any>;
-  let treeInstance: React.Component<TreeWithFilteringSupportProps, State, any>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  const filter = "filter";
-  const onFilterAppliedMock = moq.Mock.ofType<(propsFilter?: string) => void>();
 
   beforeEach(() => {
     testRulesetId = faker.random.word();
     setupDataProvider(dataProviderMock, imodelMock.object, testRulesetId);
-    tree = shallow(<PresentationTree dataProvider={dataProviderMock.object} filter={filter} />, { disableLifecycleMethods: true });
-    treeInstance = tree.instance();
-    expect(treeInstance.state.filteredDataProvider).to.be.undefined;
   });
 
   const setupDataProvider = (providerMock: moq.IMock<IPresentationTreeDataProvider>, imodel: IModelConnection, rulesetId: string) => {
@@ -51,271 +49,287 @@ describe("Tree withFilteringSupport", () => {
     providerMock.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => []);
   };
 
-  describe("componentDidUpdate", () => {
-
-    beforeEach(() => {
-      onFilterAppliedMock.reset();
-      expect(treeInstance.componentDidUpdate).to.not.be.undefined;
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
-    });
-
-    it("creates new filtered data provider if filter changed", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: dataProviderMock.object, filter: "previous filter", onFilterApplied: onFilterAppliedMock.object }, defaultState);
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.not.be.undefined;
-      expect(state.filteredDataProvider instanceof FilteredPresentationTreeDataProvider).to.be.true;
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
-    });
-
-    it("creates new filtered data provider if ruleset changed", async () => {
-      const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      setupDataProvider(anotherProviderMock, dataProviderMock.object.imodel, faker.random.word());
-      expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
-
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.not.be.undefined;
-      expect(state.filteredDataProvider instanceof FilteredPresentationTreeDataProvider).to.be.true;
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
-    });
-
-    it("creates new filtered data provider if imodel changed", async () => {
-      const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
-
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.not.be.undefined;
-      expect(state.filteredDataProvider instanceof FilteredPresentationTreeDataProvider).to.be.true;
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
-    });
-
-    it("does not create new filtered data provider if current filter is empty", async () => {
-      const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, faker.random.word());
-      expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
-
-      tree.setProps({ dataProvider: dataProviderMock.object, filter: "", onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
-      onFilterAppliedMock.verify((x) => x(""), moq.Times.once());
-    });
-
-    it("does not create new filtered data provider if current filter is undefined", async () => {
-      const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, faker.random.word());
-      expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
-
-      tree.setProps({ dataProvider: dataProviderMock.object, filter: undefined, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
-      onFilterAppliedMock.verify((x) => x(undefined), moq.Times.once());
-
-    });
-
-    it("does not create new filtered data provider if filter, ruleset and imodel did not change and filteredDataProvider is not set", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidUpdate!({ dataProvider: dataProviderMock.object, filter }, defaultState);
-      const filteredDataProvider = treeInstance.state.filteredDataProvider;
-      expect(filteredDataProvider).to.be.undefined;
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
-    });
-
-    it("does not create new filtered data provider if filter, ruleset and imodel did not change", async () => {
-      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
-      filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-
-      await treeInstance.componentDidUpdate!({ dataProvider: dataProviderMock.object, filter }, defaultState);
-      const filteredDataProvider = treeInstance.state.filteredDataProvider;
-      expect(filteredDataProvider).to.be.equal(filteredDataProviderMock.object);
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.once());
-
-    });
-
-  });
-
   describe("componentDidMount", () => {
 
-    beforeEach(() => {
-      onFilterAppliedMock.reset();
-      expect(treeInstance.componentDidMount).to.not.be.undefined;
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
+    it("starts filtering when filter is not empty", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          filter="test"
+          onFilterApplied={onFilterApplied}
+        />);
+      expect(tree.state().inProgress).to.deep.eq({ imodel: imodelMock.object, rulesetId: testRulesetId, filter: "test" });
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
+      expect(tree.state().filteredDataProvider instanceof FilteredPresentationTreeDataProvider).to.be.true;
+      expect(onFilterApplied).to.be.calledOnceWith("test");
     });
 
-    it("creates new filtered data provider if filter is not empty or undefined", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidMount!();
-
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.not.be.undefined;
-      expect(state.filteredDataProvider instanceof FilteredPresentationTreeDataProvider).to.be.true;
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
-    });
-
-    it("does not create new filtered data provider if filter is empty", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter: "", onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidMount!();
-
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.be.undefined;
-      onFilterAppliedMock.verify((x) => x(""), moq.Times.once());
-    });
-
-    it("does not create new filtered data provider if filter is undefined", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter: undefined, onFilterApplied: onFilterAppliedMock.object });
-      await treeInstance.componentDidMount!();
-
-      const state = treeInstance.state;
-      expect(state.filteredDataProvider).to.be.undefined;
-      onFilterAppliedMock.verify((x) => x(undefined), moq.Times.once());
-    });
-
-    it("does not call onFilterApplied if it is not set", async () => {
-      tree.setProps({ dataProvider: dataProviderMock.object, filter: undefined });
-      await treeInstance.componentDidMount!();
-
-      onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
+    it("does not start filtering if filter is empty", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          filter=""
+          onFilterApplied={onFilterApplied}
+        />);
+      expect(tree.state().inProgress).to.be.undefined;
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
     });
 
   });
 
-  describe("getDerivedStateFromProps", () => {
-    const getDerivedStateFromProps: (nextProps: TreeWithFilteringSupportProps, state: State) => State = (PresentationTree as any).getDerivedStateFromProps;
-    const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
+  describe("componentDidUpdate", () => {
 
-    before(() => {
-      expect(getDerivedStateFromProps).to.not.be.undefined;
+    it("starts filtering when filter set on clear state", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          onFilterApplied={onFilterApplied}
+        />);
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+
+      tree.setProps({ filter: "changed" });
+      expect(tree.state().inProgress).to.not.be.undefined;
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
+      expect(onFilterApplied).to.be.calledOnceWith("changed", tree.state().filteredDataProvider);
     });
 
-    it("does not change filteredDataProvider if filter is not empty or undefined", async () => {
-      const state = { filteredDataProvider: filteredDataProviderMock.object, displayOverlay: false };
+    it("starts filtering when filter set while another filter is applied", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          onFilterApplied={onFilterApplied}
+          filter="test"
+        />);
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
 
-      const result = getDerivedStateFromProps({ dataProvider: dataProviderMock.object, filter: "filter" }, state);
-      expect(result.filteredDataProvider).to.be.equal(state.filteredDataProvider);
+      onFilterApplied.resetHistory();
+
+      tree.setProps({ filter: "changed" });
+      expect(tree.state().inProgress).to.not.be.undefined;
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
+      expect(onFilterApplied).to.be.calledOnceWith("changed", tree.state().filteredDataProvider);
     });
 
-    it("clears filteredDataProvider if filter is empty", async () => {
-      const state = { filteredDataProvider: filteredDataProviderMock.object, displayOverlay: false };
+    it("clears filtering when filter set while another filter is applied", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          onFilterApplied={onFilterApplied}
+          filter="test"
+        />);
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
 
-      const result = getDerivedStateFromProps({ dataProvider: dataProviderMock.object, filter: "" }, state);
-      expect(result.filteredDataProvider).to.be.undefined;
+      onFilterApplied.resetHistory();
+
+      tree.setProps({ filter: undefined });
+      expect(tree.state().inProgress).to.be.undefined;
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
     });
 
-    it("clears filteredDataProvider if filter is undefined", async () => {
-      const state = { filteredDataProvider: filteredDataProviderMock.object, displayOverlay: false };
+    it("starts filtering when filter set while another filter is in progress", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          onFilterApplied={onFilterApplied}
+          filter="test"
+        />);
+      expect(tree.state().inProgress).to.not.be.undefined;
+      expect(tree.state().inProgress!.filter).to.eq("test");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
 
-      const result = getDerivedStateFromProps({ dataProvider: dataProviderMock.object, filter: undefined }, state);
-      expect(result.filteredDataProvider).to.be.undefined;
+      tree.setProps({ filter: "changed" });
+      expect(tree.state().inProgress).to.not.be.undefined;
+      expect(tree.state().inProgress!.filter).to.eq("changed");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
+      expect(onFilterApplied).to.be.calledOnceWith("changed", tree.state().filteredDataProvider);
+    });
+
+    it("starts filtering when filter set while another filter is in progress", async () => {
+      const onFilterApplied = sinon.spy();
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+          onFilterApplied={onFilterApplied}
+          filter="test"
+        />);
+      expect(tree.state().inProgress).to.not.be.undefined;
+      expect(tree.state().inProgress!.filter).to.eq("test");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+
+      tree.setProps({ filter: "" });
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+
+      await waitForPendingAsyncs(tree.instance());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
     });
 
   });
 
   describe("loadDataProvider", () => {
-    it("does not set state if filter changed while loading provider", async () => {
-      const anotherDataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      anotherDataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString()))
-        .callback(() => { tree.setProps({ dataProvider: anotherDataProviderMock.object, filter: "different filter" }); })
-        .returns(async () => []);
-      tree.setProps({ dataProvider: anotherDataProviderMock.object, filter });
-      expect(treeInstance.componentDidMount).to.not.be.undefined;
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
 
-      await treeInstance.componentDidMount!();
-      expect(treeInstance.state.filteredDataProvider).to.be.undefined;
+    it("does not start a new request while previous one is still pending", async () => {
+      const pathsResult1 = new ResolvablePromise<NodePathElement[]>();
+      const pathsResult2 = new ResolvablePromise<NodePathElement[]>();
+      const slowDataProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+      slowDataProvider.setup((x) => x.imodel).returns(() => imodelMock.object);
+      slowDataProvider.setup((x) => x.rulesetId).returns(() => testRulesetId);
+      slowDataProvider.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => pathsResult1);
+      slowDataProvider.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => pathsResult2);
+
+      const onFilterApplied = sinon.spy();
+      const onMatchesCounted = sinon.spy();
+
+      tree = shallow(
+        <FilteredTree
+          dataProvider={slowDataProvider.object}
+          filter="test"
+          onFilterApplied={onFilterApplied}
+          onMatchesCounted={onMatchesCounted}
+        />);
+      // expect the request to be started
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress!.filter).to.eq("test");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // change the filter and expect another request to _not_ be started
+      tree.setProps({ filter: "changed 1" });
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress!.filter).to.eq("changed 1");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // change the filter again and expect another request to _not_ be started
+      tree.setProps({ filter: "changed 2" });
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress!.filter).to.eq("changed 2");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // resolve the request and verify a new request for the latest filter (skipping the intermediate one) has been started
+      await pathsResult1.resolve([]);
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
+      slowDataProvider.verify((x) => x.getFilteredNodePaths("changed 2"), moq.Times.once());
+      expect(tree.state().inProgress!.filter).to.eq("changed 2");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // resolve the last request and verify state
+      await pathsResult2.resolve([]);
+      await waitForPendingAsyncs(tree.instance());
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.exactly(2));
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.not.be.undefined;
+      expect(onFilterApplied).to.be.calledOnceWith("changed 2", tree.state().filteredDataProvider);
+      expect(onMatchesCounted).to.be.calledOnceWith(0);
     });
 
-    it("calls onMatchesCounted if it's given through props", async () => {
-      const cb = sinon.spy();
-      tree.setProps({ onMatchesCounted: cb });
+    it("clears filter while previous filtering request is still pending", async () => {
+      const pathsResult = new ResolvablePromise<NodePathElement[]>();
+      const slowDataProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
+      slowDataProvider.setup((x) => x.imodel).returns(() => imodelMock.object);
+      slowDataProvider.setup((x) => x.rulesetId).returns(() => testRulesetId);
+      slowDataProvider.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => pathsResult);
 
-      if (treeInstance.componentDidMount)
-        await treeInstance.componentDidMount();
+      const onFilterApplied = sinon.spy();
+      const onMatchesCounted = sinon.spy();
 
-      expect(cb).to.be.calledOnce;
+      tree = shallow(
+        <FilteredTree
+          dataProvider={slowDataProvider.object}
+          filter="test"
+          onFilterApplied={onFilterApplied}
+          onMatchesCounted={onMatchesCounted}
+        />);
+      // expect the request to be started
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress!.filter).to.eq("test");
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // clear the filter and expect the state to be cleared immediately
+      tree.setProps({ filter: undefined });
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
+
+      // resolve the request and verify the filter didn't get applied
+      await pathsResult.resolve([]);
+      slowDataProvider.verify((x) => x.getFilteredNodePaths(moq.It.isAnyString()), moq.Times.once());
+      expect(tree.state().inProgress).to.be.undefined;
+      expect(tree.state().filteredDataProvider).to.be.undefined;
+      expect(onFilterApplied).to.not.be.called;
+      expect(onMatchesCounted).to.not.be.called;
     });
+
   });
 
   describe("render", () => {
 
-    it("renders without overlay if filter is undefined", () => {
-      tree.setState({ filteredDataProvider: undefined });
-      tree.setProps({ filter: undefined, dataProvider: dataProviderMock.object });
-      expect(treeInstance.render()).to.matchSnapshot();
+    beforeEach(async () => {
+      tree = shallow(
+        <FilteredTree
+          dataProvider={dataProviderMock.object}
+        />,
+        { disableLifecycleMethods: true },
+      );
+      await waitForPendingAsyncs(tree.instance());
     });
 
-    it("renders without overlay if filter is empty", () => {
-      tree.setState({ filteredDataProvider: undefined });
-      tree.setProps({ filter: "", dataProvider: dataProviderMock.object });
-      expect(treeInstance.render()).to.matchSnapshot();
+    it("renders with overlay if `state.inProgress` is set", () => {
+      tree.setState({ inProgress: { imodel: imodelMock.object, rulesetId: testRulesetId, filter: "test" } });
+      expect(tree.instance().render()).to.matchSnapshot();
     });
 
-    it("renders with overlay if filter is different", () => {
-      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
-      filteredDataProviderMock.setup((x) => x.filter).returns(() => "different filter");
-
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ filter, dataProvider: dataProviderMock.object });
-
-      expect(treeInstance.render()).to.matchSnapshot();
-    });
-
-    it("renders with overlay if rulesetId is different", async () => {
-      const differentRulesetId = faker.random.word();
-      expect(differentRulesetId).to.not.be.equal(dataProviderMock.object.rulesetId);
-      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => differentRulesetId);
-      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
-      filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
-
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ filter, dataProvider: dataProviderMock.object });
-
-      expect(treeInstance.render()).to.matchSnapshot();
-    });
-
-    it("renders with overlay if imodel is different", async () => {
-      const anotherConnectionMock = moq.Mock.ofType<IModelConnection>();
-      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.imodel).returns(() => anotherConnectionMock.object);
-      filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
-
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ filter, dataProvider: dataProviderMock.object });
-
-      expect(treeInstance.render()).to.matchSnapshot();
-    });
-
-    it("renders without overlay if nothing is different", async () => {
-      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
-      filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
-
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ filter, dataProvider: dataProviderMock.object });
-
-      expect(treeInstance.render()).to.matchSnapshot();
+    it("renders without overlay if `state.inProgress = undefined`", async () => {
+      tree.setState({ inProgress: undefined });
+      expect(tree.instance().render()).to.matchSnapshot();
     });
 
     it("renders with highlightingProps only if filter is set", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.getActiveMatch(moq.It.isAny())).returns(() => ({ nodeId: "test", matchIndex: 0 }));
 
-      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
       tree.setProps({ activeMatchIndex: 6, filter: undefined });
+      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
       expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.be.undefined;
 
       tree.setProps({ activeMatchIndex: 6, filter: "" });
@@ -327,11 +341,11 @@ describe("Tree withFilteringSupport", () => {
       const activeMatch: ActiveMatchInfo = { nodeId: "test", matchIndex: 0 };
       filteredDataProviderMock.setup((x) => x.getActiveMatch(moq.It.isAny())).returns(() => activeMatch);
 
+      tree.setProps({ filter: "filter", activeMatchIndex: 6 });
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ activeMatchIndex: 6 });
 
       expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.deep.eq({
-        searchText: filter,
+        searchText: "filter",
         activeMatch,
       });
     });

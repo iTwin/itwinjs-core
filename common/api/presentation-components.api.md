@@ -229,7 +229,7 @@ export interface TreeWithFilteringSupportProps {
     activeMatchIndex?: number;
     dataProvider: IPresentationTreeDataProvider;
     filter?: string;
-    onFilterApplied?: (filter?: string) => void;
+    onFilterApplied?: (filter: string, filteredProvider: IPresentationTreeDataProvider) => void;
     onMatchesCounted?: (count: number) => void;
 }
 
