@@ -44,18 +44,17 @@ export class TileRequest {
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
    * if the request is not subsequently canceled - resulting in either a successfully-loaded Tile, or a failed ("not found") Tile.
    */
-  public async dispatch(): Promise<void> {
+  public async dispatch(onHttpResponse: () => void): Promise<void> {
+    if (this.isCanceled)
+      return Promise.resolve();
+
+    assert(this._state === TileRequest.State.Queued);
+    this._state = TileRequest.State.Dispatched;
+    let response;
+    let gotResponse = false;
     try {
-      if (this.isCanceled)
-        return Promise.resolve();
-
-      assert(this._state === TileRequest.State.Queued);
-      this._state = TileRequest.State.Dispatched;
-      const response = await this.loader.requestTileContent(this.tile);
-      if (this.isCanceled)
-        return Promise.resolve();
-
-      return this.handleResponse(response);
+      response = await this.loader.requestTileContent(this.tile);
+      gotResponse = true;
     } catch (_err) {
       if (_err.errorNumber && _err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
@@ -63,12 +62,18 @@ export class TileRequest {
         this._state = TileRequest.State.Failed;
         IModelApp.tileAdmin.onTileTimedOut(this.tile);
       } else {
-        // Unknown error - not retryable.
+        // Unknown error - not retryable
         this.setFailed();
       }
-
-      return Promise.resolve();
     }
+
+    // Notify caller that we have finished http activity.
+    onHttpResponse();
+
+    if (!gotResponse || this.isCanceled)
+      return Promise.resolve();
+
+    return this.handleResponse(response);
   }
 
   /** Cancels this request. This leaves the associated Tile's state untouched. */

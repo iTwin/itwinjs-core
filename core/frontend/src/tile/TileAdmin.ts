@@ -359,7 +359,6 @@ class Admin extends TileAdmin {
   private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
-  private _swapActiveRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
   private _swapPendingRequests = new Queue();
   private _numCanceled = 0;
@@ -464,9 +463,6 @@ class Admin extends TileAdmin {
     this._pendingRequests = this._swapPendingRequests;
     this._swapPendingRequests = previouslyPending;
 
-    const previouslyActive = this._activeRequests;
-    this._activeRequests = this._swapActiveRequests;
-
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
 
     if (!this._throttle)
@@ -480,15 +476,10 @@ class Admin extends TileAdmin {
     previouslyPending.clear();
 
     // Cancel any active requests which are no longer needed.
-    for (const active of previouslyActive) {
+    // NB: Do NOT remove them from the active set until their http activity has completed.
+    for (const active of this._activeRequests)
       if (active.viewports.isEmpty)
         this.cancel(active);
-      else
-        this._activeRequests.add(active);
-    }
-
-    previouslyActive.clear();
-    this._swapActiveRequests = previouslyActive;
 
     // Fill up the active requests from the queue.
     while (this._activeRequests.size < this._maxActiveRequests) {
@@ -576,8 +567,7 @@ class Admin extends TileAdmin {
 
   private dispatch(req: TileRequest): void {
     this._activeRequests.add(req);
-    req.dispatch().then(() => this.dropActiveRequest(req)) // tslint:disable-line no-floating-promises
-      .catch(() => this.dropActiveRequest(req));
+    req.dispatch(() => this.dropActiveRequest(req)).catch((_) => undefined);
   }
 
   private cancel(req: TileRequest) {
