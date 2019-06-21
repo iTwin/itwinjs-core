@@ -28,10 +28,10 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
   public async getDefaultConfigs(): Promise<string> { return this.forward(arguments); }
-  public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string): Promise<void> { return this.forward(arguments); }
+  public async saveCsv(_outputPath: string, _outputName: string, _rowDataJson: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
   public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward(arguments); }
 
-  public async finishCsv(_output: string, _outputPath: string | undefined, _outputName: string | undefined): Promise<void> { return this.forward(arguments); }
+  public async finishCsv(_output: string, _outputPath: string | undefined, _outputName: string | undefined, _csvFormat?: string | undefined): Promise<void> { return this.forward(arguments); }
   public async finishTest(): Promise<void> { return this.forward(arguments); }
 
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }

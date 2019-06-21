@@ -10,7 +10,7 @@ interface Entry {
   valueDescription: string;
   value: number;
   date: string;
-  info?: any;
+  info?: object;
 }
 
 export class Reporter {

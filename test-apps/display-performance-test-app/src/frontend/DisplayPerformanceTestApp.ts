@@ -36,8 +36,8 @@ async function getDefaultConfigs(): Promise<string> {
   return DisplayPerfRpcInterface.getClient().getDefaultConfigs();
 }
 
-async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
-  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]));
+async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>, csvFormat?: string): Promise<void> {
+  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]), csvFormat);
 }
 
 const wantConsoleOutput: boolean = false;
@@ -333,6 +333,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
+  rowData.set("Test Name", getTestName(configs));
+  rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
 
   // Calculate average timings
   if (pixSelectStr) { // timing read pixels
@@ -446,6 +448,7 @@ class DefaultConfigs {
   public iModelLocation?: string;
   public iModelName?: string;
   public iModelHubProject?: string;
+  public csvFormat?: string;
   public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
   public extViewName?: string;
@@ -469,6 +472,7 @@ class DefaultConfigs {
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
       this.testType = "timing";
+      this.csvFormat = "original";
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -479,6 +483,7 @@ class DefaultConfigs {
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
+      if (prevConfigs.csvFormat) this.csvFormat = prevConfigs.csvFormat;
       if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
       if (prevConfigs.viewStatePropsString) this.viewStatePropsString = prevConfigs.viewStatePropsString;
@@ -497,6 +502,7 @@ class DefaultConfigs {
     if (jsonData.iModelLocation) this.iModelLocation = combineFilePaths(jsonData.iModelLocation, this.iModelLocation);
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
+    if (jsonData.csvFormat) this.csvFormat = jsonData.csvFormat;
     if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
     if (jsonData.viewName) {
       this.viewName = jsonData.viewName;
@@ -527,6 +533,7 @@ class DefaultConfigs {
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
     debugPrint("iModelHubProject: " + this.iModelHubProject);
+    debugPrint("csvFormat: " + this.csvFormat);
     debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
@@ -988,6 +995,8 @@ async function runTest(testConfig: DefaultConfigs) {
     await savePng(getImageString(testConfig));
   }
 
+  const csvFormat = testConfig.csvFormat!;
+
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
     for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
@@ -1016,7 +1025,7 @@ async function runTest(testConfig: DefaultConfigs) {
         updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
         updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
         const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
-        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
         // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
         await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
@@ -1049,7 +1058,7 @@ async function runTest(testConfig: DefaultConfigs) {
         }
       }
       const rowData = getRowData(finalFrameTimings, testConfig);
-      await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+      await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
     }
   }
 
@@ -1163,7 +1172,7 @@ async function main() {
   if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
   if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
   if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
-  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName);
+  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName, jsonData.csvFormat);
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
   IModelApp.shutdown();
