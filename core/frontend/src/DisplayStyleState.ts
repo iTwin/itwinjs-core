@@ -102,6 +102,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @beta */
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this._backgroundMap.settings = settings;
+    this.settings.backgroundMap = settings;
   }
 
   /** Modify a subset of the background map display settings.
