@@ -32,6 +32,10 @@
           "dest": "./lib"
         },
         {
+          "source": "./src/**/*.svg",
+          "dest": "./lib"
+        },
+        {
           "source": "./public/**/*",
           "dest": "./lib/public"
         }
@@ -123,6 +127,7 @@
     "rimraf": "^2.6.2",
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
+    "svg-baker-runtime": "^1.4.2",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
@@ -149,7 +154,8 @@
     "react-redux": "^5.0.7",
     "react-resize-detector": "^3.2.0",
     "react-split-pane": "0.1.77",
-    "redux": "^4.0.0"
+    "redux": "^4.0.0",
+    "svg-sprite-loader": "^3.8.0"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

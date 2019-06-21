@@ -17,6 +17,7 @@ import { UiFramework } from "../UiFramework";
 
 // import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 // tslint:disable-next-line: variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
@@ -134,6 +135,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
           onClick={this._toggleIsExpanded}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
+          betaBadge={this.props.betaBadge && <BetaBadge />}
         />
       </ExpandableItem>
     );

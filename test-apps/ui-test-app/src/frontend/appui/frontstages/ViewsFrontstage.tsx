@@ -168,7 +168,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true}
+              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
                 applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
           />
@@ -406,7 +406,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _saveContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", execute: () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
         if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
             (contentProps: ContentProps) => {
@@ -425,7 +425,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _restoreContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", execute: async () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
         const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
         if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
           // Parse SavedViewLayoutProps
@@ -485,7 +485,7 @@ class FrontstageToolWidget extends React.Component {
   private get _popupButtonItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
+        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
           <div style={{ width: "200px", height: "100px" }}>
             hello world!
           </div>
@@ -501,6 +501,7 @@ class FrontstageToolWidget extends React.Component {
       new ToolItemDef({
         toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
         execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
+        betaBadge: true,
       }),
       this._popupButtonItemDef,
       AppTools.tool1,
@@ -508,6 +509,7 @@ class FrontstageToolWidget extends React.Component {
         items: [AppTools.tool2],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._enabledTestStateFunc,
+        betaBadge: true,
       }),
       AppTools.toolWithSettings,
       AppTools.toggleHideShowItemsCommand,
@@ -522,6 +524,7 @@ class FrontstageToolWidget extends React.Component {
         ],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._visibleTestStateFunc,
+        betaBadge: true,
       }),
     ]);
     return items;
@@ -550,6 +553,7 @@ class FrontstageToolWidget extends React.Component {
         items: [AppTools.tool1, AppTools.tool2, this._groupItemDef, this._saveContentLayout, this._restoreContentLayout],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
+        betaBadge: true,
       }),
     ]);
     return items;
@@ -591,6 +595,7 @@ class FrontstageNavigationWidget extends React.Component {
   private get _rotateViewCommand() {
     const toolItemDef = CoreTools.rotateViewCommand;
     toolItemDef.iconSpec = this._rotateSvgIcon2;
+    toolItemDef.betaBadge = true;
     return toolItemDef;
   }
 

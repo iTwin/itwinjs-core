@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added beta badge support to toolbar buttons and widget tabs",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

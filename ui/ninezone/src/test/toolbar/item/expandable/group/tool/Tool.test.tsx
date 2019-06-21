@@ -42,4 +42,11 @@ describe("<GroupTool />", () => {
     sut.simulate("click");
     spy.notCalled.should.true;
   });
+
+  it("renders with betaBadge correctly", () => {
+    const sut = mount(<GroupTool betaBadge={true} />);
+    const badge = sut.find("div.nz-beta-badge");
+    badge.length.should.eq(1);
+  });
+
 });

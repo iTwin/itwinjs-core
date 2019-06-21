@@ -15,6 +15,7 @@ import {
   ResizeHandle, Tab, TabGroup, PointProps, TabSeparator, WidgetZoneIndex, TabMode, HandleMode, Rectangle,
 } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties for a [[StackedWidget]] Tab.
  * @internal
@@ -24,6 +25,7 @@ export interface WidgetTabProps {
   iconSpec?: string | React.ReactNode;
   title: string;
   widgetName: string;
+  betaBadge?: boolean;
 }
 
 /** Properties for a Widget in a [[StackedWidget]].
@@ -134,6 +136,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
           ref={(instance: Tab | null) => this._handleTabRef(stackedWidget.id, index, instance)}
+          betaBadge={tab.betaBadge && <BetaBadge />}
         >
           <Icon iconSpec={tab.iconSpec} />
         </Tab>

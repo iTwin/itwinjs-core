@@ -5,6 +5,8 @@
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "../../_variables";
 
+$badge-size: 16px;
+
 .nz-widget-rectangular-tab-tab {
   $active-width: 36px;
 
@@ -107,4 +109,11 @@
       border-bottom-left-radius: 0;
     }
   }
+
+  >.nz-beta-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
 }

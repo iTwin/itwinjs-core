@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
 
-  @include body;
+  @include body1;
 
   > .nz-icon {
     width: $icon-size;
@@ -36,6 +36,13 @@
     margin-right: $space-between-icon-and-label;
     margin-left: 8px;
     filter: $shadow;
+
+    >.nz-beta-badge {
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      filter: $no-shadow;
+    }
   }
 
   > .nz-label {

@@ -467,6 +467,7 @@ export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" 
 
 // @alpha
 export interface GroupToolProps extends CommonProps {
+    betaBadge?: React.ReactNode;
     children?: React.ReactNode;
     icon?: React.ReactNode;
     isActive?: boolean;
@@ -669,6 +670,7 @@ export class Item extends React.PureComponent<ItemProps> {
 
 // @beta
 export interface ItemProps extends CommonProps {
+    betaBadge?: React.ReactNode;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
@@ -1658,6 +1660,7 @@ export class TabModeHelpers {
 // @alpha
 export interface TabProps extends CommonProps {
     anchor: HorizontalAnchor;
+    betaBadge?: React.ReactNode;
     children?: React.ReactNode;
     lastPosition?: PointProps;
     mode: TabMode;

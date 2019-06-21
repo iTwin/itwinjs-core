@@ -3,13 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+@import "../../../../../_math";
 @import "_variables";
 
 .nz-toolbar-item-expandable-group-tool-expander {
   > .nz-expansion-indicator {
-    margin-left: -$space-after-label + 10px;
-    margin-right: $space-after-label;
-    filter: $shadow;
+    $border: solid $expander-arrow-thickness currentColor;
+    $size: sqrt($expander-arrow-size-val * $expander-arrow-size-val * 8) / 2 + px;
+
+    width: $size;
+    height: $size;
+    border-top: $border;
+    border-left: $border;
+    margin-left: $expander-arrow-thickness;
+    margin-top: $expander-arrow-thickness;
+    box-sizing: border-box;
+    transform: rotate(135deg);
   }
 
   &:active:not(.nz-disabled) {

@@ -17,6 +17,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 },
                 "_label": [Function],
                 "_tooltip": [Function],
+                "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
@@ -48,6 +49,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_label": "",
                   "_tooltip": "",
+                  "betaBadge": false,
                   "commandId": "tool1",
                   "execute": [Function],
                   "getKey": [Function],
@@ -65,6 +67,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "applicationData": Object {
                     "key": "value",
                   },
+                  "betaBadge": false,
                   "commandId": "tool2",
                   "execute": [Function],
                   "getKey": [Function],
@@ -95,6 +98,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         },
         "_label": "",
         "_tooltip": "",
+        "betaBadge": false,
         "commandId": "SampleApp.BackstageToggle",
         "execute": [Function],
         "getKey": [Function],
@@ -167,6 +171,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 CommandItemDef {
                   "_label": "",
                   "_tooltip": "",
+                  "betaBadge": false,
                   "commandId": "tool1",
                   "execute": [Function],
                   "getKey": [Function],
@@ -184,6 +189,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "applicationData": Object {
                     "key": "value",
                   },
+                  "betaBadge": false,
                   "commandId": "tool2",
                   "execute": [Function],
                   "getKey": [Function],

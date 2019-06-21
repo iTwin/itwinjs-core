@@ -1823,6 +1823,8 @@ export abstract class ItemDefBase {
     // (undocumented)
     applicationData?: any;
     // (undocumented)
+    betaBadge: boolean;
+    // (undocumented)
     iconElement?: React.ReactNode;
     // (undocumented)
     iconSpec?: string | React.ReactNode;
@@ -1873,6 +1875,7 @@ export class ItemMap extends Map<string, ItemDefBase> {
 // @public
 export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
     applicationData?: any;
+    betaBadge?: boolean;
     isActive?: boolean;
     isEnabled?: boolean;
     isPressed?: boolean;
@@ -3699,6 +3702,8 @@ export class WidgetDef {
     // (undocumented)
     applicationData?: any;
     // (undocumented)
+    betaBadge?: boolean;
+    // (undocumented)
     canOpen(): boolean;
     // (undocumented)
     classId: string | ConfigurableUiControlConstructor | undefined;
@@ -3772,6 +3777,7 @@ export class WidgetHost {
 // @public
 export interface WidgetProps extends IconProps {
     applicationData?: any;
+    betaBadge?: boolean;
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
     defaultState?: WidgetState;
@@ -3816,6 +3822,8 @@ export interface WidgetStateChangedEventArgs {
 
 // @internal
 export interface WidgetTabProps {
+    // (undocumented)
+    betaBadge?: boolean;
     // (undocumented)
     iconSpec?: string | React_2.ReactNode;
     // (undocumented)

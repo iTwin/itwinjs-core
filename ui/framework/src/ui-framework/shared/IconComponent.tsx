@@ -15,7 +15,7 @@ export type IconSpec = string | React.ReactNode;
  * @public
  */
 export interface IconProps {
-  /** CSS class name for icon */
+  /** CSS class name or SvgSprite for icon */
   iconSpec?: IconSpec;
 }
 

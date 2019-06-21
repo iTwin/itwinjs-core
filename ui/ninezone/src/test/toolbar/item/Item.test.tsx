@@ -35,4 +35,16 @@ describe("<Item />", () => {
     sut.find("button").simulate("click");
     spy.calledOnce.should.true;
   });
+
+  it("renders with betaBadge correctly", () => {
+    const sut = mount(<Item betaBadge={true} />);
+    const badge = sut.find("div.nz-beta-badge");
+    badge.length.should.eq(1);
+  });
+
+  it("should invoke onSizeKnown handler", () => {
+    const spy = sinon.spy();
+    mount(<Item onSizeKnown={spy} />);
+    spy.calledOnce.should.true;
+  });
 });

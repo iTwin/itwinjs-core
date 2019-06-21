@@ -183,6 +183,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
             iconSpec: widgetDef.iconSpec,
             title: widgetDef.label,
             widgetName: widgetDef.id,
+            betaBadge: widgetDef.betaBadge,
           };
         }),
       });

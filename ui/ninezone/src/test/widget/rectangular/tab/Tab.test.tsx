@@ -30,6 +30,15 @@ describe("<Tab />", () => {
     />).should.matchSnapshot();
   });
 
+  it("renders with betaBadge correctly", () => {
+    const sut = mount(<Tab
+      anchor={HorizontalAnchor.Left}
+      mode={TabMode.Open}
+      betaBadge={true} />);
+    const badge = sut.find("div.nz-beta-badge");
+    badge.length.should.eq(1);
+  });
+
   it("renders with last position correctly", () => {
     shallow(<Tab
       anchor={HorizontalAnchor.Left}

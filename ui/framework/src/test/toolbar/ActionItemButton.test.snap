@@ -1,14 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ActionItemButton disabled renders correctly 1`] = `
+exports[`ActionItemButton enabled renders correctly 1`] = `
 <Item
+  betaBadge={false}
   icon={
     <Unknown
       iconSpec="icon-placeholder"
     />
   }
   isActive={false}
-  isDisabled={true}
+  isDisabled={false}
   key="command"
   onClick={[Function]}
   onKeyDown={[Function]}
@@ -16,24 +17,11 @@ exports[`ActionItemButton disabled renders correctly 1`] = `
 />
 `;
 
-exports[`ActionItemButton hidden renders correctly 1`] = `
-<Item
-  icon={
-    <Unknown
-      iconSpec="icon-placeholder"
-    />
-  }
-  isActive={false}
-  isDisabled={true}
-  key="command"
-  onClick={[Function]}
-  onKeyDown={[Function]}
-  title="tests.label"
-/>
-`;
+exports[`ActionItemButton hidden renders correctly 1`] = `""`;
 
 exports[`ActionItemButton renders correctly 1`] = `
 <Item
+  betaBadge={false}
   icon={
     <Unknown
       iconSpec="icon-placeholder"

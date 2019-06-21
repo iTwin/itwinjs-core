@@ -119,6 +119,7 @@ export class WidgetDef {
   public applicationData?: any;
   public isFloating = false;
   public iconSpec?: string | React.ReactNode;
+  public betaBadge?: boolean;
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
@@ -188,6 +189,8 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me.iconSpec = widgetProps.iconSpec;
+    if (widgetProps.betaBadge !== undefined)
+      me.betaBadge = widgetProps.betaBadge;
 
     me.setUpSyncSupport(widgetProps);
   }

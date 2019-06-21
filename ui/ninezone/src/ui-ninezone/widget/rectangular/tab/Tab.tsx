@@ -11,6 +11,7 @@ import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import { PointerCaptor } from "../../../base/PointerCaptor";
 import { PointProps, Point } from "../../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../../utilities/Rectangle";
+
 import "./Tab.scss";
 
 /** Describes available tab modes.
@@ -68,6 +69,8 @@ export interface TabProps extends CommonProps {
   onDragEnd?: () => void;
   /** Title for the tab. */
   title?: string;
+  /** A Beta badge to draw. */
+  betaBadge?: React.ReactNode;
 }
 
 /** Rectangular widget tab. Used in [[Stacked]] component.
@@ -98,6 +101,11 @@ export class Tab extends React.PureComponent<TabProps> {
         title={this.props.title}
       >
         {this.props.children}
+        {this.props.betaBadge &&
+          <div className="nz-beta-badge">
+            {this.props.betaBadge}
+          </div>
+        }
         <PointerCaptor
           className="nz-draggable"
           isMouseDown={this.props.lastPosition ? true : undefined}

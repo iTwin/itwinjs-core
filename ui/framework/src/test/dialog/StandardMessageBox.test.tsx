@@ -152,7 +152,7 @@ describe("StandardMessageBox", () => {
     const component = render(reactNode);
 
     component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
-    expect(spyOnEscape).to.be.calledOnce;
+    spyOnEscape.calledOnce.should.true;
   });
 
 });

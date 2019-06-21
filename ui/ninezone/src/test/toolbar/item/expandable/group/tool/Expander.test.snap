@@ -6,8 +6,6 @@ exports[`<GroupToolExpander /> renders correctly 1`] = `
 >
   <div
     className="nz-expansion-indicator"
-  >
-    &gt;
-  </div>
+  />
 </GroupTool>
 `;

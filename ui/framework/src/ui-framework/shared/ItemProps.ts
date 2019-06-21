@@ -73,6 +73,8 @@ export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipPr
   isPressed?: boolean;
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
+  /** Indicates whether to draw a Beta badge. */
+  betaBadge?: boolean;
 }
 
 /** Definition for a command handler used by [[CommandItemProps]].

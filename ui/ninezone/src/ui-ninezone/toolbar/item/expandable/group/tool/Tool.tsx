@@ -7,6 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+
 import "./Tool.scss";
 
 /** Properties of [[GroupTool]] component.
@@ -27,6 +28,8 @@ export interface GroupToolProps extends CommonProps {
   label?: string;
   /** Function called when the item is clicked. */
   onClick?: () => void;
+  /** A Beta badge to draw. */
+  betaBadge?: React.ReactNode;
 }
 
 /** Tool entry of tool group panel. Used in [[GroupColumn]].
@@ -49,6 +52,11 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
       >
         <div className="nz-icon">
           {this.props.icon}
+          {this.props.betaBadge &&
+            <div className="nz-beta-badge">
+              {this.props.betaBadge}
+            </div>
+          }
         </div>
         <div className="nz-label">
           {this.props.label}

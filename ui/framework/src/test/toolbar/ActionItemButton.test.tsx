@@ -22,7 +22,9 @@ describe("ActionItemButton", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
 
+  beforeEach(async () => {
     testCommand =
       new CommandItemDef({
         commandId: "command",
@@ -42,11 +44,15 @@ describe("ActionItemButton", () => {
   });
 
   it("hidden renders correctly", () => {
-    shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
+    const myCommand = testCommand;
+    myCommand.isVisible = false;
+    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
   });
 
-  it("disabled renders correctly", () => {
-    shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
+  it("enabled renders correctly", () => {
+    const myCommand = testCommand;
+    myCommand.isEnabled = true;
+    shallow(<ActionItemButton actionItem={myCommand} />).should.matchSnapshot();
   });
 
   it("should execute a function", () => {
@@ -68,6 +74,7 @@ describe("ActionItemButton", () => {
   it("should set focus to home on Esc", () => {
     const wrapper = mount(<ActionItemButton actionItem={testCommand} />);
     const element = wrapper.find(".nz-toolbar-item-item");
+    element.length.should.eq(1);
     element.simulate("focus");
     element.simulate("keyDown", { key: "Escape", keyCode: 27 });
     expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
@@ -142,4 +149,18 @@ describe("ActionItemButton", () => {
     wrapper.setProps({ isEnabled: true });
     expect(wrapper.state("isEnabled")).to.be.true;
   });
+});
+
+it("should render with betaBadge", () => {
+  const myCommand =
+    new CommandItemDef({
+      commandId: "command",
+      iconSpec: "icon-placeholder",
+      betaBadge: true,
+    });
+
+  const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
+  const badge = wrapper.find("div.nz-beta-badge");
+  badge.length.should.eq(1);
+  wrapper.unmount();
 });
