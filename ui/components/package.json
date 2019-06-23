@@ -77,7 +77,7 @@
     "@types/chai-spies": "^1.0.0",
     "@types/chai-string": "^1.4.1",
     "@types/classnames": "^2.2.3",
-    "@types/enzyme": "^3.1.12",
+    "@types/enzyme": "3.9.3",
     "@types/faker": "^4.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^5.2.5",

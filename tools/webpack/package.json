@@ -26,7 +26,7 @@
   "dependencies": {
     "@bentley/config-loader": "1.1.0-dev.19",
     "@types/chai": "^4.1.4",
-    "@types/enzyme": "^3.1.12",
+    "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
     "@types/sinon": "^5.0.5",
