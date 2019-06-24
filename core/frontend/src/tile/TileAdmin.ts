@@ -94,7 +94,7 @@ export abstract class TileAdmin {
   public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array>;
+  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -113,6 +113,8 @@ export abstract class TileAdmin {
   public abstract onTileFailed(tile: Tile): void;
   /** @internal */
   public abstract onTileElided(): void;
+  /** @internal */
+  public abstract onCacheMiss(): void;
 }
 
 /** @alpha */
@@ -139,6 +141,10 @@ export namespace TileAdmin {
     totalUndisplayableTiles: number;
     /** The total number of tiles whose contents were not requested during this session because their volumes were determined to be empty. */
     totalElidedTiles: number;
+    /** The total number of tiles whose contents were not found in cloud storage cache and therefore resulted in a backend request to generate the tile content. */
+    totalCacheMisses: number;
+    /** The total number of tiles for which content requests were dispatched. */
+    totalDispatchedRequests: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
@@ -368,6 +374,8 @@ class Admin extends TileAdmin {
   private _totalEmpty = 0;
   private _totalUndisplayable = 0;
   private _totalElided = 0;
+  private _totalCacheMisses = 0;
+  private _totalDispatchedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
   private readonly _treeExpirationTime?: BeDuration;
@@ -384,11 +392,13 @@ class Admin extends TileAdmin {
       totalEmptyTiles: this._totalEmpty,
       totalUndisplayableTiles: this._totalUndisplayable,
       totalElidedTiles: this._totalElided,
+      totalCacheMisses: this._totalCacheMisses,
+      totalDispatchedRequests: this._totalDispatchedRequests,
     };
   }
 
   public resetStatistics(): void {
-    this._totalCompleted = this._totalFailed = this._totalTimedOut = this._totalEmpty = this._totalUndisplayable = this._totalElided = 0;
+    this._totalCompleted = this._totalFailed = this._totalTimedOut = this._totalEmpty = this._totalUndisplayable = this._totalElided = this._totalCacheMisses = this._totalDispatchedRequests = 0;
   }
 
   public constructor(options?: TileAdmin.Props) {
@@ -566,6 +576,7 @@ class Admin extends TileAdmin {
   }
 
   private dispatch(req: TileRequest): void {
+    ++this._totalDispatchedRequests;
     this._activeRequests.add(req);
     req.dispatch(() => this.dropActiveRequest(req)).catch((_) => undefined);
   }
@@ -590,10 +601,10 @@ class Admin extends TileAdmin {
     return intfc.requestTileTreeProps(iModel.iModelToken.toJSON(), treeId);
   }
 
-  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array> {
+  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array> {
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId);
+    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId, isCanceled);
   }
 
   private initializeRpc(): void {
@@ -613,6 +624,7 @@ class Admin extends TileAdmin {
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }
   public onTileTimedOut(_tile: Tile) { ++this._totalTimedOut; }
   public onTileElided() { ++this._totalElided; }
+  public onCacheMiss() { ++this._totalCacheMisses; }
   public onTileCompleted(tile: Tile) {
     ++this._totalCompleted;
     if (tile.isEmpty)

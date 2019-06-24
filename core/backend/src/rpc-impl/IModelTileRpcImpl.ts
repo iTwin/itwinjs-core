@@ -156,7 +156,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return RequestTileTreePropsMemoizer.perform({ requestContext, iModelToken, treeId });
   }
 
-  public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
+  public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string, _unused?: () => boolean): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const content = RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });

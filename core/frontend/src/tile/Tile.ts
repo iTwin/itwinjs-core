@@ -235,6 +235,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   }
 
   public get isLoading(): boolean { return Tile.LoadStatus.Loading === this.loadStatus; }
+  public get isQueued(): boolean { return Tile.LoadStatus.Queued === this.loadStatus; }
   public get isNotFound(): boolean { return Tile.LoadStatus.NotFound === this.loadStatus; }
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
@@ -640,7 +641,7 @@ export namespace Tile {
     Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
     Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
     NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
-    Abandoned = 5, // A request was made to the backend, then later cancelled as it was determined that the tile is no longer needed on the frontend.
+    Abandoned = 5, // The tile has been discarded.
   }
 
   /**

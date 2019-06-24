@@ -7,7 +7,7 @@ import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
@@ -550,6 +550,15 @@ describe("mirukuru TileTree", () => {
     imodel = await IModelConnection.openSnapshot(path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim"));
   });
 
+  afterEach(() => {
+    if (imodel) {
+      // Ensure tiles are not in memory...
+      imodel.tiles.purge(BeTimePoint.now().plus(BeDuration.fromSeconds(500)));
+      // Reset statistics...
+      IModelApp.tileAdmin.resetStatistics();
+    }
+  });
+
   after(async () => {
     if (imodel) await imodel.closeSnapshot();
     MockRender.App.shutdown();
@@ -571,7 +580,7 @@ describe("mirukuru TileTree", () => {
     const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true);
     const tree = new TileTree(TileTree.paramsFromJSON(treeProps, imodel, true, loader, "0x1c"));
 
-    const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile);
+    const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile, () => false);
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
@@ -596,7 +605,7 @@ describe("mirukuru TileTree", () => {
     const test = async (tree: TileTree, expectedVersion: number, expectedRootContentId: string) => {
       expect(tree).not.to.be.undefined;
       expect(tree.rootTile.contentId).to.equal(expectedRootContentId);
-      const response = await tree.loader.requestTileContent(tree.rootTile);
+      const response = await tree.loader.requestTileContent(tree.rootTile, () => false);
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
@@ -659,6 +668,38 @@ describe("mirukuru TileTree", () => {
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
       expect(treeCounter).to.equal(numRetries);
+    });
+  });
+
+  it("should retry tile requests if canceled while awaiting cache miss", async () => {
+    let tileCounter = 0;
+    const numRetries = 3;
+
+    // Replace the `isCanceled` property with one that returns true `numRetries` times, to indicate the request should not be forwarded to the backend in the event of a cache miss.
+    // (Because we are running locally, we will never get a cache hit).
+    const propertyDescriptor = Object.getOwnPropertyDescriptor(TileRequest.prototype, "isCanceled")!;
+    const oldGet = propertyDescriptor.get;
+    propertyDescriptor.get = () => {
+      ++tileCounter;
+      if (tileCounter >= numRetries) {
+        propertyDescriptor.get = oldGet;
+        Object.defineProperty(TileRequest.prototype, "isCanceled", propertyDescriptor);
+      }
+
+      return true;
+    };
+    Object.defineProperty(TileRequest.prototype, "isCanceled", propertyDescriptor);
+
+    await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
+      await vp.waitForAllTilesToRender();
+      expect(tileCounter).to.equal(numRetries);
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      const stats = IModelApp.tileAdmin.statistics;
+      // We only record cache misses if the request is NOT canceled.
+      expect(stats.totalCacheMisses).to.equal(1);
+      expect(stats.totalDispatchedRequests).to.equal(numRetries + 1);
     });
   });
 });
@@ -780,7 +821,7 @@ describe("TileAdmin", () => {
       */
 
       private static async rootTileHasEdges(tree: TileTree, imodel: IModelConnection): Promise<boolean> {
-        const response = await tree.loader.requestTileContent(tree.rootTile) as Uint8Array;
+        const response = await tree.loader.requestTileContent(tree.rootTile, () => false) as Uint8Array;
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 

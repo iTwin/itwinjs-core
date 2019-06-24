@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
 import { Tile } from "./Tile";
 import { TileTree, TileLoader } from "./TileTree";
@@ -53,10 +53,14 @@ export class TileRequest {
     let response;
     let gotResponse = false;
     try {
-      response = await this.loader.requestTileContent(this.tile);
+      response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
       gotResponse = true;
-    } catch (_err) {
-      if (_err.errorNumber && _err.errorNumber === IModelStatus.ServerTimeout) {
+    } catch (err) {
+      if (err instanceof AbandonedError) {
+        // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
+        this.notifyAndClear();
+        this._state = TileRequest.State.Failed;
+      } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;

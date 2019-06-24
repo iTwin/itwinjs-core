@@ -316,9 +316,9 @@ class RealityModelTileLoader extends TileLoader {
     return props;
   }
 
-  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+  public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
-    if (undefined === foundChild)
+    if (undefined === foundChild || isCanceled())
       return undefined;
 
     return this._tree.client.getTileContent(getUrl(foundChild.json.content));

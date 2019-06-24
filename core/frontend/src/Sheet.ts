@@ -225,7 +225,7 @@ export namespace Attachments {
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
     public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Primary; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
-    public async requestTileContent(_tile: Tile): Promise<TileRequest.Response> {
+    public async requestTileContent(_tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
       // ###TODO?
       return Promise.resolve(undefined);
     }

@@ -920,7 +920,7 @@ export namespace Attachments {
         // (undocumented)
         readonly priority: Tile.LoadPriority;
         // (undocumented)
-        requestTileContent(_tile: Tile): Promise<TileRequest.Response>;
+        requestTileContent(_tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
         // (undocumented)
         tileRequiresLoading(_params: Tile.Params): boolean;
     }
@@ -3185,7 +3185,7 @@ export namespace IModelConnection {
         // (undocumented)
         forEachTreeOwner(func: (owner: TileTree.Owner) => void): void;
         // (undocumented)
-        getTileContent(treeId: string, contentId: string): Promise<Uint8Array>;
+        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
         // (undocumented)
         getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner;
         // (undocumented)
@@ -6330,6 +6330,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly isParentDisplayable: boolean;
     // (undocumented)
+    readonly isQueued: boolean;
+    // (undocumented)
     readonly isReady: boolean;
     // (undocumented)
     isRegionCulled(args: Tile.DrawArgs): boolean;
@@ -6524,6 +6526,8 @@ export abstract class TileAdmin {
     abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
     abstract maxActiveRequests: number;
     // @internal (undocumented)
+    abstract onCacheMiss(): void;
+    // @internal (undocumented)
     abstract onShutDown(): void;
     // @internal (undocumented)
     abstract onTileCompleted(tile: Tile): void;
@@ -6536,7 +6540,7 @@ export abstract class TileAdmin {
     // @internal
     abstract process(): void;
     // @internal (undocumented)
-    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string): Promise<Uint8Array>;
+    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
@@ -6569,7 +6573,9 @@ export namespace TileAdmin {
         numActiveRequests: number;
         numCanceled: number;
         numPendingRequests: number;
+        totalCacheMisses: number;
         totalCompletedRequests: number;
+        totalDispatchedRequests: number;
         totalElidedTiles: number;
         totalEmptyTiles: number;
         totalFailedRequests: number;
@@ -6615,7 +6621,7 @@ export abstract class TileLoader {
     // (undocumented)
     processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[];
     // (undocumented)
-    abstract requestTileContent(tile: Tile): Promise<TileRequest.Response>;
+    abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
     abstract tileRequiresLoading(params: Tile.Params): boolean;
     // (undocumented)

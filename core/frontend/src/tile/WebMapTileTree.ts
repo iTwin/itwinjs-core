@@ -381,7 +381,7 @@ class WebMapTileLoader extends TileLoader {
     return this._childTileCreator.getChildren(quadId);
   }
 
-  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+  public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
     const quadId = new QuadId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }

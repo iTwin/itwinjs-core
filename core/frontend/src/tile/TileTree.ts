@@ -214,7 +214,7 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
  */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
-  public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
+  public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
   public abstract get priority(): Tile.LoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }

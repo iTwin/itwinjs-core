@@ -343,8 +343,16 @@ export namespace IModelTile {
       return kids;
     }
 
-    public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
-      return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId);
+    public async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
+      const handleCacheMiss = () => {
+        const cancelMe = isCanceled();
+        if (!cancelMe)
+          IModelApp.tileAdmin.onCacheMiss();
+
+        return cancelMe;
+      };
+
+      return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId, handleCacheMiss);
     }
 
     public adjustContentIdSizeMultiplier(contentId: string, sizeMultiplier: number): string {

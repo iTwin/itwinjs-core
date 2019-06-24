@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added total number of dispatched tile requests and of cache misses to tile statistics tracker.",
+      "packageName": "@bentley/frontend-devtools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Paul.Connelly@bentley.com"
+}
