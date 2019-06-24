@@ -10,7 +10,7 @@
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson %TYPEDOC_THEME%",
@@ -100,7 +100,7 @@
     "rimraf": "^2.6.2",
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",

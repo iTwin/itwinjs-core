@@ -17,10 +17,10 @@ alpha;convertHexToRgb(hex: string): RgbColor | undefined
 alpha;createButton(props: ButtonProps): Button
 alpha;createCheckBox(props: CheckBoxProps): CheckBox
 alpha;createColorInput(props: ColorInputProps): ColorInput
-alpha;createComboBox
+alpha;createComboBox(props: ComboBoxProps): ComboBox
 alpha;createNestedMenu(props: NestedMenuProps): NestedMenu
 alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement
-alpha;createRadioBox
+alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
 alpha;DiagnosticsPanel

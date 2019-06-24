@@ -10,7 +10,7 @@
   "main": "lib/ui-framework.js",
   "typings": "lib/ui-framework",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./ui-framework.ts --onlyJson %TYPEDOC_THEME%",
@@ -134,7 +134,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [

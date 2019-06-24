@@ -19,7 +19,8 @@
     "**/out": true,
     "**/lib": true,
     "tools/build/mocha-reporter": true,
-    "tools/build/tslint-rules": true
+    "tools/build/tslint-rules": true,
+    "tools/webpack/bin/buildIModelJsModule.js": true
   },
   "files.trimTrailingWhitespace": true,
   "cSpell.words": [

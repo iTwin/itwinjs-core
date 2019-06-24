@@ -8,7 +8,7 @@ import { Point, PointProps } from "../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
 import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
-import { NineZone, NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
+import { NineZone, NineZoneProps, WidgetZoneIndex } from "./NineZone";
 import { Widget } from "./Widget";
 import { WidgetZone, StatusZoneManager, StatusZoneManagerProps, ZonePropsBase } from "./Zone";
 import { TargetType, TargetZoneProps } from "./Target";
@@ -88,20 +88,18 @@ export class StateManager {
       size: {
         ...size,
       },
-      zones: {
-        ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
-          const id = Number(key) as WidgetZoneIndex;
-          const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
-          acc[id] = {
-            ...model.props.zones[id],
+      zones: Object.keys(model.props.zones).reduce((acc, key) => {
+        const id = Number(key) as WidgetZoneIndex;
+        const bounds = model.getWidgetZone(id).getLayout().getInitialBounds();
+        return {
+          ...acc,
+          [id]: {
+            ...acc[id],
             isLayoutChanged: false,
             bounds,
-          };
-          return acc;
-        }, {}),
-      },
-
+          },
+        };
+      }, model.props.zones),
     };
 
     return newState;
@@ -113,46 +111,42 @@ export class StateManager {
 
     const newState: NineZoneProps = {
       ...model.props,
-      zones: {
-        ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
-          const id = Number(key) as WidgetZoneIndex;
-          const zone = state.zones[id];
+      zones: Object.keys(model.props.zones).reduce((acc, key) => {
+        const id = Number(key) as WidgetZoneIndex;
+        const zone = state.zones[id];
 
-          const layout = model.getWidgetZone(id).getLayout();
-          const bounds = layout.bounds.equals(zone.bounds) ? zone.bounds : layout.bounds;
-          const isLayoutChanged = zoneId === id ? true : zone.isLayoutChanged;
+        const layout = model.getWidgetZone(id).getLayout();
+        const bounds = layout.bounds.equals(zone.bounds) ? zone.bounds : layout.bounds;
+        const isLayoutChanged = zoneId === id ? true : zone.isLayoutChanged;
 
-          const oldFloatingBounds = zone.floating ? zone.floating.bounds : undefined;
-          const newFloatingBounds = layout.floatingBounds;
+        const oldFloatingBounds = zone.floating ? zone.floating.bounds : undefined;
+        const newFloatingBounds = layout.floatingBounds;
 
-          let floating = zone.floating;
-          if (newFloatingBounds && oldFloatingBounds && !newFloatingBounds.equals(oldFloatingBounds)) {
-            floating = {
-              ...state.zones[id].floating,
-              stackId: state.zones[id].floating!.stackId,
-              bounds: newFloatingBounds,
-            };
-          }
+        let floating = zone.floating;
+        if (newFloatingBounds && oldFloatingBounds && !newFloatingBounds.equals(oldFloatingBounds)) {
+          floating = {
+            ...state.zones[id].floating,
+            stackId: state.zones[id].floating!.stackId,
+            bounds: newFloatingBounds,
+          };
+        }
 
-          const noChange = bounds === zone.bounds &&
-            floating === zone.floating &&
-            isLayoutChanged === zone.isLayoutChanged;
+        if (bounds === zone.bounds &&
+          floating === zone.floating &&
+          isLayoutChanged === zone.isLayoutChanged) {
+          return acc;
+        }
 
-          if (noChange) {
-            acc[id] = zone;
-            return acc;
-          }
-
-          acc[id] = {
-            ...model.props.zones[id],
+        return {
+          ...acc,
+          [id]: {
+            ...acc[id],
             bounds,
             floating,
             isLayoutChanged,
-          };
-          return acc;
-        }, {}),
-      },
+          },
+        };
+      }, model.props.zones),
     };
 
     return newState;
@@ -168,22 +162,20 @@ export class StateManager {
 
     const newState: NineZoneProps = {
       ...model.props,
-      zones: {
-        ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
-          const id = Number(key) as WidgetZoneIndex;
-          const zone = model.getWidgetZone(id);
-          const bounds = zone.getLayout().getInitialBounds();
+      zones: Object.keys(model.props.zones).reduce((acc, key) => {
+        const id = Number(key) as WidgetZoneIndex;
+        const zone = model.getWidgetZone(id);
+        const bounds = zone.getLayout().getInitialBounds();
 
-          acc[id] = {
-            ...model.props.zones[id],
+        return {
+          ...acc,
+          [id]: {
+            ...acc[id],
             bounds,
-            ...(id === StatusZoneManager.id && { isInFooterMode } as StatusZoneManagerProps),
-          };
-
-          return acc;
-        }, {}),
-      },
+            ...id === StatusZoneManager.id ? { isInFooterMode } as StatusZoneManagerProps : {},
+          },
+        };
+      }, model.props.zones),
     };
 
     return newState;
@@ -240,44 +232,44 @@ export class StateManager {
     const keepSomeZonesMerged = zone.getWidgets().length > unmergeBounds.length;
     return {
       ...model.props,
-      zones: {
-        ...model.props.zones,
-        ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
-          const id = Number(key) as WidgetZoneIndex;
-          const mergedZone = unmergeBounds.find((z) => z.id === id);
+      zones: Object.keys(model.props.zones).reduce((acc, key) => {
+        const id = Number(key) as WidgetZoneIndex;
+        const mergedZone = unmergeBounds.find((z) => z.id === id);
 
-          if (!mergedZone)
-            return acc;
+        if (!mergedZone)
+          return acc;
 
-          const isDefaultZone = id === defaultZone.id;
-          const isZone = id === zone.id;
-          const unsetAnchor = !isDefaultZone;
-          const filterOthers = isZone && keepSomeZonesMerged;
+        const isDefaultZone = id === defaultZone.id;
+        const isZone = id === zone.id;
+        const unsetAnchor = !isDefaultZone;
+        const filterOthers = isZone && keepSomeZonesMerged;
 
-          const filteredWidgets = model.props.zones[zone.props.id].widgets.filter((w) => {
-            if (filterOthers)
-              return w.id !== widgetId;
-            return w.id === id;
-          });
+        const filteredWidgets = model.props.zones[zone.props.id].widgets.filter((w) => {
+          if (filterOthers)
+            return w.id !== widgetId;
+          return w.id === id;
+        });
 
-          const isZoneOpen = filteredWidgets.some((w) => w.tabIndex > 0);
-          const widgets = isZoneOpen ? filteredWidgets : filteredWidgets.map((w, index) => {
-            const isFirstWidget = index === 0;
-            const isClosed = w.tabIndex < 1;
-            const tabIndex = isDefaultZone ? tabId : 1;
-            const openWidget = isFirstWidget && isClosed;
-            if (openWidget) {
-              return {
-                ...w,
-                tabIndex,
-              };
-            }
+        const isZoneOpen = filteredWidgets.some((w) => w.tabIndex > 0);
+        const widgets = isZoneOpen ? filteredWidgets : filteredWidgets.map((w, index) => {
+          const isFirstWidget = index === 0;
+          const isClosed = w.tabIndex < 1;
+          const tabIndex = isDefaultZone ? tabId : 1;
+          const openWidget = isFirstWidget && isClosed;
+          if (openWidget) {
+            return {
+              ...w,
+              tabIndex,
+            };
+          }
 
-            return w;
-          });
+          return w;
+        });
 
-          acc[id] = {
-            ...model.props.zones[id],
+        return {
+          ...acc,
+          [id]: {
+            ...acc[id],
             ...defaultZone.id === id ? {
               floating: {
                 bounds: floatingBounds,
@@ -287,11 +279,9 @@ export class StateManager {
             ...unsetAnchor ? { anchor: undefined } : {},
             bounds: mergedZone.bounds,
             widgets,
-          };
-
-          return acc;
-        }, {}),
-      },
+          },
+        };
+      }, model.props.zones),
       draggingWidget: {
         id: widgetId,
         tabIndex: tabId,
@@ -391,7 +381,6 @@ export class StateManager {
     const targetZone = model.target.zone;
     const draggingZone = draggingWidget.zone;
 
-    const zonesToUpdate: Partial<ZonesType> = {};
     const bounds = Rectangle.create(draggingZone.props.bounds).outerMergeWith(targetZone.props.bounds);
 
     const contentZone = model.getContentZone();
@@ -414,39 +403,41 @@ export class StateManager {
     let widgets: Widget[] = [];
     widgets = widgets.concat(...zoneWidgets);
 
-    for (const zone of alignedZones)
-      if (zone.equals(targetZone))
-        zonesToUpdate[zone.props.id] = {
-          ...model.props.zones[zone.props.id],
-          bounds,
-          floating: undefined,
-          widgets: [
-            ...widgets.map((w) => {
-              if (w.equals(draggingWidget.widget))
-                return {
-                  ...w.props,
-                };
-              return {
-                ...w.props,
-                tabIndex: -1,
-              };
-            }),
-          ],
-          anchor: draggingZone.defaultHorizontalAnchor,
-        };
-      else
-        zonesToUpdate[zone.props.id] = {
-          ...model.props.zones[zone.props.id],
-          floating: undefined, // dragging zone is merged and should not float anymore
-          widgets: [], // dragging zone is merged and should contain no widgets
-        };
-
     return {
       ...model.props,
-      zones: {
-        ...model.props.zones,
-        ...zonesToUpdate,
-      },
+      zones: alignedZones.reduce((acc, zone) => {
+        if (zone.equals(targetZone))
+          return {
+            ...acc,
+            [zone.props.id]: {
+              ...acc[zone.props.id],
+              bounds,
+              floating: undefined,
+              widgets: [
+                ...widgets.map((w) => {
+                  if (w.equals(draggingWidget.widget))
+                    return {
+                      ...w.props,
+                    };
+                  return {
+                    ...w.props,
+                    tabIndex: -1,
+                  };
+                }),
+              ],
+              anchor: draggingZone.defaultHorizontalAnchor,
+            },
+          };
+
+        return {
+          ...acc,
+          [zone.props.id]: {
+            ...acc[zone.props.id],
+            floating: undefined, // dragging zone is merged and should not float anymore
+            widgets: [], // dragging zone is merged and should contain no widgets
+          },
+        };
+      }, model.props.zones),
       draggingWidget: undefined,
     };
   }

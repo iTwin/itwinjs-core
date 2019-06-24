@@ -164,7 +164,7 @@ class WebWorkerProxy {
     wo.msgId = this._nextMsgId++;
     const message = new RequestMessage(wo.msgId, wo.operation, wo.operands);
     this._queue.set(wo.msgId, wo);
-    this._worker.postMessage(message, wo.transferable);
+    this._worker.postMessage(message, wo.transferable ? wo.transferable : []);
   }
 
   // gets the queue size.

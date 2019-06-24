@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to TypeScript 3.5",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "shaun.sewall@bentley.com"
+}

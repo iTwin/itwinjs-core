@@ -147,7 +147,7 @@ export class MemoryTracker {
   }
 
   private addSelector(parent: HTMLElement): void {
-    const entries: Array<ComboBoxEntry<MemIndex>> = [];
+    const entries: ComboBoxEntry[] = [];
     for (let i = MemIndex.None; i < MemIndex.COUNT; i++)
       entries.push({ name: memLabels[i + 1], value: i });
 

@@ -27,6 +27,7 @@
     "sourceMap": true,
     "declarationMap": true,
     "jsx": "react",
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true
   }
 }

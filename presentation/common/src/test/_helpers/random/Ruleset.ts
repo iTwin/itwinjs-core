@@ -6,22 +6,21 @@
 const RulesetSchema = require("../../../../Ruleset.schema.json");
 import { Ruleset } from "../../../presentation-common";
 
-const hasIndexSignature = (o: any): o is { [key: string]: string } => {
-  return typeof o === "object";
+type IndexedType = { [key: number]: any } | { [key: string]: any };
+const hasIndexSignature = (obj: any): obj is IndexedType => {
+  return typeof obj === "object" || Array.isArray(obj);
 };
-const fixEmptyStrings = <T extends { [key: string]: unknown }>(obj: T) => {
-  if (Array.isArray(obj) || hasIndexSignature(obj)) {
-    for (const key in obj) {
-      if (!obj.hasOwnProperty(key))
-        continue;
-      const value: any = obj[key];
-      if (typeof value === "object" || Array.isArray(value)) {
-        fixEmptyStrings(value);
-      } else if (typeof value === "string") {
-        obj[key] = value.trim();
-        if (obj[key] === "")
-          obj[key] = "was empty string";
-      }
+const fixEmptyStrings = (obj: any) => {
+  for (const key in obj) {
+    if (!obj.hasOwnProperty(key))
+      continue;
+    const value: unknown = obj[key];
+    if (hasIndexSignature(value)) {
+      fixEmptyStrings(value);
+    } else if (typeof value === "string") {
+      obj[key] = value.trim();
+      if (obj[key] === "")
+        obj[key] = "was empty string";
     }
   }
 };

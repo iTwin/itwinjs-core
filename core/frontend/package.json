@@ -6,7 +6,7 @@
   "typings": "lib/imodeljs-frontend",
   "license": "MIT",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson %TYPEDOC_THEME% --excludes=webgl/**/*,**/primitives",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-frontend",
@@ -89,7 +89,7 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "webpack": "^4.20.2"
   },
   "//dependencies": [

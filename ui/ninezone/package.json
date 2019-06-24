@@ -10,7 +10,7 @@
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "build:watch": "tsc -w",
     "clean": "rimraf lib out demo/lib package-deps.json",
     "cover": "nyc npm test",
@@ -114,7 +114,7 @@
     "tslint-etc": "^1.5.2",
     "tslint-loader": "^3.6.0",
     "typemoq": "^2.1.0",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "url-loader": "^1.0.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.0",

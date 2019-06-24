@@ -100,7 +100,7 @@ export class SavedViewPicker extends ToolBarDropDown {
 
     this._element.appendChild(document.createElement("hr"));
 
-    const entries: Array<RadioBoxEntry<string>> = [];
+    const entries: RadioBoxEntry[] = [];
     for (const view of this._views) {
       entries.push({
         label: view.name,

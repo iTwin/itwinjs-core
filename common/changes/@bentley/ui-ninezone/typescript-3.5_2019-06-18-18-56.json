@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to TypeScript 3.5",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "shaun.sewall@bentley.com"
+}

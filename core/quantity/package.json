@@ -7,7 +7,7 @@
   "typings": "lib/imodeljs-quantity",
   "repository": {},
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf lib package-deps.json .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
@@ -54,7 +54,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2"
+    "typescript": "~3.5.2"
   },
   "dependencies": {},
   "peerDependencies": {

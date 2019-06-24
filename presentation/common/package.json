@@ -20,7 +20,7 @@
   "main": "lib/presentation-common.js",
   "typings": "lib/presentation-common",
   "scripts": {
-    "build": "npm run ruleset-json-schema && npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "npm run ruleset-json-schema && npm run extract && buildIModelJsModule",
     "build:watch": "npm run ruleset-json-schema && tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
@@ -82,7 +82,7 @@
     "tslint-consistent-codestyle": "^1.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "typescript-json-schema": "^0.28.0",
     "yargs": "^12.0.0"
   },

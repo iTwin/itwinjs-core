@@ -6,7 +6,7 @@
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
@@ -59,7 +59,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2"
+    "typescript": "~3.5.2"
   },
   "dependencies": {},
   "nyc": {

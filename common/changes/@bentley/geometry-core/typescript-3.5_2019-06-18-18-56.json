@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to TypeScript 3.5",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "shaun.sewall@bentley.com"
+}

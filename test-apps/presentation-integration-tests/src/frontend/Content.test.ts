@@ -53,7 +53,7 @@ describe("Content", () => {
       initialize(500);
       const realRace = Promise.race;
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        values.push(new Promise((_resolve, reject) => { reject("something"); }));
+        (values as any).push(new Promise((_resolve, reject) => { reject("something"); }));
         return realRace.call(Promise, values);
       });
     });

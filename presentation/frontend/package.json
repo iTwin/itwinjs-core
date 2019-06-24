@@ -21,7 +21,7 @@
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
   "scripts": {
-    "build": "npm run extract && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "npm run extract && buildIModelJsModule",
     "build:watch": "tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
@@ -95,7 +95,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {

@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "lib/frontend-devtools.js",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=frontend-devtools",
@@ -55,7 +55,8 @@
     "@bentley/build-tools": "1.1.0-dev.20",
     "@bentley/webpack-tools": "1.1.0-dev.20",
     "@types/node": "10.14.1",
-    "typescript": "~3.2.2",
+    "rimraf": "^2.6.2",
+    "typescript": "~3.5.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2"
   },

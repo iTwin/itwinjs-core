@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to TypeScript 3.5",
+      "packageName": "@bentley/imodeljs-webserver",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "shaun.sewall@bentley.com"
+}
