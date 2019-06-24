@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

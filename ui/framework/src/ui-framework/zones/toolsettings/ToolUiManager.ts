@@ -98,7 +98,19 @@ export class ToolUiManager {
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
-  public static get toolSettingsProperties(): ToolSettingsPropertyRecord[] { return ToolUiManager._toolSettings; }
+  public static get toolSettingsProperties(): ToolSettingsPropertyRecord[] {
+    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForCachedProperties) {
+      // once the activeTool has been set in frontend we can get the tool properties directly from the tool and not from the initial properties set in
+      // cache when the tool was activate but not yet set as active tool.
+      // TODO: have Brien check top see if activeToolChanged.raiseEvent could be called after setPrimitiveTool(newTool);
+      ToolUiManager._toolSettings = [];
+      const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
+      if (properties)
+        return properties;
+    }
+
+    return ToolUiManager._toolSettings;
+  }
 
   /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties. */
   public static get useDefaultToolSettingsProvider(): boolean { return ToolUiManager._useDefaultToolSettingsProvider; }
