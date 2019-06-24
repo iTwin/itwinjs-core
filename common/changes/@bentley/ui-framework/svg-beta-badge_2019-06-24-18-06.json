@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added *.svg to .npmignore file",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}
