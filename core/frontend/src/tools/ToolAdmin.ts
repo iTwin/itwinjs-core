@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration, BeEvent, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, BeTimePoint, AbandonedError } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -19,7 +19,10 @@ import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings } from "./Tool";
+import {
+  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled,
+  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings,
+} from "./Tool";
 import { ViewTool } from "./ViewTool";
 
 /** @public */
@@ -30,59 +33,38 @@ export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend =
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
-/** Class that assists in maintaining the state of tool settings properties for the current session
- *  @internal
+/** Class that maintains the state of tool settings properties for the current session
+ * @internal
  */
 export class ToolSettingsState {
-
-  /** Initialize single tool settings value
-   * @internal
-   */
+  /** Initialize single tool settings value */
   public initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
-    if (item) {
-      const key = `${toolId}:${item.propertyName}`;
-      const savedValue = window.sessionStorage.getItem(key);
-      if (savedValue) {
-        const readValue = JSON.parse(savedValue) as ToolSettingsValue;
-        // set the primitive value to the saved value - note: tool settings only support primitive values.
-        item.value.value = readValue.value;
-        if (readValue.hasDisplayValue)
-          item.value.displayValue = readValue.displayValue;
-      }
+    const key = `${toolId}:${item.propertyName}`;
+    const savedValue = window.sessionStorage.getItem(key);
+    if (null !== savedValue) {
+      const readValue = JSON.parse(savedValue) as ToolSettingsValue;
+      // set the primitive value to the saved value - note: tool settings only support primitive values.
+      item.value.value = readValue.value;
+      if (readValue.hasDisplayValue)
+        item.value.displayValue = readValue.displayValue;
     }
   }
 
-  /** Initialize an array of tool settings values
-   *  @internal
-   */
+  /** Initialize an array of tool settings values */
   public initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    if (tsProps && tsProps.length) {
-      tsProps.forEach((item: ToolSettingsPropertyItem) => {
-        this.initializeToolSettingProperty(toolId, item);
-      });
-    }
+    tsProps.forEach((item: ToolSettingsPropertyItem) => this.initializeToolSettingProperty(toolId, item));
   }
 
-  /** Save single tool settings value
-   * @internal
-   */
+  /** Save single tool settings value */
   public saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
-    if (item) {
-      const key = `${toolId}:${item.propertyName}`;
-      const objectAsString = JSON.stringify(item.value);
-      window.sessionStorage.setItem(key, objectAsString);
-    }
+    const key = `${toolId}:${item.propertyName}`;
+    const objectAsString = JSON.stringify(item.value);
+    window.sessionStorage.setItem(key, objectAsString);
   }
 
-  /** Save an array of tool settings values
-   * @internal
-   */
+  /** Save an array of tool settings values */
   public saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    if (tsProps && tsProps.length) {
-      tsProps.forEach((item: ToolSettingsPropertyItem) => {
-        this.saveToolSettingProperty(toolId, item);
-      });
-    }
+    tsProps.forEach((item: ToolSettingsPropertyItem) => this.saveToolSettingProperty(toolId, item));
   }
 }
 
@@ -920,7 +902,12 @@ export class ToolAdmin {
       return;   // we're inside a pickable decoration, don't send event to tool
     }
 
-    await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
+    try {
+      await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
+    } catch (error) {
+      if (error instanceof AbandonedError) return; // expected, not a problem. Just ignore this motion and return.
+      throw error; // unknown error
+    }
 
     current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);

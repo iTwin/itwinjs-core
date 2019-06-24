@@ -38,6 +38,7 @@
     "Linestyle",
     "Memoized",
     "Millis",
+    "Mutex",
     "NEEDSWORK",
     "Nums",
     "Obscurable",

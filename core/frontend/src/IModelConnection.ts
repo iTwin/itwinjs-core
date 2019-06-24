@@ -5,38 +5,28 @@
 /** @module IModelConnection */
 
 import {
-  assert,
-  BeEvent,
-  BentleyStatus,
-  BeTimePoint,
-  DbResult,
-  Dictionary,
-  dispose,
-  Id64,
-  Id64Arg,
-  Id64Set,
-  Id64String,
-  Logger,
-  OpenMode,
-  TransientIdSequence,
+  assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Set,
+  Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, ImageSourceFormat, IModel, IModelError,
-  IModelNotFoundResponse, IModelReadRpcInterface, IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface,
-  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
-  SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface, IModelProps, QueryResponse, QueryPriority, QueryQuota, QueryLimit, QueryResponseStatus,
+  AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus,
+  ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelReadRpcInterface,
+  IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, ModelProps, ModelQueryParams, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
+  RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
+  ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
+import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
-import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
-import { ViewState } from "./ViewState";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTree } from "./tile/TileTree";
+import { ViewState } from "./ViewState";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -338,7 +328,7 @@ export class IModelConnection extends IModel {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
       return row.nRows;
     }
-    Logger.logTrace(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
+    Logger.logError(loggerCategory, "IModelConnection.queryRowCount", () => ({ ...this.iModelToken, ecsql, bindings }));
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
@@ -366,7 +356,6 @@ export class IModelConnection extends IModel {
    * @internal
    */
   public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
-    Logger.logTrace(loggerCategory, "IModelConnection.queryRows", () => ({ ...this.iModelToken, ecsql, bindings, limit, quota, priority }));
     return IModelReadRpcInterface.getClient().queryRows(this.iModelToken.toJSON(), ecsql, bindings, limit, quota, priority);
   }
 
@@ -429,7 +418,6 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem updating the extents.
    */
   public async updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void> {
-    Logger.logTrace(loggerCategory, "IModelConnection.updateProjectExtents", () => ({ ...this.iModelToken, newExtents }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().updateProjectExtents(this.iModelToken.toJSON(), newExtents.toJSON());
@@ -440,7 +428,6 @@ export class IModelConnection extends IModel {
    * @throws [[IModelError]] if the IModelConnection is read-only or there is a problem saving changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    Logger.logTrace(loggerCategory, "IModelConnection.saveChanges", () => ({ ...this.iModelToken, description }));
     if (OpenMode.ReadWrite !== this.openMode)
       return Promise.reject(new IModelError(IModelStatus.ReadOnly, "IModelConnection was opened read-only", Logger.logError));
     return IModelWriteRpcInterface.getClient().saveChanges(this.iModelToken.toJSON(), description);
@@ -469,11 +456,17 @@ export class IModelConnection extends IModel {
    */
   public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken.toJSON()); }
 
-  /** Request a snap from the backend. */
-  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return IModelReadRpcInterface.getClient().requestSnap(this.iModelToken.toJSON(), IModelApp.sessionId, props); }
+  private _snapRpc = new OneAtATimeAction<SnapResponseProps>((props: SnapRequestProps) => IModelReadRpcInterface.getClient().requestSnap(this.iModelToken.toJSON(), IModelApp.sessionId, props));
+  /** Request a snap from the backend.
+   * @note callers must gracefully handle Promise rejected with AbandonedError
+   */
+  public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> { return this._snapRpc.request(props); }
 
-  /** Request a tooltip from the backend.  */
-  public async getToolTipMessage(id: string): Promise<string[]> { return IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken.toJSON(), id); }
+  private _toolTipRpc = new OneAtATimeAction<string[]>((id: string) => IModelReadRpcInterface.getClient().getToolTipMessage(this.iModelToken.toJSON(), id));
+  /** Request a tooltip from the backend.
+   * @note callers must gracefully handle Promise rejected with AbandonedError
+   */
+  public async getToolTipMessage(id: Id64String): Promise<string[]> { return this._toolTipRpc.request(id); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates

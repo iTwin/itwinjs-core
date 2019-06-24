@@ -3107,7 +3107,7 @@ export class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     readonly geoServices: GeoServices;
-    getToolTipMessage(id: string): Promise<string[]>;
+    getToolTipMessage(id: Id64String): Promise<string[]>;
     // @alpha
     readonly hilited: HiliteSet;
     // @alpha

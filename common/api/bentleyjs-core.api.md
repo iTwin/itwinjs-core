@@ -4,6 +4,10 @@
 
 ```ts
 
+// @beta (undocumented)
+export class AbandonedError extends Error {
+}
+
 // @beta
 export function assert(condition: boolean, msg?: string): void;
 
@@ -961,6 +965,14 @@ export class LRUDictionary<K, V> extends LRUCache<K, V> {
 export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
+
+// @beta
+export class OneAtATimeAction<T> {
+    constructor(run: (...args: any[]) => Promise<T>);
+    // (undocumented)
+    msg: string;
+    request(...args: any[]): Promise<T>;
+    }
 
 // @public
 export enum OpenMode {
