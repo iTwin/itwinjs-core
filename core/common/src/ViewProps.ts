@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows } from "./Render";
+import { AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows, ViewFlags } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
@@ -74,8 +74,6 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** @internal This doesn't belong here - it is not persistent. */
-  contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
   /** If true, show grids. */
@@ -86,11 +84,17 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't show materials. */
   noMaterial?: boolean;
-  /** If true, don't use camera lights. */
+  /** If true, don't use camera lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noCameraLights?: boolean;
-  /** If true, don't use source lights. */
+  /** If true, don't use source lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSourceLights?: boolean;
-  /** If true, don't use solar lights. */
+  /** If true, don't use solar lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSolarLight?: boolean;
   /** If true, show visible edges. */
   visEdges?: boolean;

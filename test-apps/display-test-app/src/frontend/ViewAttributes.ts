@@ -450,7 +450,7 @@ export class ViewAttributes {
   private addLightingToggle(parent: HTMLElement): void {
     const elems = this.addCheckbox("Lights", (enabled: boolean) => {
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.solarLight = vf.cameraLights = vf.sourceLights = enabled;
+      vf.lighting = enabled;
       this._vp.viewFlags = vf;
       this.sync();
     }, parent);
@@ -460,7 +460,7 @@ export class ViewAttributes {
       const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
       elems.div.style.display = visible ? "block" : "none";
       if (visible)
-        elems.checkbox.checked = vf.solarLight || vf.cameraLights || vf.sourceLights;
+        elems.checkbox.checked = vf.lighting;
     };
 
     this._updates.push(update);

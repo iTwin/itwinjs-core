@@ -131,7 +131,7 @@ describe("Render mirukuru", () => {
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
       const vf = vp.view.viewFlags;
-      vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.lighting = false;
       vp.invalidateRenderPlan();
       await vp.drawFrame();
 
@@ -206,7 +206,7 @@ describe("Render mirukuru", () => {
       const elemId = "0x29";
       const subcatId = "0x18";
       const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
 
       type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
@@ -332,7 +332,7 @@ describe("Render mirukuru", () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
       const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
       vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();

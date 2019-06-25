@@ -115,7 +115,6 @@ describe("ViewState", () => {
     vf.cameraLights = !vf.cameraLights;
     vf.clipVolume = !vf.clipVolume;
     vf.constructions = !vf.constructions;
-    vf.continuousRendering = !vf.continuousRendering;
     vf.dimensions = !vf.dimensions;
     vf.edgeMask = vf.edgeMask === 0 ? 1 : 0;
     vf.fill = !vf.fill;
@@ -197,7 +196,6 @@ describe("ViewState", () => {
     assert.equal(vs0.viewFlags.cameraLights, vs1.viewFlags.cameraLights, "clone should copy viewFlags.cameraLights");
     assert.equal(vs0.viewFlags.clipVolume, vs1.viewFlags.clipVolume, "clone should copy viewFlags.clipVolume");
     assert.equal(vs0.viewFlags.constructions, vs1.viewFlags.constructions, "clone should copy viewFlags.constructions");
-    // This flag is hidden - assert.equal(vs0.viewFlags.continuousRendering, vs1.viewFlags.continuousRendering, "clone should copy viewFlags.continuousRendering");
     assert.equal(vs0.viewFlags.dimensions, vs1.viewFlags.dimensions, "clone should copy viewFlags.dimensions");
     // This flag is hidden - assert.equal(vs0.viewFlags.edgeMask, vs1.viewFlags.edgeMask, "clone should copy viewFlags.edgeMask"); //
     assert.equal(vs0.viewFlags.fill, vs1.viewFlags.fill, "clone should copy viewFlags.fill");

@@ -254,9 +254,7 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     viewFlags.renderMode = RenderMode.SmoothShade;
     viewFlags.transparency = false;
     viewFlags.textures = false;
-    viewFlags.sourceLights = false;
-    viewFlags.cameraLights = false;
-    viewFlags.solarLight = false;
+    viewFlags.lighting = false;
     viewFlags.shadows = false;
     viewFlags.noGeometryMap = true;
     viewFlags.monochrome = false;

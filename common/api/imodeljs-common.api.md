@@ -5041,6 +5041,8 @@ export namespace ViewFlag {
         // (undocumented)
         overrideAll(flags?: ViewFlags): void;
         // (undocumented)
+        setApplyLighting(val: boolean): void;
+        // (undocumented)
         setEdgeMask(val: number): void;
         // (undocumented)
         setForceSurfaceDiscard(val: boolean): void;
@@ -5054,8 +5056,6 @@ export namespace ViewFlag {
         setRenderMode(val: RenderMode): void;
         // (undocumented)
         setShowBackgroundMap(val: boolean): void;
-        // (undocumented)
-        setShowCameraLights(val: boolean): void;
         // (undocumented)
         setShowClipVolume(val: boolean): void;
         // (undocumented)
@@ -5073,10 +5073,6 @@ export namespace ViewFlag {
         // (undocumented)
         setShowShadows(val: boolean): void;
         // (undocumented)
-        setShowSolarLight(val: boolean): void;
-        // (undocumented)
-        setShowSourceLights(val: boolean): void;
-        // (undocumented)
         setShowStyles(val: boolean): void;
         // (undocumented)
         setShowTextures(val: boolean): void;
@@ -5092,43 +5088,37 @@ export namespace ViewFlag {
     // (undocumented)
     export const enum PresenceFlag {
         // (undocumented)
-        kBackgroundMap = 23,
+        kBackgroundMap = 21,
         // (undocumented)
-        kCameraLights = 14,
+        kClipVolume = 15,
         // (undocumented)
-        kClipVolume = 17,
-        // (undocumented)
-        kConstructions = 18,
-        // (undocumented)
-        kContinuousRendering = 7,
+        kConstructions = 16,
         // (undocumented)
         kDimensions = 2,
         // (undocumented)
-        kEdgeMask = 22,
+        kEdgeMask = 20,
         // (undocumented)
         kFill = 8,
         // (undocumented)
-        kForceSurfaceDiscard = 24,
+        kForceSurfaceDiscard = 22,
         // (undocumented)
-        kGeometryMap = 20,
+        kGeometryMap = 18,
         // (undocumented)
         kHiddenEdges = 12,
         // (undocumented)
-        kHlineMaterialColors = 21,
+        kHlineMaterialColors = 19,
+        // (undocumented)
+        kLighting = 13,
         // (undocumented)
         kMaterials = 10,
         // (undocumented)
-        kMonochrome = 19,
+        kMonochrome = 17,
         // (undocumented)
         kPatterns = 3,
         // (undocumented)
         kRenderMode = 0,
         // (undocumented)
-        kShadows = 16,
-        // (undocumented)
-        kSolarLight = 15,
-        // (undocumented)
-        kSourceLights = 13,
+        kShadows = 14,
         // (undocumented)
         kStyles = 5,
         // (undocumented)
@@ -5137,6 +5127,8 @@ export namespace ViewFlag {
         kTextures = 9,
         // (undocumented)
         kTransparency = 6,
+        // (undocumented)
+        kUnused = 7,
         // (undocumented)
         kVisibleEdges = 11,
         // (undocumented)
@@ -5150,8 +5142,6 @@ export interface ViewFlagProps {
     ambientOcclusion?: boolean;
     backgroundMap?: boolean;
     clipVol?: boolean;
-    // @internal
-    contRend?: boolean;
     // @internal
     edgeMask?: number;
     forceSurfaceDiscard?: boolean;
@@ -5186,8 +5176,6 @@ export class ViewFlags {
     // (undocumented)
     clone(out?: ViewFlags): ViewFlags;
     constructions: boolean;
-    // @internal
-    continuousRendering: boolean;
     // (undocumented)
     static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags;
     dimensions: boolean;
@@ -5206,6 +5194,7 @@ export class ViewFlags {
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
     hLineMaterialColors: boolean;
+    lighting: boolean;
     materials: boolean;
     monochrome: boolean;
     // @internal

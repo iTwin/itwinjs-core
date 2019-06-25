@@ -240,7 +240,7 @@ export namespace Attachments {
 
       // ###TODO: Why do 2d views have camera lights enabled?
       this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
-      this._viewFlagOverrides.setShowCameraLights(false);
+      this._viewFlagOverrides.setApplyLighting(false);
     }
 
     public get maxDepth() { return 1; }
