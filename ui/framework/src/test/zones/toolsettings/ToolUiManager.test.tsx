@@ -67,14 +67,23 @@ describe("ToolUiManager", () => {
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
     toolSettingsProperties.push(new ToolSettingsPropertyRecord(enumValue.clone() as PrimitiveValue, enumDescription, { rowPriority: 1, columnIndex: 3 }));
-    ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
+    ToolUiManager.initializeToolSettingsData(toolSettingsProperties, testToolId, testToolLabel, testToolDescription);
+
+    // override the property getter to return the properties needed for the test
+    const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(ToolUiManager, "toolSettingsProperties")!;
+    Object.defineProperty(ToolUiManager, "toolSettingsProperties", {
+      get: () => toolSettingsProperties,
+    });
 
     expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.true;
     expect(ToolUiManager.toolSettingsProperties.length).to.equal(toolSettingsProperties.length);
     expect(ToolUiManager.activeToolLabel).to.eq(testToolLabel);
     expect(ToolUiManager.activeToolDescription).to.eq(testToolDescription);
 
-    ToolUiManager.clearCachedProperties();
+    // restore the overriden property getter
+    Object.defineProperty(ToolUiManager, "toolSettingsProperties", propertyDescriptorToRestore);
+
+    ToolUiManager.clearToolSettingsData();
     expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.false;
     expect(ToolUiManager.toolSettingsProperties).to.be.empty;
     expect(ToolUiManager.activeToolLabel).to.be.empty;
@@ -83,7 +92,7 @@ describe("ToolUiManager", () => {
 
   it("should handle no tool settings", () => {
     const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
-    const result = ToolUiManager.cacheToolSettingsProperties(toolSettingsProperties);
+    const result = ToolUiManager.initializeToolSettingsData(toolSettingsProperties);
     expect(result).to.be.false;
   });
 

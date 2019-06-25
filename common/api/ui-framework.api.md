@@ -3364,12 +3364,12 @@ export interface TooltipProps {
 export class ToolUiManager {
     static readonly activeToolDescription: string;
     static activeToolLabel: string;
-    static cachePropertiesForTool(tool: InteractiveTool): void;
-    static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
-    static clearCachedProperties(): void;
+    static clearToolSettingsData(): void;
     static initialize(): void;
+    static initializeDataForTool(tool: InteractiveTool): void;
+    static initializeToolSettingsData(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
     static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
-    static readonly toolIdForCachedProperties: string;
+    static readonly toolIdForToolSettings: string;
     static readonly toolSettingsProperties: ToolSettingsPropertyRecord[];
     static useDefaultToolSettingsProvider: boolean;
     }

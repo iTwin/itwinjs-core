@@ -35,15 +35,14 @@ export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPro
  */
 export class ToolUiManager {
   private static _useDefaultToolSettingsProvider = false;
-  private static _toolSettings: ToolSettingsPropertyRecord[] = [];
-  private static _toolIdForCachedProperties: string = "";
+  private static _toolIdForToolSettings: string = "";
   private static _activeToolLabel: string = "";
   private static _activeToolDescription: string = "";
 
   private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
-    // istanbul ignore if
-    if (toolId !== ToolUiManager._toolIdForCachedProperties) {
-      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForCachedProperties}}`);
+    // istanbul ignore next
+    if (toolId !== ToolUiManager._toolIdForToolSettings) {
+      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForToolSettings}}`);
       return;
     }
 
@@ -52,23 +51,23 @@ export class ToolUiManager {
 
   /** Initializes the ToolUiManager */
   public static initialize() {
+    // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.toolSettingsChangeHandler = ToolUiManager.syncToolSettingsProperties;
     }
   }
 
   /** clear cached Tool Settings properties. */
-  public static clearCachedProperties() {
-    ToolUiManager._toolSettings = [];
+  public static clearToolSettingsData() {
     ToolUiManager.useDefaultToolSettingsProvider = false;
     ToolUiManager._activeToolLabel = "";
     ToolUiManager._activeToolDescription = "";
-    ToolUiManager._toolIdForCachedProperties = "";
+    ToolUiManager._toolIdForToolSettings = "";
   }
 
   /** Cache Tool Settings properties */
-  public static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
-    ToolUiManager.clearCachedProperties();
+  public static initializeToolSettingsData(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean {
+    ToolUiManager.clearToolSettingsData();
     // istanbul ignore else
     if (toolLabel)
       ToolUiManager._activeToolLabel = toolLabel;
@@ -81,35 +80,29 @@ export class ToolUiManager {
     if (toolSettingsProperties && toolSettingsProperties.length > 0) {
       // istanbul ignore else
       if (toolId)
-        ToolUiManager._toolIdForCachedProperties = toolId;
+        ToolUiManager._toolIdForToolSettings = toolId;
 
       ToolUiManager._useDefaultToolSettingsProvider = true;
-      ToolUiManager._toolSettings = toolSettingsProperties;
       return true;
     }
     return false;
   }
 
-  /** Cache Tool Settings properties for the specified tool. The tool specified should be the active tool, since only one active tool is support
-   * the cache only ever contains the properties of one tool.
+  /** Set of data used in Tool Settings for the specified tool. The tool specified should be the "active" tool.
    */
-  public static cachePropertiesForTool(tool: InteractiveTool) {
-    ToolUiManager.cacheToolSettingsProperties(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
+  public static initializeDataForTool(tool: InteractiveTool) {
+    ToolUiManager.initializeToolSettingsData(tool.supplyToolSettingsProperties(), tool.toolId, tool.flyover, tool.description);
   }
 
   /** Returns the toolSettings properties that can be used to populate the tool settings widget. */
   public static get toolSettingsProperties(): ToolSettingsPropertyRecord[] {
-    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForCachedProperties) {
-      // once the activeTool has been set in frontend we can get the tool properties directly from the tool and not from the initial properties set in
-      // cache when the tool was activate but not yet set as active tool.
-      // TODO: have Brien check top see if activeToolChanged.raiseEvent could be called after setPrimitiveTool(newTool);
-      ToolUiManager._toolSettings = [];
+    if (IModelApp.toolAdmin && IModelApp.toolAdmin.activeTool && IModelApp.toolAdmin.activeTool.toolId === ToolUiManager._toolIdForToolSettings) {
       const properties = IModelApp.toolAdmin.activeTool.supplyToolSettingsProperties();
       if (properties)
         return properties;
     }
 
-    return ToolUiManager._toolSettings;
+    return [];
   }
 
   /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties. */
@@ -133,8 +126,8 @@ export class ToolUiManager {
   /** Gets the Id of the active tool. If a tool is not active, blank is returned.
    * @return  Id of the active tool, or blank if one is not active.
    */
-  public static get toolIdForCachedProperties(): string {
-    return ToolUiManager._toolIdForCachedProperties;
+  public static get toolIdForToolSettings(): string {
+    return ToolUiManager._toolIdForToolSettings;
   }
 
 }

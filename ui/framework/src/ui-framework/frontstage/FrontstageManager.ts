@@ -128,11 +128,11 @@ export class FrontstageManager {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
-        // make sure toolsettings properties are cached before creating ToolInformation
-        ToolUiManager.clearCachedProperties();
+        // make sure tool settings properties are cached before creating ToolInformation
+        ToolUiManager.clearToolSettingsData();
         // istanbul ignore else
         if (tool instanceof InteractiveTool)
-          ToolUiManager.cachePropertiesForTool(tool);
+          ToolUiManager.initializeDataForTool(tool);
 
         // if the tool data is not already cached then see if there is data to cache
         FrontstageManager.ensureToolInformationIsSet(tool.toolId);

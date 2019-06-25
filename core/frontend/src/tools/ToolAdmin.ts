@@ -1296,10 +1296,11 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.setInputCollector(newTool);
+    // it is important to raise event after setInputCollector is called
+    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1347,7 +1348,6 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.All;
@@ -1357,6 +1357,8 @@ export class ToolAdmin {
 
     this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setViewTool(newTool);
+    // it is important to raise event after setViewTool is called
+    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1380,7 +1382,6 @@ export class ToolAdmin {
     this.exitInputCollector();
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
     this.setIncompatibleViewportCursor(true); // Don't restore this
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
@@ -1390,11 +1391,12 @@ export class ToolAdmin {
     IModelApp.accuDraw.onPrimitiveToolInstall();
     IModelApp.accuSnap.onStartTool();
 
-    if (undefined === newTool)
-      return;
-
-    this.setCursor(IModelApp.viewManager.crossHairCursor);
-    this.setPrimitiveTool(newTool);
+    if (undefined !== newTool) {
+      this.setCursor(IModelApp.viewManager.crossHairCursor);
+      this.setPrimitiveTool(newTool);
+    }
+    // it is important to raise event after setPrimitiveTool is called
+    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.

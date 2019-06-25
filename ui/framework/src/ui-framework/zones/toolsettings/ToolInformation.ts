@@ -29,7 +29,7 @@ export class ToolInformation {
       if (ConfigurableUiManager.isControlRegistered(this.toolId)) {
         provider = ConfigurableUiManager.createControl(this.toolId, this.toolId) as ToolUiProvider;
       } else {
-        if (ToolUiManager.useDefaultToolSettingsProvider && this.toolId === ToolUiManager.toolIdForCachedProperties)
+        if (ToolUiManager.useDefaultToolSettingsProvider && this.toolId === ToolUiManager.toolIdForToolSettings)
           provider = ConfigurableUiManager.createControl("DefaultToolSettings", this.toolId) as ToolUiProvider;
       }
       // istanbul ignore else

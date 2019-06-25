@@ -104,7 +104,7 @@ export class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
-    ToolUiManager.clearCachedProperties();
+    ToolUiManager.clearToolSettingsData();
     SyncUiEventDispatcher.setTimeoutPeriod(0); // disables non-immediate event processing.
   }
 
