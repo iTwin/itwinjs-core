@@ -637,7 +637,7 @@ export class Matrix3d implements BeJSONFunctions {
   public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, error: boolean } {
 
     const result = { axis: Vector3d.unitZ(), angle: Angle.createRadians(0), error: true };
-    if (this.isIdentity()) {
+    if (this.isIdentity) {
       result.error = false;
       return result;
     }
