@@ -19,7 +19,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile } from "./tile/Tile";
-import { TileLoader, TileTree } from "./tile/TileTree";
+import { TileLoader, TileTree, TileTreeSet } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
@@ -883,7 +883,7 @@ export namespace Attachments {
       return view.getExtents().x / placement.bbox.xLength();
     }
 
-    public discloseTileTrees(trees: Set<TileTree>): void {
+    public discloseTileTrees(trees: TileTreeSet): void {
       // ###TODO: An Attachment.Tree is *NOT* owned by a TileTree.Owner. It should be.
       // We disclose it for purposese of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
       if (undefined !== this._tree)
@@ -956,10 +956,10 @@ export namespace Attachments {
   export class Attachment2d extends Attachment {
     public treeRef?: TileTree.Reference;
 
-    public discloseTileTrees(trees: Set<TileTree>): void {
+    public discloseTileTrees(trees: TileTreeSet): void {
       super.discloseTileTrees(trees);
       if (undefined !== this.treeRef)
-        this.treeRef.discloseTileTrees(trees);
+        trees.disclose(this.treeRef);
     }
 
     public constructor(props: ViewAttachmentProps, view: ViewState2d) {
@@ -986,11 +986,11 @@ export namespace Attachments {
 
     public get is2d(): boolean { return false; }
 
-    public discloseTileTrees(trees: Set<TileTree>): void {
+    public discloseTileTrees(trees: TileTreeSet): void {
       super.discloseTileTrees(trees);
       const tree = this._tree as Tree3d;
       if (undefined !== tree)
-        tree.viewport.discloseTileTrees(trees);
+        trees.disclose(tree.viewport);
     }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
@@ -1111,10 +1111,10 @@ export class SheetViewState extends ViewState2d {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: Set<TileTree>): void {
+  public discloseTileTrees(trees: TileTreeSet): void {
     super.discloseTileTrees(trees);
     for (const attachment of this._attachments.list) {
-      attachment.discloseTileTrees(trees);
+      trees.disclose(attachment);
     }
   }
 

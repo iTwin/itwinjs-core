@@ -17,7 +17,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileLoader, BatchedTileIdMap } from "./TileTree";
+import { TileTree, TileTreeSet, TileLoader, BatchedTileIdMap } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -130,14 +130,14 @@ class RealityTreeReference extends TileTree.Reference {
     super.addToScene(context);
   }
 
-  public discloseTileTrees(trees: Set<TileTree>): void {
+  public discloseTileTrees(trees: TileTreeSet): void {
     super.discloseTileTrees(trees);
 
     if (undefined !== this._classifier)
-      this._classifier.discloseTileTrees(trees);
+      trees.disclose(this._classifier);
 
     if (undefined !== this._mapDrapeTree)
-      this._mapDrapeTree.discloseTileTrees(trees);
+      trees.disclose(this._mapDrapeTree);
   }
 
   public getToolTip(hit: HitDetail): HTMLElement | string | undefined {

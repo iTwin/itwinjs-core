@@ -26,7 +26,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, TileTreeSet } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport, ViewFrustum } from "./Viewport";
 
@@ -338,8 +338,8 @@ export abstract class ViewState extends ElementState {
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: Set<TileTree>): void {
-    this.forEachTileTreeRef((ref) => ref.discloseTileTrees(trees));
+  public discloseTileTrees(trees: TileTreeSet): void {
+    this.forEachTileTreeRef((ref) => trees.disclose(ref));
   }
 
   /** @internal */

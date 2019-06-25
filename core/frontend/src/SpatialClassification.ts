@@ -9,7 +9,7 @@ import { SceneContext } from "./ViewContext";
 import { BatchType, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelTile } from "./tile/IModelTile";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, TileTreeSet } from "./tile/TileTree";
 
 interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
   modelId: Id64String;
@@ -73,9 +73,9 @@ class ClassifierTreeReference extends TileTree.Reference {
     return this._owner;
   }
 
-  public discloseTileTrees(trees: Set<TileTree>): void {
+  public discloseTileTrees(trees: TileTreeSet): void {
     // NB: We do NOT call super because we don't use our tree if no classifier is active.
-    this._classifiedTree.discloseTileTrees(trees);
+    trees.disclose(this._classifiedTree);
 
     const classifier = this._classifiers.active;
     const classifierTree = undefined !== classifier ? this.treeOwner.tileTree : undefined;

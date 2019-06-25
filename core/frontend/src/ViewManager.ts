@@ -12,7 +12,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { TileTree } from "./tile/TileTree";
+import { TileTreeSet } from "./tile/TileTree";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -311,11 +311,11 @@ export class ViewManager {
     for (const entry of viewportsByIModel) {
       const iModel = entry[0];
       const viewports = entry[1];
-      const trees = new Set<TileTree>();
+      const trees = new TileTreeSet();
       for (const viewport of viewports)
         viewport.discloseTileTrees(trees);
 
-      iModel.tiles.purge(olderThan, trees);
+      iModel.tiles.purge(olderThan, trees.trees);
     }
   }
 

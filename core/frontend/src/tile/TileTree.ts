@@ -297,6 +297,32 @@ export abstract class TileLoader {
   public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
 }
 
+/** @internal */
+export interface TileTreeDiscloser {
+  discloseTileTrees: (trees: TileTreeSet) => void;
+}
+
+/** A set of TileTrees, populated by a call to a `discloseTileTrees` function on an object like a [[Viewport]], [[ViewState]], or [[TileTree.Reference]].
+ * @internal
+ */
+export class TileTreeSet {
+  private readonly _processed = new Set<TileTreeDiscloser>();
+  public readonly trees = new Set<TileTree>();
+
+  public add(tree: TileTree): void {
+    this.trees.add(tree);
+  }
+
+  public disclose(discloser: TileTreeDiscloser): void {
+    if (!this._processed.has(discloser)) {
+      this._processed.add(discloser);
+      discloser.discloseTileTrees(this);
+    }
+  }
+
+  public get size(): number { return this.trees.size; }
+}
+
 /** A hierarchical level-of-detail tree of 3d [[Tile]]s to be rendered in a [[Viewport]].
  * @internal
  */
@@ -410,7 +436,7 @@ export namespace TileTree {
      * Override this and call super if you have such auxiliary trees.
      * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
      */
-    public discloseTileTrees(trees: Set<TileTree>): void {
+    public discloseTileTrees(trees: TileTreeSet): void {
       const tree = this.treeOwner.tileTree;
       if (undefined !== tree)
         trees.add(tree);

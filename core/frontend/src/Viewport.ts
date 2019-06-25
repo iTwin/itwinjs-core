@@ -26,7 +26,7 @@ import { Decorations, GraphicList, Pixel, RenderMemory, RenderPlan, RenderTarget
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { Tile } from "./tile/Tile";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, TileTreeSet } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewStateUndo, ViewState2d } from "./ViewState";
@@ -1841,9 +1841,9 @@ export abstract class Viewport implements IDisposable {
   /** Disclose *all* TileTrees currently in use by this Viewport. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
    * @internal
    */
-  public discloseTileTrees(trees: Set<TileTree>): void {
-    this.forEachTiledGraphicsProviderTree((ref) => ref.discloseTileTrees(trees));
-    this.view.discloseTileTrees(trees);
+  public discloseTileTrees(trees: TileTreeSet): void {
+    this.forEachTiledGraphicsProviderTree((ref) => trees.disclose(ref));
+    trees.disclose(this.view);
   }
 
   /** @internal */
@@ -2738,9 +2738,9 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    const trees = new Set<TileTree>();
+    const trees = new TileTreeSet();
     this.discloseTileTrees(trees);
-    for (const tree of trees)
+    for (const tree of trees.trees)
       tree.collectStatistics(stats);
 
     // ###TODO: Want to record memory used by RenderTarget?

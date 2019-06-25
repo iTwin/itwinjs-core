@@ -323,6 +323,8 @@ internal;TiledGraphicsProvider
 internal;class TileLoader
 internal;TileTree 
 internal;TileTree
+internal;TileTreeDiscloser
+internal;TileTreeSet
 public;Tool
 public;ToolAdmin
 public;ToolList = ToolType[]

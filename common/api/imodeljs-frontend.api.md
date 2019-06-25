@@ -856,7 +856,7 @@ export namespace Attachments {
         static readonly DEBUG_BOUNDING_BOX_COLOR: ColorDef;
         debugDrawBorder(context: SceneContext): void;
         // (undocumented)
-        discloseTileTrees(trees: Set<TileTree>): void;
+        discloseTileTrees(trees: TileTreeSet): void;
         // (undocumented)
         displayPriority: number;
         getOrCreateClip(transform?: Transform): ClipVector;
@@ -879,7 +879,7 @@ export namespace Attachments {
     export class Attachment2d extends Attachment {
         constructor(props: ViewAttachmentProps, view: ViewState2d);
         // (undocumented)
-        discloseTileTrees(trees: Set<TileTree>): void;
+        discloseTileTrees(trees: TileTreeSet): void;
         // (undocumented)
         readonly is2d: boolean;
         // (undocumented)
@@ -891,7 +891,7 @@ export namespace Attachments {
     export class Attachment3d extends Attachment {
         constructor(props: ViewAttachmentProps, view: ViewState3d);
         // (undocumented)
-        discloseTileTrees(trees: Set<TileTree>): void;
+        discloseTileTrees(trees: TileTreeSet): void;
         getState(depth: number): State;
         // (undocumented)
         readonly is2d: boolean;
@@ -5454,7 +5454,7 @@ export class SheetViewState extends ViewState2d {
         max: number;
     };
     // @internal
-    discloseTileTrees(trees: Set<TileTree>): void;
+    discloseTileTrees(trees: TileTreeSet): void;
     // @internal
     load(): Promise<void>;
     // @internal
@@ -6743,7 +6743,7 @@ export namespace TileTree {
         // (undocumented)
         collectStatistics(stats: RenderMemory.Statistics): void;
         decorate(_context: DecorateContext): void;
-        discloseTileTrees(trees: Set<TileTree>): void;
+        discloseTileTrees(trees: TileTreeSet): void;
         getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
         abstract readonly treeOwner: Owner;
         unionFitRange(union: Range3d): void;
@@ -6752,6 +6752,24 @@ export namespace TileTree {
         compareTileTreeIds(lhs: any, rhs: any): number;
         createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
     }
+}
+
+// @internal (undocumented)
+export interface TileTreeDiscloser {
+    // (undocumented)
+    discloseTileTrees: (trees: TileTreeSet) => void;
+}
+
+// @internal
+export class TileTreeSet {
+    // (undocumented)
+    add(tree: TileTree): void;
+    // (undocumented)
+    disclose(discloser: TileTreeDiscloser): void;
+    // (undocumented)
+    readonly size: number;
+    // (undocumented)
+    readonly trees: Set<TileTree>;
 }
 
 // @public
@@ -7937,7 +7955,7 @@ export abstract class Viewport implements IDisposable {
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
     // @internal
-    discloseTileTrees(trees: Set<TileTree>): void;
+    discloseTileTrees(trees: TileTreeSet): void;
     displayStyle: DisplayStyleState;
     // (undocumented)
     dispose(): void;
@@ -8193,7 +8211,7 @@ export abstract class ViewState extends ElementState {
     // (undocumented)
     description?: string;
     // @internal
-    discloseTileTrees(trees: Set<TileTree>): void;
+    discloseTileTrees(trees: TileTreeSet): void;
     displayStyle: DisplayStyleState;
     // @internal (undocumented)
     drawGrid(context: DecorateContext): void;

@@ -7,6 +7,7 @@ import {
   IModelApp,
   RenderMemory,
   TileTree,
+  TileTreeSet,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
@@ -40,7 +41,7 @@ const memLabels = [
 const calcMem: CalcMem[] = [
   (stats, vp) => {
     vp.collectStatistics(stats);
-    const trees = new Set<TileTree>();
+    const trees = new TileTreeSet();
     vp.discloseTileTrees(trees);
     return trees.size;
   },
