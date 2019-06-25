@@ -9,7 +9,7 @@ import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/Frontsta
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
-import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, Zone, RectangleProps, Outline } from "@bentley/ui-ninezone";
+import { StatusZoneManagerProps as NZ_ZoneProps, DropTarget, Zone, Rectangle, RectangleProps, Outline } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[StatusBarZone]] component
@@ -30,14 +30,18 @@ export interface StatusBarZoneProps extends CommonProps {
  */
 export class StatusBarZone extends React.Component<StatusBarZoneProps> {
   public render(): React.ReactNode {
+    const bounds = Rectangle.create(this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds);
     return (
       <>
         <Zone
+          bounds={this.props.zoneProps.isInFooterMode ? undefined : bounds}
           className={this.props.className}
-          style={this.props.style}
-          isInFooterMode={this.props.zoneProps.isInFooterMode}
           isHidden={this.props.isHidden}
-          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
+          isInFooterMode={this.props.zoneProps.isInFooterMode}
+          style={{
+            ...this.props.style,
+            ...this.props.zoneProps.isInFooterMode ? { height: `${bounds.getHeight()}px` } : {},
+          }}
         >
           {
             this.props.widgetControl &&

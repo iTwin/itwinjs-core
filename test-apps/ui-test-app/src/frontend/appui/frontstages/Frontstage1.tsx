@@ -32,6 +32,7 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
+import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
 export class Frontstage1 extends FrontstageProvider {
 
@@ -65,6 +66,24 @@ export class Frontstage1 extends FrontstageProvider {
             ]}
           />
         }
+        centerLeft={
+          <Zone
+            allowsMerging={true}
+            defaultState={ZoneState.Minimized}
+            widgets={[
+              <Widget id="VerticalPropertyGrid" iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+            ]}
+          />
+        }
+        bottomLeft={
+          <Zone
+            allowsMerging={true}
+            defaultState={ZoneState.Minimized}
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
+            ]}
+          />
+        }
         /** The HorizontalPropertyGrid in zone 9 should be merged across zones 6 & 9 and take up the height of both zones initially.
          *  The zones can be resized manually to take up the full height.
          */
@@ -89,42 +108,45 @@ export class Frontstage1 extends FrontstageProvider {
         }
 
         topMostPanel={
-          <StagePanel size="64px"
+          <StagePanel
             widgets={[
               <Widget element={<h2>TopMost panel</h2>} />,
             ]}
           />
         }
         topPanel={
-          <StagePanel size="64px"
+          <StagePanel
+            resizable={false}
             widgets={[
               <Widget element={<h2>Top panel</h2>} />,
             ]}
           />
         }
         leftPanel={
-          <StagePanel size="100px"
-            widgets={[
-              <Widget element={<h2>Left panel</h2>} />,
-            ]}
+          <StagePanel
+            allowedZones={[9, 4, 7]}
           />
         }
         rightPanel={
-          <StagePanel size="100px"
+          <StagePanel
+            allowedZones={[9]}
+            resizable={false}
             widgets={[
               <Widget element={<h2>Right panel</h2>} />,
             ]}
           />
         }
         bottomPanel={
-          <StagePanel size="64px"
+          <StagePanel
             widgets={[
               <Widget element={<h2>Bottom panel</h2>} />,
             ]}
           />
         }
         bottomMostPanel={
-          <StagePanel size="64px"
+          <StagePanel
+            allowedZones={[9, 4]}
+            size={100}
             widgets={[
               <Widget element={<h2>BottomMost panel</h2>} />,
             ]}

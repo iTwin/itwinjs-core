@@ -89,13 +89,13 @@ export class BackstageSeparator extends React.PureComponent<CommonProps> {
     render(): JSX.Element;
 }
 
-// @beta
+// @alpha
 export class BackTarget extends React.PureComponent<BackTargetProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @beta
+// @alpha
 export interface BackTargetProps extends MergeTargetProps {
     zoneIndex: WidgetZoneIndex;
 }
@@ -167,7 +167,7 @@ export const containHorizontally: (componentBounds: RectangleProps, containerBou
 export const containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
 
 // @alpha (undocumented)
-export class ContentZone extends ZoneManager {
+export class ContentZone extends ZoneManagerHelper {
     constructor(nineZone: NineZone);
     // (undocumented)
     static readonly id: ContentZoneIndex;
@@ -210,7 +210,7 @@ export class CssProperties {
 export const DefaultHistoryManager: HistoryManager;
 
 // @alpha (undocumented)
-export const DefaultStateManager: StateManager;
+export const DefaultStateManager: ZonesManager;
 
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
@@ -260,7 +260,7 @@ export class DraggingWidget {
     // (undocumented)
     readonly widget: Widget;
     // (undocumented)
-    readonly zone: WidgetZone;
+    readonly zone: WidgetZone | undefined;
 }
 
 // @alpha (undocumented)
@@ -332,7 +332,7 @@ export interface FloatingProps {
 }
 
 // @alpha (undocumented)
-export interface FloatingZoneProps extends ZonePropsBase {
+export interface FloatingZoneProps extends ZoneManagerProps {
     // (undocumented)
     readonly floating: FloatingProps;
 }
@@ -405,20 +405,44 @@ export class FooterSeparator extends React.PureComponent<FooterSeparatorProps> {
 export interface FooterSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
-// @alpha (undocumented)
-export const getDefaultNineZoneProps: () => NineZoneProps;
+// @alpha
+export const getDefaultNineZoneStagePanelManagerProps: () => NineZoneStagePanelManagerProps;
+
+// @alpha
+export const getDefaultNineZoneStagePanelPaneManagerProps: () => NineZoneStagePanelPaneManagerProps;
+
+// @alpha
+export const getDefaultNineZoneStagePanelsManagerProps: () => NineZoneStagePanelsManagerProps;
+
+// @beta
+export const getDefaultStagePanelManagerProps: () => StagePanelManagerProps;
+
+// @beta
+export const getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps;
 
 // @alpha (undocumented)
 export const getDefaultStatusZoneProps: () => StatusZoneManagerProps;
 
 // @alpha (undocumented)
+export const getDefaultWidgetHorizontalAnchor: (id: WidgetZoneIndex) => HorizontalAnchor;
+
+// @alpha (undocumented)
 export const getDefaultWidgetProps: (id: WidgetZoneIndex) => WidgetProps;
 
 // @alpha (undocumented)
-export const getDefaultZoneProps: (id: WidgetZoneIndex) => ZonePropsBase;
+export const getDefaultWidgetVerticalAnchor: (id: WidgetZoneIndex) => VerticalAnchor.Bottom | VerticalAnchor.Middle;
 
 // @alpha (undocumented)
-export const getDefaultZonesProps: () => Readonly<ZonesType>;
+export const getDefaultZoneProps: (id: WidgetZoneIndex) => ZoneManagerProps;
+
+// @alpha (undocumented)
+export const getDefaultZonesManagerProps: () => ZonesManagerProps;
+
+// @alpha (undocumented)
+export const getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgets;
+
+// @alpha (undocumented)
+export const getDefaultZonesManagerZonesProps: () => Readonly<ZonesType>;
 
 // @alpha (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
@@ -660,7 +684,7 @@ export class HorizontalAnchorHelpers {
 }
 
 // @alpha (undocumented)
-export const isStatusZone: (zone: ZonePropsBase) => zone is StatusZoneManagerProps;
+export const isStatusZone: (zone: ZoneManagerProps) => zone is StatusZoneManagerProps;
 
 // @beta
 export class Item extends React.PureComponent<ItemProps> {
@@ -696,8 +720,6 @@ export interface ItemsProps extends CommonProps {
 export class Layout {
     constructor(props: LayoutProps);
     // (undocumented)
-    readonly anchor: HorizontalAnchor;
-    // (undocumented)
     readonly bottomLayouts: Layout[];
     // (undocumented)
     bounds: Rectangle;
@@ -725,6 +747,8 @@ export class Layout {
     getShrinkRight(px: number): number;
     // (undocumented)
     getShrinkTop(px: number): number;
+    // (undocumented)
+    readonly horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     readonly isResizable: boolean;
     // (undocumented)
@@ -818,8 +842,6 @@ export class Layout6 extends WidgetZoneLayout {
 // @alpha (undocumented)
 export class Layout7 extends WidgetZoneLayout {
     // (undocumented)
-    getInitialBottomZone(): WidgetZone | undefined;
-    // (undocumented)
     getInitialRightZone(): WidgetZone | undefined;
     // (undocumented)
     getInitialTopZone(): WidgetZone;
@@ -838,8 +860,6 @@ export class Layout8 extends WidgetZoneLayout {
 // @alpha (undocumented)
 export class Layout9 extends WidgetZoneLayout {
     // (undocumented)
-    getInitialBottomZone(): WidgetZone | undefined;
-    // (undocumented)
     getInitialLeftZone(): WidgetZone | undefined;
     // (undocumented)
     getInitialTopZone(): WidgetZone;
@@ -857,6 +877,8 @@ export interface LayoutProps {
     readonly bounds: RectangleProps;
     // (undocumented)
     readonly floatingBounds?: RectangleProps;
+    // (undocumented)
+    readonly horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     readonly resizers?: Partial<Resizers>;
     // (undocumented)
@@ -991,6 +1013,37 @@ export interface NestedGroupProps extends GroupProps {
 }
 
 // @beta
+export interface NestedStagePanelKey<TProps extends NestedStagePanelsManagerProps> {
+    // (undocumented)
+    readonly id: NestedStagePanelsId<TProps>;
+    // (undocumented)
+    readonly type: StagePanelType;
+}
+
+// @beta
+export type NestedStagePanelsId<TProps extends NestedStagePanelsManagerProps> = Extract<keyof TProps["panels"], string | number>;
+
+// @beta
+export class NestedStagePanelsManager {
+    // (undocumented)
+    getPanelsManager<TProps extends NestedStagePanelsManagerProps>(id: NestedStagePanelsId<TProps>): StagePanelsManager;
+    // (undocumented)
+    resize<TProps extends NestedStagePanelsManagerProps>(panel: NestedStagePanelKey<TProps>, resizeBy: number, props: TProps): TProps;
+    // (undocumented)
+    setIsCollapsed<TProps extends NestedStagePanelsManagerProps>(panel: NestedStagePanelKey<TProps>, isCollapsed: boolean, props: TProps): TProps;
+    // (undocumented)
+    setSize<TProps extends NestedStagePanelsManagerProps>(panel: NestedStagePanelKey<TProps>, size: number, props: TProps): TProps;
+}
+
+// @beta
+export interface NestedStagePanelsManagerProps {
+    // (undocumented)
+    readonly panels: {
+        readonly [id: string]: StagePanelsManagerProps;
+    };
+}
+
+// @beta
 export class NestedToolSettings extends React.PureComponent<NestedToolSettingsProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1004,28 +1057,28 @@ export interface NestedToolSettingsProps extends CommonProps {
 }
 
 // @alpha (undocumented)
-export class NineZone implements Iterable<ZoneManager> {
+export class NineZone implements Iterable<ZoneManagerHelper> {
     // (undocumented)
     [Symbol.iterator](): {
-        next(): IteratorResult<ZoneManager>;
+        next(): IteratorResult<ZoneManagerHelper>;
     };
-    constructor(props: NineZoneProps);
+    constructor(props: ZonesManagerProps);
     // (undocumented)
     readonly draggingWidget: DraggingWidget | undefined;
     // (undocumented)
-    findZone(cell: CellProps): ZoneManager;
+    findZone(cell: CellProps): WidgetZone;
     // (undocumented)
     getContentZone(): ContentZone;
     // (undocumented)
-    getStatusZone(): StatusZoneManager;
+    getStatusZone(): StatusZoneManagerHelper;
     // (undocumented)
-    getWidget(widgetId: number): Widget;
+    getWidget(widgetId: WidgetZoneIndex): Widget;
     // (undocumented)
     getWidgetZone(zoneId: WidgetZoneIndex): WidgetZone;
     // (undocumented)
-    getZone(zoneId: ZoneIndex): ZoneManager;
+    getZone(zoneId: ZoneIndex): ZoneManagerHelper;
     // (undocumented)
-    readonly props: NineZoneProps;
+    readonly props: ZonesManagerProps;
     // (undocumented)
     readonly root: NineZoneRoot;
     // (undocumented)
@@ -1033,18 +1086,68 @@ export class NineZone implements Iterable<ZoneManager> {
     }
 
 // @alpha (undocumented)
-export type NineZoneFactory = (props: NineZoneProps) => NineZone;
+export type NineZoneFactory = (props: ZonesManagerProps) => NineZone;
 
-// @alpha (undocumented)
-export interface NineZoneProps {
+// @alpha
+export class NineZoneManager {
     // (undocumented)
-    readonly draggingWidget?: DraggingWidgetProps;
+    getNestedPanelsManager(): NineZoneNestedStagePanelsManager;
     // (undocumented)
-    readonly size: SizeProps;
+    getPanelTarget(): NineZoneManagerPanelTarget | undefined;
     // (undocumented)
-    readonly target?: TargetZoneProps;
+    getPaneTarget(): NineZoneManagerPaneTarget | undefined;
     // (undocumented)
-    readonly zones: Readonly<ZonesType>;
+    getZonesManager(): ZonesManager;
+    // (undocumented)
+    handleWidgetTabClick<TProps extends NineZoneManagerProps>(widgetId: WidgetZoneIndex, tabId: number, props: TProps): TProps;
+    // (undocumented)
+    handleWidgetTabDragEnd<TProps extends NineZoneManagerProps>(props: TProps): TProps;
+    // (undocumented)
+    handleWidgetTabDragStart<TProps extends NineZoneManagerProps>(args: WidgetTabDragStartArguments, props: TProps): TProps;
+    // (undocumented)
+    setPanelTarget(target: NineZoneManagerPanelTarget | undefined): void;
+    // (undocumented)
+    setPaneTarget(target: NineZoneManagerPaneTarget | undefined): void;
+    }
+
+// @alpha
+export interface NineZoneManagerPanelTarget {
+    // (undocumented)
+    readonly panelId: string | number;
+    // (undocumented)
+    readonly panelType: StagePanelType;
+}
+
+// @alpha
+export interface NineZoneManagerPaneTarget extends NineZoneManagerPanelTarget {
+    // (undocumented)
+    readonly paneIndex: number;
+}
+
+// @alpha
+export interface NineZoneManagerProps {
+    // (undocumented)
+    readonly nested: NineZoneNestedStagePanelsManagerProps;
+    // (undocumented)
+    readonly zones: ZonesManagerProps;
+}
+
+// @alpha
+export class NineZoneNestedStagePanelsManager extends NestedStagePanelsManager {
+    // (undocumented)
+    addWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneIndex, panel: NestedStagePanelKey<TProps>, paneIndex: number | undefined, props: TProps): TProps;
+    // (undocumented)
+    getPanelsManager<TProps extends NestedStagePanelsManagerProps>(id: NestedStagePanelsId<TProps>): NineZoneStagePanelsManager;
+    // (undocumented)
+    removeWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneIndex, panel: NestedStagePanelKey<TProps>, props: TProps): TProps;
+}
+
+// @alpha
+export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanelsManagerProps {
+    // (undocumented)
+    readonly panels: {
+        readonly [id: string]: NineZoneStagePanelsManagerProps;
+    };
 }
 
 // @alpha (undocumented)
@@ -1052,6 +1155,73 @@ export class NineZoneRoot extends Root {
     constructor(nineZone: NineZone);
     // (undocumented)
     readonly nineZone: NineZone;
+}
+
+// @alpha
+export class NineZoneStagePanelManager extends StagePanelManager {
+    // (undocumented)
+    addWidget<TProps extends NineZoneStagePanelManagerProps>(widgetId: WidgetZoneIndex, paneIndex: number | undefined, props: TProps): TProps;
+    // (undocumented)
+    findWidget<TProps extends NineZoneStagePanelManagerProps>(widgetId: WidgetZoneIndex, props: TProps): {
+        paneIndex: number;
+        widgetIndex: number;
+    } | undefined;
+    // (undocumented)
+    static getHorizontalAnchor(type: StagePanelType): HorizontalAnchor;
+    // (undocumented)
+    getPaneManager(paneIndex: number): NineZoneStagePanelPaneManager;
+    // (undocumented)
+    static getVerticalAnchor(type: StagePanelType): VerticalAnchor.BottomPanel | VerticalAnchor.Middle | VerticalAnchor.TopPanel;
+    // (undocumented)
+    removeWidget<TProps extends NineZoneStagePanelManagerProps>(widgetId: WidgetZoneIndex, props: TProps): TProps;
+}
+
+// @alpha
+export interface NineZoneStagePanelManagerProps extends StagePanelManagerProps {
+    // (undocumented)
+    readonly panes: ReadonlyArray<NineZoneStagePanelPaneManagerProps>;
+}
+
+// @alpha
+export class NineZoneStagePanelPaneManager {
+    // (undocumented)
+    addWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneIndex, props: TProps): TProps;
+    // (undocumented)
+    removeWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneIndex, props: TProps): TProps;
+}
+
+// @alpha
+export interface NineZoneStagePanelPaneManagerProps {
+    // (undocumented)
+    readonly widgets: ReadonlyArray<WidgetZoneIndex>;
+}
+
+// @alpha
+export class NineZoneStagePanelsManager extends StagePanelsManager {
+    // (undocumented)
+    addWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneIndex, type: StagePanelType, paneIndex: number | undefined, props: TProps): TProps;
+    // (undocumented)
+    findWidget<TProps extends NineZoneStagePanelsManagerProps>(widgetId: WidgetZoneIndex, props: TProps): {
+        paneIndex: number;
+        widgetIndex: number;
+        type: StagePanelType;
+    } | undefined;
+    // (undocumented)
+    getPanelManager(type: StagePanelType): NineZoneStagePanelManager;
+    // (undocumented)
+    removeWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneIndex, type: StagePanelType, props: TProps): TProps;
+}
+
+// @alpha
+export interface NineZoneStagePanelsManagerProps extends StagePanelsManagerProps {
+    // (undocumented)
+    readonly bottom: NineZoneStagePanelManagerProps;
+    // (undocumented)
+    readonly left: NineZoneStagePanelManagerProps;
+    // (undocumented)
+    readonly right: NineZoneStagePanelManagerProps;
+    // (undocumented)
+    readonly top: NineZoneStagePanelManagerProps;
 }
 
 // @internal
@@ -1133,6 +1303,7 @@ export class Point implements PointProps {
     // (undocumented)
     equals(other: PointProps): boolean;
     getDistanceTo(other: PointProps): number;
+    getManhattanDistanceTo(other: PointProps): number;
     getOffsetTo(other: PointProps): Point;
     // (undocumented)
     offset(offset: PointProps): Point;
@@ -1144,6 +1315,8 @@ export class Point implements PointProps {
     setX(x: number): Point;
     // (undocumented)
     setY(y: number): Point;
+    // (undocumented)
+    toProps(): PointProps;
     // (undocumented)
     readonly x: number;
     // (undocumented)
@@ -1206,11 +1379,14 @@ export class Rectangle implements RectangleProps {
     readonly right: number;
     setHeight(height: number): Rectangle;
     setPosition(position: PointProps): Rectangle;
+    setSize(size: SizeProps): Rectangle;
     setWidth(width: number): Rectangle;
     // (undocumented)
     readonly top: number;
     // (undocumented)
     topLeft(): Point;
+    // (undocumented)
+    toProps(): RectangleProps;
 }
 
 // @beta
@@ -1255,10 +1431,17 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
 
 // @alpha
 export interface ResizeGripProps extends CommonProps {
-    // (undocumented)
     direction: ResizeDirection;
-    // (undocumented)
-    onResize?: (x: number, y: number) => void;
+    onClick?: () => void;
+    onResize?: (args: ResizeGripResizeArgs) => void;
+    onResizeEnd?: (args: ResizeGripResizeArgs) => void;
+    onResizeStart?: (args: ResizeGripResizeArgs) => void;
+}
+
+// @alpha
+export interface ResizeGripResizeArgs {
+    readonly bounds: RectangleProps;
+    readonly position: PointProps;
 }
 
 // @alpha
@@ -1296,16 +1479,14 @@ export interface ResizeStrategy {
 
 // @alpha (undocumented)
 export class Root {
-    constructor(size: SizeProps, isInFooterMode: boolean);
+    constructor(bounds: Rectangle, isInFooterMode: boolean);
     // (undocumented)
-    readonly bounds: Rectangle;
+    bounds: Rectangle;
     // (undocumented)
     static readonly FOOTER_HEIGHT = 40;
     // (undocumented)
     isInFooterMode: boolean;
-    // (undocumented)
-    size: SizeProps;
-}
+    }
 
 // @alpha
 export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableState> {
@@ -1516,6 +1697,44 @@ export interface SnapProps extends CommonProps {
     onClick?: () => void;
 }
 
+// @beta
+export class Splitter extends React.PureComponent<SplitterProps, SplitterState> {
+    constructor(props: SplitterProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: SplitterProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @beta
+export class SplitterPaneTarget extends React.PureComponent<MergeTargetProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface SplitterProps extends CommonProps {
+    children?: React.ReactNode;
+    isGripHidden?: boolean;
+    isVertical?: boolean;
+}
+
+// @beta
+export class SplitterTarget extends React.PureComponent<SplitterTargetProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface SplitterTargetProps extends MergeTargetProps {
+    readonly isVertical?: boolean;
+    readonly paneCount: number;
+}
+
 // @alpha
 export class Stacked extends React.PureComponent<StackedProps> {
     // (undocumented)
@@ -1530,9 +1749,11 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
     contentRef?: React.Ref<HTMLDivElement>;
     fillZone?: boolean;
     horizontalAnchor: HorizontalAnchor;
+    isCollapsed?: boolean;
     isDragged?: boolean;
     isFloating?: boolean;
     isOpen?: boolean;
+    isTabBarVisible?: boolean;
     onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
     onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
@@ -1540,31 +1761,120 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
     verticalAnchor: VerticalAnchor;
 }
 
-// @alpha (undocumented)
-export class StateManager {
-    constructor(nineZoneFactory: NineZoneFactory);
+// @beta
+export class StagePanel extends React.PureComponent<StagePanelProps> {
     // (undocumented)
-    handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number, state: NineZoneProps): NineZoneProps;
+    render(): JSX.Element;
+}
+
+// @beta
+export class StagePanelManager {
     // (undocumented)
-    handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number, state: NineZoneProps): NineZoneProps;
+    collapseOffset: number;
     // (undocumented)
-    handleTargetChanged(target: TargetZoneProps | undefined, state: NineZoneProps): NineZoneProps;
+    maxSize: number;
     // (undocumented)
-    handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean, state: NineZoneProps): NineZoneProps;
+    minSize: number;
     // (undocumented)
-    handleWidgetTabDrag(dragged: PointProps, state: NineZoneProps): NineZoneProps;
+    resize<TProps extends StagePanelManagerProps>(resizeBy: number, props: TProps): TProps;
     // (undocumented)
-    handleWidgetTabDragEnd(state: NineZoneProps): NineZoneProps;
+    setIsCollapsed<TProps extends StagePanelManagerProps>(isCollapsed: boolean, props: TProps): TProps;
     // (undocumented)
-    handleWidgetTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps, state: NineZoneProps): NineZoneProps;
+    setSize<TProps extends StagePanelManagerProps>(newSize: number, props: TProps): TProps;
     // (undocumented)
-    layout(size: SizeProps, state: NineZoneProps): NineZoneProps;
+    shouldCollapse(resizeBy: number, props: StagePanelManagerProps): boolean;
+}
+
+// @beta
+export interface StagePanelManagerProps {
     // (undocumented)
-    mergeZone(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex, state: NineZoneProps): NineZoneProps;
+    readonly isCollapsed: boolean;
     // (undocumented)
-    setAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean, state: NineZoneProps): NineZoneProps;
+    readonly size: number | undefined;
+}
+
+// @beta
+export interface StagePanelProps extends CommonProps {
+    children?: React.ReactNode;
+    onResize?: (resizeBy: number) => void;
+    onToggleCollapse?: () => void;
+    size?: number;
+    type: StagePanelType;
+}
+
+// @beta
+export class StagePanels extends React.PureComponent<StagePanelsProps> {
     // (undocumented)
-    setIsInFooterMode(isInFooterMode: boolean, state: NineZoneProps): NineZoneProps;
+    render(): JSX.Element;
+}
+
+// @beta
+export class StagePanelsManager {
+    // (undocumented)
+    static getPanel<TProps extends StagePanelsManagerProps, T extends StagePanelType>(type: T, props: TProps): TProps[StagePanelTypeToPropName[T]];
+    // (undocumented)
+    getPanelManager(type: StagePanelType): StagePanelManager;
+    // (undocumented)
+    static getPanelPropName<T extends StagePanelType>(type: T): StagePanelTypeToPropName[T];
+    // (undocumented)
+    static getPanelType<T extends StagePanelPropNames>(propName: T): StagePanelPropNameToType[T];
+    // (undocumented)
+    resize<TProps extends StagePanelsManagerProps>(type: StagePanelType, resizeBy: number, props: TProps): TProps;
+    // (undocumented)
+    setIsCollapsed<TProps extends StagePanelsManagerProps>(type: StagePanelType, isCollapsed: boolean, props: TProps): TProps;
+    // (undocumented)
+    setSize<TProps extends StagePanelsManagerProps>(type: StagePanelType, size: number, props: TProps): TProps;
+}
+
+// @beta
+export interface StagePanelsManagerProps {
+    // (undocumented)
+    readonly bottom: StagePanelManagerProps;
+    // (undocumented)
+    readonly left: StagePanelManagerProps;
+    // (undocumented)
+    readonly right: StagePanelManagerProps;
+    // (undocumented)
+    readonly top: StagePanelManagerProps;
+}
+
+// @beta
+export interface StagePanelsProps extends CommonProps {
+    bottomPanel?: React.ReactNode;
+    children?: React.ReactNode;
+    leftPanel?: React.ReactNode;
+    rightPanel?: React.ReactNode;
+    topPanel?: React.ReactNode;
+}
+
+// @beta
+export class StagePanelTarget extends React.PureComponent<StagePanelTargetProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface StagePanelTargetProps extends MergeTargetProps {
+    type: StagePanelType;
+}
+
+// @beta
+export enum StagePanelType {
+    // (undocumented)
+    Bottom = 0,
+    // (undocumented)
+    Left = 1,
+    // (undocumented)
+    Right = 3,
+    // (undocumented)
+    Top = 2
+}
+
+// @internal
+export class StagePanelTypeHelpers {
+    // (undocumented)
+    static getCssClassName(type: StagePanelType): string;
+    static isVertical(type: StagePanelType): boolean;
 }
 
 // @beta
@@ -1593,24 +1903,28 @@ export interface StatusMessageProps extends CommonProps {
     status: Status;
 }
 
-// @beta
+// @alpha (undocumented)
 export type StatusZoneIndex = 8;
 
 // @alpha (undocumented)
-export class StatusZoneManager extends WidgetZone {
+export class StatusZoneManager {
+    // (undocumented)
+    setIsInFooterMode<TProps extends StatusZoneManagerProps>(isInFooterMode: boolean, props: TProps): TProps;
+}
+
+// @alpha (undocumented)
+export class StatusZoneManagerHelper extends WidgetZone {
     constructor(nineZone: NineZone, props: StatusZoneManagerProps);
     // (undocumented)
     static readonly id: StatusZoneIndex;
     // (undocumented)
     readonly id: StatusZoneIndex;
     // (undocumented)
-    readonly isMergeable: boolean;
-    // (undocumented)
     readonly props: StatusZoneManagerProps;
 }
 
 // @alpha (undocumented)
-export interface StatusZoneManagerProps extends ZonePropsBase {
+export interface StatusZoneManagerProps extends ZoneManagerProps {
     // (undocumented)
     readonly id: StatusZoneIndex;
     // (undocumented)
@@ -1619,6 +1933,8 @@ export interface StatusZoneManagerProps extends ZonePropsBase {
 
 // @alpha
 export class Tab extends React.PureComponent<TabProps> {
+    // (undocumented)
+    static defaultProps: TabDefaultProps;
     // (undocumented)
     getBounds(): RectangleProps;
     // (undocumented)
@@ -1633,9 +1949,11 @@ export class TabGroup extends React.PureComponent<TabGroupProps> {
 
 // @alpha
 export interface TabGroupProps extends CommonProps {
-    anchor: HorizontalAnchor;
     children?: React.ReactNode;
     handle: HandleMode;
+    horizontalAnchor: HorizontalAnchor;
+    isCollapsed?: boolean;
+    verticalAnchor: VerticalAnchor;
 }
 
 // @alpha
@@ -1659,9 +1977,11 @@ export class TabModeHelpers {
 
 // @alpha
 export interface TabProps extends CommonProps {
-    anchor: HorizontalAnchor;
     betaBadge?: React.ReactNode;
     children?: React.ReactNode;
+    horizontalAnchor: HorizontalAnchor;
+    isCollapsed?: boolean;
+    isProtruding: boolean;
     lastPosition?: PointProps;
     mode: TabMode;
     onClick?: () => void;
@@ -1669,6 +1989,7 @@ export interface TabProps extends CommonProps {
     onDragEnd?: () => void;
     onDragStart?: (initialPosition: PointProps) => void;
     title?: string;
+    verticalAnchor: VerticalAnchor;
 }
 
 // @alpha
@@ -1679,6 +2000,8 @@ export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
 
 // @alpha
 export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
+    // (undocumented)
+    readonly isHorizontal?: boolean;
 }
 
 // @alpha (undocumented)
@@ -1697,9 +2020,9 @@ export class Target {
 // @alpha (undocumented)
 export enum TargetType {
     // (undocumented)
-    Back = 1,
+    Back = 0,
     // (undocumented)
-    Merge = 0
+    Merge = 1
 }
 
 // @alpha (undocumented)
@@ -2000,22 +2323,30 @@ export interface UserProfileProps extends CommonProps {
 // @alpha
 export enum VerticalAnchor {
     // (undocumented)
-    Bottom = 1,
+    Bottom = 0,
     // (undocumented)
-    Middle = 0
+    BottomPanel = 1,
+    // (undocumented)
+    Middle = 2,
+    // (undocumented)
+    TopPanel = 3
 }
 
 // @alpha
 export class VerticalAnchorHelpers {
     static readonly BOTTOM_CLASS_NAME = "nz-bottom-anchor";
+    static readonly BOTTOM_PANEL_CLASS_NAME = "nz-bottom-panel-anchor";
     // (undocumented)
     static getCssClassName(anchor: VerticalAnchor): string;
+    // (undocumented)
+    static isHorizontal(anchor: VerticalAnchor): boolean;
     static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
+    static readonly TOP_PANEL_CLASS_NAME = "nz-top-panel-anchor";
 }
 
 // @alpha (undocumented)
 export class Widget {
-    constructor(zone: WidgetZone, props: WidgetProps);
+    constructor(nineZone: NineZone, props: WidgetProps);
     // (undocumented)
     readonly defaultZone: WidgetZone;
     // (undocumented)
@@ -2025,12 +2356,6 @@ export class Widget {
     // (undocumented)
     static isCellBetweenWidgets(cell: Cell, widgets: ReadonlyArray<Widget>): boolean;
     // (undocumented)
-    readonly isFirst: boolean;
-    // (undocumented)
-    readonly isInHomeZone: boolean;
-    // (undocumented)
-    readonly isLast: boolean;
-    // (undocumented)
     readonly isMiddle: boolean;
     // (undocumented)
     readonly nineZone: NineZone;
@@ -2039,7 +2364,7 @@ export class Widget {
     // (undocumented)
     static sort(widgets: ReadonlyArray<Widget>): Widget[];
     // (undocumented)
-    readonly zone: WidgetZone;
+    readonly zone: WidgetZone | undefined;
 }
 
 // @alpha
@@ -2059,22 +2384,32 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
 // @alpha (undocumented)
 export interface WidgetProps {
     // (undocumented)
+    readonly horizontalAnchor: HorizontalAnchor;
+    // (undocumented)
     readonly id: WidgetZoneIndex;
     // (undocumented)
     readonly tabIndex: number;
+    // (undocumented)
+    readonly verticalAnchor: VerticalAnchor;
+}
+
+// @alpha
+export interface WidgetTabDragStartArguments {
+    readonly initialPosition: PointProps;
+    readonly tabId: number;
+    readonly widgetBounds: RectangleProps;
+    readonly widgetId: WidgetZoneIndex;
 }
 
 // @alpha (undocumented)
-export class WidgetZone extends ZoneManager {
-    constructor(nineZone: NineZone, props: ZonePropsBase);
+export class WidgetZone extends ZoneManagerHelper {
+    constructor(nineZone: NineZone, props: ZoneManagerProps);
     // (undocumented)
     readonly bounds: RectangleProps;
     // (undocumented)
-    canBeMergedTo(zone: WidgetZone): boolean;
+    canBeMergedTo(target: WidgetZone): boolean;
     // (undocumented)
     protected _cell: Cell | undefined;
-    // (undocumented)
-    readonly defaultHorizontalAnchor: HorizontalAnchor;
     // (undocumented)
     readonly defaultWidget: Widget;
     // (undocumented)
@@ -2084,23 +2419,9 @@ export class WidgetZone extends ZoneManager {
     // (undocumented)
     getLayout(): WidgetZoneLayout;
     // (undocumented)
-    getUnmergeBounds(): Array<{
-        id: WidgetZoneIndex;
-        bounds: RectangleProps;
-    }>;
-    // (undocumented)
-    getUnmergeWidgetBounds(widget: Widget): Array<{
-        id: WidgetZoneIndex;
-        bounds: RectangleProps;
-    }>;
-    // (undocumented)
     getWidgets(): ReadonlyArray<Widget>;
     // (undocumented)
-    readonly hasMergedWidgets: boolean;
-    // (undocumented)
     readonly hasSingleDefaultWidget: boolean;
-    // (undocumented)
-    readonly horizontalAnchor: HorizontalAnchor;
     // (undocumented)
     readonly id: WidgetZoneIndex;
     // (undocumented)
@@ -2110,12 +2431,6 @@ export class WidgetZone extends ZoneManager {
         props: FloatingZoneProps;
     };
     // (undocumented)
-    readonly isMergeable: boolean;
-    // (undocumented)
-    readonly isMergedHorizontally: boolean;
-    // (undocumented)
-    readonly isMergedVertically: boolean;
-    // (undocumented)
     readonly isWidgetOpen: boolean;
     // (undocumented)
     protected _isWidgetOpen: boolean | undefined;
@@ -2124,23 +2439,19 @@ export class WidgetZone extends ZoneManager {
     // (undocumented)
     readonly nineZone: NineZone;
     // (undocumented)
-    readonly props: ZonePropsBase;
-    // (undocumented)
-    readonly verticalAnchor: VerticalAnchor;
+    readonly props: ZoneManagerProps;
     // (undocumented)
     protected _widget: Widget | undefined;
     // (undocumented)
     protected _widgets: Widget[] | undefined;
 }
 
-// @beta
+// @alpha (undocumented)
 export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 
 // @alpha (undocumented)
 export class WidgetZoneLayout extends Layout {
     constructor(props: WidgetZoneLayoutProps);
-    // (undocumented)
-    readonly anchor: HorizontalAnchor;
     // (undocumented)
     readonly bottomLayouts: WidgetZoneLayout[];
     // (undocumented)
@@ -2315,45 +2626,29 @@ export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 
 // @alpha (undocumented)
 export class ZoneManager {
+}
+
+// @alpha (undocumented)
+export class ZoneManagerHelper {
     constructor(nineZone: NineZone, id: ZoneIndex);
     // (undocumented)
     readonly cell: Cell;
     // (undocumented)
-    equals(other: ZoneManager): boolean;
+    equals(other: ZoneManagerHelper): boolean;
     // (undocumented)
     readonly id: ZoneIndex;
     // (undocumented)
-    isFirst(zones: ReadonlyArray<ZoneManager>): boolean;
-    // (undocumented)
-    isLast(zones: ReadonlyArray<ZoneManager>): boolean;
-    // (undocumented)
-    readonly isMergeable: boolean;
-    // (undocumented)
-    isStatusZone(): this is WidgetZone;
-    // (undocumented)
     protected _isWidgetOpen: boolean | undefined;
-    // (undocumented)
-    isWidgetZone(): this is WidgetZone;
     // (undocumented)
     readonly nineZone: NineZone;
     // (undocumented)
     protected _widgets: Widget[] | undefined;
 }
 
-// @beta
-export interface ZoneProps extends CommonProps {
-    bounds: RectangleProps;
-    children?: React.ReactNode;
-    isHidden?: boolean;
-    isInFooterMode?: boolean;
-}
-
 // @alpha (undocumented)
-export interface ZonePropsBase {
+export interface ZoneManagerProps {
     // (undocumented)
     readonly allowsMerging: boolean;
-    // (undocumented)
-    readonly anchor?: HorizontalAnchor;
     // (undocumented)
     readonly bounds: RectangleProps;
     // (undocumented)
@@ -2363,7 +2658,16 @@ export interface ZonePropsBase {
     // (undocumented)
     readonly isLayoutChanged: boolean;
     // (undocumented)
-    readonly widgets: ReadonlyArray<WidgetProps>;
+    readonly widgets: ReadonlyArray<WidgetZoneIndex>;
+}
+
+// @beta
+export interface ZoneProps extends CommonProps {
+    bounds?: RectangleProps;
+    children?: React.ReactNode;
+    isFloating?: boolean;
+    isHidden?: boolean;
+    isInFooterMode?: boolean;
 }
 
 // @beta
@@ -2372,6 +2676,75 @@ export class Zones extends React.PureComponent<ZonesProps> {
     render(): JSX.Element;
 }
 
+// @alpha (undocumented)
+export class ZonesManager {
+    constructor(nineZoneFactory: NineZoneFactory);
+    // (undocumented)
+    addWidget<TProps extends ZonesManagerProps>(zoneId: WidgetZoneIndex, widgetId: WidgetZoneIndex, props: TProps): TProps;
+    // (undocumented)
+    findZoneWithWidget(widgetId: WidgetZoneIndex, props: ZonesManagerProps): WidgetZoneIndex;
+    // (undocumented)
+    getUnmergeWidgetBounds(zoneId: WidgetZoneIndex, props: ZonesManagerProps): Array<{
+        id: WidgetZoneIndex;
+        bounds: RectangleProps;
+    }>;
+    // (undocumented)
+    handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleTargetChanged(target: TargetZoneProps | undefined, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleWidgetTabDrag(dragged: PointProps, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleWidgetTabDragEnd(state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    handleWidgetTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    isMergedHorizontally(zoneId: WidgetZoneIndex, props: ZonesManagerProps): boolean;
+    // (undocumented)
+    isMergedVertically(zoneId: WidgetZoneIndex, props: ZonesManagerProps): boolean;
+    // (undocumented)
+    isWidgetOpen(zoneId: WidgetZoneIndex, props: ZonesManagerProps): boolean;
+    // (undocumented)
+    layout(bounds: RectangleProps, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    mergeZone(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    removeWidget<TProps extends ZonesManagerProps>(zoneId: WidgetZoneIndex, widgetId: WidgetZoneIndex, props: TProps): TProps;
+    // (undocumented)
+    setAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    setIsInFooterMode(isInFooterMode: boolean, state: ZonesManagerProps): ZonesManagerProps;
+    // (undocumented)
+    setWidgetHorizontalAnchor<TProps extends ZonesManagerProps>(widgetId: WidgetZoneIndex, horizontalAnchor: HorizontalAnchor, props: TProps): TProps;
+    // (undocumented)
+    setWidgetTabId<TProps extends ZonesManagerProps>(widgetId: WidgetZoneIndex, tabIndex: number, props: TProps): TProps;
+    // (undocumented)
+    setWidgetVerticalAnchor<TProps extends ZonesManagerProps>(widgetId: WidgetZoneIndex, verticalAnchor: VerticalAnchor, props: TProps): TProps;
+}
+
+// @alpha (undocumented)
+export interface ZonesManagerProps {
+    // (undocumented)
+    readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly draggingWidget?: DraggingWidgetProps;
+    // (undocumented)
+    readonly target?: TargetZoneProps;
+    // (undocumented)
+    readonly widgets: ZonesManagerWidgets;
+    // (undocumented)
+    readonly zones: Readonly<ZonesType>;
+}
+
+// @alpha (undocumented)
+export type ZonesManagerWidgets = {
+    readonly [id in WidgetZoneIndex]: WidgetProps;
+};
+
 // @beta
 export interface ZonesProps extends CommonProps {
     children?: React.ReactNode;
@@ -2379,8 +2752,9 @@ export interface ZonesProps extends CommonProps {
 }
 
 // @alpha (undocumented)
-export type ZonesType = {
-    [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZonePropsBase;
+export type ZonesType = // todo: readonly
+{
+    [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZoneManagerProps;
 } & {
     [id in StatusZoneIndex]: StatusZoneManagerProps;
 };

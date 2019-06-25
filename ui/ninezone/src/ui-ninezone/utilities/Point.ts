@@ -25,10 +25,15 @@ export class Point implements PointProps {
   public constructor(public readonly x = 0, public readonly y = 0) {
   }
 
-  /** Calculates distance to other point. */
+  /** Calculates Euclidean distance to other point. */
   public getDistanceTo(other: PointProps): number {
     const offset = this.getOffsetTo(other);
     return Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.y, 2));
+  }
+
+  /** Calculates gridlike distance to other point. */
+  public getManhattanDistanceTo(other: PointProps): number {
+    return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
   }
 
   /** Gets offset to other point. */
@@ -64,5 +69,13 @@ export class Point implements PointProps {
   /** @returns New [[Point]] with modified y value. */
   public setY(y: number) {
     return new Point(this.x, y);
+  }
+
+  /** @returns [[PointProps]] object for this point. */
+  public toProps(): PointProps {
+    return {
+      x: this.x,
+      y: this.y,
+    };
   }
 }

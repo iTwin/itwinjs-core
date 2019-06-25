@@ -100,6 +100,18 @@ describe("Rectangle", () => {
     offsetted.bottom.should.eq(3);
   });
 
+  it("should return rectangle with new size", () => {
+    const sut = new Rectangle(-5, 2, 5, 8);
+    const newRect = sut.setSize({
+      height: 100,
+      width: 150,
+    });
+    newRect.left.should.eq(-5);
+    newRect.top.should.eq(2);
+    newRect.right.should.eq(145);
+    newRect.bottom.should.eq(102);
+  });
+
   it("should return true if other rectangle is equal", () => {
     const sut = new Rectangle(-5, 2, 5, 8);
     const other: RectangleProps = {

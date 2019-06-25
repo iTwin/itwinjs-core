@@ -6,13 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { WidgetZoneIndex } from "../state/NineZone";
+import { WidgetZoneIndex } from "../manager/Zones";
 import { Arrow } from "./Arrow";
 import { MergeTargetProps } from "./Merge";
-import { ZoneTarget } from "./Target";
+import { ZoneTarget } from "./Zone";
 
 /** Properties of [[BackTarget]] component.
- * @beta
+ * @alpha
  */
 export interface BackTargetProps extends MergeTargetProps {
   /** Describes back target arrow rotation. */
@@ -20,7 +20,7 @@ export interface BackTargetProps extends MergeTargetProps {
 }
 
 /** Zone target used to merge widget back to initial zone.
- * @beta
+ * @alpha
  */
 export class BackTarget extends React.PureComponent<BackTargetProps> {
   public render() {

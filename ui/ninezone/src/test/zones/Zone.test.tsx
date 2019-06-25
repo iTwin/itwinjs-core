@@ -8,14 +8,26 @@ import { Zone } from "../../ui-ninezone";
 
 describe("<Zone />", () => {
   it("should render", () => {
-    mount(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
+    mount(<Zone />);
   });
 
   it("renders correctly", () => {
-    shallow(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
+    shallow(<Zone />).should.matchSnapshot();
+  });
+
+  it("renders correctly positioned", () => {
+    mount(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
   });
 
   it("renders correctly in footer mode", () => {
-    shallow(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} isInFooterMode />).should.matchSnapshot();
+    shallow(<Zone isInFooterMode />).should.matchSnapshot();
+  });
+
+  it("renders floating correctly", () => {
+    shallow(<Zone isFloating />).should.matchSnapshot();
+  });
+
+  it("renders hidden correctly", () => {
+    shallow(<Zone isHidden />).should.matchSnapshot();
   });
 });

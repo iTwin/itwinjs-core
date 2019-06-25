@@ -8,32 +8,29 @@
 $badge-size: 16px;
 
 .nz-widget-rectangular-tab-tab {
-  $active-width: 36px;
-
   box-sizing: border-box;
-  width: $nz-tab-width;
-  height: $nz-tab-height;
   background-color: $nz-tab-background-color;
   border: {
     color: $nz-widget-border-color;
     width: $nz-widget-border-width;
-    radius: $nz-widget-border-radius;
     style: solid;
   };
-  margin-left: auto;
-  margin-right: 0;
-  cursor: pointer;
   pointer-events: auto;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 500ms ease;
-  transition-property: color, background-color;
-  color: $nz-tab-color;
 
-  &:not(:first-child) {
-    margin-top: -1px;
+  &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+    width: $nz-tab-height;
+
+    &:not(:first-child) {
+      margin-left: -$nz-widget-border-width;
+    }
+  }
+
+  &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+    height: $nz-tab-height;
+
+    &:not(:first-child) {
+      margin-top: -$nz-widget-border-width;
+    }
   }
 
   > * {
@@ -47,6 +44,12 @@ $badge-size: 16px;
     filter: unset;
   }
 
+  > .nz-beta-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   &:hover {
     color: $nz-hovered-tab-color;
     transition-duration: 150ms;
@@ -56,64 +59,148 @@ $badge-size: 16px;
     }
   }
 
-  &.nz-mode-active {
-    width: $active-width;
-    background-color: $nz-widget-background-color;
-    color: $nz-active-tab-color;
-    margin-right: -$nz-widget-border-width;
+  &:not(.nz-collapsed) {
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 500ms ease;
+    transition-property: color, background-color;
+    color: $nz-tab-color;
+    border-radius: $nz-widget-border-radius;
 
+    &.nz-mode-active {
+      background-color: $nz-widget-background-color;
+      color: $nz-active-tab-color;
+
+      > * {
+        filter: $nz-active-tab-shadow;
+      }
+
+      &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        background-color: $nz-active-tab-color;
+      }
+    }
+
+    &.nz-bottom-panel-anchor {
+      &.nz-mode-active {
+        height: $nz-tab-width + $nz-widget-border-width;
+        margin-bottom: -$nz-widget-border-width;
+
+        &:before {
+          top: $nz-tab-strip-margin;
+        }
+      }
+
+      &.nz-mode-active, &.nz-mode-open {
+        border-bottom-width: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &.nz-top-panel-anchor {
+      &.nz-mode-active {
+        height: $nz-tab-width + $nz-widget-border-width;
+        margin-top: -$nz-widget-border-width;
+
+        &:before {
+          bottom: $nz-tab-strip-margin;
+        }
+      }
+
+      &.nz-mode-active, &.nz-mode-open {
+        border-top-width: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+    }
+
+    &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+      height: $nz-tab-width;
+
+      &.nz-mode-active {
+        &:before {
+          left: $nz-tab-strip-margin;
+          height: $nz-tab-strip-width;
+          width: $nz-tab-height - $nz-tab-strip-margin * 2 - $nz-widget-border-width * 2;
+        }
+      }
+    }
+
+    &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+      width: $nz-tab-width;
+
+      &.nz-mode-active {
+        &.nz-protruding {
+          width: $nz-active-tab-width;
+        }
+
+        &:not(.nz-protruding) {
+          width: $nz-tab-width + $nz-widget-border-width;
+        }
+
+        &:before {
+          top: $nz-tab-strip-margin;
+          width: $nz-tab-strip-width;
+          height: $nz-tab-height - $nz-tab-strip-margin * 2 - $nz-widget-border-width * 2;
+        }
+      }
+
+      &.nz-right-anchor {
+        &.nz-mode-active {
+          margin-right: -$nz-widget-border-width;
+
+          &:before {
+            left: $nz-tab-strip-margin;
+          }
+        }
+
+        &.nz-mode-active, &.nz-mode-open {
+          border-right-width: 0;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+
+      &.nz-left-anchor {
+        &.nz-mode-active {
+          margin-left: -$nz-widget-border-width;
+
+          &:before {
+            right: $nz-tab-strip-margin;
+          }
+        }
+
+        &.nz-mode-active, &.nz-mode-open {
+          border-left-width: 0;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
+  }
+
+  &.nz-collapsed {
     > * {
-      filter: $nz-active-tab-shadow;
+      display: none;
     }
 
-    &::before {
-      content: '';
-      display: block;
-      position: absolute;
+    &.nz-mode-active {
       background-color: $nz-active-tab-color;
-      top: $nz-tab-strip-margin;
-      width: $nz-tab-strip-width;
-      height: $nz-tab-height - $nz-tab-strip-margin * 2 - $nz-widget-border-width * 2;
+    }
+
+    &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+      width: $nz-collapsed-tab-width;
+    }
+
+    &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+      height: $nz-collapsed-tab-width;
+      width: $nz-tab-height;
     }
   }
-
-  &.nz-right-anchor {
-    &.nz-mode-active {
-      &::before {
-        left: $nz-tab-strip-margin;
-      }
-    }
-
-    &.nz-mode-active, &.nz-mode-open {
-      border-right-width: 0;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-
-  &.nz-left-anchor {
-    margin-left: 0;
-    margin-right: unset;
-
-    &.nz-mode-active {
-      margin-left: -$nz-widget-border-width;
-
-      &::before {
-        right: $nz-tab-strip-margin;
-      }
-    }
-
-    &.nz-mode-active, &.nz-mode-open {
-      border-left-width: 0;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-  }
-
-  >.nz-beta-badge {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
 }

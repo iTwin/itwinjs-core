@@ -12,8 +12,8 @@ beta;BackstageItem
 beta;BackstageItemProps 
 beta;BackstageProps 
 beta;BackstageSeparator 
-beta;BackTarget 
-beta;BackTargetProps 
+alpha;BackTarget 
+alpha;BackTargetProps 
 alpha;Cell 
 alpha;CellProps
 alpha;Chevron 
@@ -29,7 +29,7 @@ alpha;Corner
 internal;Css
 internal;CssProperties
 alpha;DefaultHistoryManager: HistoryManager
-alpha;DefaultStateManager: StateManager
+alpha;DefaultStateManager: ZonesManager
 beta;Dialog 
 beta;DialogProps 
 beta;Direction
@@ -54,11 +54,19 @@ beta;FooterPopupProps
 beta;FooterProps 
 beta;FooterSeparator 
 beta;FooterSeparatorProps 
-alpha;getDefaultNineZoneProps: () => NineZoneProps
+alpha;getDefaultNineZoneStagePanelManagerProps: () => NineZoneStagePanelManagerProps
+alpha;getDefaultNineZoneStagePanelPaneManagerProps: () => NineZoneStagePanelPaneManagerProps
+alpha;getDefaultNineZoneStagePanelsManagerProps: () => NineZoneStagePanelsManagerProps
+beta;getDefaultStagePanelManagerProps: () => StagePanelManagerProps
+beta;getDefaultStagePanelsManagerProps: () => StagePanelsManagerProps
 alpha;getDefaultStatusZoneProps: () => StatusZoneManagerProps
+alpha;getDefaultWidgetHorizontalAnchor: (id: WidgetZoneIndex) => HorizontalAnchor
 alpha;getDefaultWidgetProps: (id: WidgetZoneIndex) => WidgetProps
-alpha;getDefaultZoneProps: (id: WidgetZoneIndex) => ZonePropsBase
-alpha;getDefaultZonesProps: () => Readonly
+alpha;getDefaultWidgetVerticalAnchor: (id: WidgetZoneIndex) => VerticalAnchor.Bottom | VerticalAnchor.Middle
+alpha;getDefaultZoneProps: (id: WidgetZoneIndex) => ZoneManagerProps
+alpha;getDefaultZonesManagerProps: () => ZonesManagerProps
+alpha;getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgets
+alpha;getDefaultZonesManagerZonesProps: () => Readonly
 alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;getToolbarItemProps: 
 alpha;Group 
@@ -87,7 +95,7 @@ alpha;HistoryTray
 alpha;HistoryTrayProps 
 alpha;HorizontalAnchor
 alpha;HorizontalAnchorHelpers
-alpha;isStatusZone: (zone: ZonePropsBase) => zone is StatusZoneManagerProps
+alpha;isStatusZone: (zone: ZoneManagerProps) => zone is StatusZoneManagerProps
 beta;Item 
 beta;ItemProps 
 alpha;Items 
@@ -123,12 +131,27 @@ beta;MessageLayoutProps
 beta;MessageProgress 
 alpha;NestedGroup 
 alpha;NestedGroupProps 
+beta;NestedStagePanelKey
+beta;NestedStagePanelsId
+beta;NestedStagePanelsManager
+beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
 alpha;NineZone 
-alpha;NineZoneFactory = (props: NineZoneProps) => NineZone
-alpha;NineZoneProps
+alpha;NineZoneFactory = (props: ZonesManagerProps) => NineZone
+alpha;NineZoneManager
+alpha;NineZoneManagerPanelTarget
+alpha;NineZoneManagerPaneTarget 
+alpha;NineZoneManagerProps
+alpha;NineZoneNestedStagePanelsManager 
+alpha;NineZoneNestedStagePanelsManagerProps 
 alpha;NineZoneRoot 
+alpha;NineZoneStagePanelManager 
+alpha;NineZoneStagePanelManagerProps 
+alpha;NineZoneStagePanelPaneManager
+alpha;NineZoneStagePanelPaneManagerProps
+alpha;NineZoneStagePanelsManager 
+alpha;NineZoneStagePanelsManagerProps 
 internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
@@ -149,6 +172,7 @@ alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
 alpha;ResizeGrip 
 alpha;ResizeGripProps 
+alpha;ResizeGripResizeArgs
 alpha;ResizeHandle = Corner | Edge
 alpha;Resizers
 alpha;ResizeStrategy
@@ -174,14 +198,31 @@ beta;SnapModePanel
 beta;SnapModePanelProps 
 beta;SnapModeProps 
 beta;SnapProps 
+beta;Splitter 
+beta;SplitterPaneTarget 
+beta;SplitterProps 
+beta;SplitterTarget 
+beta;SplitterTargetProps 
 alpha;Stacked 
 alpha;StackedProps 
-alpha;StateManager
+beta;StagePanel 
+beta;StagePanelManager
+beta;StagePanelManagerProps
+beta;StagePanelProps 
+beta;StagePanels 
+beta;StagePanelsManager
+beta;StagePanelsManagerProps
+beta;StagePanelsProps 
+beta;StagePanelTarget 
+beta;StagePanelTargetProps 
+beta;StagePanelType
+internal;StagePanelTypeHelpers
 beta;Status
 internal;StatusHelpers
 beta;StatusMessageProps 
-beta;StatusZoneIndex = 8
-alpha;StatusZoneManager 
+alpha;StatusZoneIndex = 8
+alpha;StatusZoneManager
+alpha;StatusZoneManagerHelper 
 alpha;StatusZoneManagerProps 
 alpha;Tab 
 alpha;TabGroup 
@@ -241,8 +282,9 @@ alpha;Widget
 alpha;WidgetContent 
 alpha;WidgetContentProps 
 alpha;WidgetProps
+alpha;WidgetTabDragStartArguments
 alpha;WidgetZone 
-beta;WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9
+alpha;WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9
 alpha;WidgetZoneLayout 
 alpha;WidgetZoneLayout
 alpha;WidgetZoneLayoutProps
@@ -253,8 +295,11 @@ alpha;ZoneIdToWidget
 alpha;ZoneIdToWidget
 alpha;ZoneIndex = WidgetZoneIndex | ContentZoneIndex
 alpha;ZoneManager
+alpha;ZoneManagerHelper
+alpha;ZoneManagerProps
 beta;ZoneProps 
-alpha;ZonePropsBase
 beta;Zones 
+alpha;ZonesManager
+alpha;ZonesManagerProps
+alpha;ZonesManagerWidgets =
 beta;ZonesProps 
-alpha;ZonesType =

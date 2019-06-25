@@ -164,7 +164,7 @@ describe("<PanelsProvider />", () => {
       </PanelsProvider>,
     );
     children.calledOnce.should.true;
-    children.calledWith(sinon.match.array.deepEquals([]));
+    children.calledWith(sinon.match.array.deepEquals([])).should.true;
   });
 
   it("should force update", () => {

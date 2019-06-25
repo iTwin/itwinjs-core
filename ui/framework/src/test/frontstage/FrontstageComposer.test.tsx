@@ -8,7 +8,7 @@ import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup } from "../../ui-framework";
-import { getDefaultNineZoneProps } from "@bentley/ui-ninezone";
+import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps } from "@bentley/ui-ninezone";
 import sinon = require("sinon");
 import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
@@ -66,13 +66,21 @@ describe("FrontstageComposer", () => {
     await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
     wrapper.update();
 
-    const newNineZoneProps = getDefaultNineZoneProps();
-    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneStateManager, "handleTabClick").returns(newNineZoneProps);
+    const nineZoneProps: NineZoneManagerProps = {
+      zones: getDefaultZonesManagerProps(),
+      nested: {
+        panels: {
+          inner: getDefaultNineZoneStagePanelsManagerProps(),
+          outer: getDefaultNineZoneStagePanelsManagerProps(),
+        },
+      },
+    };
+    handleTabClickStub = sinon.stub(FrontstageManager.NineZoneManager, "handleWidgetTabClick").returns(nineZoneProps);
 
     wrapper.instance().handleTabClick(6, 0);
 
     handleTabClickStub.calledOnce.should.true;
-    wrapper.instance().state.nineZoneProps.should.eq(newNineZoneProps);
+    wrapper.instance().state.nineZone.should.eq(nineZoneProps);
 
     wrapper.unmount();
   });

@@ -29,9 +29,15 @@ describe("Point", () => {
     sut.y.should.eq(2);
   });
 
-  it("should get distance to other point", () => {
-    const sut = Point.create({ x: 1, y: 2 });
-    sut.getDistanceTo({ x: -1, y: 2 }).should.eq(2);
+  it("should get Euclidean distance to other point", () => {
+    const sut = new Point(1, 2);
+    const distance = sut.getDistanceTo({ x: -1, y: -2 });
+    distance.should.be.closeTo(4.472, 0.001);
+  });
+
+  it("should get Manhattan distance to other point", () => {
+    const sut = new Point(1, 2);
+    sut.getManhattanDistanceTo({ x: -1, y: -2 }).should.eq(6);
   });
 
   it("should get offset to other point", () => {
@@ -95,5 +101,13 @@ describe("Point", () => {
     result.should.not.eq(sut);
     result.x.should.eq(1);
     result.y.should.eq(10);
+  });
+
+  it("should set y by returning a new point", () => {
+    const sut = new Point(1, 2);
+    const props = sut.toProps();
+    Object.keys(props).length.should.eq(2);
+    props.x.should.eq(1);
+    props.y.should.eq(2);
   });
 });

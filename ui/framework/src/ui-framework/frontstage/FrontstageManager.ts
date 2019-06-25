@@ -5,10 +5,9 @@
 /** @module Frontstage */
 
 import { UiEvent } from "@bentley/ui-core";
-import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
+import { NineZoneManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
@@ -109,6 +108,7 @@ export class FrontstageManager {
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
+  private static _nineZoneManager = new NineZoneManager();
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
@@ -172,7 +172,7 @@ export class FrontstageManager {
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
   /** Get  Nine-zone State Manager. */
-  public static get NineZoneStateManager() { return NineZoneStateManager; }
+  public static get NineZoneManager() { return this._nineZoneManager; }
 
   /** Clears the Frontstage map.
    */

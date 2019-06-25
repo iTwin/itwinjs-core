@@ -16,7 +16,7 @@ import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../fr
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
-import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
+import { isStatusZone, DropTarget, RectangleProps, ZoneManagerProps, ZonesManagerWidgets, WidgetZoneIndex, DraggingWidgetProps } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for [[Zone]] Location.
@@ -57,20 +57,17 @@ export interface ZoneProps extends CommonProps {
  * @internal
  */
 export interface ZoneRuntimeProps {
-  contentRef: React.RefObject<HTMLDivElement>;
+  draggingWidget: DraggingWidgetProps | undefined;
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
   zoneDef: ZoneDef;
-  zoneProps: NZ_ZoneProps;
+  zoneProps: ZoneManagerProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
   ghostOutline: RectangleProps | undefined;
   dropTarget: DropTarget;
-  horizontalAnchor: HorizontalAnchor;
-  verticalAnchor: VerticalAnchor;
-  isDragged: boolean | undefined;
-  lastPosition: PointProps | undefined;
-  isUnmergeDrag: boolean;
   isHidden: boolean;
+  widgets: ZonesManagerWidgets;
 }
 
 /** Zone React component.
@@ -163,21 +160,18 @@ export class Zone extends React.Component<ZoneProps> {
     return (
       <FrameworkZone
         className={this.props.className}
+        draggingWidget={runtimeProps.draggingWidget}
+        getWidgetContentRef={runtimeProps.getWidgetContentRef}
         style={this.props.style}
-        contentRef={runtimeProps.contentRef}
         zoneProps={runtimeProps.zoneProps}
         widgetChangeHandler={runtimeProps.widgetChangeHandler}
         targetedBounds={runtimeProps.ghostOutline}
         targetChangeHandler={runtimeProps.targetChangeHandler}
         zoneDefProvider={runtimeProps.zoneDefProvider}
         dropTarget={runtimeProps.dropTarget}
-        horizontalAnchor={runtimeProps.horizontalAnchor}
-        verticalAnchor={runtimeProps.verticalAnchor}
-        isDragged={runtimeProps.isDragged}
-        lastPosition={runtimeProps.lastPosition}
-        isUnmergeDrag={runtimeProps.isUnmergeDrag}
         fillZone={zoneDef.shouldFillZone}
         isHidden={runtimeProps.isHidden}
+        widgets={runtimeProps.widgets}
       />
     );
   }

@@ -8,20 +8,19 @@
   background-color: $buic-background-widget;
   box-sizing: border-box;
 
-  &.uifw-stagepanel-top {
+  &.nz-panel-top {
     border-bottom: 1px solid $buic-background-widget-stroke;
   }
 
-  &.uifw-stagepanel-left {
+  &.nz-panel-left {
     border-right: 1px solid $buic-background-widget-stroke;
   }
 
-  &.uifw-stagepanel-right {
+  &.nz-panel-right {
     border-left: 1px solid $buic-background-widget-stroke;
   }
 
-  &.uifw-stagepanel-bottom {
+  &.nz-panel-bottom {
     border-top: 1px solid $buic-background-widget-stroke;
   }
 }
-

@@ -198,9 +198,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             ]}
           />
         }
-
         leftPanel={
-          <StagePanel size="280px"
+          <StagePanel
+            size={280}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree"
                 control={VisibilityTreeWidgetControl}

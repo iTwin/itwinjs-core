@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
+import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 import { PointerCaptor } from "../../../base/PointerCaptor";
 import { PointProps, Point } from "../../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../../utilities/Rectangle";
@@ -51,10 +51,16 @@ export class TabModeHelpers {
  * @alpha
  */
 export interface TabProps extends CommonProps {
-  /** Describes to which side the widget of this tab is anchored. */
-  anchor: HorizontalAnchor;
+  /** A Beta badge to draw. */
+  betaBadge?: React.ReactNode;
   /** Tab icon. */
   children?: React.ReactNode;
+  /** Describes to which side the widget of this tab is anchored. */
+  horizontalAnchor: HorizontalAnchor;
+  /** Describes if the tab is collapsed. */
+  isCollapsed?: boolean;
+  /** Describes if the tab is protruded when active. */
+  isProtruding: boolean;
   /** Last pointer position of draggable tab. */
   lastPosition?: PointProps;
   /** Describes current tab mode. */
@@ -63,15 +69,22 @@ export interface TabProps extends CommonProps {
   onClick?: () => void;
   /** Function called when tab is dragged. */
   onDrag?: (dragged: PointProps) => void;
-  /** Function called when tab drag action is started. */
+  /** Function called when tab drag action is started.
+   * @param initialPosition Initial pointer position in window coordinates.
+   */
   onDragStart?: (initialPosition: PointProps) => void;
   /** Function called when tab drag action is finished. */
   onDragEnd?: () => void;
   /** Title for the tab. */
   title?: string;
-  /** A Beta badge to draw. */
-  betaBadge?: React.ReactNode;
+  /** Describes to which side the widget is vertically anchored. */
+  verticalAnchor: VerticalAnchor;
 }
+
+/** Default properties of [[Tab]] component.
+ * @alpha
+ */
+type TabDefaultProps = Pick<TabProps, "isProtruding">;
 
 /** Rectangular widget tab. Used in [[Stacked]] component.
  * @alpha
@@ -79,6 +92,10 @@ export interface TabProps extends CommonProps {
 export class Tab extends React.PureComponent<TabProps> {
   private _initial: Point | undefined = undefined;
   private _tab = React.createRef<HTMLDivElement>();
+
+  public static defaultProps: TabDefaultProps = {
+    isProtruding: true,
+  };
 
   public getBounds(): RectangleProps {
     if (!this._tab.current)
@@ -89,7 +106,10 @@ export class Tab extends React.PureComponent<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",
-      HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
+      this.props.isProtruding && "nz-protruding",
+      this.props.isCollapsed && "nz-collapsed",
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
       TabModeHelpers.getCssClassName(this.props.mode),
       this.props.className);
 

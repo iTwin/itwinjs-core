@@ -11,6 +11,7 @@
   "typings": "lib/ui-framework",
   "scripts": {
     "build": "buildIModelJsModule",
+    "build:watch": "tsc --w",
     "clean": "rimraf ./lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./ui-framework.ts --onlyJson %TYPEDOC_THEME%",

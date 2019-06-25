@@ -8,13 +8,13 @@ import * as React from "react";
 
 import { WidgetType, WidgetDef, WidgetState, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { StackedWidget, EachWidgetProps } from "../widgets/StackedWidget";
+import { WidgetStack } from "../widgets/WidgetStack";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
-  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, Zone as NZ_Zone, RectangleProps,
-  Outline, HorizontalAnchor, VerticalAnchor, PointProps,
+  DropTarget, Zone as NZ_Zone, RectangleProps, ZonesManagerWidgets,
+  Outline, ZoneManagerProps, WidgetZoneIndex, DraggingWidgetProps,
 } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
@@ -22,20 +22,17 @@ import { CommonProps } from "@bentley/ui-core";
  * @internal
  */
 export interface FrameworkZoneProps extends CommonProps {
-  contentRef: React.RefObject<HTMLDivElement>;
-  horizontalAnchor: HorizontalAnchor;
-  verticalAnchor: VerticalAnchor;
-  zoneProps: ZonePropsBase;
+  draggingWidget: DraggingWidgetProps | undefined;
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   dropTarget: DropTarget;
-  zoneDefProvider: ZoneDefProvider;
-  isDragged: boolean | undefined;
-  lastPosition: PointProps | undefined;
-  isUnmergeDrag: boolean;
   fillZone?: boolean;
   isHidden: boolean;
+  widgets: ZonesManagerWidgets;
+  zoneDefProvider: ZoneDefProvider;
+  zoneProps: ZoneManagerProps;
 }
 
 interface FrameworkZoneState {
@@ -113,13 +110,13 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   private getWidgetPropsIdForDef(widgetDef: WidgetDef): number | undefined {
     // istanbul ignore else
     if (this.props.zoneProps.widgets.length > 0) {
-      for (const wProps of this.props.zoneProps.widgets) {
-        const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
+      for (const wId of this.props.zoneProps.widgets) {
+        const zoneDef = this.props.zoneDefProvider.getZoneDef(wId);
 
         // istanbul ignore else
         if (zoneDef) {
           if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
-            return wProps.id;
+            return wId;
         }
       }
     }
@@ -129,7 +126,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
   private _getWidget = () => {
     if (this.props.zoneProps.widgets.length === 1) {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0].id);
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0]);
       // istanbul ignore if
       if (!zoneDef)
         return null;
@@ -141,70 +138,18 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       }
     }
 
-    let widgetDefToActivate: WidgetDef | undefined;
-    const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
-
-    this.props.zoneProps.widgets.forEach((nzWidgetProps: NZ_WidgetProps) => {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(nzWidgetProps.id);
-      // istanbul ignore if
-      if (!zoneDef)
-        return;
-
-      const visibleWidgetDefs = zoneDef.widgetDefs
-        .filter((widgetDef: WidgetDef) => {
-          return widgetDef.isVisible && !widgetDef.isFloating;
-        });
-
-      if (!visibleWidgetDefs || 0 === visibleWidgetDefs.length)
-        return;
-
-      if (nzWidgetProps.tabIndex === -2) { // -2 is used when stage is initially created and we need to apply default widget state.
-        // No WidgetTab has been selected so find the first WidgetDef set to Open and use that as the widgetDefToActivate
-        for (const currentWidgetDef of visibleWidgetDefs) {
-          if (WidgetState.Open === currentWidgetDef.state) {
-            if (!widgetDefToActivate)
-              widgetDefToActivate = currentWidgetDef;
-          }
-        }
-      } else {
-        // if there was a state change in this zone then force the WidgetDef state to match that defined by the active tabIndex
-        for (let index = 0; index < visibleWidgetDefs.length; index++) {
-          if (nzWidgetProps.tabIndex === index)
-            widgetDefToActivate = visibleWidgetDefs[index];
-        }
-      }
-
-      widgets.push({
-        id: nzWidgetProps.id,
-        isStatusBar: zoneDef.isStatusBar,
-        tabs: visibleWidgetDefs.map((widgetDef: WidgetDef) => {
-          return {
-            isActive: widgetDef === widgetDefToActivate,
-            iconSpec: widgetDef.iconSpec,
-            title: widgetDef.label,
-            widgetName: widgetDef.id,
-            betaBadge: widgetDef.betaBadge,
-          };
-        }),
-      });
-    });
-
-    if (widgets.length === 0)
-      return null;
-
     return (
-      <StackedWidget
-        contentRef={this.props.contentRef}
+      <WidgetStack
+        draggingWidget={this.props.draggingWidget}
         fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
-        horizontalAnchor={this.props.horizontalAnchor}
-        isDragged={this.props.isDragged}
+        getWidgetContentRef={this.props.getWidgetContentRef}
+        isCollapsed={false}
+        isInStagePanel={false}
         isFloating={this.props.zoneProps.floating ? true : false}
-        isUnmergeDrag={this.props.isUnmergeDrag}
-        lastPosition={this.props.lastPosition}
-        verticalAnchor={this.props.verticalAnchor}
-        widgets={widgets}
+        widgets={this.props.zoneProps.widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        zoneId={this.props.zoneProps.id}
+        zoneDefProvider={this.props.zoneDefProvider}
+        zonesWidgets={this.props.widgets}
       />
     );
   }
