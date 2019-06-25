@@ -122,9 +122,9 @@ export abstract class GeometricModelState extends ModelState {
 }
 
 interface PrimaryTreeId {
-  treeId: IModelTile.PrimaryTreeId;
-  modelId: Id64String;
-  is3d: boolean;
+  readonly treeId: IModelTile.PrimaryTreeId;
+  readonly modelId: Id64String;
+  readonly is3d: boolean;
 }
 
 class PrimaryTreeSupplier implements TileTree.Supplier {
@@ -163,7 +163,7 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 
 class PrimaryTreeReference extends TileTree.Reference {
   private readonly _view: ViewState;
-  private readonly _id: PrimaryTreeId;
+  private _id: PrimaryTreeId;
   private _owner: TileTree.Owner;
 
   public constructor(view: ViewState, model: GeometricModelState) {
@@ -180,7 +180,12 @@ class PrimaryTreeReference extends TileTree.Reference {
   public get treeOwner(): TileTree.Owner {
     const newId = PrimaryTreeReference.createTreeId(this._view, this._id.modelId);
     if (0 !== IModelTile.compareTreeIds(newId, this._id.treeId)) {
-      this._id.treeId = newId;
+      this._id = {
+        modelId: this._id.modelId,
+        is3d: this._id.is3d,
+        treeId: newId,
+      };
+
       this._owner = primaryTreeSupplier.getOwner(this._id, this._view.iModel);
     }
 

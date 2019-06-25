@@ -18,7 +18,8 @@ function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.O
     tree.collectStatistics(stats);
 }
 
-type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => void;
+// Returns the number of tile trees processed.
+type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => number;
 type PurgeMem = (olderThan?: BeTimePoint) => void;
 
 const enum MemIndex {
@@ -37,8 +38,21 @@ const memLabels = [
 ];
 
 const calcMem: CalcMem[] = [
-  (stats, vp) => vp.collectStatistics(stats),
-  (stats, vp) => vp.view.iModel.tiles.forEachTreeOwner((owner) => collectTileTreeMemory(stats, owner)),
+  (stats, vp) => {
+    vp.collectStatistics(stats);
+    const trees = new Set<TileTree>();
+    vp.discloseTileTrees(trees);
+    return trees.size;
+  },
+  (stats, vp) => {
+    let numTrees = 0;
+    vp.view.iModel.tiles.forEachTreeOwner((owner) => {
+      collectTileTreeMemory(stats, owner);
+      if (undefined !== owner.tileTree)
+        ++numTrees;
+    });
+    return numTrees;
+  },
 ];
 
 // ###TODO...
@@ -120,6 +134,7 @@ export class MemoryTracker {
   private _curIntervalId?: NodeJS.Timer;
   private _memIndex = MemIndex.None;
   private readonly _totalElem: HTMLElement;
+  private readonly _totalTreesElem: HTMLElement;
   private readonly _purgeButton: HTMLButtonElement;
   private readonly _textures: MemoryPanel;
   private readonly _buffers: MemoryPanel;
@@ -136,6 +151,7 @@ export class MemoryTracker {
     this._textures = new MemoryPanel(this._div, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps"]);
     this._buffers = new MemoryPanel(this._div, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
     this._totalElem = this.addStatistics(this._div);
+    this._totalTreesElem = this.addStatistics(this._div);
 
     this._purgeButton = this.addPurgeButton(this._div);
 
@@ -215,8 +231,9 @@ export class MemoryTracker {
   private update(): void {
     const calc = calcMem[this._memIndex];
     this._stats.clear();
-    calc(this._stats, this._vp);
+    const numTrees = calc(this._stats, this._vp);
     this._totalElem.innerText = "Total: " + formatMemory(this._stats.totalBytes);
+    this._totalTreesElem.innerText = "Total Tile Trees: " + numTrees;
 
     this._textures.update(this._stats.consumers, this._stats.totalBytes - this._stats.buffers.totalBytes);
     this._buffers.update(this._stats.buffers.consumers, this._stats.buffers.totalBytes);

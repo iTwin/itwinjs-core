@@ -702,6 +702,32 @@ describe("mirukuru TileTree", () => {
       expect(stats.totalDispatchedRequests).to.equal(numRetries + 1);
     });
   });
+
+  it("should use a different tile tree when view flags change", async () => {
+    const modelId = "0x1c";
+    await imodel.models.load(modelId);
+    const model = imodel.models.getLoaded(modelId) as GeometricModelState;
+
+    let edgesRequired = false;
+    const viewState = {
+      iModel: imodel,
+      viewFlags: { edgesRequired: () => edgesRequired },
+    };
+
+    const treeRef = model.createTileTreeReference(viewState as ViewState);
+    const noEdges = treeRef.treeOwner;
+
+    edgesRequired = true;
+    const edges = treeRef.treeOwner;
+    expect(edges).not.to.equal(noEdges);
+
+    const edges2 = treeRef.treeOwner;
+    expect(edges2).to.equal(edges);
+
+    edgesRequired = false;
+    const noEdges2 = treeRef.treeOwner;
+    expect(noEdges2).to.equal(noEdges);
+  });
 });
 
 describe("TileAdmin", () => {
