@@ -1659,6 +1659,32 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
+// @beta
+export class ILinearElementProvidedBySource extends RelatedElement {
+    constructor(sourceId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class ILinearLocationLocatesElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class ILinearlyLocatedAttributesElement extends RelatedElement {
+    constructor(attributedElementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export class IModelDb extends IModel {
     abandonChanges(): void;
@@ -2733,6 +2759,13 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
+// @beta
+export class IReferentReferencesElement extends RelatedElement {
+    constructor(referencedElementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export enum KeepBriefcase {
     // (undocumented)
@@ -2837,6 +2870,20 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation imp
     }
 
 // @beta
+export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class LinearlyReferencedFromPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
 export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
     constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2869,6 +2916,13 @@ export enum LinearlyReferencedLocationType {
     At = 0,
     // (undocumented)
     FromTo = 1
+}
+
+// @beta
+export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta

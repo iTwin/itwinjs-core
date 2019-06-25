@@ -130,6 +130,10 @@ public;class GroupInformationElement
 public;class GroupInformationModel 
 public;GroupInformationPartition 
 public;GroupModel 
+beta;ILinearElementProvidedBySource 
+beta;ILinearLocationLocatesElement 
+beta;ILinearlyLocatedAlongILinearElement 
+beta;ILinearlyLocatedAttributesElement 
 public;IModelDb 
 public;IModelDb
 internal;TileContentState
@@ -149,6 +153,7 @@ public;InformationRecordModel
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
 beta;InstanceChange
+beta;IReferentReferencesElement 
 public;KeepBriefcase
 public;KnownLocations
 internal;LightLocation 
@@ -159,9 +164,12 @@ beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
 beta;LinearlyReferencedAtLocation 
+beta;LinearlyReferencedAtPositionRefersToReferent 
+beta;LinearlyReferencedFromPositionRefersToReferent 
 beta;LinearlyReferencedFromToLocation 
 beta;LinearlyReferencedLocation 
 beta;LinearlyReferencedLocationType
+beta;LinearlyReferencedToPositionRefersToReferent 
 beta;class LinearPhysicalElement 
 beta;LinearReferencingSchema 
 public;LineStyle 
