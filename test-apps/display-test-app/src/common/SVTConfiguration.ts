@@ -21,6 +21,7 @@ export interface SVTConfiguration {
   useProjectExtents?: boolean;
   displaySolarShadows?: boolean; // default ON
   tileTreeExpirationSeconds?: number;
+  alertOnExceptions?: boolean; // If true, when an exception occurs inside the ToolAdmin event loop, they will be caught and displayed in an alert box.
 }
 
 export interface ConnectProjectConfiguration {

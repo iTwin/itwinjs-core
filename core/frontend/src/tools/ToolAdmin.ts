@@ -355,6 +355,10 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
+  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop. If undefined, such exceptions will propagate and most likely be uncaught.
+   * @alpha
+   */
+  public static exceptionHandler?: (exception: any) => void;
 
   private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
@@ -702,15 +706,22 @@ export class ToolAdmin {
     if (!ToolAdmin._wantEventLoop) // flag turned on at startup
       return;
 
-    IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+    try {
+      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
 
-    IModelApp.viewManager.renderLoop();
-    IModelApp.tileAdmin.process();
+      IModelApp.viewManager.renderLoop();
+      IModelApp.tileAdmin.process();
 
-    if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
-      const now = BeTimePoint.now();
-      ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
-      IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+      if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
+        const now = BeTimePoint.now();
+        ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
+        IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+      }
+    } catch (exception) {
+      if (undefined === ToolAdmin.exceptionHandler)
+        throw exception;
+      else
+        ToolAdmin.exceptionHandler(exception);
     }
 
     requestAnimationFrame(ToolAdmin.eventLoop);

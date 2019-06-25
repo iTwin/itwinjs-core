@@ -33,6 +33,7 @@ function setupStandaloneConfiguration() {
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
     configuration.enableDiagnostics = undefined === process.env.SVT_DISABLE_DIAGNOSTICS;
+    configuration.alertOnExceptions = undefined !== process.env.SVT_ALERT_ON_EXCEPTIONS;
     if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
       configuration.signInForStandalone = true;
 

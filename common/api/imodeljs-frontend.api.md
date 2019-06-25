@@ -6811,6 +6811,8 @@ export class ToolAdmin {
     doUndoOperation(): Promise<boolean>;
     // @internal (undocumented)
     endDynamics(): void;
+    // @alpha
+    static exceptionHandler?: (exception: any) => void;
     // @internal (undocumented)
     exitInputCollector(): void;
     // @internal (undocumented)
