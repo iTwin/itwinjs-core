@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration, BeEvent, BeTimePoint, AbandonedError } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, BeTimePoint, AbandonedError, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -24,6 +24,7 @@ import {
   InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings,
 } from "./Tool";
 import { ViewTool } from "./ViewTool";
+import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
@@ -355,10 +356,35 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
-  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop. If undefined, such exceptions will propagate and most likely be uncaught.
-   * @alpha
+
+  /** Whether to include a stack trace in unhandled-exception alerts
+   * @beta
    */
-  public static exceptionHandler?: (exception: any) => void;
+  public static wantExceptionDetails = true;
+  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop. To override, assign to your own function, e.g.:
+   * ```ts
+   * ToolAdmin.exceptionHandler = (exception: any) => {
+   *  ... your implementation here
+   * }
+   * ```
+   * @beta
+   */
+  public static exceptionHandler(exception: any) {
+    const msg: string = undefined !== exception.stack ? exception.stack : exception.toString();
+    Logger.logError("imodeljs-frontend.unhandledException", msg);
+
+    let out = "<h1>" + IModelApp.i18n.translate("iModelJs:Errors.ReloadPage") + "<h1>";
+    if (ToolAdmin.wantExceptionDetails) {
+      out += "<h3>" + IModelApp.i18n.translate("iModelJs:Errors.Details") + "</h3><h4>";
+      msg.split("\n").forEach((line) => out += line + "<br>");
+      out += "</h4>";
+    }
+
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical); // tslint:disable-line:no-floating-promises
+    debugger; // tslint:disable-line:no-debugger
+  }
 
   private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
@@ -694,8 +720,8 @@ export class ToolAdmin {
       this._processingEvent = true; // we can't allow any further event processing until the current event completes.
       await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
-    } catch (error) {
-      throw error; // enable this in debug only.
+    } catch (exception) {
+      ToolAdmin.exceptionHandler(exception);
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
     }
@@ -707,21 +733,18 @@ export class ToolAdmin {
       return;
 
     try {
-      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
-
-      IModelApp.viewManager.renderLoop();
-      IModelApp.tileAdmin.process();
+      const { toolAdmin, viewManager, tileAdmin } = IModelApp;
+      toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      viewManager.renderLoop();
+      tileAdmin.process();
 
       if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
         const now = BeTimePoint.now();
         ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+        viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
       }
     } catch (exception) {
-      if (undefined === ToolAdmin.exceptionHandler)
-        throw exception;
-      else
-        ToolAdmin.exceptionHandler(exception);
+      ToolAdmin.exceptionHandler(exception);
     }
 
     requestAnimationFrame(ToolAdmin.eventLoop);

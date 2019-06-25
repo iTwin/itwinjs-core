@@ -24,7 +24,6 @@ import {
   OidcBrowserClient,
   RenderDiagnostics,
   RenderSystem,
-  ToolAdmin,
   WebGLExtensionName,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
@@ -140,13 +139,6 @@ async function main() {
   DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
-
-  if (configuration.alertOnExceptions) {
-    ToolAdmin.exceptionHandler = (ex: any) => {
-      const msg = undefined !== ex ? ex.toString() : "undefined error";
-      alert(msg);
-    };
-  }
 
   // Choose RpcConfiguration based on whether we are in electron or browser
   let rpcConfiguration: RpcConfiguration;
