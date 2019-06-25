@@ -90,7 +90,7 @@ describe("Item", () => {
     });
     const key = testItem.getKey();
     const numericKey = parseInt(key, 10);
-    expect(numericKey).to.be.greaterThan(1000);
+    expect(numericKey).to.be.at.least(1000);
   });
 
   it("ActionButtonItemDef with no id but index gets index", () => {
