@@ -34,3 +34,87 @@ Many incremental enhancements contributed to improved performance and quality of
   * Enabling tiles to be downloaded without edge data, and optimizing shaders to more efficiently render tiles without edges.
 
 
+
+## Changes to how binary type ECProperty with `extendedTypeName="BeGuid"` is treated in ECSql query
+
+### When such property like `FederationGuid` from `bis.Element` is queried, now return `string` representation of Guid. Previously it returned a 16 byte `uint8array`
+
+```js
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid IS NOT NULL")) {
+    // expect row.federationGuid as string type of format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    // previously it was returning a 16 byte uint8array
+  }
+```
+
+### When searching on property like `FederationGuid` from `bis.Element` both uint8array and string type parameter is supported
+
+```js
+  // Bind string representation of Guid can now be binded to ECSql query.
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = ?", ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"])) {
+    // expect row.federationGuid as string type of format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    // previously it was returning a 16 byte uint8array
+  }
+```
+
+### Directly using Guid string in ECSql is not directly supported yet. If its necessary, use helper ECSql function `GuidToStr(B)` or `StrToGuid(S)` instead
+
+```js
+  // WARNING following will not work as of now as no implicit conversation take place between BINARY and STRING. This will be fixed in future version.
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) {
+    // ...
+  }
+```
+
+### Use StrToGuid() to parse string version of Guid into a binary version of Guid
+
+```js
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = StrToGuid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')")) {
+    // ...
+  }
+```
+
+### Use GuidToStr() to convert binary Guid to string version of Guid
+
+```js
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE GuidToStr(FederationGuid) = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) {
+    // ...
+  }
+```
+
+## ECSQL support for correlated subqueries
+
+ECSql now supported following syntax for correlated subqueries
+```
+  [NOT] EXISTS (<subquery>)
+```
+### Example
+```sql
+SELECT ECInstanceId FROM bis.Element E
+  WHERE EXISTS (
+      SELECT 1 FROM meta.ECClassDef C WHERE C.ECInstanceId = E.ECClassId AND C.Name='Pump')
+
+SELECT ECInstanceId FROM bis.Element E
+  WHERE NOT EXISTS (
+      SELECT 1 FROM meta.ECClassDef C WHERE C.ECInstanceId = E.ECClassId AND C.Name='Pump')
+
+```
+
+## ECSQL support for bitwise operators
+ECSql now supported following bitwise operator. The operand is treated as int64
+
+* `~` not
+* `|` or
+* `&` and
+* `<<` left-shift
+* `>>` right-shift
+
+### Example
+```sql
+SELECT 2 & prop FROM test.Foo WHERE prop & 2 = 2
+
+SELECT 2 | prop FROM test.Foo WHERE prop | 2 = 2
+
+SELECT *  FROM test.Foo WHERE (1 << 2) & prop
+
+SELECT * FROM test.Foo WHERE ~prop & 2;
+```
