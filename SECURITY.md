@@ -2,7 +2,7 @@
 
 The iModel.js team takes security bugs in the iModel.js library seriously. We appreciate your efforts to responsibly disclose your findings and will make every effort to acknowledge your contributions.
 
-To report a security issue, email [security@bentley.com](mailto:security@bentley.com?subject=[SECURITY]%20iModel.js), and include the words **SECURITY** and **Model.js** in the subject line.
+To report a security issue, email [security@bentley.com](mailto:security@bentley.com?subject=[SECURITY]%20iModel.js), and include the words **SECURITY** and **iModel.js** in the subject line.
 
 The iModel.js team will send back a response indicating the next steps in handling your report. After the initial reply to your report, the security team will keep you informed of the progress towards a fix and full announcement. We may ask for additional information or guidance.
 
