@@ -35,26 +35,28 @@ class Notifications extends NotificationManager {
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
-    const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
+  public async openMessageBox(_mbType: MessageBoxType, message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+    const rootDiv = document.getElementById("root") as HTMLDivElement;
     if (!rootDiv)
-      return Promise.resolve(MessageBoxValue.Cancel);
+      return MessageBoxValue.Cancel;
 
     // create a dialog element.
-    const dialog: HTMLDialogElement = document.createElement("dialog") as HTMLDialogElement;
+    const dialog = document.createElement("dialog") as HTMLDialogElement;
     dialog.className = "notification-messagebox";
 
     // set up the message
-    const span: HTMLSpanElement = document.createElement("span");
-    if (typeof _message === "string")
-      span.innerHTML = _message;
+    const span = document.createElement("span");
+    if (typeof message === "string")
+      span.innerHTML = message;
     else
-      span.appendChild(_message);
+      span.appendChild(message);
     span.className = "notification-messageboxtext";
     dialog.appendChild(span);
 
+    let onClicked: any;
+    const promise = new Promise<MessageBoxValue>((res, _rej) => onClicked = res);
     // make the ok button.
-    const button: HTMLButtonElement = document.createElement("button");
+    const button = document.createElement("button");
     button.className = "notification-messageboxbutton";
     button.innerHTML = "Ok";
     button.onclick = (event) => {
@@ -63,14 +65,14 @@ class Notifications extends NotificationManager {
       const topDiv = msgDialog.parentElement as HTMLDivElement;
       msgDialog.close();
       topDiv.removeChild(dialog);
+      onClicked(MessageBoxValue.Ok);
     };
     dialog.appendChild(button);
 
     // add the dialog to the root div element and show it.
     rootDiv.appendChild(dialog);
     dialog.showModal();
-
-    return Promise.resolve(MessageBoxValue.Ok);
+    return promise;
   }
 
   public get isToolTipSupported() { return true; }

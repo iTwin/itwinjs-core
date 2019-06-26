@@ -6830,7 +6830,14 @@ export class ToolAdmin {
     // @internal (undocumented)
     endDynamics(): void;
     // @beta
-    static exceptionHandler(exception: any): void;
+    static exceptionHandler(exception: any): Promise<any>;
+    // @beta
+    static exceptionOptions: {
+        log: boolean;
+        alertBox: boolean;
+        details: boolean;
+        launchDebugger: boolean;
+    };
     // @internal (undocumented)
     exitInputCollector(): void;
     // @internal (undocumented)
@@ -6910,9 +6917,7 @@ export class ToolAdmin {
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
     // (undocumented)
     readonly viewTool: ViewTool | undefined;
-    // @beta
-    static wantExceptionDetails: boolean;
-}
+    }
 
 // @public (undocumented)
 export type ToolList = ToolType[];

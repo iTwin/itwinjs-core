@@ -357,24 +357,43 @@ export class ToolAdmin {
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
 
-  /** Whether to include a stack trace in unhandled-exception alerts
+  /** Options for how uncaught exceptions should be handled.
    * @beta
    */
-  public static wantExceptionDetails = true;
-  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop. To override, assign to your own function, e.g.:
+  public static exceptionOptions = {
+    /** log exception to Logger */
+    log: true,
+    /** Show an alert box explaining that a problem happened */
+    alertBox: true,
+    /** include the "gory details" (e.g. stack trace) */
+    details: true,
+    /** break into debugger (only works if debugger is already opened) */
+    launchDebugger: true,
+  };
+
+  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop.
+   * @note If you wish to entirely replace this method, you can just assign to your own function, e.g.:
    * ```ts
-   * ToolAdmin.exceptionHandler = (exception: any) => {
+   * ToolAdmin.exceptionHandler = (exception: any): Promise<any> => {
    *  ... your implementation here
    * }
    * ```
    * @beta
    */
-  public static exceptionHandler(exception: any) {
+  public static async exceptionHandler(exception: any): Promise<any> {
+    const opts = ToolAdmin.exceptionOptions;
     const msg: string = undefined !== exception.stack ? exception.stack : exception.toString();
-    Logger.logError("imodeljs-frontend.unhandledException", msg);
+    if (opts.log)
+      Logger.logError("imodeljs-frontend.unhandledException", msg);
 
-    let out = "<h1>" + IModelApp.i18n.translate("iModelJs:Errors.ReloadPage") + "<h1>";
-    if (ToolAdmin.wantExceptionDetails) {
+    if (opts.launchDebugger) // this does nothing if the debugger window is not already opened
+      debugger; // tslint:disable-line:no-debugger
+
+    if (!opts.alertBox)
+      return;
+
+    let out = "<h2>" + IModelApp.i18n.translate("iModelJs:Errors.ReloadPage") + "</h2>";
+    if (opts.details) {
       out += "<h3>" + IModelApp.i18n.translate("iModelJs:Errors.Details") + "</h3><h4>";
       msg.split("\n").forEach((line) => out += line + "<br>");
       out += "</h4>";
@@ -382,8 +401,7 @@ export class ToolAdmin {
 
     const div = document.createElement("div");
     div.innerHTML = out;
-    IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical); // tslint:disable-line:no-floating-promises
-    debugger; // tslint:disable-line:no-debugger
+    return IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical);
   }
 
   private static _wantEventLoop = false;
@@ -717,34 +735,36 @@ export class ToolAdmin {
       return; // we're still working on the previous event.
 
     try {
-      this._processingEvent = true; // we can't allow any further event processing until the current event completes.
+      this._processingEvent = true;  // we can't allow any further event processing until the current event completes.
       await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception);
+      await ToolAdmin.exceptionHandler(exception); // we don't attempt to exit here
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
     }
   }
 
   /** The main event processing loop for Tools (and rendering). */
-  private static eventLoop(): void {
+  private static eventLoop() {
     if (!ToolAdmin._wantEventLoop) // flag turned on at startup
       return;
 
     try {
-      const { toolAdmin, viewManager, tileAdmin } = IModelApp;
-      toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
-      viewManager.renderLoop();
-      tileAdmin.process();
+      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.viewManager.renderLoop();
+      IModelApp.tileAdmin.process();
 
       if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
         const now = BeTimePoint.now();
         ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
-        viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+        IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
       }
     } catch (exception) {
-      ToolAdmin.exceptionHandler(exception);
+      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
+        close(); // this does nothing in a web browser, closes electron.
+      });
+      return; // unrecoverable after exception, don't request any further frames.
     }
 
     requestAnimationFrame(ToolAdmin.eventLoop);

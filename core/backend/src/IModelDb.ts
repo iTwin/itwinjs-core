@@ -937,7 +937,6 @@ export class IModelDb extends IModel {
       Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggerCategory, "IModelDb found in briefcase cache", () => iModelToken);
     return briefcaseEntry.iModelDb;
   }
 
