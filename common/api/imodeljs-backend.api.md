@@ -1612,6 +1612,12 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 }
 
 // @public
+export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
 export abstract class GraphicalModel2d extends GeometricModel2d {
     // @internal (undocumented)
     static readonly className: string;

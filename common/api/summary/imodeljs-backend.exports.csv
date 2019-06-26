@@ -123,6 +123,7 @@ public;Graphic3d
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
 public;class GraphicalElement3d 
+public;GraphicalElement3dRepresentsElement 
 public;class GraphicalModel2d 
 public;class GraphicalType2d 
 public;Group 

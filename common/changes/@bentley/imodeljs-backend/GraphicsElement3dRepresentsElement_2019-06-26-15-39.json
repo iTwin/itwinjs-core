@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Adding relationship class for GraphicalElement3dRepresentsElement.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "diego.diaz@bentley.com"
+}
