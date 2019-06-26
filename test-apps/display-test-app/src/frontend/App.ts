@@ -53,21 +53,19 @@ class Notifications extends NotificationManager {
     span.className = "notification-messageboxtext";
     dialog.appendChild(span);
 
-    let onClicked: any;
-    const promise = new Promise<MessageBoxValue>((res, _rej) => onClicked = res);
-    // make the ok button.
+    // make the ok button
     const button = document.createElement("button");
     button.className = "notification-messageboxbutton";
     button.innerHTML = "Ok";
-    button.onclick = (event) => {
-      const okButton = event.target as HTMLButtonElement;
-      const msgDialog = okButton.parentElement as HTMLDialogElement;
-      const topDiv = msgDialog.parentElement as HTMLDivElement;
-      msgDialog.close();
-      topDiv.removeChild(dialog);
-      onClicked(MessageBoxValue.Ok);
-    };
     dialog.appendChild(button);
+
+    const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
+      button.addEventListener("click", () => {
+        dialog.close();
+        rootDiv.removeChild(dialog);
+        resolve(MessageBoxValue.Ok);
+      });
+    });
 
     // add the dialog to the root div element and show it.
     rootDiv.appendChild(dialog);
