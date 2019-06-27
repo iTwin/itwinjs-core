@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not clear selection set before replacing it - this causes unnecessary onChanged events",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}
