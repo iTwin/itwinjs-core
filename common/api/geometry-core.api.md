@@ -4037,8 +4037,9 @@ export class StrokeOptions {
     static applyAngleTol(options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number): number;
     applyAngleTol(minCount: number, sweepRadians: number, defaultStepRadians: number): number;
     applyChordTol(minCount: number, radius: number, sweepRadians: number): number;
-    static applyMaxEdgeLength(options: StrokeOptions | undefined, minCount: number, edgeLength: number): number;
+    applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number;
     applyMaxEdgeLength(minCount: number, totalLength: number): number;
+    static applyMaxEdgeLength(options: StrokeOptions | undefined, minCount: number, edgeLength: number): number;
     applyMinStrokesPerPrimitive(minCount: number): number;
     applyTolerancesToArc(radius: number, sweepRadians?: number): number;
     chordTol?: number;

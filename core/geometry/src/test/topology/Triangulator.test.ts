@@ -617,5 +617,60 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "ACSArrows");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("BowTies", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const step = 10.0;
+    let dx = 0.;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // Create bow ties.   Start triangulation at each vertex.
+      const basePoints = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(4, 0, 0),
+        Point3d.create(0, a, 0),
+        Point3d.create(4, a, 0)];
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        let dy = 0.0;
+        const shiftedPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
+        dx += step;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "BowTies");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("FlexQuad", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const step = 10.0;
+    let dx = 0.;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // Create bow ties.   Start triangulation at each vertex.
+      const basePoints = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(4, 0, 0),
+        Point3d.create(4, a, 0),
+        Point3d.create(3, 1, 0)];
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        let dy = 0.0;
+        const shiftedPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
+        dx += step;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "FlexQuad");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });

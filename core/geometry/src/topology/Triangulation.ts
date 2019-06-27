@@ -416,7 +416,7 @@ export class Triangulator {
 
     let next;
     let next2;
-    let maxCandidate = ear.countEdgesAroundFace() - 2;
+    let maxCandidate = ear.countEdgesAroundFace();
     let numCandidate = 0;
     ear.clearMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
     // iterate through ears, slicing them one by one

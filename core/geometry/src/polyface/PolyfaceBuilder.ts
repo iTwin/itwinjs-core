@@ -214,7 +214,7 @@ export class UVSurfaceOps {
  *    * `builder.addTransformedUnitBox (transform)`
  *    * `builder.addTriangleFan (conePoint, linestring, toggleOrientation)`
  *    * `builder.addTrianglesInUncheckedPolygon (linestring, toggle)`
- *    * `builder.addUVGrid(surface,numU, numV, createFanInCaps)`
+ *    * `builder.addUVGridBody(surface,numU, numV, createFanInCaps)`
  *    * `builder.addGraph(Graph, acceptFaceFunction)`
  *  *  Extract with `builder.claimPolyface(true)`
  *
