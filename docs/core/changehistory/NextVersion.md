@@ -35,55 +35,39 @@ Many incremental enhancements contributed to improved performance and quality of
 
 
 
-## Changes to how binary type ECProperty with `extendedTypeName="BeGuid"` is treated in ECSql query
+## Changes to handling of GUID ECProperties
 
-### When such property like `FederationGuid` from `bis.Element` is queried, now return `string` representation of Guid. Previously it returned a 16 byte `uint8array`
+A [Guid]($bentleyjs-core) is stored inside an [IModelDb]($backend) as an ECProperty of `binary` type (a "blob" of bytes) with `extendedTypeName="BeGuid"`, but represented in Typescript as a `string`. ECSql queries must translate between these two representations. Previously, querying such a property would return a 16-byte `Uint8Array`; in iModel.js 1.1 it instead returns a `string`.
 
-```js
+The example below selects a Guid property:
+```ts
   for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid IS NOT NULL")) {
-    // expect row.federationGuid as string type of format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    // previously it was returning a 16 byte uint8array
+    // Expect row.federationGuid to be a string of the format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   }
 ```
 
-### When searching on property like `FederationGuid` from `bis.Element` both uint8array and string type parameter is supported
-
-```js
-  // Bind string representation of Guid can now be binded to ECSql query.
+When a Guid is bound to an ECSql parameter, either the `Uint8Array` **or** the `string` representation can be supplied. In the example below, the `string` representation is supplied:
+```ts
   for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = ?", ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"])) {
-    // expect row.federationGuid as string type of format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    // previously it was returning a 16 byte uint8array
-  }
-```
-
-### Directly using Guid string in ECSql is not directly supported yet. If its necessary, use helper ECSql function `GuidToStr(B)` or `StrToGuid(S)` instead
-
-```js
-  // WARNING following will not work as of now as no implicit conversation take place between BINARY and STRING. This will be fixed in future version.
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) {
     // ...
   }
 ```
 
-### Use StrToGuid() to parse string version of Guid into a binary version of Guid
+Currently, the `string` representation **cannot** be used directly inside an ECSql statement. This will be fixed in a future version. For now, use the helper functions `GuidToStr` and `StrToGuid` to explicitly convert between binary and string:
+```ts
+  // WARNING: The following will not work because no implicit conversion between BINARY and STRING is performed.
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) { /* */ }
 
-```js
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = StrToGuid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')")) {
-    // ...
-  }
-```
+  // This query is logically equivalent to the above, and will work as expected because the string is explicitly converted to a blob.
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = StrToGuid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')")) { /* */ }
 
-### Use GuidToStr() to convert binary Guid to string version of Guid
-
-```js
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE GuidToStr(FederationGuid) = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) {
-    // ...
-  }
+  // The inverse conversion can also be useful.
+  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE GuidToStr(FederationGuid) = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) { /* */ }
 ```
 
 ## ECSQL support for correlated subqueries
 
-ECSql now supported following syntax for correlated subqueries
+ECSql now supports the following syntax for correlated subqueries
 ```
   [NOT] EXISTS (<subquery>)
 ```
@@ -100,13 +84,14 @@ SELECT ECInstanceId FROM bis.Element E
 ```
 
 ## ECSQL support for bitwise operators
-ECSql now supported following bitwise operator. The operand is treated as int64
 
-* `~` not
-* `|` or
-* `&` and
-* `<<` left-shift
-* `>>` right-shift
+ECSql now supports the following bitwise operators. The operand is treated as a signed 64-bit integer.
+
+  * `~` not
+  * `|` or
+  * `&` and
+  * `<<` left-shift
+  * `>>` right-shift
 
 ### Example
 ```sql
