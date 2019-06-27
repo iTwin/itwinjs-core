@@ -584,15 +584,11 @@ export class BeInspireTree<TNodePayload> {
       node.itree!.state!.checkboxDisabled = status.isDisabled;
       hasChanges = true;
     }
-    // note: can't use `check()` & `uncheck()` because they also fiddle with
-    // parent node which we don't want
     if (status.state === CheckBoxState.On && !node.itree!.state!.checked) {
-      node.itree!.state!.checked = true;
-      this._tree.emit(BeInspireTreeEvent.NodeChecked, node);
+      node.check();
       hasChanges = true;
     } else if (status.state === CheckBoxState.Off && node.itree!.state!.checked) {
-      node.itree!.state!.checked = false;
-      this._tree.emit(BeInspireTreeEvent.NodeUnchecked, node);
+      node.uncheck();
       hasChanges = true;
     }
     if (hasChanges) {
@@ -710,10 +706,43 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
     anyNode._loadChildrenOverriden = loadChildrenBase;
   }
 
+  // note: default `check()` & `uncheck()` implementations fiddle with
+  // parent node which we don't want
+  if (!anyNode._checkOverriden) {
+    const checkBase = inspireNode.check;
+    anyNode.check = function (): Inspire.TreeNode {
+      if (!this.itree!.state!.checked) {
+        this.itree!.state!.checked = true;
+        this._tree.emit(BeInspireTreeEvent.NodeChecked, this);
+        this.markDirty();
+        this._tree.applyChanges();
+      }
+      return this;
+    };
+    anyNode._checkOverriden = checkBase;
+  }
+  if (!anyNode._uncheckOverriden) {
+    const uncheckBase = inspireNode.uncheck;
+    anyNode.uncheck = function (): Inspire.TreeNode {
+      if (this.itree!.state!.checked) {
+        this.itree!.state!.checked = false;
+        this._tree.emit(BeInspireTreeEvent.NodeUnchecked, this);
+        this.markDirty();
+        this._tree.applyChanges();
+      }
+      return this;
+    };
+    anyNode._uncheckOverriden = uncheckBase;
+  }
+
   // inject a method to reset overrides
   anyNode.resetBeInspireOverrides = function () {
     this.loadChildren = this._loadChildrenOverriden;
     delete this._loadChildrenOverriden;
+    this.check = this._checkOverriden;
+    delete this._checkOverriden;
+    this.uncheck = this._uncheckOverriden;
+    delete this._uncheckOverriden;
   };
 
   // inject a couple of methods to handle dirtiness

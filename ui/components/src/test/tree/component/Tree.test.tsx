@@ -1016,6 +1016,22 @@ describe("Tree", () => {
       expect(checkboxClickSpy).to.have.been.calledTwice;
     });
 
+    it("checking child node doesn't affect the parent", async () => {
+      // all nodes checked by default
+      const checkboxInfo = () => ({ isVisible: true, state: CheckBoxState.On });
+      const props = {
+        ...defaultCheckboxTestsProps,
+        dataProvider: createDataProvider(["0"]),
+        checkboxInfo,
+      };
+      await waitForUpdate(() => renderedTree = render(<Tree {...props} />), renderSpy, 2);
+
+      // uncheck the checkbox and verify parent node is still checked
+      await waitForUpdate(() => fireEvent.click(getNode("0-a").checkbox!), renderSpy);
+      expect(getNode("0-a").checkbox!.checked).to.be.false;
+      expect(getNode("0").checkbox!.checked).to.be.true;
+    });
+
     it("checks auto-expanded child nodes", async () => {
       const dataProvider = new TestTreeDataProvider([
         {
