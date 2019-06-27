@@ -14,7 +14,7 @@ export class Material extends RenderMaterial {
   public readonly reflectColor?: ColorDef;
   public readonly alphaUniform = new Float32Array(2); // [alpha, overridden]
   public readonly specular = new Float32Array(4); // [red, green, blue, exponent]
-  public readonly weights = new Float32Array(3);  // [diffuse weight, specular weight, reflect]
+  public readonly weights = new Float32Array(2);  // [diffuse weight, specular weight]
 
   public get textureWeight(): number { return undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0; }
   public get overridesRgb(): boolean { return 1.0 === this.diffuseUniform[3]; }
@@ -49,7 +49,6 @@ export class Material extends RenderMaterial {
 
     this.weights[0] = materialParams.diffuse;
     this.weights[1] = materialParams.specular;
-    this.weights[2] = materialParams.reflect;
 
     if (0.0 !== materialParams.transparency) {
       this.alphaUniform[0] = 1.0 - materialParams.transparency;

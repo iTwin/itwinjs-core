@@ -446,9 +446,13 @@ export class ShaderBuilder extends ShaderVariables {
   public readonly extensions: string[] = new Array<string>();
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
+  private _initializers: string[] = new Array<string>();
 
   public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
   public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
+
+  public get initializers(): string[] { return this._initializers; }
+  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
 
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
     super();
@@ -607,10 +611,8 @@ export const enum VertexShaderComponent {
  */
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
-  private _initializers: string[] = new Array<string>();
 
   public get computedVarying(): string[] { return this._computedVarying; }
-  public get initializers(): string[] { return this._initializers; }
 
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
@@ -626,7 +628,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
   public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
   public unset(id: VertexShaderComponent) { this.removeComponent(id); }
 
-  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
   public addComputedVarying(name: string, type: VariableType, computation: string): void {
     this.addVarying(name, type);
     this._computedVarying.push(computation);
@@ -645,7 +646,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
-    for (const init of this._initializers) {
+    for (const init of this.initializers) {
       main.addline("  {" + init + "  }\n");
     }
 
@@ -780,6 +781,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
     const main = new SourceBuilder();
     main.newline();
+
+    // Initialization logic that should occur at start of main() - primarily global variables whose values
+    // are too complex to compute inline or which depend on uniforms and/or other globals.
+    for (const init of this.initializers) {
+      main.addline("  {" + init + "  }\n");
+    }
+
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
@@ -1076,6 +1084,8 @@ export class ProgramBuilder {
       clone.frag.extensions[i] = this.frag.extensions[i];
     for (let i = 0; i < this.frag.list.length; i++)
       clone.frag.list[i] = this.frag.list[i];
+    for (let i = 0; i < this.frag.initializers.length; i++)
+      clone.frag.initializers[i] = this.frag.initializers[i];
 
     return clone;
   }

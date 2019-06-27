@@ -40,42 +40,51 @@ const sampleSurfaceTexture = `
   }
 `;
 
-// u_matRgb.a = 1.0 if color overridden by material, 0.0 otherwise.
-// u_matAlpha.y = 1.0 if alpha overridden by material.
 // if this is a raster glyph, the sampled color has already been modified - do not modify further.
 const applyMaterialOverrides = `
   float useMatColor = 1.0 - extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
-  vec4 matColor = mix(baseColor, vec4(u_matRgb.rgb * baseColor.a, baseColor.a), useMatColor * u_matRgb.a);
-  matColor = mix(matColor, adjustPreMultipliedAlpha(matColor, u_matAlpha.x), useMatColor * u_matAlpha.y);
-  float textureWeight = u_textureWeight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
+  vec4 matColor = mix(baseColor, vec4(mat_rgb.rgb * baseColor.a, baseColor.a), useMatColor * mat_rgb.a);
+  matColor = mix(matColor, adjustPreMultipliedAlpha(matColor, mat_alpha.x), useMatColor * mat_alpha.y);
+  float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
   return mix(matColor, g_surfaceTexel, textureWeight);
 `;
 
+const computeMaterialValues = `
+  mat_rgb = uu_matRgb;
+  mat_alpha = uu_matAlpha;
+  mat_texture_weight = uu_textureWeight;
+`
+
 /** @internal */
 export function addMaterial(frag: FragmentShaderBuilder): void {
-  // ###TODO: We could pack rgb, alpha, and override flags into two floats.
   frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
   frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
-  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
 
-  frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_matRgb", (uniform, params) => {
+  frag.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
+  frag.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
+  frag.addGlobal("mat_texture_weight", VariableType.Float);
+
+  frag.addUniform("uu_matRgb", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("uu_matRgb", (uniform, params) => {
       const mat: Material = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform4fv(mat.diffuseUniform);
     });
   });
-  frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
+  frag.addUniform("uu_matAlpha", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("uu_matAlpha", (uniform, params) => {
       const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform2fv(mat.alphaUniform);
     });
   });
-  frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
+  frag.addUniform("uu_textureWeight", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("uu_textureWeight", (uniform, params) => {
       const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
       uniform.setUniform1f(mat.textureWeight);
     });
   });
+
+  frag.addInitializer(computeMaterialValues);
+  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
 }
 
 const computePosition = `
@@ -234,7 +243,7 @@ const computeBaseColor = `
   vec4 texColor = mix(g_surfaceTexel, glyphColor, u_applyGlyphTex);
 
   // If untextured, or textureWeight < 1.0, choose surface color.
-  return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(u_textureWeight));
+  return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(mat_texture_weight));
 `;
 
 function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {

@@ -160,7 +160,6 @@ export class ShaderProgram implements IDisposable {
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attributes = new Array<Attribute>();
-  private readonly _preserveShaderSourceCode: boolean;
 
   public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string, maxClippingPlanes: number) {
     this._description = description;
@@ -170,8 +169,6 @@ export class ShaderProgram implements IDisposable {
 
     const glProgram = gl.createProgram();
     this._glProgram = (null === glProgram) ? undefined : glProgram;
-
-    this._preserveShaderSourceCode = true === System.instance.options.preserveShaderSourceCode;
 
     // Silencing 'unused variable' warnings temporarily...
     assert(undefined !== this._description);
@@ -204,13 +201,6 @@ export class ShaderProgram implements IDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     const compileLog = succeeded ? "" : (GL.ShaderType.Vertex === type ? "Vertex" : "Fragment") + " compilation errors: " + gl.getShaderInfoLog(shader) + "\n" + src;
-
-    if (this._preserveShaderSourceCode !== true) { // do not preserve shader source code
-      if (GL.ShaderType.Vertex === type)
-        this.vertSource = "";
-      else
-        this.fragSource = "";
-    }
 
     assert(succeeded, compileLog);
     return succeeded ? shader : undefined;
@@ -249,17 +239,20 @@ export class ShaderProgram implements IDisposable {
       }
     }
 
+    this._status = CompileStatus.Failure;
+
     const vert = this.compileShader(GL.ShaderType.Vertex);
     const frag = this.compileShader(GL.ShaderType.Fragment);
     if (undefined !== vert && undefined !== frag) {
       if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms) && this.compileAttributes()) {
         this._status = CompileStatus.Success;
-        return true;
       }
     }
 
-    this._status = CompileStatus.Failure;
-    return false;
+    if (true !== System.instance.options.preserveShaderSourceCode)
+      this.vertSource = this.fragSource = "";
+
+    return CompileStatus.Success === this._status;
   }
 
   public use(params: ShaderProgramParams): boolean {

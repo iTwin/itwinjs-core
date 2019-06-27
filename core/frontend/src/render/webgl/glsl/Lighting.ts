@@ -34,12 +34,12 @@ const applyLighting = `
 
     float useDefaults = extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
     const vec4 defaultSpecular = vec4(1.0, 1.0, 1.0, 43.2); // rgb, exponent
-    vec4 specular = mix(u_specular, defaultSpecular, useDefaults);
+    vec4 specular = mix(mat_specular, defaultSpecular, useDefaults);
     vec3 specularColor = specular.rgb;
     float specularExp = specular.a;
 
     const vec2 defaultWeights = vec2(.6, .4); // diffuse, specular
-    vec2 weights = mix(u_material.rg, defaultWeights, useDefaults);
+    vec2 weights = mix(mat_weights, defaultWeights, useDefaults);
     float diffuseWeight = weights.r;
     float specularWeight = weights.g;
 
@@ -69,21 +69,29 @@ const applyLighting = `
   return baseColor;
 `;
 
+const computeMaterial = `
+  mat_weights = uu_material;
+  mat_specular = uu_specular;
+`;
+
 /** @internal */
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 
   const frag = builder.frag;
-  frag.addUniform("u_material", VariableType.Vec3, (shader) => {
-    shader.addGraphicUniform("u_material", (uniform, params) => {
+  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
+  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
+
+  frag.addUniform("uu_material", VariableType.Vec2, (shader) => {
+    shader.addGraphicUniform("uu_material", (uniform, params) => {
       const material = params.target.currentViewFlags.materials ? params.geometry.material : undefined;
       const weights = undefined !== material ? material.weights : Material.default.weights;
-      uniform.setUniform3fv(weights);
+      uniform.setUniform2fv(weights);
     });
   });
 
-  frag.addUniform("u_specular", VariableType.Vec4, (shader) => {
-    shader.addGraphicUniform("u_specular", (uniform, params) => {
+  frag.addUniform("uu_specular", VariableType.Vec4, (shader) => {
+    shader.addGraphicUniform("uu_specular", (uniform, params) => {
       let mat = params.target.currentViewFlags.materials ? params.geometry.material : undefined;
       if (undefined === mat)
         mat = Material.default;
@@ -91,6 +99,8 @@ export function addLighting(builder: ProgramBuilder) {
       uniform.setUniform4fv(mat.specular);
     });
   });
+
+  frag.addInitializer(computeMaterial);
 
   frag.addFunction(computeSimpleLighting);
   frag.set(FragmentShaderComponent.ApplyLighting, applyLighting);
