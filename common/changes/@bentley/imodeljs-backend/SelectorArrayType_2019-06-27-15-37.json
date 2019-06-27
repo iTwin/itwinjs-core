@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": ""
+}
