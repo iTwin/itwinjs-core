@@ -6,11 +6,24 @@
 /** @module Topology */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
-import { XAndY } from "../geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+
+/**
+ * type for use as signature for xyz data of a single linestring appearing in a parameter list.
+ * @public
+ */
+export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[];
+
+/**
+ * type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
+ * @public
+ */
+export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[];
+
 /**
  * (static) methods for triangulating polygons
  * * @internal
@@ -232,8 +245,11 @@ export class Triangulator {
       return baseNode;
     return graph.splitEdge(baseNode, xy.x, xy.y, z);
   }
-
-  private static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | IndexedXYZCollection): HalfEdge | undefined {
+  /** Create a loop from coordinates.
+   * * Return a pointer to any node on the loop.
+   * * no masking or other markup is applied.
+   */
+  public static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined {
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     let baseNode: HalfEdge | undefined;
     if (data instanceof IndexedXYZCollection) {
@@ -289,7 +305,7 @@ export class Triangulator {
    *   * HalfEdgeMask.PRIMARY_EDGE on both sides.
    * * Use `createFaceLoopFromCoordinatesAndMasks` for detail control of masks.
    */
-  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
+  public static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
     return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
@@ -305,7 +321,7 @@ export class Triangulator {
    * @param maskForBothSides mask to apply on both sides.
    * @param maskForOtherSide mask to apply on the "other" side from the returned loop.
    */
-  public static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: XAndY[] | GrowableXYZArray, returnPositiveAreaLoop: boolean,
+  public static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean,
     maskForBothSides: HalfEdgeMask,
     maskForOtherSide: HalfEdgeMask): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
@@ -614,7 +630,7 @@ export class Triangulator {
       && right !== start
       && right.faceSuccessor !== left) {
       /** These should not happen if face is monotone . .. */
-      if (HalfEdge.crossProductAlongChain(left, start, right) <= 0)
+      if (HalfEdge.crossProductXYAlongChain(left, start, right) <= 0)
         return false;
       if (!start.belowYX(left))
         return false;
@@ -638,7 +654,7 @@ export class Triangulator {
           while (P2 !== right
             && P2 !== P0
             && P2 !== P1
-            && HalfEdge.crossProductAlongChain(P0, P1, P2) > 0) {
+            && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
             upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
             P0 = upperSideOfNewEdge;
             P1 = P0.faceSuccessor;
@@ -691,7 +707,7 @@ export class Triangulator {
           while (P0 !== left
             && P2 !== P0
             && P2 !== P1
-            && HalfEdge.crossProductAlongChain(P0, P1, P2) > 0) {
+            && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
             upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
             P0 = upperSideOfNewEdge.facePredecessor;
             P1 = upperSideOfNewEdge;

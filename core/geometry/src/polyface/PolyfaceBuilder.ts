@@ -439,8 +439,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   // cspell:word Normaln
   /**
-   * @deprecated
    * This is a misspelling of findOrAddNormalInLineString
+   * @deprecated
    */
   public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
     return this.findOrAddNormalInLineString(ls, index, transform, priorIndexA, priorIndexB);
@@ -1370,7 +1370,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
     graph.announceFaceLoops(
       (_graph: HalfEdgeGraph, seed: HalfEdge) => {
-        if (acceptFaceFunction(seed) && seed.countEdgesAroundFace () > 2) {
+        if (acceptFaceFunction(seed) && seed.countEdgesAroundFace() > 2) {
           let node = seed;
           do {
             index = this.findOrAddPointXYZ(node.x, node.y, node.z);

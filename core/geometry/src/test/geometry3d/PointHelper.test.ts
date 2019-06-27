@@ -216,7 +216,7 @@ describe("MomentData.HelloWorld", () => {
     // Checker.noisy.momentData = true;
 
     // Test undefined/empty returns
-    const mData = MomentData.pointsToPrincipalAxes([]);
+    const mData = MomentData.pointsToPrincipalAxes([])!;
     ck.testTrue(mData.origin.isAlmostZero);
     const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0,
       1, 1, 1, 0,
@@ -255,7 +255,7 @@ describe("MomentData.HelloWorld", () => {
           options.minStrokesPerPrimitive = 16;
           arc.emitStrokes(ls, options);
           ls.popPoint(); // eliminate the closure point -- now the center really is the centroid
-          const moments = MomentData.pointsToPrincipalAxes(ls.points);
+          const moments = MomentData.pointsToPrincipalAxes(ls.points)!;
           if (Checker.noisy.momentData) {
             console.log("RawMoments Diagonal", moments.sums.diagonal().toJSON());
             console.log("origin", moments.localToWorldMap.origin);
@@ -275,6 +275,9 @@ describe("MomentData.HelloWorld", () => {
             "Radii for Symmetric points on ellipse scale as axis lengths");
           if (Geometry.isAlmostEqualNumber(radiusA, radiusB)) {
             ck.testCoordinate(radiusA, moments.radiusOfGyration.z, "Circle radius Of gyration is radius");
+            // extra call for debugger . . .
+            MomentData.pointsToPrincipalAxes(ls.points)!;
+
           }
         }
       }
@@ -826,14 +829,14 @@ describe("PolygonAreas", () => {
     ];
     const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointA));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius (centroidA)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)));
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
     const a = 2.0;
     const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
     const pointB = scaleTransform.multiplyPoint3dArray(pointA);
     const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius (centroidB)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius(centroidB)));
     ck.testPoint3d(centroidA.origin, centroidB.origin, "origin is invariant after scale around origin");
     ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
     ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
@@ -843,7 +846,7 @@ describe("PolygonAreas", () => {
     const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
     const centroidC1 = centroidA.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointC));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius (centroidC)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius(centroidC)));
     ck.testPoint3d(centroidC.origin, centroidC1.origin);
     ck.testVector3d(centroidC.direction, centroidC1.direction);
     ck.testCoordinate((centroidA as any).a, (centroidC as any).a);

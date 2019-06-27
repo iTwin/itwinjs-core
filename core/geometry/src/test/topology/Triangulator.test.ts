@@ -350,7 +350,7 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulateFractals");
   });
   /* These cases had problems -- but maybe only due to bad input?
-    it.only("ProblemTriangulation", () => {
+    it("ProblemTriangulation", () => {
       Triangulator.setAndReturnHeapTrigger(80);
       const baseVectorA = Vector3d.create(0, 0, 0);
       const allGeometry = [];

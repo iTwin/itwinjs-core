@@ -1003,7 +1003,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (n > 0) {
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.
-      // Do NOT apply minstrokes per primitive.
+      // Do NOT apply min strokes per primitive.
       if (options && options.hasMaxEdgeLength) {
         dest.appendStrokePoint(this._points.getPoint3dAtUncheckedPointIndex(0));
         for (let i = 1; i < n; i++) {
@@ -1033,7 +1033,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       const df = 1.0 / (n - 1);
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.
-      // Do NOT apply minstrokes per primitive.
+      // Do NOT apply mins strokes per primitive.
       if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
           const numStroke = options.applyMaxEdgeLength(1, this._points.getPoint3dAtUncheckedPointIndex(i - 1).distance(this._points.getPoint3dAtUncheckedPointIndex(i)));
@@ -1087,7 +1087,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   // HARD TO TEST -- tests that get to announceClipInterval for arc, bspline do NOT get here with
   // linestring because the controller has special case loops through segments?
   /**
-   * Find intervals of this curveprimitve that are interior to a clipper
+   * Find intervals of this CurvePrimitive that are interior to a clipper
    * @param clipper clip structure (e.g. clip planes)
    * @param announce (optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.

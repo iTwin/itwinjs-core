@@ -86,7 +86,7 @@ class Geometry4dTests {
     ck.testExactNumber(0, Point4d.fromJSON([4.0]).maxAbs());
     const hPointA = Point4d.create(1, 2, 3, 4);
     // const hPointA1 = hPointA.normalizeWeight();
-    const hpointANeg = hPointA.negate();
+    const hPointANeg = hPointA.negate();
     const hPointA1 = hPointA.clone();
     const hPointA2 = Point4d.create(0, 0, 0, 0);
     hPointA2.setFrom(hPointA1);
@@ -114,10 +114,10 @@ class Geometry4dTests {
     pointC.clone(pointD2);
     ck.testPoint4d(pointD2, pointC);
 
-    const pointAplusC = hPointA.plus(pointC);
-    const pointAplusCScaled = hPointA.plusScaled(pointC, 1.0);
-    ck.testPoint4d(pointAplusC, pointAplusCScaled, "Add versus add with scale");
-    ck.testCoordinate(hPointA.magnitudeXYZW(), hpointANeg.magnitudeXYZW());
+    const pointAPlusC = hPointA.plus(pointC);
+    const pointAPlusCScaled = hPointA.plusScaled(pointC, 1.0);
+    ck.testPoint4d(pointAPlusC, pointAPlusCScaled, "Add versus add with scale");
+    ck.testCoordinate(hPointA.magnitudeXYZW(), hPointANeg.magnitudeXYZW());
 
     const uvw = Vector3d.create(4, 2, 9);
     const point0 = Point4d.createFromPointAndWeight(uvw, 0);
@@ -366,7 +366,6 @@ describe("Matrix4d", () => {
       ck.testPoint4d(pointQ, point4dArray[i]);
     }
 
-    ck.checkpoint("Geometry4d.Multiply");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -391,6 +390,50 @@ describe("Matrix4d", () => {
       const Q14d = pointAQ4d[i].normalizeWeight()!;
       ck.testPoint4d(Point4d.createFromPointAndWeight(Q1, 1), Q14d);
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  // cspell:word ABAT
+  it("addTranslationSandwichInPlace", () => {
+    const ck = new bsiChecker.Checker();
+    const matrixZ = Matrix4d.createRowValues(
+      10, 3, 4, 5,
+      6, 30, 1, 1.2,
+      8, 3, -15, 2,
+      9, 1, 2, 11);
+    const scale = 1.25;
+    const allMatrices = [Matrix4d.createZero(),
+    Matrix4d.createIdentity()];
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const matrix = Matrix4d.createZero();
+        matrix.setAtIJ(i, j, 2.0);
+        allMatrices.push(matrix);
+      }
+    }
+    allMatrices.push(Matrix4d.createRowValues(
+      10, 2, 3, 4,
+      5, 20, 2, 1,
+      4, 6, 30, 2,
+      3, 2, 1, 30));
+    for (const matrixB of allMatrices)
+      for (const xyz of [[2, 0, 0], [0, 3, 0], [0, 0, 4]]) {
+        const ax = xyz[0];
+        const ay = xyz[1];
+        const az = xyz[2];
+        const matrixA = Matrix4d.createTranslationXYZ(ax, ay, az);
+        const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
+        const matrixABAT = matrixAB.multiplyMatrixMatrixTranspose(matrixA);
+        // addTranslationSandwichInPlace with zero instance should match matrixABAT full multiply
+        const matrixD0 = Matrix4d.createZero();
+        matrixD0.addTranslationSandwichInPlace(matrixB, ax, ay, az, 1.0);
+        ck.testMatrix4d(matrixABAT, matrixD0, "product ABAT versus addTranslationSandwichInPlace", prettyPrint(matrixB), xyz);
+        // now confirm add scaled effect with nontrivial staring matrix.
+        const matrixE = matrixZ.plusScaled(matrixABAT, scale);
+        const matrixE1 = matrixZ.clone();
+        matrixE1.addTranslationSandwichInPlace(matrixB, ax, ay, az, scale);
+        ck.testMatrix4d(matrixE, matrixE1, "addTranslationSandwichInPlace full test", prettyPrint(matrixB), xyz);
+      }
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("Misc", () => {
@@ -412,6 +455,7 @@ describe("Matrix4d", () => {
         ck.testCoordinate(f * a, c);
       }
     }
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("Inverse", () => {
@@ -431,8 +475,8 @@ describe("Matrix4d", () => {
       const p1 = product.clone();
       p1.setIdentity();
       ck.testTrue(p1.isAlmostEqual(identity), "identity by create versus set");
-      ck.testCoordinate(0, e, "A*Ainv error");
-      // console.log("  max error in A*Ainv - I: " + e);
+      ck.testCoordinate(0, e, "A*AInverse error");
+      // console.log("  max error in A*AInverse - I: " + e);
       Matrix4d.createZero(p1);
 
       for (const singularMatrix of [
@@ -475,7 +519,7 @@ describe("Matrix4d", () => {
     // const matrixCD = matrixC.multiplyMatrixMatrix(matrixD);
     const matrixCTD0 = matrixC.multiplyMatrixTransposeMatrix(matrixD);
     const matrixCTD1 = matrixCT.multiplyMatrixMatrix(matrixD);
-    ck.testMatrix4d(matrixCTD0, matrixCTD1, "mulltiplyMatrixTransposeMatrix");
+    ck.testMatrix4d(matrixCTD0, matrixCTD1, "multiplyMatrixTransposeMatrix");
     for (let i = 0; i < 4; i++)
       ck.testPoint4d(rows[i], cols[i], "row, col from transpose");
 
@@ -745,7 +789,7 @@ describe("Map4d", () => {
     const ck = new bsiChecker.Checker();
     let badFraction: number | undefined;
     for (const wA0 of [1, 1.1, 1.3]) {
-      for (const wA1 of [1, 0.4, 1.5]) {  // remark wA1=2 creates anomalies with spacepoint 2,4,2,anyW?
+      for (const wA1 of [1, 0.4, 1.5]) {  // remark wA1=2 creates anomalies with spacePoint 2,4,2,anyW?
         for (const wSpace of [1, 0.9]) {
           const hA0 = Point4d.create(0, 0, 0, wA0);
           const hA1 = Point4d.create(3, 1, 0, wA1);

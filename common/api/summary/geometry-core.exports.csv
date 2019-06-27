@@ -104,6 +104,7 @@ public;KnotVector
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
+public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[]
 public;Loop 
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
@@ -113,6 +114,7 @@ public;Matrix3dProps = number[][] | Matrix3d | number[]
 public;Matrix4d 
 public;Matrix4dProps = Point4dProps[]
 public;MomentData
+public;MultiLineStringDataVariant = LineStringDataVariant | LineStringDataVariant[]
 internal;Newton1dUnbounded 
 internal;Newton1dUnboundedApproximateDerivative 
 internal;Newton2dUnboundedWithDerivative 
@@ -171,6 +173,8 @@ public;Ray3d
 public;RecurseToCurvesGeometryHandler 
 public;class RecursiveCurveProcessor
 public;class RecursiveCurveProcessorWithStack 
+internal;RegionMomentsXY 
+alpha;RegionOps
 public;RotationalSweep 
 public;RuledSweep 
 alpha;Sample

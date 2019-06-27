@@ -62,10 +62,13 @@ export class HalfEdge {
   public sortAngle?: number;  // used in sorting around vertex.
   /** numeric value for application-specific tagging (e.g. sorting) */
   public sortData?: number;
+  /** application-specific data for the edge identifier.
+   * * edge split operations are expected to copy this to new sub-edges.
+   */
+  public edgeTag?: any;
   private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
-
   private _facePredecessor!: HalfEdge;
   private _faceSuccessor!: HalfEdge;
   private _edgeMate!: HalfEdge;
@@ -156,6 +159,7 @@ export class HalfEdge {
    * * if the base is undefined, create a single-edge loop.
    * * This (unlike pinch) breaks the edgeMate pairing of the base edge.
    * * This preserves xyz and i properties at all existing vertices.
+   * * on each side, if edgeTag is present it is copied to the new edge.
    * @returns Returns the reference to the half edge created.
    */
   public static splitEdge(baseA: undefined | HalfEdge,
@@ -181,6 +185,8 @@ export class HalfEdge {
       HalfEdge.setFaceLinks(newB, vPredA);
       HalfEdge.setEdgeMates(newA, mateA);
       HalfEdge.setEdgeMates(newB, baseA);
+      newA.edgeTag = baseA.edgeTag;
+      newB.edgeTag = mateA.edgeTag;
     }
     return newA;
   }
@@ -252,6 +258,26 @@ export class HalfEdge {
       node = node.faceSuccessor;
     } while (node !== this);
     return count;
+  }
+
+  /**
+   * Apply a edgeTag and mask to all edges around a face.
+   * optionally apply it to all edge mates.
+   * @param edgeTag tag to apply
+   * @param bothSides If true, also apply the tag to the mates around the face.
+   */
+  public setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate: boolean = false) {
+    let node: HalfEdge = this;
+    do {
+      node.setMask(mask);
+      node.edgeTag = tag;
+      if (applyToMate) {
+        const mate = node.edgeMate;
+        mate.edgeTag = tag;
+        mate.setMask(mask);
+      }
+      node = node.faceSuccessor;
+    } while (node !== this);
   }
 
   /** Returns the number of edges around vertex. */
@@ -432,16 +458,16 @@ export class HalfEdge {
       result);
   }
 
-  /** @returns Return cross product (2d) of vectors from base to target1 and this to target2 */
-  public static crossProductToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
+  /** Returns Return cross product (2d) of vectors from base to target1 and this to target2 */
+  public static crossProductXYToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
     return Geometry.crossProductXYXY(
       targetA.x - base.x, targetA.y - base.y,
       targetB.x - base.x, targetB.y - base.y);
   }
 
-  /** @returns Return cross product (2d) of vectors from nodeA to nodeB and nodeB to nodeC
+  /** Return cross product (2d) of vectors from nodeA to nodeB and nodeB to nodeC
    */
-  public static crossProductAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number {
+  public static crossProductXYAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number {
     return Geometry.crossProductXYXY(
       nodeB.x - nodeA.x, nodeB.y - nodeA.y,
       nodeC.x - nodeB.x, nodeC.y - nodeB.y);
@@ -461,10 +487,10 @@ export class HalfEdge {
       return true;
     return false;
   }
-  /** @returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
-  /** @returns Returns true if the face has positive area in xy parts. */
+  /** Returns Returns true if the face has positive area in xy parts. */
   public static testFacePositiveAreaXY(node: HalfEdge) {
     return node.countEdgesAroundFace() > 2 && node.signedFaceArea() > 0.0;
   }
