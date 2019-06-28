@@ -42,9 +42,13 @@ import { Geometry } from "../Geometry";
  * @internal
  */
 export class BilinearPatch implements UVSurface {
+  /** corner at parametric coordinate (0,0) */
   public point00: Point3d;
+  /** corner at parametric coordinate (1,0) */
   public point10: Point3d;
+  /** corner at parametric coordinate (0,1) */
   public point01: Point3d;
+  /** corner at parametric coordinate (1,1) */
   public point11: Point3d;
   /**
    * Capture (not clone) corner points, in u direction at v=0, then in same direction at v=1
@@ -169,13 +173,13 @@ export class BilinearPatch implements UVSurface {
       result);
   }
   /**
-   * @returns the larger of the u-direction edge lengths at v=0 and v=1
+   * Returns the larger of the u-direction edge lengths at v=0 and v=1
    */
   public maxUEdgeLength(): number {
     return Geometry.maxXY(this.point00.distance(this.point10), this.point01.distance(this.point11));
   }
   /**
-   * @returns the larger of the v-direction edge lengths at u=0 and u=1
+   * Returns the larger of the v-direction edge lengths at u=0 and u=1
    */
   public maxVEdgeLength(): number {
     return Geometry.maxXY(this.point00.distance(this.point01), this.point10.distance(this.point11));

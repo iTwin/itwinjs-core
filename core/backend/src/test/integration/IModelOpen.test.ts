@@ -79,17 +79,12 @@ describe("IModelOpen (#integration)", () => {
 
     // Open iModel and ensure RpcPendingResponse exception is thrown
     let exceptionThrown = false;
-    let startTime = 0;
-    let timeElapsed = 0;
     try {
-      startTime = Date.now();
       await IModelDb.open(requestContext, testProjectId, testIModelId, openParams);
     } catch (error) {
-      timeElapsed = Date.now() - startTime;
       exceptionThrown = error instanceof RpcPendingResponse;
     }
     assert.isTrue(exceptionThrown);
-    assert.isBelow(timeElapsed, openParams.timeout + 500); // Adding arbitrary overhead
 
     // Open and close the model
     openParams.timeout = undefined;

@@ -14,7 +14,7 @@ const KEYCODE_UP = 38;
 const KEYCODE_DOWN = 40;
 const IS_BROWSER = typeof document !== "undefined";
 const RE_NUMBER = /^[+-]?((\.\d+)|(\d+(\.\d+)?))$/;
-const RE_INCOMPLETE_NUMBER = /^([+-]0?|[0-9]*\.0*|[+-]\.0*|[+-]?\d+\.)?$/;
+const RE_INCOMPLETE_NUMBER = /^([+-]0?|[0-9]*\.0*|[+-][0-9]+\.0*|[+-]?\d+\.)?$/;
 
 /**
  * Just a simple helper to provide support for older IEs. This is not exactly a

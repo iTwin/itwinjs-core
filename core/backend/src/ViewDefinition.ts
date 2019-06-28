@@ -174,7 +174,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   public static get className(): string { return "ModelSelector"; }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
-  public models: string[];
+  public models: Id64String[];
   /** @internal */
   constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
   /** @internal */
@@ -235,7 +235,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   /** @internal */
   public static get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
-  public categories: string[];
+  public categories: Id64String[];
   /** @internal */
   constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
   /** @internal */

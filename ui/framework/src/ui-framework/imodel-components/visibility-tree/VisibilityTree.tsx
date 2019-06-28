@@ -262,6 +262,7 @@ export class VisibilityHandler implements IDisposable {
 
   private _props: VisibilityHandlerProps;
   private _onVisibilityChange: () => void;
+  private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
 
   constructor(props: VisibilityHandlerProps) {
@@ -281,6 +282,7 @@ export class VisibilityHandler implements IDisposable {
     this._props.viewport.onViewedModelsChanged.removeListener(this.onViewChanged);
     this._props.viewport.onAlwaysDrawnChanged.removeListener(this.onElementAlwaysDrawnChanged);
     this._props.viewport.onNeverDrawnChanged.removeListener(this.onElementNeverDrawnChanged);
+    clearTimeout(this._pendingVisibilityChange);
   }
 
   public get onVisibilityChange() { return this._onVisibilityChange; }
@@ -313,6 +315,8 @@ export class VisibilityHandler implements IDisposable {
   }
 
   private async getSubjectDisplayStatus(id: Id64String): Promise<VisibilityStatus> {
+    if (!this._props.viewport.view.isSpatialView())
+      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "subject.nonSpatialView") };
     const modelIds = await this.getSubjectModelIds(id);
     const isDisplayed = modelIds.some((modelId) => this.getModelDisplayStatus(modelId).isDisplayed);
     if (isDisplayed)
@@ -321,7 +325,9 @@ export class VisibilityHandler implements IDisposable {
   }
 
   private getModelDisplayStatus(id: Id64String): VisibilityStatus {
-    const isDisplayed = this._props.viewport.view.isSpatialView() && this._props.viewport.view.viewsModel(id);
+    if (!this._props.viewport.view.isSpatialView())
+      return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "model.nonSpatialView") };
+    const isDisplayed = this._props.viewport.view.viewsModel(id);
     return { isDisplayed, tooltip: createTooltip(isDisplayed ? "visible" : "hidden", undefined) };
   }
 
@@ -434,19 +440,29 @@ export class VisibilityHandler implements IDisposable {
     this._props.viewport.setAlwaysDrawn(currAlwaysDrawn);
   }
 
+  private onVisibilityChangeInternal() {
+    if (this._pendingVisibilityChange)
+      return;
+
+    this._pendingVisibilityChange = setTimeout(() => {
+      this._onVisibilityChange();
+      this._pendingVisibilityChange = undefined;
+    }, 0);
+  }
+
   // tslint:disable-next-line: naming-convention
   private onViewChanged = (_vp: Viewport) => {
-    this._onVisibilityChange();
+    this.onVisibilityChangeInternal();
   }
 
   // tslint:disable-next-line: naming-convention
   private onElementAlwaysDrawnChanged = () => {
-    this._onVisibilityChange();
+    this.onVisibilityChangeInternal();
   }
 
   // tslint:disable-next-line: naming-convention
   private onElementNeverDrawnChanged = () => {
-    this._onVisibilityChange();
+    this.onVisibilityChangeInternal();
   }
 
   private async getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]> {

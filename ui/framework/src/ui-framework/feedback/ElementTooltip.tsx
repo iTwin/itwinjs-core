@@ -89,7 +89,7 @@ export class ElementTooltip extends React.Component<CommonProps, ElementTooltipS
 
     let messageNode: React.ReactNode;
     if (typeof this.state.message === "string")
-      messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message }} />;   // TODO - After some time for warning, switch to pure text
+      messageNode = <div>{this.state.message}</div>;
     else
       messageNode = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
 

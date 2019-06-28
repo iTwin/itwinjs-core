@@ -934,10 +934,13 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   // Determine if we have a usable GCS.
   const converter = iModel.geoServices.getConverter("WGS84");
   const requestProps: XYZProps[] = [{ x: 0, y: 0, z: 0 }];
-  let haveConverter = false;
-  converter.getIModelCoordinatesFromGeoCoordinates(requestProps).then((responseProps) => {
+  let haveConverter;
+  try {
+    const responseProps = await converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
     haveConverter = responseProps.iModelCoords.length === 1 && responseProps.iModelCoords[0].s !== GeoCoordStatus.NoGCSDefined;
-  }).catch((_) => undefined);
+  } catch (_) {
+    haveConverter = false;
+  }
 
   const loader = new WebMapTileLoader(imageryProvider, iModel, groundBias, haveConverter, applyTerrain);
   const tileTreeProps = new WebMapTileTreeProps(groundBias);

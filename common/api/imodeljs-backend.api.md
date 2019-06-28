@@ -458,7 +458,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
     // @internal
     constructor(props: CategorySelectorProps, iModel: IModelDb);
-    categories: string[];
+    categories: Id64String[];
     // @internal (undocumented)
     static readonly className: string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
@@ -1607,6 +1607,12 @@ export class GraphicalElement2dIsOfType extends RelatedElement {
 export abstract class GraphicalElement3d extends GeometricElement3d {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
+export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
     // @internal (undocumented)
     static readonly className: string;
 }
@@ -3188,7 +3194,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
-    models: string[];
+    models: Id64String[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
 }

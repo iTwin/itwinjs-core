@@ -12,6 +12,7 @@ import {
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
+  GeoConverter,
   OffScreenViewport,
   SpatialViewState,
   Viewport,
@@ -417,6 +418,35 @@ describe("Render mirukuru", () => {
       expect(range).to.be.undefined;
       expect(myRange.minimum).to.equal(1);
       expect(myRange.maximum).to.equal(0);
+    });
+  });
+
+  it("should use GCS to transform map tiles", async () => {
+    // Project extents must be large enough to prevent linear transform from being used.
+    const extents = imodel.projectExtents.clone();
+    const linearRangeSquared = extents.diagonal().magnitudeSquared();
+    if (linearRangeSquared < 1000 * 1000) {
+      extents.scaleAboutCenterInPlace(1000);
+      imodel.projectExtents = extents;
+    }
+
+    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(1000 * 1000);
+
+    const fullRect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
+      const vf = vp.viewFlags.clone();
+      vf.backgroundMap = true;
+      vp.viewFlags = vf;
+
+      await vp.waitForAllTilesToRender();
+      const mapTreeRef = vp.displayStyle.backgroundMap;
+      const mapTree = mapTreeRef.treeOwner.tileTree!;
+      expect(mapTree).not.to.be.undefined;
+
+      const loader = mapTree.loader; // instance of non-exported class WebMapTileLoader;
+      const childCreator = (loader as any)._childTileCreator; // instance of non-exported class GeoTransformChildCreator
+      const converter = childCreator._converter;
+      expect(converter).instanceof(GeoConverter);
     });
   });
 });

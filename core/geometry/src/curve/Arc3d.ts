@@ -290,6 +290,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
+   * Return a parametric plane with
+   * * origin at arc center
+   * * vectorU from center to arc at angle (in radians)
+   * * vectorV from center to arc at 90 degrees past the angle.
+   * @param radians angular position
+   * @param result optional preallocated plane
+   */
+  public radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    result = result ? result : Plane3dByOriginAndVectors.createXYPlane ();
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    result.origin.setFromPoint3d (this.center);
+    this._matrix.multiplyXY(c, s, result.vectorU);
+    this._matrix.multiplyXY(-s, c, result.vectorV);
+    return result;
+  }
+
+  /**
    * Evaluate the point and derivative with respect to the angle (in radians)
    * @param theta angular position
    * @param result optional preallocated ray.

@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
@@ -222,8 +222,12 @@ describe("ViewportSelectionHandler", () => {
     const selectionSetSpies = {
       emptyAll: sinon.spy(),
       replace: sinon.spy(),
+      onChanged: sinon.spy(),
     };
     beforeEach(() => {
+      // ensure there's something in the selection set
+      imodelMock.target.selectionSet.replace(createRandomId());
+
       getHiliteSet = sinon.stub(Presentation.selection, "getHiliteSet").resolves({});
       hiliteSpies.clear = sinon.spy(imodelMock.target.hilited, "clear");
       hiliteSpies.elements = sinon.spy(imodelMock.target.hilited.elements, "addIds");
@@ -237,6 +241,12 @@ describe("ViewportSelectionHandler", () => {
       };
       selectionSetSpies.emptyAll = sinon.spy(imodelMock.target.selectionSet, "emptyAll");
       selectionSetSpies.replace = sinon.spy(imodelMock.target.selectionSet, "replace");
+      imodelMock.target.selectionSet.onChanged.addListener(selectionSetSpies.onChanged);
+      selectionSetSpies.onChanged.resetHistory();
+    });
+
+    afterEach(() => {
+      imodelMock.target.selectionSet.onChanged.removeListener(selectionSetSpies.onChanged);
     });
 
     const triggerSelectionChange = ({ sourceName = "", selectionLevel = 0, imodel = imodelMock.object }: { sourceName?: string, selectionLevel?: number, imodel?: IModelConnection } = {}) => {
@@ -270,8 +280,22 @@ describe("ViewportSelectionHandler", () => {
       expect(hiliteSpies.elements).to.not.be.called;
     });
 
+    it("clears selection set when hilite list is empty", async () => {
+      getHiliteSet.resetBehavior();
+      getHiliteSet.resolves({});
+
+      // trigger the selection change and wait for event handler to finish
+      triggerSelectionChange();
+      await waitForAllAsyncs([handler]);
+
+      // verify selection set was replaced
+      expect(selectionSetSpies.emptyAll).to.be.calledOnce;
+      expect(selectionSetSpies.replace).to.not.be.called;
+      expect(selectionSetSpies.onChanged).to.be.calledOnce;
+    });
+
     it("sets elements hilite", async () => {
-      const id = createRandomTransientId();
+      const id = createRandomId();
       getHiliteSet.resetBehavior();
       getHiliteSet.resolves({
         elements: [id],
@@ -286,8 +310,9 @@ describe("ViewportSelectionHandler", () => {
       expect(hiliteSpies.elements).to.be.calledOnceWith([id]);
 
       // verify selection set was replaced
-      expect(selectionSetSpies.emptyAll).to.be.calledOnce;
-      expect(selectionSetSpies.replace).to.be.calledOnce;
+      expect(selectionSetSpies.emptyAll).to.not.be.called;
+      expect(selectionSetSpies.replace).to.be.calledOnceWith([id]);
+      expect(selectionSetSpies.onChanged).to.be.calledOnce;
     });
 
     it("sets models hilite", async () => {
@@ -307,6 +332,7 @@ describe("ViewportSelectionHandler", () => {
 
       // verify selection set was cleared
       expect(selectionSetSpies.emptyAll).to.be.calledOnce;
+      expect(selectionSetSpies.onChanged).to.be.calledOnce;
     });
 
     it("sets subcategories hilite", async () => {
@@ -326,6 +352,7 @@ describe("ViewportSelectionHandler", () => {
 
       // verify selection set was cleared
       expect(selectionSetSpies.emptyAll).to.be.calledOnce;
+      expect(selectionSetSpies.onChanged).to.be.calledOnce;
     });
 
     it("sets combined hilite", async () => {
@@ -350,8 +377,8 @@ describe("ViewportSelectionHandler", () => {
       expect(hiliteSpies.elements).to.be.calledOnceWith([elementId]);
 
       // verify selection set was replaced
-      expect(selectionSetSpies.emptyAll).to.be.called;
-      expect(selectionSetSpies.replace).to.be.calledOnce;
+      expect(selectionSetSpies.emptyAll).to.not.be.called;
+      expect(selectionSetSpies.replace).to.be.calledOnceWith([elementId]);
     });
 
     it("ignores intermediate unified selection changes", async () => {

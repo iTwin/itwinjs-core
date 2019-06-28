@@ -955,7 +955,6 @@ export class IModelDb extends IModel {
       Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggerCategory, "IModelDb found in briefcase cache", () => iModelToken);
     return briefcaseEntry.iModelDb;
   }
 
@@ -1692,7 +1691,15 @@ export namespace IModelDb {
     private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
       requestContext.enter();
 
-      const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+      let ret;
+      try {
+        ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+      } catch (err) {
+        // Typically "imodel not open".
+        reject(err);
+        return;
+      }
+
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface

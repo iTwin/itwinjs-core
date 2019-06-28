@@ -152,7 +152,7 @@ export class ViewportSelectionHandler implements IDisposable {
       const ids = await Presentation.selection.getHiliteSet(this._imodel);
       using(Presentation.selection.suspendIModelToolSelectionSync(this._imodel), (_) => {
         imodel.hilited.clear();
-        imodel.selectionSet.emptyAll();
+        let shouldClearSelectionSet = true;
         if (ids.models && ids.models.length) {
           imodel.hilited.models.addIds(ids.models);
         }
@@ -162,7 +162,10 @@ export class ViewportSelectionHandler implements IDisposable {
         if (ids.elements && ids.elements.length) {
           imodel.hilited.elements.addIds(ids.elements);
           imodel.selectionSet.replace(ids.elements);
+          shouldClearSelectionSet = false;
         }
+        if (shouldClearSelectionSet)
+          imodel.selectionSet.emptyAll();
       });
     });
 

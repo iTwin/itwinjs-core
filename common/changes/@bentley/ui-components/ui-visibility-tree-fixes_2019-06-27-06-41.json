@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tree: Fix child node checkbox events affecting parent node's checkbox state",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

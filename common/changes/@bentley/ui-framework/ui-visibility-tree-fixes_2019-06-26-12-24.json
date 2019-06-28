@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Visibility Tree: Disable subjects and models if active view is not spatial",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}

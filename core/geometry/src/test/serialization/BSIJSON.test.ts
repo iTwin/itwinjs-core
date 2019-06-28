@@ -43,6 +43,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
+// cspell::word bsijson
 
 // Variables used for testing
 let outputFolderPath = "./src/test/output";
@@ -54,7 +55,7 @@ outputFolderPath = outputFolderPath + "/";
 if (!fs.existsSync(outputFolderPath))
   fs.mkdirSync(outputFolderPath);
 
-const bsijsonPunchList: object[] = [];
+const bsiJsonPunchList: object[] = [];
 let previousConstructor: object;
 
 Checker.noisy.printJSONSuccess = false;
@@ -95,7 +96,7 @@ function exercise_go(obj: any, noisy: boolean): number {
       console.log("clone failure ", obj);
     }
     const gq = obj as GeometryQuery;
-    // heavey object ... method fulfillment assured by inheritance.
+    // heavy object ... method fulfillment assured by inheritance.
     let imjsObject = IModelJson.Writer.toIModelJson(gq);
     if (!imjsObject) {
       console.log("GeometryQuery object did not convert to IModelJson", obj);
@@ -123,18 +124,18 @@ function exercise_go(obj: any, noisy: boolean): number {
     }
   } else if (!(obj as BeJSONFunctions).toJSON) {
     console.log("\n   **** not BSIJSONValues ***", obj);
-    bsijsonPunchList.push({ toJSONNotSupported: obj });
+    bsiJsonPunchList.push({ toJSONNotSupported: obj });
     errors++;
   } else {
     // This is a leaf-level bsijson ...
     if (!obj.setFrom)
-      bsijsonPunchList.push({ noSetFromMethod: obj });
+      bsiJsonPunchList.push({ noSetFromMethod: obj });
 
     if (!obj.clone)
-      bsijsonPunchList.push({ noCloneMethod: obj });
+      bsiJsonPunchList.push({ noCloneMethod: obj });
     if (!obj.isAlmostEqual
       && !(obj.isAlmostEqualRadiansAllowPeriodShift || obj.isAlmostEqualNoPeriodShift))
-      bsijsonPunchList.push({ noAlmostEqualMethod: obj });
+      bsiJsonPunchList.push({ noAlmostEqualMethod: obj });
 
     if (isDifferentTypeName(obj) && Checker.noisy.bsiJSONFirstAppearance)
       console.log(obj, "first toJSON() ==>", (obj as BeJSONFunctions).toJSON());
@@ -359,7 +360,12 @@ describe("BSIJSON.ExerciseAllTypes", () => {
         expect(a.isAlmostEqual(a1)).equals(true);
       }
     }
-
+    // exercise variants of row-major array json ..
+    {
+      const a1 = Transform.fromJSON([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+      const a2 = Transform.fromJSON([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]);
+      ck.testTransform(a1, a2, "Transform.fromJSON via [] and [][] variants.");
+    }
     {
       let a;
       for (a of Sample.createMatrix3dArray()) {
@@ -442,8 +448,8 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
     ck.testExactNumber(0, errors, "errors exercising geometry");
     //    errors += exercise({ q: 1 });
-    if (bsijsonPunchList.length > 0)
-      console.log(bsijsonPunchList);
+    if (bsiJsonPunchList.length > 0)
+      console.log(bsiJsonPunchList);
 
     ck.checkpoint("BSIJSON.ExerciseAllTypes");
     expect(ck.getNumErrors()).equals(0);
@@ -452,7 +458,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 });
 
 function exerciseBSIJSONValuesQuick(name: string, obj: any) {
-  if (Checker.noisy.bsijsonValuesQuick && obj as BeJSONFunctions) {
+  if (Checker.noisy.bsiJsonValuesQuick && obj as BeJSONFunctions) {
     console.log("\n" + name, " toJSON():");
     console.log(obj.toJSON());
   }

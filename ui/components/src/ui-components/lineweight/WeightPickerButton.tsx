@@ -46,6 +46,7 @@ interface WeightPickerState {
  */
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
   private _target: HTMLDivElement | null = null;
+  private _weightsContainer: HTMLDivElement | null = null;
   private _focusTarget = React.createRef<HTMLButtonElement>();  // weight button that should receive focus after popup is open
 
   /** @internal */
@@ -93,6 +94,29 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     return `ui-core-lineweight-${weight}`;
   }
 
+  private moveFocusInPopup(moveUp: boolean, event: React.KeyboardEvent<any>) {
+    const activeElement = document.activeElement;
+    if (this._weightsContainer && activeElement && activeElement.tagName === "BUTTON") {
+      const values = activeElement.id.split("-");
+      if (values.length === 4 && values[2] === "lineweight") {
+        const weight = parseInt(values[3], 10);
+        const foundIndex = this.props.weights.findIndex((val) => val === weight);
+        if (foundIndex < 0)
+          return;
+
+        const nextWeight = moveUp ? (foundIndex <= 0 ? this.props.weights[this.props.weights.length - 1] : this.props.weights[foundIndex - 1]) :
+          (foundIndex < this.props.weights.length - 1 ? this.props.weights[foundIndex + 1] : this.props.weights[0]);
+
+        const focusLocation = this._weightsContainer.querySelector(`#${this.buildIdForWeight(nextWeight)}`) as HTMLButtonElement;
+        if (focusLocation) {
+          focusLocation.focus();
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }
+    }
+  }
+
   private _handleKeyDown = (event: React.KeyboardEvent<any>) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -115,14 +139,23 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
         } catch { }
       }
       this._closePopup();
+    } else {
+      if (event.key === "ArrowDown")
+        this.moveFocusInPopup(false, event);
+      else if (event.key === "ArrowUp")
+        this.moveFocusInPopup(true, event);
     }
+  }
+
+  private _setWeightContainer = (el: any) => {
+    this._weightsContainer = el;
   }
 
   private renderPopup(title: string | undefined) {
     return (
       <div className="components-weightpicker-popup-container">
         {title && <h4>{title}</h4>}
-        <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines" onKeyDown={this._handleKeyDown}>
+        <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines" onKeyDown={this._handleKeyDown} ref={this._setWeightContainer}>
           {this.props.weights.map((weight, index) => {
             const classNames = classnames(
               "components-weightpicker-swatch",

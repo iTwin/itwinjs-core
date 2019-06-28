@@ -29,6 +29,7 @@ describe("IModelApp (#integration)", () => {
     IModelApp.authorizationClient = undefined;
   });
 
+  // TODO: Needs to be fixed (Raman + Steve)
   it.skip("should setup access token and application id values for the backend", async () => {
     const expectedAccessTokenStr = (await IModelApp.authorizationClient!.getAccessToken()).toTokenString();
 

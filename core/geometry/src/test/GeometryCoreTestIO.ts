@@ -11,6 +11,8 @@ import { Arc3d } from "../curve/Arc3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { LineString3d } from "../curve/LineString3d";
+import { MomentData } from "../geometry4d/MomentData";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -91,5 +93,27 @@ export class GeometryCoreTestIO {
       this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [1, 5, 7, 3]), dx, dy, dz);
     }
   }
-
+  public static showMomentData(collection: GeometryQuery[], momentData?: MomentData, xyOnly: boolean = false, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (momentData) {
+      const momentData1 = MomentData.inertiaProductsToPrincipalAxes(momentData.origin, momentData.sums);
+      if (momentData1) {
+        const unitX = momentData1.localToWorldMap.matrix.columnX();
+        const unitY = momentData1.localToWorldMap.matrix.columnY();
+        const unitZ = momentData1.localToWorldMap.matrix.columnZ();
+        const rx = momentData1.radiusOfGyration.x;
+        const ry = momentData1.radiusOfGyration.y;
+        const rz = momentData1.radiusOfGyration.z;
+        this.captureGeometry(collection,
+          LineString3d.create([
+            momentData1.origin.plusScaled(unitX, 2.0 * rz),
+            momentData1.origin,
+            momentData1.origin.plusScaled(unitY, rz)]), dx, dy, dz);
+        this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees (0, 355)), dx, dy, dz);
+        if (!xyOnly) {
+          this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);
+          this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitZ.scale(ry), unitX.scale(ry)), dx, dy, dz);
+        }
+      }
+    }
+  }
 }

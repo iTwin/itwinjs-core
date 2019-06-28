@@ -813,6 +813,35 @@ export class Sample {
       }
     }
   }
+
+  /** Assorted regions with arc boundaries
+   * * full circle
+   * * with varying sweep:
+   *    * partial arc with single chord closure
+   *    * partial arc with 2-edge closure via center
+   */
+  public static createArcRegions(): Loop[] {
+    const result = [];
+    const center = Point3d.create(0, 0, 0);
+    for (const sweep of [
+      AngleSweep.createStartEndDegrees(0, 360),
+      AngleSweep.createStartEndDegrees(-20, 20),
+      AngleSweep.createStartEndDegrees(0, 90),
+      AngleSweep.createStartEndDegrees(0, 180),
+    ]) {
+      const arc0 = Arc3d.createXY(Point3d.create(0, 0), 2.0, sweep);
+      if (arc0.sweep.isFullCircle) {
+        result.push(Loop.create(arc0));
+      } else {
+        const chord = LineSegment3d.create(arc0.endPoint(), arc0.startPoint());
+        result.push(Loop.create(arc0, chord));
+        result.push(Loop.create(arc0, LineString3d.create(arc0.endPoint(), center, arc0.startPoint())));
+      }
+
+    }
+    return result;
+  }
+
   /** Assorted loops in xy plane:
    * * unit square
    * * rectangle
@@ -831,11 +860,14 @@ export class Sample {
     const point0 = Point3d.create(0, 0, 0);
     const point1 = Point3d.create(1, 2, 0);
     const point2 = Point3d.create(6, 4, 0);
+    const point3 = Point3d.create(1, 5, 0);
+    const point4 = Point3d.create(8, 3, 0);
     const ax = 10.0;
     const ay = 8.0;
     const bx = 3.0;
     const by = 2.0;
     const r2 = 0.5;
+    const r2A = 2.5;
     const result = [
       ParityRegion.create(
         Loop.create(
@@ -848,6 +880,16 @@ export class Sample {
         Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
         Loop.create(Arc3d.createXY(point2, r2))),
+      ParityRegion.create(
+        Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
+        Loop.create(Arc3d.createXY(point2, r2)),
+        Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
+      ParityRegion.create(
+        Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
+        Loop.create(Arc3d.create(point4, Vector3d.create(r2, 0), Vector3d.create(0, r2A))),
+        Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
     ];
     return result;
   }
@@ -855,9 +897,15 @@ export class Sample {
   public static createSimpleUnions(): UnionRegion[] {
     const parityRegions = Sample.createSimpleParityRegions();
     const loops = Sample.createSimpleLoops();
+    const ax = 3.0;
+    const ay = 1.0;
+    const bx = 4.0;
+    const by = 2.0;
     const result = [
       UnionRegion.create(loops[0], parityRegions[0]),
-    ];
+      UnionRegion.create(
+        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 2 * ay, 0), bx, by)))];
     return result;
   }
   /** Assorted unstructured curve sets. */
