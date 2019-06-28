@@ -340,7 +340,9 @@ export class BriefcaseEntry {
     isPending: Promise<void>;
     // (undocumented)
     readonly nativeDb: IModelJsNative.DgnDb;
+    readonly onAfterOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeClose: BeEvent<() => void>;
+    readonly onBeforeOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeVersionUpdate: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     openParams: OpenParams;
@@ -648,6 +650,8 @@ export class ConcurrencyControl {
     static createRequest(): ConcurrencyControl.Request;
     // @internal
     extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request;
+    // @internal (undocumented)
+    getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
     readonly hasPendingRequests: boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
@@ -1974,15 +1978,24 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export interface BriefcaseManagerOnConflictPolicy {
-        deleteVsUpdate: number;
-        updateVsDelete: number;
-        updateVsUpdate: number;
+    export class ApplyChangeSetsRequest {
+        constructor(db: DgnDb);
+        closeBriefcase(): void;
+        containsSchemaChanges(): boolean;
+        doApplyAsync(callback: (status: ChangeSetStatus) => void, applyOption: ChangeSetApplyOption): void;
+        static doApplySync(db: DgnDb, changeSetTokens: string, applyOption: ChangeSetApplyOption): ChangeSetStatus;
+        readChangeSets(changeSetTokens: string): ChangeSetStatus;
+        reopenBriefcase(openMode: OpenMode): DbResult;
     }
     const // (undocumented)
     version: string;
     let // (undocumented)
     logger: Logger;
+    export interface BriefcaseManagerOnConflictPolicy {
+        deleteVsUpdate: number;
+        updateVsDelete: number;
+        updateVsUpdate: number;
+    }
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2025,10 +2038,6 @@ export namespace IModelJsNative {
         // (undocumented)
         appendBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest): void;
         // (undocumented)
-        applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
-        // (undocumented)
-        applyChangeSetsAsync(callback: (status: ChangeSetStatus) => void, dbname: string, dbGuid: GuidString, changeSetTokens: string, applyOption: ChangeSetApplyOption): void;
-        // (undocumented)
         attachChangeCache(changeCachePath: string): DbResult;
         // (undocumented)
         beginMultiTxnOperation(): DbResult;
@@ -2051,9 +2060,7 @@ export namespace IModelJsNative {
         // (undocumented)
         createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
         // (undocumented)
-        createIModel(accessToken: string, appVersion: string, projectId: GuidString, fileName: string, props: string): DbResult;
-        // (undocumented)
-        createStandaloneIModel(fileName: string, props: string): DbResult;
+        createIModel(fileName: string, props: string): DbResult;
         // (undocumented)
         deleteElement(elemIdJson: string): IModelStatus;
         // (undocumented)
