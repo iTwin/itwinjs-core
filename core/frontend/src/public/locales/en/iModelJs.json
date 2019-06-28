@@ -54,7 +54,7 @@
     "UnableToLoad": "Unable to load Plugin {{pluginName}}"
   },
   "Errors": {
-    "ReloadPage": "😞 Oops, something went horribly wrong - we suggest you reload the page.",
+    "ReloadPage": "😞 Oops, something went horribly wrong - please reload the page.",
     "Details": "In case you're interested in the gory details:"
   }
 }

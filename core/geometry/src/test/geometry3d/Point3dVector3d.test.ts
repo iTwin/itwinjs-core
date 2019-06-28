@@ -86,7 +86,7 @@ export class MatrixTests {
     // console.log("inverse", matrixB);
     if (matrixB) {
       const AB = matrixA.multiplyMatrixMatrix(matrixB);
-      ck.testBoolean(true, AB.isIdentity, "A * Ainverse = I");
+      ck.testBoolean(true, AB.isIdentity, "A * AInverse = I");
     }
   }
   public static checkProperties(
@@ -120,15 +120,15 @@ export class MatrixTests {
     ck: bsiChecker.Checker, pointA: Point3d[]) {
     const transform = Transform.createScaleAboutPoint(Point3d.create(3, 3, 3), 2);
     const pointB = transform.multiplyPoint3dArray(pointA);
-    ck.testExactNumber(pointA.length, pointB.length, "mutliplyPoint3dArray simple create");
+    ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray simple create");
 
     pointB.pop();
     transform.multiplyPoint3dArray(pointA, pointB);  // pointB goes in too small !!!
-    ck.testExactNumber(pointA.length, pointB.length, "mutliplyPoint3dArray needs push");
+    ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray needs push");
 
     pointB.push(Point3d.create(1, 1, 1)); // now it is bigger !!!
     transform.multiplyPoint3dArray(pointA, pointB);
-    ck.testExactNumber(pointA.length, pointB.length, "mutliplyPoint3dArray needs push");
+    ck.testExactNumber(pointA.length, pointB.length, "multiplyPoint3dArray needs push");
 
     const rangeA = Range3d.createArray(pointA);
     const rangeB = Range3d.createArray(pointB);
@@ -211,6 +211,7 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+// cspell:word eigen
 describe("Matrix3d.symmetricEigenvalues", () => {
   it("Matrix3d.symmetricEigenvalues", () => {
     const ck = new bsiChecker.Checker();
@@ -293,7 +294,7 @@ describe("Matrix3d.cachedInverse", () => {
     Matrix3d.numUseCache = 0;
     Matrix3d.numComputeCache = 0;
     Matrix3d.useCachedInverse = true;
-    // first inverssion should do the calculation
+    // first inversion should do the calculation
     const inverseA1 = matrixA.inverse() as Matrix3d;
     ck.testTrue(matrixA.multiplyMatrixMatrix(inverseA1).isIdentity, "first inverse");
     // second inversion should reuse.

@@ -340,7 +340,9 @@ export class BriefcaseEntry {
     isPending: Promise<void>;
     // (undocumented)
     readonly nativeDb: IModelJsNative.DgnDb;
+    readonly onAfterOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeClose: BeEvent<() => void>;
+    readonly onBeforeOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeVersionUpdate: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     openParams: OpenParams;
@@ -458,7 +460,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
     // @internal
     constructor(props: CategorySelectorProps, iModel: IModelDb);
-    categories: string[];
+    categories: Id64String[];
     // @internal (undocumented)
     static readonly className: string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
@@ -648,6 +650,8 @@ export class ConcurrencyControl {
     static createRequest(): ConcurrencyControl.Request;
     // @internal
     extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request;
+    // @internal (undocumented)
+    getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
     readonly hasPendingRequests: boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
@@ -1612,6 +1616,12 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 }
 
 // @public
+export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @public
 export abstract class GraphicalModel2d extends GeometricModel2d {
     // @internal (undocumented)
     static readonly className: string;
@@ -1968,15 +1978,24 @@ export class IModelJsFsStats {
 export namespace IModelJsNative {
     // (undocumented)
     export function addReferenceToObjectInVault(id: string): void;
-    export interface BriefcaseManagerOnConflictPolicy {
-        deleteVsUpdate: number;
-        updateVsDelete: number;
-        updateVsUpdate: number;
+    export class ApplyChangeSetsRequest {
+        constructor(db: DgnDb);
+        closeBriefcase(): void;
+        containsSchemaChanges(): boolean;
+        doApplyAsync(callback: (status: ChangeSetStatus) => void, applyOption: ChangeSetApplyOption): void;
+        static doApplySync(db: DgnDb, changeSetTokens: string, applyOption: ChangeSetApplyOption): ChangeSetStatus;
+        readChangeSets(changeSetTokens: string): ChangeSetStatus;
+        reopenBriefcase(openMode: OpenMode): DbResult;
     }
     const // (undocumented)
     version: string;
     let // (undocumented)
     logger: Logger;
+    export interface BriefcaseManagerOnConflictPolicy {
+        deleteVsUpdate: number;
+        updateVsDelete: number;
+        updateVsUpdate: number;
+    }
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2019,8 +2038,6 @@ export namespace IModelJsNative {
         // (undocumented)
         appendBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest): void;
         // (undocumented)
-        applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
-        // (undocumented)
         attachChangeCache(changeCachePath: string): DbResult;
         // (undocumented)
         beginMultiTxnOperation(): DbResult;
@@ -2043,9 +2060,7 @@ export namespace IModelJsNative {
         // (undocumented)
         createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
         // (undocumented)
-        createIModel(accessToken: string, appVersion: string, projectId: GuidString, fileName: string, props: string): DbResult;
-        // (undocumented)
-        createStandaloneIModel(fileName: string, props: string): DbResult;
+        createIModel(fileName: string, props: string): DbResult;
         // (undocumented)
         deleteElement(elemIdJson: string): IModelStatus;
         // (undocumented)
@@ -2125,6 +2140,8 @@ export namespace IModelJsNative {
         // (undocumented)
         hasFatalTxnError(): boolean;
         // (undocumented)
+        hasSavedChanges(): boolean;
+        // (undocumented)
         hasUnsavedChanges(): boolean;
         // (undocumented)
         importFunctionalSchema(): DbResult;
@@ -2146,6 +2163,8 @@ export namespace IModelJsNative {
         isChangeCacheAttached(): boolean;
         // (undocumented)
         isOpen(): boolean;
+        // (undocumented)
+        isReadonly(): boolean;
         // (undocumented)
         isRedoPossible(): boolean;
         // (undocumented)
@@ -3182,7 +3201,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
-    models: string[];
+    models: Id64String[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
 }

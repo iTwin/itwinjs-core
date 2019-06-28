@@ -18,7 +18,7 @@ export const MessageSpan = (props: MessageSpanProps): JSX.Element => {
   let messageNode: JSX.Element;
 
   if (typeof props.message === "string")
-    messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message }} />;   // TODO - After some time for warning, switch to pure text
+    messageNode = <span className={props.className}>{props.message}</span>;
   else
     messageNode = <span className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
 
@@ -31,7 +31,7 @@ export const MessageDiv = (props: MessageSpanProps): JSX.Element => {
   let messageNode: JSX.Element;
 
   if (typeof props.message === "string")
-    messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message }} />;   // TODO - After some time for warning, switch to pure text
+    messageNode = <div className={props.className}>{props.message}</div>;
   else
     messageNode = <div className={props.className} dangerouslySetInnerHTML={{ __html: props.message.outerHTML }} />;
 

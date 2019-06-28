@@ -79,17 +79,12 @@ describe("IModelOpen (#integration)", () => {
 
     // Open iModel and ensure RpcPendingResponse exception is thrown
     let exceptionThrown = false;
-    let startTime = 0;
-    let timeElapsed = 0;
     try {
-      startTime = Date.now();
       await IModelDb.open(requestContext, testProjectId, testIModelId, openParams);
     } catch (error) {
-      timeElapsed = Date.now() - startTime;
       exceptionThrown = error instanceof RpcPendingResponse;
     }
     assert.isTrue(exceptionThrown);
-    assert.isBelow(timeElapsed, openParams.timeout + 500); // Adding arbitrary overhead
 
     // Open and close the model
     openParams.timeout = undefined;
@@ -179,47 +174,5 @@ describe("IModelOpen (#integration)", () => {
       await iModel.close(requestContext, KeepBriefcase.Yes);
     }
   });
-
-  // it.skip("should be able to make repetitive multiple simultaneous open requests to the Hub", async () => {
-  //   const projectName = "DesignReviewTestDatasets";
-  //   const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, projectName);
-
-  //   const iModelNames = [
-  //     "BSY_OG_UK_01 OG_REF",
-  //     "Coffs Harbour Bypass Dataset 1",
-  //     "Coffs Harbour Bypass Dataset 2",
-  //     "Mott Dataset 1",
-  //     "Mott Dataset 2 - Section 6",
-  //     "Mott Dataset 3 - Section 8",
-  //     "Mott Dataset 4 - Section 8",
-  //     "Mott WP-137",
-  //     "OG_REF",
-  //     "PenChemOSBL7",
-  //     "Retail Building",
-  //     "Stadium Dataset 1",
-  //     "Sweco Norway Dataset 1",
-  //     "Sweco Norway Dataset 2 - Revit and MicroStation Bridge",
-  //     "Sweco Norway Dataset 3 - 108 refs",
-  //   ];
-
-  //   const iModelIds = new Array<GuidString>();
-  //   const changeSetIds = new Array<GuidString>();
-  //   for (const iModelName of iModelNames) {
-  //     let iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
-  //     assert.isDefined(iModelId, `iModel ${iModelName} not found in project ${projectName}`);
-  //     iModelIds.push(iModelId);
-
-  //     let changeSetId: GuidString = await HubUtility.queryLatestChangeSetId(requestContext, iModelId);
-  //     assert.isDefined(changeSetId);
-  //     changeSetIds.push(changeSetId);
-  //   }
-
-  //   // Remove all briefcases from cache
-  //   for (const iModelId of iModelIds) {
-  //     const path = (BriefcaseManager as any).getIModelPath(iModelId);
-  //     (BriefcaseManager as any).deleteFolderRe
-  //   }
-
-  // });
 
 });

@@ -59,6 +59,7 @@ export class Transform implements BeJSONFunctions {
   /** Set this Transform instance from flexible inputs:
    * * Any object (such as another Transform) that has `origin` and `matrix` members accepted by Point3d.setFromJSON and Matrix3d.setFromJSON
    * * An array of 3 number arrays, each with 4 entries which are rows in a 3x4 matrix.
+   * * An array of 12 numbers, each block of 4 entries as a row 3x4 matrix.
    */
   public setFromJSON(json?: TransformProps): void {
     if (json) {
@@ -76,7 +77,15 @@ export class Transform implements BeJSONFunctions {
         this._origin.set(data[0][3], data[1][3], data[2][3]);
         return;
       }
-
+      if (Geometry.isNumberArray(json, 12)) {
+        const data = json as number[];
+        this._matrix.setRowValues(
+          data[0], data[1], data[2],
+          data[4], data[5], data[6],
+          data[8], data[9], data[10]);
+        this._origin.set(data[3], data[7], data[11]);
+        return;
+      }
     }
     this.setIdentity();
   }

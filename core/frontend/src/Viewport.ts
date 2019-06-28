@@ -1450,10 +1450,10 @@ export abstract class Viewport implements IDisposable {
 
   private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
     this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
-      if (enableAllSubCategories) {
+      if (enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
-        this._changeFlags.setViewedCategories();
-      }
+
+      this._changeFlags.setViewedCategories();
     });
   }
 

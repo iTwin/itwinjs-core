@@ -248,3 +248,4 @@ We need a Site class that implements ISite. Should it be Sealed?
 4. Provide validation of ModelAffinity usage?
 5. Provide validation code/capability that uses ModelAffinity data.
 
+> Next: [Categories](./categories.md)

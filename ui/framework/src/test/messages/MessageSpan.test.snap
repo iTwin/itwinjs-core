@@ -11,13 +11,9 @@ exports[`MessageSpan & MessageDiv MessageDiv with message HTMLElement 1`] = `
 `;
 
 exports[`MessageSpan & MessageDiv MessageDiv with message text 1`] = `
-<div
-  dangerouslySetInnerHTML={
-    Object {
-      "__html": "Test",
-    }
-  }
-/>
+<div>
+  Test
+</div>
 `;
 
 exports[`MessageSpan & MessageDiv MessageSpan with message HTMLElement 1`] = `
@@ -31,11 +27,7 @@ exports[`MessageSpan & MessageDiv MessageSpan with message HTMLElement 1`] = `
 `;
 
 exports[`MessageSpan & MessageDiv MessageSpan with message text 1`] = `
-<span
-  dangerouslySetInnerHTML={
-    Object {
-      "__html": "Test",
-    }
-  }
-/>
+<span>
+  Test
+</span>
 `;

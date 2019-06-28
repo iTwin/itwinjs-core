@@ -234,6 +234,7 @@ export abstract class CurveCollection extends GeometryQuery {
       }
     }
   }
+
 }
 /** Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.

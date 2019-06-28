@@ -196,3 +196,5 @@ Embedding relationships should not have 'Has' in the class name.
 #### BIS-1700 <a name="BIS-1700"></a>
 
 Struct classes must not have base classes.
+
+> Next: [BIS Glossary](./glossary.md)

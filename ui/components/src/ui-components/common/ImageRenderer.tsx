@@ -5,7 +5,7 @@
 /** @module Common */
 
 import * as React from "react";
-import { WebFontIcon, UiError } from "@bentley/ui-core";
+import { WebFontIcon, UiError, SvgSprite } from "@bentley/ui-core";
 import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 import { UiComponents } from "../UiComponents";
 
@@ -33,11 +33,8 @@ export class ImageRenderer {
 
   /** Render svg string into JSX */
   private renderSvg(svg: string) {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(svg, "image/svg+xml");
-
     return (
-      <div dangerouslySetInnerHTML={{ __html: doc.documentElement.outerHTML }} />
+      <div><SvgSprite src={svg} /></div>
     );
   }
 

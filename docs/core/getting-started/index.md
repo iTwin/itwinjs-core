@@ -53,17 +53,17 @@ The content can be either:
 
 OR
 
-- **You can use your own** – Follow [these steps](https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view ) to format your content into a ‘Snapshot iModel’ (.bim) before proceeding to the Project Registration page below.
+- **You can use your own** – Follow <a href="https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view" target="_blank">these steps</a> to format your content into a ‘Snapshot iModel’ (.bim) before proceeding to the Project Registration page below.
 
 **[Register Project Here](./registration-dashboard?tab=1)**
 
-_Note: The “iModel Testdrive” organization is intended for developer testing only.  See [this page](https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537) for information about administering a CONNECT project in your own organization._
+_Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization._
 
 
 ## 5. Get the Sample Code
 The Github repositories for the applications described in step 3.
 
-[Simple Viewer App](https://github.com/imodeljs/simple-viewer-app)<br/>
+<a href="https://github.com/imodeljs/simple-viewer-app" target="_blank">Simple Viewer App</a><br/>
 An example of an *interactive application* which can:
 - Embed an iModel.js viewport into your application to display graphical data.
 - Browse iModel catalog and view element properties.

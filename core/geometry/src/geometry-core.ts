@@ -183,6 +183,8 @@ export * from "./curve/LineString3d";
 export * from "./curve/Loop";
 export * from "./curve/ParityRegion";
 export * from "./curve/Path";
+export * from "./curve/RegionMomentsXY";
+export * from "./curve/RegionOps";
 export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";

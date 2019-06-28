@@ -57,7 +57,7 @@ export class Checker {
     boxMap: false,
     rotMatrixAxisAndAngle: false,
     map4d: false,
-    bsijsonValuesQuick: false,
+    bsiJsonValuesQuick: false,
     testTransitionSpiral: true,
     newtonRtoRD: false,
     ACSArrows: false,

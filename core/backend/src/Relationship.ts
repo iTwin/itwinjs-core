@@ -106,6 +106,14 @@ export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
   public static get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
+/** Relates a [[GraphicalElement3d]] to the [[Element]] that it represents
+ * @public
+ */
+export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
+  /** @internal */
+  public static get className(): string { return "GraphicalElement3dRepresentsElement"; }
+}
+
 /** Properties that are common to all types of link table ECRelationships
  * @public
  */

@@ -1,6 +1,7 @@
 ### BIS
 
-- [Introduction](./index.md)
+- [Base Infrastructure Schemas (BIS)](./index.md)
+- [Federated Digital Twins](./intro/federated-digital-twins.md)
 - [Modeling with BIS](./intro/modeling-with-bis.md)
 - [BIS Organization](./intro/bis-organization.md)
 - [Fabric of the Universe](./intro/fabric-of-the-universe.md)
@@ -12,6 +13,12 @@
 - [Relationship Fundamentals](./intro/relationship-fundamentals.md)
 - [Schemas (“Domains”)](./intro/schemas-domains.md)
 - [Information Hierarchy](./intro/information-hierarchy.md)
+- [Modeling Perspectives](./intro/modeling-perspectives.md)
+- [Top of the World](./intro/top-of-the-world.md)
+- [Single Responsible Party Principle](./intro/srpp.md)
+- [Organizing Models and Elements](./intro/organizing-models-and-elements.md)
+- [Modeling Systems](./intro/modeling-systems.md)
+- [Overlapping Systems](./intro/overlapping-systems.md)
 - [Physical Models and Elements](./intro/physical-models-and-elements.md)
 - [Functional Models and Elements](./intro/functional-models-and-elements.md)
 - [Analysis Models and Elements](./intro/analysis-models-and-elements.md)
@@ -20,15 +27,15 @@
 - [Categories](./intro/categories.md)
 - [Schema Customization](./intro/schema-customization.md)
 - [Data Evolution Across Time](./intro/appendix-a-data-evolution-across-time.md)
-- [Schema Production Status](./intro/schema-production-status.md)
 - [Schema Versioning](./intro/schema-versioning-and-generations.md)
+- [Schema Production Status](./intro/schema-production-status.md)
+- [BIS Schema Units](./intro/units.md)
+- [BIS Schema Validation](./intro/bis-schema-validation.md)
 - [BIS Glossary](./intro/glossary.md)
 
 <!-- TODO: The following are not linked in...?
 ./domains/*
 ./intro/appendix-c-bis-domain-design-fundamentals.md
-./intro/bis-schema-validation.md
-./intro/units.md
 -->
 
 &nbsp;

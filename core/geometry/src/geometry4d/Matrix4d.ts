@@ -40,8 +40,11 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[i] = other._coffs[i];
   }
   /** Return a deep clone. */
-  public clone(): Matrix4d {
-    const result = new Matrix4d();
+  public clone(result?: Matrix4d): Matrix4d {
+    if (result === this)
+      return this;
+    if (result === undefined)
+      result = new Matrix4d();
     for (let i = 0; i < 16; i++)
       result._coffs[i] = this._coffs[i];
     return result;
@@ -149,6 +152,19 @@ export class Matrix4d implements BeJSONFunctions {
     result._coffs[11] = z;
     return result;
   }
+
+  /** return this matrix plus scale times matrixB. */
+  public plusScaled(matrixB: Matrix4d, scale: number, result?: Matrix4d): Matrix4d {
+    // If result is undefined, a real clone is created.
+    // If result is "this" we get the pointer to this right back.
+    // If result is other, "this" coffs are copied.
+    // Then we can add matrixB.  (Which we assume is different from this?)
+    result = this.clone(result);
+    for (let i = 0; i < 16; i++)
+      result._coffs[i] += scale * matrixB._coffs[i];
+    return result;
+  }
+
   /**
    * Create a Matrix4d with translation and scaling values directly inserted (along with 1 as final diagonal entry)
    * @param tx x entry for translation column
@@ -418,6 +434,12 @@ export class Matrix4d implements BeJSONFunctions {
   public atIJ(rowIndex: number, columnIndex: number): number {
     return this._coffs[rowIndex * 4 + columnIndex];
   }
+
+  /** Set a matrix entry by row and column index.
+   */
+  public setAtIJ(rowIndex: number, columnIndex: number, value: number) {
+    this._coffs[rowIndex * 4 + columnIndex] = value;
+  }
   /** multiply matrix * [x,y,z,w]. immediately renormalize to return in a Point3d.
    * If zero weight appears in the result (i.e. input is on eyeplane) leave the mapped xyz untouched.
    */
@@ -505,7 +527,7 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[iB] += scale * this._coffs[iA];
   }
   /** Compute an inverse matrix.
-   * * This uses simple Bauss-Jordan elimination -- no pivot.
+   * * This uses simple Gauss-Jordan elimination -- no pivot.
    * @returns undefined if 1/pivot becomes too large. (i.e. apparent 0 pivot)
    */
   public createInverse(): Matrix4d | undefined {
@@ -521,7 +543,7 @@ export class Matrix4d implements BeJSONFunctions {
     for (pivotRow = 0; pivotRow < 3; pivotRow++) {
       pivotIndex = pivotRow * 5;
       pivotValue = work._coffs[pivotIndex];
-      // console.log("** pivot row " + pivotRow + " pivotvalue " + pivotValue);
+      // console.log("** pivot row " + pivotRow + " pivotValue " + pivotValue);
       divPivot = Geometry.conditionalDivideFraction(1.0, pivotValue);
       if (divPivot === undefined)
         return undefined;
@@ -534,12 +556,12 @@ export class Matrix4d implements BeJSONFunctions {
         // console.log(inverse.rowArrays());
       }
     }
-    // console.log("\n**********************Backsub\n");
+    // console.log("\n**********************BackSub\n");
     // upward gaussian elimination ...
     for (pivotRow = 1; pivotRow < 4; pivotRow++) {
       pivotIndex = pivotRow * 5;
       pivotValue = work._coffs[pivotIndex];
-      // console.log("** pivot row " + pivotRow + " pivotvalue " + pivotValue);
+      // console.log("** pivot row " + pivotRow + " pivotValue " + pivotValue);
       divPivot = Geometry.conditionalDivideFraction(1.0, pivotValue);
       if (divPivot === undefined)
         return undefined;
@@ -591,5 +613,126 @@ export class Matrix4d implements BeJSONFunctions {
       this._coffs[i] *= az;
     for (let i = 12; i < 16; i++)
       this._coffs[i] *= aw;
+  }
+  /**
+   * add an outer product (single column times single row times scale factor) to this matrix.
+   * @param vectorU column vector
+   * @param vectorV row vector
+   * @param scale scale factor
+   */
+  public addScaledOuterProductInPlace(vectorU: Point4d, vectorV: Point4d, scale: number) {
+    let a = vectorU.x * scale;
+    this._coffs[0] += a * vectorV.x;
+    this._coffs[1] += a * vectorV.y;
+    this._coffs[2] += a * vectorV.z;
+    this._coffs[3] += a * vectorV.w;
+
+    a = vectorU.y * scale;
+    this._coffs[4] += a * vectorV.x;
+    this._coffs[5] += a * vectorV.y;
+    this._coffs[6] += a * vectorV.z;
+    this._coffs[7] += a * vectorV.w;
+
+    a = vectorU.z * scale;
+    this._coffs[8] += a * vectorV.x;
+    this._coffs[9] += a * vectorV.y;
+    this._coffs[10] += a * vectorV.z;
+    this._coffs[11] += a * vectorV.w;
+
+    a = vectorU.w * scale;
+    this._coffs[12] += a * vectorV.x;
+    this._coffs[13] += a * vectorV.y;
+    this._coffs[14] += a * vectorV.z;
+    this._coffs[15] += a * vectorV.w;
+  }
+  /**
+   * ADD (n place) scale*A*B*AT where
+   * * A is a pure translation with final column [x,y,z,1]
+   * * B is the given `matrixB`
+   * * AT is the transpose of A.
+   * * scale is a multiplier.
+   * @param matrixB the middle matrix.
+   * @param ax x part of translation
+   * @param ay y part of translation
+   * @param az z part of translation
+   * @param scale scale factor for entire product
+   */
+  public addTranslationSandwichInPlace(matrixB: Matrix4d, ax: number, ay: number, az: number, scale: number) {
+    const bx = matrixB._coffs[3];
+    const by = matrixB._coffs[7];
+    const bz = matrixB._coffs[11];
+    // matrixB can be non-symmetric!!
+    const cx = matrixB._coffs[12];
+    const cy = matrixB._coffs[13];
+    const cz = matrixB._coffs[14];
+
+    const beta = matrixB._coffs[15];
+    const axBeta = ax * beta;
+    const ayBeta = ay * beta;
+    const azBeta = az * beta;
+    this._coffs[0] += scale * (matrixB._coffs[0] + ax * bx + cx * ax + ax * axBeta);
+    this._coffs[1] += scale * (matrixB._coffs[1] + ay * bx + cy * ax + ax * ayBeta);
+    this._coffs[2] += scale * (matrixB._coffs[2] + az * bx + cz * ax + ax * azBeta);
+    this._coffs[3] += scale * (bx + axBeta);
+
+    this._coffs[4] += scale * (matrixB._coffs[4] + ax * by + cx * ay + ay * axBeta);
+    this._coffs[5] += scale * (matrixB._coffs[5] + ay * by + cy * ay + ay * ayBeta);
+    this._coffs[6] += scale * (matrixB._coffs[6] + az * by + cz * ay + ay * azBeta);
+    this._coffs[7] += scale * (by + ayBeta);
+
+    this._coffs[8] += scale * (matrixB._coffs[8] + ax * bz + cx * az + az * axBeta);
+    this._coffs[9] += scale * (matrixB._coffs[9] + ay * bz + cy * az + az * ayBeta);
+    this._coffs[10] += scale * (matrixB._coffs[10] + az * bz + cz * az + az * azBeta);
+    this._coffs[11] += scale * (bz + azBeta);
+
+    this._coffs[12] += scale * (cx + axBeta);
+    this._coffs[13] += scale * (cy + ayBeta);
+    this._coffs[14] += scale * (cz + azBeta);
+    this._coffs[15] += scale * beta;
+  }
+  /**
+   * Multiply and replace contents of this matrix by A*this*AT where
+   * * A is a pure translation with final column [x,y,z,1]
+   * * this is this matrix.
+   * * AT is the transpose of A.
+   * * scale is a multiplier.
+   * @param matrixB the middle matrix.
+   * @param ax x part of translation
+   * @param ay y part of translation
+   * @param az z part of translation
+   * @param scale scale factor for entire product
+   */
+  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) {
+    const bx = this._coffs[3];
+    const by = this._coffs[7];
+    const bz = this._coffs[11];
+    // matrixB can be non-symmetric!!
+    const cx = this._coffs[12];
+    const cy = this._coffs[13];
+    const cz = this._coffs[14];
+
+    const beta = this._coffs[15];
+    const axBeta = ax * beta;
+    const ayBeta = ay * beta;
+    const azBeta = az * beta;
+    this._coffs[0] += (ax * bx + cx * ax + ax * axBeta);
+    this._coffs[1] += (ay * bx + cy * ax + ax * ayBeta);
+    this._coffs[2] += (az * bx + cz * ax + ax * azBeta);
+    this._coffs[3] += axBeta;
+
+    this._coffs[4] += (ax * by + cx * ay + ay * axBeta);
+    this._coffs[5] += (ay * by + cy * ay + ay * ayBeta);
+    this._coffs[6] += (az * by + cz * ay + ay * azBeta);
+    this._coffs[7] += ayBeta;
+
+    this._coffs[8] += (ax * bz + cx * az + az * axBeta);
+    this._coffs[9] += (ay * bz + cy * az + az * ayBeta);
+    this._coffs[10] += (az * bz + cz * az + az * azBeta);
+    this._coffs[11] += azBeta;
+
+    this._coffs[12] += axBeta;
+    this._coffs[13] += ayBeta;
+    this._coffs[14] += azBeta;
+    // coffs[15] is unchanged !!!
   }
 }
