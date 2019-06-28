@@ -131,7 +131,7 @@ wMapped[0] = w2; wMapped[1] = w1; wMapped[2] = w1; wMapped[3] = w2;
 return 4;
 */
   }
-  /** Sum function values with given weghts and x values. */
+  /** Sum function values with given weights and x values. */
   public static sum1(
     xx: Float64Array,
     ww: Float64Array,
@@ -143,3 +143,4 @@ return 4;
   }
 
 }
+// someday .... http://www.holoborodko.com/pavel/numerical-methods/numerical-integration/overlapped-newton-cotes-quadratures/

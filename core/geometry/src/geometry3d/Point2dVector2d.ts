@@ -310,11 +310,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /** Return a new Vector2d extending from point0 to point1 */
   public static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d {
-    if (result) {
-      result.set(point1.x - point0.x, point1.y - point0.y);
-      return result;
-    }
-    return new Vector2d(point1.x - point0.x, point1.y - point0.y);
+    return Vector2d.create (point1.x - point0.x, point1.y - point0.y, result);
   }
   /**
    * Return a vector that bisects the angle between two normals and extends to the intersection of two offset lines

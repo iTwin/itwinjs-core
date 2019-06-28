@@ -1469,6 +1469,7 @@ export class Geometry {
     static isNumberArray(json: any, minEntries?: number): boolean;
     static isSameCoordinate(x: number, y: number, tol?: number): boolean;
     static isSameCoordinateSquared(x: number, y: number): boolean;
+    static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean;
     static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol?: number): boolean;
     static isSamePoint2d(dataA: Point2d, dataB: Point2d): boolean;
     static isSamePoint3d(dataA: Point3d, dataB: Point3d): boolean;
@@ -3904,11 +3905,13 @@ export class Segment1d {
     fractionToPoint(fraction: number): number;
     isAlmostEqual(other: Segment1d): boolean;
     readonly isExact01: boolean;
+    readonly isExact01Reversed: boolean;
     readonly isIn01: boolean;
     reverseInPlace(): void;
     set(x0: number, x1: number): void;
     setFrom(other: Segment1d): void;
     shift(dx: number): void;
+    signedDelta(): number;
     x0: number;
     x1: number;
 }
@@ -4193,6 +4196,7 @@ export type TransformProps = number[][] | number[] | {
 // @alpha
 export class TransitionConditionalProperties {
     constructor(radius0: number | undefined, radius1: number | undefined, bearing0: Angle | undefined, bearing1: Angle | undefined, arcLength: number | undefined);
+    applyScaleFactor(a: number): void;
     bearing0: Angle | undefined;
     bearing1: Angle | undefined;
     clone(): TransitionConditionalProperties;
@@ -4208,6 +4212,7 @@ export class TransitionConditionalProperties {
 export class TransitionSpiral3d extends CurvePrimitive {
     constructor(spiralType: string | undefined, radius01: Segment1d, bearing01: AngleSweep, activeFractionInterval: Segment1d, localToWorld: Transform, arcLength: number, properties: TransitionConditionalProperties | undefined);
     activeFractionInterval: Segment1d;
+    readonly activeStrokes: LineString3d;
     static averageCurvature(radiusLimits: Segment1d): number;
     static averageCurvatureR0R1(r0: number, r1: number): number;
     bearing01: AngleSweep;
@@ -4224,13 +4229,15 @@ export class TransitionSpiral3d extends CurvePrimitive {
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
     endPoint(): Point3d;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
-    fractionToBearingRadians(fraction: number): number;
-    fractionToCurvature(fraction: number): number;
-    fractionToFrenetFrame(fraction: number, result?: Transform): Transform;
-    fractionToPoint(fraction: number, result?: Point3d): Point3d;
-    fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
-    fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
+    fractionToBearingRadians(activeFraction: number): number;
+    fractionToCurvature(activeFraction: number): number;
+    fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform;
+    fractionToPoint(activeFraction: number, result?: Point3d): Point3d;
+    fractionToPointAnd2Derivatives(activeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
+    fractionToPointAndDerivative(activeFraction: number, result?: Ray3d): Ray3d;
     getSpiralType(): string;
+    globalFractionToBearingRadians(fraction: number): number;
+    globalFractionToCurvature(fraction: number): number;
     static initWorkSpace(): void;
     isAlmostEqual(other: GeometryQuery): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
@@ -4248,7 +4255,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
     reverseInPlace(): void;
     setFrom(other: TransitionSpiral3d): TransitionSpiral3d;
     startPoint(): Point3d;
-    tryTransformInPlace(transform: Transform): boolean;
+    tryTransformInPlace(transformA: Transform): boolean;
 }
 
 // @internal

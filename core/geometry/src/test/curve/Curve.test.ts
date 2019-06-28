@@ -122,6 +122,7 @@ class ExerciseCurve {
       ck.testFalse(curveA.isAlmostEqual(curveB), "scale changes surface");
       ck.testTrue(curveB.isSameGeometryClass(curveA));
       const pointB0 = curveB.fractionToPoint(u0);
+      curveB.fractionToPoint(u0);
       ck.testPoint3d(pointA0, pointB0, "fixed point preserved");
       const pointB1 = curveB.fractionToPoint(u1);
       ck.testCoordinate(scaleFactor * pointA0.distance(pointA1), pointB0.distance(pointB1));
@@ -246,7 +247,12 @@ class ExerciseCurve {
 
       if (expectProportionalDistance) {
         length0F = curve.curveLengthBetweenFractions(0.0, fraction);
-        ck.testCoordinate(fraction * length01, length0F, "interpolated points at expected distance");
+        if (curve instanceof TransitionSpiral3d) {
+          // special tolerance on spirals . . .
+          const delta = Math.abs(fraction * length01 - length0F);
+          ck.testCoordinate(0, delta / 1000.0, "fluffy length along spiral");
+        } else
+          ck.testCoordinate(fraction * length01, length0F, "interpolated points at expected distance");
       }
       if (expectEqualChordLength && previousDistance !== 0.0)
         ck.testCoordinate(distance, previousDistance, "equalChordLength in fractional Steps");
@@ -491,6 +497,7 @@ class ExerciseCurve {
         Segment1d.create(0, 1),
         Transform.createIdentity());
       if (ck.testPointer(spiral) && spiral) {
+        ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
         ExerciseCurve.exerciseFractionToPoint(ck, spiral, true, false);
         ExerciseCurve.exerciseStroke(ck, spiral);
         ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3);
@@ -677,7 +684,7 @@ describe("CurvePrimitive.TransitionSpiral", () => {
       Transform.createIdentity());
     const point0 = c.fractionToPointAndDerivative(0);
     const point1 = Ray3d.createZero();
-    const numStroke = 20;
+    const numStroke = 50;
     let chordSum = 0.0;
     let trapezoidSum = 0.0;
     for (let i = 1; i <= numStroke; i++) {
@@ -694,7 +701,9 @@ describe("CurvePrimitive.TransitionSpiral", () => {
       console.log("  chordSum ", chordSum, " deltaC", chordSum - c.curveLength());
       console.log("  trapSum ", trapezoidSum, " deltaT", trapezoidSum - c.curveLength());
     }
-    ck.testCoordinate(c.curveLength(), chordSum, "spiral length versus chord sum");
+    // We expect trapezoidSum to be good (really good!) approximation of the length.
+    // chordSum is not so good -- allow it to haver a bigger error.
+    ck.testCoordinateWithToleranceFactor(chordSum, trapezoidSum, 1000.0, "spiral length versus chord sum");
     ck.testCoordinate(c.curveLength(), trapezoidSum, "spiral length versus trapezoid sum");
 
     ck.checkpoint("CurvePrimitive.TransitionSpiral");

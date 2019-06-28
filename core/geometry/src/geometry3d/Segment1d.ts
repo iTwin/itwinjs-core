@@ -76,6 +76,10 @@ export class Segment1d {
    */
   public fractionToPoint(fraction: number): number { return Geometry.interpolate(this.x0, fraction, this.x1); }
   /**
+   * Return the signed start-to-end shift (aka distance)
+   */
+  public signedDelta(): number { return this.x1 - this.x0; }
+  /**
    * * swap the x0 and x1 member values.
    * * This makes the fractionToPoint evaluates reverse direction.
    */
@@ -90,6 +94,10 @@ export class Segment1d {
    * Return true if the segment limits are (exactly) 0 and 1
    */
   public get isExact01(): boolean { return this.x0 === 0.0 && this.x1 === 1.0; }
+  /**
+   * Return true if the segment limits are (exactly) 1 and 0
+   */
+  public get isExact01Reversed(): boolean { return this.x0 === 1.0 && this.x1 === 0.0; }
 
   /** On input, `this` is an interval of a line.  On output, the interval has been clipped to positive parts of a linear function
    * * f0 and f1 are values at parameter values 0 and 1 (which are in general NOT x0 and x1)

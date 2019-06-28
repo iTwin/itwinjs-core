@@ -1033,7 +1033,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       const df = 1.0 / (n - 1);
       // This is a linestring.
       // There is no need for chordTol and angleTol within a segment.
-      // Do NOT apply mins strokes per primitive.
+      // Do NOT apply min strokes per primitive.
       if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
           const numStroke = options.applyMaxEdgeLength(1, this._points.getPoint3dAtUncheckedPointIndex(i - 1).distance(this._points.getPoint3dAtUncheckedPointIndex(i)));

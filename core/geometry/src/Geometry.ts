@@ -208,6 +208,11 @@ export class Geometry {
       return Math.abs(x - y) < Math.abs(tol);
     return Math.abs(x - y) < Geometry.smallMetricDistance;
   }
+  /** Boolean test for metric coordinate near-equality, with toleranceFactor applied to the usual smallMetricDistance */
+  public static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean {
+    return Geometry.isSameCoordinate(x, y, toleranceFactor * Geometry.smallMetricDistance);
+  }
+
   /** Boolean test for metric coordinate near-equality of x, y pair */
   public static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol: number = Geometry.smallMetricDistance): boolean {
     let d = x1 - x0;
