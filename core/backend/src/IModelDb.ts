@@ -137,7 +137,7 @@ export class IModelDb extends IModel {
   public readonly openParams: OpenParams;
 
   /** Event raised just before an IModelDb is opened.
-   *
+   * @note This event is *not* raised for snapshot IModelDbs.
    * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpen]]
@@ -383,30 +383,48 @@ export class IModelDb extends IModel {
 
   private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     briefcaseEntry.iModelDb = this;
-    briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseCloseHandler, this);
+    briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseBeforeCloseHandler, this);
     briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
     briefcaseEntry.onChangesetApplied.addListener(this.forwardChangesetApplied, this);
+    briefcaseEntry.onBeforeOpen.addListener(this.onBriefcaseBeforeOpenHandler, this);
+    briefcaseEntry.onAfterOpen.addListener(this.onBriefcaseAfterOpenHandler, this);
     this._briefcase = briefcaseEntry;
   }
 
   private clearBriefcaseEntry(): void {
     const briefcaseEntry = this.briefcase;
-    briefcaseEntry.onBeforeClose.removeListener(this.onBriefcaseCloseHandler, this);
+    briefcaseEntry.onBeforeClose.removeListener(this.onBriefcaseBeforeCloseHandler, this);
     briefcaseEntry.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
     briefcaseEntry.onChangesetApplied.removeListener(this.forwardChangesetApplied, this);
+    briefcaseEntry.onBeforeOpen.removeListener(this.onBriefcaseBeforeOpenHandler, this);
+    briefcaseEntry.onAfterOpen.removeListener(this.onBriefcaseAfterOpenHandler, this);
     briefcaseEntry.iModelDb = undefined;
     this._briefcase = undefined;
   }
 
-  private onBriefcaseCloseHandler() {
+  private onBriefcaseBeforeCloseHandler() {
     this.onBeforeClose.raiseEvent();
     this.clearStatementCache();
     this.clearSqliteStatementCache();
   }
 
+  private onBriefcaseBeforeOpenHandler(requestContext: AuthorizedClientRequestContext) {
+    if (!this.briefcase.iModelDb)
+      return;
+    IModelDb.onOpen.raiseEvent(requestContext, this.briefcase.contextId, this.briefcase.iModelId, this.briefcase.openParams, this.briefcase.contextId, IModelVersion.asOfChangeSet(this.briefcase.targetChangeSetId));
+  }
+
+  private onBriefcaseAfterOpenHandler(requestContext: AuthorizedClientRequestContext) {
+    if (!this.briefcase.iModelDb)
+      return;
+    IModelDb.onOpened.raiseEvent(requestContext, this.briefcase.iModelDb);
+  }
+
   private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
 
-  /** Event called when the iModel is about to be closed */
+  /** Event called when the iModel is about to be closed
+   * @note This event is *not* raised for snapshot IModelDbs.
+   */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db

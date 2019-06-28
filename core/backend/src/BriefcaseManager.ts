@@ -13,7 +13,7 @@ import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IMode
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "./IModelJsNative";
@@ -152,10 +152,20 @@ export class BriefcaseEntry {
    */
   public readonly onChangesetApplied = new BeEvent<() => void>();
 
-  /** Event called when the briefcase is about to be closed
+  /** Event called right before the briefcase is about to be closed
    * @internal
    */
   public readonly onBeforeClose = new BeEvent<() => void>();
+
+  /** Event called right before the briefcase is about to be opened
+   * @internal
+   */
+  public readonly onBeforeOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>();
+
+  /** Event called after the briefcase was opened
+   * @internal
+   */
+  public readonly onAfterOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>();
 
   /** Event called when the version of the briefcase has been updated
    * @internal
@@ -1007,7 +1017,7 @@ export class BriefcaseManager {
 
     const nativeDb = new IModelHost.platform.DgnDb();
 
-    let res: DbResult = nativeDb.createStandaloneIModel(fileName, JSON.stringify(args));
+    let res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ fileName }));
 
@@ -1171,7 +1181,7 @@ export class BriefcaseManager {
       return;
     }
     if (raiseOnCloseEvent)
-      briefcase.onBeforeClose.raiseEvent(briefcase);
+      briefcase.onBeforeClose.raiseEvent();
     briefcase.nativeDb.closeIModel();
     briefcase.isOpen = false;
     if (BriefcaseManager._cache.findBriefcase(briefcase))
@@ -1231,12 +1241,6 @@ export class BriefcaseManager {
     if (typeof reverseToId === "undefined" && typeof reinstateToId === "undefined" && typeof mergeToId === "undefined")
       return;
 
-    // Close Db before processing change sets
-    if (briefcase.isOpen)
-      briefcase.onBeforeClose.raiseEvent(briefcase);
-    briefcase.nativeDb!.closeIModel();
-    briefcase.isOpen = false;
-
     // Reverse, reinstate and merge as necessary
     const perfLogger = new PerfLogger("Processing change sets", () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
     try {
@@ -1260,11 +1264,6 @@ export class BriefcaseManager {
       }
     } finally {
       perfLogger.dispose();
-
-      // Reopen Db after processing change sets
-      briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
-      briefcase.isOpen = true;
-      // TODO: Should we notify open handlers since we notify onBeforeClose?
 
       // Setup all change set ids and indexes
       briefcase.parentChangeSetId = briefcase.nativeDb.getParentChangeSetId();
@@ -1295,27 +1294,90 @@ export class BriefcaseManager {
     // Gather the changeset tokens
     const changeSetTokens = new Array<ChangeSetToken>();
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(briefcase.iModelId);
+    let maxFileSize: number = 0;
+    let containsSchemaChanges: boolean = false;
     changeSets.forEach((changeSet: ChangeSet) => {
       const changeSetPathname = path.join(changeSetsPath, changeSet.fileName!);
       assert(IModelJsFs.existsSync(changeSetPathname), `Change set file ${changeSetPathname} does not exist`);
       const changeSetToken = new ChangeSetToken(changeSet.wsgId, changeSet.parentId!, +changeSet.index!, changeSetPathname, changeSet.changesType === ChangesType.Schema);
       changeSetTokens.push(changeSetToken);
+      if (+changeSet.fileSize! > maxFileSize)
+        maxFileSize = +changeSet.fileSize!;
+      if (changeSet.changesType === ChangesType.Schema)
+        containsSchemaChanges = true;
     });
 
-    // Apply change sets
+    /* Apply change sets
+     * If any of the change sets contain schema changes, or are otherwise too large, we process them asynchrnously
+     * to avoid blocking the main-thread/event-loop and keep the backend responsive. However, this will be an invasive
+     * operation that will force the Db to be closed and reopenend.
+     * If the change sets are processed synchronously, they are applied one-by-one to avoid blocking the main
+     * thread and the event loop. Even so, if any single change set too long to process that will again cause the
+     * cause the event loop to be blocked. Also if any of the change sets contain schema changes, that will cause
+     * the Db to be closed and reopened.
+     */
     perfLogger = new PerfLogger("Processing change sets - applying change sets", () => ({ ...briefcase.getDebugInfo() }));
-    const status: ChangeSetStatus = await this.applyChangeSetsToNativeDb(briefcase.nativeDb, briefcase.pathname, briefcase.iModelId, changeSetTokens, processOption);
-    if (ChangeSetStatus.Success !== status)
-      throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
+    let status: ChangeSetStatus;
+    if (containsSchemaChanges || maxFileSize > 1024 * 1024) {
+      status = await this.applyChangeSetsToNativeDbAsync(requestContext, briefcase, changeSetTokens, processOption);
+      requestContext.enter();
+    } else {
+      status = await this.applyChangeSetsToNativeDbSync(briefcase, changeSetTokens, processOption);
+    }
     perfLogger.dispose();
 
+    if (ChangeSetStatus.Success !== status)
+      throw new IModelError(status, "Error applying changesets", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), targetChangeSetId, targetChangeSetIndex }));
     briefcase.onChangesetApplied.raiseEvent();
   }
 
-  private static async applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, dbname: string, dbGuid: GuidString, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
-    return new Promise((resolve, _reject) => {
-      nativeDb.applyChangeSetsAsync(resolve, dbname, dbGuid, JSON.stringify(changeSetTokens), processOption);
+  /** Apply change sets synchronously
+   * - change sets are applied one-by-one to avoid blocking the main thread
+   * - must NOT be called if some of the change sets are too large since that will also block the main thread and leave the backend unresponsive
+   * - may cause the Db to close and reopen *if* the change sets contain schema changes
+   */
+  private static async applyChangeSetsToNativeDbSync(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
+    // Apply the changes (one by one to avoid blocking the event loop)
+    for (const changeSetToken of changeSetTokens) {
+      const tempChangeSetTokens = new Array<ChangeSetToken>(changeSetToken);
+      const status = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(briefcase.nativeDb, JSON.stringify(tempChangeSetTokens), processOption);
+      if (ChangeSetStatus.Success !== status)
+        return status;
+      await BeDuration.wait(0); // Just turns this operation asynchronous to avoid blocking the event loop
+    }
+    return ChangeSetStatus.Success;
+  }
+
+  /** Apply change sets asynchronously
+   * - invasive operation that closes/reopens the Db
+   * - must be called if some of the change sets are too large and the synchronous call will leave the backend unresponsive
+   */
+  private static async applyChangeSetsToNativeDbAsync(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): Promise<ChangeSetStatus> {
+    requestContext.enter();
+
+    const applyRequest = new IModelHost.platform.ApplyChangeSetsRequest(briefcase.nativeDb);
+
+    let status: ChangeSetStatus = applyRequest.readChangeSets(JSON.stringify(changeSetTokens));
+    if (status !== ChangeSetStatus.Success)
+      return status;
+
+    briefcase.onBeforeClose.raiseEvent();
+    applyRequest.closeBriefcase();
+
+    const doApply = new Promise<ChangeSetStatus>((resolve, _reject) => {
+      applyRequest.doApplyAsync(resolve, processOption);
     });
+    status = await doApply;
+    requestContext.enter();
+
+    briefcase.onBeforeOpen.raiseEvent(requestContext);
+    const result = applyRequest.reopenBriefcase(briefcase.openParams.openMode);
+    if (result !== DbResult.BE_SQLITE_OK)
+      status = ChangeSetStatus.ApplyError;
+    else
+      briefcase.onAfterOpen.raiseEvent(requestContext);
+
+    return status;
   }
 
   public static async reverseChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
@@ -1529,12 +1591,21 @@ export class BriefcaseManager {
     return changeSetToken;
   }
 
-  /** Applies a change set to a standalone iModel */
+  /** Applies a change set to a standalone iModel
+   * @internal
+   */
   public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
     if (!briefcase.openParams.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not standalone", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
-    return briefcase.nativeDb!.applyChangeSets(JSON.stringify(changeSetTokens), processOption);
+    // Apply the changes one by one for debugging
+    for (const changeSetToken of changeSetTokens) {
+      const tempChangeSetTokens = new Array<ChangeSetToken>(changeSetToken);
+      const status = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(briefcase.nativeDb, JSON.stringify(tempChangeSetTokens), processOption);
+      if (ChangeSetStatus.Success !== status)
+        return status;
+    }
+    return ChangeSetStatus.Success;
   }
 
   /** Dumps a change set */
