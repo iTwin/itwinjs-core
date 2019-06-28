@@ -346,7 +346,7 @@ export class AccuSnap implements Decorator {
         // Ignore response if we're no longer interested in this tooltip.
         if (this._toolTipPromise === promise)
           this.showLocateMessage(viewPt, vp, msg);
-      });
+      }).catch((_) => undefined); // can be rejected on abort.
     }
   }
 

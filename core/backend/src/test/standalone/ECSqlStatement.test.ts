@@ -227,6 +227,27 @@ describe("ECSqlStatement", () => {
         } catch (e) { assert.isNotNull(e); }
       });
   });
+  it("HextoId-IdToHex", async () => {
+    await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+        assert.isTrue(ecdb.isOpen);
+        for (let i = 1; i <= 2; i++) {
+          const r: ECSqlInsertResult = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+            return stmt.stepForInsert();
+          });
+          assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+        }
+        ecdb.saveChanges();
+        for await (const row of ecdb.query("SELECT IdToHex(ECInstanceId) as hexId, ECInstanceId, HexToId('0x1') as idhex FROM ts.Foo WHERE n = ?", [1])) {
+          assert.equal(row.hexId, row.id);
+          assert.equal(row.hexId, row.idhex);
+        }
+      });
+  });
   it("Bind BeGuid", async () => {
     await using(ECDbTestHelper.createECDb(_outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
@@ -246,10 +267,72 @@ describe("ECSqlStatement", () => {
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
         }
         ecdb.saveChanges();
+
+        const uint8arrayToGuid = (guidArray: any) => {
+          if (!(guidArray instanceof Uint8Array))
+            throw new Error("Expecting a Uint8Array type argument");
+
+          if (guidArray.byteLength !== 16)
+            throw new Error("Expecting a Uint8Array of length 16");
+
+          let guidStr: string = "";
+          const part = [0, 4, 6, 8, 10, 16];
+          for (let z = 0; z < part.length - 1; z++) {
+            guidArray.subarray(part[z], part[z + 1]).forEach((c) => {
+              guidStr += ("00" + c.toString(16)).substr(-2);
+            });
+            if (z < part.length - 2)
+              guidStr += "-";
+          }
+          return guidStr;
+        };
+        const guidToUint8Array = (v: GuidString) => {
+          if (v.length !== 36)
+            throw new Error("Guid is expected to have 36 characters xxxxxxxx-xxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+          const ar = new Uint8Array(16);
+          const t = v.split("-").join("");
+          let i = 0;
+          for (let z = 0; z < 32; z += 2) {
+            ar[i++] = parseInt(t.substr(z, 2), 16);
+          }
+          return ar;
+        };
+
+        const testGuid = "74da899a-6dde-406c-bf45-f4547d948f00";
+        assert.equal(testGuid, uint8arrayToGuid(guidToUint8Array(testGuid)));
         let k = 0;
         assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo ORDER BY ECInstanceId", [], undefined, (row: any) => {
           assert.equal(row.guid, guids[k++]);
         }), maxRows);
+
+        // following will not return any guid BLOB ? = STRING
+        for (const guid of guids) {
+          assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo WHERE guid=?", [guid], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, `SELECT guid FROM ts.Foo WHERE guid='${guid}'`, [], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 0);
+          assert.equal(await query(ecdb, `SELECT guid FROM ts.Foo WHERE guid=StrToGuid('${guid}')`, [], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo WHERE guid=StrToGuid(?)", [guid], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo WHERE GuidToStr(guid)=?", [guid], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo WHERE guid=?", [guidToUint8Array(guid)], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, "SELECT guid FROM ts.Foo WHERE guid=StrToGuid(?)", [guid], undefined, (row: any) => {
+            assert.equal(row.guid, guid);
+          }), 1);
+          assert.equal(await query(ecdb, "SELECT GuidToStr(guid) as gstr FROM ts.Foo WHERE guid=StrToGuid(?)", [guid], undefined, (row: any) => {
+            assert.equal(row.gstr, guid);
+          }), 1);
+        }
       });
   });
   it("Bind Ids", async () => {

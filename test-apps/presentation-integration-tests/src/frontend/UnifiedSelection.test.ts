@@ -2,16 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable:no-direct-imports
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random"; /* tslint:disable-line:no-direct-imports */
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager"; /* tslint:disable-line:no-direct-imports */
-import { waitForAllAsyncs } from "@bentley/presentation-frontend/lib/test/_helpers/PendingAsyncsHelper"; // tslint:disable-line: no-direct-imports
-import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/viewport/WithUnifiedSelection"; // tslint:disable-line: no-direct-imports
+import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager";
+import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
+import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/viewport/WithUnifiedSelection";
 
 describe("Unified Selection", () => {
 

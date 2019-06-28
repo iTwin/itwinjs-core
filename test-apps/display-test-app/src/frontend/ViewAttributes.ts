@@ -33,7 +33,7 @@ import {
   ColorInputProps,
   createNestedMenu,
   createNumericInput,
- } from "@bentley/frontend-devtools";
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
 import { isString } from "util";
@@ -450,7 +450,7 @@ export class ViewAttributes {
   private addLightingToggle(parent: HTMLElement): void {
     const elems = this.addCheckbox("Lights", (enabled: boolean) => {
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.solarLight = vf.cameraLights = vf.sourceLights = enabled;
+      vf.lighting = enabled;
       this._vp.viewFlags = vf;
       this.sync();
     }, parent);
@@ -460,7 +460,7 @@ export class ViewAttributes {
       const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
       elems.div.style.display = visible ? "block" : "none";
       if (visible)
-        elems.checkbox.checked = vf.solarLight || vf.cameraLights || vf.sourceLights;
+        elems.checkbox.checked = vf.lighting;
     };
 
     this._updates.push(update);
@@ -585,6 +585,7 @@ export class ViewAttributes {
     groundBiasDiv.style.display = "block";
     groundBiasDiv.style.textAlign = "left";
     comboBoxesDiv.appendChild(groundBiasDiv);
+    const terrainCheckbox = this.addCheckbox("Terrain", (enabled: boolean) => { this.updateBackgroundMap({ applyTerrain: enabled }); }, comboBoxesDiv).checkbox;
 
     this._updates.push((view) => {
       const visible = isMapSupported(view);
@@ -599,6 +600,7 @@ export class ViewAttributes {
       providers.value = map.providerName;
       types.value = map.mapType.toString();
       groundBias.value = map.groundBias.toString();
+      terrainCheckbox.checked = map.applyTerrain;
     });
 
     div.appendChild(comboBoxesDiv);
@@ -674,8 +676,6 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       else
         displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
 
-      // ###TODO: Is there such a concept as "2d reality models"???
-      promises.push(displayStyle.loadContextRealityModels());
       displayStyles.set(displayStyleProp.id!, displayStyle);
     }
 

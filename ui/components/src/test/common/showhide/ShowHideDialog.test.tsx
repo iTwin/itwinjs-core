@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { ShowHideDialog } from "../../../ui-components";
 import TestUtils from "../../TestUtils";
 

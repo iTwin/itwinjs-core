@@ -35,6 +35,7 @@ export * from "./domains/GenericElements";
 export * from "./domains/LinearReferencing";
 export * from "./domains/LinearReferencingElementAspects";
 export * from "./domains/LinearReferencingElements";
+export * from "./domains/LinearReferencingRelationships";
 export * from "./IModelJsNative";
 export * from "./IModelHost";
 export * from "./IModelTransformer";

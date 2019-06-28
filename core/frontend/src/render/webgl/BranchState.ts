@@ -40,9 +40,7 @@ export class BranchState {
   public static createForDecorations(): BranchState {
     const vf = new ViewFlags();
     vf.renderMode = RenderMode.SmoothShade;
-    vf.sourceLights = false;
-    vf.cameraLights = false;
-    vf.solarLight = false;
+    vf.lighting = false;
     return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
   }
 

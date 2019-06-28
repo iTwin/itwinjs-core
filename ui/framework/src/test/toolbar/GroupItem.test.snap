@@ -9,6 +9,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_label": "Tool 1",
           "_tooltip": "",
+          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -26,6 +27,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "applicationData": Object {
             "key": "value",
           },
+          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -45,6 +47,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "tool1" => CommandItemDef {
           "_label": "Tool 1",
           "_tooltip": "",
+          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -62,6 +65,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "applicationData": Object {
             "key": "value",
           },
+          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -79,6 +83,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       },
       "_label": "tests.label",
       "_tooltip": "",
+      "betaBadge": false,
       "direction": 3,
       "directionExplicit": true,
       "execute": [Function],
@@ -94,6 +99,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "_label": "Tool 1",
           "_tooltip": "",
+          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -111,6 +117,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "applicationData": Object {
             "key": "value",
           },
+          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -137,6 +144,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       CommandItemDef {
         "_label": "Tool 1",
         "_tooltip": "",
+        "betaBadge": false,
         "commandId": "tool1",
         "execute": [Function],
         "getKey": [Function],
@@ -154,6 +162,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "applicationData": Object {
           "key": "value",
         },
+        "betaBadge": true,
         "commandId": "tool2",
         "execute": [Function],
         "getKey": [Function],

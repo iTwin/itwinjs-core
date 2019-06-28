@@ -16,12 +16,14 @@ import "./Zone.scss";
  */
 export interface ZoneProps extends CommonProps {
   /** Zone bounds. */
-  bounds: RectangleProps;
+  bounds?: RectangleProps;
   /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[Outline]] */
   children?: React.ReactNode;
   /** Describes if the zone is in footer mode. */
   isInFooterMode?: boolean;
-  /** Describes if the zone component is hidden. */
+  /** Describes if the zone is floating. */
+  isFloating?: boolean;
+  /** Describes if the zone is hidden. */
   isHidden?: boolean;
 }
 
@@ -33,11 +35,15 @@ export class Zone extends React.PureComponent<ZoneProps> {
     const className = classnames(
       "nz-zones-zone",
       this.props.isInFooterMode && "nz-footer-mode",
+      this.props.isFloating && "nz-floating",
       this.props.isHidden && "nz-hidden",
       this.props.className);
 
     const style: React.CSSProperties = {
-      ...CssProperties.fromBounds(this.props.bounds),
+      ...!this.props.bounds ? {} : {
+        ...CssProperties.fromBounds(this.props.bounds),
+        position: "absolute",
+      },
       ...this.props.style,
     };
 

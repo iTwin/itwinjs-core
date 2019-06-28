@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
 
-import { IDisposable, GuidString, Guid, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType, ElementLocateManager, IModelApp } from "@bentley/imodeljs-frontend";
-import { KeySet, Keys, SelectionScope } from "@bentley/presentation-common";
+import { IDisposable, using, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
+import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@bentley/imodeljs-frontend";
+import { KeySet, Keys, SelectionScope, AsyncTasksTracker } from "@bentley/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
 import { SelectionScopesManager } from "./SelectionScopesManager";
@@ -69,7 +69,7 @@ export class SelectionManager implements ISelectionProvider {
     const registration = this._imodelToolSelectionSyncHandlers.get(imodel);
     if (sync) {
       if (!registration || registration.requestorsCount === 0) {
-        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, IModelApp.locateManager, this) });
+        this._imodelToolSelectionSyncHandlers.set(imodel, { requestorsCount: 1, handler: new ToolSelectionSyncHandler(imodel, this) });
       } else {
         this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount: registration.requestorsCount + 1 });
       }
@@ -324,15 +324,13 @@ export class ToolSelectionSyncHandler implements IDisposable {
 
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
-  private _locateManager: ElementLocateManager;
   private _imodel: IModelConnection;
   private _imodelToolSelectionListenerDisposeFunc: () => void;
-  private _asyncsInProgress = new Set<GuidString>();
+  private _asyncsTracker = new AsyncTasksTracker();
   public isSuspended?: boolean;
 
-  public constructor(imodel: IModelConnection, locateManager: ElementLocateManager, logicalSelection: SelectionManager) {
+  public constructor(imodel: IModelConnection, logicalSelection: SelectionManager) {
     this._imodel = imodel;
-    this._locateManager = locateManager;
     this._logicalSelection = logicalSelection;
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
@@ -342,7 +340,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
   }
 
   /** note: used only it tests */
-  public get pendingAsyncs() { return this._asyncsInProgress; }
+  public get pendingAsyncs() { return this._asyncsTracker.pendingAsyncs; }
 
   // tslint:disable-next-line:naming-convention
   private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
@@ -373,12 +371,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     }
 
     // determine the scope id
-    // note: _always_ use "element" scope for fence selection
-    let scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
-    const currHit = this._locateManager.currHit;
-    const isSingleSelectionFromPick = (undefined !== currHit && 1 === Id64.sizeOf(ids) && Id64.has(ids, currHit.sourceId));
-    if (!isSingleSelectionFromPick)
-      scopeId = "element";
+    const scopeId = getScopeId(this._logicalSelection.scopes.activeScope);
 
     // we're always using scoped selection changer even if the scope is set to "element" - that
     // makes sure we're adding to selection keys with concrete classes and not "BisCore:Element", which
@@ -393,9 +386,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     }
 
     const parsedIds = parseIds(ids);
-    const asyncId = Guid.createValue();
-    this._asyncsInProgress.add(asyncId);
-    try {
+    await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
       switch (ev.type) {
         case SelectionSetEventType.Add:
           await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
@@ -407,9 +398,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
           await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
           break;
       }
-    } finally {
-      this._asyncsInProgress.delete(asyncId);
-    }
+    });
   }
 }
 

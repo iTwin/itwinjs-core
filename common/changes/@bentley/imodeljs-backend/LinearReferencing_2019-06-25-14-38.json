@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Exporting relationships module.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "diego.diaz@bentley.com"
+}

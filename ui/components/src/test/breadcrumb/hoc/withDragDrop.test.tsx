@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 import ReactTestUtils from "react-dom/test-utils";
 import { Breadcrumb } from "../../../ui-components";
 import { withBreadcrumbDragDrop } from "../../../ui-components/breadcrumb/hoc/withDragDrop";

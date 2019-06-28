@@ -8,8 +8,8 @@ import { once } from "lodash";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  DefaultContentDisplayTypes, KeySet, ContentFlags, Key, Item,
-  Content, DescriptorOverrides, ContentRequestOptions, Paged, Ruleset,
+  DefaultContentDisplayTypes, KeySet, DEFAULT_KEYS_BATCH_SIZE, ContentFlags, Key, Item,
+  Content, DescriptorOverrides, ContentRequestOptions, Ruleset,
 } from "@bentley/presentation-common";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager"; /* tslint:disable-line:no-direct-imports */
 import { Presentation } from "../Presentation";
@@ -42,7 +42,6 @@ export interface HiliteSet {
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
-  private _pageSize = 1000;
   private _cached: undefined | { keysGuid: string, result: HiliteSet };
 
   private constructor(imodel: IModelConnection) {
@@ -51,32 +50,25 @@ export class HiliteSetProvider {
 
   public static create(imodel: IModelConnection) { return new HiliteSetProvider(imodel); }
 
-  private async getPage(descriptor: DescriptorOverrides, keys: KeySet, pageIndex: number): Promise<Content | undefined> {
-    const options: Paged<ContentRequestOptions<IModelConnection>> = {
+  private async getRecords(keys: KeySet): Promise<Item[]> {
+    const options: ContentRequestOptions<IModelConnection> = {
       imodel: this._imodel,
       rulesetId: HILITE_RULESET.id,
-      paging: {
-        start: pageIndex * this._pageSize,
-        size: this._pageSize,
-      },
     };
-    return Presentation.presentation.getContent(options, descriptor, keys);
-  }
-
-  private async getRecords(keys: KeySet): Promise<Item[]> {
     const descriptor: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.Viewport,
       contentFlags: ContentFlags.KeysOnly,
       hiddenFieldNames: [],
     };
-    let pageIndex = 0;
-    let content = await this.getPage(descriptor, keys, pageIndex++);
-    const result = new Array<Item>();
-    while (content && content.contentSet.length) {
-      content.contentSet.forEach((rec) => result.push(rec));
-      content = await this.getPage(descriptor, keys, pageIndex++);
-    }
-    return result;
+    const contentPromises = new Array<Promise<Content | undefined>>();
+    keys.forEachBatch(DEFAULT_KEYS_BATCH_SIZE, (batch: KeySet) => {
+      contentPromises.push(Presentation.presentation.getContent(options, descriptor, batch));
+    });
+    return (await Promise.all(contentPromises)).reduce((items, content) => {
+      if (content)
+        items.push(...content.contentSet);
+      return items;
+    }, new Array<Item>());
   }
 
   private createHiliteSet(records: Item[], transientIds: Id64String[]) {

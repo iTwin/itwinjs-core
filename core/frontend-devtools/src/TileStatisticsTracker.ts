@@ -40,6 +40,8 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalEmptyTiles, label: "Empty" },
   { getValue: (stats, _vp) => stats.totalUndisplayableTiles, label: "Undisplayable" },
   { getValue: (stats, _vp) => stats.totalElidedTiles, label: "Elided" },
+  { getValue: (stats, _vp) => stats.totalCacheMisses, label: "Cache Misses" },
+  { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
 ];
 
 /** @alpha */

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
-import { render, RenderResult } from "react-testing-library";
+import { render, RenderResult, fireEvent } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
@@ -16,9 +16,207 @@ describe("Popup />", () => {
     const component = render(<Popup isOpen={true} top={30} left={70} />);
     expect(component.getByTestId("core-popup")).to.exist;
   });
+
   it("mounts and unmounts correctly", () => {
     const wrapper = render(<Popup isOpen={true} top={30} left={70} />);
     wrapper.unmount();
+  });
+  it("renders correctly closed and open", () => {
+    const component = render(<Popup isOpen={false} top={30} left={70} />);
+    expect(component.queryByTestId("core-popup")).not.to.exist;
+    component.rerender(<Popup isOpen={true} top={30} left={70} />);
+    expect(component.getByTestId("core-popup")).to.exist;
+  });
+
+  it("button opens popup and moves focus correctly (HTMLElementRef)", async () => {
+    const focusTarget = React.createRef<HTMLButtonElement>();  // button that should receive focus after popup is open
+    let button: HTMLElement | null = null;
+    let isOpen = false;
+
+    const component = render(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} focusTarget={focusTarget} moveFocus={true}>
+        <div>
+          <button data-testid="button-not-to-have-focus" />
+          <button data-testid="button-to-have-focus" ref={focusTarget} />
+        </div>
+      </Popup>
+    </div>);
+    expect(component).not.to.be.null;
+    expect(button).not.to.be.null;
+    expect(isOpen).to.be.false;
+    fireEvent.click(button!);
+    expect(isOpen).to.be.true;
+    component.rerender(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} focusTarget={focusTarget} moveFocus={true}>
+        <div>
+          <button data-testid="button-not-to-have-focus" />
+          <button data-testid="button-to-have-focus" ref={focusTarget} />
+        </div>
+      </Popup>
+    </div>);
+    // component.debug();
+    const popup = component.getByTestId("core-popup");
+    expect(popup).to.exist;
+
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+
+    const buttonWithFocus = component.getByTestId("button-to-have-focus") as HTMLButtonElement;
+    const focusedElement = document.activeElement;
+    expect(focusedElement).to.eq(buttonWithFocus);
+  });
+
+  it("button opens popup and moves focus correctly (CSS Selector)", async () => {
+    let button: HTMLElement | null = null;
+    let isOpen = false;
+
+    const component = render(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} focusTarget=".button-to-have-focus" moveFocus={true}>
+        <div>
+          <button className="button-not-to-have-focus" data-testid="button-not-to-have-focus" />
+          <button className="button-to-have-focus" data-testid="button-to-have-focus" />
+        </div>
+      </Popup>
+    </div>);
+    expect(component).not.to.be.null;
+    expect(button).not.to.be.null;
+    expect(isOpen).to.be.false;
+    fireEvent.click(button!);
+    expect(isOpen).to.be.true;
+    component.rerender(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} focusTarget=".button-to-have-focus" moveFocus={true}>
+        <div>
+          <button className="button-not-to-have-focus" data-testid="button-not-to-have-focus" />
+          <button className="button-to-have-focus" data-testid="button-to-have-focus" />
+        </div>
+      </Popup>
+    </div>);
+    // component.debug();
+    const popup = component.getByTestId("core-popup");
+    expect(popup).to.exist;
+
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+
+    const buttonWithFocus = component.getByTestId("button-to-have-focus") as HTMLButtonElement;
+    const focusedElement = document.activeElement;
+    expect(focusedElement).to.eq(buttonWithFocus);
+  });
+
+  it("button opens popup and moves focus to first available", async () => {
+    let button: HTMLElement | null = null;
+    let isOpen = false;
+
+    const component = render(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} moveFocus={true}>
+        <div>
+          <span />
+          <input data-testid="input-one" />
+          <input data-testid="input-two" />
+        </div>
+      </Popup>
+    </div>);
+    expect(component).not.to.be.null;
+    expect(button).not.to.be.null;
+    expect(isOpen).to.be.false;
+    fireEvent.click(button!);
+    expect(isOpen).to.be.true;
+    component.rerender(<div>
+      <button ref={(el) => { button = el; }} onClick={() => isOpen = !isOpen} />
+      <Popup isOpen={isOpen} top={30} left={70} moveFocus={true}>
+        <div>
+          <span />
+          <input data-testid="input-one" />
+          <input data-testid="input-two" />
+        </div>
+      </Popup>
+    </div>);
+    // component.debug();
+    const popup = component.getByTestId("core-popup");
+    expect(popup).to.exist;
+
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+
+    const topDiv = component.getByTestId("focus-trap-div") as HTMLDivElement;
+    const bottomDiv = component.getByTestId("focus-trap-limit-div") as HTMLDivElement;
+    const inputOne = component.getByTestId("input-one") as HTMLInputElement;
+    expect(document.activeElement).to.eq(inputOne);
+    const inputTwo = component.getByTestId("input-two") as HTMLInputElement;
+    inputTwo.focus();
+    expect(document.activeElement).to.eq(inputTwo);
+
+    // if we hit top - reset focus to bottom
+    topDiv.focus();
+    expect(document.activeElement).to.eq(inputTwo);
+
+    // if we hit bottom - reset focus to top
+    bottomDiv.focus();
+    expect(document.activeElement).to.eq(inputOne);
+  });
+
+  it("popup and moves focus to first available (button)", async () => {
+    const component = render(<div>
+      <Popup isOpen={true} top={30} left={70} moveFocus={true}>
+        <div>
+          <span />
+          <button data-testid="item-one" />
+          <button data-testid="item-two" />
+        </div>
+      </Popup>
+    </div>);
+    expect(component.getByTestId("core-popup")).to.exist;
+
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+    const activeFocusElement = document.activeElement;
+    expect(activeFocusElement).to.eq(component.getByTestId("item-one"));
+  });
+
+  it("popup and moves focus to first available (a)", async () => {
+    const component = render(<div>
+      <Popup isOpen={true} top={30} left={70} moveFocus={true}>
+        <div>
+          <span />
+          <div>
+            <div>
+              <a href="#" data-testid="item-one">test1</a>
+            </div>
+          </div>
+          <a href="#" data-testid="item-two">test2</a>
+        </div>
+      </Popup>
+    </div>);
+    expect(component.getByTestId("core-popup")).to.exist;
+
+    // component.debug();
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+    const activeFocusElement = document.activeElement;
+    expect(activeFocusElement).to.eq(component.getByTestId("item-one"));
+  });
+
+  it("popup and moves focus to first available (textarea)", async () => {
+    const component = render(<div>
+      <Popup isOpen={true} top={30} left={70} moveFocus={true}>
+        <div>
+          <span />
+          <textarea data-testid="item-one" />
+          <textarea data-testid="item-two" />
+        </div>
+      </Popup>
+    </div>);
+    expect(component.getByTestId("core-popup")).to.exist;
+
+    // wait for button to receive focus
+    await new Promise((r) => { setTimeout(r, 80); });
+    const activeFocusElement = document.activeElement;
+    expect(activeFocusElement).to.eq(component.getByTestId("item-one"));
   });
 
   describe("renders", () => {
@@ -252,7 +450,7 @@ describe("Popup />", () => {
     });
     it("should do nothing on 'a'", () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose} />);
+      const wrapper = mount(<Popup isOpen={true} onClose={spyOnClose}><div>fake content</div></Popup>);
       expect(wrapper.state("isOpen")).to.be.true;
 
       window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "a" }));

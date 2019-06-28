@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes } from "@bentley/imodeljs-frontend";

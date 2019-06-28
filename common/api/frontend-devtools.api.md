@@ -111,20 +111,20 @@ export interface ComboBox {
 }
 
 // @alpha (undocumented)
-export interface ComboBoxEntry<T> {
+export interface ComboBoxEntry {
     // (undocumented)
     name: string;
     // (undocumented)
-    value: T;
+    value: number | string | undefined;
 }
 
 // @alpha (undocumented)
 export type ComboBoxHandler = (select: HTMLSelectElement) => void;
 
 // @alpha (undocumented)
-export interface ComboBoxProps<T> {
+export interface ComboBoxProps {
     // (undocumented)
-    entries: Array<ComboBoxEntry<T>>;
+    entries: ComboBoxEntry[];
     // (undocumented)
     handler?: ComboBoxHandler;
     // (undocumented)
@@ -136,7 +136,7 @@ export interface ComboBoxProps<T> {
     // (undocumented)
     tooltip?: string;
     // (undocumented)
-    value?: T;
+    value?: number | string;
 }
 
 // @alpha (undocumented)
@@ -152,7 +152,7 @@ export function createCheckBox(props: CheckBoxProps): CheckBox;
 export function createColorInput(props: ColorInputProps): ColorInput;
 
 // @alpha (undocumented)
-export function createComboBox<T>(props: ComboBoxProps<T>): ComboBox;
+export function createComboBox(props: ComboBoxProps): ComboBox;
 
 // @alpha (undocumented)
 export function createNestedMenu(props: NestedMenuProps): NestedMenu;
@@ -161,7 +161,7 @@ export function createNestedMenu(props: NestedMenuProps): NestedMenu;
 export function createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement;
 
 // @alpha (undocumented)
-export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T>;
+export function createRadioBox(props: RadioBoxProps): RadioBox;
 
 // @alpha (undocumented)
 export function createSlider(props: SliderProps): Slider;
@@ -261,32 +261,32 @@ export interface NumericInputProps {
 }
 
 // @alpha (undocumented)
-export interface RadioBox<T> {
+export interface RadioBox {
     // (undocumented)
     div: HTMLDivElement;
     // (undocumented)
     label?: HTMLLabelElement;
     // (undocumented)
-    setValue: (newValue: T) => boolean;
+    setValue: (newValue: number | string) => boolean;
 }
 
 // @alpha (undocumented)
-export interface RadioBoxEntry<T> {
+export interface RadioBoxEntry {
     // (undocumented)
     label: string;
     // (undocumented)
-    value: T;
+    value: number | string | undefined;
 }
 
 // @alpha (undocumented)
 export type RadioBoxHandler = (value: string, form: HTMLFormElement) => void;
 
 // @alpha (undocumented)
-export interface RadioBoxProps<T> {
+export interface RadioBoxProps {
     // (undocumented)
-    defaultValue?: T;
+    defaultValue?: number | string;
     // (undocumented)
-    entries: Array<RadioBoxEntry<T>>;
+    entries: RadioBoxEntry[];
     // (undocumented)
     handler: RadioBoxHandler;
     // (undocumented)

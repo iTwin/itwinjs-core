@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows } from "./Render";
+import { AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows, ViewFlags } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
@@ -74,8 +74,6 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** @internal This doesn't belong here - it is not persistent. */
-  contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
   /** If true, show grids. */
@@ -86,11 +84,17 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't show materials. */
   noMaterial?: boolean;
-  /** If true, don't use camera lights. */
+  /** If true, don't use camera lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noCameraLights?: boolean;
-  /** If true, don't use source lights. */
+  /** If true, don't use source lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSourceLights?: boolean;
-  /** If true, don't use solar lights. */
+  /** If true, don't use solar lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSolarLight?: boolean;
   /** If true, show visible edges. */
   visEdges?: boolean;
@@ -158,6 +162,8 @@ export interface BackgroundMapProps {
     /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
     mapType?: BackgroundMapType;
   };
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  applyTerrain?: boolean;
 }
 
 /** The current set of supported background map providers.
@@ -175,10 +181,13 @@ export class BackgroundMapSettings {
   public readonly providerName: BackgroundMapProviderName;
   /** The type of map graphics to be drawn. */
   public readonly mapType: BackgroundMapType;
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  public readonly applyTerrain: boolean;
 
-  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0) {
+  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0, applyTerrain = false) {
     this.groundBias = groundBias;
     this.providerName = providerName;
+    this.applyTerrain = applyTerrain;
     switch (mapType) {
       case BackgroundMapType.Street:
       case BackgroundMapType.Aerial:
@@ -196,13 +205,14 @@ export class BackgroundMapSettings {
 
     const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
     const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    return new BackgroundMapSettings(providerName, mapType, json.groundBias);
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.applyTerrain);
   }
 
   public toJSON(): BackgroundMapProps {
     return {
       groundBias: this.groundBias,
       providerName: this.providerName,
+      applyTerrain: this.applyTerrain,
       providerData: { mapType: this.mapType },
     };
   }
@@ -213,7 +223,7 @@ export class BackgroundMapSettings {
   }
 
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType;
+    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType && this.applyTerrain === other.applyTerrain;
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -227,6 +237,7 @@ export class BackgroundMapSettings {
     const props = {
       providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
       groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
+      applyTerrain: undefined !== changedProps.applyTerrain ? changedProps.applyTerrain : this.applyTerrain,
       providerData: {
         mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
       },
@@ -343,7 +354,7 @@ export interface ContextRealityModelProps {
   name?: string;
   description?: string;
   /** @beta */
-  classifiers?: SpatialClassificationProps.PropertiesProps[];
+  classifiers?: SpatialClassificationProps.Properties[];
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].

@@ -149,6 +149,15 @@ export class Rectangle implements RectangleProps {
     return new Rectangle(this.left, this.top, this.left + width, this.bottom);
   }
 
+  /**
+   * Sets the height and width of the rectangle.
+   * @note Only [[Edge.Bottom]] and [[Edge.Right]] are subjects to change.
+   * @returns New [[Rectangle]] with modified height.
+   */
+  public setSize(size: SizeProps) {
+    return new Rectangle(this.left, this.top, this.left + size.width, this.top + size.height);
+  }
+
   /** Checks if bounds of two rectangles match. */
   public equals(other: RectangleProps) {
     if (this.left === other.left &&
@@ -245,5 +254,15 @@ export class Rectangle implements RectangleProps {
 
     const left = segmentId * segmentWidth;
     return this.inset(left, 0, 0, 0).setWidth(segmentWidth);
+  }
+
+  /** @returns [[RectangleProps]] object for this rectangle. */
+  public toProps(): RectangleProps {
+    return {
+      bottom: this.bottom,
+      left: this.left,
+      right: this.right,
+      top: this.top,
+    };
   }
 }

@@ -8,10 +8,11 @@ import { RpcManager } from "@bentley/imodeljs-common";
 import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile, addEndOfTestToCsvFile } from "./CsvWriter";
 import * as fs from "fs";
 import { app } from "electron";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
-
+  private _reporter = new Reporter();
   public async getDefaultConfigs(): Promise<string> {
     let jsonStr = "";
     const defaultJsonFile = "./src/backend/DefaultConfig.json";
@@ -36,17 +37,31 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     return jsonStr;
   }
 
-  public async saveCsv(outputPath: string, outputName: string, rowDataJson: string): Promise<void> {
+  public async saveCsv(outputPath: string, outputName: string, rowDataJson: string, csvFormat?: string): Promise<void> {
     const rowData = new Map(JSON.parse(rowDataJson)) as Map<string, number | string>;
-    if (outputPath !== undefined && outputName !== undefined) {
-      let outputFile = this.createFullFilePath(outputPath, outputName);
-      outputFile = outputFile ? outputFile : "";
-      if (fs.existsSync(outputFile)) {
-        addColumnsToCsvFile(outputFile, rowData);
-      } else {
-        createNewCsvFile(outputPath, outputName, rowData);
+    const testName = rowData.get("Test Name") as string;
+    rowData.delete("Test Name");
+    if (csvFormat === "original") {
+      rowData.delete("Browser");
+      if (outputPath !== undefined && outputName !== undefined) {
+        let outputFile = this.createFullFilePath(outputPath, outputName);
+        outputFile = outputFile ? outputFile : "";
+        if (fs.existsSync(outputFile)) {
+          addColumnsToCsvFile(outputFile, rowData);
+        } else {
+          createNewCsvFile(outputPath, outputName, rowData);
+        }
+        addDataToCsvFile(outputFile, rowData);
       }
-      addDataToCsvFile(outputFile, rowData);
+    } else {
+      const rowObject = this.mapToObj(rowData);
+      if (process.env.browser) {
+        rowObject.browser = process.env.browser;
+      }
+      const totalTime = rowObject["Total Time"] as number;
+      const fps = rowObject["Effective FPS"] as number;
+      this._reporter.addEntry("DisplayTests", testName, "Total time", totalTime, rowObject);
+      this._reporter.addEntry("DisplayTests", testName, "Effective FPS", fps, rowObject);
     }
   }
 
@@ -67,11 +82,15 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     fs.writeFileSync(fileName, buf);
   }
 
-  public async finishCsv(output: string, outputPath?: string, outputName?: string) {
+  public async finishCsv(output: string, outputPath?: string, outputName?: string, csvFormat?: string) {
     if (outputPath !== undefined && outputName !== undefined) {
       let outputFile = this.createFullFilePath(outputPath, outputName);
       outputFile = outputFile ? outputFile : "";
-      addEndOfTestToCsvFile(output, outputFile);
+      if (csvFormat === "original" || !csvFormat) {
+        addEndOfTestToCsvFile(output, outputFile);
+      } else {
+        this._reporter.exportCSV(outputFile);
+      }
     }
   }
 
@@ -99,6 +118,14 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
         output += "\\";
       return output + fileName;
     }
+  }
+
+  private mapToObj(map: Map<string, number | string>) {
+    const obj: { [key: string]: string | number } = {};
+    map.forEach((value: number | string, key: string) => {
+      obj[key] = value;
+    });
+    return obj;
   }
 
   private createEsvFilename(fileName: string): string {

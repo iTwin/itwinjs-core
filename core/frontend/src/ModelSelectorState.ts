@@ -8,7 +8,6 @@ import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorProps } from "@bentley/imodeljs-common";
-import { SpatialClassification } from "./SpatialClassification";
 
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a [[SpatialViewState]].
  * It defines the set of [[ModelState]]s drawn within the view as a set of IDs.
@@ -74,7 +73,6 @@ export class ModelSelectorState extends ElementState {
 
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
   public async load(): Promise<void> {
-
-    return this.iModel.models.load(this.models).then(async (_) => SpatialClassification.loadModelClassifiers(this.models, this.iModel));
+    return this.iModel.models.load(this.models);
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ensure new tiles are loaded when edge display is toggled.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

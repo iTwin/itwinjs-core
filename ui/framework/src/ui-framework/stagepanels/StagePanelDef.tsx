@@ -22,8 +22,8 @@ export enum StagePanelState {
  * @alpha
  */
 export class StagePanelDef extends WidgetHost {
-  /** Default Height or Width of the panel */
-  public size: string = "0";
+  /** Default size of the panel */
+  public size: number | undefined = undefined;
   /** Panel state.  Defaults to PanelState.Open. */
   public panelState: StagePanelState = StagePanelState.Open;
   /** Indicates whether the panel is resizable. */

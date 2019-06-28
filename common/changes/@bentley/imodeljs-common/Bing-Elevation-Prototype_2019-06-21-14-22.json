@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add support for applying terrain to background map.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

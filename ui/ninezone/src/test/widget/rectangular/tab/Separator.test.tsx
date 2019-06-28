@@ -14,4 +14,8 @@ describe("<TabSeparator />", () => {
   it("renders correctly", () => {
     shallow(<TabSeparator />).should.matchSnapshot();
   });
+
+  it("renders horizontal correctly", () => {
+    shallow(<TabSeparator isHorizontal />).should.matchSnapshot();
+  });
 });

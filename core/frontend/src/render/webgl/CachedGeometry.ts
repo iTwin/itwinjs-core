@@ -121,7 +121,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
     else if (RenderMode.SmoothShade !== vf.renderMode)
       return false;
     else
-      return vf.sourceLights || vf.cameraLights || vf.solarLight;
+      return vf.lighting;
   }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;

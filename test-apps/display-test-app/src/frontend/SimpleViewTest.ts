@@ -18,13 +18,13 @@ import {
 } from "@bentley/imodeljs-common";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
+  FrontendRequestContext,
   IModelApp,
   IModelConnection,
+  OidcBrowserClient,
   RenderDiagnostics,
   RenderSystem,
-  FrontendRequestContext,
   WebGLExtensionName,
-  OidcBrowserClient,
 } from "@bentley/imodeljs-frontend";
 import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
@@ -133,6 +133,8 @@ async function main() {
 
   if (configuration.useProjectExtents)
     DisplayTestApp.tileAdminProps.useProjectExtents = true;
+
+  DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 
   DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)

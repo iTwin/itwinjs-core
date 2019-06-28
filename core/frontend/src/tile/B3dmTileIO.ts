@@ -109,7 +109,8 @@ export namespace B3dmTileIO {
           const feature: any = {};
           for (const key in this._batchTableJson)
             feature[key] = this._batchTableJson[key][i];
-          featureTable.insert(new Feature(this._idMap.getBatchId(feature, this._iModel)));
+
+          featureTable.insert(new Feature(this._idMap.getBatchId(feature)));
         }
       } else {
         const feature = new Feature(this._modelId);

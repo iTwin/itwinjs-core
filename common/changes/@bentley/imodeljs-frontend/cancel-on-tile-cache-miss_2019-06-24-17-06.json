@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Avoid forwarding tile content request to backend if request is canceled while awaiting content from blob storage.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

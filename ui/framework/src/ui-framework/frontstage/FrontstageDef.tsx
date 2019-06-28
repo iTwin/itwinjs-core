@@ -5,11 +5,9 @@
 /** @module Frontstage */
 
 import * as React from "react";
-
 import { UiError } from "@bentley/ui-core";
-import { NineZoneProps } from "@bentley/ui-ninezone";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-
+import { NineZoneManagerProps } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDef } from "../zones/ZoneDef";
 import { ContentLayoutDef } from "../content/ContentLayout";
@@ -70,7 +68,7 @@ export class FrontstageDef {
   public contentLayoutDef?: ContentLayoutDef;
   public contentGroup?: ContentGroup;
   public frontstageProvider?: FrontstageProvider;
-  public nineZoneProps?: NineZoneProps;
+  public nineZone?: NineZoneManagerProps;
 
   /** Constructs the [[FrontstageDef]]  */
   constructor() { }

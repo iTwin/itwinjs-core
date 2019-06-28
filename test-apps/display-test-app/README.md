@@ -93,3 +93,5 @@ rush install -c
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * SVT_USE_PROJECT_EXTENTS
   * If defined, the range of a spatial tile tree will be based on the project extents rather than upon the model's range.
+* SVT_TILETREE_EXPIRATION_SECONDS
+  * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.

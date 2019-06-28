@@ -6,6 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import * as _ from "lodash";
+
 import {
   ActivityMessageDetails,
   NotifyMessageDetails,
@@ -106,6 +108,7 @@ export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _messages: NotifyMessageDetails[] = new Array<NotifyMessageDetails>();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
+  private static _lastMessage?: NotifyMessageDetails;
 
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -128,13 +131,23 @@ export class MessageManager {
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this._lastMessage = undefined;
+  }
+
+  /** Set the maximum number of cached message. */
+  public static setMaxCachedMessages(max: number): void {
+    this._maxCachedMessages = max;
+    this.checkMaxCachedMessages();
   }
 
   /** Output a message and/or alert to the user.
    * @param  message  Details about the message to output.
    */
   public static addMessage(message: NotifyMessageDetails): void {
-    this.addToMessageCenter(message);
+    if (!_.isEqual(message, this._lastMessage)) {
+      this.addToMessageCenter(message);
+      this._lastMessage = message;
+    }
 
     if (message.msgType === OutputMessageType.Alert) {
       if (message.openAlert === OutputMessageAlert.Balloon)
@@ -151,7 +164,11 @@ export class MessageManager {
    */
   public static addToMessageCenter(message: NotifyMessageDetails): void {
     this._messages.push(message);
+    this.checkMaxCachedMessages();
+  }
 
+  /** Checks number of messages against the maximum. */
+  private static checkMaxCachedMessages(): void {
     if (this._messages.length > this._maxCachedMessages) {
       const numToErase = this._maxCachedMessages / 4;
       this._messages.splice(0, numToErase);

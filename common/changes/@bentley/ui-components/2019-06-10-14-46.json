@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tree: Fix an issue whith multiselection where shift-selecting nodes would not select anything.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Robert.Lukasonok@bentley.com"
+}

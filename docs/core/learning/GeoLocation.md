@@ -37,7 +37,7 @@ By converting the minium and maximum values of the Project Extent to two [Cartog
 
 ### The Global Origin
 
-All spatial coordinate values are stored in an iModel in [IEEE 754]($https://en.wikipedia.org/wiki/IEEE_754) floating point numbers. As such, the highest precision is obtained by numbers close to zero. For this reason, it is sometimes desireable to store a *bias distance* to be added to all coordinates. This value is called the **Global Origin** for an iModel, and it applies to all spatial coordinates. The Global Origin may be obtained by [IModel.globalOrigin]($common).
+All spatial coordinate values are stored in an iModel in [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) floating point numbers. As such, the highest precision is obtained by numbers close to zero. For this reason, it is sometimes desireable to store a *bias distance* to be added to all coordinates. This value is called the **Global Origin** for an iModel, and it applies to all spatial coordinates. The Global Origin may be obtained by [IModel.globalOrigin]($common).
 
 > Notes about Global Origin:
 

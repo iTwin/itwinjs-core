@@ -17,6 +17,10 @@
 
   @include nz-widget-opacity;
 
+  > .nz-primary-grip {
+    @include uicore-z-index(widget-grip);
+  }
+
   > .nz-height-expander {
     display: flex;
     flex-direction: column;
@@ -25,14 +29,6 @@
       content: '';
       flex: 0 1 $min-height;
     }
-  }
-
-  > .nz-top-grip {
-    width: 100%;
-    position: absolute;
-    top: -$grip-offset;
-
-    @include uicore-z-index(widget-grip);
   }
 
   > .nz-content-container {
@@ -51,26 +47,16 @@
         style: solid;
         width: $nz-widget-border-width;
         color: $nz-widget-border-color;
-        bottom-left-radius: $nz-widget-border-radius;
-        bottom-right-radius: $nz-widget-border-radius;
+        radius: $nz-widget-border-radius;
       }
       box-sizing: border-box;
     }
 
-    > .nz-bottom-grip {
-      width: 100%;
-      position: absolute;
-      bottom: -$grip-offset;
-
+    > .nz-secondary-grip {
       @include uicore-z-index(widget-grip);
     }
 
     > .nz-content-grip {
-      display: none;
-      height: 100%;
-      position: absolute;
-      top: 0;
-
       @include uicore-z-index(widget-grip);
     }
   }
@@ -78,6 +64,11 @@
   > .nz-tabs-column {
     display: flex;
     flex-direction: column;
+    position: relative;
+
+    > .nz-tabs {
+      display: flex;
+    }
 
     > .nz-tabs-grip-container {
       position: relative;
@@ -93,22 +84,46 @@
     }
   }
 
-  &.nz-left-anchor {
-    > .nz-tabs-column {
-      > .nz-tabs-grip-container {
-        > .nz-tabs-grip {
-          left: -$grip-offset;
+  > .nz-tab-bar {
+    pointer-events: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: $buic-background-panel;
+    height: 100%;
+    width: 100%;
+  }
+
+  &.nz-collapsed {
+    > .nz-content-container {
+      display: none;
+    }
+
+    &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+      display: block;
+
+      > .nz-tabs-column {
+        > .nz-tabs-grip-container {
+          display: none;
+        }
+      }
+
+      > .nz-height-expander {
+        display: none;
+      }
+
+      &.nz-right-anchor {
+        > .nz-tabs-column {
+          align-items: flex-start;
         }
       }
     }
+  }
 
-    > .nz-content-container {
-      > .nz-content {
-        border-top-left-radius: $nz-widget-border-radius;
-      }
-
-      > .nz-content-grip {
-        left: -$grip-offset;
+  &.nz-left-anchor {
+    > .nz-tabs-column {
+      > .nz-tabs {
+        align-items: flex-start;
       }
     }
   }
@@ -117,20 +132,8 @@
     flex-direction: row-reverse;
 
     > .nz-tabs-column {
-      > .nz-tabs-grip-container {
-        > .nz-tabs-grip {
-          right: -$grip-offset;
-        }
-      }
-    }
-
-    > .nz-content-container {
-      > .nz-content {
-        border-top-right-radius: $nz-widget-border-radius;
-      }
-
-      > .nz-content-grip {
-        right: -$grip-offset;
+      > .nz-tabs {
+        align-items: flex-end;
       }
     }
   }
@@ -143,11 +146,11 @@
     height: 100%;
     align-items: center;
 
-    &.nz-bottom-anchor, &.nz-bottom-anchor {
+    &.nz-bottom-anchor {
       align-items: flex-end;
     }
 
-    > .nz-top-grip {
+    > .nz-primary-grip {
       display: none;
     }
 
@@ -157,14 +160,6 @@
 
         > .nz-tabs-grip {
           display: none;
-        }
-      }
-
-      > .nz-tabs {
-        > * {
-          &.nz-active {
-            margin-right: unset;
-          }
         }
       }
     }
@@ -178,11 +173,154 @@
     height: 100%;
   }
 
-  &.nz-floating {
+  &:not(.nz-floating) {
     > .nz-content-container {
       > .nz-content-grip {
-        display: block;
+        display: none;
       }
+    }
+  }
+
+  &.nz-bottom-panel-anchor {
+    flex-direction: column-reverse;
+
+    > .nz-content-container {
+      > .nz-content {
+        border-top-left-radius: 0;
+      }
+
+      > .nz-content-grip {
+        bottom: -$grip-offset;
+      }
+    }
+
+    > .nz-tabs-column {
+      > .nz-tabs-grip-container {
+        > .nz-tabs-grip {
+          bottom: -$grip-offset;
+        }
+      }
+    }
+  }
+
+  &.nz-top-panel-anchor {
+    flex-direction: column;
+
+    > .nz-content-container {
+      > .nz-content {
+        border-bottom-left-radius: 0;
+      }
+
+      > .nz-content-grip {
+        top: -$grip-offset;
+      }
+    }
+
+    > .nz-tabs-column {
+      > .nz-tabs-grip-container {
+        > .nz-tabs-grip {
+          top: -$grip-offset;
+        }
+      }
+    }
+  }
+
+  &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+    height: 100%;
+
+    &:not(.nz-collapsed) {
+      min-height: $min-height;
+    }
+
+    &:not(.nz-fill-zone) {
+      max-height: fit-content;
+    }
+
+    > .nz-tabs-column {
+      flex-direction: row;
+
+      > .nz-tabs {
+        flex-direction: row;
+      }
+    }
+
+    > .nz-height-expander {
+      display: none;
+    }
+
+    > .nz-content-container {
+      min-height: 0;
+
+      > .nz-secondary-grip {
+        top: 0;
+        right: -$grip-offset;
+      }
+    }
+
+    > .nz-primary-grip {
+      left: -$grip-offset;
+    }
+  }
+
+  &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+    &.nz-left-anchor {
+      > .nz-content-container {
+        > .nz-content {
+          border-top-right-radius: 0;
+        }
+
+        > .nz-content-grip {
+          left: -$grip-offset;
+        }
+      }
+
+      > .nz-tabs-column {
+        > .nz-tabs-grip-container {
+          > .nz-tabs-grip {
+            left: -$grip-offset;
+          }
+        }
+      }
+    }
+
+    &.nz-right-anchor {
+      > .nz-content-container {
+        > .nz-content {
+          border-top-left-radius: 0;
+        }
+
+        > .nz-content-grip {
+          right: -$grip-offset;
+        }
+      }
+
+      > .nz-tabs-column {
+        > .nz-tabs-grip-container {
+          > .nz-tabs-grip {
+            right: -$grip-offset;
+          }
+        }
+      }
+    }
+
+    > .nz-content-container {
+      > .nz-secondary-grip {
+        bottom: -$grip-offset;
+      }
+
+      > .nz-content-grip {
+        top: 0;
+      }
+    }
+
+    > .nz-tabs-column {
+      > .nz-tabs {
+        flex-direction: column;
+      }
+    }
+
+    > .nz-primary-grip {
+      top: -$grip-offset;
     }
   }
 }

@@ -75,7 +75,6 @@ export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 
 export * from "./ui-framework/widgets/NavigationWidget";
-export * from "./ui-framework/widgets/StackedWidget";
 export * from "./ui-framework/widgets/StatusBar";
 export * from "./ui-framework/widgets/StatusBarWidgetControl";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
@@ -85,6 +84,7 @@ export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
+export * from "./ui-framework/widgets/WidgetStack";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";

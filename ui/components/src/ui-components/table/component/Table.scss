@@ -16,7 +16,7 @@
   }
 
   .react-grid-Canvas {
-    height: calc(100% - 25px) !important;
+    height: 100% !important;
 
     @include uicore-touch-scrolling;
     @include uicore-scrollbar();
@@ -24,10 +24,13 @@
 
   .react-grid-Container,
   .react-grid-Grid,
-  .react-grid-Main,
-  .react-grid-Viewport {
+  .react-grid-Main {
     min-height: 100% !important;
     height: 100% !important;
+  }
+
+  .react-grid-Viewport {
+    height: calc(100% - 25px) !important;
   }
 
   .react-grid-Container,
@@ -155,8 +158,9 @@
 }
 
 .components-table.hide-header {
-  .react-grid-Canvas {
+  .react-grid-Viewport {
     height: 100% !important;
+    top: 0 !important;
   }
 
   .react-grid-Cell {
@@ -166,9 +170,5 @@
 
   .react-grid-Header {
     display: none;
-  }
-
-  .react-grid-Viewport {
-    top: 0 !important;
   }
 }

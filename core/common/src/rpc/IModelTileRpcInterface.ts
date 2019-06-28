@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
+import { AbandonedError } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelTokenProps, IModelToken } from "../IModel";
@@ -34,8 +35,11 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /** @internal */
   public async requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
   /** @internal */
-  public async requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array> {
+  public async requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean): Promise<Uint8Array> {
     const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId);
+    if (undefined === cached && undefined !== isCanceled && isCanceled())
+      throw new AbandonedError();
+
     return cached || this.forward(arguments);
   }
 

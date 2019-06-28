@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ensure we never have two active snap or tooltip requests",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

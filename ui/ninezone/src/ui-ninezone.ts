@@ -40,7 +40,21 @@ export * from "./ui-ninezone/footer/Indicator";
 export * from "./ui-ninezone/footer/Popup";
 export * from "./ui-ninezone/footer/Separator";
 
+export * from "./ui-ninezone/manager/NestedStagePanels";
+export * from "./ui-ninezone/manager/NineZone";
+export * from "./ui-ninezone/manager/StagePanel";
+export * from "./ui-ninezone/manager/StagePanelPane";
+export * from "./ui-ninezone/manager/StagePanels";
+
 export * from "./ui-ninezone/popup/Tooltip";
+
+export * from "./ui-ninezone/stage-panels/Splitter";
+export * from "./ui-ninezone/stage-panels/StagePanel";
+export * from "./ui-ninezone/stage-panels/StagePanels";
+
+export * from "./ui-ninezone/stage-panels/manager/NestedStagePanels";
+export * from "./ui-ninezone/stage-panels/manager/StagePanel";
+export * from "./ui-ninezone/stage-panels/manager/StagePanels";
 
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";
@@ -102,18 +116,20 @@ export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 
-export * from "./ui-ninezone/zones/state/Manager";
-export * from "./ui-ninezone/zones/state/NineZone";
-export * from "./ui-ninezone/zones/state/Target";
-export * from "./ui-ninezone/zones/state/Widget";
-export * from "./ui-ninezone/zones/state/Zone";
+export * from "./ui-ninezone/zones/manager/Target";
+export * from "./ui-ninezone/zones/manager/Widget";
+export * from "./ui-ninezone/zones/manager/Zone";
+export * from "./ui-ninezone/zones/manager/Zones";
 
-export * from "./ui-ninezone/zones/state/layout/Layout";
-export * from "./ui-ninezone/zones/state/layout/Layouts";
-export * from "./ui-ninezone/zones/state/layout/Root";
+export * from "./ui-ninezone/zones/manager/layout/Layout";
+export * from "./ui-ninezone/zones/manager/layout/Layouts";
+export * from "./ui-ninezone/zones/manager/layout/Root";
 
 export * from "./ui-ninezone/zones/target/Back";
 export * from "./ui-ninezone/zones/target/Merge";
+export * from "./ui-ninezone/zones/target/Splitter";
+export * from "./ui-ninezone/zones/target/SplitterPane";
+export * from "./ui-ninezone/zones/target/StagePanel";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -151,6 +167,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description SnapMode
  * Classes for working with SnapMode UI
+ */
+/**
+ * @docs-group-description StagePanels
+ * Classes for working with stage panels
  */
 /**
  * @docs-group-description ToolAssistance

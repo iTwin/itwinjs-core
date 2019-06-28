@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetStackTab should render with beta badge 1`] = `
+<Tab
+  betaBadge={<BetaBadge />}
+  horizontalAnchor={0}
+  isCollapsed={false}
+  isProtruding={false}
+  mode={2}
+  onClick={[Function]}
+  onDrag={[Function]}
+  onDragEnd={[Function]}
+  onDragStart={[Function]}
+  title=""
+  verticalAnchor={0}
+>
+  <Component />
+</Tab>
+`;

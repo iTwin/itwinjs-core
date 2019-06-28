@@ -12,6 +12,7 @@ import { Transform } from "./Transform";
 import { UVSurface } from "./GeometryHandler";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { Geometry } from "../Geometry";
+
 /**
  * * A Bilinear patch is defined by its 4 corner points.
  * * the corner points do not have to be coplanar
@@ -38,6 +39,7 @@ import { Geometry } from "../Geometry";
  *   * sum all at once as
  *      * X = (1-u)* (1-v) *point00 + (1-u)*v * point01 + u * (1-v) *point10 + u* v * point11
  *
+ * @internal
  */
 export class BilinearPatch implements UVSurface {
   public point00: Point3d;

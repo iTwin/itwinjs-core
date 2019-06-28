@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SplitterPaneTarget /> renders correctly 1`] = `
+<ZoneTarget
+  className="nz-zones-target-splitterPane"
+>
+  <Arrow
+    zoneIndex={6}
+  />
+  <Arrow
+    zoneIndex={4}
+  />
+  <div
+    className="nz-overlay"
+  />
+</ZoneTarget>
+`;

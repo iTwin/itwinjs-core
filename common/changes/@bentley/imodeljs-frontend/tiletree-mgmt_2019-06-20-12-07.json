@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Improve memory management for tile trees.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

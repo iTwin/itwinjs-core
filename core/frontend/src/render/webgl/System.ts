@@ -17,7 +17,6 @@ import {
   RenderDiagnostics,
   RenderTarget,
   RenderClipVolume,
-  RenderClassifierModel,
   RenderPlanarClassifier,
   GraphicList,
   PackedFeatureTable,
@@ -58,13 +57,11 @@ import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
-import { TileTreeModelState } from "../../ModelState";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
-import { ModelSelectorState } from "../../ModelSelectorState";
-import { CategorySelectorState } from "../../CategorySelectorState";
-import { TiledGraphicsProvider } from "../../TiledGraphicsProvider";
+import { SpatialViewState } from "../../ViewState";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
+import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
 
@@ -365,15 +362,12 @@ export class IdMap implements IDisposable {
   public readonly textures: Map<string, RenderTexture>;
   /** Mapping of textures using gradient symbology. */
   public readonly gradients: Dictionary<Gradient.Symb, RenderTexture>;
-  /** Mapping of (planar) classification model ID to textures */
-  public readonly classifiers: Map<Id64String, RenderClassifierModel>;
   /** Solar shadow map (one for IModel) */
   private _solarShadowMap?: RenderSolarShadowMap;
   public constructor() {
     this.materials = new Map<string, RenderMaterial>();
     this.textures = new Map<string, RenderTexture>();
     this.gradients = new Dictionary<Gradient.Symb, RenderTexture>(Gradient.Symb.compareSymb);
-    this.classifiers = new Map<Id64String, RenderClassifierModel>();
   }
 
   public dispose() {
@@ -387,6 +381,7 @@ export class IdMap implements IDisposable {
 
     this.textures.clear();
     this.gradients.clear();
+    this._solarShadowMap = dispose(this._solarShadowMap);
   }
 
   /** Add a material to this IdMap, given that it has a valid key. */
@@ -486,20 +481,13 @@ export class IdMap implements IDisposable {
     return texture;
   }
 
-  /** Get a classifier model */
-  public getSpatialClassificationModel(modelId: Id64String): RenderClassifierModel | undefined { return this.classifiers.get(modelId); }
-
-  /** @internal */
-  /** Add a new classifier */
-  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel) { this.classifiers.set(modelId, classifier); }
-
   /** @internal */
   /** Get solar shadow map */
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState) {
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
     if (undefined === this._solarShadowMap)
       this._solarShadowMap = new SolarShadowMap();
 
-    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, models, categories);
+    (this._solarShadowMap as SolarShadowMap)!.set(frustum, direction, settings, view);
     return this._solarShadowMap;
   }
 }
@@ -658,7 +646,7 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, drape?: TextureDrape): RenderGraphic { return new Branch(branch, transform, clips, undefined, planarClassifier, drape); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, classifierOrDrape?: PlanarClassifier | TextureDrape): RenderGraphic { return new Branch(branch, transform, clips, undefined, classifierOrDrape); }
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
@@ -772,11 +760,9 @@ export class System extends RenderSystem {
 
     return clipVolume;
   }
-  public getSpatialClassificationModel(modelId: Id64String, iModel: IModelConnection): RenderClassifierModel | undefined { return this.getIdMap(iModel).classifiers.get(modelId); }
-  public addSpatialClassificationModel(modelId: Id64String, classifier: RenderClassifierModel, iModel: IModelConnection) { this.getIdMap(iModel).classifiers.set(modelId, classifier); }
-  public createPlanarClassifier(properties: SpatialClassificationProps.Properties, tileTree: TileTree, classifiedModel: TileTreeModelState, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedModel, sceneContext); }
-  public createBackgroundMapDrape(drapedModel: TileTreeModelState, drapeProvider: TiledGraphicsProvider.Provider) { return BackgroundMapDrape.create(drapedModel, drapeProvider); }
-  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, models: ModelSelectorState, categories: CategorySelectorState, iModel: IModelConnection): RenderSolarShadowMap | undefined { return this.getIdMap(iModel).getSolarShadowMap(frustum, direction, settings, models, categories); }
+  public createPlanarClassifier(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedTree, sceneContext); }
+  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) { return BackgroundMapDrape.create(drapedTree, mapTree); }
+  public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined { return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);

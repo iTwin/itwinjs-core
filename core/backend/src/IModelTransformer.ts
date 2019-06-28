@@ -17,15 +17,20 @@ const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
 /** @alpha */
 export class IModelTransformer {
+  /** The read-only source iModel. */
   protected _sourceDb: IModelDb;
+  /** The read/write target iModel. */
   protected _targetDb: IModelDb;
+  /** The native import context */
   private _importContext: IModelJsNative.ImportContext;
-
+  /** The set of CodeSpecs to exclude from transformation to the target iModel. */
   protected _excludedCodeSpecNames = new Set<string>();
-  protected _excludedCodeSpecIds = new Set<Id64String>();
+  /** The set of specific Elements to exclude from transformation to the target iModel. */
   protected _excludedElementIds = new Set<Id64String>();
+  /** The set of Categories where Elements in that Category will be excluded from transformation to the target iModel. */
   protected _excludedElementCategoryIds = new Set<Id64String>();
-  protected _excludedElementClassNames = new Set<string>();
+  /** The set of classes of Elements that will be excluded (polymorphically) from transformation to the target iModel. */
+  protected _excludedElementClasses = new Set<typeof Element>();
 
   /** Construct a new IModelImporter
    * @param sourceDb The source IModelDb
@@ -77,8 +82,8 @@ export class IModelTransformer {
   }
 
   /** Add a rule to exclude a CodeSpec */
-  public excludeCodeSpec(sourceCodeSpecName: string): void {
-    this._excludedCodeSpecNames.add(sourceCodeSpecName);
+  public excludeCodeSpec(codeSpecName: string): void {
+    this._excludedCodeSpecNames.add(codeSpecName);
   }
 
   /** Add a rule to exclude a specific Element.
@@ -103,38 +108,10 @@ export class IModelTransformer {
 
   /** Add a rule to exclude all Elements of a specified class. */
   public excludeElementClass(sourceClassFullName: string): void {
-    this._excludedElementClassNames.add(sourceClassFullName);
+    this._excludedElementClasses.add(this._sourceDb.getJsClass<typeof Element>(sourceClassFullName));
   }
 
-  public importCodeSpecs(): void {
-    const sql = `SELECT ECInstanceId AS id FROM BisCore:CodeSpec`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const sourceCodeSpecId = statement.getRow().id;
-        const codeSpec: CodeSpec = this._sourceDb.codeSpecs.getById(sourceCodeSpecId);
-        if (this._excludedCodeSpecNames.has(codeSpec.name)) {
-          Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
-          this._excludedCodeSpecIds.add(codeSpec.id);
-          continue;
-        }
-        const targetCodeSpecId = this._importContext.importCodeSpec(sourceCodeSpecId);
-        if (!Id64.isValidId64(targetCodeSpecId)) {
-          throw new IModelError(IModelStatus.InvalidCodeSpec, `Error importing CodeSpec: ${codeSpec.name}`, Logger.logError, loggerCategory);
-        }
-      }
-    });
-  }
-
-  public importCodeSpec(sourceId: Id64String): Id64String {
-    return this._importContext.importCodeSpec(sourceId);
-  }
-
-  public importFonts(): void {
-    for (const font of this._sourceDb.fontMap.fonts.values()) {
-      this._importContext.importFont(font.id);
-    }
-  }
-
+  /** Resolve the Subject's ElementId from the specified subjectPath. */
   public static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined {
     let subjectId: Id64String | undefined = IModel.rootSubjectId;
     const subjectNames: string[] = subjectPath.split("/");
@@ -151,6 +128,8 @@ export class IModelTransformer {
     return subjectId;
   }
 
+  // WIP: Missing targetScopeElementId
+  /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel. */
   public initFromExternalSourceAspects(): void {
     const sql = `SELECT Element.Id AS elementId FROM ${ExternalSourceAspect.classFullName}`;
     this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -166,18 +145,11 @@ export class IModelTransformer {
     });
   }
 
-  public importAll(): void {
-    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP
-    this.initFromExternalSourceAspects();
-    this.importCodeSpecs();
-    this.importFonts();
-    this.importElement(IModel.rootSubjectId, targetScopeElementId);
-    this.importModels(DefinitionPartition.classFullName, targetScopeElementId);
-    this.importModels(InformationPartitionElement.classFullName, targetScopeElementId);
-    this.importModels(Drawing.classFullName, targetScopeElementId);
-    this.importModels(Sheet.classFullName, targetScopeElementId);
-    this.importRelationships();
-  }
+  /** Called after the decision has been made to exclude a source CodeSpec from the target iModel.
+   * @param _codeSpecName The name of the source CodeSpec that was excluded from transformation.
+   * @note A subclass can override this method to be notified after a CodeSpec has been excluded.
+   */
+  protected onCodeSpecExcluded(_codeSpecName: string): void { }
 
   /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel.
    * @param _sourceElement The sourceElement that was processed
@@ -195,7 +167,7 @@ export class IModelTransformer {
 
   /** Called after processing a source Element when that processing caused an Element to be excluded from the target iModel.
    * @param _sourceElement The source Element that was excluded from transformation.
-   * @note A subclass can override this method to be notified after Elements have been excluded.
+   * @note A subclass can override this method to be notified after an Element has been excluded.
    */
   protected onElementExcluded(_sourceElement: Element): void { }
 
@@ -209,13 +181,15 @@ export class IModelTransformer {
       Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Id`);
       return true;
     }
-    if (this._excludedElementClassNames.has(sourceElement.classFullName)) { // WIP: handle subclasses
-      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
-      return true;
-    }
     if (sourceElement.category) {
       if (this._excludedElementCategoryIds.has(sourceElement.category)) {
         Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Category [${sourceElement.category}]`);
+        return true;
+      }
+    }
+    for (const excludedElementClass of this._excludedElementClasses) {
+      if (sourceElement instanceof excludedElementClass) {
+        Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
         return true;
       }
     }
@@ -398,6 +372,7 @@ export class IModelTransformer {
     });
   }
 
+  /** Imports all relationships that subclass from BisCore:ElementRefersToElements */
   public importRelationships(): void {
     const sql = `SELECT ECInstanceId AS id FROM ${ElementRefersToElements.classFullName}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
@@ -417,5 +392,48 @@ export class IModelTransformer {
         }
       }
     });
+  }
+
+  /** Import all fonts from the source iModel into the target iModel. */
+  public importFonts(): void {
+    for (const font of this._sourceDb.fontMap.fonts.values()) {
+      this._importContext.importFont(font.id);
+    }
+  }
+
+  /** Import all CodeSpecs from the source iModel into the target iModel. */
+  public importCodeSpecs(): void {
+    const sql = `SELECT Name FROM BisCore:CodeSpec`;
+    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const codeSpecName: string = statement.getRow().name;
+        this.importCodeSpec(codeSpecName);
+      }
+    });
+  }
+
+  /** Import a single CodeSpec from the source iModel into the target iModel. */
+  public importCodeSpec(codeSpecName: string): void {
+    if (this._excludedCodeSpecNames.has(codeSpecName)) {
+      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpecName}`);
+      this.onCodeSpecExcluded(codeSpecName);
+      return;
+    }
+    const sourceCodeSpecId: Id64String = this._sourceDb.codeSpecs.queryId(codeSpecName);
+    this._importContext.importCodeSpec(sourceCodeSpecId);
+  }
+
+  /** Attempts to import everything from the source iModel into the target iModel. */
+  public importAll(): void {
+    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP
+    this.initFromExternalSourceAspects();
+    this.importCodeSpecs();
+    this.importFonts();
+    this.importElement(IModel.rootSubjectId, targetScopeElementId);
+    this.importModels(DefinitionPartition.classFullName, targetScopeElementId);
+    this.importModels(InformationPartitionElement.classFullName, targetScopeElementId);
+    this.importModels(Drawing.classFullName, targetScopeElementId);
+    this.importModels(Sheet.classFullName, targetScopeElementId);
+    this.importRelationships();
   }
 }

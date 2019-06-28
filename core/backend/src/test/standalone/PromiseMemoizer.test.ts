@@ -115,7 +115,7 @@ describe("A wrapper around PromiseMemoizer", () => {
     assert.equal(actualValue, expectedValue);
   });
 
-  it("should not increase the cache size when repeating the same call", async () => {
+  it.skip("should not increase the cache size when repeating the same call", async () => {
     for (let ii = 0; ii < 5; ii++) { // Ensure the testFn doesn't resolve
       const retString = await testMemoizer.callMemoizedTestFn(0, resolveWaitTime); // same call everytime
       assert.equal(retString, "Pending");

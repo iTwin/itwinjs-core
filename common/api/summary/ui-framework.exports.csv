@@ -139,6 +139,8 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
+internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
 public;GroupButton: React_2.FunctionComponent
 public;GroupButtonProps 
 public;GroupItemDef 
@@ -218,6 +220,7 @@ public;NavigationWidgetDef
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
+public;NineZoneChangeHandler
 public;PointerMessage 
 public;PointerMessageChangedEvent 
 public;PointerMessageChangedEventArgs
@@ -262,10 +265,12 @@ public;SignOutModalFrontstage
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
 public;SpecialKey
-internal;StackedWidget 
-internal;StackedWidgetProps 
+internal;SplitterPaneTarget 
+internal;SplitterPaneTargetProps
 alpha;StagePanel 
+public;StagePanelChangeHandler
 alpha;StagePanelDef 
+alpha;StagePanelDefaultProps = Pick
 alpha;StagePanelLocation
 alpha;StagePanelProps
 internal;StagePanelRuntimeProps
@@ -353,6 +358,14 @@ public;WidgetDef
 internal;WidgetDefFactory
 public;WidgetHost
 public;WidgetProps 
+internal;WidgetStack 
+internal;WidgetStackProps 
+internal;WidgetStackTab 
+internal;WidgetStackTabGroup 
+internal;WidgetStackTabGroupProps
+internal;WidgetStackTabProps
+internal;WidgetStackTabs 
+internal;WidgetStackTabsProps
 public;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs

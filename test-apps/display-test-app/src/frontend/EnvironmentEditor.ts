@@ -29,7 +29,6 @@ import {
  } from "@bentley/frontend-devtools";
 
 type EnvironmentAspect = "ground" | "sky";
-type SkyboxType = "2colors" | "4colors";
 type UpdateAttribute = (view: ViewState) => void;
 
 let expandEnvironmentEditor = false;
@@ -37,7 +36,7 @@ let expandEnvironmentEditor = false;
 export class EnvironmentEditor {
   private readonly _vp: Viewport;
   private readonly _updates: UpdateAttribute[] = [];
-  private readonly _eeSkyboxType: RadioBox<SkyboxType>;
+  private readonly _eeSkyboxType: RadioBox;
   private readonly _eeZenithColor: ColorInput;
   private readonly _eeSkyColor: ColorInput;
   private readonly _eeGroundColor: ColorInput;

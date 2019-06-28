@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Export bilinear patch (used by bing elevation)",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Ray.Bentley@bentley.com"
+}

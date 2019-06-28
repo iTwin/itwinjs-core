@@ -8,7 +8,7 @@ import * as _ from "lodash";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  KeySet, PageOptions, SelectionInfo,
+  KeySet, DEFAULT_KEYS_BATCH_SIZE, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
   Ruleset, RegisteredRuleset, DescriptorOverrides,
 } from "@bentley/presentation-common";
@@ -287,6 +287,12 @@ export class ContentDataProvider implements IContentDataProvider {
 
   // tslint:disable-next-line:naming-convention
   private getDefaultContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
+    // istanbul ignore if
+    if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
+      const msg = `ContentDataProvider.getContentDescriptor requesting descriptor with ${this.keys.size} keys which
+        exceeds the suggested size of ${DEFAULT_KEYS_BATCH_SIZE}. Possible "HTTP 413 Payload Too Large" error.`;
+      Logger.logWarning("Presentation.Components", msg);
+    }
     return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
@@ -343,6 +349,13 @@ export class ContentDataProvider implements IContentDataProvider {
         return undefined;
     } else {
       descriptorOrOverrides = this.getDescriptorOverrides();
+    }
+
+    // istanbul ignore if
+    if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
+      const msg = `ContentDataProvider.getContent requesting with ${this.keys.size} keys which
+        exceeds the suggested size of ${DEFAULT_KEYS_BATCH_SIZE}. Possible "HTTP 413 Payload Too Large" error.`;
+      Logger.logWarning("Presentation.Components", msg);
     }
 
     const requestSize = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;

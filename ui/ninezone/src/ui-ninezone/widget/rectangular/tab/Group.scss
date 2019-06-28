@@ -11,6 +11,7 @@
   $width: 10px;
 
   position: relative;
+  display: flex;
 
   &:before {
     content: "";
@@ -21,23 +22,41 @@
     transition: opacity 0.3s ease-in-out;
   }
 
-  &.nz-left-anchor {
-    &:before {
-      border-top-right-radius: $border-radius;
-      border-bottom-right-radius: $border-radius;
-      left: $offset;
-
-      background: linear-gradient(to right, $buic-background-5, $buic-background-4);
-    }
+  &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
+    flex-direction: row;
   }
 
-  &.nz-right-anchor {
-    &:before {
-      border-top-left-radius: $border-radius;
-      border-bottom-left-radius: $border-radius;
-      right: $offset;
+  &.nz-top-panel-anchor {
+    align-items: flex-start;
+  }
 
-      background: linear-gradient(to left, $buic-background-5, $buic-background-4);
+  &.nz-bottom-panel-anchor {
+    align-items: flex-end;
+  }
+
+  &:not(.nz-bottom-panel-anchor):not(.nz-top-panel-anchor) {
+    flex-direction: column;
+
+    &.nz-left-anchor {
+      &:before {
+        border-top-right-radius: $border-radius;
+        border-bottom-right-radius: $border-radius;
+        left: $offset;
+
+        background: linear-gradient(to right, $buic-background-5, $buic-background-4);
+      }
+    }
+
+    &.nz-right-anchor {
+      align-items: flex-end;
+
+      &:before {
+        border-top-left-radius: $border-radius;
+        border-bottom-left-radius: $border-radius;
+        right: $offset;
+
+        background: linear-gradient(to left, $buic-background-5, $buic-background-4);
+      }
     }
   }
 

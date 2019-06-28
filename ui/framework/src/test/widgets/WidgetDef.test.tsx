@@ -42,6 +42,7 @@ describe("WidgetDef", () => {
       element: <div />,
       syncEventIds: [SyncUiEventId.FrontstageReady],
       stateFunc: sinon.spy(),
+      betaBadge: true,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
@@ -60,6 +61,7 @@ describe("WidgetDef", () => {
     expect(widgetDef.label).to.eq("label");
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
+    expect(widgetDef.betaBadge).to.eq(true);
   });
 
   it("registerControl & widgetControl using same classId", () => {

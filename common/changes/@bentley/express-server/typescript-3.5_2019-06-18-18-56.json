@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update to TypeScript 3.5",
+      "packageName": "@bentley/express-server",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "shaun.sewall@bentley.com"
+}

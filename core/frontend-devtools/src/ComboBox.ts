@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @alpha */
-export interface ComboBoxEntry<T> {
+export interface ComboBoxEntry {
   name: string;
-  value: T;
+  value: number | string | undefined;
 }
 
 /** @alpha */
 export type ComboBoxHandler = (select: HTMLSelectElement) => void;
 
 /** @alpha */
-export interface ComboBoxProps<T> {
+export interface ComboBoxProps {
   name?: string;
   id: string;
-  entries: Array<ComboBoxEntry<T>>;
+  entries: ComboBoxEntry[];
   parent?: HTMLElement;
   handler?: ComboBoxHandler;
-  value?: T;
+  value?: number | string;
   tooltip?: string;
 }
 
@@ -31,7 +31,7 @@ export interface ComboBox {
 }
 
 /** @alpha */
-export function createComboBox<T>(props: ComboBoxProps<T>): ComboBox {
+export function createComboBox(props: ComboBoxProps): ComboBox {
   const div = document.createElement("div");
 
   let label: HTMLLabelElement | undefined;

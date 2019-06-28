@@ -366,10 +366,7 @@ export abstract class Target extends RenderTarget {
       vf.renderMode = RenderMode.SmoothShade;
       vf.clipVolume = false;
 
-      const showLights = !this.is2d;
-      vf.sourceLights = showLights;
-      vf.cameraLights = showLights;
-      vf.solarLight = showLights;
+      vf.lighting = !this.is2d;
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -896,9 +893,7 @@ export abstract class Target extends RenderTarget {
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
       vf.textures = false;
-      vf.sourceLights = false;
-      vf.cameraLights = false;
-      vf.solarLight = false;
+      vf.lighting = false;
       vf.shadows = false;
       vf.noGeometryMap = true;
       vf.acsTriad = false;
@@ -1042,9 +1037,7 @@ export abstract class Target extends RenderTarget {
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
     vf.transparency = false;
     vf.textures = true; // false;
-    vf.sourceLights = false;
-    vf.cameraLights = false;
-    vf.solarLight = false;
+    vf.lighting = false;
     vf.shadows = false;
     vf.noGeometryMap = true;
     vf.acsTriad = false;

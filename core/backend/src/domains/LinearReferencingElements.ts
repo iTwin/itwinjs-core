@@ -4,46 +4,43 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, assert } from "@bentley/bentleyjs-core";
 import {
-  ElementProps, LinearLocationElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
+  ElementProps, GeometricElement3dProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
   LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  ReferentElementProps, RelatedElement, IModelError,
+  ReferentElementProps, RelatedElement, IModelError, Code,
 } from "@bentley/imodeljs-common";
 import { PhysicalElement, SpatialLocationElement } from "../Element";
 import { ElementAspect } from "../ElementAspect";
-import { RelationshipProps } from "../Relationship";
 import { IModelDb } from "../IModelDb";
+import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
+import {
+  ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, ILinearLocationLocatesElement,
+  IReferentReferencesElement,
+} from "./LinearReferencingRelationships";
 
-/** Base class for SpatialLocationElement subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
+/** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta
  */
 export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
   /** @internal */
   public static get className(): string { return "LinearlyLocatedAttribution"; }
 
-  public linearElement: RelatedElement;
-  public attributedElement?: RelatedElement;
+  public attributedElement?: ILinearlyLocatedAttributesElement;
 
   public constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb) {
     super(props, iModel);
-    this.linearElement = RelatedElement.fromJSON(props.linearElement)!;
     this.attributedElement = RelatedElement.fromJSON(props.attributedElement);
   }
 }
 
-/** Base class for SpatialLocationElement implementations that are linearly located along a Linear-Element.
+/** Base class for Spatial Location Element implementations that are linearly located along a Linear-Element.
  * @beta
  */
-export abstract class LinearLocationElement extends SpatialLocationElement implements LinearLocationElementProps {
+export abstract class LinearLocationElement extends SpatialLocationElement {
   /** @internal */
   public static get className(): string { return "LinearLocationElement"; }
 
-  public linearElement: RelatedElement;
-  public locatedElement?: RelatedElement;
-
-  public constructor(props: LinearLocationElementProps, iModel: IModelDb) {
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.linearElement = RelatedElement.fromJSON(props.linearElement)!;
-    this.locatedElement = RelatedElement.fromJSON(props.locatedElement);
   }
 }
 
@@ -53,41 +50,83 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
 export class LinearLocation extends LinearLocationElement {
   /** @internal */
   public static get className(): string { return "LinearLocation"; }
-  public constructor(props: LinearLocationElement, iModel: IModelDb) {
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  private static toProps(modelId: Id64String, categoryId: Id64String): GeometricElement3dProps {
+    const props: GeometricElement3dProps = {
+      classFullName: LinearLocation.classFullName,
+      category: categoryId,
+      model: modelId,
+      code: Code.createEmpty(),
+    };
+
+    return props;
+  }
+
+  public static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation {
+    return new LinearLocation(this.toProps(modelId, categoryId), iModel);
+  }
+
+  public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+    fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
+    const newId = LinearlyLocated.insertFromTo(iModel, this.toProps(modelId, categoryId), linearElementId, fromToPosition);
+
+    ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
+
+    return newId;
+  }
+
+  public insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String {
+    const newId = LinearlyLocated.insertFromTo(iModel, this, linearElementId, fromToPosition);
+
+    ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
+
+    return newId;
+  }
+
+  public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+    atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
+    const newId = LinearlyLocated.insertAt(iModel, this.toProps(modelId, categoryId), linearElementId, atPosition);
+
+    ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
+
+    return newId;
+  }
+
+  public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String {
+    const newId = LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
+
+    ILinearLocationLocatesElement.insert(iModel, newId, locatedElementId);
+
+    return newId;
   }
 }
 
-/** Base class for PhysicalElement implementations that are linearly located along a Linear-Element.
+/** Base class for Physical Elements that are inherintly linearly located along a Linear-Element.
  * @beta
  */
-export abstract class LinearPhysicalElement extends PhysicalElement implements LinearLocationElementProps {
+export abstract class LinearPhysicalElement extends PhysicalElement {
   /** @internal */
   public static get className(): string { return "LinearPhysicalElement"; }
 
-  public linearElement: RelatedElement;
-  public locatedElement?: RelatedElement;
-
-  public constructor(props: LinearLocationElementProps, iModel: IModelDb) {
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.linearElement = RelatedElement.fromJSON(props.linearElement)!;
-    this.locatedElement = RelatedElement.fromJSON(props.locatedElement);
   }
 }
 
-/** SpatialLocationElement-subclasses that can play the role of a Referent (known location along a Linear-Element).
+/** Spatial Location Element that can play the role of a Referent (known location along a Linear-Element).
  * @beta
  */
 export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
   /** @internal */
   public static get className(): string { return "ReferentElement"; }
 
-  public linearElement: RelatedElement;
-  public referencedElement?: RelatedElement;
+  public referencedElement?: IReferentReferencesElement;
 
   public constructor(props: ReferentElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.linearElement = RelatedElement.fromJSON(props.linearElement)!;
     this.referencedElement = RelatedElement.fromJSON(props.referencedElement);
   }
 }
@@ -100,6 +139,31 @@ export class Referent extends ReferentElement {
   public static get className(): string { return "Referent"; }
   public constructor(props: ReferentElementProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  private static toProps(modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): ReferentElementProps {
+    const props: ReferentElementProps = {
+      classFullName: LinearLocation.classFullName,
+      category: categoryId,
+      model: modelId,
+      code: Code.createEmpty(),
+      referencedElement: new IReferentReferencesElement(referencedElementId),
+    };
+
+    return props;
+  }
+
+  public static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): Referent {
+    return new Referent(this.toProps(modelId, categoryId, referencedElementId), iModel);
+  }
+
+  public static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
+    atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String {
+    return LinearlyLocated.insertAt(iModel, this.toProps(modelId, categoryId, referencedElementId), linearElementId, atPosition);
+  }
+
+  public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
+    return LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
   }
 }
 
@@ -255,7 +319,7 @@ class AtECSQLGenImpl extends ECSQLGenImpl {
     return "AtLocation.AtPosition.DistanceAlongFromStart StartDistanceAlong, AtLocation.AtPosition.DistanceAlongFromStart StopDistanceAlong, AtLocation.ECInstanceId LocationAspectId ";
   }
   public genFromJoin(): string {
-    return "INNER JOIN LinearReferencing.LinearlyReferencedAtLocation) AtLocation ON LinearlyLocated.InstanceId = AtLocation.Element.Id ";
+    return "INNER JOIN LinearReferencing.LinearlyReferencedAtLocation AtLocation ON LinearlyLocated.InstanceId = AtLocation.Element.Id ";
   }
   public genWhere(bindVals: any[], from?: number, inclusiveFrom?: boolean, to?: number, inclusiveTo?: boolean): string {
     const fromCompOp: string = (inclusiveFrom === undefined || inclusiveFrom) ? ">=" : ">";
@@ -300,6 +364,7 @@ class QueryLinearLocationsECSQLGen {
 
     this._ecSql += select;
   }
+
   private _parseClassFullName(classFullName: string): [string, string] | undefined {
     const parts = classFullName.split(":");
     if (parts.length !== 2)
@@ -307,6 +372,7 @@ class QueryLinearLocationsECSQLGen {
 
     return [parts[0], parts[1]];
   }
+
   private _genLinearlyLocated(): string {
     return "meta.ECSchemaDef JOIN meta.ECClassDef USING meta.SchemaOwnsClasses JOIN " +
       "(SELECT coalesce(Located.TargetECInstanceId, Along.SourceECInstanceId) InstanceId, " +
@@ -315,6 +381,7 @@ class QueryLinearLocationsECSQLGen {
       "LinearReferencing.ILinearLocationLocatesElement Located ON Along.SourceECInstanceId = Located.SourceECInstanceId " +
       "WHERE Along.TargetECInstanceId = ?) LinearlyLocated ON meta.ECClassDef.ECInstanceId = LinearlyLocated.ClassId ";
   }
+
   private _addFromClause(impl: ECSQLGenImpl/*bvector<double>& bindVals*/): void {
     let from = "FROM ";
     from += this._genLinearlyLocated();
@@ -322,6 +389,7 @@ class QueryLinearLocationsECSQLGen {
 
     this._ecSql += from;
   }
+
   private _addWhereClause(impl: ECSQLGenImpl, bindVals: any[]) {
     let where = "WHERE ";
 
@@ -344,7 +412,7 @@ class QueryLinearLocationsECSQLGen {
         if (schemaNameClassName === undefined)
           throw new IModelError(0, "Invalid full class name");
 
-        where += "meta.ECSchemaDef.Name ='" + schemaNameClassName[0] + "' AND meta.ECClassDef.Name = '" + schemaNameClassName[1] + "'";
+        where += "meta.ECSchemaDef.Name ='" + schemaNameClassName[0] + "' AND meta.ECClassDef.Name = '" + schemaNameClassName[1] + "' ";
       } else if (1 < this._params.linearlyLocatedClassFullNames.length) {
         where += "(";
         for (const classFullName in this._params.linearlyLocatedClassFullNames) {
@@ -365,12 +433,14 @@ class QueryLinearLocationsECSQLGen {
 
     this._ecSql += where;
   }
+
   private _addOrderByClause(impl: ECSQLGenImpl): void {
     let orderBy = "ORDER BY ";
     orderBy += impl.genOrderBy();
 
     this._ecSql += orderBy;
   }
+
   private _createImpl(): ECSQLGenImpl {
     if (this._params.linearlyReferencedLocationTypeFilter === undefined ||
       this._params.linearlyReferencedLocationTypeFilter === LinearlyReferencedLocationType.Any) {
@@ -408,12 +478,9 @@ export class LinearlyLocated {
   private static insertBasic(iModel: IModelDb, elProps: ElementProps, linearElementId: Id64String): Id64String {
     const newId = iModel.elements.insertElement(elProps);
 
-    const linearlyLocatedAlongLinearElement: RelationshipProps = {
-      classFullName: "LinearReferencing:ILinearlyLocatedAlongILinearElement",
-      sourceId: newId,
-      targetId: linearElementId,
-    };
-    iModel.relationships.insertInstance(linearlyLocatedAlongLinearElement);
+    const linearlyLocatedAlongLinearElement =
+      ILinearlyLocatedAlongILinearElement.create(iModel, newId, linearElementId);
+    linearlyLocatedAlongLinearElement.insert();
 
     return newId;
   }
@@ -430,13 +497,8 @@ export class LinearlyLocated {
     atPosition: LinearlyReferencedAtLocationProps): Id64String {
     const newId: Id64String = this.insertBasic(iModel, elProps, linearElementId);
 
-    const atPositionAspectProps: LinearlyReferencedAtLocationAspectProps = {
-      classFullName: "LinearReferencing:LinearlyReferencedAtLocation",
-      element: { id: newId },
-      atPosition: atPosition.atPosition,
-      fromReferent: atPosition.fromReferent,
-    };
-    iModel.elements.insertAspect(atPositionAspectProps);
+    LinearlyReferencedAtLocation.insert(iModel, newId, atPosition.atPosition,
+      (atPosition.fromReferent === undefined) ? undefined : atPosition.fromReferent.id);
 
     return newId;
   }
@@ -453,15 +515,10 @@ export class LinearlyLocated {
     fromToPosition: LinearlyReferencedFromToLocationProps): Id64String {
     const newId: Id64String = this.insertBasic(iModel, elProps, linearElementId);
 
-    const fromToPositionAspectProps: LinearlyReferencedFromToLocationAspectProps = {
-      classFullName: "LinearReferencing:LinearlyReferencedFromToLocation",
-      element: { id: newId },
-      fromPosition: fromToPosition.fromPosition,
-      fromPositionFromReferent: fromToPosition.fromPositionFromReferent,
-      toPosition: fromToPosition.toPosition,
-      toPositionFromReferent: fromToPosition.toPositionFromReferent,
-    };
-    iModel.elements.insertAspect(fromToPositionAspectProps);
+    LinearlyReferencedFromToLocation.insert(iModel, newId,
+      fromToPosition.fromPosition, fromToPosition.toPosition,
+      (fromToPosition.fromPositionFromReferent === undefined) ? undefined : fromToPosition.fromPositionFromReferent.id,
+      (fromToPosition.toPositionFromReferent === undefined) ? undefined : fromToPosition.toPositionFromReferent.id);
 
     return newId;
   }

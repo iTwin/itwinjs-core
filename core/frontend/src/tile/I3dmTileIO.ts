@@ -121,7 +121,7 @@ export namespace I3dmTileIO {
           for (const key in this._batchTableJson)
             feature[key] = this._batchTableJson[key][i];
 
-          this._featureTable.insert(new Feature(this._idMap.getBatchId(feature, this._iModel)));
+          this._featureTable.insert(new Feature(this._idMap.getBatchId(feature)));
         }
       } else {
         // NB: For reality models with no batch table, we want the model ID in the feature table

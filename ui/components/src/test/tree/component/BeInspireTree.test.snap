@@ -148,6 +148,73 @@ Array [
 ]
 `;
 
+exports[`BeInspireTree pagination loads additional pages after grandparent loads a page 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isExpanded": true,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isExpanded": true,
+    "level": 1,
+  },
+  Object {
+    "id": "0-0-0",
+    "level": 2,
+  },
+  Object {
+    "id": "0-0-1",
+    "level": 2,
+  },
+  Object {
+    "id": "0-0-2",
+    "level": 2,
+  },
+  Object {
+    "id": "0-0-3",
+    "level": 2,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 2,
+  },
+  Object {
+    "id": "0-1",
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "level": 0,
+  },
+  Object {
+    "id": "2",
+    "level": 0,
+  },
+  Object {
+    "id": "3",
+    "level": 0,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 0,
+  },
+]
+`;
+
 exports[`BeInspireTree pagination loads additional pages when child nodes are loaded arbitrarily 1`] = `
 Array [
   Object {

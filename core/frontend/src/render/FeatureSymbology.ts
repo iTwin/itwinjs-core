@@ -318,16 +318,18 @@ export namespace FeatureSymbology {
           app = undefined !== modelApp ? elemApp.extendAppearance(app) : elemApp;
       }
 
+      let subCatApp;
       if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
         if (!alwaysDrawn && !this.isSubCategoryVisibleInModel(subcatLo, subcatHi, modelLo, modelHi))
           return undefined;
 
-        const subCat = this.getSubCategoryOverrides(subcatLo, subcatHi);
-        if (undefined !== subCat)
-          app = subCat.extendAppearance(app);
+        subCatApp = this.getSubCategoryOverrides(subcatLo, subcatHi);
+        if (undefined !== subCatApp)
+          app = subCatApp.extendAppearance(app);
       }
 
-      if (undefined === elemApp && undefined === modelApp)
+      // Only apply default if NO Appearance was explicitly registered (doesn't matter if registered Appearance does not actually override anything)
+      if (undefined === elemApp && undefined === modelApp && undefined === subCatApp)
         app = this._defaultOverrides.extendAppearance(app);
 
       let visible = alwaysDrawn || this.isClassVisible(geomClass);

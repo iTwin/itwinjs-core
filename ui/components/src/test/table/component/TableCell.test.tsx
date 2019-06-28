@@ -6,7 +6,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { render, fireEvent, waitForElement } from "react-testing-library";
+import { render, fireEvent, waitForElement } from "@testing-library/react";
 import { TableIconCellContent, TableCell, TableCellContent } from "../../../ui-components/table/component/TableCell";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import { CellItem } from "../../../ui-components/table/TableDataProvider";

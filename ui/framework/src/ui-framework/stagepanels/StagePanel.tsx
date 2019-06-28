@@ -6,17 +6,36 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-
-import { UiError } from "@bentley/ui-core";
-
+import {
+  StagePanel as NZ_StagePanel, StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
+  StagePanelTypeHelpers, NineZoneStagePanelManagerProps, StagePanelTarget, Splitter, ZonesManagerProps,
+  WidgetZoneIndex, SplitterTarget, SplitterPaneTarget as NZ_SplitterPaneTarget,
+} from "@bentley/ui-ninezone";
 import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
-import { WidgetDef, WidgetType } from "../widgets/WidgetDef";
+import { WidgetDef } from "../widgets/WidgetDef";
 import { WidgetProps } from "../widgets/Widget";
-import { UiFramework } from "../UiFramework";
-
+import { WidgetStack } from "../widgets/WidgetStack";
+import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { ZoneLocation } from "../zones/Zone";
 import "./StagePanel.scss";
 
-/** Enum for StagePanel location.
+/** Available StagePanel locations.
+ * ------------------------------------------------------------------------------------
+ * TopMost
+ * ------------------------------------------------------------------------------------
+ * Left     | Top                                                           | Right
+ *          |---------------------------------------------------------------|
+ *          | Nine-zone                                                     |
+ *          |                                                               |
+ *          |                                                               |
+ *          |                                                               |
+ *          |                                                               |
+ *          |                                                               |
+ *          |---------------------------------------------------------------|
+ *          | Bottom                                                        |
+ * ------------------------------------------------------------------------------------
+ * BottomMost
+ * ------------------------------------------------------------------------------------
  * @alpha
  */
 export enum StagePanelLocation {
@@ -32,12 +51,14 @@ export enum StagePanelLocation {
  * @alpha
  */
 export interface StagePanelProps {
-  /** Default Height or Width of the panel */
-  size: string;
+  /** Describes which zones are allowed in this stage panel. */
+  allowedZones?: ZoneLocation[];
+  /** Default size of the panel. */
+  size?: number;
   /** Default Panel state. Controls how the panel is initially displayed. Defaults to StagePanelState.Open. */
   defaultState?: StagePanelState;
-  /** Indicates whether the panel is resizable. */
-  resizable?: boolean;
+  /** Indicates whether the panel is resizable. Defaults to true. */
+  resizable: boolean;
   /** Any application data to attach to this Panel. */
   applicationData?: any;
 
@@ -48,20 +69,44 @@ export interface StagePanelProps {
   runtimeProps?: StagePanelRuntimeProps;
 }
 
+/** Default properties of [[StagePanel]] component.
+ * @alpha
+ */
+export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
+
 /** Runtime Properties for the [[StagePanel]] component.
  * @internal
  */
 export interface StagePanelRuntimeProps {
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;
+  stagePanelChangeHandler: StagePanelChangeHandler;
+  widgetChangeHandler: WidgetChangeHandler;
+  zoneDefProvider: ZoneDefProvider;
+  zones: ZonesManagerProps;
 }
 
 /** Frontstage Panel React component.
  * @alpha
  */
 export class StagePanel extends React.Component<StagePanelProps> {
+  private _measurer = React.createRef<HTMLDivElement>();
+
+  public static readonly defaultProps: StagePanelDefaultProps = {
+    resizable: true,
+  };
 
   constructor(props: StagePanelProps) {
     super(props);
+  }
+
+  public componentDidMount(): void {
+    this.initializeSize();
+  }
+
+  public componentDidUpdate(): void {
+    this.initializeSize();
   }
 
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
@@ -70,82 +115,226 @@ export class StagePanel extends React.Component<StagePanelProps> {
 
     if (props.defaultState)
       panelDef.panelState = props.defaultState;
-    if (props.resizable)
-      panelDef.resizable = props.resizable;
+    panelDef.resizable = props.resizable;
     if (props.applicationData !== undefined)
       panelDef.applicationData = props.applicationData;
 
-    // istanbul ignore else
     if (props.widgets) {
       props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-        const widgetDef = StagePanel.createWidgetDef(widgetNode);
-        // istanbul ignore else
-        if (widgetDef) {
-          panelDef.addWidgetDef(widgetDef);
-        }
+        const widgetDef = new WidgetDef(widgetNode.props);
+        panelDef.addWidgetDef(widgetDef);
       });
     }
   }
 
-  private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
-    let widgetDef: WidgetDef | undefined;
-
-    // istanbul ignore else
-    if (React.isValidElement(widgetNode))
-      widgetDef = new WidgetDef(widgetNode.props);
-
-    return widgetDef;
-  }
-
   public render(): React.ReactNode {
-    const { runtimeProps } = this.props;
-    let classes = classnames("uifw-stagepanel");
-    let cssProperties: React.CSSProperties = {};
-    let content: React.ReactNode = null;
+    if (!this.props.runtimeProps)
+      return null;
 
-    if (runtimeProps) {
-      const { size } = this.props;
-      const { panelDef } = runtimeProps;
-      const { location } = panelDef;
-
-      // NEEDSWORK: currently only support one rectangular Widget
-      if (panelDef.widgetCount === 1 && panelDef.widgetDefs[0].widgetType === WidgetType.Rectangular) {
-        const widgetDef = panelDef.widgetDefs[0];
-        content = (widgetDef.isVisible) ? widgetDef.reactElement : null;
-      } else {
-        throw new UiError(UiFramework.loggerCategory(this), "StagePanels currently only support one rectangular Widget");
+    const className = classnames("uifw-stagepanel");
+    const { panelDef, panel, zones, zoneDefProvider, getWidgetContentRef, widgetChangeHandler } = this.props.runtimeProps;
+    const draggingWidget = zones.draggingWidget;
+    const isTargetVisible = draggingWidget && this.props.allowedZones && this.props.allowedZones.some((z) => draggingWidget.id === z);
+    const paneCount = panelDef.widgetCount + panel.panes.length;
+    const type = getStagePanelType(panelDef.location);
+    if (paneCount === 0) {
+      if (isTargetVisible) {
+        return (
+          <StagePanelTarget
+            onTargetChanged={this._handleTargetChanged}
+            type={type}
+          />
+        );
       }
-
-      classes = classnames("uifw-stagepanel",
-        (location === StagePanelLocation.Top || location === StagePanelLocation.TopMost) && "uifw-stagepanel-top",
-        location === StagePanelLocation.Left && "uifw-stagepanel-left",
-        location === StagePanelLocation.Right && "uifw-stagepanel-right",
-        (location === StagePanelLocation.Bottom || location === StagePanelLocation.BottomMost) && "uifw-stagepanel-bottom",
-      );
-      cssProperties = this.getDivProperties(size, location);
+      return null;
     }
 
+    const isVertical = StagePanelTypeHelpers.isVertical(type);
     return (
-      <div className={classes} style={cssProperties}>
-        {content}
-      </div>
+      <NZ_StagePanel
+        className={className}
+        onResize={this.props.resizable ? this._handleResize : undefined}
+        onToggleCollapse={this._handleToggleCollapse}
+        size={panel.isCollapsed ? undefined : panel.size}
+        type={type}
+      >
+        <div
+          ref={this._measurer}
+          style={{ width: "100%", height: "100%", position: "absolute", zIndex: -1 }}
+        />
+        <SplitterTarget
+          isVertical={isVertical}
+          onTargetChanged={this._handleTargetChanged}
+          paneCount={paneCount}
+          style={{
+            ...isTargetVisible ? {} : { display: "none" },
+          }}
+        />
+        <Splitter
+          isGripHidden={panel.isCollapsed}
+          isVertical={isVertical}
+        >
+          {Array.from({ length: panelDef.widgetCount }, (_, index) => index).map((index) => {
+            const widgetDef = panelDef.widgetDefs[index];
+            if (!widgetDef.isVisible)
+              return null;
+            return (
+              <div
+                key={`wd-${index}`}
+                style={{
+                  height: "100%",
+                  display: panel.isCollapsed ? "none" : "block",
+                }}
+              >
+                {widgetDef.reactElement}
+              </div>
+            );
+          })}
+          {panel.panes.map((paneProps, index) => {
+            return (
+              <div
+                key={`w-${index}`}
+                style={{ height: "100%", position: "relative" }}
+              >
+                <WidgetStack
+                  draggingWidget={undefined}
+                  fillZone={true}
+                  getWidgetContentRef={getWidgetContentRef}
+                  isCollapsed={panel.isCollapsed}
+                  isFloating={false}
+                  isInStagePanel={true}
+                  widgets={paneProps.widgets}
+                  widgetChangeHandler={widgetChangeHandler}
+                  zoneDefProvider={zoneDefProvider}
+                  zonesWidgets={zones.widgets}
+                />
+                {isTargetVisible && <SplitterPaneTarget
+                  onTargetChanged={this._handlePaneTargetChanged}
+                  paneIndex={index}
+                />}
+              </div>
+            );
+          })}
+        </Splitter>
+      </NZ_StagePanel>
     );
   }
 
-  private getDivProperties(size: string, location: StagePanelLocation): React.CSSProperties {
-    let panelStyle: React.CSSProperties;
+  private _handleResize = (resizeBy: number) => {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
+      return;
+    runtimeProps.stagePanelChangeHandler.handlePanelResize(runtimeProps.panelDef.location, resizeBy);
+  }
 
-    if (location === StagePanelLocation.Left || location === StagePanelLocation.Right)
-      panelStyle = {
-        width: size,
-        height: "100%",
-      };
-    else
-      panelStyle = {
-        height: size,
-        width: "100%",
-      };
+  private _handleTargetChanged = (isTargeted: boolean) => {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
+      return;
+    runtimeProps.stagePanelChangeHandler.handlePanelTargetChange(isTargeted ? runtimeProps.panelDef.location : undefined);
+  }
 
-    return panelStyle;
+  private _handleToggleCollapse = () => {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
+      return;
+    runtimeProps.stagePanelChangeHandler.handleTogglePanelCollapse(runtimeProps.panelDef.location);
+  }
+
+  private _handlePaneTargetChanged = (paneIndex: number | undefined) => {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps)
+      return;
+    runtimeProps.stagePanelChangeHandler.handlePanelPaneTargetChange(runtimeProps.panelDef.location, paneIndex);
+  }
+
+  private initializeSize() {
+    const runtimeProps = this.props.runtimeProps;
+    if (!runtimeProps || runtimeProps.panel.size !== undefined || !this._measurer.current)
+      return;
+    const panelDef = runtimeProps.panelDef;
+    const location = panelDef.location;
+    if (panelDef.size) {
+      runtimeProps.stagePanelChangeHandler.handlePanelInitialize(location, panelDef.size);
+      return;
+    }
+    const clientRect = this._measurer.current.getBoundingClientRect();
+    const type = getStagePanelType(location);
+    const size = StagePanelTypeHelpers.isVertical(type) ? clientRect.width : clientRect.height;
+    runtimeProps.stagePanelChangeHandler.handlePanelInitialize(location, size);
+  }
+}
+
+/** @internal */
+export const getStagePanelType = (location: StagePanelLocation): NZ_StagePanelType => {
+  switch (location) {
+    case StagePanelLocation.Bottom:
+    case StagePanelLocation.BottomMost:
+      return NZ_StagePanelType.Bottom;
+    case StagePanelLocation.Left:
+      return NZ_StagePanelType.Left;
+    case StagePanelLocation.Right:
+      return NZ_StagePanelType.Right;
+    case StagePanelLocation.Top:
+    case StagePanelLocation.TopMost:
+      return NZ_StagePanelType.Top;
+  }
+};
+
+/** @internal */
+export const getNestedStagePanelKey = (location: StagePanelLocation): NestedStagePanelKey<NestedStagePanelsManagerProps> => {
+  switch (location) {
+    case StagePanelLocation.Bottom:
+      return {
+        id: "inner",
+        type: NZ_StagePanelType.Bottom,
+      };
+    case StagePanelLocation.BottomMost:
+      return {
+        id: "outer",
+        type: NZ_StagePanelType.Bottom,
+      };
+    case StagePanelLocation.Left:
+      return {
+        id: "inner",
+        type: NZ_StagePanelType.Left,
+      };
+    case StagePanelLocation.Right:
+      return {
+        id: "inner",
+        type: NZ_StagePanelType.Right,
+      };
+    case StagePanelLocation.Top:
+      return {
+        id: "inner",
+        type: NZ_StagePanelType.Top,
+      };
+    case StagePanelLocation.TopMost:
+      return {
+        id: "outer",
+        type: NZ_StagePanelType.Top,
+      };
+  }
+};
+
+/** @internal */
+export interface SplitterPaneTargetProps {
+  onTargetChanged: (paneIndex: number | undefined) => void;
+  paneIndex: number;
+}
+
+/** @internal */
+export class SplitterPaneTarget extends React.PureComponent<SplitterPaneTargetProps> {
+  public render() {
+    return (
+      <NZ_SplitterPaneTarget
+        onTargetChanged={this._handleTargetChanged}
+      />
+    );
+  }
+
+  private _handleTargetChanged = (isTargeted: boolean) => {
+    const target = isTargeted ? this.props.paneIndex : undefined;
+    this.props.onTargetChanged(target);
   }
 }

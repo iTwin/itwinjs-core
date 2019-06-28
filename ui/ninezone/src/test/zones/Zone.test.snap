@@ -3,27 +3,27 @@
 exports[`<Zone /> renders correctly 1`] = `
 <div
   className="nz-zones-zone"
-  style={
-    Object {
-      "height": 10,
-      "left": 0,
-      "top": 0,
-      "width": 10,
-    }
-  }
+  style={Object {}}
 />
 `;
 
 exports[`<Zone /> renders correctly in footer mode 1`] = `
 <div
   className="nz-zones-zone nz-footer-mode"
-  style={
-    Object {
-      "height": 10,
-      "left": 0,
-      "top": 0,
-      "width": 10,
-    }
-  }
+  style={Object {}}
+/>
+`;
+
+exports[`<Zone /> renders floating correctly 1`] = `
+<div
+  className="nz-zones-zone nz-floating"
+  style={Object {}}
+/>
+`;
+
+exports[`<Zone /> renders hidden correctly 1`] = `
+<div
+  className="nz-zones-zone nz-hidden"
+  style={Object {}}
 />
 `;

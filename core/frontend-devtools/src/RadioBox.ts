@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @alpha */
-export interface RadioBoxEntry<T> {
-  value: T;
+export interface RadioBoxEntry {
+  value: number | string | undefined;
   label: string;
 }
 
@@ -13,25 +13,25 @@ export interface RadioBoxEntry<T> {
 export type RadioBoxHandler = (value: string, form: HTMLFormElement) => void;
 
 /** @alpha */
-export interface RadioBoxProps<T> {
+export interface RadioBoxProps {
   id: string;
-  entries: Array<RadioBoxEntry<T>>;
+  entries: RadioBoxEntry[];
   handler: RadioBoxHandler;
   name?: string;
   parent?: HTMLElement;
-  defaultValue?: T;
+  defaultValue?: number | string;
   vertical?: boolean;
 }
 
 /** @alpha */
-export interface RadioBox<T> {
+export interface RadioBox {
   label?: HTMLLabelElement;
-  setValue: (newValue: T) => boolean;
+  setValue: (newValue: number | string) => boolean;
   div: HTMLDivElement;
 }
 
 /** @alpha */
-export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T> {
+export function createRadioBox(props: RadioBoxProps): RadioBox {
   const div = document.createElement("div");
 
   let label: HTMLLabelElement | undefined;
@@ -52,7 +52,7 @@ export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T> {
     input.type = "radio";
     input.name = props.name ? props.name : props.id;
 
-    input.value = entry.value.toString();
+    input.value = (undefined !== entry.value) ? entry.value.toString() : "";
 
     let inputLabel: HTMLLabelElement;
     inputLabel = document.createElement("label") as HTMLLabelElement;
@@ -87,7 +87,7 @@ export function createRadioBox<T>(props: RadioBoxProps<T>): RadioBox<T> {
   if (undefined !== props.parent)
     props.parent.appendChild(div);
 
-  const setValue = (value: T): boolean => {
+  const setValue = (value: number | string): boolean => {
     const stringValue = value.toString();
     const validValue: boolean = radioBoxes.map((input) => input.value).includes(stringValue);
     if (validValue) {

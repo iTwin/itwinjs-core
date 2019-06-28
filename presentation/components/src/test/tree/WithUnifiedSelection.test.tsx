@@ -24,7 +24,7 @@ import {
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
-import { treeWithUnifiedSelection } from "../../tree/WithUnifiedSelection";
+import { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "../../tree/WithUnifiedSelection";
 import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -155,8 +155,8 @@ describe("Tree withUnifiedSelection", () => {
     const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
-    />, { disableLifecycleMethods: true }).dive();
-    component.instance().componentDidUpdate!(component.props(), component.state()!);
+    />, { disableLifecycleMethods: true }).dive<TreeWithUnifiedSelectionProps, {}>();
+    component.instance().componentDidUpdate!(component.props(), component.state());
   });
 
   describe("selection handling", () => {

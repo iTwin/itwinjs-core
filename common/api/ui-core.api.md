@@ -568,6 +568,19 @@ export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 // @public
 export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
 
+// @beta
+export class FocusTrap extends React.Component<Props, State> {
+    constructor(props: Props);
+    // (undocumented)
+    componentDidUpdate(prevProps: Props, prevState: State): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    isFocusable(element: HTMLElement): boolean;
+    // (undocumented)
+    render(): JSX.Element | null;
+    }
+
 // @internal
 export const getClassName: (obj: any) => string;
 
@@ -960,14 +973,18 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
 // @beta
 export interface PopupProps extends CommonProps {
+    ariaLabel?: string;
+    focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     left: number;
+    moveFocus?: boolean;
     // (undocumented)
     offset: number;
     onClose?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
     position: Position;
+    role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
     showShadow: boolean;
     target?: HTMLElement | null;

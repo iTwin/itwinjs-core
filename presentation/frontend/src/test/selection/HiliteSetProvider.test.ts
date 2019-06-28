@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey, createRandomTransientId, createRandomDescriptor } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Content, Item } from "@bentley/presentation-common";
+import { KeySet, DEFAULT_KEYS_BATCH_SIZE, Content, Item } from "@bentley/presentation-common";
 import { Presentation } from "../../Presentation";
 import { PresentationManager } from "../../PresentationManager";
 import { RulesetManager } from "../../RulesetManager";
@@ -154,6 +154,37 @@ describe("HiliteSetProvider", () => {
       expect(result.models).to.deep.eq([resultModelKey.id]);
       expect(result.subCategories).to.deep.eq([resultSubCategoryKey.id]);
       expect(result.elements).to.deep.eq([transientKey.id, resultElementKey.id]);
+    });
+
+    it("requests content in batches when keys count exceeds max", async () => {
+      // create a key set of such size that we need 3 content requests
+      const inputKeys = new KeySet();
+      for (let i = 0; i < (2 * DEFAULT_KEYS_BATCH_SIZE + 1); ++i)
+        inputKeys.add(createRandomECInstanceKey());
+
+      // first request returns content with an element key
+      const elementKey = createRandomECInstanceKey();
+      const resultContent1 = new Content(createRandomDescriptor(), [
+        new Item([elementKey], "", "", undefined, {}, {}, [], {}), // element
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => resultContent1);
+
+      // second request returns no content
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === DEFAULT_KEYS_BATCH_SIZE))).returns(async () => undefined);
+
+      // third request returns content with subcategory and model keys
+      const subCategoryKey = createRandomECInstanceKey();
+      const modelKey = createRandomECInstanceKey();
+      const resultContent2 = new Content(createRandomDescriptor(), [
+        new Item([subCategoryKey], "", "", undefined, {}, {}, [], { isSubCategory: true }),
+        new Item([modelKey], "", "", undefined, {}, {}, [], { isModel: true }),
+      ]);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.is((keys) => keys.size === 1))).returns(async () => resultContent2);
+
+      const result = await provider.getHiliteSet(new KeySet(inputKeys));
+      expect(result.models).to.deep.eq([modelKey.id]);
+      expect(result.subCategories).to.deep.eq([subCategoryKey.id]);
+      expect(result.elements).to.deep.eq([elementKey.id]);
     });
 
   });

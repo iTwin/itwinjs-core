@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64String } from "@bentley/bentleyjs-core";
 import { ElementAspectProps, GeometricElement3dProps, RelatedElementProps } from "../ElementProps";
 
 /** Properties of an ILinearElement
@@ -14,13 +13,6 @@ export interface ILinearElementProps extends GeometricElement3dProps {
   startValue: number;
   lengthValue: number;
   source: RelatedElementProps;
-}
-
-/** Properties of an ILinearLocationElement
- * @beta
- */
-export interface ILinearLocationElementProps {
-  locatedElement?: RelatedElementProps;
 }
 
 /** Properties of an ILinearlyLocatedAttribution
@@ -34,12 +26,6 @@ export interface ILinearlyLocatedAttributionProps {
  * @beta
  */
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
-}
-
-/** Properties of a [LinearLocationElement]($backend)
- * @beta
- */
-export interface LinearLocationElementProps extends GeometricElement3dProps, ILinearLocationElementProps {
 }
 
 /** Properties of an IReferent
@@ -70,7 +56,7 @@ export interface DistanceExpressionProps {
  */
 export interface LinearlyReferencedAtLocationProps {
   atPosition: DistanceExpressionProps;
-  fromReferent?: Id64String;
+  fromReferent?: RelatedElementProps;
 }
 
 /** Core properties of a [LinearlyReferencedFromToLocationAspect]($backend)
@@ -78,9 +64,9 @@ export interface LinearlyReferencedAtLocationProps {
  */
 export interface LinearlyReferencedFromToLocationProps {
   fromPosition: DistanceExpressionProps;
-  fromPositionFromReferent?: Id64String;
+  fromPositionFromReferent?: RelatedElementProps;
   toPosition: DistanceExpressionProps;
-  toPositionFromReferent?: Id64String;
+  toPositionFromReferent?: RelatedElementProps;
 }
 
 /** Properties of a [LinearlyReferencedAtLocationAspect]($backend)

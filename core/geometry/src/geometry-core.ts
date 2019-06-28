@@ -114,6 +114,7 @@
 
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
+export * from "./geometry3d/BilinearPatch";
 export * from "./geometry3d/FrameBuilder";
 export * from "./geometry3d/GeometryHandler";
 export * from "./geometry3d/GrowableBlockedArray";

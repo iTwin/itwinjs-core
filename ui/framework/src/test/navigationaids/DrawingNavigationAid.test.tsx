@@ -7,7 +7,7 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Point3d, Vector3d, Matrix3d, AxisIndex } from "@bentley/geometry-core";
-import { render, cleanup, wait, fireEvent } from "react-testing-library";
+import { render, cleanup, wait, fireEvent } from "@testing-library/react";
 import * as moq from "typemoq";
 import {
   ConfigurableUiManager,

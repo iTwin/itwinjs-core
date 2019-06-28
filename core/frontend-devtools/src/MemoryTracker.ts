@@ -4,21 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  TileTreeModelState,
+  IModelApp,
   RenderMemory,
+  TileTree,
+  TileTreeSet,
   Viewport,
 } from "@bentley/imodeljs-frontend";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { createComboBox, ComboBoxEntry } from "./ComboBox";
 
-function collectTileTreeMemory(stats: RenderMemory.Statistics, model: TileTreeModelState): void {
-  const tree = model.tileTree;
+function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.Owner): void {
+  const tree = owner.tileTree;
   if (undefined !== tree)
     tree.collectStatistics(stats);
 }
 
-type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => void;
-type PurgeMem = (vp: Viewport) => void;
+// Returns the number of tile trees processed.
+type CalcMem = (stats: RenderMemory.Statistics, vp: Viewport) => number;
+type PurgeMem = (olderThan?: BeTimePoint) => void;
 
 const enum MemIndex {
   None = -1,
@@ -36,18 +39,27 @@ const memLabels = [
 ];
 
 const calcMem: CalcMem[] = [
-  (stats, vp) => vp.view.forEachTileTreeModel((model) => collectTileTreeMemory(stats, model)),
-  (stats, vp) => vp.view.iModel.models.loaded.forEach((model, _id) => {
-    const geomModel = model.asGeometricModel;
-    if (undefined !== geomModel)
-      collectTileTreeMemory(stats, geomModel);
-  }),
+  (stats, vp) => {
+    vp.collectStatistics(stats);
+    const trees = new TileTreeSet();
+    vp.discloseTileTrees(trees);
+    return trees.size;
+  },
+  (stats, vp) => {
+    let numTrees = 0;
+    vp.view.iModel.tiles.forEachTreeOwner((owner) => {
+      collectTileTreeMemory(stats, owner);
+      if (undefined !== owner.tileTree)
+        ++numTrees;
+    });
+    return numTrees;
+  },
 ];
 
 // ###TODO...
 const purgeMem: Array<PurgeMem | undefined> = [
   undefined,
-  (_vp) => undefined,
+  (olderThan?) => IModelApp.viewManager.purgeTileTrees(olderThan ? olderThan : BeTimePoint.now()),
 ];
 
 function formatMemory(numBytes: number): string {
@@ -123,6 +135,7 @@ export class MemoryTracker {
   private _curIntervalId?: NodeJS.Timer;
   private _memIndex = MemIndex.None;
   private readonly _totalElem: HTMLElement;
+  private readonly _totalTreesElem: HTMLElement;
   private readonly _purgeButton: HTMLButtonElement;
   private readonly _textures: MemoryPanel;
   private readonly _buffers: MemoryPanel;
@@ -139,6 +152,7 @@ export class MemoryTracker {
     this._textures = new MemoryPanel(this._div, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps"]);
     this._buffers = new MemoryPanel(this._div, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
     this._totalElem = this.addStatistics(this._div);
+    this._totalTreesElem = this.addStatistics(this._div);
 
     this._purgeButton = this.addPurgeButton(this._div);
 
@@ -150,7 +164,7 @@ export class MemoryTracker {
   }
 
   private addSelector(parent: HTMLElement): void {
-    const entries: Array<ComboBoxEntry<MemIndex>> = [];
+    const entries: ComboBoxEntry[] = [];
     for (let i = MemIndex.None; i < MemIndex.COUNT; i++)
       entries.push({ name: memLabels[i + 1], value: i });
 
@@ -170,7 +184,7 @@ export class MemoryTracker {
 
     const button = document.createElement("button");
     button.innerText = "Purge";
-    button.click = () => this.purge();
+    button.addEventListener("click", () => this.purge());
 
     div.appendChild(button);
     parent.appendChild(div);
@@ -218,8 +232,9 @@ export class MemoryTracker {
   private update(): void {
     const calc = calcMem[this._memIndex];
     this._stats.clear();
-    calc(this._stats, this._vp);
+    const numTrees = calc(this._stats, this._vp);
     this._totalElem.innerText = "Total: " + formatMemory(this._stats.totalBytes);
+    this._totalTreesElem.innerText = "Total Tile Trees: " + numTrees;
 
     this._textures.update(this._stats.consumers, this._stats.totalBytes - this._stats.buffers.totalBytes);
     this._buffers.update(this._stats.buffers.consumers, this._stats.buffers.totalBytes);
@@ -228,7 +243,8 @@ export class MemoryTracker {
   private purge(): void {
     const purge = purgeMem[this._memIndex];
     if (undefined !== purge) {
-      purge(this._vp);
+      purge();
+      this._vp.invalidateScene(); // to trigger reloading of tiles we actually do want to continue drawing
       this.update();
     }
   }

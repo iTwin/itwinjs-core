@@ -1,66 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Tree withFilteringSupport render renders with overlay if filter is different 1`] = `
-<div
-  className="filteredTree"
->
-  <Tree
-    dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeMatch": undefined,
-        "searchText": "filter",
-      }
-    }
-    selectionMode={1}
-  />
-  <div
-    className="filteredTreeOverlay"
-  />
-</div>
-`;
-
-exports[`Tree withFilteringSupport render renders with overlay if imodel is different 1`] = `
-<div
-  className="filteredTree"
->
-  <Tree
-    dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeMatch": undefined,
-        "searchText": "filter",
-      }
-    }
-    selectionMode={1}
-  />
-  <div
-    className="filteredTreeOverlay"
-  />
-</div>
-`;
-
-exports[`Tree withFilteringSupport render renders with overlay if rulesetId is different 1`] = `
-<div
-  className="filteredTree"
->
-  <Tree
-    dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeMatch": undefined,
-        "searchText": "filter",
-      }
-    }
-    selectionMode={1}
-  />
-  <div
-    className="filteredTreeOverlay"
-  />
-</div>
-`;
-
-exports[`Tree withFilteringSupport render renders without overlay if filter is empty 1`] = `
+exports[`Tree withFilteringSupport render renders with overlay if \`state.inProgress\` is set 1`] = `
 <div
   className="filteredTree"
 >
@@ -69,33 +9,19 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is e
     nodeHighlightingProps={undefined}
     selectionMode={1}
   />
+  <div
+    className="filteredTreeOverlay"
+  />
 </div>
 `;
 
-exports[`Tree withFilteringSupport render renders without overlay if filter is undefined 1`] = `
+exports[`Tree withFilteringSupport render renders without overlay if \`state.inProgress = undefined\` 1`] = `
 <div
   className="filteredTree"
 >
   <Tree
     dataProvider={null}
     nodeHighlightingProps={undefined}
-    selectionMode={1}
-  />
-</div>
-`;
-
-exports[`Tree withFilteringSupport render renders without overlay if nothing is different 1`] = `
-<div
-  className="filteredTree"
->
-  <Tree
-    dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeMatch": undefined,
-        "searchText": "filter",
-      }
-    }
     selectionMode={1}
   />
 </div>

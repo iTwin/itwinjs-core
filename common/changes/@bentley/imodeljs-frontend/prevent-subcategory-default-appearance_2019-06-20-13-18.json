@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Prevent default symbology overrides applying to subcategories whose appearances were explicitly overridden.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

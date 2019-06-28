@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "1.1.0-dev.16",
+  "version": "1.1.0-dev.22",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -63,7 +63,7 @@
     "typedoc": "^0.14.2",
     "typedoc-plugin-external-module-name": "2.0.0",
     "typedoc-plugin-internal-external": "2.0.1",
-    "typescript": "~3.2.2",
+    "typescript": "~3.5.2",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "url-loader": "^1.0.1",
     "webpack-node-externals": "^1.7.2",

@@ -6,26 +6,35 @@
 
 .nz-widget-rectangular-resizeGrip {
   pointer-events: auto;
+  position: absolute;
+
+  > .nz-grip {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
 
   &.nz-direction-ew {
     cursor: ew-resize;
+    height: 100%;
     width: $nz-resize-grip-size;
   }
 
   &.nz-direction-ns {
     cursor: ns-resize;
     height: $nz-resize-grip-size;
+    width: 100%;
   }
 
   &.nz-direction-ne-sw {
     cursor: nesw-resize;
-    width: $nz-resize-grip-size;
     height: $nz-resize-grip-size;
+    width: $nz-resize-grip-size;
   }
 
   &.nz-direction-nw-se {
     cursor: nwse-resize;
-    width: $nz-resize-grip-size;
     height: $nz-resize-grip-size;
+    width: $nz-resize-grip-size;
   }
 }

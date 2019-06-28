@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
+    "incremental": false,
     "jsx": "react",
     "baseUrl": "../node_modules/",
     "paths": {

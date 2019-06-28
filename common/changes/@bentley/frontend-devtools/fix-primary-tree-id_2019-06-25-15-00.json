@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Include number of tile trees in memory tracker panel.",
+      "packageName": "@bentley/frontend-devtools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Paul.Connelly@bentley.com"
+}

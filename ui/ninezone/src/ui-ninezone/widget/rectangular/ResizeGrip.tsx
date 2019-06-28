@@ -8,17 +8,9 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { PointerCaptor } from "../../base/PointerCaptor";
-import { Rectangle } from "../../utilities/Rectangle";
-import { Point, PointProps } from "../../utilities/Point";
+import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
+import { PointProps, Point } from "../../utilities/Point";
 import "./ResizeGrip.scss";
-
-/** Properties of [[ResizeGrip]] component.
- * @alpha
- */
-export interface ResizeGripProps extends CommonProps {
-  onResize?: (x: number, y: number) => void;
-  direction: ResizeDirection;
-}
 
 /** Available resize directions of resize grip.
  * @alpha
@@ -58,15 +50,43 @@ export class ResizeDirectionHelpers {
   }
 }
 
+/** Arguments used in resize actions of [[ResizeGrip]] component.
+ * @alpha
+ */
+export interface ResizeGripResizeArgs {
+  /** Pointer position. */
+  readonly position: PointProps;
+  /** Grip bounds. */
+  readonly bounds: RectangleProps;
+}
+
+/** Properties of [[ResizeGrip]] component.
+ * @alpha
+ */
+export interface ResizeGripProps extends CommonProps {
+  /** Function called when grip is clicked. */
+  onClick?: () => void;
+  /** Function called when grip is resized. */
+  onResize?: (args: ResizeGripResizeArgs) => void;
+  /** Function called when resize action is ended. */
+  onResizeEnd?: (args: ResizeGripResizeArgs) => void;
+  /** Function called when resize action is started. */
+  onResizeStart?: (args: ResizeGripResizeArgs) => void;
+  /** Available resize directions of resize grip. */
+  direction: ResizeDirection;
+}
+
 /** Resize grip used by [[Stacked]] component.
  * @alpha
  */
 export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
-  private _relativePosition?: Point;
   private _grip = React.createRef<HTMLDivElement>();
+  private _isResizing = false;
+  private _movedBy = 0;
+  private _lastPosition = new Point();
 
   public render() {
-    const { className, ...props } = this.props;
+    const { className, onClick, ...props } = this.props;
 
     const pointerCaptorClassName = classnames(
       "nz-widget-rectangular-resizeGrip",
@@ -81,16 +101,19 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
         onMouseMove={this._handleMouseMove}
         {...props}
       >
-        <div ref={this._grip} />
+        <div
+          className="nz-grip"
+          onClick={this._handleClick}
+          ref={this._grip}
+        />
       </PointerCaptor>
     );
   }
 
-  private _getRelativePosition(grip: HTMLElement, clientPos: PointProps) {
-    const clientRect = grip.getBoundingClientRect();
-    const bounds = Rectangle.create(clientRect);
-
-    return bounds.topLeft().getOffsetTo(clientPos);
+  private _handleClick = () => {
+    if (this._movedBy > 0)
+      return;
+    this.props.onClick && this.props.onClick();
   }
 
   private _handleMouseDown = (e: MouseEvent) => {
@@ -98,43 +121,59 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps> {
     if (!grip)
       return;
 
+    this._movedBy = 0;
+    this._lastPosition = new Point(e.clientX, e.clientY);
+
+    this._isResizing = true;
     e.preventDefault();
 
-    this._relativePosition = this._getRelativePosition(grip, {
-      x: e.clientX,
-      y: e.clientY,
+    const bounds = Rectangle.create(grip.getBoundingClientRect());
+    this.props.onResizeStart && this.props.onResizeStart({
+      position: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+      bounds: bounds.toProps(),
     });
   }
 
-  private _handleMouseUp = () => {
-    this._relativePosition = undefined;
+  private _handleMouseUp = (e: MouseEvent) => {
+    const grip = this._grip.current;
+    if (!this._isResizing || !grip)
+      return;
+
+    const newPosition = new Point(e.clientX, e.clientY);
+    this._movedBy += newPosition.getManhattanDistanceTo(this._lastPosition);
+    this._lastPosition = newPosition;
+
+    e.preventDefault();
+    this._isResizing = false;
+    const bounds = Rectangle.create(grip.getBoundingClientRect());
+    this.props.onResizeEnd && this.props.onResizeEnd({
+      position: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+      bounds: bounds.toProps(),
+    });
   }
 
   private _handleMouseMove = (e: MouseEvent) => {
-    if (!this._relativePosition)
-      return;
-
     const grip = this._grip.current;
-    if (!grip)
+    if (!this._isResizing || !grip)
       return;
 
-    const relativePosition = this._getRelativePosition(grip, {
-      x: e.clientX,
-      y: e.clientY,
+    const newPosition = new Point(e.clientX, e.clientY);
+    this._movedBy += newPosition.getManhattanDistanceTo(this._lastPosition);
+    this._lastPosition = newPosition;
+
+    const bounds = Rectangle.create(grip.getBoundingClientRect());
+    this.props.onResize && this.props.onResize({
+      position: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+      bounds: bounds.toProps(),
     });
-
-    let difference = this._relativePosition.getOffsetTo(relativePosition);
-    switch (this.props.direction) {
-      case ResizeDirection.NorthSouth: {
-        difference = difference.setX(0);
-        break;
-      }
-      case ResizeDirection.EastWest: {
-        difference = difference.setY(0);
-        break;
-      }
-    }
-
-    this.props.onResize && this.props.onResize(difference.x, difference.y);
   }
 }

@@ -289,6 +289,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
+    // istanbul ignore else
     if (this.getGridSpecsFromToolSettingProperties())
       this.toolSettingsNode = <DefaultToolSettings rows={this.rows} numCols={this._numCols} valueMap={this.valueMap} labelMap={this.labelMap} toolId={FrontstageManager.activeToolId} />;
     else
@@ -297,6 +298,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 
   // assumes columns are sorted by index.
   private getRequiredNumberOfColumns(records: ToolSettingsPropertyRecord[]): number {
+    // istanbul ignore next
     if (!records || records.length < 1)
       return 0;
 

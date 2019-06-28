@@ -36,6 +36,14 @@ export interface ArrayTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Array;
 }
 
+// @internal
+export class AsyncTasksTracker {
+    // (undocumented)
+    readonly pendingAsyncs: Set<string>;
+    // (undocumented)
+    trackAsyncTask(): IDisposable;
+}
+
 // @public
 export interface BaseNodeKey {
     pathFromRoot: string[];
@@ -256,6 +264,9 @@ export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecific
     queries?: QuerySpecification[];
     specType: ChildNodeSpecificationTypes.CustomQueryInstanceNodes;
 }
+
+// @alpha
+export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 // @public
 export enum DefaultContentDisplayTypes {
@@ -626,6 +637,8 @@ export class KeySet {
     add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet;
     clear(): KeySet;
     delete(value: Keys | Key): KeySet;
+    forEach(callback: (key: Key, index: number) => void): void;
+    forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void;
     // @internal
     static fromJSON(json: KeySetJSON): KeySet;
     readonly guid: GuidString;

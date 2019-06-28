@@ -17,6 +17,7 @@ import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { CommonProps } from "@bentley/ui-core";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
@@ -127,6 +128,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}
+        betaBadge={this.props.betaBadge && <BetaBadge />}
       />
     );
   }

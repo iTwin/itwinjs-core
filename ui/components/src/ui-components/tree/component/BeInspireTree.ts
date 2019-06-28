@@ -480,36 +480,37 @@ export class BeInspireTree<TNodePayload> {
   }
 
   /**
-   * Selects all nodes between two nodes (inclusive)
-   *
-   * Note: order of supplied nodes is not important
+   * Returns all visible nodes that are located between the two input nodes (inclusive).
+   * Input nodes can be provided in any order.
+   */
+  public getVisibleNodesBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>): Array<BeInspireTreeNode<TNodePayload>> {
+    let startIndex = -1;
+    let endIndex = -1;
+    for (let i = 0; i < this.visible().length; ++i) {
+      const vn = this.visible()[i];
+      if (vn.id === node1.id)
+        startIndex = i;
+      if (vn.id === node2.id)
+        endIndex = i;
+      if (startIndex !== -1 && endIndex !== -1)
+        break;
+    }
+
+    if (startIndex > endIndex)
+      [startIndex, endIndex] = [endIndex, startIndex];
+
+    return this.visible().slice(startIndex, endIndex + 1);
+  }
+
+  /**
+   * Selects all visible nodes that are located between the two input nodes (inclusive).
+   * Input nodes can be provided in any order.
    */
   public selectBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>, muteEvents = true): Array<BeInspireTreeNode<TNodePayload>> {
     return using(this.mute((muteEvents) ? [BeInspireTreeEvent.NodeSelected] : []), (_r) => {
-      let start, end: BeInspireTreeNode<TNodePayload>;
-      if (node1.indexPath() <= node2.indexPath()) {
-        start = node1;
-        end = node2;
-      } else {
-        start = node2;
-        end = node1;
-      }
-
-      let startIndex = -1;
-      let endIndex = -1;
-      for (let i = 0; i < this.visible().length; ++i) {
-        const vn = this.visible()[i];
-        if (vn.id === start.id)
-          startIndex = i;
-        if (vn.id === end.id)
-          endIndex = i;
-        if (startIndex !== -1 && endIndex !== -1)
-          break;
-      }
-
-      const selected = this.visible().slice(startIndex, endIndex + 1);
-      selected.forEach((n) => n.select());
-      return selected;
+      const nodesBetween = this.getVisibleNodesBetween(node1, node2);
+      nodesBetween.forEach((n) => n.select());
+      return nodesBetween;
     });
   }
 
@@ -595,7 +596,7 @@ export class BeInspireTree<TNodePayload> {
       hasChanges = true;
     }
     if (hasChanges) {
-      node.setDirty(true);
+      node.markDirty();
       this.applyChanges();
     }
   }
@@ -687,6 +688,9 @@ async function ensureNodesAutoExpanded(branch: Inspire.TreeNodes | Inspire.TreeN
 
 /** @internal */
 export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNode<TPayload> => {
+  // When inspire-tree loads child nodes, some existing nodes transfer their properties to freshly created objects.
+  // Therefore, we cannot capture and use the `inspireNode` reference within methods we are about to assign to the node.
+
   const anyNode = inspireNode as any;
   if (!inspireNode) {
     // some inspire tree methods return `undefined` even when they say they don't - handle
@@ -696,8 +700,8 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
 
   if (!anyNode._loadChildrenOverriden) {
     const loadChildrenBase = inspireNode.loadChildren;
-    inspireNode.loadChildren = async (): Promise<Inspire.TreeNodes> => {
-      const children = await loadChildrenBase.call(inspireNode);
+    inspireNode.loadChildren = async function (): Promise<Inspire.TreeNodes> {
+      const children = await loadChildrenBase.call(this);
       // note: inspire-tree calls BeInspireTreeEvent.ChildrenLoaded as part of
       // the above call, so listeners get called before we get a chance to auto-expand...
       await ensureNodesAutoExpanded(children);
@@ -707,24 +711,24 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
   }
 
   // inject a method to reset overrides
-  anyNode.resetBeInspireOverrides = () => {
-    anyNode.loadChildren = anyNode._loadChildrenOverriden;
-    delete anyNode._loadChildrenOverriden;
+  anyNode.resetBeInspireOverrides = function () {
+    this.loadChildren = this._loadChildrenOverriden;
+    delete this._loadChildrenOverriden;
   };
 
   // inject a couple of methods to handle dirtiness
-  anyNode.isDirty = () => anyNode.itree.dirty;
-  anyNode.setDirty = (value: boolean) => {
+  anyNode.isDirty = function () { return this.itree.dirty; };
+  anyNode.setDirty = function (value: boolean) {
     if (value)
-      anyNode.markDirty();
+      this.markDirty();
     else
-      anyNode.itree.dirty = value;
+      this.itree.dirty = value;
   };
   if (!anyNode._markDirtyOverriden) {
     const markDirtyBase = inspireNode.markDirty;
-    inspireNode.markDirty = () => {
-      const result = markDirtyBase.call(inspireNode);
-      anyNode.itree.dirtyTimestamp = (new Date()).getTime();
+    anyNode.markDirty = function () {
+      const result = markDirtyBase.call(this);
+      this.itree.dirtyTimestamp = (new Date()).getTime();
       return result;
     };
     anyNode._markDirtyOverriden = markDirtyBase;

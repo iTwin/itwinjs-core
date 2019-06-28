@@ -143,6 +143,14 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@testing-library/dom",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@testing-library/react",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -277,10 +285,6 @@
     {
       "name": "detect-port",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "dom-testing-library",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "dotenv",
@@ -651,10 +655,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "react-testing-library",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-virtualized",
       "allowedCategories": [ "frontend" ]
     },
@@ -685,6 +685,10 @@
     {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "rxjs",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "sass-loader",
@@ -732,7 +736,7 @@
     },
     {
       "name": "svg-baker-runtime",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "svg-react-loader",
@@ -740,7 +744,7 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "sw-precache-webpack-plugin",

@@ -68,26 +68,10 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   private _togglePopup = () => {
     if (this.props.readonly)
       return;
-    this.setState((_prevState) => ({ showPopup: !this.state.showPopup }), () => {
-      if (this._focusTarget.current) {
-        this._focusTarget.current.focus();
-        // tslint:disable-next-line:no-console
-        // console.log(`[_togglePopup] Try to set focus for active weight item in popup`);
-      }
-    });
+    this.setState({ showPopup: !this.state.showPopup });
   }
 
   private _onPopupOpened = () => {
-    if (this._focusTarget.current) {
-      const focusTarget = this._focusTarget.current;
-
-      // try using setImmediate and setting focus within callback
-      setImmediate(() => {
-        focusTarget.focus();
-        // tslint:disable-next-line:no-console
-        // console.log(`[_onPopupOpened] Try to set focus for active weight item in popup`);
-      });
-    }
   }
 
   private _closePopup = () => {
@@ -100,21 +84,60 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
       this.props.onLineWeightPick(weight);
   }
 
+  public componentDidMount() {
+    // tslint:disable-next-line: no-console
+    // console.log(`WeightPickerButton.componentDidMount focusRef=${this._focusTarget && this._focusTarget.current ? "set" : "unset"}`);
+  }
+
+  private buildIdForWeight(weight: number): string {
+    return `ui-core-lineweight-${weight}`;
+  }
+
+  private _handleKeyDown = (event: React.KeyboardEvent<any>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      const weightButton = document.activeElement as HTMLElement;
+      // istanbul ignore else
+      if (weightButton.tagName === "BUTTON") {
+        try {
+          const values = weightButton.id.split("-");
+          // istanbul ignore else
+          if (values.length) {
+            const weight = parseInt(values[values.length - 1], 10);
+            // istanbul ignore else
+            if (!isNaN(weight)) {
+              // istanbul ignore else
+              if (this.props.onLineWeightPick)
+                this.props.onLineWeightPick(weight);
+            }
+          }
+        } catch { }
+      }
+      this._closePopup();
+    }
+  }
+
   private renderPopup(title: string | undefined) {
     return (
       <div className="components-weightpicker-popup-container">
         {title && <h4>{title}</h4>}
-        <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines">
-          {this.props.weights.map((weight, index) =>
-            <LineWeightSwatch
-              className="components-weightpicker-swatch"
+        <ul data-testid="components-weightpicker-popup-lines" className="components-weightpicker-popup-lines" onKeyDown={this._handleKeyDown}>
+          {this.props.weights.map((weight, index) => {
+            const classNames = classnames(
+              "components-weightpicker-swatch",
+              weight === this.props.activeWeight && "active",
+            );
+            return (<LineWeightSwatch
+              className={classNames}
               key={index}
               colorDef={this.props.colorDef}
-              focusRef={this._focusTarget}
-              autoFocus={weight === this.props.activeWeight ? true : false}
+              id={this.buildIdForWeight(weight)}
               hideLabel={this.props.hideLabel}
               onClick={this._handleWeightPicked.bind(this, weight)}
-              weight={weight} />)}
+              weight={weight} />);
+          })
+          }
         </ul>
       </div>
     );
@@ -144,6 +167,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
                 readonly={this.props.readonly}
                 disabled={this.props.disabled}
                 hideLabel={this.props.hideLabel}
+                aria-haspopup="listbox"
+                aria-expanded={this.state.showPopup}
                 onClick={this._togglePopup} />
             </div>
             <Popup
@@ -153,6 +178,8 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               position={Position.Bottom}
               onClose={this._closePopup}
               onOpen={this._onPopupOpened}
+              focusTarget={`#${this.buildIdForWeight(this.props.activeWeight)}`}
+              moveFocus={true}
               target={this._target} >
               {this.renderPopup(this.props.dropDownTitle)}
             </Popup>

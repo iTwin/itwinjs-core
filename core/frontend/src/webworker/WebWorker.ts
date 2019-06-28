@@ -87,7 +87,7 @@ class TestWebWorker {
       // We got an object back from the operation.
       if (typeof result === "object") {
         const reply: WorkerReply = new WorkerReply(event.data.msgId, result.result);
-        postMessage(reply, result.transferable ? [reply.result] : undefined);
+        postMessage(reply, result.transferable ? [reply.result] : []);
         if (result.callback)
           result.callback();
       } else {

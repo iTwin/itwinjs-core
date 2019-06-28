@@ -1,13 +1,13 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "1.1.0-dev.16",
+  "version": "1.1.0-dev.22",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
   "repository": {},
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf lib package-deps.json .nyc_output",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-quantity",
     "lint": "tslint --project . 1>&2",
@@ -36,9 +36,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.1.0-dev.16",
-    "@bentley/build-tools": "1.1.0-dev.16",
-    "@bentley/webpack-tools": "1.1.0-dev.16",
+    "@bentley/bentleyjs-core": "1.1.0-dev.22",
+    "@bentley/build-tools": "1.1.0-dev.22",
+    "@bentley/webpack-tools": "1.1.0-dev.22",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
@@ -54,11 +54,11 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2"
+    "typescript": "~3.5.2"
   },
   "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.1.0-dev.16"
+    "@bentley/bentleyjs-core": "^1.1.0-dev.22"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",

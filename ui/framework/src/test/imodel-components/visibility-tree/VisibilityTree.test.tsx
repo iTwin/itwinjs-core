@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
 import * as sinon from "sinon";
-import { render, cleanup, waitForElement, within, fireEvent } from "react-testing-library";
+import { render, cleanup, waitForElement, within, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../../TestUtils";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
@@ -1003,7 +1003,7 @@ describe("VisibilityTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
-            const alwaysDisplayed = new Set();
+            const alwaysDisplayed = new Set<string>();
             const neverDisplayed = new Set([key.id]);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
@@ -1031,14 +1031,14 @@ describe("VisibilityTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
-            const alwaysDisplayed = new Set();
+            const alwaysDisplayed = new Set<string>();
             const neverDisplayed = new Set([key.id]);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => {
               return set.size === 3
                 && set.has(key.id)
-                && assemblyChildrenIds.reduce((result, id) => (result && set.has(id)), true);
+                && assemblyChildrenIds.reduce<boolean>((result, id) => (result && set.has(id)), true);
             }))).verifiable();
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
 
@@ -1064,7 +1064,7 @@ describe("VisibilityTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             const alwaysDisplayed = new Set([key.id]);
-            const neverDisplayed = new Set();
+            const neverDisplayed = new Set<string>();
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
@@ -1092,14 +1092,14 @@ describe("VisibilityTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             const alwaysDisplayed = new Set([key.id]);
-            const neverDisplayed = new Set();
+            const neverDisplayed = new Set<string>();
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => {
               return set.size === 3
                 && set.has(key.id)
-                && assemblyChildrenIds.reduce((result, id) => (result && set.has(id)), true);
+                && assemblyChildrenIds.reduce<boolean>((result, id) => (result && set.has(id)), true);
             }))).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {

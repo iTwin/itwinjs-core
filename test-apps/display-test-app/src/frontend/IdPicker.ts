@@ -34,7 +34,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     }
   }
 
-  protected get _comboBoxEntries(): Array<ComboBoxEntry<string>> {
+  protected get _comboBoxEntries(): ComboBoxEntry[] {
     return [
       { name: "", value: "" },
       { name: "Show All", value: "All" },
@@ -199,7 +199,7 @@ export class CategoryPicker extends IdPicker {
   protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeCategoryDisplay(ids, enabled); }
 
-  protected get _comboBoxEntries(): Array<ComboBoxEntry<string>> {
+  protected get _comboBoxEntries(): ComboBoxEntry[] {
     const entries = super._comboBoxEntries;
     entries.push({ name: "All SubCategories", value: "Subcategories" });
     return entries;

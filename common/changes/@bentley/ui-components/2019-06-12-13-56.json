@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "BeInspireTree: Fix an issue with calling `updateNodesCheckboxes()` while handling `ModelLoaded` event",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Robert.Lukasonok@bentley.com"
+}

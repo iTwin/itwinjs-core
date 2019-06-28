@@ -156,7 +156,11 @@ export class AzCopy extends EventEmitter {
   public static getVersion(): string {
     if (!AzCopy._currentAzCopyVersion) {
       const cmd = execFileSync(AzCopy.execPath, ["--version"], { encoding: "utf8" });
-      AzCopy._currentAzCopyVersion = cmd.split(" ").slice(-1)[0];
+      const match = cmd.match(/[0-9]+\.[0-9]+\.[0-9]+/);
+      if (match)
+        AzCopy._currentAzCopyVersion = match[0];
+      else
+        AzCopy._currentAzCopyVersion = "";
     }
     return AzCopy._currentAzCopyVersion;
   }

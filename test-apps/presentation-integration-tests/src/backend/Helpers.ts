@@ -71,7 +71,7 @@ export const tweakRuleset = <T extends { [key: string]: any } | any[]>(src: T, o
         }
         if (undefined === out[key] && undefined !== src[key]) {
           if (valueMatchesDefault(key, srcValue))
-            out[key] = srcValue;
+            out[key as keyof T] = srcValue;
         }
         if (typeof srcValue === "object" || Array.isArray(srcValue)) {
           tweakRuleset(srcValue, out[key]);

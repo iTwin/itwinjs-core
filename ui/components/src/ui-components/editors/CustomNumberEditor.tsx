@@ -92,6 +92,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // istanbul ignore else
     if (this._input && !disabled && !readonly) {
       this._input.focus();
+      this._input.select();
     }
   }
 
@@ -229,6 +230,11 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
   }
 
+  private _onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.focus)
+      e.target.select();
+  }
+
   /** @internal */
   public render() {
     const record = this.props.propertyRecord as PropertyRecord;
@@ -252,6 +258,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         value={this.state.inputValue}
         onChange={this._updateInputValue}
         onKeyDown={this._onKeyPress}
+        onFocus={this._onFocus}
         data-testid="components-customnumber-editor"
       />
     );

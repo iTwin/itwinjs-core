@@ -28,6 +28,7 @@ Object.defineProperty(Base, "useColors", {
 });
 
 class BentleyMochaReporter extends Spec {
+  protected _junitReporter: any;
   constructor(_runner: any, options: any) {
     super(...arguments);
     this._junitReporter = new MochaJUnitReporter(...arguments);

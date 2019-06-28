@@ -184,7 +184,7 @@ describe("Viewport", () => {
     test({ providerName: "NonExistentProvider" }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
 
     // providerData missing mapType => preserve current mapType
-    test({ providerData: { } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
+    test({ providerData: {} }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
 
     // Change mapType only
     test({ providerData: { mapType: BackgroundMapType.Aerial } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial }, groundBias: 1234.5 });

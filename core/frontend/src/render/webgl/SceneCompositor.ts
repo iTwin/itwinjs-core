@@ -7,7 +7,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry, AmbientOcclusionGeometry, BlurGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, AmbientOcclusionGeometry, BlurGeometry } from "./CachedGeometry";
 import { Vector2d, Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
@@ -15,27 +15,13 @@ import { PackedFeatureTable, Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
+import { RenderCommands, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { BatchState } from "./BranchState";
 import { Feature } from "@bentley/imodeljs-common";
 import { Debug } from "./Diagnostics";
-
-let progParams: ShaderProgramParams | undefined;
-let drawParams: DrawParams | undefined;
-
-/** @internal */
-export function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
-  if (undefined === progParams) {
-    progParams = new ShaderProgramParams();
-    drawParams = new DrawParams();
-  }
-
-  progParams.init(target);
-  drawParams!.init(progParams, geometry);
-  return drawParams!;
-}
+import { getDrawParams } from "./ScratchDrawParams";
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements IDisposable {

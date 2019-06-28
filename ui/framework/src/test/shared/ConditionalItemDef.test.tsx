@@ -10,7 +10,7 @@ import { ConditionalItemDef } from "../../ui-framework/shared/ConditionalItemDef
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { BaseItemState } from "../../ui-framework/shared/ItemDefBase";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import { Toolbar } from "../../ui-framework/toolbar/Toolbar";
 import { Orientation } from "@bentley/ui-core";
 import { ItemList } from "../../ui-framework/shared/ItemMap";

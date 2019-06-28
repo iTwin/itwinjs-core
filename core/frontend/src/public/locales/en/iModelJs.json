@@ -52,5 +52,9 @@
     "NotLoaded": "Required module {{moduleName}} is not loaded",
     "VersionMismatch": "Version {{versionLoaded}} of {{moduleName}} is not compatible with {{versionRequired}}",
     "UnableToLoad": "Unable to load Plugin {{pluginName}}"
+  },
+  "Errors": {
+    "ReloadPage": "😞 Oops, something went horribly wrong - we suggest you reload the page.",
+    "Details": "In case you're interested in the gory details:"
   }
 }

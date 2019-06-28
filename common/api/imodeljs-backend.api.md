@@ -85,7 +85,6 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { LightLocationProps } from '@bentley/imodeljs-common';
-import { LinearLocationElementProps } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
@@ -884,8 +883,6 @@ export class DistanceExpression implements DistanceExpressionProps {
     // (undocumented)
     lateralOffsetFromLinearElement?: number;
     // (undocumented)
-    toJSON(): DistanceExpressionProps;
-    // (undocumented)
     verticalOffsetFromLinearElement?: number;
 }
 
@@ -1660,6 +1657,32 @@ export class GroupModel extends GroupInformationModel {
     // @internal (undocumented)
     static readonly className: string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+}
+
+// @beta
+export class ILinearElementProvidedBySource extends RelatedElement {
+    constructor(sourceId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class ILinearLocationLocatesElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class ILinearlyLocatedAttributesElement extends RelatedElement {
+    constructor(attributedElementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @public
@@ -2625,16 +2648,10 @@ export namespace IModelJsNative {
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     dispose(): void;
-    excludeCodeSpec(sourceCodeSpecName: string): void;
-    // (undocumented)
-    protected _excludedCodeSpecIds: Set<string>;
-    // (undocumented)
+    excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
-    // (undocumented)
     protected _excludedElementCategoryIds: Set<string>;
-    // (undocumented)
-    protected _excludedElementClassNames: Set<string>;
-    // (undocumented)
+    protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
     excludeElement(sourceElementId: Id64String): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
@@ -2643,36 +2660,28 @@ export class IModelTransformer {
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
     protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
-    // (undocumented)
     importAll(): void;
     importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
-    importCodeSpec(sourceId: Id64String): Id64String;
-    // (undocumented)
+    importCodeSpec(codeSpecName: string): void;
     importCodeSpecs(): void;
     importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
-    // (undocumented)
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
     importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
-    // (undocumented)
     importRelationships(): void;
-    // (undocumented)
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
-    // (undocumented)
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldExcludeElement(sourceElement: Element): boolean;
-    // (undocumented)
     protected _sourceDb: IModelDb;
-    // (undocumented)
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
@@ -2756,6 +2765,13 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
+// @beta
+export class IReferentReferencesElement extends RelatedElement {
+    constructor(referencedElementId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export enum KeepBriefcase {
     // (undocumented)
@@ -2786,20 +2802,26 @@ export class LinearElement {
 
 // @beta
 export class LinearLocation extends LinearLocationElement {
-    constructor(props: LinearLocationElement, iModel: IModelDb);
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-}
+    // (undocumented)
+    static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation;
+    // (undocumented)
+    static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
+    // (undocumented)
+    insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, locatedElementId: Id64String): Id64String;
+    // (undocumented)
+    static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
+    // (undocumented)
+    insertFromTo(iModel: IModelDb, linearElementId: Id64String, fromToPosition: LinearlyReferencedFromToLocationProps, locatedElementId: Id64String): Id64String;
+    }
 
 // @beta
-export abstract class LinearLocationElement extends SpatialLocationElement implements LinearLocationElementProps {
-    constructor(props: LinearLocationElementProps, iModel: IModelDb);
+export abstract class LinearLocationElement extends SpatialLocationElement {
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
-    linearElement: RelatedElement;
-    // (undocumented)
-    locatedElement?: RelatedElement;
 }
 
 // @beta (undocumented)
@@ -2833,11 +2855,9 @@ export class LinearlyLocated {
 export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
     constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
     // (undocumented)
-    attributedElement?: RelatedElement;
+    attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
-    linearElement: RelatedElement;
 }
 
 // @beta
@@ -2848,9 +2868,25 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation imp
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    element: RelatedElement;
+    static create(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): LinearlyReferencedAtLocation;
     // (undocumented)
-    fromReferent?: Id64String;
+    fromReferent?: LinearlyReferencedAtPositionRefersToReferent;
+    // (undocumented)
+    static insert(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): void;
+    }
+
+// @beta
+export class LinearlyReferencedAtPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class LinearlyReferencedFromPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -2859,16 +2895,18 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    element: RelatedElement;
+    static create(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): LinearlyReferencedFromToLocation;
     // (undocumented)
     fromPosition: DistanceExpression;
     // (undocumented)
-    fromPositionFromReferent?: Id64String;
+    fromPositionFromReferent?: LinearlyReferencedFromPositionRefersToReferent;
+    // (undocumented)
+    static insert(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): void;
     // (undocumented)
     toPosition: DistanceExpression;
     // (undocumented)
-    toPositionFromReferent?: Id64String;
-}
+    toPositionFromReferent?: LinearlyReferencedToPositionRefersToReferent;
+    }
 
 // @beta
 export class LinearlyReferencedLocation extends ElementMultiAspect {
@@ -2887,14 +2925,17 @@ export enum LinearlyReferencedLocationType {
 }
 
 // @beta
-export abstract class LinearPhysicalElement extends PhysicalElement implements LinearLocationElementProps {
-    constructor(props: LinearLocationElementProps, iModel: IModelDb);
+export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement {
+    constructor(referentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export abstract class LinearPhysicalElement extends PhysicalElement {
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-    // (undocumented)
-    linearElement: RelatedElement;
-    // (undocumented)
-    locatedElement?: RelatedElement;
 }
 
 // @beta
@@ -3304,7 +3345,13 @@ export class Referent extends ReferentElement {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-}
+    // (undocumented)
+    static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): Referent;
+    // (undocumented)
+    static insertAt(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps, referencedElementId: Id64String): Id64String;
+    // (undocumented)
+    insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String;
+    }
 
 // @beta
 export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
@@ -3312,9 +3359,7 @@ export abstract class ReferentElement extends SpatialLocationElement implements 
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)
-    linearElement: RelatedElement;
-    // (undocumented)
-    referencedElement?: RelatedElement;
+    referencedElement?: IReferentReferencesElement;
 }
 
 // @public

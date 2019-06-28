@@ -482,6 +482,32 @@ export class BezierPolynomialAlgebra {
     static univariateDifference(data: Float64Array, difference: Float64Array): void;
 }
 
+// @internal
+export class BilinearPatch implements UVSurface {
+    constructor(point00: Point3d, point10: Point3d, point01: Point3d, point11: Point3d);
+    clone(): BilinearPatch;
+    cloneTransformed(transform: Transform): BilinearPatch | undefined;
+    static create(point00: Point3d, point10: Point3d, point01: Point3d, point11: Point3d): BilinearPatch;
+    static createXYZ(x00: number, y00: number, z00: number, x10: number, y10: number, z10: number, x01: number, y01: number, z01: number, x11: number, y11: number, z11: number): BilinearPatch;
+    extendRange(range: Range3d, transform?: Transform): void;
+    isAlmostEqual(other: BilinearPatch): boolean;
+    // (undocumented)
+    maxUEdgeLength(): number;
+    // (undocumented)
+    maxVEdgeLength(): number;
+    // (undocumented)
+    point00: Point3d;
+    // (undocumented)
+    point01: Point3d;
+    // (undocumented)
+    point10: Point3d;
+    // (undocumented)
+    point11: Point3d;
+    tryTransformInPlace(transform: Transform): boolean;
+    uvFractionToPoint(u: number, v: number, result?: Point3d): Point3d;
+    uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+}
+
 // @public
 export type BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number;
 

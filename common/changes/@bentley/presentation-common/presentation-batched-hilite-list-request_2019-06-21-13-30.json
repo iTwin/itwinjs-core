@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add functions `KeySet.forEach` and `KeySet.forEachBatch`",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
