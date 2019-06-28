@@ -70,4 +70,4 @@ TODO
 
 ![Information Hierarchy](./media/information-hierarchy.png)
 
-> Next: [Physical Models and Elements](./physical-models-and-elements.md)
+> Next: [Modeling Perspectives](./modeling-perspectives.md)
