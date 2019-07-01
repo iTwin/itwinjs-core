@@ -363,7 +363,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
       rowData.set(colName, sum / finalFrameTimings.length);
     }
   }
-  rowData.set("Effective FPS", (1000.0 / Number(rowData.get("Total Time"))).toFixed(2));
+  const totalTime: number = Number(rowData.get("Total Time"));
+  rowData.set("Effective FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(2) : "0.00");
   return rowData;
 }
 
