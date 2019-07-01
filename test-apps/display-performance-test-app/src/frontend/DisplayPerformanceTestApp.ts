@@ -1149,10 +1149,11 @@ async function main() {
   // Retrieve DefaultConfigs
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
+  const testConfig = new DefaultConfigs(jsonData);
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];
-      await testModel(new DefaultConfigs(jsonData), modelData);
+      await testModel(testConfig, modelData);
     }
   }
 
@@ -1172,8 +1173,8 @@ async function main() {
   if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
   if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
   if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
-  if (jsonData.csvFormat === undefined) jsonData.csvFormat = "original";
-  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName, jsonData.csvFormat);
+  if (testConfig.csvFormat === undefined) testConfig.csvFormat = "original";
+  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
   IModelApp.shutdown();
