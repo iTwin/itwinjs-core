@@ -30,6 +30,7 @@ import {
   Marker,
 } from "@bentley/imodeljs-frontend";
 
+/** @alpha */
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
   protected _ids: string[];
@@ -103,6 +104,7 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
   }
 }
 
+/** @alpha */
 export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectExtentsDecoration;
   protected _extents: AxisAlignedBox3d;
@@ -280,7 +282,13 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     }
   }
 
-  public static toggle(imodel: IModelConnection) {
+  public static toggle(imodel: IModelConnection, enabled?: boolean) {
+    if (undefined !== enabled) {
+      const alreadyEnabled = undefined !== ProjectExtentsDecoration._decorator;
+      if (enabled === alreadyEnabled)
+        return;
+    }
+
     if (undefined === ProjectExtentsDecoration._decorator) {
       ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(imodel);
       IModelApp.toolAdmin.startDefaultTool();
@@ -291,6 +299,11 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 }
 
-export function toggleProjectExtents(imodel: IModelConnection): void {
-  ProjectExtentsDecoration.toggle(imodel);
+/** Enable or disable the project extents decoration. This decoration draws a box coinciding with the iModel's project extents.
+ * @param imodel The iModel from which to obtain the extents.
+ * @param enable If undefined, the current enabled state of the decoration will be inverted; otherwise it will be enabled if true, or disabled if false.
+ * @alpha
+ */
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void {
+  ProjectExtentsDecoration.toggle(imodel, enabled);
 }

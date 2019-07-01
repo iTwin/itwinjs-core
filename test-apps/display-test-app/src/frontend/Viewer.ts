@@ -4,14 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, IModelApp, IModelConnection, PluginAdmin, ScreenViewport, Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import {
+  imageBufferToPngDataUrl,
+  IModelApp,
+  IModelConnection,
+  PluginAdmin,
+  ScreenViewport,
+  Viewport,
+  ViewState,
+} from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { DebugPanel } from "./DebugPanel";
 import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
-import { toggleProjectExtents } from "./ProjectExtents";
 import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
@@ -68,12 +75,6 @@ class DebugTools extends ToolBarDropDown {
       src: "cold.svg",
       click: () => IModelApp.tools.run("Plugin", ["wmsPlugin.js"]),
       tooltip: "Test WMS Weather Maps",
-    }));
-
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-viewbottom",
-      click: () => toggleProjectExtents(IModelApp.viewManager.selectedView!.iModel),
-      tooltip: "Toggle project extents",
     }));
 
     this._element.appendChild(createToolButton({

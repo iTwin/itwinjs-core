@@ -16,6 +16,7 @@ export * from "./DiagnosticsPanel";
 export * from "./FpsTracker";
 export * from "./FrustumDecoration";
 export * from "./MemoryTracker";
+export * from "./ProjectExtents";
 export * from "./TileStatisticsTracker";
 export * from "./ToolSettingsTracker";
 

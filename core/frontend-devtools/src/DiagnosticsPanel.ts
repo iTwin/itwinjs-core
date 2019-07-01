@@ -11,6 +11,7 @@ import { createCheckBox, CheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
 import { ChangeFlag, ChangeFlags, PrimitiveVisibility, Target, Tile, Viewport } from "@bentley/imodeljs-frontend";
 import { FrustumDecorator } from "./FrustumDecoration";
+import { toggleProjectExtents } from "./ProjectExtents";
 
 const flagNames: Array<[ChangeFlag, string]> = [
   [ChangeFlag.AlwaysDrawn, "Always Drawn"],
@@ -48,6 +49,7 @@ export class DiagnosticsPanel {
   private readonly _statsTracker: StatsTracker;
   private readonly _toolSettingsTracker: ToolSettingsTracker;
   private readonly _frustumCheckbox: CheckBox;
+  private readonly _projectExtentsCheckbox: CheckBox;
   private readonly _removeEventListener: () => void;
 
   public constructor(vp: Viewport) {
@@ -56,6 +58,14 @@ export class DiagnosticsPanel {
     this._element.className = "debugPanel";
 
     this._fpsTracker = new FpsTracker(this._element, vp);
+
+    this._projectExtentsCheckbox = createCheckBox({
+      parent: this._element,
+      name: "Project Extents",
+      handler: (cb) => toggleProjectExtents(vp.iModel, cb.checked),
+      id: "debugPanel_projectExtents",
+      tooltip: "Draw a box representing the project extents",
+    });
 
     createCheckBox({
       parent: this._element,
@@ -71,6 +81,8 @@ export class DiagnosticsPanel {
       id: "debugPanel_frustumSnapshot",
       tooltip: "Draw the current frustum as a decoration graphic",
     });
+
+    this._frustumCheckbox.div.style.display = this._projectExtentsCheckbox.div.style.display = vp.view.isSpatialView() ? "block" : "none";
 
     createCheckBox({
       parent: this._element,
@@ -123,6 +135,10 @@ export class DiagnosticsPanel {
     FrustumDecorator.disable();
     this._frustumCheckbox.checkbox.checked = false;
     this._frustumCheckbox.div.style.display = this._viewport.view.isSpatialView() ? "block" : "none";
+
+    toggleProjectExtents(this._viewport.iModel, false);
+    this._projectExtentsCheckbox.checkbox.checked = false;
+    this._projectExtentsCheckbox.div.style.display = this._viewport.view.isSpatialView() ? "block" : "none";
   }
 
   private addSeparator(): void {

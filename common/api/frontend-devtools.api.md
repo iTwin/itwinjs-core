@@ -4,9 +4,20 @@
 
 ```ts
 
+import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
+import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
+import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { EditManipulator } from '@bentley/imodeljs-frontend';
+import { EventHandled } from '@bentley/imodeljs-frontend';
+import { HitDetail } from '@bentley/imodeljs-frontend';
+import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { Marker } from '@bentley/imodeljs-frontend';
+import { Point3d } from '@bentley/geometry-core';
+import { Range3d } from '@bentley/geometry-core';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { Vector3d } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
 
 // @alpha (undocumented)
@@ -261,6 +272,64 @@ export interface NumericInputProps {
 }
 
 // @alpha (undocumented)
+export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
+    constructor(iModel: IModelConnection);
+    // (undocumented)
+    protected _boxId?: string;
+    // (undocumented)
+    protected clearControls(): void;
+    // (undocumented)
+    protected _controlAxis: Vector3d[];
+    // (undocumented)
+    protected _controlIds: string[];
+    // (undocumented)
+    protected _controlPoint: Point3d[];
+    // (undocumented)
+    protected createControls(): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected _extents: AxisAlignedBox3d;
+    // (undocumented)
+    getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    protected _markers: Marker[];
+    // (undocumented)
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected stop(): void;
+    // (undocumented)
+    testDecorationHit(id: string): boolean;
+    // (undocumented)
+    static toggle(imodel: IModelConnection, enabled?: boolean): void;
+    // (undocumented)
+    protected updateDecorationListener(_add: boolean): void;
+}
+
+// @alpha (undocumented)
+export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
+    constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]);
+    // (undocumented)
+    protected accept(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected _anchorIndex: number;
+    // (undocumented)
+    protected _axis: Vector3d[];
+    // (undocumented)
+    protected _base: Point3d[];
+    // (undocumented)
+    computeNewExtents(ev: BeButtonEvent): Range3d | undefined;
+    // (undocumented)
+    protected _ids: string[];
+    // (undocumented)
+    protected init(): void;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+}
+
+// @alpha (undocumented)
 export interface RadioBox {
     // (undocumented)
     div: HTMLDivElement;
@@ -365,6 +434,9 @@ export interface TextBoxProps {
     // (undocumented)
     tooltip?: string;
 }
+
+// @alpha
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void;
 
 // @alpha (undocumented)
 export class ToolSettingsTracker {
