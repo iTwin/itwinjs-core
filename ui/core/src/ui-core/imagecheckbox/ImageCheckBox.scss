@@ -20,15 +20,15 @@
   }
 
   input[type="checkbox"]:checked + .image {
-    color: $uicore-blue;
+    color: $buic-foreground-primary;
   }
 
   input[type="checkbox"]:not(:checked) + .image {
-    color: $uicore-icons-dark;
+    color: $buic-foreground-body;
   }
 
   input[type="checkbox"] + .image {
-    opacity: .85;
+    opacity: 0.65;
 
     &:hover {
       opacity: 1;
@@ -41,8 +41,7 @@
   }
 
   /* accessibility */
-  [type="checkbox"]:checked:focus + .image:before,
-  [type="checkbox"]:not(:checked):focus + .image:before {
-    outline: 1px dotted $uicore-blue;
+  [type="checkbox"]:focus + .image:before {
+    outline: 1px dotted currentColor;
   }
 }

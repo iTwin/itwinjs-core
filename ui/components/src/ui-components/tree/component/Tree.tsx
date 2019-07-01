@@ -692,10 +692,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _getNodeHeight = (node?: TreeNodeItem) => {
-    if (this.props.showDescriptions && node && node.description)
-      return 44;
-
-    return 24;
+    const contentHeight = (this.props.showDescriptions && node && node.description) ? 43 : 24;
+    const borderSize = 1;
+    // Not counting node's border size twice because we want neighboring borders to overlap
+    return contentHeight + borderSize;
   }
 
   /** map TreeNodeItem into an InspireNode
@@ -889,13 +889,17 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const renderNode = ({ index, style, isScrolling }: VirtualizedListRowProps) => {
       const node = nodes[index];
       const key = node.id ? node.id : node.text;
+
+      // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
+      const className = classnames("node-wrapper", { "is-selected": node.selected() });
+
       if (!node.payload) {
         if (!isScrolling) {
           // tslint:disable-next-line:no-floating-promises
           this.state.model.requestNodeLoad(toNode(node.getParent()), node.placeholderIndex!);
         }
         return (
-          <div key={key} className="node-wrapper" style={style}>
+          <div key={key} className={className} style={style}>
             <PlaceholderNode key={node.id} node={node} />
           </div>
         );
@@ -905,7 +909,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
       const props = this.createTreeNodeProps(node);
       return (
-        <div key={key} className="node-wrapper" style={style}>
+        <div key={key} className={className} style={style}>
           {baseRenderNode(node, props)}
         </div>
       );

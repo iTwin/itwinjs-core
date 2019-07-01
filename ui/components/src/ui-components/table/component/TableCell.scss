@@ -9,7 +9,20 @@
   display: flex;
   align-items: center;
   color: $buic-foreground-body;
-  background-color: $buic-background-control;
+  padding: 1px 1px 0px 1px;
+  box-sizing: border-box;
+
+  @mixin define-border($edge) {
+    &.border-#{$edge} {
+      border-#{$edge}: 1px solid $buic-foreground-primary;
+      padding-#{$edge}: 0;
+    }
+  }
+
+  @include define-border("top");
+  @include define-border("right");
+  @include define-border("bottom");
+  @include define-border("left");
 
   &.is-selected {
     background-color: $buic-row-selection;
@@ -19,13 +32,13 @@
     outline: none;
   }
 
-  &>* {
-    padding: 8px 0 0 8px;
+  > * {
+    padding-left: 8px;
     height: 100%;
     width: calc(100% - 8px);
   }
 
-  >span:empty:before {
+  > span:empty:before {
     content: "\200b"; // unicode zero width space character
   }
 }

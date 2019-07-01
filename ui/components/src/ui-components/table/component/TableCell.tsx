@@ -109,6 +109,7 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
       ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
       textAlign: cellItem.alignment,
       height,
+      lineHeight: height + "px", // Centers text vertically
       ...this.props.style,
     };
   }

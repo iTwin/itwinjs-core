@@ -15,6 +15,11 @@
     border: none;
   }
 
+  // Appears when columns get reordered
+  .rdg-last--frozen {
+    box-shadow: none !important;
+  }
+
   .react-grid-Canvas {
     height: 100% !important;
 
@@ -44,7 +49,7 @@
   .react-grid-Canvas,
   .react-grid-Row {
     border: none;
-    background: $buic-background-control;
+    background: transparent;
     outline: none;
     font-size: 14px;
   }
@@ -53,19 +58,16 @@
     width: fit-content;
   }
 
-  .is-hover-enabled .react-grid-Row:hover, .is-hover-enabled .react-grid-Row:hover * {
-    background: $buic-row-hover !important;
-  }
-
-  .react-grid-Row.row-selected, .react-grid-Row.row-selected * {
-    background: $buic-row-selection;
-  }
-
   .react-grid-Cell {
     padding-left: 0px;
     padding-right: 0px;
+    border: none;
     color: $buic-foreground-body;
-    background: $buic-background-control;
+    background: transparent;
+
+    &:focus {
+      outline: none !important;
+    }
   }
 
   .react-grid-Cell--locked:last-of-type {
@@ -73,12 +75,9 @@
     box-sizing: border-box;
   }
 
-  .react-grid-Cell:focus {
-    outline: none !important;
-  }
-
   .react-grid-Header {
     background: $buic-background-table-header;
+    box-shadow: none;
   }
 
   .react-grid-HeaderCell {
@@ -111,18 +110,19 @@
   }
 
   /* TODO: Is property-name-cell old? */
-  .property-name-cell span {
-    height: 100%;
-    display: inline-block;
-    vertical-align: text-bottom;
-    padding: 0 0 2px 6px;
-  }
+  .property-name-cell {
+    span {
+      height: 100%;
+      display: inline-block;
+      vertical-align: text-bottom;
+      padding: 0 0 2px 6px;
+    }
 
-  /* TODO: Is property-name-cell old? */
-  .property-name-cell be-svg-icon {
-    width: 24px;
-    height: 16px;
-    margin-top: 4px;
+    be-svg-icon {
+      width: 24px;
+      height: 16px;
+      margin-top: 4px;
+    }
   }
 
   .react-grid-HeaderCell--locked {
@@ -130,8 +130,10 @@
   }
 
   .react-grid-Cell__value {
-    &.is-hover-enabled:hover {
-      background: $buic-row-hover !important;
+    // Remove transformations that center the content vertically in order to make cell borders fit
+    > div {
+      top: 0 !important;
+      transform: none !important;
     }
   }
 
@@ -153,8 +155,24 @@
   }
 }
 
-.components-table-header-drag-drop .react-grid-HeaderCell {
-  height: 100%;
+.components-table.row-selection {
+  .react-grid-Cell.row-selected {
+    background: $buic-row-selection;
+  }
+
+  .react-grid-Row:hover .react-grid-Cell {
+    background: $buic-row-hover;
+  }
+}
+
+.components-table.cell-selection {
+  .react-grid-Row:hover .react-grid-Cell {
+    background: transparent;
+  }
+
+  .react-grid-Cell:hover .components-table-cell {
+    background: $buic-row-hover;
+  }
 }
 
 .components-table.hide-header {
@@ -171,4 +189,8 @@
   .react-grid-Header {
     display: none;
   }
+}
+
+.components-table-header-drag-drop .react-grid-HeaderCell {
+  height: 100%;
 }
