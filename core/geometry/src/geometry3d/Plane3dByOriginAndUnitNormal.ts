@@ -78,6 +78,7 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
       return new Plane3dByOriginAndUnitNormal(pointA, cross);
     return undefined;
   }
+
   /** test for (toleranced) equality with `other` */
   public isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean {
     return this._origin.isAlmostEqual(other._origin) && this._normal.isAlmostEqual(other._normal);

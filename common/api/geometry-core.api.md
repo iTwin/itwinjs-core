@@ -22,7 +22,7 @@ export abstract class AbstractNewtonIterator {
 // @internal
 export class AnalyticRoots {
     static appendCubicRoots(c: Float64Array | number[], results: GrowableFloat64Array): void;
-    static appendImplicitLineUnitCircleIntersections(alpha: number, beta: number, gamma: number, cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array, radiansValues: OptionalGrowableFloat64Array, reltol?: number): number;
+    static appendImplicitLineUnitCircleIntersections(alpha: number, beta: number, gamma: number, cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array, radiansValues: OptionalGrowableFloat64Array, relTol?: number): number;
     static appendLinearRoot(c0: number, c1: number, values: GrowableFloat64Array): void;
     static appendQuadraticRoots(c: Float64Array | number[], values: GrowableFloat64Array): void;
     static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array): void;
@@ -217,6 +217,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     readonly matrix: Matrix3d;
     maxVectorLength(): number;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
+    otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined;
+    readonly perpendicularVector: Vector3d;
     static readonly quadratureGuassCount = 5;
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
@@ -251,16 +253,23 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         vector90: Vector3d;
         sweep: AngleSweep;
     };
-    toVectors(): {
-        center: Point3d;
-        vector0: Vector3d;
-        vector90: Vector3d;
-        sweep: AngleSweep;
-    };
+    toVectors(): ArcVectors;
     tryTransformInPlace(transform: Transform): boolean;
     readonly vector0: Vector3d;
     readonly vector90: Vector3d;
     }
+
+// @public
+export interface ArcVectors {
+    // (undocumented)
+    center: Point3d;
+    // (undocumented)
+    sweep: AngleSweep;
+    // (undocumented)
+    vector0: Vector3d;
+    // (undocumented)
+    vector90: Vector3d;
+}
 
 // @public
 export class AuxChannel {
@@ -1214,6 +1223,8 @@ export abstract class CurveCollection extends GeometryQuery {
 export class CurveCurve {
     static intersectionProjectedXY(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
     static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
+    // @alpha
+    static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
 }
 
 // @public
@@ -1275,13 +1286,6 @@ export class CurveLocationDetail {
     setIntervalRole(value: CurveIntervalRole): void;
     updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number): boolean;
     vectorInCurveLocationDetail?: Vector3d;
-}
-
-// @public
-export class CurveLocationDetailArrayPair {
-    constructor();
-    dataA: CurveLocationDetail[];
-    dataB: CurveLocationDetail[];
 }
 
 // @public
@@ -2912,7 +2916,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     static createOriginAndTargets(origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndVectorsArrays(origin: Float64Array, vectorU: Float64Array, vectorV: Float64Array, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
-    static createOriginAndVectorsWeightedArrays(originw: Float64Array, vectorUw: Float64Array, vectorVw: Float64Array, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
+    static createOriginAndVectorsWeightedArrays(originW: Float64Array, vectorUw: Float64Array, vectorVw: Float64Array, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     static createXYPlane(result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     fractionToPoint(u: number, v: number, result?: Point3d): Point3d;
@@ -3929,6 +3933,7 @@ export class SmallSystem {
     result?: Vector3d): Vector3d | undefined;
     static lineSegment2dXYTransverseIntersectionUnbounded(a0: Point2d, a1: Point2d, b0: Point2d, b1: Point2d, result: Vector2d): boolean;
     static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
+    static lineSegment3dClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined;
     static lineSegment3dHXYClosestPointUnbounded(hA0: Point4d, hA1: Point4d, spacePoint: Point4d): number | undefined;
     static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined;
     static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined;
@@ -4078,7 +4083,7 @@ export class SweepContour {
 
 // @internal
 export class TorusImplicit {
-    constructor(majorRadiusR: number, minorRadiusr: number);
+    constructor(majorRadius: number, minorRadius: number);
     boxSize(): number;
     evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
     evaluateImplicitFunctionPoint(xyz: Point3d): number;

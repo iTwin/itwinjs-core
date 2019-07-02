@@ -30,6 +30,17 @@ import { Point4d } from "../geometry4d/Point4d";
 
 /* tslint:disable:variable-name no-empty*/
 /**
+ * Compact vector form of an elliptic arc defined by center, vectors for angle coordinates 0 and 90 degrees, and sweep.
+ * * See `Arc3d` for further details of the parameterization and meaning of the vectors.
+ * @public
+ */
+export interface ArcVectors {
+  center: Point3d;
+  vector0: Vector3d;
+  vector90: Vector3d;
+  sweep: AngleSweep;
+}
+/**
  * Circular or elliptic arc.
  *
  * * The angle to point equation is:
@@ -68,6 +79,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * read property for (clone of) vector90
    */
   public get vector90(): Vector3d { return this._matrix.columnY(); }
+  /**
+   * read property for (clone of) plane normal, with arbitrary length.
+   */
+  public get perpendicularVector(): Vector3d { return this._matrix.columnZ(); }
   /**
    * read property for (clone of!) matrix of vector0, vector90, unit normal
    */
@@ -298,10 +313,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional preallocated plane
    */
   public radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    result = result ? result : Plane3dByOriginAndVectors.createXYPlane ();
+    result = result ? result : Plane3dByOriginAndVectors.createXYPlane();
     const c = Math.cos(radians);
     const s = Math.sin(radians);
-    result.origin.setFromPoint3d (this.center);
+    result.origin.setFromPoint3d(this.center);
     this._matrix.multiplyXY(c, s, result.vectorU);
     this._matrix.multiplyXY(-s, c, result.vectorV);
     return result;
@@ -631,7 +646,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** Return the arc definition with center, two vectors, and angle sweep;
    */
-  public toVectors(): { center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep: AngleSweep } {
+  public toVectors(): ArcVectors {
     return {
       center: this.center,
       vector0: this._matrix.columnX(),
@@ -772,5 +787,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedArcIntervals(this, announce);
+  }
+  /** Compute the center and vectors of another arc as local coordinates within this arc's frame. */
+  public otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined {
+    const otherOrigin = this._matrix.multiplyInverseXYZAsPoint3d(
+      other.center.x - this.center.x, other.center.y - this.center.y, other.center.z - this.center.z);
+    const otherVector0 = this._matrix.multiplyInverse(other.vector0);
+    const otherVector90 = this._matrix.multiplyInverse(other.vector90);
+    if (otherOrigin && otherVector0 && otherVector90) {
+      return { center: otherOrigin, vector0: otherVector0, vector90: otherVector90, sweep: this.sweep.clone() };
+    }
+    return undefined;
   }
 }

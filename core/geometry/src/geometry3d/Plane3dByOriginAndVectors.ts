@@ -66,7 +66,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
       result.vectorV.scaleToLength(yLength, result.vectorV);
     return result;
   }
-  /** Capture origin and directions in a new planed. */
+  /** Capture origin and directions in a new plane. */
   public static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     if (!result)
       return new Plane3dByOriginAndVectors(origin, vectorU, vectorV);
@@ -75,6 +75,7 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     result.vectorV = vectorV;
     return result;
   }
+
   /** Set all origin and both vectors from direct numeric parameters */
   public setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors {
     this.origin.set(x0, y0, z0);
@@ -123,8 +124,8 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
    * @param vectorU x,y,z,w of vectorU
    * @param vectorV x,y,z,w of vectorV
    */
-  public static createOriginAndVectorsWeightedArrays(originw: Float64Array, vectorUw: Float64Array, vectorVw: Float64Array, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    const w = originw[3];
+  public static createOriginAndVectorsWeightedArrays(originW: Float64Array, vectorUw: Float64Array, vectorVw: Float64Array, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    const w = originW[3];
     result = Plane3dByOriginAndVectors.createXYPlane(result);
     if (Geometry.isSmallMetricDistance(w))
       return result;
@@ -138,9 +139,9 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
     //        = X'/w  - X w'/w^2)
     // The w parts of the formal xyzw sums are identically 0.
     // Here the X' and its w' are taken from each vectorUw and vectorVw
-    result.origin.set(originw[0] * dw, originw[1] * dw, originw[2] * dw);
-    Vector3d.createAdd2ScaledXYZ(vectorUw[0], vectorUw[1], vectorUw[2], dw, originw[0], originw[1], originw[2], -au, result.vectorU);
-    Vector3d.createAdd2ScaledXYZ(vectorVw[0], vectorVw[1], vectorVw[2], dw, originw[0], originw[1], originw[2], -av, result.vectorV);
+    result.origin.set(originW[0] * dw, originW[1] * dw, originW[2] * dw);
+    Vector3d.createAdd2ScaledXYZ(vectorUw[0], vectorUw[1], vectorUw[2], dw, originW[0], originW[1], originW[2], -au, result.vectorU);
+    Vector3d.createAdd2ScaledXYZ(vectorVw[0], vectorVw[1], vectorVw[2], dw, originW[0], originW[1], originW[2], -av, result.vectorV);
     return result;
   }
   /**
