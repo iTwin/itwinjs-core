@@ -25,6 +25,7 @@ import {
 } from "./Tool";
 import { ViewTool } from "./ViewTool";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
@@ -384,7 +385,7 @@ export class ToolAdmin {
     const opts = ToolAdmin.exceptionOptions;
     const msg: string = undefined !== exception.stack ? exception.stack : exception.toString();
     if (opts.log)
-      Logger.logError("imodeljs-frontend.unhandledException", msg);
+      Logger.logError(FrontendLoggerCategory.Package + ".unhandledException", msg);
 
     if (opts.launchDebugger) // this does nothing if the debugger window is not already opened
       debugger; // tslint:disable-line:no-debugger
