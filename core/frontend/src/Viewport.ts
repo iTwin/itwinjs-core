@@ -74,21 +74,61 @@ export class SyncFlags {
   public get isValidRotatePoint(): boolean { return this._rotatePoint; }
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
-  public invalidateDecorations(): void { this._decorations = false; }
-  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); this.invalidateAnimationFraction(); }
-  public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
-  public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
-  public invalidateRotatePoint(): void { this._rotatePoint = false; }
-  public invalidateAnimationFraction(): void { this._animationFraction = false; }
-  public invalidateRedrawPending(): void { this._redrawPending = false; }
-  public setValidDecorations(): void { this._decorations = true; }
-  public setValidScene(): void { this._scene = true; }
-  public setValidController(): void { this._controller = true; }
-  public setValidRenderPlan(): void { this._renderPlan = true; }
-  public setValidRotatePoint(): void { this._rotatePoint = true; }
-  public setValidAnimationFraction(): void { this._animationFraction = true; }
-  public setRedrawPending(): void { this._redrawPending = true; }
-  public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._animationFraction = other._animationFraction; this._redrawPending = other._redrawPending; }
+  public invalidateDecorations(): void {
+    this._decorations = false;
+  }
+  public invalidateScene(): void {
+    this._scene = false;
+    this.invalidateDecorations();
+    this.invalidateAnimationFraction();
+  }
+  public invalidateRenderPlan(): void {
+    this._renderPlan = false;
+    this.invalidateScene();
+  }
+  public invalidateController(): void {
+    this._controller = false;
+    this.invalidateRenderPlan();
+  }
+  public invalidateRotatePoint(): void {
+    this._rotatePoint = false;
+  }
+  public invalidateAnimationFraction(): void {
+    this._animationFraction = false;
+  }
+  public invalidateRedrawPending(): void {
+    this._redrawPending = false;
+  }
+  public setValidDecorations(): void {
+    this._decorations = true;
+  }
+  public setValidScene(): void {
+    this._scene = true;
+  }
+  public setValidController(): void {
+    this._controller = true;
+  }
+  public setValidRenderPlan(): void {
+    this._renderPlan = true;
+  }
+  public setValidRotatePoint(): void {
+    this._rotatePoint = true;
+  }
+  public setValidAnimationFraction(): void {
+    this._animationFraction = true;
+  }
+  public setRedrawPending(): void {
+    this._redrawPending = true;
+  }
+  public initFrom(other: SyncFlags): void {
+    this._decorations = other._decorations;
+    this._scene = other._scene;
+    this._renderPlan = other._renderPlan;
+    this._controller = other._controller;
+    this._rotatePoint = other._rotatePoint;
+    this._animationFraction = other._animationFraction;
+    this._redrawPending = other._redrawPending;
+  }
 }
 
 /** @see [[ChangeFlags]]
@@ -1623,7 +1663,11 @@ export abstract class Viewport implements IDisposable {
       return;
 
     // Need to redraw once models are available. Don't want to trigger events again.
-    return this.iModel.models.load(models).then(() => this.invalidateScene());
+    return this.iModel.models.load(models).then(() => {
+      this.invalidateScene();
+      if (this.view.isSpatialView())
+        this.view.markModelSelectorChanged();
+    });
   }
 
   /** @internal */
