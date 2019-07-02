@@ -46,21 +46,27 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 
   private loadIcons(): void {
+    // istanbul ignore else
     if (this._enumIcons)
       return;
 
     const { propertyRecord } = this.props;
 
+    // istanbul ignore else
     if (propertyRecord) {
+      // istanbul ignore else
       if (propertyRecord.property.enum) {
         const numChoices = propertyRecord.property.enum.choices.length;
         this._enumIcons = new Array<IconDefinition>(numChoices);
         this._enumIcons.fill({ iconClass: "icon icon-placeholder" });
 
+        // istanbul ignore else
         if (propertyRecord.property.editor && propertyRecord.property.editor.params) {
           const bgParams = propertyRecord.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.ButtonGroupData) as ButtonGroupEditorParams;
+          // istanbul ignore else
           if (bgParams) {
             bgParams.buttons.forEach((iconDef: IconDefinition, index: number) => {
+              // istanbul ignore else
               if (index < numChoices) {
                 this._enumIcons![index] = iconDef;
               }
@@ -71,6 +77,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     }
   }
 
+  // istanbul ignore next
   public getValue(): string | number {
     return this.state.selectValue;
   }
@@ -113,6 +120,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     // if the props have changed then we need to update the state
     const prevRecord = prevProps.propertyRecord;
     const currentRecord = this.props.propertyRecord;
+    // istanbul ignore else
     if (prevRecord !== currentRecord) {
       const state = EnumButtonGroupEditor.getStateFromProps(this.props);
       this.setState(state);
@@ -144,6 +152,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
   }
 
   private getIcon(index: number) {
+    // istanbul ignore else
     if (this._enumIcons && this._enumIcons.length > index)
       return (<i className={this._enumIcons[index].iconClass} />);
     return null;
@@ -177,6 +186,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
     const choiceValue = propertyRecord!.property.enum!.choices[index].value;
     const isActive = (choiceValue === this.state.selectValue) ? true : false;
     let isDisabled = false;
+    // istanbul ignore else
     if (this._enumIcons && this._enumIcons.length > index) {
       const isEnabledFunction = this._enumIcons![index].isEnabledFunction;
       if (isEnabledFunction) {

@@ -50,6 +50,23 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
+  it("calls addon's forceLoadSchemas", async () => {
+    addonMock
+      .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
+      .callback((_db, cb) => { cb(IModelJsNative.ECPresentationStatus.Success); })
+      .verifiable();
+    await nativePlatform.forceLoadSchemas(ClientRequestContext.current, undefined);
+    addonMock.verifyAll();
+
+    addonMock.reset();
+    addonMock
+      .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
+      .callback((_db, cb) => { cb(IModelJsNative.ECPresentationStatus.Error); })
+      .verifiable();
+    expect(nativePlatform.forceLoadSchemas(ClientRequestContext.current, undefined)).to.be.rejected;
+    addonMock.verifyAll();
+  });
+
   it("calls addon's handleRequest", async () => {
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), "", moq.It.isAny()))

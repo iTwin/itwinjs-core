@@ -10,6 +10,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
+import { Transform } from "../geometry3d/Transform";
 /** function signature for function of one node with no return type restrictions
  * @internal
  */
@@ -59,11 +60,15 @@ export class HalfEdge {
   public z: number;
   /** angle used for sort-around-vertex */
   public sortAngle?: number;  // used in sorting around vertex.
-
+  /** numeric value for application-specific tagging (e.g. sorting) */
+  public sortData?: number;
+  /** application-specific data for the edge identifier.
+   * * edge split operations are expected to copy this to new sub-edges.
+   */
+  public edgeTag?: any;
   private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
-
   private _facePredecessor!: HalfEdge;
   private _faceSuccessor!: HalfEdge;
   private _edgeMate!: HalfEdge;
@@ -84,7 +89,7 @@ export class HalfEdge {
     if (numStep > 0)
       for (let i = 0; i < numStep; i++) node = node.faceSuccessor;
     else if (numStep < 0)
-      for (let i = 0; i > numStep; i++) node = node.facePredecessor;
+      for (let i = 0; i > numStep; i--) node = node.facePredecessor;
     return node.y;
   }
   /**
@@ -133,7 +138,7 @@ export class HalfEdge {
   /**
    * * set heA <==> heB pointer relation through heA._faceSuccessor and heB._facePredecessor
    * * This changes heA._faceSuccessor and heB._facePredecessor, but not heA._facePredecessor and heB._faceSuccessor.
-   * * this must always be done with another call to restablish the entire double-linked list.
+   * * this must always be done with another call to reestablish the entire double-linked list.
    */
   private static setFaceLinks(heA: HalfEdge, heB: HalfEdge) {
     heA._faceSuccessor = heB;
@@ -153,10 +158,11 @@ export class HalfEdge {
    * * This requires two new half edges.
    * * if the base is undefined, create a single-edge loop.
    * * This (unlike pinch) breaks the edgeMate pairing of the base edge.
-   * * This preserves xyzi properties at all existing vertices.
+   * * This preserves xyz and i properties at all existing vertices.
+   * * on each side, if edgeTag is present it is copied to the new edge.
    * @returns Returns the reference to the half edge created.
    */
-  public static splitEdge(base: undefined | HalfEdge,
+  public static splitEdge(baseA: undefined | HalfEdge,
     xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0, heArray: HalfEdge[] | undefined): HalfEdge {
     const newA = new HalfEdge(xA, yA, zA, iA);
     const newB = new HalfEdge(xA, yA, zA, iA);
@@ -165,20 +171,22 @@ export class HalfEdge {
       heArray.push(newB);
     }
 
-    if (base === undefined) {
+    if (baseA === undefined) {
       newA._faceSuccessor = newA._facePredecessor = newA;
       newB._faceSuccessor = newB._facePredecessor = newB;
       HalfEdge.setEdgeMates(newA, newB);
     } else {
-      const nextA = base._faceSuccessor;
-      const mateA = base._edgeMate;
-      const vpredA = mateA._faceSuccessor;
+      const nextA = baseA._faceSuccessor;
+      const mateA = baseA._edgeMate;
+      const vPredA = mateA._faceSuccessor;
       HalfEdge.setFaceLinks(newA, nextA);
-      HalfEdge.setFaceLinks(base, newA);
+      HalfEdge.setFaceLinks(baseA, newA);
       HalfEdge.setFaceLinks(mateA, newB);
-      HalfEdge.setFaceLinks(newB, vpredA);
+      HalfEdge.setFaceLinks(newB, vPredA);
       HalfEdge.setEdgeMates(newA, mateA);
-      HalfEdge.setEdgeMates(newB, base);
+      HalfEdge.setEdgeMates(newB, baseA);
+      newA.edgeTag = baseA.edgeTag;
+      newB.edgeTag = mateA.edgeTag;
     }
     return newA;
   }
@@ -212,7 +220,6 @@ export class HalfEdge {
    * @param mask mask to query
    */
   public getMask(mask: HalfEdgeMask): number { return (this.maskBits & mask); }
-
   /**
    * Clear mask bits from this HalfEdge
    * @param mask mask to clear
@@ -251,6 +258,26 @@ export class HalfEdge {
       node = node.faceSuccessor;
     } while (node !== this);
     return count;
+  }
+
+  /**
+   * Apply a edgeTag and mask to all edges around a face.
+   * optionally apply it to all edge mates.
+   * @param edgeTag tag to apply
+   * @param bothSides If true, also apply the tag to the mates around the face.
+   */
+  public setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate: boolean = false) {
+    let node: HalfEdge = this;
+    do {
+      node.setMask(mask);
+      node.edgeTag = tag;
+      if (applyToMate) {
+        const mate = node.edgeMate;
+        mate.edgeTag = tag;
+        mate.setMask(mask);
+      }
+      node = node.faceSuccessor;
+    } while (node !== this);
   }
 
   /** Returns the number of edges around vertex. */
@@ -308,6 +335,16 @@ export class HalfEdge {
     this.maskBits |= mask;
     return oldMask;
   }
+  /**
+   * Set (copy) the this.x, this.y, this.z from node.x, node.y, node.z
+   * @param node node containing xyz
+   */
+  public setXYZFrom(node: HalfEdge) {
+    this.x = node.x;
+    this.y = node.y;
+    this.z = node.z;
+  }
+
   /**
    * Test if mask bits are set in the node's bitMask.
    * @return Return true (as a simple boolean, not a mask) if any bits of the mask parameter match bits of the node's bitMask
@@ -421,8 +458,42 @@ export class HalfEdge {
       result);
   }
 
-  /** Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  /** Returns Return cross product (2d) of vectors from base to target1 and this to target2 */
+  public static crossProductXYToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
+    return Geometry.crossProductXYXY(
+      targetA.x - base.x, targetA.y - base.y,
+      targetB.x - base.x, targetB.y - base.y);
+  }
+
+  /** Return cross product (2d) of vectors from nodeA to nodeB and nodeB to nodeC
+   */
+  public static crossProductXYAlongChain(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): number {
+    return Geometry.crossProductXYXY(
+      nodeB.x - nodeA.x, nodeB.y - nodeA.y,
+      nodeC.x - nodeB.x, nodeC.y - nodeB.y);
+  }
+  /** Return true if `this` is lexically below `other`, comparing y first then x. */
+  public belowYX(other: HalfEdge): boolean {
+    // Check y's
+    // if (!Geometry.isSameCoordinate(a.y, b.y))
+
+    if (this.y < other.y)
+      return true;
+    if (this.y > other.y)
+      return false;
+    // same y.
+    // Check x's
+    if (this.x < other.x)
+      return true;
+    return false;
+  }
+  /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
+
+  /** Returns Returns true if the face has positive area in xy parts. */
+  public static testFacePositiveAreaXY(node: HalfEdge) {
+    return node.countEdgesAroundFace() > 2 && node.signedFaceArea() > 0.0;
+  }
 
   /** Return true if x and y coordinates of this and other are exactly equal */
   public isEqualXY(other: HalfEdge): boolean {
@@ -434,6 +505,10 @@ export class HalfEdge {
     return Geometry.distanceXYXY(this.x, this.y, other.x, other.y);
   }
 
+  /** Return true if x and y coordinates of this and other are exactly equal */
+  public distanceXYZ(other: HalfEdge): number {
+    return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
+  }
   /**
    *
    * * Evaluate f(node) at each node around a face loop.
@@ -581,7 +656,7 @@ export class HalfEdge {
     return this.x + (node1.x - this.x) * fraction;
   }
   /**
-   * Return the interpolated x coordinate between this node and its face successor.
+   * Return the interpolated y coordinate between this node and its face successor.
    * @param fraction fractional position along this edge.
    */
   public fractionToY(fraction: number): number {
@@ -589,6 +664,14 @@ export class HalfEdge {
     return this.y + (node1.y - this.y) * fraction;
   }
 
+  /**
+   * Return the interpolated z coordinate between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   */
+  public fractionToZ(fraction: number): number {
+    const node1 = this.faceSuccessor;
+    return this.z + (node1.z - this.z) * fraction;
+  }
   /**
    * * Compute fractional coordinates of the intersection of edges from given base nodes
    * * If parallel or colinear, return undefined.
@@ -684,13 +767,26 @@ export class HalfEdgeGraph {
    * * Insert a vertex in the edge beginning at base.
    * * this creates two half edges.
    * * The base of the new edge is 'after' the (possibly undefined) start node in its face loop.
-   * * The existing mate retains its base xyzi properties but is no longer the mate of base.
+   * * The existing mate retains its base xyz and i properties but is no longer the mate of base.
    * * The base and existing mate each become mates with a new half edge.
    * @returns Returns the reference to the half edge created.
    */
   public splitEdge(base: undefined | HalfEdge,
     xA: number = 0, yA: number = 0, zA: number = 0, iA: number = 0): HalfEdge {
     const he = HalfEdge.splitEdge(base, xA, yA, zA, iA, this.allHalfEdges);
+    return he;
+  }
+
+  /**
+   * * Insert a vertex in the edge beginning at base, with coordinates specified as a fraction along the existing edge.
+   * * this creates two half edges.
+   * * The base of the new edge is 'after' the (possibly undefined) start node in its face loop.
+   * * The existing mate retains its base xyz and i properties but is no longer the mate of base.
+   * * The base and existing mate each become mates with a new half edge.
+   * @returns Returns the reference to the half edge created.
+   */
+  public splitEdgeAtFraction(base: HalfEdge, fraction: number): HalfEdge {
+    const he = HalfEdge.splitEdge(base, base.fractionToX(fraction), base.fractionToY(fraction), base.fractionToZ(fraction), 0, this.allHalfEdges);
     return he;
   }
   /** This is a destructor-like action that eliminates all interconnection among the graph's nodes.
@@ -844,7 +940,17 @@ export class HalfEdgeGraph {
   }
   /** Return the number of nodes in the graph */
   public countNodes(): number { return this.allHalfEdges.length; }
+  /** Apply transform to the xyz coordinates in the graph. */
+  public transformInPlace(transform: Transform) {
+    for (const node of this.allHalfEdges) {
+      transform.multiplyXYAndZInPlace(node);
+    }
+  }
 }
+// cspell:word CONSTU
+// cspell:word CONSTV
+// cspell:word USEAM
+// cspell:word VSEAM
 /**
  * * Each node of the graph has a mask member.
  * * The mask member is a number which is used as set of single bit boolean values.
@@ -853,13 +959,13 @@ export class HalfEdgeGraph {
  *   * The PRIMARY_EDGE bit is widely used to indicate linework created directly from input data, hence protected from triangle edge flipping.
  *   * The BOUNDARY bit is widely used to indicate that crossing this edge is a transition from outside to inside.
  *   * VISITED is used locally in many searches.
- *      * Never use VISITED unless the search logic is highy self contained.
+ *      * Never use VISITED unless the search logic is highly self contained.
  * @internal
  */
 export enum HalfEdgeMask {
   /**  Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
-   * * An an edge inserted "within a purely exterior face" can yaver EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
+   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
    * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
    */
   EXTERIOR = 0x00000001,

@@ -16,6 +16,8 @@ import { ListPicker, ListItem, ListItemType } from "./ListPicker";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { SupportsViewSelectorChange } from "../content/ContentControl";
 
+// cSpell:ignore Spatials
+
 /** [[ViewSelectorChangedEvent]] Args interface.
  * @beta
  */
@@ -36,6 +38,12 @@ export class ViewSelectorChangedEvent extends UiEvent<ViewSelectorChangedEventAr
  */
 export interface ViewSelectorProps {
   imodel?: IModelConnection;
+  listenForShowUpdates?: boolean;
+
+  showSpatials: boolean;
+  showDrawings: boolean;
+  showSheets: boolean;
+  showUnknown: boolean;
 }
 
 /** State for the [[ViewSelector]] component
@@ -46,15 +54,54 @@ interface ViewSelectorState {
   selectedViewId: string | null;
   title: string;
   initialized: boolean;
+  showSpatials: boolean;
+  showDrawings: boolean;
+  showSheets: boolean;
+  showUnknown: boolean;
 }
+
+/** Default properties of [[Backstage]] component.
+ * @beta
+ */
+export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;
+
+/** ViewSelector Show Update Event Args interface.
+ */
+interface ViewSelectorShowUpdateEventArgs {
+  showSpatials: boolean;
+  showDrawings: boolean;
+  showSheets: boolean;
+  showUnknown: boolean;
+}
+
+/** ViewSelector Show Update Event class.
+ */
+class ViewSelectorShowUpdateEvent extends UiEvent<ViewSelectorShowUpdateEventArgs> { }
 
 /** View Selector React component
  * @beta
  */
 export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
 
+  private static readonly _onViewSelectorShowUpdateEvent = new ViewSelectorShowUpdateEvent();
+  private _removeShowUpdateListener?: () => void;
+  private _isMounted = false;
+
+  public static readonly defaultProps: ViewSelectorDefaultProps = {
+    showSpatials: true,
+    showDrawings: true,
+    showSheets: true,
+    showUnknown: true,
+  };
+
   /** Gets the [[ViewSelectorChangedEvent]] */
   public static readonly onViewSelectorChangedEvent = new ViewSelectorChangedEvent();
+
+  /** Updates the ViewSelector show settings.
+   */
+  public static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void {
+    ViewSelector._onViewSelectorShowUpdateEvent.emit({ showSpatials, showDrawings, showSheets, showUnknown });
+  }
 
   /** Creates a ViewSelector */
   constructor(props: ViewSelectorProps) {
@@ -65,11 +112,33 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       selectedViewId: null,
       title: UiFramework.translate("savedViews.views"),
       initialized: false,
+      showSpatials: props.showSpatials,
+      showDrawings: props.showDrawings,
+      showSheets: props.showSheets,
+      showUnknown: props.showUnknown,
     };
   }
 
-  public componentDidMount() {
-    this.loadViews(); // tslint:disable-line:no-floating-promises
+  public async componentDidMount() {
+    this._isMounted = true;
+    if (this.props.listenForShowUpdates)
+      this._removeShowUpdateListener = ViewSelector._onViewSelectorShowUpdateEvent.addListener(this._handleViewSelectorShowUpdateEvent);
+
+    await this.loadViews();
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
+    if (this._removeShowUpdateListener)
+      this._removeShowUpdateListener();
+  }
+
+  private _handleViewSelectorShowUpdateEvent = (args: ViewSelectorShowUpdateEventArgs): void => {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
+    this.setState(args, async () => this.loadViews());
   }
 
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
@@ -113,6 +182,10 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
         containers.push(unknownContainer);
     }
 
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState({
       items: containers,
       selectedViewId: null,
@@ -145,13 +218,13 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
         const className = ViewUtilities.getBisBaseClass(spec.class);
 
-        if (ViewUtilities.isSpatial(className))
+        if (ViewUtilities.isSpatial(className) && this.state.showSpatials)
           views3d.push(viewItem);
-        else if (ViewUtilities.isDrawing(className))
+        else if (ViewUtilities.isDrawing(className) && this.state.showDrawings)
           views2d.push(viewItem);
-        else if (ViewUtilities.isSheet(className))
+        else if (ViewUtilities.isSheet(className) && this.state.showSheets)
           sheets.push(viewItem);
-        else
+        else if (this.state.showUnknown)
           unknown.push(viewItem);
       });
     }
@@ -211,6 +284,11 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
       // Create the new array with the current item enabled
       const itemsWithEnabled = this.state.items.map(itemMapper);
+
+      // istanbul ignore next
+      if (!this._isMounted)
+        return;
+
       // Update the state so that we show the user it was enabled while we work in the background
       this.setState(Object.assign({}, this.state, { items: itemsWithEnabled }));
     }

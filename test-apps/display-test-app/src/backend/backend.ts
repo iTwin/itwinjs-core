@@ -11,12 +11,14 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
 import { UrlFileHandler } from "@bentley/imodeljs-clients-backend";
 import { SVTConfiguration } from "../common/SVTConfiguration";
+import "./SVTRpcImpl"; // just to get the RPC implementation registered
+import SVTRpcInterface from "../common/SVTRpcInterface";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
@@ -36,6 +38,14 @@ function setupStandaloneConfiguration() {
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
     configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+    const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
+    if (undefined !== treeExpiration)
+      try {
+        configuration.tileTreeExpirationSeconds = Number.parseInt(treeExpiration, 10);
+      } catch (_) {
+        //
+      }
+
     configuration.displaySolarShadows = true;
 
     configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;

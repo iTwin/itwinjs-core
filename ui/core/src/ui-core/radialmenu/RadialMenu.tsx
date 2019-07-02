@@ -86,14 +86,18 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
       <div
         ref={(el) => { this._root = el; }}
         className={classnames("core-radial-menu", { opened: this.props.opened }, this.props.className)}
-        style={divStyle}>
+        style={divStyle}
+        data-testid="core-radial-menu"
+      >
         <svg
           xmlns="http://w3.org/2000/svg" version="1.1"
           width={width} height={width}
           className={"core-radial-menu-container"}>
           {React.Children.map(this.props.children, (child, index) => {
+            // istanbul ignore next
             if (!child || typeof child !== "object" || !("props" in child))
               return child;
+
             const childElement = (child as React.ReactElement<any>);
             return React.cloneElement(childElement, {
               key: index,
@@ -114,13 +118,13 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   public componentDidMount() {
     this._generateAnnularSectors();
 
-    window.addEventListener("keyup", this._handleKeyUp as any);
-    window.addEventListener("mouseup", this._handleClick as any);
+    window.addEventListener("keyup", this._handleKeyUp);
+    window.addEventListener("mouseup", this._handleClick);
   }
 
   public componentWillUnmount() {
-    window.removeEventListener("keyup", this._handleKeyUp as any);
-    window.removeEventListener("mouseup", this._handleClick as any);
+    window.removeEventListener("keyup", this._handleKeyUp);
+    window.removeEventListener("mouseup", this._handleClick);
   }
 
   public componentDidUpdate(prevProps: RadialMenuProps) {
@@ -129,18 +133,19 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
     }
   }
 
-  private _handleKeyUp = (event: React.KeyboardEvent<Window>) => {
+  private _handleKeyUp = (event: KeyboardEvent) => {
     if (event.keyCode === 27 /*<Esc>*/ && this.props.onEsc)
       this.props.onEsc(event);
   }
 
-  private _handleClick = (event: React.MouseEvent<Window>) => {
+  private _handleClick = (event: MouseEvent) => {
     if (event.target instanceof HTMLElement && this._root && !event.target.contains(this._root) && this.props.onBlur)
       this.props.onBlur(event);
   }
 
   /** Manually call onSelect of highlighted button. */
   public select = () => {
+    // istanbul ignore else
     if (this._selectedButton)
       this._selectedButton.select();
   }
@@ -213,10 +218,13 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
 
       if (this.props.labelRotate) {
         let a = angle * 180 / Math.PI + 90;
-        while (a > 180) a -= 360;
+        while (a > 180)
+          a -= 360;
         while (a < -180) a += 360;
-        if (a > 90) a -= 180;
-        if (a < -90) a += 180;
+        if (a > 90)
+          a -= 180;
+        if (a < -90)
+          a += 180;
         t = `rotate(${a} ${p.x}, ${p.y})`;
       }
     }
@@ -243,10 +251,14 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
   }
   /** Manually call this.props.onSelect */
   public select = () => {
-    if (this.props.onSelect) this.props.onSelect(undefined);
+    // istanbul ignore else
+    if (this.props.onSelect)
+      this.props.onSelect(undefined);
   }
   private _handleClick = (event: React.MouseEvent<SVGElement>) => {
-    if (this.props.onSelect) this.props.onSelect(event);
+    // istanbul ignore else
+    if (this.props.onSelect)
+      this.props.onSelect(event);
   }
   private _handleMouseOver = (_event: React.MouseEvent<SVGElement>) => {
     this.setState({ hover: true });

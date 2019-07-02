@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent, act } from "react-testing-library";
+import { render, cleanup, fireEvent, act } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
@@ -103,6 +103,7 @@ describe("<TimelineComponent />", () => {
 
   it("should render without milestones - minimized", async () => {
     const dataProvider = new TestTimelineDataProvider(false);
+    expect(dataProvider.loop).to.be.false;
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -119,7 +120,7 @@ describe("<TimelineComponent />", () => {
     // renderedComponent.debug();
 
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButton = renderedComponent.getAllByTestId("play-button")[0];
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
@@ -151,7 +152,8 @@ describe("<TimelineComponent />", () => {
 
     expect(renderedComponent).not.to.be.undefined;
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButtons = renderedComponent.getAllByTestId("play-button");
+    const playButton = playButtons[playButtons.length - 1];
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
@@ -234,7 +236,8 @@ describe("<TimelineComponent />", () => {
       onPlayPause={dataProvider.onPlayPause} />);
 
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButtons = renderedComponent.getAllByTestId("play-button");
+    const playButton = playButtons[0];
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
@@ -264,7 +267,8 @@ describe("<TimelineComponent />", () => {
       onPlayPause={dataProvider.onPlayPause} />);
 
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButtons = renderedComponent.getAllByTestId("play-button");
+    const playButton = playButtons[0];
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
@@ -298,7 +302,7 @@ describe("<TimelineComponent />", () => {
       onPlayPause={dataProvider.onPlayPause} />);
 
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButton = renderedComponent.getAllByTestId("play-button")[0];
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
@@ -326,7 +330,8 @@ describe("<TimelineComponent />", () => {
       onPlayPause={dataProvider.onPlayPause} />);
 
     // hit play/pause button to start animation
-    const playButton = renderedComponent.getByTestId("play-button");
+    const playButtons = renderedComponent.getAllByTestId("play-button");
+    const playButton = playButtons[playButtons.length - 1]; // last play button is the one in the scrubber.
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 

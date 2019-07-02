@@ -21,6 +21,7 @@ import {
 import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import classnames = require("classnames");
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 // tslint:disable-next-line: variable-name
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -92,7 +93,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    const key = (index !== undefined) ? index.toString() : this.id;
+    const key = this.getKey(index);
     this.resolveItems();
 
     return (
@@ -120,6 +121,7 @@ interface ToolGroupItem {
   iconSpec?: IconSpec;
   label: string;
   trayId?: string;
+  betaBadge?: boolean;
 }
 type ColumnItemMap = Map<string, ToolGroupItem>;
 
@@ -285,7 +287,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
 
             this._trayIndex++;
             const itemTrayId = this.generateTrayId();
-            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId };
+            const groupItem: ToolGroupItem = { iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId, betaBadge: item.betaBadge };
 
             columnItems.set(item.id, groupItem);
             this.processGroupItemDef(item, itemTrayId, trays);
@@ -367,6 +369,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
           onKeyDown={this._handleKeyDown}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
+          betaBadge={groupItemDef.betaBadge && <BetaBadge />}
         />
       </ExpandableItem>
     );
@@ -548,6 +551,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
+                betaBadge={item.betaBadge && <BetaBadge />}
               />
             );
           })}

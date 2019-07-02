@@ -13,6 +13,7 @@ Object {
     ],
     "type": "ECInstanceNode",
   },
+  "autoExpand": true,
   "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
   "label": "engage",
   "style": Object {
@@ -87,6 +88,7 @@ Array [
       ],
       "type": "ECInstanceNode",
     },
+    "autoExpand": true,
     "description": "Necessitatibus eum ab.",
     "hasChildren": true,
     "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",

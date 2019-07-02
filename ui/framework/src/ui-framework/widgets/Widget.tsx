@@ -55,6 +55,8 @@ export interface WidgetProps extends IconProps {
   classId?: string | ConfigurableUiControlConstructor;
   /** Control's priority */
   priority?: number;
+  /** Indicates whether to draw a Beta badge. */
+  betaBadge?: boolean;
 }
 
 /** Widget React component.

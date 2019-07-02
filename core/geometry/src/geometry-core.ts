@@ -14,7 +14,7 @@
 
 /**
  * @docs-package-description
- * The geometry-core package contains classes for working with CAD geometry:  points, vectors, curves, surfaces, and analytic solids
+ * The geometry-core package contains classes for working with geometry:  points, vectors, curves, surfaces, and analytic solids
  */
 /**
  * @docs-group-description CartesianGeometry
@@ -107,13 +107,6 @@
  */
 // doc:export class SolidDOc { }
 /**
- * @docs-group-description Utility
- * These modules and classes are outside the geometric structure
- * * geometry-core.ts -- gathers and exports class, so callers can import from geometry-core without knowning which classes
- *        are in which files.
- */
-// doc:export class Utility { }
-/**
  * @docs-group-description Topology
  * The Topology classes provide adjacency structures used in triangulations.
  */
@@ -121,6 +114,7 @@
 
 export * from "./geometry3d/Angle";
 export * from "./geometry3d/AngleSweep";
+export * from "./geometry3d/BilinearPatch";
 export * from "./geometry3d/FrameBuilder";
 export * from "./geometry3d/GeometryHandler";
 export * from "./geometry3d/GrowableBlockedArray";
@@ -177,6 +171,7 @@ export * from "./curve/ConstructCurveBetweenCurves";
 export * from "./curve/CoordinateXYZ";
 export * from "./curve/CurveChain";
 export * from "./curve/CurveChainWithDistanceIndex";
+export * from "./curve/CurveExtendMode";
 export * from "./curve/CurveCollection";
 export * from "./curve/CurveCurveIntersectXY";
 export * from "./curve/CurveLocationDetail";
@@ -188,6 +183,8 @@ export * from "./curve/LineString3d";
 export * from "./curve/Loop";
 export * from "./curve/ParityRegion";
 export * from "./curve/Path";
+export * from "./curve/RegionMomentsXY";
+export * from "./curve/RegionOps";
 export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";

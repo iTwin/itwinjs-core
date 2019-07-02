@@ -2,6 +2,36 @@
   "name": "@bentley/presentation-frontend",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@bentley/presentation-frontend_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add missing HiliteRules.json file to published package."
+          },
+          {
+            "comment": "Reorganize docs script output"
+          },
+          {
+            "comment": "Request hilite list in batches to avoid HTTP413 error"
+          },
+          {
+            "comment": "Add API to get hilite set for current selection"
+          },
+          {
+            "comment": "Add ability to suspend tool selection set synchronization with logical selection"
+          },
+          {
+            "comment": "Apply selection scopes when using fence or line selection"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/presentation-frontend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

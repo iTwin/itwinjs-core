@@ -23,7 +23,6 @@ export class NullTarget extends RenderTarget {
   public onDestroy(): void { }
   public reset(): void { }
   public changeScene(): void { }
-  public changeBackgroundMap(): void { }
   public changeDynamics(): void { }
   public changeDecorations(): void { }
   public changeRenderPlan(): void { }

@@ -11,6 +11,7 @@ import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonProps } from '@bentley/ui-core';
@@ -18,13 +19,17 @@ import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
+import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
+import { DraggingWidgetProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { DropTarget } from '@bentley/ui-ninezone';
+import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
@@ -36,7 +41,12 @@ import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
 import { MessageSeverity } from '@bentley/ui-core';
-import { NineZoneProps } from '@bentley/ui-ninezone';
+import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { NestedStagePanelKey } from '@bentley/ui-ninezone';
+import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
+import { NineZoneManager } from '@bentley/ui-ninezone';
+import { NineZoneManagerProps } from '@bentley/ui-ninezone';
+import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -60,12 +70,16 @@ import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
+import { SheetProps } from '@bentley/imodeljs-common';
 import { Size } from '@bentley/ui-ninezone';
 import { SnapMode } from '@bentley/imodeljs-frontend';
+import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
 import { StatusZoneManagerProps } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
+import { Tab } from '@bentley/ui-ninezone';
+import { TabMode } from '@bentley/ui-ninezone';
 import { TargetType } from '@bentley/ui-ninezone';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
@@ -77,12 +91,15 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
+import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetZoneIndex } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
-import { ZonePropsBase } from '@bentley/ui-ninezone';
+import { ZoneManagerProps } from '@bentley/ui-ninezone';
+import { ZonesManagerProps } from '@bentley/ui-ninezone';
+import { ZonesManagerWidgets } from '@bentley/ui-ninezone';
 
 // @public
 export interface Action<T extends string> {
@@ -99,6 +116,10 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     execute(): void;
     // (undocumented)
     getDimension(orientation: Orientation): number;
+    // @internal (undocumented)
+    getKey: (index?: number | undefined) => string;
+    // @internal (undocumented)
+    static getRandomId(): string;
     // (undocumented)
     handleSizeKnown: (size: Size) => void;
     // (undocumented)
@@ -106,7 +127,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // (undocumented)
     size?: Size;
     // (undocumented)
-    toolbarReactNode(_index?: number): React_2.ReactNode;
+    toolbarReactNode(index?: number): React_2.ReactNode;
 }
 
 // @public
@@ -183,7 +204,7 @@ export interface ActivityMessageEventArgs {
     // (undocumented)
     details?: ActivityMessageDetails;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     percentage: number;
     // (undocumented)
@@ -223,8 +244,8 @@ export class AppNotificationManager extends NotificationManager {
     protected _hidePointerMessage(): void;
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
-    openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
-    outputActivityMessage(messageText: string, percentComplete: number): boolean;
+    openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    outputActivityMessage(messageText: HTMLElement | string, percentComplete: number): boolean;
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
@@ -619,6 +640,8 @@ export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
+    // @internal
+    static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
     static loadContentGroup(groupProps: ContentGroupProps): void;
@@ -647,6 +670,9 @@ export interface ConfigurableUiState {
     // (undocumented)
     widgetOpacity: number;
 }
+
+// @beta
+export type ContentCallback = (content: ContentProps) => void;
 
 // @public
 export class ContentControl extends ConfigurableUiControl {
@@ -678,21 +704,21 @@ export class ContentGroup {
     clearContentControls(): void;
     // (undocumented)
     contentPropsList: ContentProps[];
-    // (undocumented)
     getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined;
-    // (undocumented)
+    getContentControlById(id: string): ContentControl | undefined;
     getContentControls(): ContentControl[];
-    // (undocumented)
     getContentNodes(): React_2.ReactNode[];
-    // (undocumented)
     getControlFromElement(node: React_2.ReactNode): ContentControl | undefined;
+    // @internal
+    getViewports(): Array<ScreenViewport | undefined>;
     // (undocumented)
     groupId: string;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
-    // (undocumented)
     refreshContentNodes(): void;
-    }
+    // @beta
+    toJSON(contentCallback?: ContentCallback): ContentGroupProps;
+}
 
 // @public
 export class ContentGroupManager {
@@ -750,47 +776,35 @@ export interface ContentLayoutComponentProps extends CommonProps {
 // @public
 export class ContentLayoutDef {
     constructor(layoutProps: ContentLayoutProps);
-    // (undocumented)
+    // @internal (undocumented)
+    static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
     descriptionKey: string;
-    // (undocumented)
-    fillLayoutContainer(content: React_2.ReactNode[], resizable: boolean): React_2.ReactNode | undefined;
-    // (undocumented)
+    fillLayoutContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode | undefined;
     getUsedContentIndexes(): number[];
-    // (undocumented)
     id: string;
-    // (undocumented)
     priority: number;
     // (undocumented)
     readonly rootSplit: LayoutSplit | undefined;
-    }
+    // @beta
+    toJSON(): ContentLayoutProps;
+}
 
 // @public
 export class ContentLayoutManager {
-    // (undocumented)
+    static readonly activeContentGroup: ContentGroup | undefined;
     static readonly activeLayout: ContentLayoutDef | undefined;
-    // (undocumented)
-    static addLayout(layoutId: string, layout: ContentLayoutDef): void;
-    // (undocumented)
-    static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
-    // (undocumented)
+    static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
     static findLayout(layoutId: string): ContentLayoutDef | undefined;
-    // (undocumented)
     static loadLayout(layoutProps: ContentLayoutProps): void;
-    // (undocumented)
     static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
-    // (undocumented)
     static refreshActiveLayout(): void;
-    // (undocumented)
-    static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup): void;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
 }
 
 // @public
 export interface ContentLayoutProps extends LayoutFragmentProps {
-    // (undocumented)
     descriptionKey?: string;
-    // (undocumented)
     id?: string;
-    // (undocumented)
     priority?: number;
 }
 
@@ -876,6 +890,8 @@ export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -897,8 +913,6 @@ export class CustomItemDef extends ActionButtonItemDef {
     customId: string;
     // (undocumented)
     static customIdPrefix: string;
-    // (undocumented)
-    handleSyncUiEvent(_args: SyncUiEventArgs): boolean;
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -1098,6 +1112,8 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -1218,6 +1234,8 @@ export class ExpandableSection extends React_2.PureComponent<ExpandableSectionPr
 // @beta
 export interface ExpandableSectionProps extends CommonProps {
     // (undocumented)
+    expanded?: boolean;
+    // (undocumented)
     title?: string;
 }
 
@@ -1278,33 +1296,27 @@ export class FrameworkZone extends React_2.Component<FrameworkZoneProps, Framewo
 // @internal
 export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
-    contentRef: React_2.RefObject<HTMLDivElement>;
+    draggingWidget: DraggingWidgetProps | undefined;
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
     fillZone?: boolean;
     // (undocumented)
-    horizontalAnchor: HorizontalAnchor;
-    // (undocumented)
-    isDragged: boolean | undefined;
+    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     isHidden: boolean;
-    // (undocumented)
-    isUnmergeDrag: boolean;
-    // (undocumented)
-    lastPosition: PointProps | undefined;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
     targetedBounds?: RectangleProps;
     // (undocumented)
-    verticalAnchor: VerticalAnchor;
-    // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    widgets: ZonesManagerWidgets;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
     // (undocumented)
-    zoneProps: ZonePropsBase;
+    zoneProps: ZoneManagerProps;
 }
 
 // @public
@@ -1313,6 +1325,8 @@ export class Frontstage extends React_2.Component<FrontstageProps, FrontstageSta
     constructor(props: FrontstageProps);
     // @internal
     componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(): void;
     // @internal
     componentWillUnmount(): void;
     static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void;
@@ -1333,7 +1347,7 @@ export interface FrontstageActivatedEventArgs {
 }
 
 // @public
-export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider {
+export class FrontstageComposer extends React_2.Component<CommonProps, FrontstageComposerState> implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
     constructor(props: CommonProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1343,6 +1357,14 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     getGhostOutlineBounds(zoneId: WidgetZoneIndex): RectangleProps | undefined;
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
+    // @alpha (undocumented)
+    handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
+    // @alpha (undocumented)
+    handlePanelPaneTargetChange(panelLocation: StagePanelLocation, paneIndex: number | undefined): void;
+    // @alpha (undocumented)
+    handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void;
+    // @alpha (undocumented)
+    handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void;
     // (undocumented)
     handleResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
     // (undocumented)
@@ -1352,11 +1374,15 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // (undocumented)
     handleTabDragEnd: () => void;
     // (undocumented)
-    handleTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => void;
+    handleTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
     // (undocumented)
     handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void;
+    // @alpha (undocumented)
+    handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
     // (undocumented)
     handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean): void;
+    // (undocumented)
+    handleZonesBoundsChange(bounds: RectangleProps): void;
     // (undocumented)
     mergeZones(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex): void;
     // (undocumented)
@@ -1404,6 +1430,8 @@ export class FrontstageDef {
     // (undocumented)
     contentGroupId: string;
     // (undocumented)
+    contentLayoutDef?: ContentLayoutDef;
+    // (undocumented)
     contextToolbarEnabled: boolean;
     // (undocumented)
     defaultContentId: string;
@@ -1431,7 +1459,7 @@ export class FrontstageDef {
     // @alpha (undocumented)
     leftPanel?: StagePanelDef;
     // (undocumented)
-    nineZoneProps?: NineZoneProps;
+    nineZone?: NineZoneManagerProps;
     onActivated(): void;
     onDeactivated(): void;
     onFrontstageReady(): void;
@@ -1439,7 +1467,11 @@ export class FrontstageDef {
     readonly panelDefs: StagePanelDef[];
     // @alpha (undocumented)
     rightPanel?: StagePanelDef;
+    // (undocumented)
+    setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
+    // (undocumented)
+    setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
     startDefaultTool(): void;
     // (undocumented)
     topCenter?: ZoneDef;
@@ -1499,7 +1531,7 @@ export class FrontstageManager {
     static readonly isLoading: boolean;
     static readonly modalFrontstageCount: number;
     static readonly nestedFrontstageCount: number;
-    static readonly NineZoneStateManager: import("@bentley/ui-ninezone").StateManager;
+    static readonly NineZoneManager: NineZoneManager;
     static readonly onContentControlActivatedEvent: ContentControlActivatedEvent;
     static readonly onContentLayoutActivatedEvent: ContentLayoutActivatedEvent;
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
@@ -1513,6 +1545,7 @@ export class FrontstageManager {
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
     static setActiveFrontstage(frontstageId: string): Promise<void>;
     static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
+    static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
     static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     static setActiveToolId(toolId: string): void;
     static setWidgetState(widgetId: string, state: WidgetState): boolean;
@@ -1574,7 +1607,11 @@ export interface FrontstageRuntimeProps {
     // (undocumented)
     frontstageDef: FrontstageDef;
     // (undocumented)
-    nineZoneProps: NineZoneProps;
+    nineZone: NineZoneManagerProps;
+    // (undocumented)
+    nineZoneChangeHandler: NineZoneChangeHandler;
+    // (undocumented)
+    stagePanelChangeHandler: StagePanelChangeHandler;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
@@ -1616,6 +1653,12 @@ export type FunctionType = (...args: any[]) => any;
 
 // @public
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
+
+// @internal (undocumented)
+export const getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
+
+// @internal (undocumented)
+export const getStagePanelType: (location: StagePanelLocation) => StagePanelType;
 
 // @public
 export const GroupButton: React_2.FunctionComponent<GroupButtonProps>;
@@ -1781,9 +1824,9 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 // @public
 export interface InputFieldMessageEventArgs {
     // (undocumented)
-    detailedMessage: string;
+    detailedMessage: HTMLElement | string;
     // (undocumented)
-    messageText: string;
+    messageText: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -1807,6 +1850,8 @@ export abstract class ItemDefBase {
     constructor(itemProps: ItemProps);
     // (undocumented)
     applicationData?: any;
+    // (undocumented)
+    betaBadge: boolean;
     // (undocumented)
     iconElement?: React.ReactNode;
     // (undocumented)
@@ -1858,6 +1903,7 @@ export class ItemMap extends Map<string, ItemDefBase> {
 // @public
 export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
     applicationData?: any;
+    betaBadge?: boolean;
     isActive?: boolean;
     isEnabled?: boolean;
     isPressed?: boolean;
@@ -1984,43 +2030,34 @@ export interface LabelProps {
 
 // @public
 export interface LayoutFragmentProps {
-    // (undocumented)
     horizontalSplit?: LayoutHorizontalSplitProps;
-    // (undocumented)
     verticalSplit?: LayoutVerticalSplitProps;
 }
 
 // @public
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
-    // (undocumented)
     bottom: LayoutFragmentProps | number;
-    // (undocumented)
     top: LayoutFragmentProps | number;
 }
 
 // @public
 export interface LayoutSplit {
     // (undocumented)
-    createContentContainer(content: React_2.ReactNode[], resizable: boolean): React_2.ReactNode;
+    createContentContainer(contentNodes: React_2.ReactNode[], resizable: boolean): React_2.ReactNode;
     // (undocumented)
     isLocked: boolean;
 }
 
 // @public
 export interface LayoutSplitPropsBase {
-    // (undocumented)
     id?: string;
-    // (undocumented)
     lock?: boolean;
-    // (undocumented)
     percentage: number;
 }
 
 // @public
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
-    // (undocumented)
     left: LayoutFragmentProps | number;
-    // (undocumented)
     right: LayoutFragmentProps | number;
 }
 
@@ -2066,6 +2103,10 @@ export class ListPicker extends React_2.Component<ListPickerPropsExtended> {
 // @beta
 export class ListPickerBase extends React_2.PureComponent<ListPickerProps, ListPickerState> {
     constructor(props: any);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
     getExpandedContent(): React_2.ReactNode;
     isExpanded: () => boolean;
     minimize: () => void;
@@ -2152,8 +2193,9 @@ export interface MessageCenterFieldProps extends StatusFieldProps {
 // @public
 export class MessageManager {
     static addMessage(message: NotifyMessageDetails): void;
+    static addToMessageCenter(message: NotifyMessageDetails): void;
     static clearMessages(): void;
-    static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage?: string, priority?: OutputMessagePriority): void;
+    static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage?: HTMLElement | string, priority?: OutputMessagePriority): void;
     static endActivityMessage(isCompleted: boolean): boolean;
     static getIconClassName(details: NotifyMessageDetails): string;
     static getIconType(details: NotifyMessageDetails): MessageBoxIconType;
@@ -2167,10 +2209,11 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
-    static openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
+    static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
+    static setMaxCachedMessages(max: number): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
-    static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean;
+    static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
     }
 
 // @public
@@ -2388,6 +2431,12 @@ export class NestedFrontstage {
 }
 
 // @public
+export interface NineZoneChangeHandler {
+    // (undocumented)
+    handleZonesBoundsChange(bounds: RectangleProps): void;
+}
+
+// @public
 export class PointerMessage extends React_2.Component<PointerMessageProps, PointerMessageState> {
     // (undocumented)
     componentDidMount(): void;
@@ -2412,11 +2461,11 @@ export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEve
 // @public
 export interface PointerMessageChangedEventArgs {
     // (undocumented)
-    detailedMessage?: string;
+    detailedMessage?: HTMLElement | string;
     // (undocumented)
     isVisible: boolean;
     // (undocumented)
-    message: string;
+    message: HTMLElement | string;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -2531,6 +2580,51 @@ export interface RotationData {
 // @internal (undocumented)
 export const RULESET: Ruleset;
 
+// @beta
+export class SavedView {
+    static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: SavedViewProps): boolean;
+    static emphasizeElementsToProps(vp: ScreenViewport, savedViewProps: SavedViewProps): void;
+    static viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: SavedViewProps): Promise<ViewState | undefined>;
+    static viewStateToProps(viewState: ViewState): SavedViewProps;
+}
+
+// @beta
+export class SavedViewLayout {
+    static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: SavedViewLayoutProps): boolean;
+    static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements?: boolean, contentCallback?: ContentCallback): SavedViewLayoutProps;
+    static viewStatesFromProps(iModelConnection: IModelConnection, savedProps: SavedViewLayoutProps): Promise<Array<ViewState | undefined>>;
+}
+
+// @beta
+export interface SavedViewLayoutProps {
+    // (undocumented)
+    contentGroupProps: ContentGroupProps;
+    // (undocumented)
+    contentLayoutProps: ContentLayoutProps;
+    // (undocumented)
+    savedViews: SavedViewProps[];
+}
+
+// @beta
+export interface SavedViewProps {
+    // (undocumented)
+    bisBaseClass: string;
+    // (undocumented)
+    categorySelectorProps: CategorySelectorProps;
+    // (undocumented)
+    displayStyleProps: DisplayStyleProps;
+    // (undocumented)
+    emphasizeElementsProps?: EmphasizeElementsProps;
+    // (undocumented)
+    modelSelectorProps?: ModelSelectorProps;
+    // (undocumented)
+    sheetAttachments?: Id64Array;
+    // (undocumented)
+    sheetProps?: SheetProps;
+    // (undocumented)
+    viewDefinitionProps: ViewDefinitionProps;
+}
+
 // @alpha
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
@@ -2638,6 +2732,8 @@ export class SheetNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @alpha
@@ -2734,45 +2830,47 @@ export enum SpecialKey {
     Tab = "Tab"
 }
 
-// @internal
-export class StackedWidget extends React_2.Component<StackedWidgetProps> {
+// @internal (undocumented)
+export class SplitterPaneTarget extends React_2.PureComponent<SplitterPaneTargetProps> {
     // (undocumented)
-    render(): React_2.ReactNode;
-    }
+    render(): JSX.Element;
+}
 
-// @internal
-export interface StackedWidgetProps extends CommonProps {
+// @internal (undocumented)
+export interface SplitterPaneTargetProps {
     // (undocumented)
-    contentRef: React_2.RefObject<HTMLDivElement>;
+    onTargetChanged: (paneIndex: number | undefined) => void;
     // (undocumented)
-    fillZone: boolean;
-    // (undocumented)
-    horizontalAnchor: HorizontalAnchor;
-    // (undocumented)
-    isDragged: boolean | undefined;
-    // (undocumented)
-    isFloating: boolean;
-    // (undocumented)
-    isUnmergeDrag: boolean;
-    // (undocumented)
-    lastPosition: PointProps | undefined;
-    // (undocumented)
-    verticalAnchor: VerticalAnchor;
-    // (undocumented)
-    widgetChangeHandler: WidgetChangeHandler;
-    // (undocumented)
-    widgets: EachWidgetProps[];
-    // (undocumented)
-    zoneId: WidgetZoneIndex;
+    paneIndex: number;
 }
 
 // @alpha
 export class StagePanel extends React_2.Component<StagePanelProps> {
     constructor(props: StagePanelProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(): void;
+    // (undocumented)
+    static readonly defaultProps: StagePanelDefaultProps;
+    // (undocumented)
     static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void;
     // (undocumented)
     render(): React_2.ReactNode;
+}
+
+// @public
+export interface StagePanelChangeHandler {
+    // @alpha (undocumented)
+    handlePanelInitialize(panelLocation: StagePanelLocation, size: number): void;
+    // @alpha (undocumented)
+    handlePanelPaneTargetChange(panelLocation: StagePanelLocation, paneIndex: number | undefined): void;
+    // @alpha (undocumented)
+    handlePanelResize(panelLocation: StagePanelLocation, resizeBy: number): void;
+    // @alpha (undocumented)
+    handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void;
+    // @alpha (undocumented)
+    handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
 }
 
 // @alpha
@@ -2782,8 +2880,11 @@ export class StagePanelDef extends WidgetHost {
     location: StagePanelLocation;
     panelState: StagePanelState;
     resizable: boolean;
-    size: string;
+    size: number | undefined;
 }
+
+// @alpha
+export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
 // @alpha
 export enum StagePanelLocation {
@@ -2803,19 +2904,32 @@ export enum StagePanelLocation {
 
 // @alpha
 export interface StagePanelProps {
+    allowedZones?: ZoneLocation[];
     applicationData?: any;
     defaultState?: StagePanelState;
-    resizable?: boolean;
+    resizable: boolean;
     // @internal (undocumented)
     runtimeProps?: StagePanelRuntimeProps;
-    size: string;
+    size?: number;
     widgets?: Array<React_2.ReactElement<WidgetProps>>;
 }
 
 // @internal
 export interface StagePanelRuntimeProps {
     // (undocumented)
+    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    // (undocumented)
+    panel: NineZoneStagePanelManagerProps;
+    // (undocumented)
     panelDef: StagePanelDef;
+    // (undocumented)
+    stagePanelChangeHandler: StagePanelChangeHandler;
+    // (undocumented)
+    widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    zoneDefProvider: ZoneDefProvider;
+    // (undocumented)
+    zones: ZonesManagerProps;
 }
 
 // @alpha
@@ -2860,6 +2974,8 @@ export class StandardRotationNavigationAid extends React_2.Component<CommonProps
 // @alpha
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static navigationAidId: string;
 }
 
 // @public
@@ -3204,7 +3320,7 @@ export class ToolInformation {
 
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
-    constructor(commandItemProps: ToolItemProps);
+    constructor(toolItemProps: ToolItemProps);
     // (undocumented)
     readonly id: string;
     // (undocumented)
@@ -3248,12 +3364,12 @@ export interface TooltipProps {
 export class ToolUiManager {
     static readonly activeToolDescription: string;
     static activeToolLabel: string;
-    static cachePropertiesForTool(tool: InteractiveTool): void;
-    static cacheToolSettingsProperties(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
-    static clearCachedProperties(): void;
+    static clearToolSettingsData(): void;
     static initialize(): void;
+    static initializeDataForTool(tool: InteractiveTool): void;
+    static initializeToolSettingsData(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
     static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
-    static readonly toolIdForCachedProperties: string;
+    static readonly toolIdForToolSettings: string;
     static readonly toolSettingsProperties: ToolSettingsPropertyRecord[];
     static useDefaultToolSettingsProvider: boolean;
     }
@@ -3364,6 +3480,7 @@ export class UiFramework {
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    // @beta (undocumented)
     static readonly oidcClient: IOidcFrontendClient;
     // @beta
     static readonly onUiVisibilityChanged: UiVisibilityChangedEvent;
@@ -3444,6 +3561,16 @@ export interface VersionInfo {
     userCreated?: string;
 }
 
+// @beta
+export interface ViewLayout {
+    // (undocumented)
+    contentGroup: ContentGroup;
+    // (undocumented)
+    contentLayoutDef: ContentLayoutDef;
+    // (undocumented)
+    viewStates: Array<ViewState | undefined>;
+}
+
 // @public
 export class ViewportContentControl extends ContentControl implements SupportsViewSelectorChange {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -3463,10 +3590,15 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 export class ViewSelector extends React_2.Component<ViewSelectorProps, ViewSelectorState> {
     constructor(props: ViewSelectorProps);
     // (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    static readonly defaultProps: ViewSelectorDefaultProps;
     loadViews(): Promise<void>;
     static readonly onViewSelectorChangedEvent: ViewSelectorChangedEvent;
     render(): JSX.Element;
+    static updateShowSettings(showSpatials: boolean, showDrawings: boolean, showSheets: boolean, showUnknown: boolean): void;
     updateState(viewId?: any): Promise<void>;
 }
 
@@ -3487,9 +3619,22 @@ export interface ViewSelectorChangedEventArgs {
 }
 
 // @beta
+export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;
+
+// @beta
 export interface ViewSelectorProps {
     // (undocumented)
     imodel?: IModelConnection;
+    // (undocumented)
+    listenForShowUpdates?: boolean;
+    // (undocumented)
+    showDrawings: boolean;
+    // (undocumented)
+    showSheets: boolean;
+    // (undocumented)
+    showSpatials: boolean;
+    // (undocumented)
+    showUnknown: boolean;
 }
 
 // @public
@@ -3511,7 +3656,7 @@ export class ViewUtilities {
 export class VisibilityHandler implements IDisposable {
     constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(node: TreeNodeItem, on: boolean): Promise<boolean>;
+    changeVisibility(node: TreeNodeItem, on: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -3524,8 +3669,6 @@ export class VisibilityHandler implements IDisposable {
 export interface VisibilityHandlerProps {
     // (undocumented)
     dataProvider: IPresentationTreeDataProvider;
-    // (undocumented)
-    getLoadedNode: (id: string) => TreeNodeItem | undefined;
     // (undocumented)
     onVisibilityChange: () => void;
     // (undocumented)
@@ -3587,7 +3730,7 @@ export interface WidgetChangeHandler {
     // (undocumented)
     handleTabDragEnd(): void;
     // (undocumented)
-    handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps): void;
+    handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps): void;
     // (undocumented)
     handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void;
 }
@@ -3611,6 +3754,8 @@ export class WidgetDef {
     readonly activeState: WidgetState;
     // (undocumented)
     applicationData?: any;
+    // (undocumented)
+    betaBadge?: boolean;
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
@@ -3685,6 +3830,7 @@ export class WidgetHost {
 // @public
 export interface WidgetProps extends IconProps {
     applicationData?: any;
+    betaBadge?: boolean;
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
     defaultState?: WidgetState;
@@ -3704,6 +3850,144 @@ export interface WidgetProps extends IconProps {
     syncEventIds?: string[];
     tooltip?: string | StringGetter;
     tooltipKey?: string;
+}
+
+// @internal
+export class WidgetStack extends React_2.Component<WidgetStackProps> {
+    // (undocumented)
+    render(): React_2.ReactNode;
+    }
+
+// @internal
+export interface WidgetStackProps extends CommonProps {
+    // (undocumented)
+    draggingWidget: DraggingWidgetProps | undefined;
+    // (undocumented)
+    fillZone: boolean;
+    // (undocumented)
+    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    // (undocumented)
+    isCollapsed: boolean;
+    // (undocumented)
+    isFloating: boolean;
+    // (undocumented)
+    isInStagePanel: boolean;
+    // (undocumented)
+    widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    widgets: ReadonlyArray<WidgetZoneIndex>;
+    // (undocumented)
+    zoneDefProvider: ZoneDefProvider;
+    // (undocumented)
+    zonesWidgets: ZonesManagerWidgets;
+}
+
+// @internal
+export class WidgetStackTab extends React_2.Component<WidgetStackTabProps> {
+    // (undocumented)
+    render(): React_2.ReactNode;
+}
+
+// @internal
+export class WidgetStackTabGroup extends React_2.Component<WidgetStackTabGroupProps> {
+    // (undocumented)
+    render(): React_2.ReactNode;
+}
+
+// @internal
+export interface WidgetStackTabGroupProps {
+    // (undocumented)
+    draggingWidget: DraggingWidgetProps | undefined;
+    // (undocumented)
+    horizontalAnchor: HorizontalAnchor;
+    // (undocumented)
+    isCollapsed: boolean;
+    // (undocumented)
+    isProtruding: boolean;
+    // (undocumented)
+    isStacked: boolean;
+    // (undocumented)
+    isWidgetOpen: boolean;
+    // (undocumented)
+    onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+    // (undocumented)
+    onTabDrag: (dragged: PointProps) => void;
+    // (undocumented)
+    onTabDragEnd: () => void;
+    // (undocumented)
+    onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+    // (undocumented)
+    tabs: WidgetTabProps[];
+    // (undocumented)
+    verticalAnchor: VerticalAnchor;
+    // (undocumented)
+    widgetId: WidgetZoneIndex;
+}
+
+// @internal
+export interface WidgetStackTabProps {
+    // (undocumented)
+    horizontalAnchor: HorizontalAnchor;
+    // (undocumented)
+    iconSpec?: string | React_2.ReactNode;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    isBetaBadgeVisible: boolean;
+    // (undocumented)
+    isCollapsed: boolean;
+    // (undocumented)
+    isProtruding: boolean;
+    // (undocumented)
+    lastPosition: PointProps | undefined;
+    // (undocumented)
+    mode: TabMode;
+    // (undocumented)
+    onClick: (index: number) => void;
+    // (undocumented)
+    onDrag: (dragged: PointProps) => void;
+    // (undocumented)
+    onDragEnd: () => void;
+    // (undocumented)
+    onDragStart: (index: number, initialPosition: PointProps) => void;
+    // (undocumented)
+    tabRef?: React_2.Ref<Tab>;
+    // (undocumented)
+    title: string;
+    // (undocumented)
+    verticalAnchor: VerticalAnchor;
+}
+
+// @internal
+export class WidgetStackTabs extends React_2.Component<WidgetStackTabsProps> {
+    // (undocumented)
+    render(): React_2.ReactNode;
+}
+
+// @internal
+export interface WidgetStackTabsProps {
+    // (undocumented)
+    draggingWidget: DraggingWidgetProps | undefined;
+    // (undocumented)
+    horizontalAnchor: HorizontalAnchor;
+    // (undocumented)
+    isCollapsed: boolean;
+    // (undocumented)
+    isProtruding: boolean;
+    // (undocumented)
+    isWidgetOpen: boolean;
+    // (undocumented)
+    onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+    // (undocumented)
+    onTabDrag: (dragged: PointProps) => void;
+    // (undocumented)
+    onTabDragEnd: () => void;
+    // (undocumented)
+    onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+    // (undocumented)
+    verticalAnchor: VerticalAnchor;
+    // (undocumented)
+    widgets: ReadonlyArray<EachWidgetProps>;
 }
 
 // @public
@@ -3729,6 +4013,8 @@ export interface WidgetStateChangedEventArgs {
 
 // @internal
 export interface WidgetTabProps {
+    // (undocumented)
+    betaBadge: boolean;
     // (undocumented)
     iconSpec?: string | React_2.ReactNode;
     // (undocumented)
@@ -3885,33 +4171,27 @@ export interface ZoneProps extends CommonProps {
 // @internal
 export interface ZoneRuntimeProps {
     // (undocumented)
-    contentRef: React_2.RefObject<HTMLDivElement>;
+    draggingWidget: DraggingWidgetProps | undefined;
     // (undocumented)
     dropTarget: DropTarget;
     // (undocumented)
+    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    // (undocumented)
     ghostOutline: RectangleProps | undefined;
-    // (undocumented)
-    horizontalAnchor: HorizontalAnchor;
-    // (undocumented)
-    isDragged: boolean | undefined;
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
-    isUnmergeDrag: boolean;
-    // (undocumented)
-    lastPosition: PointProps | undefined;
-    // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
-    verticalAnchor: VerticalAnchor;
-    // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
+    // (undocumented)
+    widgets: ZonesManagerWidgets;
     // (undocumented)
     zoneDef: ZoneDef;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
     // (undocumented)
-    zoneProps: ZonePropsBase;
+    zoneProps: ZoneManagerProps;
 }
 
 // @public

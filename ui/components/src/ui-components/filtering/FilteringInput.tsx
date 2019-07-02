@@ -36,6 +36,8 @@ export interface FilteringInputProps extends CommonProps {
   filteringInProgress: boolean;
   /** [[ResultSelector]] React Component properties */
   resultSelectorProps?: ResultSelectorProps;
+  /** Specify that the <input> element should automatically get focus */
+  autoFocus?: boolean;
 }
 
 /**
@@ -66,8 +68,12 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   }
 
   private _onSearchButtonClick = () => {
-    if (!this.state.searchText)
+    if (!this.state.searchText) {
+      // Empty search string is the same as clearing the search.
+      this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
+      this.props.onFilterClear();
       return;
+    }
 
     this.props.onFilterStart(this.state.searchText);
   }
@@ -119,6 +125,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       >
         <span className="components-filtering-input-input">
           <input type="text"
+            autoFocus={this.props.autoFocus}
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
             onChange={this._onInputChanged} />

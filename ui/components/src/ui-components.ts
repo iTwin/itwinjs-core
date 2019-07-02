@@ -118,6 +118,7 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
+// istanbul ignore next
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();
@@ -171,10 +172,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Table
  * Classes for working with a Table.
- */
-/**
- * @docs-group-description Timeline
- * Classes for working with a Timeline.
  */
 /**
  * @docs-group-description Tree

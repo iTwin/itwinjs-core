@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ContentView */
 
-import { ScreenViewport, IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelApp, IModelConnection, ViewState, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentViewManager } from "./ContentViewManager";
+import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
@@ -89,18 +92,20 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   private _getNavigationAid = (classFullName: string) => {
     const className = ViewUtilities.getBisBaseClass(classFullName);
     let navigationAidId = "";
+
     switch (className) {
-      case "SheetViewDefinition":
-        navigationAidId = "SheetNavigationAid";
+      case SheetViewState.className:
+        navigationAidId = SheetNavigationAidControl.navigationAidId;
         break;
-      case "DrawingViewDefinition":
-        navigationAidId = "DrawingNavigationAid";
+      case DrawingViewState.className:
+        navigationAidId = DrawingNavigationAidControl.navigationAidId;
         break;
-      case "SpatialViewDefinition":
-      case "OrthographicViewDefinition":
-        navigationAidId = "CubeNavigationAid";
+      case SpatialViewState.className:
+      case OrthographicViewState.className:
+        navigationAidId = CubeNavigationAidControl.navigationAidId;
         break;
     }
+
     return navigationAidId;
   }
 

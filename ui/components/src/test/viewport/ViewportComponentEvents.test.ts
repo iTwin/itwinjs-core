@@ -4,25 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ViewportComponentEvents } from "../../ui-components";
-import { Matrix3d } from "@bentley/geometry-core";
+
+import { Matrix3d, Point3d } from "@bentley/geometry-core";
 import { IModelApp, Viewport, StandardViewId, ViewManager, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
+
+import { ViewportComponentEvents } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("ViewportComponentEvents", () => {
   const onSelectedViewportChanged = new BeUiEvent();
-  it("should quietly fail initialization when IModelApp.viewManager is not defined", () => {
-    ViewportComponentEvents.initialize();
+
+  before(() => {
+    ViewportComponentEvents.terminate();
   });
-  it.skip("should initialize when IModelApp.viewManager is defined", () => {
+
+  it("should initialize when IModelApp.viewManager is defined", () => {
     (IModelApp as any)._viewManager = { onSelectedViewportChanged } as ViewManager;
     ViewportComponentEvents.initialize();
     expect(onSelectedViewportChanged.numberOfListeners).to.equal(1);
   });
+
   it("should return early in initialization when already initialized", () => {
     ViewportComponentEvents.initialize();
   });
+
   it("should setCubeMatrix", async () => {
     const cubeListener = sinon.spy();
     const remove = ViewportComponentEvents.onCubeRotationChangeEvent.addListener(cubeListener);
@@ -32,6 +38,7 @@ describe("ViewportComponentEvents", () => {
     expect(cubeListener.calledOnce).to.be.true;
     remove();
   });
+
   it("should setStandardRotation", async () => {
     const standardRotationListener = sinon.spy();
     const remove = ViewportComponentEvents.onStandardRotationChangeEvent.addListener(standardRotationListener);
@@ -41,6 +48,7 @@ describe("ViewportComponentEvents", () => {
     expect(standardRotationListener.calledOnce).to.be.true;
     remove();
   });
+
   it("should setViewMatrix", async () => {
     const viewRotationListener = sinon.spy();
     const remove = ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
@@ -50,7 +58,8 @@ describe("ViewportComponentEvents", () => {
     expect(viewRotationListener.calledOnce).to.be.true;
     remove();
   });
-  it.skip("should setViewMatrix when onSelectedViewportChanged event is emitted", async () => {
+
+  it("should setViewMatrix when onSelectedViewportChanged event is emitted", async () => {
     const viewRotationListener = sinon.spy();
     const remove = ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     const current = { rotation: Matrix3d.createIdentity() } as Viewport;
@@ -59,12 +68,24 @@ describe("ViewportComponentEvents", () => {
     expect(viewRotationListener.calledOnce).to.be.true;
     remove();
   });
+
   it("should not setViewMatrix when onSelectedViewportChanged event is emitted with unset current", async () => {
     const viewRotationListener = sinon.spy();
     const remove = ViewportComponentEvents.onViewRotationChangeEvent.addListener(viewRotationListener);
     onSelectedViewportChanged.emit({} as SelectedViewportChangedArgs);
     await TestUtils.flushAsyncOperations();
     expect(viewRotationListener.calledOnce).to.be.false;
+    remove();
+  });
+
+  it("should setDrawingViewportState", async () => {
+    const drawingViewportStateListener = sinon.spy();
+    const remove = ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(drawingViewportStateListener);
+    const origin = Point3d.createZero();
+    const rotation = Matrix3d.createIdentity();
+    ViewportComponentEvents.setDrawingViewportState(origin, rotation);
+    await TestUtils.flushAsyncOperations();
+    expect(drawingViewportStateListener.calledOnce).to.be.true;
     remove();
   });
 });

@@ -1,6 +1,15 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- added OneAtATimeActivity class
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

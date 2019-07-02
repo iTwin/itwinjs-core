@@ -23,8 +23,9 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 export class Loop extends CurveChain {
   /** tag value that can be set to true for user code to mark inner and outer loops. */
   public isInner: boolean = false;
-  /** Test if `other` is an instance of `Loop` */
+  /** test if `other` is a `Loop` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
+  /** Test if `other` is an instance of `Loop` */
   public constructor() { super(); }
   /**
    * Create a loop from variable length list of CurvePrimitives

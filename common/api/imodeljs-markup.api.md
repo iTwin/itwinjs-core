@@ -579,6 +579,12 @@ export abstract class RedlineTool extends MarkupTool {
 // @beta
 export class SelectTool extends MarkupTool {
     // (undocumented)
+    protected boxSelect(ev: BeButtonEvent, isDynamics: boolean): boolean;
+    // (undocumented)
+    protected boxSelectInit(): void;
+    // (undocumented)
+    protected boxSelectStart(ev: BeButtonEvent): boolean;
+    // (undocumented)
     flashedElement: Element | undefined;
     // (undocumented)
     onCleanup(): void;
@@ -595,9 +601,13 @@ export class SelectTool extends MarkupTool {
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
+    onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
+    // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected unflashSelected(): void;
 }
 
 // @beta

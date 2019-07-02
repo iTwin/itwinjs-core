@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "../widget/_variables";
+
+.nz-stagePanels-stagePanel {
+  $min-size: 6px;
+
+  position: relative;
+  height: 100%;
+  pointer-events: all;
+
+  > div:first-child {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  &.nz-panel-bottom > .nz-resize-grip {
+    top: -$nz-resize-grip-size / 2;
+    left: 0;
+  }
+
+  &.nz-panel-left > .nz-resize-grip {
+    right: -$nz-resize-grip-size / 2;
+    top: 0;
+  }
+
+  &.nz-panel-right > .nz-resize-grip {
+    left: -$nz-resize-grip-size / 2;
+    top: 0;
+  }
+
+  &.nz-panel-top > .nz-resize-grip {
+    bottom: -$nz-resize-grip-size / 2;
+    left: 0;
+  }
+
+  &.nz-panel-bottom, &.nz-panel-top {
+    min-height: $min-size;
+  }
+
+  &.nz-panel-left, &.nz-panel-right {
+    min-width: $min-size;
+  }
+
+  &:hover {
+    --buic-widget-opacity: 1;
+  }
+}

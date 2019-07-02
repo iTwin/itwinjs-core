@@ -9,7 +9,7 @@ import { TextureUnit } from "../RenderFlags";
 import { addModelMatrix } from "./Vertex";
 import { Vector3d } from "@bentley/geometry-core";
 
-const computeShadowPos = "vec4 proj = u_shadowProj * MAT_MODEL * rawPosition; v_shadowPos = proj.xyz/proj.w;";
+const computeShadowPos = "vec4 shadowProj = u_shadowProj * MAT_MODEL * rawPosition; v_shadowPos = shadowProj.xyz/shadowProj.w;";
 const scratchShadowParams = new Float32Array(4);   // Color RGB, Shadow bias.
 const scratchShadowDir = new Float32Array(3);
 const scratchDirection = new Vector3d();

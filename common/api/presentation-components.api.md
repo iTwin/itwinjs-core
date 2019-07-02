@@ -229,7 +229,7 @@ export interface TreeWithFilteringSupportProps {
     activeMatchIndex?: number;
     dataProvider: IPresentationTreeDataProvider;
     filter?: string;
-    onFilterApplied?: (filter?: string) => void;
+    onFilterApplied?: (filter: string, filteredProvider: IPresentationTreeDataProvider) => void;
     onMatchesCounted?: (count: number) => void;
 }
 
@@ -250,7 +250,7 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
 // @public
 export interface ViewWithUnifiedSelectionProps {
-    // @alpha
+    // @alpha @deprecated
     ruleset?: Ruleset | string;
     // @internal (undocumented)
     selectionHandler?: ViewportSelectionHandler;

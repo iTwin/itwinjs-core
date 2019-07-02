@@ -16,6 +16,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
@@ -158,14 +159,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param spacePoint point in space
    * @param extend if false, only return points within the bounded line segment. If true, allow the point to be on the unbounded line that contains the bounded segment.
    */
-  public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
-    if (!extend) {
-      if (fraction > 1.0)
-        fraction = 1.0;
-      else if (fraction < 0.0)
-        fraction = 0.0;
-    }
+    fraction = CurveExtendOptions.correctFraction(extend, fraction);
     result = CurveLocationDetail.create(this, result);
     // remark: This can be done by result.setFP (fraction, thePoint, undefined, a)
     //   but that creates a temporary point.
@@ -193,7 +189,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       && Geometry.isSmallMetricDistance(plane.altitude(this._point1));
   }
   /** Compute points of simple (transverse) with a plane.
-   * * Use isInPlane to test if the linesegment is completely in the plane.
+   * * Use isInPlane to test if the line segment is completely in the plane.
    */
   public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const h0 = plane.altitude(this._point0);
@@ -235,11 +231,11 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       this._point0.set(0, 0, 0);
       this._point1.set(1, 0, 0);
       return;
-    } else if (json.startPoint && json.endPoint) { // {startPoint:JSONPOINT, endPoint:JSONPOINT}
+    } else if (json.startPoint && json.endPoint) { // {startPoint:json point, endPoint:json point}
       this._point0.setFromJSON(json.startPoint);
       this._point1.setFromJSON(json.endPoint);
     } else if (Array.isArray(json)
-      && json.length > 1) { // [JSONPOINT, JSONPOINT]
+      && json.length > 1) { // [json point, json point]
       this._point0.setFromJSON(json[0]);
       this._point1.setFromJSON(json[1]);
     }

@@ -153,9 +153,9 @@ describe("RecursiveClipSets", () => {
   it("Test2", () => {
     for (const perpendicularFactor of [-1.0, 1.0]) {
       for (const generatorFunction of [
-        Sample.createFractalDiamonConvexPattern,
+        Sample.createFractalDiamondConvexPattern,
         Sample.createFractalSquareReversingPattern,
-        Sample.createFractalLReversingPatterh,
+        Sample.createFractalLReversingPattern,
         Sample.createFractalLMildConcavePatter]) {
         const shifterA = new SaveAndRestoreCheckTransform(0, 20, 0);
         for (let numRecursion = 0; numRecursion < 4; numRecursion++) {
@@ -223,9 +223,9 @@ describe("RecursiveClipSets", () => {
       for (const generatorFunction of [
         Sample.createFractalSquareReversingPattern,
         Sample.nonConvexQuadSimpleFractal,
-        Sample.createFractalDiamonConvexPattern,
+        Sample.createFractalDiamondConvexPattern,
         Sample.createFractalSquareReversingPattern,
-        Sample.createFractalLReversingPatterh,
+        Sample.createFractalLReversingPattern,
         Sample.createFractalLMildConcavePatter]) {
         const shifterA = new SaveAndRestoreCheckTransform(50, 0, 0);
         for (const depth of [2, 0, 1, 2]) {

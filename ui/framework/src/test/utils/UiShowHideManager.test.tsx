@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import sinon = require("sinon");
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 
 import {
@@ -138,7 +138,7 @@ describe("UiShowHideManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(UiShowHideManager.isUiVisible).to.eq(true);
 
-      await TestUtils.tick(25);
+      await TestUtils.tick(100);
       expect(UiShowHideManager.isUiVisible).to.eq(false);
     });
 

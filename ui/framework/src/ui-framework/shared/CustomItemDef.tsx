@@ -2,14 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Items */
+/** @module Item */
 
 import * as React from "react";
 
 import { Size } from "@bentley/ui-ninezone";
 
 import { CustomItemProps } from "./ItemProps";
-import { SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 
 /** @internal */
@@ -44,18 +43,15 @@ export class CustomItemDef extends ActionButtonItemDef {
     return this.customId;
   }
 
-  public handleSyncUiEvent(_args: SyncUiEventArgs): boolean {
-    return false;
-  }
-
   public toolbarReactNode(index?: number): React.ReactNode {
     if (!this.isVisible)
       return null;
 
     let clone: React.ReactNode;
 
+    // istanbul ignore else
     if (React.isValidElement(this.reactElement)) {
-      const key = (index !== undefined) ? index.toString() : this.id;
+      const key = this.getKey(index);
       const cloneProps: CloneProps = {
         key,
         onSizeKnown: this.handleSizeKnown,

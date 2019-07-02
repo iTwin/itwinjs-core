@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, GuidString, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { Transform, Range3d } from "@bentley/geometry-core";
 import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
@@ -64,14 +64,41 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  public static onInsert(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
-  public static onUpdate(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
-  public static onDelete(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
-  public static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
-  public static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
-  public static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
-  public static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
+  /** Called before a new Element is inserted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onInsert(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called before an Element is updated.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called before an Element is deleted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onDelete(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called after a new Element was inserted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called after an Element was updated.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called after an Element was deleted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+
+  /** @beta */
+  protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
+  /** @beta */
+  protected static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Save this Element's properties to an object for serializing to JSON.
    * @internal
@@ -112,8 +139,7 @@ export class Element extends Entity implements ElementProps {
   /** Get a display label for this Element. By default returns userLabel if present, otherwise code value. */
   public getDisplayLabel(): string { return this.userLabel ? this.userLabel : this.code.getValue(); }
 
-  /**
-   * Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
+  /** Get a list of HTML strings that describe this Element for the tooltip. Strings will be listed on separate lines in the tooltip.
    * Any instances of the pattern `%{tag}` will be replaced by the localized value of tag.
    */
   public getToolTipMessage(): string[] {
@@ -136,8 +162,7 @@ export class Element extends Entity implements ElementProps {
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
 
-  /**
-   * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
+  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode) { this.iModel.concurrencyControl.buildRequestForElement(this, opcode); }
@@ -207,7 +232,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
   }
 }
 
-/** A 3D Graphical Element
+/** A 3d Graphical Element
  * @public
  */
 export abstract class GraphicalElement3d extends GeometricElement3d {

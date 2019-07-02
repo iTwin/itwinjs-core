@@ -7,7 +7,33 @@
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { XYParitySearchContext } from "./XYParitySearchContext";
+import { SignedDataSummary } from "./SignedDataSummary";
+/**
+ * Interface for an object that executes boolean tests on edges.
+ */
+export interface HalfEdgeTestObject {
+  testEdge(h: HalfEdge): boolean;
+}
+/**
+ */
+export class HalfEdgeMaskTester {
+  private _targetMask: HalfEdgeMask;
+  private _targetValue: boolean;
+  /**
+   *
+   * @param mask mask to test in `testEdge` function
+   * @param targetValue value to match for true return
+   */
+  public constructor(mask: HalfEdgeMask, targetValue: boolean = true) {
+    this._targetMask = mask;
+    this._targetValue = targetValue;
+  }
+  /** Return true if the value of the targetMask matches the targetValue */
+  public testEdge(edge: HalfEdge): boolean {
+    return edge.isMaskSet(this._targetMask) === this._targetValue;
+  }
 
+}
 // Search services for HalfEdgeGraph
 export class HalfEdgeGraphSearch {
 
@@ -27,18 +53,29 @@ export class HalfEdgeGraphSearch {
    * Search an array of faceSeed nodes for the face with the most negative area.
    * @param oneCandidateNodePerFace array containing one node from each face to be considered.
    */
-  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdge[]): HalfEdge {
-    let mostNegativeAreaNode: HalfEdge = oneCandidateNodePerFace[0];
-    let mostNegArea = Number.MAX_VALUE;
+  public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[]): HalfEdge {
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary (oneCandidateNodePerFace);
+    return summary.largestNegativeItem!;
+  }
 
-    for (const node of oneCandidateNodePerFace) {
+  /**
+   *
+   * Return a summary structure data about face areas.
+   */
+  public static collectFaceAreaSummary(source: HalfEdgeGraph | HalfEdge[], collectAllNodes: boolean = false): SignedDataSummary<HalfEdge> {
+    const result = new SignedDataSummary<HalfEdge>(collectAllNodes);
+    let allFaces: HalfEdge[];
+
+    if (source instanceof HalfEdgeGraph)
+      allFaces = source.collectFaceLoops();
+    else
+      allFaces = source;
+
+    for (const node of allFaces) {
       const area = node.signedFaceArea();
-      if (area < 0 && area < mostNegArea) {
-        mostNegArea = area;
-        mostNegativeAreaNode = node;
-      }
+      result.announceItem(node, area);
     }
-    return mostNegativeAreaNode;
+    return result;
   }
 
   /**
@@ -52,7 +89,7 @@ export class HalfEdgeGraphSearch {
    * @param visitMask mask applied to all faces as visited.
    * @param parityMask mask to apply (a) to first face, (b) to faces with alternating parity during the search.
    */
-  private static parityFloodFromSeed(seedEdge: HalfEdge, visitMask: HalfEdgeMask, parityMask: HalfEdgeMask): HalfEdge[] {
+  private static parityFloodFromSeed(seedEdge: HalfEdge, visitMask: HalfEdgeMask, parityEdgeTester: HalfEdgeTestObject | undefined, parityMask: HalfEdgeMask): HalfEdge[] {
     const faces: HalfEdge[] = [];
     if (seedEdge.isMaskSet(visitMask)) return faces; // empty
 
@@ -66,8 +103,10 @@ export class HalfEdgeGraphSearch {
       if (!mate)
         continue;
       if (!mate.isMaskSet(visitMask)) {
-        const mateState = !p.isMaskSet(parityMask);
-        HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(mate, mateState ? allMasks : visitMask, stack, faces);
+        let newState = p.isMaskSet(parityMask);
+        if (!parityEdgeTester || parityEdgeTester.testEdge(p))
+          newState = !newState;
+        HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(mate, newState ? allMasks : visitMask, stack, faces);
       }
     }
     return faces;
@@ -75,7 +114,7 @@ export class HalfEdgeGraphSearch {
   /**
    * * Search the given faces for the one with the minimum area.
    * * If the mask in that face is OFF, toggle it on (all half edges of) all the faces.
-   * * In a properly merged planar subdivision there should be only one true negative area face per compnent.
+   * * In a properly merged planar subdivision there should be only one true negative area face per component.
    * @param graph parent graph
    * @param parityMask mask which was previously set with alternating parity, but with an arbitrary start face.
    * @param faces array of faces to search.
@@ -105,16 +144,17 @@ export class HalfEdgeGraphSearch {
   /**
    * Collect arrays gathering faces by connected component.
    * @param graph graph to inspect
-   * @param parityMask (optional) mask to apply indicating parity.  If this is Mask.NULL_MASK, there is no record of parity.
+   * @param parityEdgeTester (optional) function to test of an edge is a parity change.
+   * @param parityMask (optional, along with boundaryTestFunction) mask to apply indicating parity.  If this is Mask.NULL_MASK, there is no record of parity.
    */
-  public static collectConnectedComponents(graph: HalfEdgeGraph, parityMask: HalfEdgeMask = HalfEdgeMask.NULL_MASK): HalfEdge[][] {
+  public static collectConnectedComponentsWithExteriorParityMasks(graph: HalfEdgeGraph, parityEdgeTester: HalfEdgeTestObject | undefined, parityMask: HalfEdgeMask = HalfEdgeMask.NULL_MASK): HalfEdge[][] {
     const components = [];
     const visitMask = HalfEdgeMask.VISITED;
     const allMasks = parityMask | visitMask;
     graph.clearMask(allMasks);
     for (const faceSeed of graph.allHalfEdges) {
       if (!faceSeed.isMaskSet(HalfEdgeMask.VISITED)) {
-        const newFaces = HalfEdgeGraphSearch.parityFloodFromSeed(faceSeed, visitMask, parityMask);
+        const newFaces = HalfEdgeGraphSearch.parityFloodFromSeed(faceSeed, visitMask, parityEdgeTester, parityMask);
         components.push(newFaces);
       }
     }
@@ -143,7 +183,7 @@ export class HalfEdgeGraphSearch {
     }
 
     // nodeB is the real start node for search ... emit ends of each edge around the face,
-    //   stopping after emitting ndoeB as an edge end.
+    //   stopping after emitting nodeB as an edge end.
     let node = nodeB.faceSuccessor;
     for (; ;) {
       if (!context.advance(node.x, node.y)) {

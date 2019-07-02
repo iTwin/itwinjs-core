@@ -275,14 +275,14 @@ describe("Complex.HelloWorld", () => {
     const d0 = Complex.create();
     const d1 = Complex.create(1, 1);
     d1.set();
-    ck.testComplex(d0, d1, "Complex arg defautls");
-    ck.checkpoint("Complex.Helloword");
+    ck.testComplex(d0, d1, "Complex arg defaults");
+    ck.checkpoint("Complex.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
 });
 
 describe("YawPitchRollAngles", () => {
-  it("HellowWorld", () => {
+  it("HelloWorld", () => {
     const ck = new Checker();
     const ypr0 = YawPitchRollAngles.createDegrees(10, 20, 30);
     const matrix0: Matrix3d = ypr0.toMatrix3d();
@@ -292,7 +292,7 @@ describe("YawPitchRollAngles", () => {
     // console.log (ypr1);
     if (ypr1)
       expect(ypr0.maxDiffRadians(ypr1)).lessThan(Geometry.smallAngleRadians);
-    ck.checkpoint("YawPitchRollAngles.Helloword");
+    ck.checkpoint("YawPitchRollAngles.Hello world");
     expect(ck.getNumErrors()).equals(0);
   });
 });

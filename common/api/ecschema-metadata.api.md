@@ -250,7 +250,7 @@ export enum CustomAttributeContainerType {
     TargetRelationshipConstraint = 2048
 }
 
-// @internal
+// @beta
 export enum DecimalPrecision {
     // (undocumented)
     Eight = 8,
@@ -280,7 +280,7 @@ export enum DecimalPrecision {
     Zero = 0
 }
 
-// @internal
+// @beta
 export class DelayedPromise<T> implements Promise<T> {
     // (undocumented)
     readonly [Symbol.toStringTag]: "Promise";
@@ -294,14 +294,11 @@ export class DelayedPromise<T> implements Promise<T> {
 // @beta (undocumented)
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
-// Warning: (ae-incompatible-release-tags) The symbol "DelayedPromiseWithProps" is marked as @beta, but its signature references "DelayedPromise" which is marked as @internal
-// 
 // @beta (undocumented)
 export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
 
 // @beta (undocumented)
 export interface DelayedPromiseWithPropsConstructor {
-    // Warning: (ae-incompatible-release-tags) The symbol "__new" is marked as @beta, but its signature references "DelayedPromise" which is marked as @internal
     new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
 }
 
@@ -832,7 +829,7 @@ export interface Enumerator<T> {
     readonly value: T;
 }
 
-// @internal
+// @alpha
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)
@@ -853,16 +850,10 @@ export class Format extends SchemaItem {
     deserialize(formatProps: FormatProps): Promise<void>;
     // (undocumented)
     deserializeSync(formatProps: FormatProps): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "formatTraits" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
-    // 
     // (undocumented)
     readonly formatTraits: FormatTraits;
-    // Warning: (ae-incompatible-release-tags) The symbol "_formatTraits" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
-    // 
     // (undocumented)
     protected _formatTraits: FormatTraits;
-    // Warning: (ae-incompatible-release-tags) The symbol "hasFormatTrait" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
-    // 
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -873,9 +864,6 @@ export class Format extends SchemaItem {
     readonly minWidth: number | undefined;
     // (undocumented)
     protected _minWidth?: number;
-    // Warning: (ae-incompatible-release-tags) The symbol "precision" is marked as @beta, but its signature references "DecimalPrecision" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "precision" is marked as @beta, but its signature references "FractionalPrecision" which is marked as @internal
-    // 
     // (undocumented)
     readonly precision: DecimalPrecision | FractionalPrecision;
     // (undocumented)
@@ -886,22 +874,14 @@ export class Format extends SchemaItem {
     protected _roundFactor: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Format;
-    // Warning: (ae-incompatible-release-tags) The symbol "scientificType" is marked as @beta, but its signature references "ScientificType" which is marked as @internal
-    // 
     // (undocumented)
     readonly scientificType: ScientificType | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "_scientificType" is marked as @beta, but its signature references "ScientificType" which is marked as @internal
-    // 
     // (undocumented)
     protected _scientificType?: ScientificType;
     // (undocumented)
     protected setPrecision(precision: number): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "showSignOption" is marked as @beta, but its signature references "ShowSignOption" which is marked as @internal
-    // 
     // (undocumented)
     readonly showSignOption: ShowSignOption;
-    // Warning: (ae-incompatible-release-tags) The symbol "_showSignOption" is marked as @beta, but its signature references "ShowSignOption" which is marked as @internal
-    // 
     // (undocumented)
     protected _showSignOption: ShowSignOption;
     // (undocumented)
@@ -924,12 +904,8 @@ export class Format extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @beta, but its signature references "FormatType" which is marked as @internal
-    // 
     // (undocumented)
     readonly type: FormatType;
-    // Warning: (ae-incompatible-release-tags) The symbol "_type" is marked as @beta, but its signature references "FormatType" which is marked as @internal
-    // 
     // (undocumented)
     protected _type: FormatType;
     // (undocumented)
@@ -954,7 +930,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
 // @internal
 export const formatStringRgx: RegExp;
 
-// @internal
+// @beta
 export enum FormatTraits {
     // (undocumented)
     ApplyRounding = 16,
@@ -981,7 +957,7 @@ export enum FormatTraits {
 // @internal
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
-// @internal
+// @beta
 export enum FormatType {
     // (undocumented)
     Decimal = 0,
@@ -996,7 +972,7 @@ export enum FormatType {
 // @internal
 export function formatTypeToString(type: FormatType): string;
 
-// @internal
+// @beta
 export enum FractionalPrecision {
     // (undocumented)
     Eight = 8,
@@ -1218,13 +1194,9 @@ export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass
 // @beta (undocumented)
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
 
-// Warning: (ae-incompatible-release-tags) The symbol "LazyLoadedSchema" is marked as @beta, but its signature references "DelayedPromise" which is marked as @internal
-// 
 // @beta (undocumented)
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
 
-// Warning: (ae-incompatible-release-tags) The symbol "LazyLoadedSchemaItem" is marked as @beta, but its signature references "DelayedPromise" which is marked as @internal
-// 
 // @beta (undocumented)
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
 
@@ -1299,19 +1271,13 @@ export interface NoDelayedPromiseMethods {
 
 // @beta
 export class OverrideFormat {
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "DecimalPrecision" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "__constructor" is marked as @beta, but its signature references "FractionalPrecision" which is marked as @internal
     constructor(parent: Format, name: string, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
     // (undocumented)
     readonly decimalSeparator: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "formatTraits" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
-    // 
     // (undocumented)
     readonly formatTraits: FormatTraits;
     // (undocumented)
     readonly fullName: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "hasFormatTrait" is marked as @beta, but its signature references "FormatTraits" which is marked as @internal
-    // 
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -1320,19 +1286,12 @@ export class OverrideFormat {
     readonly minWidth: number | undefined;
     readonly name: string;
     readonly parent: Format;
-    // Warning: (ae-incompatible-release-tags) The symbol "precision" is marked as @beta, but its signature references "DecimalPrecision" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "precision" is marked as @beta, but its signature references "FractionalPrecision" which is marked as @internal
-    // 
     // (undocumented)
     readonly precision: DecimalPrecision | FractionalPrecision;
     // (undocumented)
     readonly roundFactor: number;
-    // Warning: (ae-incompatible-release-tags) The symbol "scientificType" is marked as @beta, but its signature references "ScientificType" which is marked as @internal
-    // 
     // (undocumented)
     readonly scientificType: ScientificType | undefined;
-    // Warning: (ae-incompatible-release-tags) The symbol "showSignOption" is marked as @beta, but its signature references "ShowSignOption" which is marked as @internal
-    // 
     // (undocumented)
     readonly showSignOption: ShowSignOption;
     // (undocumented)
@@ -1343,8 +1302,6 @@ export class OverrideFormat {
     readonly stationSeparator: string;
     // (undocumented)
     readonly thousandSeparator: string;
-    // Warning: (ae-incompatible-release-tags) The symbol "type" is marked as @beta, but its signature references "FormatType" which is marked as @internal
-    // 
     // (undocumented)
     readonly type: FormatType;
     // (undocumented)
@@ -1953,11 +1910,9 @@ export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
-    // Warning: (ae-incompatible-release-tags) The symbol "compareSchemaKeyByVersion" is marked as @alpha, but its signature references "FileSchemaKey" which is marked as @internal
     compareSchemaKeyByVersion(lhs: FileSchemaKey, rhs: FileSchemaKey): number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;
-    // Warning: (ae-incompatible-release-tags) The symbol "findEligibleSchemaKeys" is marked as @alpha, but its signature references "FileSchemaKey" which is marked as @internal
     protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
     // (undocumented)
     abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -2218,7 +2173,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     loadSchema<T extends Schema>(schemaPath: string, context: SchemaContext): Promise<T | undefined>;
 }
 
-// @internal
+// @beta
 export enum ScientificType {
     // (undocumented)
     Normalized = 0,
@@ -2229,7 +2184,7 @@ export enum ScientificType {
 // @internal
 export function scientificTypeToString(scientificType: ScientificType): string;
 
-// @internal
+// @beta
 export enum ShowSignOption {
     // (undocumented)
     NegativeParentheses = 3,

@@ -1,11 +1,10 @@
 {
   "extends": "./tsconfig-base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "module": "commonjs",
     "declaration": false,
     "declarationMap": false,
     "sourceMap": false,
+    "incremental": false,
     "rootDir": "./src",
     "outDir": "." // We want the files to be accessible within a directory at the root alongside the scripts directory
   },

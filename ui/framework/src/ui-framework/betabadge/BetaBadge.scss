@@ -1,0 +1,15 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+
+$icon-size: 16px;
+$icon-color: $buic-icon-color;
+
+.uifw-beta-badge {
+  transform: rotate(270deg);
+  width: $icon-size;
+  height: $icon-size;
+  color: $icon-color;
+}

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import * as ReactNumericInput from "react-numeric-input";
+import { ReactNumericInput, ReactNumericInputProps } from "./ReactNumericInput";
 
 import { CommonProps } from "../../utils/Props";
 import { Omit } from "../../utils/typeUtils";
@@ -16,42 +16,25 @@ import "./NumericInput.scss";
 // cSpell:ignore nostyle
 
 /** @alpha */
-export type BoundsFunctionProp = number | (() => number | undefined);
-
-/** @alpha */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 /** @alpha */
-export interface NumericInputProps extends Omit<
-  ReactNumericInput.NumericInputProps,
-  "min" | "max" | "step" | "precision" | "defaultValue" | "onInvalid" | "style" | "nostyle" | "mobile"
-  >, CommonProps {
-  componentClass?: string;
-  defaultValue?: number | string;
-  format?: ((value: number | null) => string);
-  max?: BoundsFunctionProp;
-  maxLength?: number;
-  min?: BoundsFunctionProp;
-  mobile?: boolean | "auto" | (() => boolean);
-  noValidate?: boolean | string;
-  onBlur?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-  onChange?: ((value: number | null, stringValue: string, input: HTMLInputElement) => void);
-  onFocus?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-  onInput?: React.FormEventHandler<HTMLInputElement>;
-  onInvalid?: ((error: string, value: number | null, stringValue: string) => void);
-  onKeyDown?: React.KeyboardEventHandler<HTMLDivElement | HTMLInputElement>;
-  onSelect?: React.ReactEventHandler<HTMLInputElement>;
-  onValid?: ((value: number | null, stringValue: string) => void);
-  parse?: ((stringValue: string) => number | null);
-  precision?: number | (() => number | null | undefined);
-  snap?: boolean;
+export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
   step?: StepFunctionProp;
-  strict?: boolean;
-  value?: number | string;
 }
+
+/** Default properties of [[NumericInput]] component.
+ * @alpha
+ */
+export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
 /** @alpha */
 export class NumericInput extends React.Component<NumericInputProps> {
+
+  /** @internal */
+  public static readonly defaultProps: NumericInputDefaultProps = {
+    strict: true,
+  };
 
   private _step = (_component: ReactNumericInput, direction: string): number | undefined => {
     let result: number | undefined;

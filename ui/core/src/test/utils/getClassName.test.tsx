@@ -50,4 +50,12 @@ describe("getClassName", () => {
     expect(getClassName(undefined)).to.eq("");
   });
 
+  it("should be Object if passed an empty object", () => {
+    expect(getClassName({})).to.eq("Object");
+  });
+
+  it("should be Number if passed a numeric value", () => {
+    expect(getClassName(123)).to.eq("Number");
+  });
+
 });

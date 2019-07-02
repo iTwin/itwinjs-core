@@ -31,20 +31,33 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 /** A React component that renders a simple checkbox with label
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const Checkbox: React.FunctionComponent<CheckboxProps> = (props) => {
-  const { label, status, className, style, inputClassName, inputStyle, labelClassName, labelStyle, ...inputProps } = props;
-  const classNames = classnames(
-    "core-checkbox",
-    inputProps.disabled && "disabled",
-    status,
-    className,
-  );
+export class Checkbox extends React.Component<CheckboxProps> {
+  private _id: string = "";
 
-  return (
-    <span className={classNames} style={style} >
-      <input className={inputClassName} style={inputStyle} {...inputProps} type={"checkbox"} />
-      {label && <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}> {label} </span>}
-    </span>
-  );
-};
+  constructor(props: CheckboxProps) {
+    super(props);
+
+    if (props.id)
+      this._id = props.id;
+    else
+      this._id = `core-checkbox-${Math.random().toString().replace(/0\./, "")}`;
+  }
+
+  /** @internal */
+  public render() {
+    const { label, status, className, style, inputClassName, inputStyle, labelClassName, labelStyle, id, ...inputProps } = this.props;
+    const classNames = classnames(
+      "core-checkbox",
+      inputProps.disabled && "disabled",
+      status,
+      className,
+    );
+
+    return (
+      <span className={classNames} style={style} >
+        <input id={this._id} className={inputClassName} style={inputStyle} {...inputProps} type="checkbox" />
+        {label && <label htmlFor={this._id} className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}> {label} </label>}
+      </span>
+    );
+  }
+}

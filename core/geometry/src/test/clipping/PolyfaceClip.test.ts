@@ -18,8 +18,8 @@ import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { RFunctions } from "../polyface/PolyfaceQuery.test";
 
-/* tslint:disable:no-console no-trailing-whitespace */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
     const ck = new Checker();
@@ -110,6 +110,34 @@ describe("PolyfaceClip", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceG, 0, 0, 0);
     GeometryCoreTestIO.captureGeometry(allGeometry, polyfaceP, 5, 0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "addPolygon");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
+  it("Section", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const zShift = 0.01;
+    for (const multiplier of [1, 3]) {
+      x0 += multiplier * 10;
+      const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), 3 * multiplier, 4 * multiplier);
+      if (multiplier > 1)
+        polyface.data.point.mapComponent(2,
+          (x: number, y: number, _z: number) => {
+            return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, -1.0, 8.0);
+          });
+      for (let q = 1; q <= multiplier + 1.5; q++) {
+        const clipper = ClipPlane.createNormalAndPointXYZXYZ(q, 1, 0, q, q, 1)!;
+        const section = PolyfaceClip.sectionPolyfaceClipPlane(polyface, clipper)!;
+        // save with zShift to separate cleanly from the background mesh . .
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, 0, zShift);
+        GeometryCoreTestIO.captureGeometry(allGeometry, section, x0, 0, 0);
+      }
+      // !!! save this only at end so the x0 shift does not move the mesh for the clippers.
+      GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, 0, 0);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "Section");
     expect(ck.getNumErrors()).equals(0);
 
   });

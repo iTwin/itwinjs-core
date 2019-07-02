@@ -141,6 +141,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
   }
 
   public focus() {
+    // istanbul ignore else
     if (this._inputElement)
       this._inputElement.focus();
   }

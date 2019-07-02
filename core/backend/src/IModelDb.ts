@@ -104,7 +104,8 @@ export class OpenParams {
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
- * @see [learning about IModelDb]($docs/learning/backend/IModelDb.md)
+ * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
+ * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
  */
 export class IModelDb extends IModel {
@@ -161,7 +162,12 @@ export class IModelDb extends IModel {
   private _briefcase?: BriefcaseEntry;
 
   /** @internal */
-  public get briefcase(): BriefcaseEntry { return this._briefcase!; }
+  public get briefcase(): BriefcaseEntry {
+    if (undefined === this._briefcase)
+      throw new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.iModelToken }));
+
+    return this._briefcase;
+  }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
@@ -186,10 +192,12 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
-  /** Create an *empty* local iModel *snapshot* file. Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param args The parameters that define the new iModel *snapshot*
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
   public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
@@ -197,11 +205,12 @@ export class IModelDb extends IModel {
     return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
   }
 
-  /** Create a local iModel *snapshot* file using this iModel as a *seed* or starting point.
-   * Snapshots are disconnected from iModelHub so do not have a change timeline. Snapshots are typically used for archival or data transfer purposes.
+  /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @returns A writeable IModelDb
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
   public createSnapshot(snapshotFile: string): IModelDb {
@@ -249,6 +258,7 @@ export class IModelDb extends IModel {
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
    * @see [[open]]
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
    * @beta
    */
@@ -294,7 +304,7 @@ export class IModelDb extends IModel {
       }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ token: requestContext.accessToken.toTokenString(), contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
@@ -311,7 +321,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.Message, iModelToken: imodelDb.iModelToken }));
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
@@ -334,8 +344,6 @@ export class IModelDb extends IModel {
    * @internal
    */
   public closeStandalone(): void {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
     if (!this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
     BriefcaseManager.closeStandalone(this.briefcase);
@@ -358,8 +366,6 @@ export class IModelDb extends IModel {
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
-    if (!this.briefcase)
-      throw this.newNotOpenError();
     if (this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
@@ -409,14 +415,7 @@ export class IModelDb extends IModel {
   public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
-  public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
-
-  /** Returns a new IModelError with errorNumber, message, and meta-data set properly for a *not open* error.
-   * @internal
-   */
-  public newNotOpenError() {
-    return new IModelError(IModelStatus.NotOpen, "IModelDb not open", Logger.logError, loggerCategory, () => ({ name: this.name, ...this.iModelToken }));
-  }
+  public getBriefcaseId(): BriefcaseId { return new BriefcaseId(!this.isOpen ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
 
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSQL statement to prepare
@@ -439,6 +438,11 @@ export class IModelDb extends IModel {
 
     return stmt;
   }
+
+  /** Check if the connection to the briefcase is valid or not
+   * @internal
+   */
+  public get isOpen(): boolean { return undefined !== this._briefcase; }
 
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
@@ -550,24 +554,31 @@ export class IModelDb extends IModel {
       return value;
     };
     return new Promise<QueryResponse>((resolve) => {
-      const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-      if (postrc.status !== PostStatus.Done)
-        resolve({ status: QueryResponseStatus.PostError, rows: [] });
-
-      const poll = () => {
-        const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-        if (pollrc.status === PollStatus.Done)
-          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Partial)
-          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Timeout)
-          resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-        else if (pollrc.status === PollStatus.Pending)
-          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
-        else
-          resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
-      };
-      setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+      if (!this.isOpen) {
+        resolve({ status: QueryResponseStatus.Done, rows: [] });
+      } else {
+        const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
+        if (postrc.status !== PostStatus.Done)
+          resolve({ status: QueryResponseStatus.PostError, rows: [] });
+        const poll = () => {
+          if (!this.isOpen) {
+            resolve({ status: QueryResponseStatus.Done, rows: [] });
+          } else {
+            const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
+            if (pollrc.status === PollStatus.Done)
+              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
+            else if (pollrc.status === PollStatus.Partial)
+              resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
+            else if (pollrc.status === PollStatus.Timeout)
+              resolve({ status: QueryResponseStatus.Timeout, rows: [] });
+            else if (pollrc.status === PollStatus.Pending)
+              setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+            else
+              resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+          }
+        };
+        setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+      }
     });
   }
   /** Execute a query and stream its results
@@ -886,9 +897,6 @@ export class IModelDb extends IModel {
    */
   public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
     requestContext.enter();
-    if (!this.briefcase)
-      throw this.newNotOpenError();
-
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchema(schemaFileName);
       if (DbResult.BE_SQLITE_OK !== status)
@@ -929,7 +937,6 @@ export class IModelDb extends IModel {
       Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
-    Logger.logTrace(loggerCategory, "IModelDb found in briefcase cache", () => iModelToken);
     return briefcaseEntry.iModelDb;
   }
 
@@ -954,7 +961,6 @@ export class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    if (!this.briefcase) throw this.newNotOpenError();
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
@@ -965,8 +971,6 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
   public prepareStatement(sql: string): ECSqlStatement {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
     const stmt = new ECSqlStatement();
     stmt.prepare(this.nativeDb, sql);
     return stmt;
@@ -1101,13 +1105,17 @@ export class IModelDb extends IModel {
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
-      request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-        this._snaps.delete(sessionId);
-        if (ret.error !== undefined)
-          reject(new Error(ret.error.message));
-        else
-          resolve(ret.result);
-      });
+      if (!this.isOpen) {
+        reject(new Error("not open"));
+      } else {
+        request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
+          this._snaps.delete(sessionId);
+          if (ret.error !== undefined)
+            reject(new Error(ret.error.message));
+          else
+            resolve(ret.result);
+        });
+      }
     });
   }
 
@@ -1201,7 +1209,6 @@ export namespace IModelDb {
      * @return a json string with the properties of the model.
      */
     public getModelJson(modelIdArg: string): string {
-      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
       const val = this._iModel.nativeDb.getModel(modelIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "Model=" + modelIdArg);
@@ -1237,9 +1244,8 @@ export namespace IModelDb {
       if (props.isPrivate === undefined) // temporarily work around bug in addon
         props.isPrivate = false;
 
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
-      if (IModelStatus.Success !== jsClass.onInsert(props))
-        return Id64.invalid;
+      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(props);
 
       const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
       if (val.error)
@@ -1255,9 +1261,8 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: ModelProps): void {
-      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
-      if (IModelStatus.Success !== jsClass.onUpdate(props))
-        return;
+      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(props);
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
@@ -1273,13 +1278,12 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getModelProps(id);
-        const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
-        if (IModelStatus.Success !== jsClass.onDelete(props))
-          return;
+        const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
+        jsClass.onDelete(props);
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+          throw new IModelError(error, "deleting model id " + id, Logger.logWarning, loggerCategory);
 
         jsClass.onDeleted(props);
       });
@@ -1293,8 +1297,7 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /**
-     * Read element data from iModel as a json string
+    /** Read element data from iModel as a json string
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @return a json string with the properties of the element.
      */
@@ -1305,8 +1308,7 @@ export namespace IModelDb {
       return val.result! as T;
     }
 
-    /**
-     * Get properties of an Element by Id, FederationGuid, or Code
+    /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
@@ -1318,8 +1320,7 @@ export namespace IModelDb {
       return this.getElementJson<T>(JSON.stringify(elementId));
     }
 
-    /**
-     * Get an element by Id, FederationGuid, or Code
+    /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
@@ -1332,8 +1333,7 @@ export namespace IModelDb {
       return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
     }
 
-    /**
-     * Query for the Id of the element that has a specified code.
+    /** Query for the Id of the element that has a specified code.
      * This method is for the case where you know the element's Code.
      * If you only know the code *value*, then in the simplest case, you can query on that
      * and filter the results.
@@ -1362,24 +1362,35 @@ export namespace IModelDb {
       });
     }
 
-    /**
-     * Create a new instance of an element.
+    /** Query for the last modified time of the specified element.
+     * @internal
+     */
+    public queryLastModifiedTime(elementId: Id64String): string {
+      const sql = `SELECT LastMod FROM ${Element.classFullName} WHERE ECInstanceId=:elementId`;
+      return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
+        statement.bindId("elementId", elementId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          return statement.getValue(0).getDateTime();
+        }
+        throw new IModelError(IModelStatus.InvalidId, "Element not found", Logger.logWarning, loggerCategory);
+      });
+    }
+
+    /** Create a new instance of an element.
      * @param elProps The properties of the new element.
      * @throws [[IModelError]] if there is a problem creating the element.
      */
     public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
-    /**
-     * Insert a new element into the iModel.
+    /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
       const iModel = this._iModel;
-      const jsClass = iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
-      if (IModelStatus.Success !== jsClass.onInsert(elProps, iModel))
-        return Id64.invalid;
+      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(elProps, iModel);
 
       const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (val.error)
@@ -1396,19 +1407,17 @@ export namespace IModelDb {
      */
     public updateElement(elProps: ElementProps): void {
       const iModel = this._iModel;
-      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName);
-      if (IModelStatus.Success !== jsClass.onUpdate(elProps, iModel))
-        return;
+      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(elProps, iModel);
 
-      const error = iModel.nativeDb.updateElement(JSON.stringify(elProps));
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+      const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps));
+      if (stat !== IModelStatus.Success)
+        throw new IModelError(stat, "error updating element id " + elProps.id, Logger.logWarning, loggerCategory);
 
       jsClass.onUpdated(elProps, iModel);
     }
 
-    /**
-     * Delete one or more elements from this iModel.
+    /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
      */
@@ -1416,9 +1425,8 @@ export namespace IModelDb {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getElementProps(id);
-        const jsClass = iModel.getJsClass<typeof Element>(props.classFullName);
-        if (IModelStatus.Success !== jsClass.onDelete(props, iModel))
-          return;
+        const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
+        jsClass.onDelete(props, iModel);
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
@@ -1485,9 +1493,6 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
-
       const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
@@ -1498,9 +1503,6 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
-
       const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory);
@@ -1656,8 +1658,6 @@ export namespace IModelDb {
     /** @internal */
     public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<TileTreeProps> {
       requestContext.enter();
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
 
       return new Promise<TileTreeProps>((resolve, reject) => {
         requestContext.enter();
@@ -1672,12 +1672,16 @@ export namespace IModelDb {
 
     private pollTileContent(resolve: (arg0: Uint8Array) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
       requestContext.enter();
-      if (!this._iModel.briefcase) {
-        reject(this._iModel.newNotOpenError());
+
+      let ret;
+      try {
+        ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
+      } catch (err) {
+        // Typically "imodel not open".
+        reject(err);
         return;
       }
 
-      const ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
@@ -1706,8 +1710,6 @@ export namespace IModelDb {
     /** @internal */
     public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
       requestContext.enter();
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
 
       return new Promise<Uint8Array>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
@@ -1744,9 +1746,9 @@ export class TxnManager {
   private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 
   /** @internal */
-  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId, this._iModel); }
+  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { (this._getElementClass(elClassName) as any).onBeforeOutputsHandled(elId, this._iModel); }
   /** @internal */
-  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onAllInputsHandled(elId, this._iModel); }
+  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { (this._getElementClass(elClassName) as any).onAllInputsHandled(elId, this._iModel); }
 
   /** @internal */
   protected _onRootChanged(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel); }

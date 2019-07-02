@@ -14,6 +14,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import * as os from "os";
+import { URL } from "url";
 
 const loggerCategory: string = ClientsBackendLoggerCategory.IModelHub;
 
@@ -222,7 +223,18 @@ export class AzureFileHandler implements FileHandler {
         });
     });
   }
-
+  /**
+   * Make url safe for logging by removing sensitive information
+   * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
+   */
+  private static getSafeUrlForLogging(url: string): string {
+    const safeToLogDownloadUrl: URL = new URL(url);
+    if (safeToLogDownloadUrl.search.length > 0)
+      safeToLogDownloadUrl.search = "...";
+    if (safeToLogDownloadUrl.hash.length > 0)
+      safeToLogDownloadUrl.hash = "...";
+    return safeToLogDownloadUrl.toString();
+  }
   /**
    * Download a file from AzureBlobStorage for the iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
@@ -235,8 +247,10 @@ export class AzureFileHandler implements FileHandler {
    */
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
     progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    // strip search and hash parameters from download Url for logging purpose
     requestContext.enter();
-    Logger.logInfo(loggerCategory, `Downloading file from ${downloadUrl}`);
+    const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
+    Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
     ArgumentCheck.defined("downloadToPathname", downloadToPathname);
 
@@ -258,7 +272,7 @@ export class AzureFileHandler implements FileHandler {
       return Promise.reject(err);
     }
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Downloaded file from ${downloadUrl}`);
+    Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
   }
   /** Get encoded block id from its number. */
   private getBlockId(blockId: number) {
@@ -302,8 +316,9 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[ResponseError]] if the file cannot be uploaded.
    */
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(uploadUrlString);
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Uploading file to ${uploadUrlString}`);
+    Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 

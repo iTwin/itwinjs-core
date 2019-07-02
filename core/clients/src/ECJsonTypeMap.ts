@@ -388,8 +388,7 @@ export class ECJsonTypeMap {
           }
         }
 
-        typedInstance[propertyEntry.typedPropertyName] = ecValue;
-
+        typedInstance[propertyEntry.typedPropertyName as keyof T] = ecValue;
       });
     });
 

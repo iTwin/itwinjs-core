@@ -1,6 +1,9 @@
 sep=;
 Release Tag;API Item
+beta;AbandonedError 
 beta;assert(condition: boolean, msg?: string): void
+alpha;AsyncMutex
+alpha;AsyncMutexUnlockFnType = () => void
 beta;AuthStatus
 public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
@@ -62,6 +65,7 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
+beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator
 public;PerfLogger 

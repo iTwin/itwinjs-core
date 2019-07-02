@@ -14,6 +14,8 @@ public;AxisAlignedBox3dProps = Range3dProps
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
+beta;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+beta;BackgroundMapSettings
 public;BackgroundMapType
 beta;BatchType
 public;class BentleyCloudRpcConfiguration 
@@ -66,6 +68,7 @@ public;DisplayStyleProps
 beta;DisplayStyleSettings
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
+beta;DistanceExpressionProps
 beta;DPoint2dProps = number[]
 public;EcefLocation 
 public;EcefLocationProps
@@ -136,6 +139,8 @@ public;HSVColor
 public;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
+beta;ILinearElementProps 
+beta;ILinearlyLocatedAttributionProps
 public;ImageBuffer
 public;ImageBufferFormat
 internal;ImageLight
@@ -157,6 +162,7 @@ public;InformationPartitionElementProps
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
 internal;interop: any
+beta;IReferentProps
 public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 public;LatAndLong
@@ -165,6 +171,11 @@ internal;Light
 internal;LightLocationProps 
 internal;LightProps
 internal;LightType
+beta;LinearlyLocatedAttributionProps 
+beta;LinearlyReferencedAtLocationAspectProps 
+beta;LinearlyReferencedAtLocationProps
+beta;LinearlyReferencedFromToLocationAspectProps 
+beta;LinearlyReferencedFromToLocationProps
 public;LinePixels
 public;LineStyle
 beta;LineStyleProps 
@@ -231,11 +242,12 @@ internal;QPoint3dList
 internal;Quantization
 public;QueryLimit
 public;QueryPriority
-internal;QueryQuota
-internal;QueryResponse
-internal;QueryResponseStatus
+public;QueryQuota
+public;QueryResponse
+public;QueryResponseStatus
 public;Rank
 internal;ReadableFormData 
+beta;ReferentElementProps 
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps

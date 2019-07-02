@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
+import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 import "./Group.scss";
 
 /** Available handle modes.
@@ -47,12 +47,16 @@ export class HandleModeHelpers {
  * @alpha
  */
 export interface TabGroupProps extends CommonProps {
-  /** Describes to which side the widget of this tab is anchored. */
-  anchor: HorizontalAnchor;
   /** Actual tabs. See: [[Tab]], [[TabSeparator]] */
   children?: React.ReactNode;
   /** Describes handle mode of this tab group. */
   handle: HandleMode;
+  /** Describes to which side the widget of this tab is anchored. */
+  horizontalAnchor: HorizontalAnchor;
+  /** Describes if the tab group is collapsed. */
+  isCollapsed?: boolean;
+  /** Describes to which side the widget is vertically anchored. */
+  verticalAnchor: VerticalAnchor;
 }
 
 /** Tab group component for stacked widget.
@@ -62,8 +66,10 @@ export class TabGroup extends React.PureComponent<TabGroupProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-group",
+      this.props.isCollapsed && "nz-collapsed",
       HandleModeHelpers.getCssClassName(this.props.handle),
-      HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
       this.props.className);
 
     return (

@@ -24,6 +24,12 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GraphChecker } from "./Graph.test";
 import { HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { SweepContour } from "../../solid/SweepContour";
+import { prettyPrint } from "../testFunctions";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 
 function rotateArray(data: Point3d[], index0: number) {
   const out = [];
@@ -114,11 +120,13 @@ describe("Triangulation", () => {
 
   it("SquareWaves", () => {
     let degreeCount = 0;
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
     for (const degrees of [0, 10, 30, 95, -20]) {
       let y0 = 0.0;
       for (const numPhase of [1, 3, 7, 15]) {
-        const x0 = 4.0 + 6.0 * numPhase * degreeCount;
         const name = "SquareWave" + degreeCount + "." + numPhase;
+        degreeCount++;
         const pointA = Point3d.create(1.5 * numPhase, 0, 0);
         const yShiftVector = Vector3d.create(0, 2, 0);
         const rotation = Transform.createFixedPointAndMatrix(
@@ -145,12 +153,12 @@ describe("Triangulation", () => {
         // pfC.tryTranslateInPlace(x0 + 4 * yShiftVector.x, y0 + 4 * yShiftVector.y, 0);
 
         ls1.tryTranslateInPlace(x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, [ls1, ls, pfA, pfB], x0, y0);
         y0 += 3 + 4 * numPhase;
-        GeometryCoreTestIO.saveGeometry([ls1, ls, pfA, pfB], "Graph", name);
       }
-      degreeCount++;
+      x0 += 100.0;
     }
-    ck.checkpoint("SquareWaves");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "SquareWaves");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -290,12 +298,12 @@ describe("Triangulation", () => {
     const allGeometry = [];
     // REMARK
     // EDL Feb 20 2019
-    // Triangulation introduces a search zheap (not understood by me at this time) for very large polygons.
+    // Triangulation introduces a search z heap (not understood by me at this time) for very large polygons.
     // With original trigger of 80 edges, some invalid triangulations occur for numRecursion = 2 (the original limit)
     // Raise the trigger to 200 and all is fine.
     // But the statement coverage drops significantly -- 94% to 93.37
     // numRecursion = 3 generates larger polygons (around 400) and again there are some failures.
-    // so we conclude the zheap is large chunk of code with some bugs.
+    // so we conclude the z heap is large chunk of code with some bugs.
     // This is an unlikely use case at this time.  So
     //   1) the heap trigger is left at 200 (see Triangulation.ts)
     //   2) add a method `Triangulation.setAndReturnHeapTrigger (number): number`
@@ -306,8 +314,8 @@ describe("Triangulation", () => {
         const baseVectorB = baseVectorA.clone();
         for (const generatorFunction of [
           Sample.createFractalSquareReversingPattern,
-          Sample.createFractalDiamonConvexPattern,
-          Sample.createFractalLReversingPatterh,
+          Sample.createFractalDiamondConvexPattern,
+          Sample.createFractalLReversingPattern,
           Sample.createFractalHatReversingPattern,
           Sample.createFractalLMildConcavePatter]) {
           for (const degrees of [0, 10, 79]) {
@@ -339,10 +347,10 @@ describe("Triangulation", () => {
       baseVectorA.y = 0.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulateFractals");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulateFractals");
   });
   /* These cases had problems -- but maybe only due to bad input?
-    it.only("ProblemTriangulation", () => {
+    it("ProblemTriangulation", () => {
       Triangulator.setAndReturnHeapTrigger(80);
       const baseVectorA = Vector3d.create(0, 0, 0);
       const allGeometry = [];
@@ -455,16 +463,17 @@ describe("Triangulation", () => {
       }
       x0 += 4.0;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "TriangulationWithColinearVertices");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "TriangulationWithColinearVertices");
   });
   // public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false) {
   it("PieCuts", () => {
+    const ck = new Checker();
 
     const numThetaSkip = 3;
     const allGeometry = [];
     const r = 1.0;
     let x0 = 0.0;
-    // proimise: all x above x0 is free space.
+    // promise: all x above x0 is free space.
     for (const points of [
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
@@ -472,20 +481,27 @@ describe("Triangulation", () => {
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
       Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 2, 8, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 270), 5, 12, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-10, 270), 2, 8, false),
+      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-30, 200), 5, 12, false),
       Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
     ]) {
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
       const range = Range3d.createArray(points);
+      const expectedTriangleCount = points.length - 2;   // we know that the point array is unclosed !!!
       const dx = range.xLength();
       const dy = range.yLength();
       const ex = x0 - range.low.x;
+      const polygonArea = PolygonOps.areaXY(points);
       x0 += r;
       for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
         const pointsB = rotateArray(points, rotation);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
+        const faceSummary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, false);
+        ck.testExactNumber(1, faceSummary.numNegative, "Exactly one outer loop after triangulation");
+        ck.testExactNumber(0, faceSummary.numZero, " no slivers");
+        ck.testExactNumber(expectedTriangleCount, faceSummary.numPositive, "triangle count");
+        ck.testCoordinate(polygonArea, faceSummary.positiveSum, "positive area sum");
         const ls = LineString3d.create(points);
         ls.tryTranslateInPlace(ex, 0);
         allGeometry.push(ls);
@@ -502,6 +518,159 @@ describe("Triangulation", () => {
       }
       x0 += 2.0 * dx;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "PieCuts");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PieCuts");
+    expect(ck.getNumErrors()).equals(0);
   });
+
+  it("FacetsInCircle", () => {
+    const ck = new Checker();
+    const savedMeshes: GeometryQuery[] = [];
+    let x0 = 0;
+    for (const r of [1.0, 3.234242342]) {
+      let y0 = 0;
+      for (const n of [4, 7, 16, 19]) {
+        const points = [];
+        for (let i = 0; i < n; i++) {
+          const angle = Angle.createDegrees(i * 360 / n);
+          points.push(Point3d.create(r * angle.cos(), r * angle.sin()));
+        }
+        points.push(points[0].clone());
+        x0 += 2.0 * r;
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+        ck.testExactNumber(n - 1, graph.countFaceLoops());
+        if (graph)
+          GeometryCoreTestIO.captureGeometry(savedMeshes, PolyfaceBuilder.graphToPolyface(graph), x0, y0, 0);
+        y0 += 2.0 * r;
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "Circles");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("DegeneratePolygons", () => {
+    const ck = new Checker();
+    for (const points of [
+      [{ x: 5.36, y: 8.85, z: 23.78 },
+      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+      { x: 5.36, y: 8.85, z: 23.78 },
+      { x: 5.36, y: 8.85, z: 23.78 }],
+      [{ x: 0, y: 0, z: 0 },
+      { x: 3.4621419875139443, y: -2.0064530227179844, z: 0 },
+      { x: 0, y: 0, z: 0 }],
+      [{ x: 0, y: 0, z: 0 },
+      { x: 2.9577539019415324, y: -0.8576720613542541, z: 0 },
+      { x: 8.881784197001252e-16, y: 0, z: 0 }],
+    ]) {
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      if (graph) {
+        const polyface = PolyfaceBuilder.graphToPolyface(graph);
+        ck.testExactNumber(polyface.facetCount, 0, "degenerate triangle produced no facets.");
+      }
+    }
+  });
+  it("facets for ACS", () => {
+    const ck = new Checker();
+    const savedMeshes = [];
+    let counter0 = 0;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // sawtooth. Triangulate leading portions that are valid polygons (edge from origin does not cross)
+      const basePoints = [
+        Point3d.create(0, 1, 0),
+        Point3d.create(4, 1, 0),
+        Point3d.create(a, 0, 0),
+        Point3d.create(6, 2, 0),
+        Point3d.create(a, 4, 0),
+        Point3d.create(4, 3, 0),
+        Point3d.create(0, 3, 0)];
+      let counter1 = 0;
+      const needParams = true;
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        const arrowPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          arrowPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+        const loop = Loop.createPolygon(arrowPoints);
+        const sweepContour = SweepContour.createForLinearSweep(loop);
+
+        const options = new StrokeOptions();
+        options.needParams = false;
+        options.needParams = needParams;
+        const builder = PolyfaceBuilder.create(options);
+
+        sweepContour!.emitFacets(builder, false);
+        const polyface = builder.claimPolyface(true);
+        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, "Triangle count in arrow " + counter0 + "." + counter1 + " needParams" + needParams)
+          || Checker.noisy.ACSArrows) {
+          console.log(" Triangulation From Start index " + startIndex, " (needParams " + needParams + ")");
+          console.log("   arrow parameter " + a);
+          console.log("    Facet Count " + polyface.facetCount, " case " + counter0 + "." + counter1);
+          console.log(prettyPrint(arrowPoints));
+          const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
+          console.log(prettyPrint(jsPolyface));
+        }
+        polyface.tryTranslateInPlace(counter1 * 10, counter0 * 10, 0);
+        savedMeshes.push(polyface);
+        counter1++;
+      }
+      counter0++;
+    }
+    GeometryCoreTestIO.saveGeometry(savedMeshes, "Triangulation", "ACSArrows");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("BowTies", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const step = 10.0;
+    let dx = 0.;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // Create bow ties.   Start triangulation at each vertex.
+      const basePoints = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(4, 0, 0),
+        Point3d.create(0, a, 0),
+        Point3d.create(4, a, 0)];
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        let dy = 0.0;
+        const shiftedPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
+        dx += step;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "BowTies");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("FlexQuad", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const step = 10.0;
+    let dx = 0.;
+    for (const a of [4.5]) { // , 4.1, 3.5, 3]) {
+      // Create bow ties.   Start triangulation at each vertex.
+      const basePoints = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(4, 0, 0),
+        Point3d.create(4, a, 0),
+        Point3d.create(3, 1, 0)];
+      for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
+        let dy = 0.0;
+        const shiftedPoints = [];
+        for (let j = 0; j < basePoints.length; j++)
+          shiftedPoints.push(basePoints[(startIndex + j) % basePoints.length]);
+
+        const graph = Triangulator.createTriangulatedGraphFromSingleLoop(shiftedPoints);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(shiftedPoints), dx, dy += step);
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, dx, dy += step);
+        dx += step;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "FlexQuad");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

@@ -6,6 +6,8 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import * as _ from "lodash";
+
 import {
   ActivityMessageDetails,
   NotifyMessageDetails,
@@ -21,6 +23,7 @@ import { UiFramework } from "../UiFramework";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
 import { ConfigurableUiActionId } from "../configurableui/state";
+import { MessageSpan } from "./MessageSpan";
 
 class MessageBoxCallbacks {
   constructor(
@@ -44,7 +47,7 @@ export interface MessageAddedEventArgs {
  * @public
  */
 export interface ActivityMessageEventArgs {
-  message: string;
+  message: HTMLElement | string;
   percentage: number;
   details?: ActivityMessageDetails;
   restored?: boolean;
@@ -55,8 +58,8 @@ export interface ActivityMessageEventArgs {
  */
 export interface InputFieldMessageEventArgs {
   target: Element;
-  messageText: string;
-  detailedMessage: string;
+  messageText: HTMLElement | string;
+  detailedMessage: HTMLElement | string;
   priority: OutputMessagePriority;
 }
 
@@ -92,7 +95,7 @@ export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
  * Used to display tracked progress in ActivityMessage.
  */
 class OngoingActivityMessage {
-  public message: string = "";
+  public message: HTMLElement | string = "";
   public percentage: number = 0;
   public details: ActivityMessageDetails = new ActivityMessageDetails(true, true, true);
   public isRestored: boolean = false;
@@ -105,6 +108,7 @@ export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _messages: NotifyMessageDetails[] = new Array<NotifyMessageDetails>();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
+  private static _lastMessage?: NotifyMessageDetails;
 
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -127,17 +131,22 @@ export class MessageManager {
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this._lastMessage = undefined;
+  }
+
+  /** Set the maximum number of cached message. */
+  public static setMaxCachedMessages(max: number): void {
+    this._maxCachedMessages = max;
+    this.checkMaxCachedMessages();
   }
 
   /** Output a message and/or alert to the user.
    * @param  message  Details about the message to output.
    */
   public static addMessage(message: NotifyMessageDetails): void {
-    this._messages.push(message);
-
-    if (this._messages.length > this._maxCachedMessages) {
-      const numToErase = this._maxCachedMessages / 4;
-      this._messages.splice(0, numToErase);
+    if (!_.isEqual(message, this._lastMessage)) {
+      this.addToMessageCenter(message);
+      this._lastMessage = message;
     }
 
     if (message.msgType === OutputMessageType.Alert) {
@@ -148,6 +157,22 @@ export class MessageManager {
     }
 
     this.onMessageAddedEvent.emit({ message });
+  }
+
+  /** Add a message to the Message Center.
+   * @param  message  Details about the message to output.
+   */
+  public static addToMessageCenter(message: NotifyMessageDetails): void {
+    this._messages.push(message);
+    this.checkMaxCachedMessages();
+  }
+
+  /** Checks number of messages against the maximum. */
+  private static checkMaxCachedMessages(): void {
+    if (this._messages.length > this._maxCachedMessages) {
+      const numToErase = this._maxCachedMessages / 4;
+      this._messages.splice(0, numToErase);
+    }
   }
 
   /**
@@ -170,7 +195,7 @@ export class MessageManager {
    *                    is now being restored from the status bar.
    * @returns true if details is valid and can be used to display ActivityMessage
    */
-  public static setupActivityMessageValues(message: string, percentage: number, restored?: boolean): boolean {
+  public static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean {
     this._OngoingActivityMessage.message = message;
     this._OngoingActivityMessage.percentage = percentage;
 
@@ -216,7 +241,7 @@ export class MessageManager {
    * @param detailedMessage   Optional detailed message text to display.
    * @param priority   Optional message priority which controls icon to display.
    */
-  public static displayInputFieldMessage(target: HTMLElement, messageText: string, detailedMessage = "", priority = OutputMessagePriority.Error) {
+  public static displayInputFieldMessage(target: HTMLElement, messageText: HTMLElement | string, detailedMessage: HTMLElement | string = "", priority = OutputMessagePriority.Error) {
     this.onInputFieldMessageAddedEvent.emit({
       target,
       messageText,
@@ -296,12 +321,12 @@ export class MessageManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public static async openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const title = UiFramework.translate("general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {
       const messageBoxCallbacks = new MessageBoxCallbacks(onFulfilled, onRejected);
-      const messageElement = <span dangerouslySetInnerHTML={{ __html: message }} />;
+      const messageElement = <MessageSpan message={message} />;
       ModalDialogManager.openDialog(this.standardMessageBox(mbType, icon, title, messageElement, messageBoxCallbacks));
     });
   }
@@ -311,11 +336,11 @@ export class MessageManager {
     const iconType = this.getIconType(messageDetails);
     const content = (
       <>
-        <span dangerouslySetInnerHTML={{ __html: messageDetails.briefMessage }} />
+        <MessageSpan message={messageDetails.briefMessage} />
         {
           messageDetails.detailedMessage && (
             <p>
-              <span dangerouslySetInnerHTML={{ __html: messageDetails.detailedMessage }} />
+              <MessageSpan message={messageDetails.detailedMessage} />
             </p>
           )
         }

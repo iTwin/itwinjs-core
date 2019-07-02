@@ -8,6 +8,9 @@ exports[`<ResizeGrip /> renders correctly 1`] = `
   onMouseMove={[Function]}
   onMouseUp={[Function]}
 >
-  <div />
+  <div
+    className="nz-grip"
+    onClick={[Function]}
+  />
 </PointerCaptor>
 `;

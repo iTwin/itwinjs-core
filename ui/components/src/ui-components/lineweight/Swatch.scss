@@ -17,23 +17,32 @@
   min-height: 24px;
   box-sizing: border-box;
 
+  // remove inner focus ring that is specific to Firefox.
+  &::-moz-focus-inner {
+    border: 0px;
+  }
+
+  &:focus {
+    outline: 1px solid $buic-row-selection;
+  }
+
   &[disabled] {
     opacity: .2;
     cursor: default;
   }
 
-  > span {
+  >span {
     width: 1.5em;
     text-align: right;
   }
 
-  > div {
+  >div {
     flex: 1;
     background: $buic-foreground-body;
     margin-left: 15px;
   }
 }
 
-.components-lineweight-swatch.hide-label > span {
+.components-lineweight-swatch.hide-label>span {
   display: none;
 }

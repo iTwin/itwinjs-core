@@ -28,65 +28,66 @@ export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLBu
   readonly?: boolean;
   /** function to run when user selects a line weight swatch */
   onClick?: () => void;
-  /** ref for Button that is to received focus. */
-  focusRef?: React.Ref<HTMLButtonElement>;
 }
 
 /** LineWeightSwatch Functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const LineWeightSwatch: React.FunctionComponent<LineWeightSwatchProps> = (props) => {
-
-  const {
-    onClick, colorDef, weight, hideLabel, focusRef, autoFocus, className, // do not pass on color swatch specific props
-    disabled, readonly, ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
-  } = props as any;
-
-  let rgbaString = "";
-
-  if (colorDef) {
-    const { b, g, r, t } = colorDef.colors as any;
-    rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
+  /** @internal */
+  constructor(props: LineWeightSwatchProps) {
+    super(props);
   }
 
-  const buttonStyle: React.CSSProperties = colorDef ? {
-    ...props.style,
-    color: rgbaString,
-  } : {
-      ...props.style,
-    };
+  public componentDidMount() {
+    // tslint:disable-next-line: no-console
+    // console.log(`LineWeightSwatchProps.componentDidMount setFocusRef=${this.props.setFocusRef} focusRef=${this.props.focusRef && this.props.focusRef.current ? "set" : "unset"}`);
+  }
 
-  const svgStyle: React.CSSProperties = colorDef ? {
-    height: `${weight}px`,
-    background: rgbaString,
-  } : {
+  public render() {
+    const {
+      onClick, colorDef, weight, hideLabel, className, // do not pass on color swatch specific props
+      disabled, readonly, ...otherProps /* tslint:disable-line: trailing-comma */ // pass-through props
+    } = this.props as any;
+
+    let rgbaString = "";
+
+    if (colorDef) {
+      const { b, g, r, t } = colorDef.colors as any;
+      rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+    }
+
+    const buttonStyle: React.CSSProperties = colorDef ? {
+      ...this.props.style,
+      color: rgbaString,
+    } : {
+        ...this.props.style,
+      };
+
+    const svgStyle: React.CSSProperties = colorDef ? {
       height: `${weight}px`,
+      background: rgbaString,
+    } : {
+        height: `${weight}px`,
+      };
+
+    const handleClick = (_e: React.MouseEvent) => {
+      if (onClick)
+        onClick();
     };
 
-  const handleClick = (_e: React.MouseEvent) => {
-    if (onClick)
-      onClick();
-  };
+    const classes = classnames(
+      "components-lineweight-swatch",
+      hideLabel && "hide-label",
+      readonly && "readonly",
+      className,
+    );
 
-  const classes = classnames(
-    "components-lineweight-swatch",
-    hideLabel && "hide-label",
-    readonly && "readonly",
-    autoFocus && "active",
-    className,
-  );
-
-  const ref = props.autoFocus ? focusRef : null;
-
-  return (
-    <button {...otherProps} style={buttonStyle} className={classes} onClick={handleClick} ref={ref} disabled={disabled}>
-      {!hideLabel && <span>{weight.toFixed(0)}</span>}
-      <div style={svgStyle} />
-    </button>
-  );
-};
-
-// <svg viewBox="0 0 120 24">
-// <line x1="0" y1="12" x2="120" y2="12" strokeWidth={weight} />  /* stroke={rgbaString} */
-// </svg>
+    return (
+      <button {...otherProps} style={buttonStyle} className={classes} onClick={handleClick} disabled={disabled}>
+        {!hideLabel && <span>{weight.toFixed(0)}</span>}
+        <div style={svgStyle} />
+      </button>
+    );
+  }
+}

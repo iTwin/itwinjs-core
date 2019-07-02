@@ -6,9 +6,12 @@
 
 import { memoize } from "lodash";
 import * as React from "react";
-import ReactDataGrid from "react-data-grid";
 import ReactResizeDetector from "react-resize-detector";
 import classnames from "classnames";
+
+// Matches how react-data-grid is exported
+// https://github.com/Microsoft/TypeScript-Handbook/blob/master/pages/Modules.md#export--and-import--require
+import ReactDataGrid = require("react-data-grid");
 
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
@@ -223,8 +226,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _rowLoadGuid = Guid.createValue();
   private _rowSelectionHandler: SelectionHandler<number>;
   private _cellSelectionHandler: SelectionHandler<CellKey>;
-  private _selectedRowIndices: Set<number> = new Set();
-  private _selectedCellKeys: Map<string, Set<number>> = new Map(); // column keys -> rowIndices
+  private _selectedRowIndices: Set<number> = new Set<number>();
+  private _selectedCellKeys: Map<string, Set<number>> = new Map<string, Set<number>>(); // column keys -> rowIndices
   private _rowItemSelectionHandlers?: Array<SingleSelectionHandler<number>>;
   private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
   private _pressedItemSelected: boolean = false;
@@ -376,6 +379,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const columnDescriptions = await this.props.dataProvider.getColumns();
     this._currentUpdate = TableUpdate.None;
 
+    // istanbul ignore next
     if (!this._isMounted)
       return UpdateStatus.Abort;
 
@@ -427,6 +431,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const rowsCount = await this.props.dataProvider.getRowsCount();
     this._currentUpdate = TableUpdate.None;
 
+    // istanbul ignore next
     if (!this._isMounted)
       return UpdateStatus.Abort;
 
@@ -465,7 +470,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   /** @internal */
   public updateSelectedRows() {
-    const selectedRowIndices = new Set();
+    const selectedRowIndices = new Set<number>();
     if (this.props.isRowSelected) {
       for (let rowIndex = 0; rowIndex < this.state.rows.length; rowIndex++) {
         if (this.state.rows[rowIndex] && this.props.isRowSelected(this.state.rows[rowIndex].item))
@@ -573,7 +578,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _rowComponentSelectionHandler: MultiSelectionHandler<number> = {
     deselectAll: () => {
-      this._selectedRowIndices = new Set();
+      this._selectedRowIndices = new Set<number>();
       if (!this._pressedItemSelected) {
         this._deactivateCellEditor();
         this.forceUpdate();
@@ -628,7 +633,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _cellComponentSelectionHandler: MultiSelectionHandler<CellKey> = {
     deselectAll: () => {
-      this._selectedCellKeys = new Map();
+      this._selectedCellKeys = new Map<string, Set<number>>();
       this.forceUpdate();
     },
     selectBetween: (item1: CellKey, item2: CellKey) => {
@@ -698,6 +703,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const maxIndex = Math.min(this.state.rowsCount, index + this._pageAmount);
     const loadResult = await this.loadRows(index, maxIndex);
 
+    // istanbul ignore next
     if (!this._isMounted)
       return;
 
@@ -852,6 +858,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private async gridSortAsync(columnKey: string, directionEnum: SortDirection) {
     let columnIndex = this.getColumnIndexFromKey(columnKey);
+    // istanbul ignore next
     if (columnIndex < 0)
       return;
 
@@ -864,6 +871,8 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     await this.props.dataProvider.sort(columnIndex, directionEnum);
+
+    // istanbul ignore next
     if (!this._isMounted)
       return;
 
@@ -1130,6 +1139,7 @@ export class Table extends React.Component<TableProps, TableState> {
                 headerRowHeight={TABLE_ROW_HEIGHT}
                 rowHeight={TABLE_ROW_HEIGHT}
                 onGridSort={this._handleGridSort}
+                enableRowSelect={null}  // Prevent deprecation warning
               />}
           </ReactResizeDetector>
         </div>

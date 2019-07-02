@@ -7,13 +7,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { MergeTargetProps } from "./Merge";
-import "./Target.scss";
 
-/** Basic zone target component used by [[BackTarget]] and [[MergeTarget]] components.
+/** Basic component used by widget targets. I.e. [[ZoneTarget]], [[StagePanelTarget]]
  * @internal
  */
-export class ZoneTarget extends React.PureComponent<MergeTargetProps> {
+export class WidgetTarget extends React.PureComponent<MergeTargetProps> {
   private _isTargeted = false;
+  private _target = React.createRef<HTMLDivElement>();
 
   public componentWillUnmount() {
     this._isTargeted && this.props.onTargetChanged && this.props.onTargetChanged(false);
@@ -27,19 +27,26 @@ export class ZoneTarget extends React.PureComponent<MergeTargetProps> {
     return (
       <div
         className={className}
+        onMouseEnter={this._handleMouseEnter}
+        onMouseMove={this._handleMouseMove}
+        onMouseLeave={this._handleMouseLeave}
+        ref={this._target}
         style={this.props.style}
       >
-        <div
-          onMouseEnter={this._handleMouseEnter}
-          onMouseLeave={this._handleMouseLeave}
-        >
-          {this.props.children}
-        </div>
+        {this.props.children}
       </div>
     );
   }
 
   private _handleMouseEnter = () => {
+    this._isTargeted = true;
+    this.props.onTargetChanged && this.props.onTargetChanged(true);
+  }
+
+  private _handleMouseMove = (e: React.MouseEvent) => {
+    if (this._isTargeted || e.target !== this._target.current)
+      return;
+
     this._isTargeted = true;
     this.props.onTargetChanged && this.props.onTargetChanged(true);
   }

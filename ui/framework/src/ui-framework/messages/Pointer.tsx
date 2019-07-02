@@ -11,6 +11,7 @@ import { XAndY } from "@bentley/geometry-core";
 import { offsetAndContainInContainer, Point, PointProps, Rectangle, SizeProps, Tooltip } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
+import { MessageSpan, MessageDiv } from "./MessageSpan";
 
 /** Properties of [[PointerMessage]] component.
  * @public
@@ -26,8 +27,8 @@ export interface PointerMessageProps extends CommonProps {
 interface PointerMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: string;
-  detailedMessage?: string;
+  message: HTMLElement | string;
+  detailedMessage?: HTMLElement | string;
   position: PointProps;
 }
 
@@ -37,8 +38,8 @@ interface PointerMessageState {
 export interface PointerMessageChangedEventArgs {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: string;
-  detailedMessage?: string;
+  message: HTMLElement | string;
+  detailedMessage?: HTMLElement | string;
   relativePosition?: RelativePosition;
   viewport?: HTMLElement;
   pt?: XAndY;
@@ -113,18 +114,10 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
         {this.state.priority === OutputMessagePriority.Warning ? <span className="icon icon-status-warning" /> : <span />}
         {this.state.priority === OutputMessagePriority.Error ? <span className="icon icon-status-error" /> : <span />}
         {
-          this.state.message &&
-          <span
-            className="uifw-popup-message-brief"
-            dangerouslySetInnerHTML={{ __html: this.state.message }}
-          />
+          this.state.message && <MessageSpan className="uifw-popup-message-brief" message={this.state.message} />
         }
         {
-          this.state.detailedMessage &&
-          <div
-            className="uifw-popup-message-detailed"
-            dangerouslySetInnerHTML={{ __html: this.state.detailedMessage }}
-          />
+          this.state.detailedMessage && <MessageDiv className="uifw-popup-message-detailed" message={this.state.detailedMessage} />
         }
       </Tooltip>
     );

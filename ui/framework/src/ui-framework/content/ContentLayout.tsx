@@ -7,13 +7,14 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { Orientation, UiEvent, CommonProps, UiError } from "@bentley/ui-core";
+import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { LayoutHorizontalSplitProps, LayoutVerticalSplitProps, ContentLayoutProps, LayoutFragmentProps, LayoutSplitPropsBase } from "./ContentLayoutProps";
 
 import "./ContentLayout.scss";
 
@@ -22,54 +23,12 @@ import "./ContentLayout.scss";
 // import SplitPane from "react-split-pane";
 const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
-/** Base interface for layout split properties
- * @public
- */
-export interface LayoutSplitPropsBase {
-  id?: string;            // The id used to save the current state of the splitter
-  percentage: number;     // The percentage of this layout that should be occupied by the left/top fragment by default
-  lock?: boolean;         // Default - false. Used to lock splitter into fixed position
-}
-
-/** Properties for a layout fragment
- * @public
- */
-export interface LayoutFragmentProps {
-  verticalSplit?: LayoutVerticalSplitProps;
-  horizontalSplit?: LayoutHorizontalSplitProps;
-}
-
-/** Properties for a vertical layout split
- * @public
- */
-export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
-  left: LayoutFragmentProps | number;
-  right: LayoutFragmentProps | number;
-}
-
-/** Properties for a horizontal layout split
- * @public
- */
-export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
-  top: LayoutFragmentProps | number;
-  bottom: LayoutFragmentProps | number;
-}
-
-/** Properties for a [[ContentLayoutDef]]
- * @public
- */
-export interface ContentLayoutProps extends LayoutFragmentProps {
-  id?: string;
-  descriptionKey?: string;
-  priority?: number;     // The priority for the layout. Determines its position in menus. Higher numbers appear first.
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
+/** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {
   content: React.ReactNode;
 }
 
+/** State for [[ContentWrapper]] */
 interface ContentWrapperState {
   content: React.ReactNode;
   isActive: boolean;
@@ -122,7 +81,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   private _handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
     const isActive = this.state.content === args.activeContent;
     if (this.state.isActive !== isActive) {
-      this.setState((_prevState) => ({ isActive }));
+      this.setState({ isActive });
     }
   }
 
@@ -133,8 +92,6 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   }
 
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////
 
 /** Properties for the [[SplitContainer]] component */
 interface SplitContainerProps extends CommonProps {
@@ -176,13 +133,11 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
       const height = this._containerDiv.getBoundingClientRect().height;
 
       if (this.props.orientation === Orientation.Horizontal) {
-        if (width > 0) {
-          percentage = size / width;
-        }
-      } else {
-        if (height > 0) {
+        if (height > 0)
           percentage = size / height;
-        }
+      } else {
+        if (width > 0)
+          percentage = size / width;
       }
 
       if (this.props.onSplitterChange)
@@ -264,6 +219,8 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
   }
 }
 
+/** Properties for [[SingleContentContainer]] component
+ */
 interface SingleContentProps extends CommonProps {
   content: React.ReactNode;
 }
@@ -287,118 +244,136 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
  * @public
  */
 export interface LayoutSplit {
-  createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
+  createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
   isLocked: boolean;
+}
+
+/** Base Split class.
+ */
+class BaseSplit {
+  public defaultPercentage: number;
+  public stateId: string = "";
+  public isLocked: boolean = false;
+
+  constructor(props: LayoutSplitPropsBase) {
+    this.defaultPercentage = props.percentage;
+
+    if (props.id)
+      this.stateId = props.id;
+
+    if (props.lock)
+      this.isLocked = props.lock;
+  }
 }
 
 /** Horizontal Split class.
  */
-class HorizontalSplit implements LayoutSplit {
+class HorizontalSplit extends BaseSplit implements LayoutSplit {
   private _topIndex: number = -1;
   private _bottomIndex: number = -1;
   private _topSplit?: LayoutSplit;
   private _bottomSplit?: LayoutSplit;
-  private _defaultPercentage: number;
-  private _stateId: string = "";
-  private _isLocked: boolean = false;
+  private _props: LayoutHorizontalSplitProps;
 
-  constructor(def: LayoutHorizontalSplitProps) {
-    this._defaultPercentage = def.percentage;
+  constructor(props: LayoutHorizontalSplitProps) {
+    super(props);
 
-    if (def.id)
-      this._stateId = def.id;
+    this._props = props;
 
-    if (def.lock)
-      this._isLocked = def.lock;
-
-    if (typeof def.top === "number") {
-      this._topIndex = def.top;
+    if (typeof props.top === "number") {
+      this._topIndex = props.top;
     } else {
-      this._topSplit = ContentLayoutManager.createSplit(def.top);
+      this._topSplit = ContentLayoutDef.createSplit(props.top);
     }
 
-    if (typeof def.bottom === "number") {
-      this._bottomIndex = def.bottom;
+    if (typeof props.bottom === "number") {
+      this._bottomIndex = props.bottom;
     } else {
-      this._bottomSplit = ContentLayoutManager.createSplit(def.bottom);
+      this._bottomSplit = ContentLayoutDef.createSplit(props.bottom);
     }
   }
 
-  public get isLocked(): boolean {
-    return this._isLocked;
+  private _handleSplitterChange = (_size: number, percentage: number): void => {
+    this._props.percentage = percentage;
   }
 
-  public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {
+  public createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode {
     if (this.isLocked)
       resizable = false;
 
-    const topContent = (!this._topSplit) ? <ContentWrapper content={content[this._topIndex]} /> : this._topSplit.createContentContainer(content, resizable);
-    const bottomContent = (!this._bottomSplit) ? <ContentWrapper content={content[this._bottomIndex]} /> : this._bottomSplit.createContentContainer(content, resizable);
+    const topContent = (!this._topSplit) ?
+      <ContentWrapper content={contentNodes[this._topIndex]} /> :
+      this._topSplit.createContentContainer(contentNodes, resizable);
+    const bottomContent = (!this._bottomSplit) ?
+      <ContentWrapper content={contentNodes[this._bottomIndex]} /> :
+      this._bottomSplit.createContentContainer(contentNodes, resizable);
 
     return (
       <SplitContainer
         contentA={topContent}
         contentB={bottomContent}
         orientation={Orientation.Horizontal}
-        percentage={this._defaultPercentage}
+        percentage={this.defaultPercentage}
         resizable={resizable}
-        splitterStateId={this._stateId} />
+        splitterStateId={this.stateId}
+        onSplitterChange={this._handleSplitterChange}
+      />
     );
   }
 }
 
 /** Vertical Split class.
  */
-class VerticalSplit implements LayoutSplit {
+class VerticalSplit extends BaseSplit implements LayoutSplit {
   private _leftIndex: number = -1;
   private _rightIndex: number = -1;
   private _leftSplit?: LayoutSplit;
   private _rightSplit?: LayoutSplit;
-  private _defaultPercentage: number;
-  private _stateId: string = "";
-  private _isLocked: boolean = false;
+  private _props: LayoutVerticalSplitProps;
 
-  constructor(def: LayoutVerticalSplitProps) {
-    this._defaultPercentage = def.percentage;
+  constructor(props: LayoutVerticalSplitProps) {
+    super(props);
 
-    if (def.id)
-      this._stateId = def.id;
+    this._props = props;
 
-    if (def.lock)
-      this._isLocked = def.lock;
-
-    if (typeof def.left === "number") {
-      this._leftIndex = def.left;
+    if (typeof props.left === "number") {
+      this._leftIndex = props.left;
     } else {
-      this._leftSplit = ContentLayoutManager.createSplit(def.left);
+      this._leftSplit = ContentLayoutDef.createSplit(props.left);
     }
 
-    if (typeof def.right === "number") {
-      this._rightIndex = def.right;
+    if (typeof props.right === "number") {
+      this._rightIndex = props.right;
     } else {
-      this._rightSplit = ContentLayoutManager.createSplit(def.right);
+      this._rightSplit = ContentLayoutDef.createSplit(props.right);
     }
   }
 
-  public get isLocked(): boolean {
-    return this._isLocked;
+  private _handleSplitterChange = (_size: number, percentage: number): void => {
+    this._props.percentage = percentage;
   }
 
-  public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {
+  public createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode {
     if (this.isLocked)
       resizable = false;
 
-    const leftContent = (!this._leftSplit) ? <ContentWrapper content={content[this._leftIndex]} /> : this._leftSplit.createContentContainer(content, resizable);
-    const rightContent = (!this._rightSplit) ? <ContentWrapper content={content[this._rightIndex]} /> : this._rightSplit.createContentContainer(content, resizable);
+    const leftContent = (!this._leftSplit) ?
+      <ContentWrapper content={contentNodes[this._leftIndex]} /> :
+      this._leftSplit.createContentContainer(contentNodes, resizable);
+    const rightContent = (!this._rightSplit) ?
+      <ContentWrapper content={contentNodes[this._rightIndex]} /> :
+      this._rightSplit.createContentContainer(contentNodes, resizable);
 
     return (
       <SplitContainer
         contentA={leftContent}
         contentB={rightContent}
         orientation={Orientation.Vertical}
-        percentage={this._defaultPercentage}
+        percentage={this.defaultPercentage}
         resizable={resizable}
-        splitterStateId={this._stateId} />
+        splitterStateId={this.stateId}
+        onSplitterChange={this._handleSplitterChange}
+      />
     );
   }
 }
@@ -408,13 +383,15 @@ class VerticalSplit implements LayoutSplit {
  */
 export class ContentLayoutDef {
   private static _sId = 0;
-
-  public id: string = "";
-  public descriptionKey: string = "";
-  public priority: number = 0;
   private _layoutProps: ContentLayoutProps;
-
   private _rootSplit?: LayoutSplit;
+
+  /** ID for this Content Layout */
+  public id: string = "";
+  /** Localization key for a description. */
+  public descriptionKey: string = "";
+  /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */
+  public priority: number = 0;
 
   constructor(layoutProps: ContentLayoutProps) {
     this._layoutProps = layoutProps;
@@ -434,19 +411,28 @@ export class ContentLayoutDef {
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }
 
-  public fillLayoutContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode | undefined {
-    this._rootSplit = ContentLayoutManager.createSplit(this._layoutProps);
+  /** Creates [[ContentLayoutProps]] for JSON purposes
+   * @beta
+   */
+  public toJSON(): ContentLayoutProps { return this._layoutProps; }
+
+  /** Fill a layout container with React nodes for each content view
+   */
+  public fillLayoutContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode | undefined {
+    this._rootSplit = ContentLayoutDef.createSplit(this._layoutProps);
 
     if (this.rootSplit) {
-      return this.rootSplit.createContentContainer(content, resizable);
+      return this.rootSplit.createContentContainer(contentNodes, resizable);
     }
 
-    if (content.length > 0)
-      return <SingleContentContainer content={content[0]} />;
+    if (contentNodes.length > 0)
+      return <SingleContentContainer content={contentNodes[0]} />;
 
     return undefined;
   }
 
+  /** Gets the indexes of content views used in this Content Layout
+   */
   public getUsedContentIndexes(): number[] {
     let allContentIndexes: number[] = [];
 
@@ -507,6 +493,18 @@ export class ContentLayoutDef {
 
     return contentIndexes;
   }
+
+  /** @internal */
+  public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {
+    if (fragmentDef.horizontalSplit) {
+      return new HorizontalSplit(fragmentDef.horizontalSplit);
+    } else if (fragmentDef.verticalSplit) {
+      return new VerticalSplit(fragmentDef.verticalSplit);
+    }
+
+    return undefined;
+  }
+
 }
 
 /** Content Layout Activated Event Args class.
@@ -525,7 +523,7 @@ export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedE
 /** State for the [[ContentLayout]].
  */
 interface ContentLayoutState {
-  contentLayout: ContentLayoutDef;
+  contentLayoutDef: ContentLayoutDef;
   contentGroup: ContentGroup;
   contentContainer?: React.ReactNode;
   isUiVisible: boolean;
@@ -551,25 +549,14 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   constructor(props: ContentLayoutComponentProps) {
     super(props);
 
-    let contentGroup: ContentGroup;
-    let contentContainer: React.ReactNode;
+    const contentLayoutDef = this.props.contentLayout;
+    const contentGroup = this.props.contentGroup;
 
-    contentGroup = this.props.contentGroup;
-
-    // istanbul ignore else
-    if (contentGroup) {
-      const content: React.ReactNode[] = contentGroup.getContentNodes();
-      let contentLayout: ContentLayoutDef;
-
-      contentLayout = this.props.contentLayout;
-
-      // istanbul ignore else
-      if (content && contentLayout)
-        contentContainer = contentLayout.fillLayoutContainer(content, true);
-    }
+    const contentNodes = contentGroup.getContentNodes();
+    const contentContainer = contentLayoutDef.fillLayoutContainer(contentNodes, true);
 
     this.state = {
-      contentLayout: this.props.contentLayout,
+      contentLayoutDef: this.props.contentLayout,
       contentGroup: this.props.contentGroup,
       contentContainer,
       isUiVisible: UiFramework.getIsUiVisible(),
@@ -591,26 +578,16 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   }
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
-    const contentGroup: ContentGroup = args.contentGroup;
-    let contentContainer: React.ReactNode;
+    const contentLayoutDef = args.contentLayout;
+    const contentGroup = args.contentGroup;
 
-    // istanbul ignore else
-    if (contentGroup) {
-      const content: React.ReactNode[] = contentGroup.getContentNodes();
+    const contentNodes = contentGroup.getContentNodes();
+    const contentContainer = contentLayoutDef.fillLayoutContainer(contentNodes, true);
 
-      const contentLayout = args.contentLayout;
-
-      // istanbul ignore else
-      if (contentLayout)
-        contentContainer = contentLayout.fillLayoutContainer(content, true);
-    }
-
-    this.setState((_prevState, _props) => {
-      return {
-        contentLayout: args.contentLayout,
-        contentGroup: args.contentGroup,
-        contentContainer,
-      };
+    this.setState({
+      contentLayoutDef: args.contentLayout,
+      contentGroup: args.contentGroup,
+      contentContainer,
     });
   }
 
@@ -622,7 +599,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
       );
 
       return (
-        <div id="uifw-contentlayout-div" className={className} style={this.props.style} key={this.state.contentLayout.id}
+        <div id="uifw-contentlayout-div" className={className} style={this.props.style} key={this.state.contentLayoutDef.id}
           onMouseDown={this._onMouseDown}
           onMouseUp={this._onMouseUp}
         >
@@ -641,62 +618,4 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
   private _onMouseUp = (_event: React.MouseEvent<HTMLDivElement>) => {
     ContentViewManager.setMouseDown(false);
   }
-}
-
-/** ContentLayout Manager class.
- * @public
- */
-export class ContentLayoutManager {
-  private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
-  private static _activeLayout?: ContentLayoutDef;
-  private static _activeGroup?: ContentGroup;
-
-  public static loadLayouts(layoutPropsList: ContentLayoutProps[]) {
-    layoutPropsList.map((layoutProps, _index) => {
-      ContentLayoutManager.loadLayout(layoutProps);
-    });
-  }
-
-  public static loadLayout(layoutProps: ContentLayoutProps) {
-    const layout = new ContentLayoutDef(layoutProps);
-    if (layoutProps.id)
-      ContentLayoutManager.addLayout(layoutProps.id, layout);
-    else
-      throw new UiError(UiFramework.loggerCategory(this), `loadLayout: ContentLayoutProps should contain an 'id'`);
-  }
-
-  public static findLayout(layoutId: string): ContentLayoutDef | undefined {
-    return this._layoutDefs.get(layoutId);
-  }
-
-  public static addLayout(layoutId: string, layout: ContentLayoutDef) {
-    this._layoutDefs.set(layoutId, layout);
-  }
-
-  public static get activeLayout(): ContentLayoutDef | undefined { return this._activeLayout; }
-
-  public static setActiveLayout(contentLayout: ContentLayoutDef, contentGroup: ContentGroup) {
-    this._activeLayout = contentLayout;
-    this._activeGroup = contentGroup;
-    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout, contentGroup });
-  }
-
-  public static refreshActiveLayout() {
-    // istanbul ignore else
-    if (this._activeLayout && this._activeGroup) {
-      FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._activeLayout, contentGroup: this._activeGroup });
-      this._activeGroup.refreshContentNodes();
-    }
-  }
-
-  public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {
-    if (fragmentDef.horizontalSplit) {
-      return new HorizontalSplit(fragmentDef.horizontalSplit);
-    } else if (fragmentDef.verticalSplit) {
-      return new VerticalSplit(fragmentDef.verticalSplit);
-    }
-
-    return undefined;
-  }
-
 }

@@ -21,19 +21,28 @@ describe("YPR", () => {
     ck.testTrue(YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(), "isIdentity with wrap");
 
     for (const degrees of [
+      Vector3d.create(10, 0, 0),
+      Vector3d.create(0, 10, 0),
+      Vector3d.create(0, 0, 10),
+      Vector3d.create(0, 20, 10),
+      Vector3d.create(10, 20, 0),
+      Vector3d.create(10, 0, 20),
       Vector3d.create(3, 2, 9),
       Vector3d.create(6, 2, -40),
       Vector3d.create(-9, 14, -2),
       Vector3d.create(-25, 8, 2),
       Vector3d.create(1, 40, 3),
       Vector3d.create(1, -40, 2),
-      Vector3d.create(10, 0, 0),
-      Vector3d.create(0, 10, 0),
-      Vector3d.create(0, 0, 10),
       Vector3d.create(90, 0, 0),
       Vector3d.create(0, 90, 0),
       Vector3d.create(0, 0, 90)]) {
       const yprA = YawPitchRollAngles.createDegrees(degrees.x, degrees.y, degrees.z);
+      const yawMatrix = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees.x));
+      const pitchMatrix = Matrix3d.createRotationAroundAxisIndex(1, Angle.createDegrees(-degrees.y));
+      const rollMatrix = Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(degrees.z));
+      const product = yawMatrix.multiplyMatrixMatrix(pitchMatrix.multiplyMatrixMatrix(rollMatrix));
+      // const product = zMatrix.multiplyMatrixMatrix(yMatrix.multiplyMatrixMatrix(xMatrix));
+
       const yprB = yprA.clone();
       ck.testTrue(yprA.isAlmostEqual(yprB), "clone match");
       ck.testCoordinate(degrees.magnitudeSquared(), yprA.sumSquaredDegrees(), "YPR sumSquaredDegrees");
@@ -45,6 +54,9 @@ describe("YPR", () => {
       ck.testCoordinate(yprA.maxAbsRadians(), Angle.degreesToRadians(maxDegrees), "maxAbsRadians");
 
       const matrixA = yprA.toMatrix3d();
+
+      ck.testMatrix3d (matrixA, product, "degrees ", degrees.toJSON ());
+
       const yprAI = YawPitchRollAngles.createFromMatrix3d(matrixA);
       if (ck.testPointer(yprAI, "matrix to YPR") && yprAI) {
         ck.testTrue(yprA.isAlmostEqual(yprAI), "YPR-matrix-YPR round trip.");

@@ -1230,6 +1230,33 @@ export class SmallSystem {
     result.set(0, 0);
     return false;
   }
+  /**
+   * * (ax0,ay0) to (ax0+ux,ay0+uy) are line A.
+   * * (bx0,by0) to (bx0+vx,by0+vy) are lineB.
+   * * Return true if the lines have a simple intersection.
+   * * Return the fractional (not xy) coordinates in result.x, result.y
+   * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
+   */
+  public static lineSegmentXYUVTransverseIntersectionUnbounded(
+    ax0: number, ay0: number, ux: number, uy: number,
+    bx0: number, by0: number, vx: number, vy: number,
+    result: Vector2d): boolean {
+
+    const cx = bx0 - ax0;
+    const cy = by0 - ay0;
+
+    const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
+    const cv = Geometry.crossProductXYXY(cx, cy, vx, vy);
+    const cu = Geometry.crossProductXYXY(ux, uy, cx, cy);
+    const s = Geometry.conditionalDivideFraction(cv, uv);
+    const t = Geometry.conditionalDivideFraction(cu, uv);
+    if (s !== undefined && t !== undefined) {
+      result.set(s, -t);
+      return true;
+    }
+    result.set(0, 0);
+    return false;
+  }
 
   /**
    * Return true if lines (a0,a1) to (b0, b1) have a simple intersection using only xy parts

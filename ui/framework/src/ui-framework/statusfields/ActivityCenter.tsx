@@ -17,7 +17,7 @@ import { Centered } from "@bentley/ui-core";
  * @internal
  */
 interface ActivityCenterState {
-  title: string;
+  message: HTMLElement | string;
   percentage: number;
   isActivityMessageVisible: boolean;
 }
@@ -29,7 +29,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
   constructor(p: StatusFieldProps) {
     super(p);
     this.state = {
-      title: "",
+      message: "",
       percentage: 0,
       isActivityMessageVisible: true,
     };
@@ -46,21 +46,21 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
   }
 
   private _handleActivityMessageEvent = (args: ActivityMessageEventArgs) => {
-    this.setState((_prevState) => ({
-      title: args.message,
+    this.setState({
+      message: args.message,
       percentage: args.percentage,
       isActivityMessageVisible: true,
-    }));
+    });
   }
 
   private _handleActivityMessageCancelledEvent = () => {
-    this.setState((_prevState) => ({
+    this.setState({
       isActivityMessageVisible: false,
-    }));
+    });
   }
 
   private _openActivityMessage = () => {
-    MessageManager.setupActivityMessageValues(this.state.title, this.state.percentage, true);
+    MessageManager.setupActivityMessageValues(this.state.message, this.state.percentage, true);
   }
 
   public render(): React.ReactNode {
@@ -68,7 +68,7 @@ export class ActivityCenterField extends React.Component<StatusFieldProps, Activ
     const isPercentageValid = (this.state.percentage > 0 && this.state.percentage < 100);
     if (this.state.isActivityMessageVisible && isPercentageValid) {
       const moreDetails = UiFramework.translate("activityCenter.moreDetails");
-      const tooltip = this.state.title + " - " + moreDetails;
+      const tooltip = this.state.message + " - " + moreDetails;
 
       footerMessages = (
         <Centered className={classnames("open-activity-message", this.props.className)}

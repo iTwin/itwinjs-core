@@ -1136,6 +1136,18 @@ describe("BeInspireTree", () => {
       expect(renderedTree).to.matchSnapshot();
     });
 
+    it("loads additional pages after grandparent loads a page", async () => {
+      // Reveal not loaded grandchildren "0-0-2" and "0-0-3"
+      await tree.node("0")!.expand();
+      await tree.node("0-0")!.expand();
+      // Load root node "2"
+      await tree.requestNodeLoad(undefined, 2);
+      // Load the grandchildren
+      await tree.requestNodeLoad(tree.node("0-0"), 2);
+      // Expect the grandchildren to be loaded
+      expect(renderedTree).to.matchSnapshot();
+    });
+
     it("fires ChangesApplied event when child node is loaded for not rendered parent", async () => {
       tree = new BeInspireTree({
         dataProvider: createDataProviderInterface(createHierarchy(2, 3)),
@@ -1207,6 +1219,16 @@ describe("BeInspireTree", () => {
 
       expect(getNodesSpy).to.not.be.called;
       expect(renderedTree).to.deep.eq(renderedTreeBefore); // expect children to not change
+    });
+
+    it("does not throw when updateNodesCheckboxes is called while handling ModelLoaded event", (done) => {
+      tree.on(BeInspireTreeEvent.ModelLoaded, async (model: BeInspireTreeNodes<Node>) => {
+        await tree.updateNodesCheckboxes(model, () => ({ state: CheckBoxState.On }));
+        done();
+      });
+
+      // tslint:disable-next-line: no-floating-promises
+      tree.requestNodeLoad(undefined, 2);
     });
 
   });

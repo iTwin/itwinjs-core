@@ -181,14 +181,16 @@ export class ShaderVariables {
   /** Find an existing variable with the specified name */
   public find(name: string): ShaderVariable | undefined { return this.list.find((v: ShaderVariable) => v.name === name); }
 
-  /** Add a new variable, if a variable with the same name does not already exist. */
-  public addVariable(v: ShaderVariable): void {
+  /** Add a new variable, if a variable with the same name does not already exist.  return true if added */
+  public addVariable(v: ShaderVariable): boolean {
     const found = this.find(v.name);
     if (undefined !== found) {
       assert(found.type === v.type);
       // assume same binding etc...
+      return false;
     } else {
       this.list.push(v);
+      return true;
     }
   }
 
@@ -200,8 +202,8 @@ export class ShaderVariables {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Attribute, binding));
   }
 
-  public addVarying(name: string, type: VariableType) {
-    this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying));
+  public addVarying(name: string, type: VariableType): boolean {
+    return this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying));
   }
 
   public addGlobal(name: string, type: VariableType, value?: string, isConst: boolean = false) {
@@ -237,8 +239,21 @@ export class ShaderVariables {
 
   public get length(): number { return this.list.length; }
 
-  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
-  public exceedsMaxVaryingVectors(): boolean {
+  private findSlot(variableSize: number, loopSize: number, registers: number[]): number {
+    // Find the first available slot into which to insert this variable
+    for (let i = 0; i < loopSize; i++) {
+      const newSize = registers[i] + variableSize;
+      if (newSize <= 4) {
+        registers[i] = newSize;
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /*
+  // Return string of varying types with their theoretical slot numbers
+  public checkMaxVaryingVectors(fragSource: string): string {
     // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
     // The packing rules are defined by the standard. Specifically each row can contain one of:
     //  vec4
@@ -246,13 +261,101 @@ export class ShaderVariables {
     //  vec2 (+ vec2)
     //  vec2 (+ float (+ float))
     //  float (+ float (+ float (+ float)))
-    const registers = [0, 0, 0, 0, 0, 0, 0, 0];
-    for (const variable of this.list) {
+    // Varyings are packed in order of size from largest to smallest
+    const loopSize = 64;
+    const registers = Array(loopSize + 1).fill(0);
+    let outStr = "";
+    let slot = 0;
+
+    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    // Add in any built in vars that count as varyings if they are used
+    if (fragSource.includes("gl_FragCoord")) {
+      varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
+    }
+    if (fragSource.includes("gl_PointCoord")) {
+      varyings.push(ShaderVariable.create("gl_PointCoord", VariableType.Vec2, VariableScope.Varying));
+    }
+    if (fragSource.includes("gl_FrontFacing")) {
+      varyings.push(ShaderVariable.create("gl_FrontFacing", VariableType.Boolean, VariableScope.Varying));
+    }
+    // Need to process in size order (largest first)
+    varyings.sort((a, b) => b.type - a.type); // this is good enough to sort by
+
+    for (const variable of varyings) {
+      let variableSize = 0;
+      switch (variable.type) {
+        case VariableType.Boolean:
+        case VariableType.Int:
+        case VariableType.Float:
+          variableSize = 1;
+          break;
+        case VariableType.Vec2:
+          variableSize = 2;
+          break;
+        case VariableType.Vec3:
+          variableSize = 3;
+          break;
+        case VariableType.Vec4:
+          variableSize = 4;
+          break;
+        default:
+          assert(false, "Invalid varying variable type");
+          continue;
+      }
+      slot = this.findSlot(variableSize, loopSize, registers);
+      outStr += "// varying slot " + slot + " " + Convert.typeToString(variable.type) + " " + variable.name + "\n";
+    }
+    const slotsUsed = registers.indexOf(0);
+    registers.length = slotsUsed;
+    outStr += "// Slots used: " + slotsUsed + "  [" + registers.toString() + "]\n";
+
+    // debug output modes
+    const outputAll = true;  // false just outputs varyings that use more than 8
+    if (outputAll) {
+      return outStr;
+    } else {
+      if (slotsUsed > 8)
+        return outStr;
+      else
+        return "";
+    }
+  }
+  */
+
+  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
+  public exceedsMaxVaryingVectors(fragSource: string): boolean {
+    // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
+    // The packing rules are defined by the standard. Specifically each row can contain one of:
+    //  vec4
+    //  vec3 (+ float)
+    //  vec2 (+ vec2)
+    //  vec2 (+ float (+ float))
+    //  float (+ float (+ float (+ float)))
+    // Varyings are packed in order of size from largest to smallest
+    const loopSize = 64;
+    const registers = Array(loopSize + 1).fill(0);
+
+    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    // Add in any built in vars that count as varyings if they are used
+    if (fragSource.includes("gl_FragCoord")) {
+      varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
+    }
+    if (fragSource.includes("gl_PointCoord")) {
+      varyings.push(ShaderVariable.create("gl_PointCoord", VariableType.Vec2, VariableScope.Varying));
+    }
+    if (fragSource.includes("gl_FrontFacing")) {
+      varyings.push(ShaderVariable.create("gl_FrontFacing", VariableType.Boolean, VariableScope.Varying));
+    }
+    // Need to process in size order (largest first)
+    varyings.sort((a, b) => b.type - a.type); // this is good enough to sort by
+
+    for (const variable of varyings) {
       if (VariableScope.Varying !== variable.scope)
         continue;
 
       let variableSize = 0;
       switch (variable.type) {
+        case VariableType.Boolean:
         case VariableType.Int:
         case VariableType.Float:
           variableSize = 1;
@@ -271,22 +374,11 @@ export class ShaderVariables {
           continue;
       }
 
-      // Find the first available slot into which to insert this variable
-      let slotAvailable = false;
-      for (let i = 0; i < 8; i++) {
-        const newSize = registers[i] + variableSize;
-        if (newSize <= 4) {
-          registers[i] = newSize;
-          slotAvailable = true;
-          break;
-        }
-      }
-
-      if (!slotAvailable)
-        return true;
+      this.findSlot(variableSize, loopSize, registers);
     }
 
-    return false;
+    const slotsUsed = registers.indexOf(0);
+    return slotsUsed > 8;
   }
 }
 
@@ -897,8 +989,8 @@ export class ProgramBuilder {
   }
 
   public addInlineComputedVarying(name: string, type: VariableType, inlineComputation: string) {
-    this.frag.addVarying(name, type);
-    this.vert.addComputedVarying(name, type, inlineComputation);
+    if (this.frag.addVarying(name, type))
+      this.vert.addComputedVarying(name, type, inlineComputation);
   }
   public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
     let funcDecl = "\n" + Convert.typeToString(type) + " " + funcName + "()";
@@ -915,10 +1007,35 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
-    if (this.vert.exceedsMaxVaryingVectors())
+    const vertSource = this.vert.buildSource();
+    const fragSource = this.frag.buildSource();
+    if (this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
-    const prog = new ShaderProgram(gl, this.vert.buildSource(), this.frag.buildSource(), this.vert.headerComment, this.frag.maxClippingPlanes);
+    /*
+    // Debug output
+    const outSrc = true; // true for source out, false for just varying info
+    if (this.frag.headerComment) {
+      let tStr = "";
+      if (!outSrc) {
+        tStr = this.frag.headerComment + "\n";
+      }
+      const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
+      if (tStr2) {
+        if (outSrc) {
+          dbgLog("//===============================================================================================================");
+          dbgLog(vertSource);
+          dbgLog("//========= Varying Info =========");
+          dbgLog(tStr2);
+          dbgLog(fragSource);
+        } else {
+          dbgLog(tStr + tStr2);
+        }
+      }
+    }
+    */
+
+    const prog = new ShaderProgram(gl, vertSource, fragSource, this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;

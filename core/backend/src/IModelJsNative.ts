@@ -38,7 +38,7 @@ export declare namespace IModelJsNative {
     /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
     crashDir: string;
     /** Write .dmp files to crashDir? The default is false. Even if writeDumpsToCrashDir is false, the iModelJsNativeCrash*.properties.txt file will be written to crashDir. */
-    writeDumpsToCrashDir?: boolean;
+    enableCrashDumps?: boolean;
     /** max # .dmp files that may exist in crashDir */
     maxDumpsInDir?: number;
     /** If writeDumpsToCrashDir is true, do you want a full-memory dump? Defaults to false. */
@@ -345,6 +345,7 @@ export declare namespace IModelJsNative {
 
   export class ECPresentationManager implements IDisposable {
     constructor(id?: string);
+    public forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;
@@ -397,6 +398,7 @@ export declare namespace IModelJsNative {
   export class ImportContext implements IDisposable {
     constructor(sourceDb: DgnDb, targetDb: DgnDb);
     public dispose(): void;
+    public addClass(sourceClassFullName: string, targetClassFullName: string): BentleyStatus;
     public addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
     public addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
     public findCodeSpecId(sourceId: Id64String): Id64String;

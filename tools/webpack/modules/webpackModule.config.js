@@ -219,7 +219,6 @@ function getConfig(env) {
   // set up Uglify.
   if (!devMode) {
     const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-    const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
     webpackLib.optimization.minimizer = [
       new UglifyJSPlugin({
         uglifyOptions: {
@@ -252,8 +251,7 @@ function getConfig(env) {
         // Enable file caching
         cache: true,
         sourceMap: true,
-      }),
-      new OptimizeCSSAssetsPlugin({}),
+      })
     ];
   }
 

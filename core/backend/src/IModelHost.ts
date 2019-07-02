@@ -123,13 +123,15 @@ export class IModelHostConfiguration {
   public crashReportingConfig?: CrashReportingConfig;
 
   public concurrentQuery: ConcurrentQueryConfig = {
-    concurrent: os.cpus().length,
+    concurrent: (os.cpus().length - 1),
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
     minMonitorInterval: 1, // 1 seconds
     idleCleanupTime: 30 * 60, // 30 minutes
     cachedStatementsPerThread: 40,
-    maxQueueSize: os.cpus().length * 500,
+    maxQueueSize: (os.cpus().length - 1) * 500,
     pollInterval: 50,
+    useSharedCache: false,
+    useUncommitedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes

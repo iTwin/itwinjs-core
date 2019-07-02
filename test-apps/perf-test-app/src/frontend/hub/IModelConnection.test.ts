@@ -54,15 +54,16 @@ describe("IModelConnection (#integration)", () => {
     const projectId = await TestUtility.getTestProjectId("Bridge866");
     const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
 
-    /* // time to open an imodel with first revision
+    // time to open an imodel with first revision
     const startTime = new Date().getTime();
     const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
     const endTime = new Date().getTime();
     assert.isNotNull(noVersionsIModel2);
     assert.exists(noVersionsIModel2);
     const elapsedTime = (endTime - startTime) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with first revision", elapsedTime);
-    await noVersionsIModel2.close(); */
+    const info1 = { Description: "first CS", Operation: "Open" };
+    await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime, JSON.stringify(info1));
+    await noVersionsIModel2.close();
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
@@ -71,7 +72,6 @@ describe("IModelConnection (#integration)", () => {
     assert.isNotNull(noVersionsIModel);
     assert.exists(noVersionsIModel);
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("Open", "Open an iModel with latest revision", elapsedTime1);
     const info = { Description: "latest CS", Operation: "Open" };
     await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "OpenIModel", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     await noVersionsIModel.close();
@@ -86,7 +86,6 @@ describe("IModelConnection (#integration)", () => {
     const rows = await executeQuery(iModel, "SELECT * FROM BisCore.LineStyle");
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    await TestRpcInterface.getClient().saveCSV("ExecuteQuery", "Execute a simple ECSQL query", elapsedTime1);
     const info = { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" };
     await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     assert.equal(rows.length, 7);

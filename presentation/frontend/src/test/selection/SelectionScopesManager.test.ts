@@ -14,6 +14,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { RpcRequestsHandler, KeySet } from "@bentley/presentation-common";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../selection/SelectionScopesManager";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common/lib/KeySet";
 
 describe("SelectionScopesManager", () => {
 
@@ -130,13 +131,13 @@ describe("SelectionScopesManager", () => {
 
     it("forwards multiple requests to RpcRequestsHandler when ids count exceeds max batch size", async () => {
       const ids = new Array<Id64String>();
-      for (let i = 0; i < 10001; ++i)
+      for (let i = 0; i < (DEFAULT_KEYS_BATCH_SIZE + 1); ++i)
         ids.push(createRandomId());
       const scope = createRandomSelectionScope();
       const result1 = new KeySet([createRandomECInstanceKey()]);
       const result2 = new KeySet([createRandomECInstanceKey()]);
       rpcRequestsHandlerMock
-        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === 10000)), scope.id))
+        .setup(async (x) => x.computeSelection(moq.It.isObjectWith({ imodel: imodelToken }), moq.It.is((inIds: string[]): boolean => (inIds.length === DEFAULT_KEYS_BATCH_SIZE)), scope.id))
         .returns(async () => result1.toJSON())
         .verifiable();
       rpcRequestsHandlerMock

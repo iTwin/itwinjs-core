@@ -72,7 +72,7 @@ const unitData: UnitDefinition[] = [
 ];
 
 /** Defines standard format types for tools that need to display measurements to user.
- * @alpha
+ * @beta
  */
 export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6 }
 

@@ -121,7 +121,7 @@ describe("BezierRoots", () => {
   it("Deflation", () => {
     const ck = new Checker();
     for (const numRoots of [2, 2, 3, 5, 6]) {
-      // baes roots at odd integer multiples of 1/(numRoots+1)
+      // base roots at odd integer multiples of 1/(numRoots+1)
       const baseRoots = [];
       for (let i = 0; i < numRoots; i++)
         baseRoots.push((1 + 2 * i) / (2 * numRoots));
@@ -139,9 +139,9 @@ describe("BezierRoots", () => {
           const bezierB = bezier.clone();
           const remainder = bezierB.deflateRoot(rootsA[i]);
           ck.testCoordinate(remainder, 0, "deflation remainder");
-          const absdiff = BezierCoffs.maxAbsDiff(bezierA, bezierB);
-          if (ck.testTrue(absdiff !== undefined))
-            ck.testCoordinate(absdiff!, 0, "inflate deflate match");
+          const absDiff = BezierCoffs.maxAbsDiff(bezierA, bezierB);
+          if (ck.testTrue(absDiff !== undefined))
+            ck.testCoordinate(absDiff!, 0, "inflate deflate match");
         }
         for (const r of rootsA) {
           const bezier0 = bezier.clone();
@@ -151,7 +151,7 @@ describe("BezierRoots", () => {
           const bezier1 = UnivariateBezier.createProduct(bezier, new Order2Bezier(-r, 1 - r));
           const delta = BezierCoffs.maxAbsDiff(bezier0, bezier1);
           if (ck.testTrue(delta !== undefined))
-            ck.testCoordinate(0, delta!, "deflate and remultiply round trip.");
+            ck.testCoordinate(0, delta!, "deflate and re-multiply round trip.");
           // another time around for debug convenience.  . .
           const remainder1 = (bezier10 as UnivariateBezier).deflateRoot(r);
           ck.testExactNumber(remainder, remainder1);
@@ -198,7 +198,7 @@ describe("BezierRoots", () => {
   it("DistributedRoots", () => {
     const ck = new Checker();
     for (const numRoots of [2, 2, 3, 5, 6]) {
-      // baes roots at odd integer multiples of 1/(numRoots+1)
+      // base roots at odd integer multiples of 1/(numRoots+1)
       const baseRoots = [];
       for (let i = 0; i < numRoots; i++)
         baseRoots.push((1 + 2 * i) / (2 * numRoots));
@@ -466,6 +466,33 @@ describe("PascalCoefficients", () => {
         ck.testCoordinate(blockA1[0], - blockA1[1]);
       }
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DeflateRoot", () => {
+    const ck = new Checker();
+    for (const rootFraction of [0, 0.3, 0.9]) {
+      const bezier = new UnivariateBezier([0, 1, 3, 1]);
+      const originalOrder = bezier.order;
+      const yAtRoot = bezier.evaluate(rootFraction);
+      bezier.addConstant(-yAtRoot);
+      const remainder = bezier.deflateRoot(rootFraction);
+      ck.testExactNumber(bezier.order + 1, originalOrder, "reduced order");
+      const bezierB = bezier.clone(true);
+      ck.testExactNumber(bezierB.order + 1, originalOrder, "reduced order");
+
+      ck.testCoordinate(0.0, remainder);
+    }
+
+    const bezier1 = new UnivariateBezier([1]);
+    ck.testCoordinate(1.0, bezier1.deflateRoot(0.5), " order=1 bezier deflation");
+    ck.testCoordinate(0.0, bezier1.deflateRoot(0.5), " order=0 bezier deflation");
+    bezier1.allocateOrder(5);
+    ck.testExactNumber(5, bezier1.order);
+
+    bezier1.allocateOrder(5);
+    ck.testExactNumber(5, bezier1.order);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

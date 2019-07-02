@@ -6,7 +6,7 @@ import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } fr
 import { Angle } from "./Angle";
 import { Point4d } from "../geometry4d/Point4d";
 import { Point2d } from "./Point2dVector2d";
-import { XYAndZ, XAndY, Matrix3dProps } from "./XYZProps";
+import { XYAndZ, XAndY, Matrix3dProps, WritableXYAndZ } from "./XYZProps";
 import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 /* tslint:disable:prefer-get */
@@ -637,22 +637,22 @@ export class Matrix3d implements BeJSONFunctions {
   public getAxisAndAngleOfRotation(): { axis: Vector3d, angle: Angle, error: boolean } {
 
     const result = { axis: Vector3d.unitZ(), angle: Angle.createRadians(0), error: true };
-    if (this.isIdentity()) {
+    if (this.isIdentity) {
       result.error = false;
       return result;
     }
     if (!this.isRigid())
       return result;
-    const QminusI = this.clone();
-    QminusI.coffs[0] -= 1.0;
-    QminusI.coffs[4] -= 1.0;
-    QminusI.coffs[8] -= 1.0;
+    const QMinusI = this.clone();
+    QMinusI.coffs[0] -= 1.0;
+    QMinusI.coffs[4] -= 1.0;
+    QMinusI.coffs[8] -= 1.0;
     // Each column of (Q - I) is the motion of the corresponding axis vector
     // during the rotation.
     // Only one of the three axes can really be close to the rotation axis.
-    const delta0 = QminusI.columnX();
-    const delta1 = QminusI.columnY();
-    const delta2 = QminusI.columnZ();
+    const delta0 = QMinusI.columnX();
+    const delta1 = QMinusI.columnY();
+    const delta2 = QMinusI.columnZ();
     const cross01 = delta0.crossProduct(delta1);
     const cross12 = delta1.crossProduct(delta2);
     const cross20 = delta2.crossProduct(delta0);
@@ -882,6 +882,7 @@ export class Matrix3d implements BeJSONFunctions {
   /** Return the dot product of the vector parameter with the Z row. */
   public dotRowZ(vector: XYZ): number { return vector.x * this.coffs[6] + vector.y * this.coffs[7] + vector.z * this.coffs[8]; }
 
+  // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen
   /** Return the dot product of the x,y,z with the X row. */
   public dotRowXXYZ(x: number, y: number, z: number): number { return x * this.coffs[0] + y * this.coffs[1] + z * this.coffs[2]; }
   /** Return the dot product of the x,y,z with the Y row. */
@@ -1301,16 +1302,25 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
+    /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
+    public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
+      const x = vector.x;
+      const y = vector.y;
+      const z = vector.z;
+      return Point3d.create(
+        origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
+        origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
+        origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
+        result);
+    }
   /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
-  public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
+  public static xyzPlusMatrixTimesXYZInPlace(origin: XYZ, matrix: Matrix3d, vector: WritableXYAndZ) {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;
-    return Point3d.create(
-      origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
-      origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
-      origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
-      result);
+    vector.x = origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z;
+    vector.y = origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z;
+    vector.z = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
   }
   /** compute `origin + matrix * vector` where the final vector is given as direct x,y,z coordinates */
   public static xyzPlusMatrixTimesCoordinates(origin: XYZ, matrix: Matrix3d, x: number, y: number, z: number, result?: Point3d): Point3d {
@@ -1380,7 +1390,7 @@ export class Matrix3d implements BeJSONFunctions {
     result[2] = origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z;
     return result;
   }
-  /** Multiply transpose of this matrix times  avector. */
+  /** Multiply transpose of this matrix times a vector. */
   public multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d {
     result = result ? result : new Vector3d();
     const x = vector.x;
@@ -1584,7 +1594,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Transform.createRefs(
         this.multiplyXYZ(other.origin.x, other.origin.y, other.origin.z),
         this.multiplyMatrixMatrix(other.matrix));
-    // be sure to do the point mulitplication first before aliasing changes the matrix ..
+    // be sure to do the point multiplication first before aliasing changes the matrix ..
     this.multiplyXYZtoXYZ(other.origin, result.origin);
     this.multiplyMatrixMatrix(other.matrix, result.matrix);
     return result;

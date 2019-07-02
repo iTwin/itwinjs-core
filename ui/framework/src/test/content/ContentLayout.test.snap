@@ -29,6 +29,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
             }
           />
         }
+        onSplitterChange={[Function]}
         orientation={0}
         percentage={0.5}
         resizable={false}
@@ -55,12 +56,14 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
             }
           />
         }
+        onSplitterChange={[Function]}
         orientation={0}
         percentage={0.5}
         resizable={false}
         splitterStateId=""
       />
     }
+    onSplitterChange={[Function]}
     orientation={1}
     percentage={0.5}
     resizable={false}
@@ -98,6 +101,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
             }
           />
         }
+        onSplitterChange={[Function]}
         orientation={1}
         percentage={0.5}
         resizable={false}
@@ -124,12 +128,14 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
             }
           />
         }
+        onSplitterChange={[Function]}
         orientation={1}
         percentage={0.5}
         resizable={false}
         splitterStateId=""
       />
     }
+    onSplitterChange={[Function]}
     orientation={0}
     percentage={0.5}
     resizable={false}
@@ -183,6 +189,7 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
         }
       />
     }
+    onSplitterChange={[Function]}
     orientation={0}
     percentage={0.5}
     resizable={true}
@@ -218,6 +225,7 @@ exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
         }
       />
     }
+    onSplitterChange={[Function]}
     orientation={1}
     percentage={0.5}
     resizable={true}

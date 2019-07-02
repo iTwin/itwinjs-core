@@ -1,6 +1,31 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Open fixes when briefcase requires merges. 
+- Catch tile upload errors.
+- Setting up briefcase is always from an older checkpoint. 
+- Add materialId, subCategory to ExportGraphicsInfo
+- fix crash in getViewThumbnail for odd number of bytes 
+- Adding relationship class for GraphicalElement3dRepresentsElement.
+- fix internal addon API
+- Initial implementation of the LinearReferencing typescript domain
+- Adding domain classes for all relatinships in the LinearReferencing schema.
+- Exporting relationships module.
+- Fixes to opening iModel-s ReadWrite from mutiple IModelConnection-s. 
+- Fixed issues with deleting briefcases if there were errors with preparing briefcases. 
+- Add a new method `forceLoadSchemas` to `IModelJsNative.ECPresentationManager`.
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
+- Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays
+- remove unnecssary logging
+- insertElement will never return Id64.invalid, throws error instead
+- Update to TypeScript 3.5
+- update property referenced in ULAS error message
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

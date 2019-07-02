@@ -18,11 +18,14 @@ export class ColumnDragLayer extends React.Component<DragLayerProps> {
   }
 
   public render(): React.ReactNode {
-    const args = this.props.args!;
+    if (this.props.args === undefined)
+      return null;
+
+    const args = this.props.args;
     const spos = args.sourceClientOffset || { x: -1000, y: -1000 };
     const ispos = args.initialSourceClientOffset || { x: -1000, y: -1000 };
 
-    const data = args.dataObject || {};
+    const data = args.dataObject || /* istanbul ignore next */ {};
     const column = data.column || {};
     const width = column.width || {};
 

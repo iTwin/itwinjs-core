@@ -20,6 +20,13 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Geometry } from "../../Geometry";
 
+function logGraph(graph: HalfEdgeGraph, title: any) {
+  console.log(" ==begin== " + title);
+  for (const he of graph.allHalfEdges) {
+    console.log(HalfEdge.nodeToIdXYString(he));
+  }
+  console.log(" ==end== " + title);
+}
 export class GraphChecker {
   public static captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph, dx: number = 0, dy: number = 0) {
     const maxTick = 0.01;
@@ -97,23 +104,23 @@ export class GraphChecker {
       console.log("**FACE LOOPS " + faces.length);
       console.log(faceData);
     }
-    const vdata = [];
+    const vData = [];
     for (const v of vertices) {
       const totalDistance = v.sumAroundVertex((node: HalfEdge) => node.distanceXY(v));
       if (totalDistance !== 0) { // output full coordinates all the way around.
-        vdata.push("INCONSISTENT VERTEX XY");
-        vdata.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
+        vData.push("INCONSISTENT VERTEX XY");
+        vData.push(JSON.stringify(v.collectAroundVertex(HalfEdge.nodeToIdMaskXY)));
       } else
-        vdata.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
+        vData.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
     }
     if (this.printToConsole) {
       console.log("**VERTEX LOOPS " + vertices.length);
-      console.log(vdata);
+      console.log(vData);
     }
   }
   /**
    * * call various "fast" mask methods at every node.
-   * * call expesnive methods (those requiring full graph search) for a few nodes.
+   * * call expensive methods (those requiring full graph search) for a few nodes.
    */
   public static exerciseMaskMethods(ck: Checker, graph: HalfEdgeGraph) {
     const myMask = HalfEdgeMask.PRIMARY_EDGE;
@@ -125,7 +132,7 @@ export class GraphChecker {
     ck.testExactNumber(numNode, graph.countMask(myMask), "graph.clearMask");
     graph.clearMask(myMask);
     let numSet = 0;
-    // do some tedius stuff at "a few" nodes .. 0,3,9,21....
+    // do some tedious stuff at "a few" nodes .. 0,3,9,21....
     const mask1 = HalfEdgeMask.WORK_MASK0; // ignore the name -- it is a mask to work with
     const mask2 = HalfEdgeMask.WORK_MASK1; // ignore the name -- it is a mask to work with.
     let numMask2InSet = 0;
@@ -152,7 +159,7 @@ export class GraphChecker {
       ck.testExactNumber(numNodesAroundVertex, nodesAroundVertex.length, "count nodes == collected array length");
       const masksAroundVertex = node.countMaskAroundVertex(mask1);
       ck.testExactNumber(nodesAroundVertex.length, masksAroundVertex);
-      ck.testExactNumber(nodesAroundVertex.length, graph.countMask(mask1), "confirm count for setmaskAroundvertex");
+      ck.testExactNumber(nodesAroundVertex.length, graph.countMask(mask1), "confirm count for setMaskAroundVertex");
       node.clearMaskAroundVertex(mask1);
       ck.testExactNumber(0, graph.countMask(mask1), "clear around vertex");
       const numMask2ThisFace = node.countMaskAroundFace(mask2);
@@ -176,6 +183,11 @@ export class GraphChecker {
       ck.testTrue(he.isEqualXY(vs), "Exact xy around vertex loop");
       ck.testFalse(he.isEqualXY(faceSuccessor), "different xy around face loop");
       ck.testTrue(he === HalfEdge.nodeToSelf(he), "HalfEdge.nodeToSelf");
+      ck.testExactNumber(he.faceStepY(0), he.y);
+      ck.testExactNumber(he.faceStepY(1), he.faceSuccessor.y);
+      ck.testExactNumber(he.faceStepY(2), he.faceSuccessor.faceSuccessor.y);
+      ck.testExactNumber(he.faceStepY(-1), he.facePredecessor.y);
+      ck.testExactNumber(he.faceStepY(-2), he.facePredecessor.facePredecessor.y);
     }
   }
   public static verifyMaskAroundFaces(ck: Checker,
@@ -195,7 +207,7 @@ export class GraphChecker {
    *
    * @param ck checker for error reports
    * @param graph graph to inspect
-   * @param checkConsistentExteriorMask if true, verify that HalfEdgemask.EXTERIOR is consistent within each face (entirely on or entirely off)
+   * @param checkConsistentExteriorMask if true, verify that HalfEdgeMask.EXTERIOR is consistent within each face (entirely on or entirely off)
    * @param numFace (optional) precise expected face count
    * @param numVertex (optional) precise expected vertex count
    * @param positiveFaceAreaSum  (optional) precise expected positive area face sum
@@ -319,7 +331,8 @@ describe("VUGraph", () => {
     const segments = graph.collectSegments();
     ck.testExactNumber(numEdge, segments.length, "segmentCount");
     GeometryCoreTestIO.saveGeometry(geometry, "Graph", "GridFixup");
-    const componentsB = HalfEdgeGraphSearch.collectConnectedComponents(graph, HalfEdgeMask.EXTERIOR);
+    const componentsB = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
+      undefined, HalfEdgeMask.EXTERIOR);
     ck.testTrue(HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR), "ParitySearch makes valid exterior Masks");
     if (ck.testExactNumber(1, componentsB.length, "Expect single component")) {
       ck.testExactNumber(numFaces, componentsB[0].length, "face count from search");
@@ -362,6 +375,81 @@ describe("VUGraph", () => {
       console.log("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(node1));
       console.log("nodeToMaskString:", HalfEdge.nodeToMaskString(node1));
     }
+  });
+
+  it("NullFaceGraph", () => {
+    const ck = new Checker();
+    const graph = new HalfEdgeGraph();
+    const inside0 = graph.addEdgeXY(0, 0, 10, 0);
+    const inside1 = graph.addEdgeXY(10, 0, 5, 5);
+    const inside2 = graph.addEdgeXY(5, 5, 0, 0);
+    const null0 = graph.addEdgeXY(3, 4, 3, 5);
+    const outside0 = inside2.faceSuccessor;
+    const outside1 = inside0.faceSuccessor;
+    const outside2 = inside1.faceSuccessor;
+    const null1 = null0.faceSuccessor;
+    HalfEdge.pinch(inside0, outside0);
+    HalfEdge.pinch(inside1, outside1);
+    HalfEdge.pinch(inside2, outside2);
+
+    inside0.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE);
+    outside0.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
+    outside0.setMaskAroundFace(HalfEdgeMask.PRIMARY_EDGE);
+
+    HalfEdge.pinch(null0, inside0);
+    HalfEdge.pinch(null1, inside1);
+
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, true);
+    ck.testExactNumber(summary.numZero, summary.zeroItemArray!.length);
+    ck.testExactNumber(1, summary.numPositive);
+    ck.testExactNumber(1, summary.numNegative);
+    ck.testExactNumber(1, summary.numZero);
+
+    ck.testTrue(HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR));
+    outside2.setMask(HalfEdgeMask.EXTERIOR);
+    ck.testFalse(HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR));
+    outside2.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
+    ck.testTrue(HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR));
+
+    const xy2 = HalfEdge.nodeToXY(inside2);
+    ck.testExactNumber(xy2[0], inside2.x);
+    ck.testExactNumber(xy2[1], inside2.y);
+    const maskBP = HalfEdge.nodeToMaskString(inside0);
+    const maskBPX = HalfEdge.nodeToMaskString(outside2);
+    ck.testTrue(maskBP === "BP" || maskBP === "PB");
+    ck.testTrue(maskBPX === "BPX");
+
+    const mask1 = HalfEdge.nodeToIdXYString(outside2);
+    const jNode = HalfEdge.nodeToIdMaskXY(outside2);
+    ck.testTrue(jNode.id.toString() === HalfEdge.nodeToIdString(outside2));
+    ck.testTrue(jNode.xy[0] === outside2.x);
+    ck.testTrue(jNode.xy[1] === outside2.y);
+    const ii = mask1.lastIndexOf("]");
+
+    ck.testExactNumber(ii + 1, mask1.length, "IdXYString");
+    if (ck.getNumErrors() !== 0)
+      logGraph(graph, "NullFace and mask string tests");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("HorizontalScanFraction", () => {
+    const ck = new Checker();
+    const graph = new HalfEdgeGraph();
+    const y0 = 2;
+    const y1 = 5;
+    const f = 0.4;
+    const ym = Geometry.interpolate(y0, f, y1);
+    const y0Edge = graph.addEdgeXY(0, y0, 10, y0);
+    const y01Edge = graph.addEdgeXY(1, y0, 10, y1);
+    const q = HalfEdge.horizontalScanFraction(y0Edge, y0);
+    const q1 = HalfEdge.horizontalScanFraction(y0Edge, y1);
+    ck.testUndefined(q1);
+    ck.testTrue(q instanceof HalfEdge && q === y0Edge);
+    const fm = HalfEdge.horizontalScanFraction(y01Edge, ym);
+    ck.testTrue(Number.isFinite(fm as number) && Geometry.isSameCoordinate(f, fm as number));
+    const f0 = HalfEdge.horizontalScanFraction(y01Edge, y0);
+    ck.testTrue(Number.isFinite(f0 as number) && Geometry.isSameCoordinate(0, f0 as number));
+    expect(ck.getNumErrors()).equals(0);
   });
 
   it("CoordinatesOnEdges", () => {

@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile, TileTree, TileLoader } from "./TileTree";
+import { Tile } from "./Tile";
+import { TileTree, TileLoader } from "./TileTree";
 import { TileAdmin } from "./TileAdmin";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
@@ -43,31 +44,40 @@ export class TileRequest {
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
    * if the request is not subsequently canceled - resulting in either a successfully-loaded Tile, or a failed ("not found") Tile.
    */
-  public async dispatch(): Promise<void> {
+  public async dispatch(onHttpResponse: () => void): Promise<void> {
+    if (this.isCanceled)
+      return Promise.resolve();
+
+    assert(this._state === TileRequest.State.Queued);
+    this._state = TileRequest.State.Dispatched;
+    let response;
+    let gotResponse = false;
     try {
-      if (this.isCanceled)
-        return Promise.resolve();
-
-      assert(this._state === TileRequest.State.Queued);
-      this._state = TileRequest.State.Dispatched;
-      const response = await this.loader.requestTileContent(this.tile);
-      if (this.isCanceled)
-        return Promise.resolve();
-
-      return this.handleResponse(response);
-    } catch (_err) {
-      if (_err.errorNumber && _err.errorNumber === IModelStatus.ServerTimeout) {
+      response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
+      gotResponse = true;
+    } catch (err) {
+      if (err instanceof AbandonedError) {
+        // Content not found in cache and we were cancelled while awaiting that response, so not forwarded to backend.
+        this.notifyAndClear();
+        this._state = TileRequest.State.Failed;
+      } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
         IModelApp.tileAdmin.onTileTimedOut(this.tile);
       } else {
-        // Unknown error - not retryable.
+        // Unknown error - not retryable
         this.setFailed();
       }
-
-      return Promise.resolve();
     }
+
+    // Notify caller that we have finished http activity.
+    onHttpResponse();
+
+    if (!gotResponse || this.isCanceled)
+      return Promise.resolve();
+
+    return this.handleResponse(response);
   }
 
   /** Cancels this request. This leaves the associated Tile's state untouched. */

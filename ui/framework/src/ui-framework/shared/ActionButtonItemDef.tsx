@@ -43,16 +43,30 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   public getDimension(orientation: Orientation): number {
     let dimension = 0;
     if (this.size)
-      dimension = (orientation === Orientation.Horizontal ? this.size.width : this.size.height) + 1;
+      dimension = (orientation === Orientation.Horizontal) ? this.size.width : this.size.height;
     return dimension;
   }
 
-  public toolbarReactNode(_index?: number): React.ReactNode {
+  /** @internal */
+  public static getRandomId(): string {
+    return (Math.floor(Math.random() * 100) + 1000).toString();
+  }
+
+  /** @internal */
+  public getKey = (index?: number): string => {
+    const key = (!!this.id) ? this.id : (index !== undefined) ? index.toString() : ActionButtonItemDef.getRandomId();
+    return key;
+  }
+
+  public toolbarReactNode(index?: number): React.ReactNode {
     if (!this.isVisible)
       return null;
 
+    const key = this.getKey(index);
+
     return (
       <ActionItemButton
+        key={key}
         actionItem={this}
         onSizeKnown={this.handleSizeKnown}
       />

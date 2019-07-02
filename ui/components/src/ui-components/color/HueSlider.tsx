@@ -80,7 +80,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
         const percent = -((top * 100) / containerHeight) + 100;
         h = ((360 * percent) / 100);
       }
-
+      // istanbul ignore else
       if (hsv.h !== h) {
         newColor.h = h;
         return newColor;
@@ -113,8 +113,10 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onChange = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    // istanbul ignore if
     if (e.target !== e.currentTarget)
       return;
+    // istanbul ignore else
     if (this._container && this.props.onHueChange) {
       const change = this._calculateChange(e, this.props.isHorizontal ? this.props.isHorizontal : false, this.props.hsv, this._container);
       change && typeof this.props.onHueChange === "function" && this.props.onHueChange(change);
@@ -122,6 +124,7 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
   }
 
   private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // istanbul ignore if
     if (e.target !== e.currentTarget)
       return;
     this._onChange(e);
@@ -145,8 +148,11 @@ export class HueSlider extends React.PureComponent<HueSliderProps> {
       newHue = hueValue.h + (evt.ctrlKey ? 180 : 60);
     } else if (evt.key === "Home") {
       newHue = 0;
-    } else if (evt.key === "End") {
-      newHue = 360;
+    } else {
+      // istanbul ignore else
+      if (evt.key === "End") {
+        newHue = 360;
+      }
     }
 
     // istanbul ignore else

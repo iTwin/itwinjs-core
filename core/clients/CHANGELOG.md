@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Removed missing group descriptions
+- Added feature tracking info to userInfo obtained by OidcBrowserClient. 
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

@@ -1,19 +1,15 @@
 # dependencies
 node_modules
+package-lock.json
 
 # build output
 .nyc_output
-/core/**/lib
-/ui/**/lib
-/presentation/**/lib
-/example-code/**/lib
-/tools/config-loader/lib
-/test-apps/**/lib
-/core/geometry/src/test/output
-/core/backend/src/test/output
+/**/lib
+/**/test/output
 /generated-docs
 /out
 **/DevBuild.txt
+coverage
 
 # rush-specific
 /common/temp
@@ -23,3 +19,7 @@ package-deps.json
 
 # docs
 /public
+
+# trash
+*.bak
+*.orig

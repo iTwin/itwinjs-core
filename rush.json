@@ -95,6 +95,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/frontend-devtools",
+      "projectFolder": "core/frontend-devtools",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-i18n",
       "projectFolder": "core/i18n",
       "reviewCategory": "frontend",

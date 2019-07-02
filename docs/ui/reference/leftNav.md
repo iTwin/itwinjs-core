@@ -55,6 +55,7 @@
 - [Message]($ninezone:Message)
 - [MessageCenter]($ninezone:MessageCenter)
 - [SnapMode]($ninezone:SnapMode)
+- [SnapMode]($ninezone:StagePanels)
 - [ToolAssistance]($ninezone:ToolAssistance)
 - [Toolbar]($ninezone:Toolbar)
 - [Utilities]($ninezone:Utilities)

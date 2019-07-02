@@ -149,8 +149,12 @@
     },
     "tooltips": {
       "subject": {
+        "nonSpatialView": "Active view is not spatial",
         "atLeastOneModelVisible": "At least one model is visible",
         "allModelsHidden": "All models are hidden"
+      },
+      "model": {
+        "nonSpatialView": "Active view is not spatial"
       },
       "category": {
         "modelNotDisplayed": "Can't control category display if model is not displayed",

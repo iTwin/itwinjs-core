@@ -32,4 +32,15 @@ describe("CustomItemDef", () => {
     expect(item.id).to.eq(testId);
   });
 
+  it("CustomItemDef that is not visible should return null from toolbarReactNode", () => {
+    const testId = "Test";
+    const item = new CustomItemDef({
+      customId: testId,
+      isVisible: false,
+      reactElement: <div>Hello!</div>,
+    });
+
+    expect(item.toolbarReactNode()).to.eq(null);
+  });
+
 });

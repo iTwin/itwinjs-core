@@ -407,13 +407,12 @@ export class HubUtility {
     // Apply change sets one by one to debug any issues
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
-
       const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(iModel.briefcase, tempChangeSets, applyOption);
-
-      let msg: string = `Applying change set ${changeSet.index}:${changeSet.id}: `;
-      msg = (status === ChangeSetStatus.Success) ? msg.concat("Success") : msg.concat("ERROR!!");
-      Logger.logInfo(HubUtility.logCategory, msg);
-
+      if (status === ChangeSetStatus.Success) {
+        Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      } else {
+        Logger.logError(HubUtility.logCategory, "Error applying ChangeSet", () => ({ ...changeSet, status, applyOption }));
+      }
       if (status !== ChangeSetStatus.Success)
         return status;
     }

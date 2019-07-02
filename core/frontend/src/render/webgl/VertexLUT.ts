@@ -38,12 +38,13 @@ export class AuxChannelLUT implements IDisposable {
     if (undefined === channels)
       return;
 
-    const map = (this[name] = new Map<string, T>());
-    for (const channel of channels) {
-      // Compiler doesn't appear to deduce specific T here? 'as any' to work around...
-      // error TS2345: Argument of type 'AuxChannel | AuxDisplacementChannel | AuxParamChannel' is not assignable to parameter of type 'T'.
-      map.set(channel.name, channel as any);
-    }
+    const map = new Map<string, T>();
+
+    // TS2322: Type 'Map<string, T>' is not assignable to type 'Map<string, AuxChannel> & Map<string, AuxDisplacementChannel> & Map<string, AuxParamChannel>'.
+    // (Compiler cannot detect that the specific property name is matched to the correct subtype at each call site - but we know that).
+    this[name] = map as any;
+    for (const channel of channels)
+      map.set(channel.name, channel as T);
   }
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }

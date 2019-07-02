@@ -1,12 +1,12 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
   "scripts": {
-    "build": "node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule.js",
+    "build": "buildIModelJsModule",
     "clean": "rimraf ./lib ./src/test/output package-deps.json",
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
@@ -39,9 +39,13 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "^1.1.0"
+  },
   "devDependencies": {
-    "@bentley/build-tools": "1.0.0",
-    "@bentley/webpack-tools": "1.0.0",
+    "@bentley/bentleyjs-core": "1.1.0",
+    "@bentley/build-tools": "1.1.0",
+    "@bentley/webpack-tools": "1.1.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -55,7 +59,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
-    "typescript": "~3.2.2"
+    "typescript": "~3.5.2"
   },
   "dependencies": {},
   "nyc": {

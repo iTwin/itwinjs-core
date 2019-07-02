@@ -22,7 +22,7 @@
  * additional (non-lazily-loaded) "nested" properties can be added.
  *
  * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromises represent processes that **may not** already be happening." kind="warning"]
- * @internal
+ * @beta
  */
 export class DelayedPromise<T> implements Promise<T> {
 

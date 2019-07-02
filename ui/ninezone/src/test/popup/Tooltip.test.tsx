@@ -42,7 +42,7 @@ describe("<Tooltip />", () => {
       height: 21,
       width: 40,
     };
-    spy.calledOnceWithExactly(sinon.match(size));
+    spy.calledOnceWithExactly(sinon.match(size)).should.true;
   });
 
   it("should offset", () => {

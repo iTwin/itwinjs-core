@@ -198,7 +198,7 @@ describe("ContentLayout", () => {
     expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
   });
 
-  it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", () => {
+  it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", async () => {
     const spyMethod = sinon.spy();
     const layoutProps: ContentLayoutProps = {
       descriptionKey: "UiFramework:tests.singleContent",
@@ -207,7 +207,7 @@ describe("ContentLayout", () => {
     const contentLayout = new ContentLayoutDef(layoutProps);
     const remove = FrontstageManager.onContentLayoutActivatedEvent.addListener(spyMethod);
 
-    ContentLayoutManager.setActiveLayout(contentLayout, myContentGroup);
+    await ContentLayoutManager.setActiveLayout(contentLayout, myContentGroup);
     spyMethod.calledOnce.should.true;
 
     ContentLayoutManager.refreshActiveLayout();

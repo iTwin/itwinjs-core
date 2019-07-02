@@ -39,9 +39,12 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
       if (!this.ref)
         return;
       const componentElement = ReactDOM.findDOMNode(this.ref);
-      if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node))
-        if (this.props.onOutsideClick) return this.props.onOutsideClick(e);
-        else if (defaultOnOutsideClick) return defaultOnOutsideClick(e);
+      if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node)) {
+        if (this.props.onOutsideClick)
+          return this.props.onOutsideClick(e);
+        else if (defaultOnOutsideClick)
+          return defaultOnOutsideClick(e);
+      }
     }
 
     public setRef = (element: HTMLDivElement) => {

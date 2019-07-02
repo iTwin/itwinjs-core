@@ -401,7 +401,7 @@ describe("GrowablePoint3dArray", () => {
 
   it("IndexedXYZCollection", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(points);
@@ -447,7 +447,7 @@ describe("GrowablePoint3dArray", () => {
 
   it("resizeAndBoundsChecks", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
     const xyzPoints = new GrowableXYZArray(points.length);    // just enough so we know the initial capacity.
     for (const p of points)
@@ -511,7 +511,7 @@ describe("GrowablePoint3dArray", () => {
 
   it("transferAndSet", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
     const array0 = new GrowableXYZArray(points.length);    // just enough so we know the initial capacity.
     for (const p of points)

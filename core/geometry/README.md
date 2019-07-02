@@ -4,7 +4,7 @@ Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 
-The __@bentley/geometry-core__ package contains classes for working with CAD geometry including:
+The __@bentley/geometry-core__ package contains classes for working with geometric types including:
 
 * Points
 * Vectors

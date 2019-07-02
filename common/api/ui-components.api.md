@@ -28,6 +28,7 @@ import * as Inspire from 'inspire-tree';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
+import { Observable } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
@@ -40,7 +41,7 @@ import { PropertyDescription } from '@bentley/imodeljs-frontend';
 import { PropertyRecord } from '@bentley/imodeljs-frontend';
 import { PropertyValue } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
-import ReactDataGrid from 'react-data-grid';
+import ReactDataGrid = require('react-data-grid');
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -243,6 +244,7 @@ export class BeInspireTree<TNodePayload> {
     deselectAll(muteEvents?: boolean): void;
     expanded(): BeInspireTreeNodes<TNodePayload>;
     flatten(): BeInspireTreeNodes<TNodePayload>;
+    getVisibleNodesBetween(node1: BeInspireTreeNode<TNodePayload>, node2: BeInspireTreeNode<TNodePayload>): Array<BeInspireTreeNode<TNodePayload>>;
     // @internal (undocumented)
     loadNodes(): Promise<void>;
     mute(events: BeInspireTreeEvent[]): EventsMuteContext;
@@ -636,7 +638,7 @@ export interface BreadcrumbProps extends CommonProps {
 
 // @beta
 export class BreadcrumbTreeUtils {
-    static aliasNodeListToTableDataProvider: (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: ImmediatelyLoadedTreeNodeItem[] | Promise<ImmediatelyLoadedTreeNodeItem[]> | import("../tree/TreeDataProvider").ITreeDataProvider | import("../tree/TreeDataProvider").TreeDataProviderMethod | undefined) => TableDataProvider;
+    static aliasNodeListToTableDataProvider: (nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: import("../tree/TreeDataProvider").TreeDataProviderMethod | ImmediatelyLoadedTreeNodeItem[] | Promise<ImmediatelyLoadedTreeNodeItem[]> | import("../tree/TreeDataProvider").ITreeDataProvider | undefined) => TableDataProvider;
     }
 
 // @beta
@@ -731,6 +733,8 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     static defaultProps: Partial<ColorPickerProps>;
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta
@@ -1168,6 +1172,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
 // @public
 export interface FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
     filteringInProgress: boolean;
     onFilterCancel: () => void;
     onFilterClear: () => void;
@@ -1405,13 +1410,19 @@ export interface LessGreaterOperatorProcessor {
 }
 
 // @beta
-export const LineWeightSwatch: React.FunctionComponent<LineWeightSwatchProps>;
+export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps> {
+    // @internal
+    constructor(props: LineWeightSwatchProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+}
 
 // @beta
 export interface LineWeightSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     colorDef?: ColorDef;
     disabled?: boolean;
-    focusRef?: React.Ref<HTMLButtonElement>;
     hideLabel?: boolean;
     onClick?: () => void;
     readonly?: boolean;
@@ -2966,6 +2977,8 @@ export class ViewportComponentEvents {
     static setStandardRotation(standardRotation: StandardViewId): void;
     // (undocumented)
     static setViewMatrix(viewport: Viewport, animationTime?: number): void;
+    // @internal
+    static terminate(): void;
 }
 
 // @public
@@ -3022,11 +3035,15 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
     // @internal
     constructor(props: WeightPickerProps);
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     static defaultProps: {
         weights: number[];
     };
     // @internal (undocumented)
     render(): JSX.Element;
+    // (undocumented)
+    setFocus(): void;
     }
 
 // @beta

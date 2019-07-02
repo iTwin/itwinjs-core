@@ -352,17 +352,21 @@ export class ECDb implements IDisposable {
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
-        const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-        if (pollrc.status === PollStatus.Done)
-          resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Partial)
-          resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-        else if (pollrc.status === PollStatus.Timeout)
-          resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-        else if (pollrc.status === PollStatus.Pending)
-          setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
-        else
-          resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+        if (!this.nativeDb || !this.nativeDb.isOpen()) {
+          resolve({ status: QueryResponseStatus.Done, rows: [] });
+        } else {
+          const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
+          if (pollrc.status === PollStatus.Done)
+            resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
+          else if (pollrc.status === PollStatus.Partial)
+            resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
+          else if (pollrc.status === PollStatus.Timeout)
+            resolve({ status: QueryResponseStatus.Timeout, rows: [] });
+          else if (pollrc.status === PollStatus.Pending)
+            setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
+          else
+            resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
+        }
       };
       setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
     });

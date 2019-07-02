@@ -18,7 +18,7 @@ import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { PlanarClassifier } from "./PlanarClassifier";
+import { TextureDrape } from "./TextureDrape";
 
 function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
@@ -354,20 +354,31 @@ export class Batch extends Graphic {
   }
 }
 
+// NB: This import MUST happen after Graphic is defined or a circular dependency is introduced.
+import { PlanarClassifier } from "./PlanarClassifier";
+
 /** @internal */
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
   public clips?: ClipPlanesVolume | ClipMaskVolume;
   public planarClassifier?: PlanarClassifier;
+  public textureDrape?: TextureDrape;
   public readonly animationId?: number;
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags, planarClassifier?: PlanarClassifier) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags, classifierOrDrape?: PlanarClassifier | TextureDrape) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
     this.clips = clips;
-    this.planarClassifier = planarClassifier;
+
+    if (undefined !== classifierOrDrape) {
+      if (classifierOrDrape instanceof PlanarClassifier)
+        this.planarClassifier = classifierOrDrape;
+      else
+        this.textureDrape = classifierOrDrape;
+    }
+
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
   }

@@ -5,11 +5,15 @@
 /** @module Tree */
 
 import * as React from "react";
+import * as _ from "lodash";
 import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
+import { AsyncTasksTracker } from "@bentley/presentation-common";
+import { using } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /**
  * Props that are injected to the TreeWithFilteringSupport HOC component.
@@ -21,7 +25,7 @@ export interface TreeWithFilteringSupportProps {
   /** The data provider used by the tree. */
   dataProvider: IPresentationTreeDataProvider;
   /** Called when filter is applied. */
-  onFilterApplied?: (filter?: string) => void;
+  onFilterApplied?: (filter: string, filteredProvider: IPresentationTreeDataProvider) => void;
   /** Called when FilteredDataProvider counts the number of matches */
   onMatchesCounted?: (count: number) => void;
   /** Index of the active match */
@@ -41,103 +45,114 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
 
   type CombinedProps = P & TreeWithFilteringSupportProps;
 
+  interface FilterKey {
+    imodel: IModelConnection;
+    rulesetId: string;
+    filter: string;
+  }
+
   interface State {
+    inProgress?: FilterKey;
     filteredDataProvider?: FilteredPresentationTreeDataProvider;
   }
 
-  const defaultState: State = {
-    filteredDataProvider: undefined,
-  };
+  const normalizeFilter = (filter: string | undefined) => (filter ? filter : "");
 
-  return class WithFilteringSupport extends React.Component<CombinedProps, State> {
+  const createFilterKey = (provider: IPresentationTreeDataProvider, filter: string | undefined): FilterKey => ({
+    imodel: provider.imodel,
+    rulesetId: provider.rulesetId,
+    filter: normalizeFilter(filter),
+  });
+
+  const createFilterKeyFromProvider = (provider: FilteredPresentationTreeDataProvider) => createFilterKey(provider, provider.filter);
+
+  const getActiveFilterKey = (state: State) => (state.inProgress ? state.inProgress : state.filteredDataProvider ? createFilterKeyFromProvider(state.filteredDataProvider) : undefined);
+
+  return class WithFilteringSupport extends React.PureComponent<CombinedProps, State> {
+
+    private _asyncsTracker = new AsyncTasksTracker();
+
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
 
     public constructor(props: CombinedProps, context?: any) {
       super(props, context);
-      this.state = defaultState;
+      this.state = {};
     }
 
-    public static getDerivedStateFromProps(nextProps: CombinedProps, state: State): State {
-      if (nextProps.filter === undefined || nextProps.filter === "")
-        return defaultState;
-      return state;
-    }
+    public get pendingAsyncs() { return this._asyncsTracker.pendingAsyncs; }
 
-    public async componentDidUpdate(prevProps: CombinedProps, _prevState: State): Promise<void> {
-      const nothingChanged = this.areEqual(prevProps, this.props);
-      const filterIsEmpty = !this.hasFilter;
-
-      if (nothingChanged || filterIsEmpty) {
-        let currentlyLoading = false;
-        if (filterIsEmpty)
-          currentlyLoading = false;
-        else if (!this.state.filteredDataProvider)
-          currentlyLoading = true;
-        else
-          currentlyLoading = !this.areEqual({ dataProvider: this.state.filteredDataProvider, filter: this.state.filteredDataProvider.filter }, this.props);
-
-        if (!currentlyLoading && this.props.onFilterApplied)
-          this.props.onFilterApplied(this.props.filter);
+    public componentDidUpdate() {
+      if (!normalizeFilter(this.props.filter)) {
+        this.setState((prev) => {
+          if (prev.inProgress || prev.filteredDataProvider)
+            return { inProgress: undefined, filteredDataProvider: undefined };
+          return null;
+        });
         return;
       }
 
-      await this.loadDataProvider(this.props.filter as string);
+      const currFilter = getActiveFilterKey(this.state);
+      const candidateFilter = createFilterKey(this.props.dataProvider, this.props.filter);
+      if (!_.isEqual(currFilter, candidateFilter)) {
+        this.setState({ inProgress: candidateFilter }, () => {
+          // tslint:disable-next-line: no-floating-promises
+          this.loadDataProvider(candidateFilter.filter);
+        });
+      }
     }
 
-    public async componentDidMount(): Promise<void> {
-      if (!this.hasFilter) {
-        if (this.props.onFilterApplied)
-          this.props.onFilterApplied(this.props.filter);
+    public componentDidMount() {
+      const filter = normalizeFilter(this.props.filter);
+      if (filter) {
+        this.setState({ inProgress: createFilterKey(this.props.dataProvider, filter) }, () => {
+          // tslint:disable-next-line: no-floating-promises
+          this.loadDataProvider(filter);
+        });
+      }
+    }
+
+    private async loadDataProvider(filter: string) {
+      if (this._asyncsTracker.pendingAsyncs.size > 0) {
+        // avoid excessive filtering requests while previous request is still in progress
         return;
       }
-      await this.loadDataProvider(this.props.filter as string);
-    }
 
-    private async loadDataProvider(filter: string): Promise<void> {
-      const nodePaths = await this.props.dataProvider.getFilteredNodePaths(filter);
-      if (this.props.filter !== filter)
+      const filterBeingApplied = createFilterKey(this.props.dataProvider, filter);
+      const nodePaths = await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
+        return this.props.dataProvider.getFilteredNodePaths(filter);
+      });
+
+      const currFilter = createFilterKey(this.props.dataProvider, this.props.filter);
+      if (!_.isEqual(currFilter, filterBeingApplied)) {
+        if (currFilter.filter) {
+          // the filter has changed while we were waiting for `getFilteredNodePaths` result - need
+          // to restart the load
+          await this.loadDataProvider(currFilter.filter);
+        } else {
+          // the filter has been cleared while we were waiting for `getFilteredNodePaths` result - the
+          // state should already be cleared so we can just return
+        }
         return;
+      }
 
       const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
-
-      if (this.props.onMatchesCounted)
-        this.props.onMatchesCounted(filteredDataProvider.countFilteringResults(nodePaths));
-
-      this.setState({ filteredDataProvider });
-    }
-
-    // tslint:disable-next-line:naming-convention
-    private get hasFilter() {
-      return (this.props.filter !== "" && this.props.filter !== undefined);
-    }
-
-    private areEqual(prop1: TreeWithFilteringSupportProps, prop2: TreeWithFilteringSupportProps): boolean {
-      if (prop1.filter !== prop2.filter)
-        return false;
-
-      if (prop1.dataProvider.rulesetId !== prop2.dataProvider.rulesetId || prop1.dataProvider.imodel !== prop2.dataProvider.imodel)
-        return false;
-
-      return true;
-    }
-
-    // tslint:disable-next-line:naming-convention
-    private get shouldDisplayOverlay() {
-      if (this.hasFilter) {
-        if (!this.state.filteredDataProvider)
-          return true;
-        return !this.areEqual({ dataProvider: this.state.filteredDataProvider, filter: this.state.filteredDataProvider.filter }, this.props);
-      }
-      return false;
+      this.setState({ inProgress: undefined, filteredDataProvider }, () => {
+        // istanbul ignore else
+        if (this.props.onFilterApplied)
+          this.props.onFilterApplied(filter, filteredDataProvider);
+        // istanbul ignore else
+        if (this.props.onMatchesCounted)
+          this.props.onMatchesCounted(filteredDataProvider.countFilteringResults(nodePaths));
+      });
     }
 
     public render() {
       const {
         filter, dataProvider, onFilterApplied, onMatchesCounted, activeMatchIndex,
-        ...props /* tslint:disable-line: trailing-comma */
+        ...props
       } = this.props as any;
 
-      const overlay = this.shouldDisplayOverlay ? <div className="filteredTreeOverlay" /> : undefined;
+      const overlay = (this.state.inProgress) ? <div className="filteredTreeOverlay" /> : undefined;
 
       let nodeHighlightingProps: HighlightableTreeProps | undefined;
       if (filter) {

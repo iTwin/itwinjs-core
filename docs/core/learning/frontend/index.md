@@ -43,9 +43,10 @@ These packages provide the following functions that a frontend requires:
 * Chrome (recommended for development)
 * Firefox
 * Safari
-* Edge
+* "New" (Chromium-based) Edge
 * Opera
 
 ### Not supported
 
 * Internet Explorer
+* "Old" (Chakra-based) Edge

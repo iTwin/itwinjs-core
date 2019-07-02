@@ -1,0 +1,9 @@
+// See https://aka.ms/vscode-remote/devcontainer.json for format details.
+{
+  "name": "imodeljs-linux",
+  "dockerFile": "./Dockerfile",
+  "context": ".",
+  "workspaceMount": "",
+  "workspaceFolder": "/workspace/imodeljs",
+  "extensions": []
+}

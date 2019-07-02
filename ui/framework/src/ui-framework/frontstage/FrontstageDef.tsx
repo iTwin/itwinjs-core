@@ -5,14 +5,13 @@
 /** @module Frontstage */
 
 import * as React from "react";
-
 import { UiError } from "@bentley/ui-core";
-import { NineZoneProps } from "@bentley/ui-ninezone";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-
+import { NineZoneManagerProps } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDef } from "../zones/ZoneDef";
-import { ContentLayoutManager, ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -23,6 +22,7 @@ import { ToolItemDef } from "../shared/ToolItemDef";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
 import { StagePanelLocation } from "../stagepanels/StagePanel";
 import { UiFramework } from "../UiFramework";
+import { ContentViewManager } from "../content/ContentViewManager";
 
 /** FrontstageDef class provides an API for a Frontstage.
  * @public
@@ -65,18 +65,21 @@ export class FrontstageDef {
   public bottomMostPanel?: StagePanelDef;
 
   public defaultLayout?: ContentLayoutDef;
+  public contentLayoutDef?: ContentLayoutDef;
   public contentGroup?: ContentGroup;
   public frontstageProvider?: FrontstageProvider;
-  public nineZoneProps?: NineZoneProps;
+  public nineZone?: NineZoneManagerProps;
 
   /** Constructs the [[FrontstageDef]]  */
   constructor() { }
 
   /** Handles when the Frontstage becomes activated */
   public onActivated(): void {
-    if (!this.defaultLayout) {
-      this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
-      if (!this.defaultLayout)
+    this.contentLayoutDef = this.defaultLayout;
+
+    if (!this.contentLayoutDef) {
+      this.contentLayoutDef = ContentLayoutManager.findLayout(this.defaultLayoutId);
+      if (!this.contentLayoutDef)
         throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this.defaultLayoutId}' not registered`);
     }
     if (!this.contentGroup) {
@@ -85,8 +88,7 @@ export class FrontstageDef {
         throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
     }
 
-    const activeLayout = this.defaultLayout!;
-    ContentLayoutManager.setActiveLayout(activeLayout, this.contentGroup);
+    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.contentLayoutDef, contentGroup: this.contentGroup });
   }
 
   /** Handles when the Frontstage becomes inactive */
@@ -111,8 +113,9 @@ export class FrontstageDef {
       controlReadyPromises.push(control.isReady);
     });
 
-    if (ContentLayoutManager.activeLayout) {
-      const usedContentIndexes = ContentLayoutManager.activeLayout.getUsedContentIndexes();
+    // istanbul ignore else
+    if (this.contentLayoutDef) {
+      const usedContentIndexes = this.contentLayoutDef.getUsedContentIndexes();
       this.contentControls.forEach((control: ContentControl, index: number) => {
         // istanbul ignore else
         if (usedContentIndexes.includes(index))
@@ -148,6 +151,32 @@ export class FrontstageDef {
       IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
       this.defaultTool.execute();
     }
+  }
+
+  public setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void {
+    this.contentLayoutDef = contentLayoutDef;
+    this.contentGroup = contentGroup;
+  }
+
+  public setActiveContent(): boolean {
+    let contentControl: ContentControl | undefined;
+    let activated = false;
+
+    if (this.contentGroup && this.defaultContentId) {
+      contentControl = this.contentGroup.getContentControlById(this.defaultContentId);
+    }
+
+    // istanbul ignore else
+    if (!contentControl && this.contentControls.length >= 0) {
+      contentControl = this.contentControls[0];
+    }
+
+    if (contentControl) {
+      ContentViewManager.setActiveContent(contentControl.reactElement, true);
+      activated = true;
+    }
+
+    return activated;
   }
 
   /** Sets the active view content control */
@@ -187,7 +216,7 @@ export class FrontstageDef {
       case 9:
         zoneDef = this.bottomRight;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }
@@ -236,7 +265,7 @@ export class FrontstageDef {
       case StagePanelLocation.BottomMost:
         panelDef = this.bottomMostPanel;
         break;
-      // istanbul ignore default
+      // istanbul ignore next
       default:
         throw new RangeError();
     }

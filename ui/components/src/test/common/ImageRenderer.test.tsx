@@ -6,8 +6,9 @@
 import * as React from "react";
 import { expect } from "chai";
 import { LoadedBinaryImage } from "../../ui-components/common/IImageLoader";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import { ImageRenderer } from "../../ui-components/common/ImageRenderer";
+import { UiError } from "@bentley/ui-core";
 
 describe("ImageRenderer", () => {
   const imageRenderer = new ImageRenderer();
@@ -62,7 +63,7 @@ describe("ImageRenderer", () => {
     });
 
     it("throws when provided image source is not supported", () => {
-      expect(() => imageRenderer.render({ sourceType: "random-type" } as any)).to.throw("ImageRenderer: Can't handle sourceType");
+      expect(() => imageRenderer.render({ sourceType: "random-type" } as any)).to.throw(UiError);
     });
   });
 

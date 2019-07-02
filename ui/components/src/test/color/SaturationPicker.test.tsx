@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import sinon from "sinon";
 import { SaturationPicker } from "../../ui-components/color/SaturationPicker";

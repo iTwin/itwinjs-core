@@ -144,6 +144,9 @@ describe("ContentControl", () => {
           const deactivatedMethod = sinon.spy(contentControl, "onDeactivated");
           ContentViewManager.setActiveContent(contentSet[1]);
           expect(deactivatedMethod.calledOnce).to.be.true;
+
+          ContentViewManager.refreshActiveContent(contentSet[0]);
+          expect(activatedMethod.calledTwice).to.be.true;
         }
       }
     }

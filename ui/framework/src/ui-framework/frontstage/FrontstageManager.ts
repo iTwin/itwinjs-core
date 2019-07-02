@@ -5,21 +5,20 @@
 /** @module Frontstage */
 
 import { UiEvent } from "@bentley/ui-core";
-import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
+import { NineZoneManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
-
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
-import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
-import { ContentLayoutActivatedEvent } from "../content/ContentLayout";
+import { ContentLayoutActivatedEvent, ContentLayoutDef } from "../content/ContentLayout";
 import { NavigationAidActivatedEvent } from "../navigationaids/NavigationAidControl";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
+import { ContentGroup } from "../content/ContentGroup";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -109,6 +108,7 @@ export class FrontstageManager {
   private static _activeFrontstageDef: FrontstageDef | undefined;
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
+  private static _nineZoneManager = new NineZoneManager();
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
@@ -128,11 +128,11 @@ export class FrontstageManager {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
-        // make sure toolsettings properties are cached before creating ToolInformation
-        ToolUiManager.clearCachedProperties();
+        // make sure tool settings properties are cached before creating ToolInformation
+        ToolUiManager.clearToolSettingsData();
         // istanbul ignore else
         if (tool instanceof InteractiveTool)
-          ToolUiManager.cachePropertiesForTool(tool);
+          ToolUiManager.initializeDataForTool(tool);
 
         // if the tool data is not already cached then see if there is data to cache
         FrontstageManager.ensureToolInformationIsSet(tool.toolId);
@@ -172,7 +172,7 @@ export class FrontstageManager {
   public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
   /** Get  Nine-zone State Manager. */
-  public static get NineZoneStateManager() { return NineZoneStateManager; }
+  public static get NineZoneManager() { return this._nineZoneManager; }
 
   /** Clears the Frontstage map.
    */
@@ -253,6 +253,7 @@ export class FrontstageManager {
 
     if (frontstageDef) {
       frontstageDef.onActivated();
+
       FrontstageManager.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
 
       await frontstageDef.waitUntilReady();
@@ -263,13 +264,7 @@ export class FrontstageManager {
 
       frontstageDef.startDefaultTool();
 
-      // istanbul ignore else
-      if (frontstageDef.contentControls.length >= 0) {
-        // TODO: get content control to activate from state info
-        const contentControl = frontstageDef.contentControls[0];
-        if (contentControl)
-          ContentViewManager.setActiveContent(contentControl.reactElement, true);
-      }
+      frontstageDef.setActiveContent();
     }
     FrontstageManager._isLoading = false;
   }
@@ -283,11 +278,8 @@ export class FrontstageManager {
 
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
-    // istanbul ignore else
-    if (FrontstageManager.activeToolId !== toolId) {
-      FrontstageManager._activeToolId = toolId;
-      FrontstageManager.onToolActivatedEvent.emit({ toolId });
-    }
+    FrontstageManager._activeToolId = toolId;
+    FrontstageManager.onToolActivatedEvent.emit({ toolId });
   }
 
   /** Gets the active tool's [[ToolInformation]] */
@@ -319,6 +311,25 @@ export class FrontstageManager {
       return toolUiProvider.toolAssistanceNode;
 
     return undefined;
+  }
+
+  /** Sets the active layout, content group and active content.
+   * @param contentLayoutDef  Content layout to make active
+   * @param contentGroup  Content Group to make active
+   */
+  public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      FrontstageManager._isLoading = false;
+
+      activeFrontstageDef.setContentLayoutAndGroup(contentLayoutDef, contentGroup);
+      FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: contentLayoutDef, contentGroup });
+
+      await activeFrontstageDef.waitUntilReady();
+      FrontstageManager._isLoading = false;
+
+      activeFrontstageDef.setActiveContent();
+    }
   }
 
   /** Opens a modal Frontstage. Modal Frontstages can be stacked.

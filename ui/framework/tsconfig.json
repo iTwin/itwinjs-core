@@ -6,7 +6,12 @@
     "outDir": "./lib",
     "skipLibCheck": true,
     "jsx": "react",
-    "preserveSymlinks": true
+    "preserveSymlinks": true,
+    "types": [
+      "sinon-chai",
+      "chai-as-promised",
+      "@bentley/webpack-tools"
+    ]
   },
   "include": [
     "./src/**/*.ts*"

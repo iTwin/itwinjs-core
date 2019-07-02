@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent } from "react-testing-library"; // , waitForElement
+import { render, cleanup, fireEvent } from "@testing-library/react"; // , waitForElement
 import { expect } from "chai";
 import sinon from "sinon";
 import { ColorSwatch } from "../../ui-components/color/Swatch";
@@ -18,6 +18,11 @@ describe("<ColorSwatch />", () => {
 
   it("should render", () => {
     const renderedComponent = render(<ColorSwatch colorDef={colorDef} />);
+    expect(renderedComponent).not.to.be.undefined;
+  });
+
+  it("should render rounded", () => {
+    const renderedComponent = render(<ColorSwatch colorDef={colorDef} round={true} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 

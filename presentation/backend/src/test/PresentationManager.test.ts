@@ -118,6 +118,15 @@ describe("PresentationManager", () => {
         });
       });
 
+      it("subscribes for `IModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
+        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: false }), (_) => {
+          expect(IModelDb.onOpened.numberOfListeners).to.eq(0);
+        });
+        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: true }), (_) => {
+          expect(IModelDb.onOpened.numberOfListeners).to.eq(1);
+        });
+      });
+
     });
 
   });
@@ -217,6 +226,14 @@ describe("PresentationManager", () => {
       nativePlatformMock.verify((x) => x.dispose(), moq.Times.once());
     });
 
+    it("unsubscribes from `IModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const manager = new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true });
+      expect(IModelDb.onOpened.numberOfListeners).to.eq(1);
+      manager.dispose();
+      expect(IModelDb.onOpened.numberOfListeners).to.eq(0);
+    });
+
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
@@ -225,6 +242,22 @@ describe("PresentationManager", () => {
     });
 
   });
+
+  describe("preloading schemas", () => {
+
+    it("calls addon's `forceLoadSchemas` on `IModelDb.onOpened` events", () => {
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+      using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
+        const context = new ClientRequestContext();
+        IModelDb.onOpened.raiseEvent(context, imodelMock.object);
+        nativePlatformMock.verify((x) => x.forceLoadSchemas(context, moq.It.isAny()), moq.Times.once());
+      });
+    });
+
+  });
+
 
   describe("addon results conversion to Presentation objects", () => {
 

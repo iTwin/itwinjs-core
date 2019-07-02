@@ -10,7 +10,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 
 import { GeometryQuery } from "./GeometryQuery";
 
-/** A Coordinate is a persistable Point3d
+/** A Coordinate is a Point3d with supporting methods from the GeometryQuery abstraction.
  * @public
  */
 export class CoordinateXYZ extends GeometryQuery {
@@ -24,10 +24,15 @@ export class CoordinateXYZ extends GeometryQuery {
     super();
     this._xyz = xyz;
   }
-  /** Create a new CoordinateXYZ */
+  /** Create a new CoordinateXYZ containing a CLONE of point */
   public static create(point: Point3d): CoordinateXYZ {
     return new CoordinateXYZ(point.clone());
   }
+  /** Create a new CoordinateXYZ */
+  public static createXYZ(x: number = 0, y: number = 0, z: number = 0): CoordinateXYZ {
+    return new CoordinateXYZ(Point3d.create(x, y, z));
+  }
+
   /** return the range of the point */
   public range(): Range3d { return Range3d.create(this._xyz); }
 

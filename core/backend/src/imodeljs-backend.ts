@@ -32,9 +32,13 @@ export * from "./domains/Functional";
 export * from "./domains/FunctionalElements";
 export * from "./domains/Generic";
 export * from "./domains/GenericElements";
-export * from "./IModelImporter";
+export * from "./domains/LinearReferencing";
+export * from "./domains/LinearReferencingElementAspects";
+export * from "./domains/LinearReferencingElements";
+export * from "./domains/LinearReferencingRelationships";
 export * from "./IModelJsNative";
 export * from "./IModelHost";
+export * from "./IModelTransformer";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
 export * from "./CloudStorageBackend";
@@ -104,13 +108,6 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
- */
-/**
- * @docs-group-description SQLite
- * Classes for executing SQLite SQL queries. Use them only for exceptional cases. Prefer [ECSQL]($docs/learning/ECSQL.md) when reading
- * the content of iModels. Prefer the [iModel APIs]($docs/learning/backend/IModelDbReadwrite.md) when modifying the content of iModels.
- *
- * *Note:* Executing a data-modifying SQL statement can corrupt the local copy of an iModel!
  */
 /**
  * @docs-group-description Portability

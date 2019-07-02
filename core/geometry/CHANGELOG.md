@@ -1,6 +1,25 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Export bilinear patch (used by bing elevation)
+- Removed missing group descriptions
+- Add "extend" support to various CurvePrimitive.closestPoint methods.
+- Add PolyfaceQuery methods to drape linestring to facets
+- Priority queue sweep logic in HalfEdgeGraph
+- (imodeljs-markup merge)
+- PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter.
+- Region centroid and polygon boolean methods
+- TransitionSpiral bug fixes in transform, use of active interval
+- Prevent triangle flip hang
+- Bspline Curve chord tolerance
+- Add quick-exit completion tests in earcut triangulation
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

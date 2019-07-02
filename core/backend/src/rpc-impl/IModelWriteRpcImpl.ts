@@ -36,10 +36,9 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async saveThumbnail(tokenProps: IModelTokenProps, val: Uint8Array): Promise<void> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const int16Val = new Uint16Array(val.buffer);
-    const int32Val = new Uint32Array(val.buffer);
-    const props: ThumbnailProps = { format: int16Val[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: int16Val[2], height: int16Val[3], image: new Uint8Array(val.buffer, 16, int16Val[0]) };
-    const id = Id64.fromLocalAndBriefcaseIds(int32Val[2], int32Val[3]);
+    const int32Val = new Uint32Array(val.buffer, 0, 6);
+    const props: ThumbnailProps = { format: int32Val[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: int32Val[2], height: int32Val[3], image: new Uint8Array(val.buffer, 24, int32Val[0]) };
+    const id = Id64.fromLocalAndBriefcaseIds(int32Val[4], int32Val[5]);
     if (!Id64.isValid(id) || props.width === undefined || props.height === undefined || props.image.length <= 0)
       return Promise.reject(new Error("bad args"));
 

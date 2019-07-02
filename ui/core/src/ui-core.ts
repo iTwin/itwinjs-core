@@ -30,6 +30,8 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
+export * from "./ui-core/focustrap/FocusTrap";
+
 export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";
@@ -93,6 +95,7 @@ export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledSelect";
 export * from "./ui-core/inputs/LabeledTextarea";
 export * from "./ui-core/inputs/numericinput/NumericInput";
+export * from "./ui-core/inputs/numericinput/ReactNumericInput";
 export * from "./ui-core/inputs/Radio";
 export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
@@ -114,7 +117,7 @@ export * from "./ui-core/text/Title2";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
-// istanbul ignore if
+// istanbul ignore next
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();

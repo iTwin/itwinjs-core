@@ -12,4 +12,4 @@
 - [Wire Format](./WireFormat.md)
 - [Frequently Asked Questions](./faq.md)
 - [Guidelines and Tips](./guidelines/index.md)
-- [iModel.js Glossary](./Glossary.md)
+- [Glossary](./Glossary.md)

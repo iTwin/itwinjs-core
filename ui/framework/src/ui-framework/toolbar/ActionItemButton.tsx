@@ -16,6 +16,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { Item, Size } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { CommonProps } from "@bentley/ui-core";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties that must be specified for a ActionItemButton component
  * @public
@@ -128,11 +129,12 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={actionItem.label}
-        key={actionItem.id}
+        key={actionItem.getKey()}
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}
         onSizeKnown={this.props.onSizeKnown}
+        betaBadge={actionItem.betaBadge && <BetaBadge />}
       />
     );
   }

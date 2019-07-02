@@ -9,7 +9,7 @@ public;ButtonProps
 public;ButtonSize
 public;ButtonType
 public;Centered: React.FunctionComponent
-public;Checkbox: React.FunctionComponent
+public;Checkbox 
 public;CheckBoxInfo
 public;CheckboxProps 
 public;CheckBoxState
@@ -55,6 +55,7 @@ beta;Face
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
+beta;FocusTrap 
 internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
@@ -103,6 +104,7 @@ beta;NodeCheckboxProps
 beta;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
 beta;NodeCheckboxRenderProps = Omit
 alpha;NumericInput 
+alpha;NumericInputDefaultProps = Pick
 alpha;NumericInputProps 
 public;Omit
 beta;OmitChildrenProp
@@ -117,6 +119,9 @@ beta;RadialMenu
 beta;RadialMenuProps 
 public;Radio 
 public;RadioProps 
+internal;ReactNumericInput 
+alpha;ReactNumericInputProps 
+internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 

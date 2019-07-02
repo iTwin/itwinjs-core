@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { wait } from "react-testing-library";
+import { wait } from "@testing-library/react";
 
 let mochaTimeoutsEnabled = true;
 beforeEach(function () {

@@ -7,7 +7,8 @@
   },
   "chromeOptions": {
     "args": [
-      "--disable-web-security"
+      "--disable-web-security",
+      "--no-sandbox"
     ]
   },
   "mochaOptions": {

@@ -144,8 +144,8 @@ export class ConcurrencyControl {
    */
   public async request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void> {
     requestContext.enter();
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel.newNotOpenError());
+    if (!this._iModel.isOpen)
+      return Promise.reject(new Error("not open"));
 
     assert(this.inBulkOperation(), "should always be in bulk mode");
 
@@ -289,8 +289,8 @@ export class ConcurrencyControl {
   /** Reserve the specified codes */
   public async reserveCodes(requestContext: AuthorizedClientRequestContext, codes: Code[]): Promise<HubCode[]> {
     requestContext.enter();
-    if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel.newNotOpenError());
+    if (!this._iModel.isOpen)
+      return Promise.reject(new Error("not open"));
 
     const bySpecId = this.buildHubCodesFromCodes(this._iModel.briefcase, codes);
     if (bySpecId === undefined)
@@ -302,8 +302,8 @@ export class ConcurrencyControl {
   // Query the state of the Codes for the specified CodeSpec and scope.
   public async queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]> {
     requestContext.enter();
-    if (this._iModel.briefcase === undefined)
-      return Promise.reject(this._iModel.newNotOpenError());
+    if (!this._iModel.isOpen)
+      return Promise.reject(new Error("not open"));
 
     const query = new CodeQuery().byCodeSpecId(specId).byCodeScope(scopeId);
 
@@ -327,8 +327,8 @@ export class ConcurrencyControl {
    */
   public async areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel.newNotOpenError());
+    if (!this._iModel.isOpen)
+      return Promise.reject(new Error("not open"));
     // throw new Error("TBD");
     if (req === undefined)
       req = this.pendingRequest;
@@ -359,9 +359,8 @@ export class ConcurrencyControl {
    */
   public async areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean> {
     requestContext.enter();
-    if (!this._iModel.briefcase)
-      return Promise.reject(this._iModel.newNotOpenError());
-
+    if (!this._iModel.isOpen)
+      return Promise.reject(new Error("not open"));
     if (req === undefined)
       req = this.pendingRequest;
 
@@ -527,8 +526,8 @@ export namespace ConcurrencyControl {
     public async reserve(requestContext: AuthorizedClientRequestContext, codes?: Code[]): Promise<void> {
       requestContext.enter();
 
-      if (!this._iModel.briefcase)
-        return Promise.reject(this._iModel.newNotOpenError());
+      if (!this._iModel.isOpen)
+        return Promise.reject(new Error("not open"));
 
       if (codes !== undefined) {
         await this._iModel.concurrencyControl.reserveCodes(requestContext, codes);

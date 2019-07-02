@@ -8,8 +8,9 @@ import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
-import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
+import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
 import { ResizeHandle } from "./rectangular/ResizeHandle";
+import { PointProps, Point } from "../utilities/Point";
 import "./Stacked.scss";
 
 /** Available [[Stacked]] widget horizontal anchors.
@@ -24,8 +25,10 @@ export enum HorizontalAnchor {
  * @alpha
  */
 export enum VerticalAnchor {
-  Middle,
   Bottom,
+  BottomPanel,
+  Middle,
+  TopPanel,
 }
 
 /** Helpers for [[HorizontalAnchor]].
@@ -52,18 +55,37 @@ export class HorizontalAnchorHelpers {
  * @alpha
  */
 export class VerticalAnchorHelpers {
+  /** Class name of [[VerticalAnchor.Bottom]] */
+  public static readonly BOTTOM_CLASS_NAME = "nz-bottom-anchor";
+  /** Class name of [[VerticalAnchor.Bottom]] */
+  public static readonly BOTTOM_PANEL_CLASS_NAME = "nz-bottom-panel-anchor";
   /** Class name of [[VerticalAnchor.Middle]] */
   public static readonly MIDDLE_CLASS_NAME = "nz-middle-anchor";
   /** Class name of [[VerticalAnchor.Bottom]] */
-  public static readonly BOTTOM_CLASS_NAME = "nz-bottom-anchor";
+  public static readonly TOP_PANEL_CLASS_NAME = "nz-top-panel-anchor";
 
   /** @returns Class name of specified [[VerticalAnchor]] */
   public static getCssClassName(anchor: VerticalAnchor): string {
     switch (anchor) {
-      case VerticalAnchor.Middle:
-        return VerticalAnchorHelpers.MIDDLE_CLASS_NAME;
       case VerticalAnchor.Bottom:
         return VerticalAnchorHelpers.BOTTOM_CLASS_NAME;
+      case VerticalAnchor.BottomPanel:
+        return VerticalAnchorHelpers.BOTTOM_PANEL_CLASS_NAME;
+      case VerticalAnchor.Middle:
+        return VerticalAnchorHelpers.MIDDLE_CLASS_NAME;
+      case VerticalAnchor.TopPanel:
+        return VerticalAnchorHelpers.TOP_PANEL_CLASS_NAME;
+    }
+  }
+
+  /** @returns Returns true if [[VerticalAnchor]] defines horizontal stacked widget. */
+  public static isHorizontal(anchor: VerticalAnchor) {
+    switch (anchor) {
+      case VerticalAnchor.BottomPanel:
+      case VerticalAnchor.TopPanel:
+        return true;
+      default:
+        return false;
     }
   }
 }
@@ -80,12 +102,16 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   fillZone?: boolean;
   /** Describes to which side the widget is horizontally anchored. */
   horizontalAnchor: HorizontalAnchor;
+  /** Describes if the widget is in collapsed stage panel. */
+  isCollapsed?: boolean;
   /** Describes if the widget is being dragged. */
   isDragged?: boolean;
   /** Describes if the widget is floating. */
   isFloating?: boolean;
   /** True if widget is open, false otherwise. */
   isOpen?: boolean;
+  /** Describes if the tab bar is visible. */
+  isTabBarVisible?: boolean;
   /** Function called when resize action is performed. */
   onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
   /** Widget tabs. See: [[Tab]], [[TabSeparator]], [[Group]] */
@@ -104,6 +130,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
  */
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();
+  private _relativePosition?: Point;
 
   public getBounds(): RectangleProps {
     if (!this._widget.current)
@@ -114,14 +141,16 @@ export class Stacked extends React.PureComponent<StackedProps> {
   public render() {
     const className = classnames(
       "nz-widget-stacked",
-      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
-      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
       !this.props.isOpen && "nz-closed",
       this.props.isDragged && "nz-dragged",
       this.props.isFloating && "nz-floating",
       this.props.fillZone && "nz-fill-zone",
+      this.props.isCollapsed && "nz-collapsed",
+      HorizontalAnchorHelpers.getCssClassName(this.props.horizontalAnchor),
+      VerticalAnchorHelpers.getCssClassName(this.props.verticalAnchor),
       this.props.className);
 
+    const isHorizontal = VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor);
     return (
       <div
         className={className}
@@ -130,6 +159,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
         onMouseEnter={this.props.onMouseEnter}
         onMouseLeave={this.props.onMouseLeave}
       >
+        {this.props.isTabBarVisible && <div className="nz-tab-bar" />}
         <div className="nz-content-container">
           <div
             className="nz-content"
@@ -137,40 +167,48 @@ export class Stacked extends React.PureComponent<StackedProps> {
           >
             {this.props.content}
           </div>
-          <ResizeGrip
-            className="nz-bottom-grip"
-            direction={ResizeDirection.NorthSouth}
-            onResize={this._handleBottomGripResize}
-          />
-          <ResizeGrip
+          {this.props.onResize && <ResizeGrip
+            className="nz-secondary-grip"
+            direction={isHorizontal ? ResizeDirection.EastWest : ResizeDirection.NorthSouth}
+            onResize={this._handleSecondaryGripResize}
+            onResizeEnd={this._handleResizeEnd}
+            onResizeStart={this._handleResizeStart}
+          />}
+          {this.props.onResize && <ResizeGrip
             className="nz-content-grip"
-            direction={ResizeDirection.EastWest}
+            direction={isHorizontal ? ResizeDirection.NorthSouth : ResizeDirection.EastWest}
             onResize={this._handleContentGripResize}
-          />
+            onResizeEnd={this._handleResizeEnd}
+            onResizeStart={this._handleResizeStart}
+          />}
         </div>
         <div className="nz-tabs-column">
           <div className="nz-tabs">
             {this.props.tabs}
           </div>
           <div className="nz-tabs-grip-container">
-            <ResizeGrip
+            {this.props.onResize && <ResizeGrip
               className="nz-tabs-grip"
-              direction={ResizeDirection.EastWest}
+              direction={isHorizontal ? ResizeDirection.NorthSouth : ResizeDirection.EastWest}
               onResize={this._handleTabsGripResize}
-            />
+              onResizeEnd={this._handleResizeEnd}
+              onResizeStart={this._handleResizeStart}
+            />}
           </div>
         </div>
         <div className="nz-height-expander" />
-        <ResizeGrip
-          className="nz-top-grip"
-          direction={ResizeDirection.NorthSouth}
-          onResize={this._handleTopGripResize}
-        />
+        {this.props.onResize && <ResizeGrip
+          className="nz-primary-grip"
+          direction={isHorizontal ? ResizeDirection.EastWest : ResizeDirection.NorthSouth}
+          onResize={this._handlePrimaryGripResize}
+          onResizeEnd={this._handleResizeEnd}
+          onResizeStart={this._handleResizeStart}
+        />}
       </div>
     );
   }
 
-  private _getFilledHeightDiff(): number {
+  private getFilledHeightDiff(): number {
     const widget = this._widget.current;
     if (!widget)
       return 0;
@@ -187,41 +225,85 @@ export class Stacked extends React.PureComponent<StackedProps> {
     return offset;
   }
 
-  private _handleTabsGripResize = (x: number) => {
-    const filledHeightDiff = this._getFilledHeightDiff();
-    switch (this.props.horizontalAnchor) {
-      case HorizontalAnchor.Left: {
-        this.props.onResize && this.props.onResize(x, 0, Edge.Right, filledHeightDiff);
-        break;
-      }
-      case HorizontalAnchor.Right: {
-        this.props.onResize && this.props.onResize(x, 0, Edge.Left, filledHeightDiff);
-        break;
-      }
+  private getResizeDifference(args: ResizeGripResizeArgs): PointProps | undefined {
+    if (!this._relativePosition)
+      return undefined;
+
+    const bounds = Rectangle.create(args.bounds);
+    const relativePosition = bounds.topLeft().getOffsetTo(args.position);
+    return this._relativePosition.getOffsetTo(relativePosition);
+  }
+
+  private _handleResizeStart = (args: ResizeGripResizeArgs) => {
+    const bounds = Rectangle.create(args.bounds);
+    this._relativePosition = bounds.topLeft().getOffsetTo(args.position);
+  }
+
+  private _handleResizeEnd = () => {
+    this._relativePosition = undefined;
+  }
+
+  private _handleTabsGripResize = (args: ResizeGripResizeArgs) => {
+    const difference = this.getResizeDifference(args);
+    if (!difference)
+      return;
+    const filledHeightDiff = this.getFilledHeightDiff();
+    let handle = this.props.horizontalAnchor === HorizontalAnchor.Left ? Edge.Right : Edge.Left;
+    let x = difference.x;
+    let y = 0;
+    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
+      handle = this.props.verticalAnchor === VerticalAnchor.BottomPanel ? Edge.Top : Edge.Bottom;
+      x = 0;
+      y = difference.y;
     }
+    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
   }
 
-  private _handleContentGripResize = (x: number) => {
-    const filledHeightDiff = this._getFilledHeightDiff();
-    switch (this.props.horizontalAnchor) {
-      case HorizontalAnchor.Left: {
-        this.props.onResize && this.props.onResize(x, 0, Edge.Left, filledHeightDiff);
-        break;
-      }
-      case HorizontalAnchor.Right: {
-        this.props.onResize && this.props.onResize(x, 0, Edge.Right, filledHeightDiff);
-        break;
-      }
+  private _handleContentGripResize = (args: ResizeGripResizeArgs) => {
+    const difference = this.getResizeDifference(args);
+    if (!difference)
+      return;
+    const filledHeightDiff = this.getFilledHeightDiff();
+    let handle = this.props.horizontalAnchor === HorizontalAnchor.Left ? Edge.Left : Edge.Right;
+    let x = difference.x;
+    let y = 0;
+    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
+      handle = this.props.verticalAnchor === VerticalAnchor.BottomPanel ? Edge.Bottom : Edge.Top;
+      x = 0;
+      y = difference.y;
     }
+    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
   }
 
-  private _handleTopGripResize = (_x: number, y: number) => {
-    const filledHeightDiff = this._getFilledHeightDiff();
-    this.props.onResize && this.props.onResize(0, y, Edge.Top, filledHeightDiff);
+  private _handlePrimaryGripResize = (args: ResizeGripResizeArgs) => {
+    const difference = this.getResizeDifference(args);
+    if (!difference)
+      return;
+    const filledHeightDiff = this.getFilledHeightDiff();
+    let handle = Edge.Top;
+    let x = 0;
+    let y = difference.y;
+    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
+      handle = Edge.Left;
+      x = difference.x;
+      y = 0;
+    }
+    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
   }
 
-  private _handleBottomGripResize = (_x: number, y: number) => {
-    const filledHeightDiff = this._getFilledHeightDiff();
-    this.props.onResize && this.props.onResize(0, y, Edge.Bottom, filledHeightDiff);
+  private _handleSecondaryGripResize = (args: ResizeGripResizeArgs) => {
+    const difference = this.getResizeDifference(args);
+    if (!difference)
+      return;
+    let handle = Edge.Bottom;
+    let x = 0;
+    let y = difference.y;
+    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
+      handle = Edge.Right;
+      x = difference.x;
+      y = 0;
+    }
+    const filledHeightDiff = this.getFilledHeightDiff();
+    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
   }
 }

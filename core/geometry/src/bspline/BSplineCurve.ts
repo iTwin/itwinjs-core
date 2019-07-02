@@ -211,7 +211,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     const point = this.fractionToPoint(0);
     const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
     this.fractionToPoint(1.0, point);
-    result.updateIfCloserCurveFractionPointDistance(this, 1.0, spacePoint, spacePoint.distance(point));
+    result.updateIfCloserCurveFractionPointDistance(this, 1.0, point, spacePoint.distance(point));
 
     let span: BezierCurve3dH | undefined;
     const numSpans = this.numSpan;
@@ -269,7 +269,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
             if (roots) {
               for (const spanFraction of roots) {
                 // promote each local bezier fraction to global fraction.
-                // savet the curve evaluation at that fraction.
+                // save the curve evaluation at that fraction.
                 numFound++;
                 const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
                 if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {

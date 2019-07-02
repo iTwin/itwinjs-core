@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import { ShowHideMenu } from "../../../ui-components";
 import TestUtils from "../../TestUtils";
 
@@ -29,12 +29,12 @@ describe("ShowHideMenu", () => {
         x={0} y={0}
         items={items}
         opened={true} />);
-      expect(getByTestId("core-context-menu-container").classList.contains("opened")).to.be.true;
+      expect(getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.true;
       rerender(<ShowHideMenu
         x={0} y={0}
         items={items}
         opened={false} />);
-      expect(getByTestId("core-context-menu-container").classList.contains("opened")).to.be.false;
+      expect(getByTestId("core-context-menu-container").classList.contains("core-context-menu-opened")).to.be.false;
     });
     it("should render with initialHidden", () => {
       const { getByTestId } = render(<ShowHideMenu

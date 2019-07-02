@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import React from "react";
-import { render, cleanup, fireEvent, waitForElement } from "react-testing-library";
+import { render, cleanup, fireEvent, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
 import sinon from "sinon";
 import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
@@ -16,14 +16,17 @@ describe("<EnumButtonGroupEditor />", () => {
   afterEach(cleanup);
 
   it("should render", () => {
-    const renderedComponent = render(<EnumButtonGroupEditor />);
+    const renderedComponent = render(<EnumButtonGroupEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 
   it("editor with buttons renders correctly", async () => {
-    const record = TestUtils.createEnumProperty("Test", 0);
-    TestUtils.addEnumButtonGroupEditorSpecification(record);
-    const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record} />);
+    const record1 = TestUtils.createEnumProperty("Test", 1);
+    const record2 = TestUtils.createEnumProperty("Test", 2);
+    TestUtils.addEnumButtonGroupEditorSpecification(record1);
+    TestUtils.addEnumButtonGroupEditorSpecification(record2);
+    const renderedComponent = render(<EnumButtonGroupEditor propertyRecord={record1} />);
+    renderedComponent.rerender(<EnumButtonGroupEditor propertyRecord={record2} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 

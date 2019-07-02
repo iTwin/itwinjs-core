@@ -53,34 +53,25 @@ export namespace SpatialClassificationProps {
 
     public constructor(inside = Display.ElementColor, outside = Display.Dimmed) { this.inside = inside; this.outside = outside; }
   }
-  /** Properties describe a single application of a classifier to a model.
+
+  /** Describes a single classifier.
    * @beta
    */
-  export interface PropertiesProps {
-    /** The classifier model Id. */
+  export interface Classifier {
+    /** The Id of the classifier model. */
     modelId: Id64String;
-    /** a distance to expand the classification around the basic geometry.  Curve geometry is expanded to regions, regions are expanded to volumes. */
+    /** A distance in meters to expand the classification around the basic geometry. Curve geometry is expanded to regions; regions are expanded to volumes. */
     expand: number;
+    /** Flags controlling how geometry is displayed based on containment within classification and whether it is selected. */
     flags: FlagsProps;
+    /** A user-friendly name for this classifier. */
     name: string;
-    isActive: boolean;
   }
 
   /** Properties describe a single application of a classifier to a model.
    * @beta
    */
-  export class Properties implements PropertiesProps {
-    public modelId: Id64String;
-    public expand: number;
-    public flags: Flags;
-    public name: string;
-    public isActive: boolean;
-    constructor(props: PropertiesProps) {
-      this.name = props.name;
-      this.modelId = props.modelId;
-      this.expand = props.expand;
-      this.flags = props.flags ? props.flags : new Flags();
-      this.isActive = props.isActive;
-    }
+  export interface Properties extends Classifier {
+    isActive: boolean;
   }
 }

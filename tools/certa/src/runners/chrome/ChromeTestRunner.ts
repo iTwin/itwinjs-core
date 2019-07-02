@@ -34,7 +34,10 @@ export class ChromeTestRunner {
       CERTA_PATH: path.join(__dirname, "../../../public/index.html"),
       CERTA_PUBLIC_DIRS: JSON.stringify(config.chromeOptions.publicDirs),
     };
-    const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv);
+    const webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
+
+    // Don't start puppeteer until the webserver is started and listening.
+    await new Promise((resolve) => webserverProcess.once("message", resolve));
 
     // FIXME: Do we really want to always enforce this behavior?
     if (process.env.CI || process.env.TF_BUILD)

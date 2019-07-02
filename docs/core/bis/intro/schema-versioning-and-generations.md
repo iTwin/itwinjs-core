@@ -247,3 +247,5 @@ Deleting ECClasses, ECEnumerations, KindOfQuantities, or ECProperties.
 
 Generally, the Custom Attributes from the ECDbMap ECSchema cannot be added, deleted, or modified if they affected the mapping of the ECSchemas and therefore the layout of the database schema.
 -->
+
+> Next: [Schema Production Status](./schema-production-status.md)

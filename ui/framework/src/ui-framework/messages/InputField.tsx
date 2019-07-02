@@ -10,6 +10,7 @@ import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageM
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 import "./InputField.scss";
+import { MessageDiv } from "./MessageSpan";
 
 /** Properties of [[InputFieldMessage]] component.
  * @beta
@@ -24,8 +25,8 @@ interface InputFieldMessageProps {
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
-  message: string;
-  detailedMessage?: string;
+  message: HTMLElement | string;
+  detailedMessage?: HTMLElement | string;
   inputFieldElement?: HTMLElement;
   showCloseButton?: boolean;
 }
@@ -60,9 +61,13 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
               {(priority === OutputMessagePriority.Warning) && <div className="icon icon-status-warning" />}
               {(priority === OutputMessagePriority.Error) && <div className="icon icon-status-error" />}
               {(priority === OutputMessagePriority.Info) && <div className="icon icon-info" />}
-              {message && <div className="uifw-popup-message-brief">{message}</div>}
+              {
+                message && <MessageDiv className="uifw-popup-message-brief" message={message} />
+              }
             </div>
-            {detailedMessage && <div className="uifw-popup-message-detailed">{detailedMessage}</div>}
+            {
+              detailedMessage && <MessageDiv className="uifw-popup-message-detailed" message={detailedMessage} />
+            }
           </div>
           {showCloseButton && <div className="uifw-popup-message-close" onClick={this._onInputMessageClose}>
             <i className="icon icon-close" />

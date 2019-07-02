@@ -243,10 +243,13 @@ export class BezierCurve3dH extends BezierCurveBase {
       const length2 = Math.sqrt(length1 * sumLength);  // This is in between
       let radians1 = maxRadians * (this.degree - 1);  // As if worst case keeps happening.
       if (this.degree < 3)
-        radians1 *= 3;  // so quadratics aren't understroked
+        radians1 *= 3;  // so quadratics aren't under-stroked
       const radians2 = Math.sqrt(radians1 * sumRadians);
       numStrokes = StrokeOptions.applyAngleTol(options,
         StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
+      if (options) {
+        numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
+      }
     }
     return numStrokes;
   }

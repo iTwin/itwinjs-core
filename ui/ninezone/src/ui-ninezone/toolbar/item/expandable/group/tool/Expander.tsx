@@ -32,9 +32,7 @@ export class GroupToolExpander extends React.PureComponent<GroupToolExpanderProp
       <GroupTool
         className={expanderClassName}
         {...props}>
-        <div className="nz-expansion-indicator">
-          >
-        </div>
+        <div className="nz-expansion-indicator" />
       </GroupTool>
     );
   }

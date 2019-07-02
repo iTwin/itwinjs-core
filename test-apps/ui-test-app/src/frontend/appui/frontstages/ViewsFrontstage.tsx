@@ -49,6 +49,9 @@ import {
   ConditionalItemDef,
   PopupButton,
   CustomItemDef,
+  ContentLayoutManager,
+  SavedViewLayout,
+  SavedViewLayoutProps,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -79,6 +82,7 @@ import { SvgSprite } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
+  public static savedViewLayoutProps: string;
 
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
@@ -164,7 +168,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true}
+              <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
                 applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
             ]}
           />
@@ -194,9 +198,9 @@ export class ViewsFrontstage extends FrontstageProvider {
             ]}
           />
         }
-
         leftPanel={
-          <StagePanel size="280px"
+          <StagePanel
+            size={280}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree"
                 control={VisibilityTreeWidgetControl}
@@ -339,6 +343,19 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _clearSelectionItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
+      execute: () => {
+        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        if (iModelConnection) {
+          iModelConnection.selectionSet.emptyAll();
+        }
+        IModelApp.toolAdmin.startDefaultTool();
+      },
+    });
+  }
+
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
@@ -387,6 +404,53 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _saveContentLayout() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
+        if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+          const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+            (contentProps: ContentProps) => {
+              if (contentProps.applicationData)
+                delete contentProps.applicationData;
+            });
+          const serialized = JSON.stringify(savedViewLayoutProps);
+          // tslint:disable-next-line: no-console
+          console.log("SavedViewLayoutProps: ", serialized);
+
+          ViewsFrontstage.savedViewLayoutProps = serialized;
+        }
+      },
+    });
+  }
+
+  private get _restoreContentLayout() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
+        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
+          // Parse SavedViewLayoutProps
+          const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
+          // Create ContentLayoutDef
+          const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
+          // Create ViewStates
+          const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+
+          // Add applicationData to the ContentProps
+          savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
+            contentProps.applicationData = { viewState: viewStates[index], iModelConnection, rulesetId: "Items" };
+          });
+          const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
+
+          // activate the layout
+          await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
+
+          // emphasize the elements
+          SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+        }
+      },
+    });
+  }
+
   /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
@@ -421,7 +485,7 @@ class FrontstageToolWidget extends React.Component {
   private get _popupButtonItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
+        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
           <div style={{ width: "200px", height: "100px" }}>
             hello world!
           </div>
@@ -437,6 +501,7 @@ class FrontstageToolWidget extends React.Component {
       new ToolItemDef({
         toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
         execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
+        betaBadge: true,
       }),
       this._popupButtonItemDef,
       AppTools.tool1,
@@ -444,6 +509,7 @@ class FrontstageToolWidget extends React.Component {
         items: [AppTools.tool2],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._enabledTestStateFunc,
+        betaBadge: true,
       }),
       AppTools.toolWithSettings,
       AppTools.toggleHideShowItemsCommand,
@@ -452,12 +518,13 @@ class FrontstageToolWidget extends React.Component {
           new GroupItemDef({
             labelKey: "SampleApp:buttons.toolGroup",
             iconSpec: "icon-placeholder",
-            items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand],
+            items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
             itemsInColumn: 4,
           }),
         ],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._visibleTestStateFunc,
+        betaBadge: true,
       }),
     ]);
     return items;
@@ -483,9 +550,10 @@ class FrontstageToolWidget extends React.Component {
       new GroupItemDef({
         labelKey: "SampleApp:buttons.anotherGroup",
         iconSpec: "icon-placeholder",
-        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef],
+        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef, this._saveContentLayout, this._restoreContentLayout],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
+        betaBadge: true,
       }),
     ]);
     return items;
@@ -527,6 +595,7 @@ class FrontstageNavigationWidget extends React.Component {
   private get _rotateViewCommand() {
     const toolItemDef = CoreTools.rotateViewCommand;
     toolItemDef.iconSpec = this._rotateSvgIcon2;
+    toolItemDef.betaBadge = true;
     return toolItemDef;
   }
 
@@ -534,7 +603,10 @@ class FrontstageNavigationWidget extends React.Component {
   private get _viewSelectorItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />
+        <ViewSelector
+          imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}
+          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
+        />
       ),
     });
   }

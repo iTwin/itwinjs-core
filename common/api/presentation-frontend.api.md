@@ -30,6 +30,16 @@ import { Ruleset } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 
+// @alpha
+export interface HiliteSet {
+    // (undocumented)
+    elements?: Id64String[];
+    // (undocumented)
+    models?: Id64String[];
+    // (undocumented)
+    subCategories?: Id64String[];
+}
+
 // @public
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
@@ -167,6 +177,8 @@ export class SelectionManager implements ISelectionProvider {
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
+    // @alpha
+    getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
@@ -176,6 +188,7 @@ export class SelectionManager implements ISelectionProvider {
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
+    suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable;
 }
 
 // @public

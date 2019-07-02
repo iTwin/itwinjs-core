@@ -10,7 +10,7 @@ import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
-import { ContentLayoutManager, ContentLayoutProps } from "../content/ContentLayout";
+import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { TaskManager, TaskPropsList } from "../workflow/Task";
 import { WorkflowManager, WorkflowPropsList, WorkflowProps } from "../workflow/Workflow";
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
@@ -22,21 +22,21 @@ import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigation
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
 import { UiFramework } from "../UiFramework";
+import { ContentLayoutProps } from "../content/ContentLayoutProps";
 
-/** Configurable Ui Manager maintains controls, Frontstages, Content Groups,
- * Content Layouts, Tasks and Workflows.
+/** Configurable Ui Manager maintains controls, Frontstages, Content Groups, Content Layouts, Tasks and Workflows.
  * @public
  */
 export class ConfigurableUiManager {
-  private static _registeredControls: { [classId: string]: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement } = {};
+  private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
 
   /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {
     // Register core controls
-    ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
-    ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
-    ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
-    ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
+    ConfigurableUiManager.registerControl(StandardRotationNavigationAidControl.navigationAidId, StandardRotationNavigationAidControl);
+    ConfigurableUiManager.registerControl(SheetNavigationAidControl.navigationAidId, SheetNavigationAidControl);
+    ConfigurableUiManager.registerControl(DrawingNavigationAidControl.navigationAidId, DrawingNavigationAidControl);
+    ConfigurableUiManager.registerControl(CubeNavigationAidControl.navigationAidId, CubeNavigationAidControl);
 
     // Initialize SyncUiEventDispatcher so it can register event callbacks.
     SyncUiEventDispatcher.initialize();
@@ -59,11 +59,11 @@ export class ConfigurableUiManager {
    * @param constructor the constructor of the control to register
    */
   public static registerControl(classId: string, constructor: ConfigurableUiControlConstructor): void {
-    if (this._registeredControls.hasOwnProperty(classId)) {
+    if (this._registeredControls.get(classId) !== undefined) {
       throw new UiError(UiFramework.loggerCategory(this), `registerControl: classId '${classId}' already registered`);
     }
 
-    this._registeredControls[classId] = constructor;
+    this._registeredControls.set(classId, constructor);
   }
 
   /** Determines if a control has been registered based on its classId.
@@ -71,17 +71,29 @@ export class ConfigurableUiManager {
    * @returns  true if the control is registered or false if not
    */
   public static isControlRegistered(classId: string): boolean {
-    const constructor = this._registeredControls[classId];
+    const constructor = this._registeredControls.get(classId);
     return constructor !== undefined;
+  }
+
+  /** Determines if a control has been registered.
+   * @internal
+   */
+  public static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined {
+    for (const [key, value] of this._registeredControls.entries()) {
+      if (value === constructor)
+        return key;
+    }
+
+    return undefined;
   }
 
   /** Unregisters a control that has been registered.
    * @param classId   the class id of the control to unregister
    */
   public static unregisterControl(classId: string): void {
-    const constructor = this._registeredControls[classId];
+    const constructor = this._registeredControls.get(classId);
     if (constructor)
-      delete this._registeredControls[classId];
+      this._registeredControls.delete(classId);
   }
 
   /** Creates a control registered by calling registerControl.
@@ -92,7 +104,7 @@ export class ConfigurableUiManager {
    */
   public static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined {
     const info = new ConfigurableCreateInfo(classId, uniqueId, uniqueId);
-    const constructor = this._registeredControls[info.classId];
+    const constructor = this._registeredControls.get(info.classId);
     if (!constructor) {
       throw new UiError(UiFramework.loggerCategory(this), `createControl: classId '${classId}' not registered`);
     }

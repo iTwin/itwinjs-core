@@ -39,22 +39,21 @@ class TestFixture {
     A.setX(1, 3);
     A.setX(2, 4);
     A.multiplyAX();
-    // Checker.noisy.tridiagonalsolver = true;
-    if (Checker.noisy.tridiagonalsolver) {
+    // Checker.noisy.tridiagonalSolver = true;
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("(1) A X AX");
       console.log(A);
 
-      // console.logxyzB("A,B dummy points", xyz);
     }
     B = A.copy();
     this.ck.testTrue(A.factorAndBackSubstitute(), "FactorAndBackSubstitute");
     this.ck.testTrue(A.factor(), "repeat factor");
-    if (Checker.noisy.tridiagonalsolver) {
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("(2) LU, X?, AX");
       console.log(A);
     }
     A.multiplyAX();
-    if (Checker.noisy.tridiagonalsolver) {
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("(3) LU, X?, LU(X?)");
       console.log(A);
     }
@@ -105,17 +104,17 @@ class TestFixture {
       A.multiplyAX();
       B = A.copy();
 
-      if (Checker.noisy.tridiagonalsolver) {
+      if (Checker.noisy.tridiagonalSolver) {
         console.log("A, X, AX");
         console.log(A.flatten());
       }
       A.factorAndBackSubstitute();
-      if (Checker.noisy.tridiagonalsolver) {
+      if (Checker.noisy.tridiagonalSolver) {
         console.log("LU, X?, AX");
         console.log(A.flatten());
       }
       A.multiplyAX();
-      if (Checker.noisy.tridiagonalsolver) {
+      if (Checker.noisy.tridiagonalSolver) {
         console.log("LU, X?, LU(X?)");
         console.log(A.flatten());
       }
@@ -135,17 +134,17 @@ class TestFixture {
     }
     A.multiplyAX();
     B = A.copy();
-    if (Checker.noisy.tridiagonalsolver) {
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("A, X, AX");
       console.log(A.flatten());
     }
     A.factorAndBackSubstitute();
-    if (Checker.noisy.tridiagonalsolver) {
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("LU, X?, AX");
       console.log(A.flatten());
     }
     A.multiplyAX();
-    if (Checker.noisy.tridiagonalsolver) {
+    if (Checker.noisy.tridiagonalSolver) {
       console.log("LU, X?, LU(X?)");
       console.log(A.flatten());
     }
@@ -187,7 +186,7 @@ class TestFixture {
     }
     A.defactor();
     if (noisy) {
-      console.log("Defatored");
+      console.log("Defactor");
       console.log(A.flatten());
     }
     this.checkX(A, B);
@@ -221,23 +220,23 @@ class TestFixture {
 }
 
 describe("TriDiagonalSystem", () => {
-  it("TriDiagonalSystem.testorder3", () => {
+  it("TriDiagonalSystem.testOrder3", () => {
     const tf = new TestFixture();
     tf.testOrder3();
     tf.testOrder3();
     expect(tf.ck.getNumErrors()).equals(0);
   });
-  it("TriDiagonalSystem.testorder4onex", () => {
+  it("TriDiagonalSystem.testOrder4onex", () => {
     const tf = new TestFixture();
     tf.testOrder4OneX();
     expect(tf.ck.getNumErrors()).equals(0);
   });
-  it("TriDiagonalSystem.testorder4", () => {
+  it("TriDiagonalSystem.testOrder4", () => {
     const tf = new TestFixture();
     tf.testOrder4();
     expect(tf.ck.getNumErrors()).equals(0);
   });
-  it("TriDiagonalSystem.testlargesystem", () => {
+  it("TriDiagonalSystem.testLargeSystem", () => {
     const tf = new TestFixture();
     tf.testLargeSystem();
     expect(tf.ck.getNumErrors()).equals(0);

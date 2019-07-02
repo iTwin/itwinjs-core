@@ -6,7 +6,7 @@
 
 // cSpell:ignore classname
 
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 
 /**
  * Various View utility methods
@@ -29,7 +29,7 @@ export class ViewUtilities {
    * @param classname Name of class to check
    */
   public static isSpatial(classname: string): boolean {
-    return classname === "SpatialViewDefinition" || classname === "OrthographicViewDefinition";
+    return classname === SpatialViewState.className || classname === OrthographicViewState.className;
   }
 
   /**
@@ -37,7 +37,7 @@ export class ViewUtilities {
    * @param classname Name of class to check
    */
   public static isOrthographic(classname: string): boolean {
-    return classname === "OrthographicViewDefinition";
+    return classname === OrthographicViewState.className;
   }
 
   /**
@@ -45,7 +45,7 @@ export class ViewUtilities {
    * @param classname Name of class to check
    */
   public static isDrawing(classname: string): boolean {
-    return classname === "DrawingViewDefinition";
+    return classname === DrawingViewState.className;
   }
 
   /**
@@ -53,7 +53,7 @@ export class ViewUtilities {
    * @param classname Name of class to check
    */
   public static isSheet(classname: string): boolean {
-    return classname === "SheetViewDefinition";
+    return classname === SheetViewState.className;
   }
 
   /**
@@ -101,6 +101,6 @@ export class ViewUtilities {
    * @param viewport ScreenViewport to check
    */
   public static viewSupportsCamera(viewport: ScreenViewport): boolean {
-    return "SpatialViewDefinition" === ViewUtilities.getBisBaseClass(viewport.view.classFullName);
+    return SpatialViewState.className === ViewUtilities.getBisBaseClass(viewport.view.classFullName);
   }
 }

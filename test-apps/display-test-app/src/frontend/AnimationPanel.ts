@@ -6,7 +6,7 @@
 import { Viewport, DisplayStyle3dState, calculateSunriseOrSunset } from "@bentley/imodeljs-frontend";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { ToolBarDropDown, createToolButton } from "./ToolBar";
-import { createCheckBox } from "./CheckBox";
+import { createCheckBox } from "@bentley/frontend-devtools";
 import { Point3d } from "@bentley/geometry-core";
 
 export class AnimationPanel extends ToolBarDropDown {

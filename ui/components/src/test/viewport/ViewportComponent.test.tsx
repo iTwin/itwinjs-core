@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import { render, cleanup, fireEvent } from "react-testing-library";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
 
@@ -21,6 +21,7 @@ import { Face } from "@bentley/ui-core";
 describe("ViewportComponent", () => {
 
   before(async () => {
+    ViewportComponentEvents.terminate();
     TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
     MockRender.App.startup();
   });

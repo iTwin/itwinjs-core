@@ -10,7 +10,7 @@ import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d, Range1dProps } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
-import { CameraProps, ViewFlagProps, GroundPlaneProps, SolarShadowProps } from "./ViewProps";
+import { CameraProps, GroundPlaneProps, SolarShadowProps, ViewFlagProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
@@ -494,8 +494,6 @@ export class ViewFlags {
   public styles: boolean = true;
   /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
   public transparency: boolean = true;
-  /** @internal This doesn't belong here - it is not persistent. */
-  public continuousRendering: boolean = false;
   /** Controls whether the fills on filled elements are displayed. */
   public fill: boolean = true;
   /** Controls whether to display texture maps for material assignments. When off only material color is used for display. */
@@ -510,11 +508,20 @@ export class ViewFlags {
   public visibleEdges: boolean = false;
   /** Shows or hides hidden edges in the shaded render mode. */
   public hiddenEdges: boolean = false;
-  /** Controls whether the source lights in spatial models are used */
+  /** Controls whether the source lights in spatial models are used
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
+   */
   public sourceLights: boolean = false;
-  /** Controls whether camera (ambient, portrait, flashbulb) lights are used. */
+  /** Controls whether camera (ambient, portrait, flashbulb) lights are used.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
+   */
   public cameraLights: boolean = false;
-  /** Controls whether sunlight used */
+  /** Controls whether sunlight used
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
+   */
   public solarLight: boolean = false;
   /** Shows or hides shadows. */
   public shadows: boolean = false;
@@ -542,6 +549,12 @@ export class ViewFlags {
    */
   public forceSurfaceDiscard: boolean = false;
 
+  /** Controls whether or not lighting is applied.
+   * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].
+   */
+  public get lighting(): boolean { return this.solarLight || this.sourceLights || this.cameraLights; }
+  public set lighting(enable: boolean) { this.solarLight = this.sourceLights = this.cameraLights = enable; }
+
   public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
   public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
     const val = undefined !== out ? out : new ViewFlags();
@@ -552,7 +565,6 @@ export class ViewFlags {
       val.weights = other.weights;
       val.styles = other.styles;
       val.transparency = other.transparency;
-      val.continuousRendering = other.continuousRendering;
       val.fill = other.fill;
       val.textures = other.textures;
       val.materials = other.materials;
@@ -608,7 +620,6 @@ export class ViewFlags {
     if (!this.weights) out.noWeight = true;
     if (!this.styles) out.noStyle = true;
     if (!this.transparency) out.noTransp = true;
-    if (this.continuousRendering) out.contRend = true;
     if (!this.fill) out.noFill = true;
     if (this.grid) out.grid = true;
     if (this.acsTriad) out.acs = true;
@@ -643,7 +654,6 @@ export class ViewFlags {
     val.weights = !JsonUtils.asBool(json.noWeight);
     val.styles = !JsonUtils.asBool(json.noStyle);
     val.transparency = !JsonUtils.asBool(json.noTransp);
-    val.continuousRendering = JsonUtils.asBool(json.contRend);
     val.fill = !JsonUtils.asBool(json.noFill);
     val.grid = JsonUtils.asBool(json.grid);
     val.acsTriad = JsonUtils.asBool(json.acs);
@@ -681,7 +691,6 @@ export class ViewFlags {
       && this.weights === other.weights
       && this.styles === other.styles
       && this.transparency === other.transparency
-      && this.continuousRendering === other.continuousRendering
       && this.fill === other.fill
       && this.textures === other.textures
       && this.materials === other.materials
@@ -716,15 +725,13 @@ export namespace ViewFlag {
     kWeights,
     kStyles,
     kTransparency,
-    kContinuousRendering,
+    kUnused,
     kFill,
     kTextures,
     kMaterials,
     kVisibleEdges,
     kHiddenEdges,
-    kSourceLights,
-    kCameraLights,
-    kSolarLight,
+    kLighting,
     kShadows,
     kClipVolume,
     kConstructions,
@@ -775,9 +782,7 @@ export namespace ViewFlag {
     public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(PresenceFlag.kFill); }
     public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(PresenceFlag.kTextures); }
     public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(PresenceFlag.kMaterials); }
-    public setShowSourceLights(val: boolean) { this._values.sourceLights = val; this.setPresent(PresenceFlag.kSourceLights); }
-    public setShowCameraLights(val: boolean) { this._values.cameraLights = val; this.setPresent(PresenceFlag.kCameraLights); }
-    public setShowSolarLight(val: boolean) { this._values.solarLight = val; this.setPresent(PresenceFlag.kSolarLight); }
+    public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(PresenceFlag.kLighting); }
     public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(PresenceFlag.kVisibleEdges); }
     public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(PresenceFlag.kHiddenEdges); }
     public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(PresenceFlag.kShadows); }
@@ -813,9 +818,7 @@ export namespace ViewFlag {
       if (this.isPresent(PresenceFlag.kFill)) base.fill = this._values.fill;
       if (this.isPresent(PresenceFlag.kTextures)) base.textures = this._values.textures;
       if (this.isPresent(PresenceFlag.kMaterials)) base.materials = this._values.materials;
-      if (this.isPresent(PresenceFlag.kSolarLight)) base.solarLight = this._values.solarLight;
-      if (this.isPresent(PresenceFlag.kCameraLights)) base.cameraLights = this._values.cameraLights;
-      if (this.isPresent(PresenceFlag.kSourceLights)) base.sourceLights = this._values.sourceLights;
+      if (this.isPresent(PresenceFlag.kLighting)) base.lighting = this._values.lighting;
       if (this.isPresent(PresenceFlag.kVisibleEdges)) base.visibleEdges = this._values.visibleEdges;
       if (this.isPresent(PresenceFlag.kHiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
       if (this.isPresent(PresenceFlag.kShadows)) base.shadows = this._values.shadows;

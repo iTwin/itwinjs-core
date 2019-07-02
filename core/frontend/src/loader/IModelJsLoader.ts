@@ -120,6 +120,8 @@ class ScriptLoader {
 
 // Load Options. Loading the UiComponents and UiFramework are optional.
 class IModelJsLoadOptions {
+  private _iModelJsCDN: string;
+
   public iModelJsVersions: any;
   public loadUiComponents: boolean;
   public loadUiFramework: boolean;
@@ -127,7 +129,7 @@ class IModelJsLoadOptions {
   public loadMarkup: boolean;
 
   // IModelJsVersionString is a JSON string. The object properties are the module names, and the values are the versions.
-  constructor(iModelJsVersionString: string | null) {
+  constructor(iModelJsVersionString: string | null, iModelJsModuleCDN: string | null) {
     this.loadUiComponents = true;
     this.loadUiFramework = true;
     this.loadECPresentation = true;
@@ -147,6 +149,7 @@ class IModelJsLoadOptions {
     } else {
       this.iModelJsVersions = {};
     }
+    this._iModelJsCDN = iModelJsModuleCDN ? iModelJsModuleCDN : "";
   }
 
   public prefixVersion(packageName: string): string | undefined {
@@ -157,7 +160,7 @@ class IModelJsLoadOptions {
       console.log("No version specified for ", packageName);
       return undefined;
     }
-    return "v".concat(versionNumberString, "/", packageName, ".js");
+    return this._iModelJsCDN.concat("v", versionNumberString, "/", packageName, ".js");
   }
 
 }
@@ -205,10 +208,12 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
 function getOptions(): IModelJsLoadOptions {
   const loaderScriptElement: HTMLScriptElement | SVGScriptElement | null = document.currentScript;
   if (!loaderScriptElement)
-    return new IModelJsLoadOptions(null);
+    return new IModelJsLoadOptions(null, null);
+
+  const iModelJsModuleCDN = loaderScriptElement.getAttribute("data-imjsmodulecdn");
 
   const iModelJsVersionString = loaderScriptElement.getAttribute("data-imjsversions");
-  return new IModelJsLoadOptions(iModelJsVersionString);
+  return new IModelJsLoadOptions(iModelJsVersionString, iModelJsModuleCDN);
 }
 
 // execute the loader

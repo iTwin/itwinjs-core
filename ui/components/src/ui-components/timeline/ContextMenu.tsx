@@ -33,11 +33,13 @@ export class ContextMenuItem extends React.Component<MenuItem> {
 
   private _onClick = (event: any) => {
     event.stopPropagation();
+    // istanbul ignore else
     if (!this.props.disabled && !this.props.isSeparator && this.props.onClick) {
       this.props.onClick();
     }
   }
 
+  // istanbul ignore next - WIP
   public render() {
     const menuClassName = classnames(
       "contextmenu-item-wip",
@@ -80,6 +82,7 @@ export interface ContextMenuProps extends CommonProps {
  * @internal
  */
 export class ContextMenu extends React.Component<ContextMenuProps> {
+  // istanbul ignore next - WIP
   public render() {
     const { items, parent, position, isOpened, onClickOutside } = this.props;
     return (

@@ -19,6 +19,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
+import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { StrokeOptions } from "./StrokeOptions";
@@ -175,7 +176,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param vector0 vector to 0 degrees (commonly major axis)
    * @param vector90 vector to 90 degree point (commonly minor axis)
    * @param sweep sweep limits
-   * @param result optional preallocted result
+   * @param result optional preallocated result
    */
   public static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case ! !!
@@ -289,6 +290,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return result;
   }
   /**
+   * Return a parametric plane with
+   * * origin at arc center
+   * * vectorU from center to arc at angle (in radians)
+   * * vectorV from center to arc at 90 degrees past the angle.
+   * @param radians angular position
+   * @param result optional preallocated plane
+   */
+  public radiansToRotatedBasis(radians: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    result = result ? result : Plane3dByOriginAndVectors.createXYPlane ();
+    const c = Math.cos(radians);
+    const s = Math.sin(radians);
+    result.origin.setFromPoint3d (this.center);
+    this._matrix.multiplyXY(c, s, result.vectorU);
+    this._matrix.multiplyXY(-s, c, result.vectorV);
+    return result;
+  }
+
+  /**
    * Evaluate the point and derivative with respect to the angle (in radians)
    * @param theta angular position
    * @param result optional preallocated ray.
@@ -319,6 +338,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public curveLength(): number {
     return this.curveLengthBetweenFractions(0, 1);
   }
+  // !! misspelled Gauss in the published static !!!   Declare it ok.
+  // cspell::word Guass
   /** Gauss point quadrature count for evaluating curve length.   (The number of intervals is adjusted to the arc sweep) */
   public static readonly quadratureGuassCount = 5;
   /** In quadrature for arc length, use this interval (divided by quickEccentricity) */
@@ -408,7 +429,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * Return all angles (in radians) where the ellipse tangent is perpendicular to the vector to a spacePoint.
    * @param spacePoint point of origin of vectors to the ellipse
    * @param _extend (NOT SUPPORTED -- ALWAYS ACTS AS "true")
-   * @param _endpoints (NOT SUPPORTED -- ALWAYS ACTS AS FALSE)
+   * @param _endpoints if true, force the end radians into the result.
    */
   public allPerpendicularAngles(spacePoint: Point3d, _extend: boolean = true, _endpoints: boolean = false): number[] {
     const radians: number[] = [];
@@ -423,6 +444,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this._matrix.dotColumnY(vectorQ),
       -this._matrix.dotColumnX(vectorQ),
       0.0, radians);
+    if (_endpoints) {
+      radians.push(this.sweep.startRadians);
+      radians.push(this.sweep.endRadians);
+    }
+
     return radians;
   }
   /**
@@ -431,9 +457,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param extend if true, consider projections to the complete ellipse.   If false, consider only endpoints and projections within the arc sweep.
    * @param result optional preallocated result.
    */
-  public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
-    const allRadians = this.allPerpendicularAngles(spacePoint);
+    const allRadians = this.allPerpendicularAngles(spacePoint, true, true);
     if (!extend && !this._sweep.isFullCircle) {
       allRadians.push(this._sweep.startRadians);
       allRadians.push(this._sweep.endRadians);
@@ -447,12 +473,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       let dMin = Number.MAX_VALUE;
       let d = 0;
       for (const radians of allRadians) {
-        if (extend || this._sweep.isRadiansInSweep(radians)) {
-          this.radiansToPointAndDerivative(radians, workRay);
+        const fraction = CurveExtendOptions.resolveRadiansToSweepFraction(extend, radians, this.sweep);
+        if (fraction !== undefined) {
+          this.fractionToPointAndDerivative(fraction, workRay);
+
           d = spacePoint.distance(workRay.origin);
           if (d < dMin) {
             dMin = d;
-            result.setFR(this._sweep.radiansToSignedPeriodicFraction(radians), workRay);
+            result.setFR(fraction, workRay);
             result.a = d;
           }
         }
@@ -737,7 +765,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     return arcB;
   }
   /**
-   * Find intervals of this curveprimitve that are interior to a clipper
+   * Find intervals of this CurvePrimitive that are interior to a clipper
    * @param clipper clip structure (e.g.clip planes)
    * @param announce(optional) function to be called announcing fractional intervals"  ` announce(fraction0, fraction1, curvePrimitive)`
    * @returns true if any "in" segments are announced.

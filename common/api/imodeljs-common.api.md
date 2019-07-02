@@ -283,13 +283,31 @@ export enum BackgroundFill {
 
 // @public
 export interface BackgroundMapProps {
-    // (undocumented)
+    applyTerrain?: boolean;
     groundBias?: number;
-    // (undocumented)
     providerData?: {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
+}
+
+// @beta
+export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+// @beta
+export class BackgroundMapSettings {
+    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number, applyTerrain?: boolean);
+    readonly applyTerrain: boolean;
+    clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
+    // (undocumented)
+    equals(other: BackgroundMapSettings): boolean;
+    equalsJSON(json?: BackgroundMapProps): boolean;
+    static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    readonly groundBias: number;
+    readonly mapType: BackgroundMapType;
+    readonly providerName: BackgroundMapProviderName;
+    // (undocumented)
+    toJSON(): BackgroundMapProps;
 }
 
 // @public
@@ -1097,7 +1115,7 @@ export enum CommonLoggerCategory {
 // @public
 export interface ContextRealityModelProps {
     // @beta (undocumented)
-    classifiers?: SpatialClassificationProps.PropertiesProps[];
+    classifiers?: SpatialClassificationProps.Properties[];
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -1213,7 +1231,7 @@ export class DisplayStyleSettings {
     addExcludedElements(id: Id64String): void;
     backgroundColor: ColorDef;
     // @alpha (undocumented)
-    backgroundMap: BackgroundMapProps | undefined;
+    backgroundMap: BackgroundMapSettings;
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
@@ -1249,6 +1267,18 @@ export interface DisplayStyleSettingsProps {
 // @public
 export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Props {
     subCategory?: Id64String;
+}
+
+// @beta
+export interface DistanceExpressionProps {
+    // (undocumented)
+    distanceAlongFromReferent?: number;
+    // (undocumented)
+    distanceAlongFromStart: number;
+    // (undocumented)
+    lateralOffsetFromLinearElement?: number;
+    // (undocumented)
+    verticalOffsetFromLinearElement?: number;
 }
 
 // @beta
@@ -2271,6 +2301,22 @@ export interface HttpServerResponse extends Writable {
     status(code: number): HttpServerResponse;
 }
 
+// @beta
+export interface ILinearElementProps extends GeometricElement3dProps {
+    // (undocumented)
+    lengthValue: number;
+    // (undocumented)
+    source: RelatedElementProps;
+    // (undocumented)
+    startValue: number;
+}
+
+// @beta
+export interface ILinearlyLocatedAttributionProps {
+    // (undocumented)
+    attributedElement?: RelatedElementProps;
+}
+
 // @public
 export class ImageBuffer {
     // @internal
@@ -2426,9 +2472,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelProps(_iModelToken: IModelTokenProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
-    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryQuota" which is marked as @internal
-    // Warning: (ae-incompatible-release-tags) The symbol "queryRows" is marked as @public, but its signature references "QueryResponse" which is marked as @internal
-    // 
     // (undocumented)
     queryRows(_iModelToken: IModelTokenProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority): Promise<QueryResponse>;
     // (undocumented)
@@ -2448,7 +2491,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal (undocumented)
-    requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array>;
+    requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
 }
@@ -2517,6 +2560,12 @@ export const INSTANCE: unique symbol;
 
 // @internal (undocumented)
 export const interop: any;
+
+// @beta
+export interface IReferentProps {
+    // (undocumented)
+    referencedElement?: RelatedElementProps;
+}
 
 // @public
 export function isPowerOfTwo(num: number): boolean;
@@ -2615,6 +2664,38 @@ export enum LightType {
     Solar = 1,
     // (undocumented)
     Spot = 6
+}
+
+// @beta
+export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
+}
+
+// @beta
+export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
+}
+
+// @beta
+export interface LinearlyReferencedAtLocationProps {
+    // (undocumented)
+    atPosition: DistanceExpressionProps;
+    // (undocumented)
+    fromReferent?: RelatedElementProps;
+}
+
+// @beta
+export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {
+}
+
+// @beta
+export interface LinearlyReferencedFromToLocationProps {
+    // (undocumented)
+    fromPosition: DistanceExpressionProps;
+    // (undocumented)
+    fromPositionFromReferent?: RelatedElementProps;
+    // (undocumented)
+    toPosition: DistanceExpressionProps;
+    // (undocumented)
+    toPositionFromReferent?: RelatedElementProps;
 }
 
 // @public
@@ -3484,13 +3565,13 @@ export enum QueryPriority {
     Normal = 1
 }
 
-// @internal
+// @public
 export interface QueryQuota {
     maxMemoryAllowed?: number;
     maxTimeAllowed?: number;
 }
 
-// @internal
+// @public
 export interface QueryResponse {
     // (undocumented)
     rows: any[];
@@ -3498,7 +3579,7 @@ export interface QueryResponse {
     status: QueryResponseStatus;
 }
 
-// @internal
+// @public
 export enum QueryResponseStatus {
     // (undocumented)
     Done = 2,
@@ -3526,6 +3607,10 @@ export interface ReadableFormData extends Readable {
     getHeaders(): {
         [key: string]: any;
     };
+}
+
+// @beta
+export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
 }
 
 // @internal (undocumented)
@@ -4546,6 +4631,12 @@ export namespace SolarShadows {
 
 // @beta
 export namespace SpatialClassificationProps {
+    export interface Classifier {
+        expand: number;
+        flags: FlagsProps;
+        modelId: Id64String;
+        name: string;
+    }
     export enum Display {
         Dimmed = 2,
         ElementColor = 4,
@@ -4574,28 +4665,9 @@ export namespace SpatialClassificationProps {
         // (undocumented)
         type: number;
     }
-    export class Properties implements PropertiesProps {
-        constructor(props: PropertiesProps);
-        // (undocumented)
-        expand: number;
-        // (undocumented)
-        flags: Flags;
+    export interface Properties extends Classifier {
         // (undocumented)
         isActive: boolean;
-        // (undocumented)
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
-    }
-    export interface PropertiesProps {
-        expand: number;
-        // (undocumented)
-        flags: FlagsProps;
-        // (undocumented)
-        isActive: boolean;
-        modelId: Id64String;
-        // (undocumented)
-        name: string;
     }
     export enum Type {
         // (undocumented)
@@ -4969,6 +5041,8 @@ export namespace ViewFlag {
         // (undocumented)
         overrideAll(flags?: ViewFlags): void;
         // (undocumented)
+        setApplyLighting(val: boolean): void;
+        // (undocumented)
         setEdgeMask(val: number): void;
         // (undocumented)
         setForceSurfaceDiscard(val: boolean): void;
@@ -4982,8 +5056,6 @@ export namespace ViewFlag {
         setRenderMode(val: RenderMode): void;
         // (undocumented)
         setShowBackgroundMap(val: boolean): void;
-        // (undocumented)
-        setShowCameraLights(val: boolean): void;
         // (undocumented)
         setShowClipVolume(val: boolean): void;
         // (undocumented)
@@ -5001,10 +5073,6 @@ export namespace ViewFlag {
         // (undocumented)
         setShowShadows(val: boolean): void;
         // (undocumented)
-        setShowSolarLight(val: boolean): void;
-        // (undocumented)
-        setShowSourceLights(val: boolean): void;
-        // (undocumented)
         setShowStyles(val: boolean): void;
         // (undocumented)
         setShowTextures(val: boolean): void;
@@ -5020,43 +5088,37 @@ export namespace ViewFlag {
     // (undocumented)
     export const enum PresenceFlag {
         // (undocumented)
-        kBackgroundMap = 23,
+        kBackgroundMap = 21,
         // (undocumented)
-        kCameraLights = 14,
+        kClipVolume = 15,
         // (undocumented)
-        kClipVolume = 17,
-        // (undocumented)
-        kConstructions = 18,
-        // (undocumented)
-        kContinuousRendering = 7,
+        kConstructions = 16,
         // (undocumented)
         kDimensions = 2,
         // (undocumented)
-        kEdgeMask = 22,
+        kEdgeMask = 20,
         // (undocumented)
         kFill = 8,
         // (undocumented)
-        kForceSurfaceDiscard = 24,
+        kForceSurfaceDiscard = 22,
         // (undocumented)
-        kGeometryMap = 20,
+        kGeometryMap = 18,
         // (undocumented)
         kHiddenEdges = 12,
         // (undocumented)
-        kHlineMaterialColors = 21,
+        kHlineMaterialColors = 19,
+        // (undocumented)
+        kLighting = 13,
         // (undocumented)
         kMaterials = 10,
         // (undocumented)
-        kMonochrome = 19,
+        kMonochrome = 17,
         // (undocumented)
         kPatterns = 3,
         // (undocumented)
         kRenderMode = 0,
         // (undocumented)
-        kShadows = 16,
-        // (undocumented)
-        kSolarLight = 15,
-        // (undocumented)
-        kSourceLights = 13,
+        kShadows = 14,
         // (undocumented)
         kStyles = 5,
         // (undocumented)
@@ -5065,6 +5127,8 @@ export namespace ViewFlag {
         kTextures = 9,
         // (undocumented)
         kTransparency = 6,
+        // (undocumented)
+        kUnused = 7,
         // (undocumented)
         kVisibleEdges = 11,
         // (undocumented)
@@ -5078,8 +5142,6 @@ export interface ViewFlagProps {
     ambientOcclusion?: boolean;
     backgroundMap?: boolean;
     clipVol?: boolean;
-    // @internal
-    contRend?: boolean;
     // @internal
     edgeMask?: number;
     forceSurfaceDiscard?: boolean;
@@ -5114,8 +5176,6 @@ export class ViewFlags {
     // (undocumented)
     clone(out?: ViewFlags): ViewFlags;
     constructions: boolean;
-    // @internal
-    continuousRendering: boolean;
     // (undocumented)
     static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags;
     dimensions: boolean;
@@ -5134,6 +5194,7 @@ export class ViewFlags {
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
     hLineMaterialColors: boolean;
+    lighting: boolean;
     materials: boolean;
     monochrome: boolean;
     // @internal

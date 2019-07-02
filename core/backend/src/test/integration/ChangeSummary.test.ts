@@ -410,7 +410,7 @@ describe("ChangeSummary (#integration)", () => {
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, IModelStatus.BadArg);
+      assert.equal(e.errorNumber, IModelStatus.NotOpen);
     }
 
     // extract on snapshot iModel should fail

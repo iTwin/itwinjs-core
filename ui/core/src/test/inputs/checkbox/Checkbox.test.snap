@@ -1,3 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`Checkbox renders 1`] = `"<span class=\\"core-checkbox\\"><input type=\\"checkbox\\"></span>"`;

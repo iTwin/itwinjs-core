@@ -3,7 +3,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
@@ -11,8 +11,9 @@ import {
   SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection,
+  AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
+  FeatureOverrideProvider, FeatureSymbology,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -35,8 +36,8 @@ async function getDefaultConfigs(): Promise<string> {
   return DisplayPerfRpcInterface.getClient().getDefaultConfigs();
 }
 
-async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
-  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]));
+async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>, csvFormat?: string): Promise<void> {
+  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, JSON.stringify([...rowData]), csvFormat);
 }
 
 const wantConsoleOutput: boolean = false;
@@ -78,6 +79,21 @@ function combineFilePaths(additionalPath: string, initPath?: string) {
     combined += "\\";
   combined += additionalPath;
   return combined;
+}
+
+function getBrowserName(userAgent: string) {
+  const lowUserAgent = userAgent.toLowerCase();
+  if (lowUserAgent.includes("electron"))
+    return "Electron";
+  if (lowUserAgent.includes("firefox"))
+    return "FireFox";
+  if (lowUserAgent.includes("edge"))
+    return "Edge";
+  if (lowUserAgent.includes("chrome") && !userAgent.includes("chromium"))
+    return "Chrome";
+  if (lowUserAgent.includes("safari") && !userAgent.includes("chrome") && !userAgent.includes("chromium"))
+    return "Safari";
+  return "Unknown";
 }
 
 class DisplayPerfTestApp {
@@ -260,6 +276,10 @@ function getViewFlagsString(): string {
         if (value) vfString += "+" + key;
     }
   }
+  if (undefined !== activeViewState.overrideElements)
+    vfString += "+ovrEl";
+  if (undefined !== activeViewState.selectedElements)
+    vfString += "+selEl";
   return vfString;
 }
 
@@ -313,6 +333,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
+  rowData.set("Test Name", getTestName(configs));
+  rowData.set("Browser", getBrowserName(IModelApp.queryRenderCompatibility().userAgent));
 
   // Calculate average timings
   if (pixSelectStr) { // timing read pixels
@@ -426,14 +448,18 @@ class DefaultConfigs {
   public iModelLocation?: string;
   public iModelName?: string;
   public iModelHubProject?: string;
+  public csvFormat?: string;
   public filenameOptsToIgnore?: string[] | string;
   public viewName?: string;
+  public extViewName?: string;
+  public viewStatePropsString?: string;
+  public overrideElements?: any[];
+  public selectedElements?: Id64Arg;
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
   public renderOptions?: RenderSystem.Options;
   public tileProps?: TileAdmin.Props;
-  public aoEnabled = false;
 
   public constructor(jsonData: any, prevConfigs?: DefaultConfigs, useDefaults = false) {
     if (useDefaults) {
@@ -446,6 +472,7 @@ class DefaultConfigs {
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
       this.testType = "timing";
+      this.csvFormat = "original";
     }
     if (prevConfigs !== undefined) {
       if (prevConfigs.view) this.view = new ViewSize(prevConfigs.view.width, prevConfigs.view.height);
@@ -456,8 +483,10 @@ class DefaultConfigs {
       if (prevConfigs.iModelLocation) this.iModelLocation = prevConfigs.iModelLocation;
       if (prevConfigs.iModelName) this.iModelName = prevConfigs.iModelName;
       if (prevConfigs.iModelHubProject) this.iModelHubProject = prevConfigs.iModelHubProject;
+      if (prevConfigs.csvFormat) this.csvFormat = prevConfigs.csvFormat;
       if (prevConfigs.filenameOptsToIgnore) this.filenameOptsToIgnore = prevConfigs.filenameOptsToIgnore;
       if (prevConfigs.viewName) this.viewName = prevConfigs.viewName;
+      if (prevConfigs.viewStatePropsString) this.viewStatePropsString = prevConfigs.viewStatePropsString;
       if (prevConfigs.testType) this.testType = prevConfigs.testType;
       if (prevConfigs.displayStyle) this.displayStyle = prevConfigs.displayStyle;
       this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
@@ -473,14 +502,26 @@ class DefaultConfigs {
     if (jsonData.iModelLocation) this.iModelLocation = combineFilePaths(jsonData.iModelLocation, this.iModelLocation);
     if (jsonData.iModelName) this.iModelName = jsonData.iModelName;
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
+    if (jsonData.csvFormat) this.csvFormat = jsonData.csvFormat;
     if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
-    if (jsonData.viewName) this.viewName = jsonData.viewName;
+    if (jsonData.viewName) {
+      this.viewName = jsonData.viewName;
+      this.viewStatePropsString = undefined;
+    }
+    if (jsonData.viewString) {
+      // If there is a viewString, put its name in the viewName property so that it gets used in the filename, etc.
+      this.viewName = jsonData.viewString._name;
+      this.viewStatePropsString = jsonData.viewString._viewStatePropsString;
+      if (undefined !== jsonData.viewString._overrideElements)
+        this.overrideElements = JSON.parse(jsonData.viewString._overrideElements) as any[];
+      if (undefined !== jsonData.viewString._selectedElements)
+        this.selectedElements = JSON.parse(jsonData.viewString._selectedElements) as Id64Arg;
+    }
     if (jsonData.testType) this.testType = jsonData.testType;
     if (jsonData.displayStyle) this.displayStyle = jsonData.displayStyle;
     this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
-    this.aoEnabled = undefined !== jsonData.viewFlags && !!jsonData.viewFlags.ambientOcclusion;
 
     debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
     debugPrint("numRendersToTime: " + this.numRendersToTime);
@@ -492,6 +533,7 @@ class DefaultConfigs {
     debugPrint("iModelLocation: " + this.iModelLocation);
     debugPrint("iModelName: " + this.iModelName);
     debugPrint("iModelHubProject: " + this.iModelHubProject);
+    debugPrint("csvFormat: " + this.csvFormat);
     debugPrint("filenameOptsToIgnore: " + this.filenameOptsToIgnore);
     debugPrint("viewName: " + this.viewName);
     debugPrint("testType: " + this.testType);
@@ -568,7 +610,66 @@ class SimpleViewState {
   public viewPort?: Viewport;
   public projectConfig?: ConnectProjectConfiguration;
   public oidcClient?: OidcBrowserClient;
+  public externalSavedViews?: any[];
+  public overrideElements?: any[];
+  public selectedElements?: Id64Arg;
   constructor() { }
+}
+
+class FOProvider implements FeatureOverrideProvider {
+  private readonly _elementOvrs = new Map<Id64String, FeatureSymbology.Appearance>();
+  private _defaultOvrs: FeatureSymbology.Appearance | undefined;
+  private readonly _vp: Viewport;
+
+  private constructor(vp: Viewport) { this._vp = vp; }
+
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
+    this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
+    if (undefined !== this._defaultOvrs)
+      ovrs.setDefaultOverrides(this._defaultOvrs);
+  }
+
+  public overrideElementsByArray(elementOvrs: any[]): void {
+    elementOvrs.forEach((eo) => {
+      const fsa = FeatureSymbology.Appearance.fromJSON(JSON.parse(eo.fsa) as FeatureSymbology.AppearanceProps);
+      if (eo.id === "-default-")
+        this.defaults = fsa;
+      else
+        this._elementOvrs.set(eo.id, fsa);
+    });
+    this.sync();
+  }
+
+  public clear(): void {
+    this._elementOvrs.clear();
+    this._defaultOvrs = undefined;
+    this.sync();
+  }
+
+  public set defaults(value: FeatureSymbology.Appearance | undefined) {
+    this._defaultOvrs = value;
+    this.sync();
+  }
+
+  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
+
+  public static get(vp: Viewport): FOProvider | undefined {
+    return vp.featureOverrideProvider instanceof FOProvider ? vp.featureOverrideProvider : undefined;
+  }
+
+  public static remove(vp: Viewport): void {
+    if (undefined !== this.get(vp))
+      vp.featureOverrideProvider = undefined;
+  }
+
+  public static getOrCreate(vp: Viewport): FOProvider {
+    let provider = this.get(vp);
+    if (undefined === provider) {
+      provider = new FOProvider(vp);
+      vp.featureOverrideProvider = provider;
+    }
+    return provider;
+  }
 }
 
 let theViewport: ScreenViewport | undefined;
@@ -651,6 +752,10 @@ async function loadIModel(testConfig: DefaultConfigs) {
       alert("openSnapshot failed: " + err.toString());
       openLocalIModel = false;
     }
+    const esvString = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(testConfig.iModelFile!);
+    if (undefined !== esvString && "" !== esvString) {
+      activeViewState.externalSavedViews = JSON.parse(esvString) as any[];
+    }
   }
 
   // Open an iModel from the iModelHub
@@ -672,7 +777,13 @@ async function loadIModel(testConfig: DefaultConfigs) {
   }
 
   // open the specified view
-  await loadView(activeViewState, testConfig.viewName!);
+  if (undefined === testConfig.viewStatePropsString) {
+    await loadView(activeViewState, testConfig.viewName!);
+  } else if (undefined !== testConfig.extViewName) {
+    await loadExternalView(activeViewState, testConfig.extViewName);
+  } else {
+    await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements, testConfig.overrideElements);
+  }
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -688,7 +799,6 @@ async function loadIModel(testConfig: DefaultConfigs) {
 
   // Set the viewFlags (including the render mode)
   if (undefined !== activeViewState.viewState) {
-    activeViewState.viewState.displayStyle.viewFlags.ambientOcclusion = testConfig.aoEnabled;
     if (testConfig.viewFlags) {
       // Use the testConfig.viewFlags data for each property in ViewFlags if it exists; otherwise, keep using the viewState's ViewFlags info
       for (const [key] of Object.entries(activeViewState.viewState.displayStyle.viewFlags)) {
@@ -700,8 +810,25 @@ async function loadIModel(testConfig: DefaultConfigs) {
     }
   }
 
+  // Set the overrides for elements (if there are any)
+  if (undefined !== iModCon && undefined !== activeViewState.overrideElements) {
+    // Hook up the feature override provider and set up the overrides in it from the ViewState.
+    // Note that we do not have to unhook it or clear out the feature overrides if there are none since the viewport is created from scratch each time.
+    const provider = FOProvider.getOrCreate(theViewport!);
+    if (undefined !== provider && undefined !== activeViewState.overrideElements) {
+      provider.overrideElementsByArray(activeViewState.overrideElements);
+    }
+  }
+
   // Load all tiles
   await waitForTilesToLoad(testConfig.iModelLocation);
+
+  // Set the selected elements (if there are any)
+  if (undefined !== iModCon && undefined !== activeViewState.selectedElements) {
+    iModCon!.selectionSet.add(activeViewState.selectedElements);
+    theViewport!.markSelectionSetDirty();
+    theViewport!.renderFrame();
+  }
 }
 
 async function closeIModel(isSnapshot: boolean) {
@@ -868,6 +995,8 @@ async function runTest(testConfig: DefaultConfigs) {
     await savePng(getImageString(testConfig));
   }
 
+  const csvFormat = testConfig.csvFormat!;
+
   if (testConfig.testType === "timing" || testConfig.testType === "both" || testConfig.testType === "readPixels") {
     // Throw away the first n renderFrame times, until it's more consistent
     for (let i = 0; i < (testConfig.numRendersToSkip ? testConfig.numRendersToSkip : 50); ++i) {
@@ -896,7 +1025,7 @@ async function runTest(testConfig: DefaultConfigs) {
         updateTestNames(testConfig, pixSelectStr, true); // Update the list of image test names
         updateTestNames(testConfig, pixSelectStr, false); // Update the list of timing test names
         const rowData = getRowData(finalFrameTimings, testConfig, pixSelectStr);
-        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+        await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
 
         // Create images from the elementID, depth (i.e. distance), and type (i.e. order)
         await createReadPixelsImages(testConfig, pixSelect, pixSelectStr);
@@ -929,7 +1058,7 @@ async function runTest(testConfig: DefaultConfigs) {
         }
       }
       const rowData = getRowData(finalFrameTimings, testConfig);
-      await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData);
+      await saveCsv(testConfig.outputPath!, testConfig.outputName!, rowData, csvFormat);
     }
   }
 
@@ -943,8 +1072,55 @@ async function loadView(state: SimpleViewState, viewName: string) {
   if (1 === viewIds.size)
     state.viewState = await state.iModelConnection!.views.load(viewIds.values().next().value);
 
+  if (undefined === state.viewState) {
+    // Could not find it in the file, so look through the external saved views for this file.
+    // This will allow us to use the 'viewName' property in the config file for either type of saved view
+    // unless there is one named the same in both lists (which is not being prevented anymore when creating them).
+    await loadExternalView(state, viewName);
+    return;
+  }
+
   if (undefined === state.viewState)
     debugPrint("Error: failed to load view by name");
+}
+
+// selects the configured view from the external saved views list.
+async function loadExternalView(state: SimpleViewState, extViewName: string) {
+  if (undefined !== state.externalSavedViews) {
+    for (const namedExternalSavedView of state.externalSavedViews) {
+      if (extViewName === namedExternalSavedView._name) {
+        let oe;
+        if (undefined !== namedExternalSavedView._overrideElements)
+          oe = JSON.parse(namedExternalSavedView._overrideElements) as any[];
+        let se;
+        if (undefined !== namedExternalSavedView._selectedElements)
+          se = JSON.parse(namedExternalSavedView._selectedElements) as Id64Arg;
+        await loadViewString(state, namedExternalSavedView._viewStatePropsString, se, oe);
+        return;
+      }
+    }
+  }
+
+  if (undefined === state.viewState)
+    debugPrint("Error: failed to load view by name");
+}
+
+// selects the configured view from a viewStateProperties string.
+async function loadViewString(state: SimpleViewState, viewStatePropsString: string, selectedElements: Id64Arg | undefined, overrideElements: any[] | undefined) {
+  const vsp = JSON.parse(viewStatePropsString);
+  const className = vsp.viewDefinitionProps.classFullName;
+  const ctor = await state.iModelConnection!.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
+  if (undefined === ctor) {
+    debugPrint("Could not create ViewState from viewString");
+    state.viewState = undefined;
+  } else {
+    state.viewState = ctor.createFromProps(vsp, state.iModelConnection!);
+    if (undefined !== state.viewState) {
+      await state.viewState.load(); // make sure any attachments are loaded
+      state.overrideElements = overrideElements;
+      state.selectedElements = selectedElements;
+    }
+  }
 }
 
 async function testModel(configs: DefaultConfigs, modelData: any) {
@@ -983,10 +1159,22 @@ async function main() {
   const topdiv = document.getElementById("topdiv")!;
   topdiv.style.display = "block";
   topdiv.innerText = "Tests Completed.";
-
   document.getElementById("imodel-viewport")!.style.display = "hidden";
 
-  await DisplayPerfRpcInterface.getClient().finishCsv(jsonData.outputPath, jsonData.outputName);
+  // Add render settings to the csv file
+  let renderData = "\"End of Tests-----------\r\n";
+  const renderComp = IModelApp.queryRenderCompatibility();
+  if (renderComp.userAgent) {
+    renderData += "Browser: " + getBrowserName(renderComp.userAgent) + "\r\n";
+    renderData += "User Agent: " + renderComp.userAgent + "\r\n";
+  }
+  if (renderComp.unmaskedRenderer) renderData += "Unmasked Renderer: " + renderComp.unmaskedRenderer + "\r\n";
+  if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
+  if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
+  if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
+  if (jsonData.csvFormat === undefined) jsonData.csvFormat = "original";
+  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName, jsonData.csvFormat);
+
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
   IModelApp.shutdown();
 }

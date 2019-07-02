@@ -15,7 +15,7 @@ import ReactResizeDetector from "react-resize-detector";
 import { DayPicker } from "./DayPicker";
 import { Popup, Position, CommonProps } from "@bentley/ui-core";
 import { SolarDataProvider } from "./interfaces";
-import { SpeedTimeline } from "./SpeedTimline";
+import { SpeedTimeline } from "./SpeedTimeline";
 import { SaturationPicker } from "../color/SaturationPicker";
 import { HueSlider } from "../color/HueSlider";
 import { ColorSwatch } from "../color/Swatch";

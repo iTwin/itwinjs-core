@@ -56,8 +56,8 @@ const unpackClipPlane = `
 `;
 
 const calcClipPlaneDist = `
-  float calcClipPlaneDist(vec4 camPos, vec4 plane) {
-    return dot(camPos, plane);
+  float calcClipPlaneDist(vec3 camPos, vec4 plane) {
+    return dot(vec4(camPos, 1.0), plane);
   }
 `;
 

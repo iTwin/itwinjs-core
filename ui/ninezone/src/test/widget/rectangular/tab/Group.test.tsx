@@ -5,19 +5,31 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { TabGroup, HorizontalAnchor, HandleMode, HandleModeHelpers } from "../../../../ui-ninezone";
+import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
 
 describe("<TabGroup />", () => {
   it("should render", () => {
     mount(<TabGroup
-      anchor={HorizontalAnchor.Left}
       handle={HandleMode.Visible}
+      horizontalAnchor={HorizontalAnchor.Left}
+      verticalAnchor={VerticalAnchor.Middle}
     />);
   });
 
   it("renders correctly", () => {
     shallow(<TabGroup
-      anchor={HorizontalAnchor.Left}
       handle={HandleMode.Visible}
+      horizontalAnchor={HorizontalAnchor.Left}
+      verticalAnchor={VerticalAnchor.Middle}
+    />).should.matchSnapshot();
+  });
+
+  it("renders collapsed correctly", () => {
+    shallow(<TabGroup
+      handle={HandleMode.Visible}
+      horizontalAnchor={HorizontalAnchor.Left}
+      isCollapsed
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 });

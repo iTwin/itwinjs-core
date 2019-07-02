@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { withDragSource, withDropTarget, DragSourceArguments } from "../../ui-components";
 import TestBackend from "react-dnd-test-backend";
 import { DragDropContext } from "react-dnd";
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 
 describe("withDragSource", () => {
 

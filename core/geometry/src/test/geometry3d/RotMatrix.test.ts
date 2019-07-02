@@ -13,6 +13,7 @@ import { Checker } from "../Checker";
 // import { prettyPrint } from "./testFunctions";
 import { expect } from "chai";
 /* tslint:disable:no-console */
+// cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT
 
 function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {
   const vectorY = Vector3d.create(1, 2, 3);
@@ -23,12 +24,12 @@ function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {
     const matrixB = matrixA.inverse();
     if (ck.testPointer(matrixB, "matrix has inverse") && matrixB) {
       const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
-      ck.testTrue(matrixAB.isIdentity, "verify A*Ainv is identity");
+      ck.testTrue(matrixAB.isIdentity, "verify A*A^inverse is identity");
     }
 
   }
 }
-// input a newly created rotmatrix.
+// input a newly created Matrix3d.
 function verifyMatrix3dInverseProperties(ck: Checker, matrixA: Matrix3d) {
 
   verifyInverseGo(ck, matrixA);
@@ -78,7 +79,7 @@ describe("Matrix3d", () => {
     // scaling columns with a zero scale clears inverse.
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const vectorQ = matrix.multiplyInverseXYZAsVector3d(4, 7, 11);
-      // There should now be a stored inversed . ..
+      // There should now be a stored inverted . ..
       if (vectorQ) {
         ck.testPointer(matrix.inverseCoffs);
         matrix.scaleColumnsInPlace(0, 3, 8);
@@ -221,7 +222,7 @@ describe("Matrix3d.Factors", () => {
       if (ck.testTrue(data.ok, "Extract axis and angle")) {
         const rigid1 = Matrix3d.createRotationAroundVector(data.axis, data.angle);
         if (ck.testPointer(rigid1) && rigid1)
-          ck.testMatrix3d(rigid, rigid1, "round trip roation around vector");
+          ck.testMatrix3d(rigid, rigid1, "round trip rotation around vector");
       }
     }
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotationA");
@@ -481,7 +482,7 @@ describe("Matrix3d.ViewConstructions", () => {
         const q = byRow.at(i, j);
         qMax = Geometry.maxAbsXYZ(q, qMax, 0);
         fillByIndex.setAt(i, j, byRow.at(i, j));
-        ck.testExactNumber(qMax, fillByIndex.maxAbs(), "evolving maxabs");
+        ck.testExactNumber(qMax, fillByIndex.maxAbs(), "evolving maxAbs");
       }
     }
     ck.testMatrix3d(byRow, fillByIndex, "clone by setAt");
@@ -505,7 +506,7 @@ describe("Matrix3d.ViewConstructions", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("SignedPerumtation", () => {
+  it("SignedPermutation", () => {
     const ck = new Checker();
     const unitX = Vector3d.unitX();
     const unitY = Vector3d.unitY();
@@ -664,7 +665,7 @@ describe("Matrix3d.ViewConstructions", () => {
       ck.testTrue(matrixA.isExactEqual(matrixA1));
       matrixA1.coffs[i] += epsilon;
       epsilon = - epsilon;
-      ck.testFalse(matrixA1.isAlmostEqual(matrixA), "exact equal after perturrb");
+      ck.testFalse(matrixA1.isAlmostEqual(matrixA), "exact equal after perturbation");
     }
 
     const matrixXY = Matrix3d.createRowValues(1, 2, 0, 3, 4, 0, 0, 0, 1); // all effects are xy

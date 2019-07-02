@@ -37,7 +37,11 @@ export * from "./ui-framework/configurableui/state";
 export * from "./ui-framework/content/ContentControl";
 export * from "./ui-framework/content/ContentGroup";
 export * from "./ui-framework/content/ContentLayout";
+export * from "./ui-framework/content/ContentLayoutProps";
+export * from "./ui-framework/content/ContentLayoutManager";
 export * from "./ui-framework/content/ContentViewManager";
+export * from "./ui-framework/content/SavedView";
+export * from "./ui-framework/content/SavedViewLayout";
 export * from "./ui-framework/content/ViewportContentControl";
 
 export * from "./ui-framework/dialog/DialogManagerBase";
@@ -71,7 +75,6 @@ export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 
 export * from "./ui-framework/widgets/NavigationWidget";
-export * from "./ui-framework/widgets/StackedWidget";
 export * from "./ui-framework/widgets/StatusBar";
 export * from "./ui-framework/widgets/StatusBarWidgetControl";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
@@ -81,6 +84,7 @@ export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
+export * from "./ui-framework/widgets/WidgetStack";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -147,7 +151,7 @@ export * from "./ui-framework/theme/ThemeManager";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
-// istanbul ignore if
+// istanbul ignore next
 if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") && window) {
   if (!(window as any).iModelJsVersions)
     (window as any).iModelJsVersions = new Map<string, string>();
@@ -162,10 +166,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Backstage
  * Classes for working with a Backstage
- */
-/**
- * @docs-group-description ClientServices
- * Classes for working with services for iModels, Login and Projects
  */
 /**
  * @docs-group-description ConfigurableUi
@@ -251,4 +251,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Zone
  * Classes for working with a Zone
+ */
+/**
+ * @docs-group-description Item
+ * Classes for working with an Item
  */

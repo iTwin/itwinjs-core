@@ -57,4 +57,42 @@ describe("withIsPressed", () => {
     expect(iAmPressed).to.eq(false);
   });
 
+  it("mouseup event when not pressed", () => {
+    let iAmPressed = false;
+    const spyMethod = sinon.spy();
+
+    function handlePressedChange(isPressed: boolean) {
+      iAmPressed = isPressed;
+      spyMethod();
+    }
+
+    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
+    const div = wrapper.find("div.withispressed-wrapper");
+
+    const e1 = new MouseEvent("mouseup", { clientX: 0, clientY: 0 });
+    div.simulate("mouseup", e1);
+    expect(spyMethod.calledOnce).to.be.false;
+    expect(iAmPressed).to.eq(false);
+  });
+
+  it("mouseleave event", () => {
+    let iAmPressed = true;
+    const spyMethod = sinon.spy();
+
+    function handlePressedChange(isPressed: boolean) {
+      iAmPressed = isPressed;
+      spyMethod();
+    }
+
+    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
+    const div = wrapper.find("div.withispressed-wrapper");
+
+    const e1 = new MouseEvent("mouseenter", { clientX: 0, clientY: 0 });
+    div.simulate("mouseenter", e1);
+    const e2 = new MouseEvent("mouseleave", { clientX: 0, clientY: 0 });
+    div.simulate("mouseleave", e2);
+    expect(spyMethod.calledOnce).to.be.true;
+    expect(iAmPressed).to.eq(false);
+  });
+
 });

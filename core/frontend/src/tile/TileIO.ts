@@ -39,6 +39,7 @@ export namespace TileIO {
     IModel = 0x6c644d69, // "iMdl"
     Cmpt = 0x74706d63,  // cmpt
     I3dm = 0x6d643369,  // i3dm
+    A3x = 0x583341, // A3X0 (numeric 0 not char '0')
   }
 
   /** Given a magic number, return whether it identifies a known tile format. */
@@ -51,6 +52,7 @@ export namespace TileIO {
       case Format.Pnts:
       case Format.Cmpt:
       case Format.I3dm:
+      case Format.A3x:
         return true;
       default:
         return false;
@@ -71,10 +73,17 @@ export namespace TileIO {
    */
   export class StreamBuffer {
     private readonly _view: DataView;
+    private readonly _byteOffset: number;
     private _curPos: number = 0;
 
-    public constructor(buffer: ArrayBuffer | SharedArrayBuffer) {
-      this._view = new DataView(buffer);
+    public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
+      if (undefined !== subView) {
+        this._view = new DataView(buffer, subView.byteOffset, subView.byteLength);
+        this._byteOffset = subView.byteOffset;
+      } else {
+        this._view = new DataView(buffer);
+        this._byteOffset = 0;
+      }
     }
 
     /** The number of bytes in this stream */
@@ -100,6 +109,8 @@ export namespace TileIO {
     public get nextUint16(): number { return this.read(2, (view) => view.getUint16(this.curPos, true)); }
     /** Read a uint32 at the current read position and advance by 4 bytes. */
     public get nextUint32(): number { return this.read(4, (view) => view.getUint32(this.curPos, true)); }
+    /** Read an int32 at the current read position and advance by 4 bytes. */
+    public get nextInt32(): number { return this.read(4, (view) => view.getInt32(this.curPos, true)); }
     /** Read a 32-bit floating point number at the current read position and advance by 4 bytes. */
     public get nextFloat32(): number { return this.read(4, (view) => view.getFloat32(this.curPos, true)); }
     /** Read a 64-bit floating point number at the current read position and advance by 8 bytes. */
@@ -111,14 +122,19 @@ export namespace TileIO {
 
     /** Read the next numBytes bytes into a Uint8Array and advance by numBytes. */
     public nextBytes(numBytes: number): Uint8Array {
-      const bytes = new Uint8Array(this.arrayBuffer, this.curPos, numBytes);
+      const bytes = new Uint8Array(this.arrayBuffer, this.curPos + this._byteOffset, numBytes);
       this.advance(numBytes);
       return bytes;
     }
 
+    /** Read the specified number of bytes at the specified offset without changing the read position. */
+    public readBytes(readPos: number, numBytes: number): Uint8Array {
+      return new Uint8Array(this.arrayBuffer, readPos + this._byteOffset, numBytes);
+    }
+
     public nextUint32s(numUint32s: number): Uint32Array {
       const numBytes = numUint32s * 4;
-      const uint32s = new Uint32Array(this.arrayBuffer, this.curPos, numUint32s);
+      const uint32s = new Uint32Array(this.arrayBuffer, this.curPos + this._byteOffset, numUint32s);
       this.advance(numBytes);
       return uint32s;
     }

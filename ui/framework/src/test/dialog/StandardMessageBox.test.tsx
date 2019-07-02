@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 
 import TestUtils from "../TestUtils";
 import { StandardMessageBox } from "../../ui-framework";
@@ -152,7 +152,7 @@ describe("StandardMessageBox", () => {
     const component = render(reactNode);
 
     component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
-    expect(spyOnEscape).to.be.calledOnce;
+    spyOnEscape.calledOnce.should.true;
   });
 
 });

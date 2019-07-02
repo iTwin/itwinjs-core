@@ -57,6 +57,7 @@ export class PointerCaptor extends React.PureComponent<PointerCaptorProps, Point
       <div
         className={className}
         onMouseDown={this._handleMouseDown}
+        style={this.props.style}
       >
         <div className="nz-overlay" />
         {this.props.children}

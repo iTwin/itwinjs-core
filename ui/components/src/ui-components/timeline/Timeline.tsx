@@ -9,6 +9,7 @@ import { Slider, Rail, Handles, Ticks, SliderItem } from "react-compound-slider"
 import { Milestone } from "./interfaces";
 import "./Timeline.scss";
 
+// istanbul ignore next - WIP
 const formatDate = (value: number) => {
   let date = new Date();
   if (value)
@@ -58,15 +59,18 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     this.state = { value: null, percent: null };
   }
 
+  // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     document.addEventListener("mousemove", this._onMouseMove);
   }
 
+  // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ value: null, percent: null });
     document.removeEventListener("mousemove", this._onMouseMove);
   }
 
+  // istanbul ignore next - WIP
   private _onMouseMove = (e: Event) => {
     const { activeHandleID, getEventData } = this.props;
 
@@ -81,6 +85,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     const { value, percent } = this.state;
     const { activeHandleID, getRailProps } = this.props;
 
+    // istanbul ignore next - WIP
     return (
       <>
         {!activeHandleID && value ? (
@@ -131,14 +136,17 @@ class Handle extends React.Component<HandleProps, HandleState> {
     this.state = { mouseOver: false };
   }
 
+  // istanbul ignore next - WIP
   private _onMouseEnter = () => {
     this.setState({ mouseOver: true });
   }
 
+  // istanbul ignore next - WIP
   private _onMouseLeave = () => {
     this.setState({ mouseOver: false });
   }
 
+  // istanbul ignore next - WIP
   public render() {
     const {
       domain: [min, max],
@@ -232,6 +240,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
   constructor(props: TimelineProps) {
     super(props);
 
+    // istanbul ignore else
     if (props.endDate && props.startDate) {
       const quarter = (props.endDate.getTime() - props.startDate.getTime()) / 4;
 
@@ -252,14 +261,12 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     const { milestones } = this.props;
     const handles: number[] = [];
 
+    // istanbul ignore else
     if (milestones) {
       milestones.forEach((milestone: Milestone) => handles.push(milestone.date.getTime()));
     }
 
     return handles;
-  }
-
-  private _onSliderStart = () => {
   }
 
   public render() {
@@ -275,7 +282,6 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
           rootStyle={{ position: "relative", height: "100%", margin: "0 60px" }}
           onUpdate={onUpdate}
           onChange={onChange}
-          onSlideStart={this._onSliderStart}
           values={this._milestones()}
         >
           <Rail>

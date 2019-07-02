@@ -254,7 +254,7 @@ export class ResponseBuilder {
     const generatedObject = new type();
 
     if (values !== undefined) {
-      values.forEach((value: any, key: string) => {
+      values.forEach((value: any, key: keyof T) => {
         generatedObject[key] = value;
       });
     }

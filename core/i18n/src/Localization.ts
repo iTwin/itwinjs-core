@@ -9,7 +9,7 @@ import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
-/** @internal */
+/** @public */
 export interface I18NOptions {
   urlTemplate?: string;
 }

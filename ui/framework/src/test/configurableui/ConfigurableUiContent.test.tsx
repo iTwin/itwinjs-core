@@ -9,7 +9,7 @@ import { mount, shallow } from "enzyme";
 
 import { ConfigurableUiContent } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {

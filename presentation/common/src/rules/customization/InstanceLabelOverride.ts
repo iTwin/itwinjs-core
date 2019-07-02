@@ -42,6 +42,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
   ClassLabel = "ClassLabel",
   BriefcaseId = "BriefcaseId",
   LocalId = "LocalId",
+  String = "String",
 }
 
 /**
@@ -126,10 +127,21 @@ export interface InstanceLabelOverrideLocalIdSpecification extends InstanceLabel
 }
 
 /**
+ * Specification that uses the specified value as the label content.
+ * @public
+ */
+export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+  specType: InstanceLabelOverrideValueSpecificationType.String;
+
+  /** The value to use as the label content. */
+  value: string;
+}
+
+/**
  * Specification to define how the label for [[InstanceLabelOverride]] should be created.
  * @public
  */
 export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification
-  | InstanceLabelOverridePropertyValueSpecification
+  | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification
   | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification
   | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;

@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows } from "./Render";
+import { AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows, ViewFlags } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 import { SpatialClassificationProps } from "./SpatialClassificationProps";
@@ -74,8 +74,6 @@ export interface ViewFlagProps {
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
-  /** @internal This doesn't belong here - it is not persistent. */
-  contRend?: boolean;
   /** If true, don't show filled regions. */
   noFill?: boolean;
   /** If true, show grids. */
@@ -86,11 +84,17 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't show materials. */
   noMaterial?: boolean;
-  /** If true, don't use camera lights. */
+  /** If true, don't use camera lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noCameraLights?: boolean;
-  /** If true, don't use source lights. */
+  /** If true, don't use source lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSourceLights?: boolean;
-  /** If true, don't use solar lights. */
+  /** If true, don't use solar lights.
+   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
+   */
   noSolarLight?: boolean;
   /** If true, show visible edges. */
   visEdges?: boolean;
@@ -146,12 +150,101 @@ export enum BackgroundMapType {
  * @public
  */
 export interface BackgroundMapProps {
+  /** The elevation of the map in meters relative to sea level. Default value: 0. */
   groundBias?: number;
-  /** The Id of a map tile provider. Currently the type should technically be `"BingProvider" | "MapBoxProvider"`, but support for other providers may be added in the future. */
+  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
+   *
+   * Default value: "BingProvider"
+   */
   providerName?: string;
+  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used. */
   providerData?: {
+    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
     mapType?: BackgroundMapType;
   };
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  applyTerrain?: boolean;
+}
+
+/** The current set of supported background map providers.
+ * @beta
+ */
+export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+/** Normalized representation of a [[BackgroundMapProps]] for which type and provider have been validated and default values have been applied where explicit values not defined.
+ * @beta
+ */
+export class BackgroundMapSettings {
+  /** Elevation in meters, relative to sea level. */
+  public readonly groundBias: number;
+  /** Identifies the provider from which map graphics will be obtained. */
+  public readonly providerName: BackgroundMapProviderName;
+  /** The type of map graphics to be drawn. */
+  public readonly mapType: BackgroundMapType;
+  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  public readonly applyTerrain: boolean;
+
+  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0, applyTerrain = false) {
+    this.groundBias = groundBias;
+    this.providerName = providerName;
+    this.applyTerrain = applyTerrain;
+    switch (mapType) {
+      case BackgroundMapType.Street:
+      case BackgroundMapType.Aerial:
+        this.mapType = mapType;
+        break;
+      default:
+        this.mapType = BackgroundMapType.Hybrid;
+    }
+  }
+
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
+    if (undefined === json)
+      return new BackgroundMapSettings();
+
+    const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
+    const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.applyTerrain);
+  }
+
+  public toJSON(): BackgroundMapProps {
+    return {
+      groundBias: this.groundBias,
+      providerName: this.providerName,
+      applyTerrain: this.applyTerrain,
+      providerData: { mapType: this.mapType },
+    };
+  }
+
+  /** Returns true if these settings are equivalent to the supplied JSON settings. */
+  public equalsJSON(json?: BackgroundMapProps): boolean {
+    return this.equals(BackgroundMapSettings.fromJSON(json));
+  }
+
+  public equals(other: BackgroundMapSettings): boolean {
+    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType && this.applyTerrain === other.applyTerrain;
+  }
+
+  /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
+   * @param changedProps JSON representation of the properties to change.
+   * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   */
+  public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
+    if (undefined === changedProps)
+      return this;
+
+    const props = {
+      providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
+      groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
+      applyTerrain: undefined !== changedProps.applyTerrain ? changedProps.applyTerrain : this.applyTerrain,
+      providerData: {
+        mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
+      },
+    };
+
+    return BackgroundMapSettings.fromJSON(props);
+  }
 }
 
 /** JSON representation of a [[GroundPlane]].
@@ -261,7 +354,7 @@ export interface ContextRealityModelProps {
   name?: string;
   description?: string;
   /** @beta */
-  classifiers?: SpatialClassificationProps.PropertiesProps[];
+  classifiers?: SpatialClassificationProps.Properties[];
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].
@@ -418,6 +511,7 @@ export class DisplayStyleSettings {
   private readonly _monochrome: ColorDef;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
+  private _backgroundMap: BackgroundMapSettings;
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -428,10 +522,12 @@ export class DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
+
     this._json = jsonProperties.styles;
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
+    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
 
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
@@ -487,12 +583,15 @@ export class DisplayStyleSettings {
   }
 
   /** @alpha */
-  public get backgroundMap(): BackgroundMapProps | undefined {
-    const props = this._json.backgroundMap;
-    return undefined !== props ? props : {};
-  }
+  public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
+
   /** @alpha */
-  public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
+  public set backgroundMap(map: BackgroundMapSettings) {
+    if (!this.backgroundMap.equals(map)) {
+      this._backgroundMap = map; // it's an immutable type.
+      this._json.backgroundMap = map.toJSON();
+    }
+  }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.

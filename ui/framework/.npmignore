@@ -5,6 +5,7 @@
 !lib/module/dev/ui-framework.js.map
 !lib/**/*.*css
 !lib/**/*.json
+!lib/**/*.svg
 !lib/public/**/*
 lib/test
 !*.md

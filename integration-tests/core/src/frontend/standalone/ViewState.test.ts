@@ -115,7 +115,6 @@ describe("ViewState", () => {
     vf.cameraLights = !vf.cameraLights;
     vf.clipVolume = !vf.clipVolume;
     vf.constructions = !vf.constructions;
-    vf.continuousRendering = !vf.continuousRendering;
     vf.dimensions = !vf.dimensions;
     vf.edgeMask = vf.edgeMask === 0 ? 1 : 0;
     vf.fill = !vf.fill;
@@ -156,11 +155,9 @@ describe("ViewState", () => {
 
     const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
     if (undefined !== oldBackgroundMap) {
-      let mt = BackgroundMapType.Aerial;
-      if (oldBackgroundMap.providerData !== undefined)
-        mt = oldBackgroundMap.providerData.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Aerial;
+      const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.setBackgroundMap({
-        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapProvider" : "BingProvider",
+        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         providerData: { mapType: mt },
       });
     } else {
@@ -199,7 +196,6 @@ describe("ViewState", () => {
     assert.equal(vs0.viewFlags.cameraLights, vs1.viewFlags.cameraLights, "clone should copy viewFlags.cameraLights");
     assert.equal(vs0.viewFlags.clipVolume, vs1.viewFlags.clipVolume, "clone should copy viewFlags.clipVolume");
     assert.equal(vs0.viewFlags.constructions, vs1.viewFlags.constructions, "clone should copy viewFlags.constructions");
-    // This flag is hidden - assert.equal(vs0.viewFlags.continuousRendering, vs1.viewFlags.continuousRendering, "clone should copy viewFlags.continuousRendering");
     assert.equal(vs0.viewFlags.dimensions, vs1.viewFlags.dimensions, "clone should copy viewFlags.dimensions");
     // This flag is hidden - assert.equal(vs0.viewFlags.edgeMask, vs1.viewFlags.edgeMask, "clone should copy viewFlags.edgeMask"); //
     assert.equal(vs0.viewFlags.fill, vs1.viewFlags.fill, "clone should copy viewFlags.fill");
@@ -228,10 +224,10 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
     assert.isDefined(vs0BackgroundMap);
-    assert.isDefined(vs0BackgroundMap!.providerData);
+    assert.isDefined(vs0BackgroundMap!.mapType);
     assert.isDefined(vs1BackgroundMap);
-    assert.isDefined(vs1BackgroundMap!.providerData);
-    assert.equal(vs0BackgroundMap!.providerData!.mapType, vs1BackgroundMap!.providerData!.mapType, "clone should copy displayStyle.backgroundMap.providerData.mapType");
+    assert.isDefined(vs1BackgroundMap!.mapType);
+    assert.equal(vs0BackgroundMap!.mapType, vs1BackgroundMap!.mapType, "clone should copy displayStyle.backgroundMap.mapType");
     assert.isDefined(vs0BackgroundMap!.providerName);
     assert.isDefined(vs1BackgroundMap!.providerName);
     assert.equal(vs0BackgroundMap!.providerName, vs1BackgroundMap!.providerName, "clone should copy displayStyle.backgroundMap.providerName");

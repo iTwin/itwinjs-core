@@ -85,6 +85,7 @@ export interface PresentationManagerProps {
     activeLocale?: string;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
+    enableSchemasPreload?: boolean;
     // @internal
     id?: string;
     localeDirectories?: string[];

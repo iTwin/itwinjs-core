@@ -175,7 +175,7 @@ export class Sample {
     if (data.length > 0)
       data.push(data[data.length - 1].clone());
   }
-  /** Return an array with numPoints on the unit circle (counting clousre) */
+  /** Return an array with numPoints on the unit circle (counting closure) */
   public static createUnitCircle(numPoints: number): Point3d[] {
     const points: Point3d[] = [];
     const dTheta = Geometry.safeDivideFraction(Math.PI * 2, numPoints - 1, 0.0);
@@ -185,10 +185,10 @@ export class Sample {
     }
     return points;
   }
-  /** Create points for an L shpaed polygon
+  /** Create points for an L shaped polygon
    * * lower left at x0,y0.
    * * ax,ay are larger side lengths (lower left to corners along x and y directions)
-   * * bx,by are smaller side lengths (innder corner to points along x and y directions)
+   * * bx,by are smaller side lengths (inner corner to points along x and y directions)
    */
   public static createLShapedPolygon(x0: number, y0: number, ax: number, ay: number, bx: number, by: number, z: number = 0): Point3d[] {
     return [
@@ -216,7 +216,7 @@ export class Sample {
   /**
    * * A first-quadrant unit square
    * * Two squares -- first and fourth quadrant unit squares
-   * * Three squares -- first, second and fourtn quarant unit squares
+   * * Three squares -- first, second and fourth quadrant unit squares
    */
   public static createClipPlaneSets(): UnionOfConvexClipPlaneSets[] {
     const result = [];
@@ -315,7 +315,7 @@ export class Sample {
    * @param points array of [x,y,z,w]
    * @param center center of arc
    * @param axes matrix with 0 and 90 degree axes
-   * @param radius0 radius mulitplier for x direction.
+   * @param radius0 radius multiplier for x direction.
    * @param radius90 radius multiplier for y direction.
    * @param applyWeightsToXYZ
    */
@@ -350,7 +350,7 @@ export class Sample {
   }
 
   /**
-   * Create both unweigthed and weighted bspline curves.
+   * Create both unweighted and weighted bspline curves.
    * (This is the combined results from createBsplineCurves and createBspline3dHCurves)
    */
   public static createMixedBsplineCurves(): BSplineCurve3dBase[] {
@@ -374,13 +374,13 @@ export class Sample {
     return Sample.createPlane(x, y, z, u, v, 1);
   }
 
-  /** Create ray from origina and direction components.   (Normalize the direction) */
+  /** Create ray from (x,y,z) and direction components.   (Normalize the direction) */
   public static createRay(x: number, y: number, z: number, u: number, v: number, w: number): Ray3d {
     return Ray3d.create(
       Point3d.create(x, y, z),
       Vector3d.create(u, v, w).normalize() as Vector3d);
   }
-  /** Assorted Plane3dBYOriginandUnitNormal */
+  /** Assorted Plane3dBYOriginAndUnitNormal */
   public static readonly plane3dByOriginAndUnitNormal: Plane3dByOriginAndUnitNormal[] = [
     Plane3dByOriginAndUnitNormal.createXYPlane(),
     Plane3dByOriginAndUnitNormal.createYZPlane(),
@@ -388,14 +388,14 @@ export class Sample {
     Sample.createPlane(0, 0, 0, 3, 0, 1),
     Sample.createPlane(1, 2, 3, 2, 4, -1)];
 
-  /** Asorted Ray3d, not all unit direction vectors. */
+  /** Assorted Ray3d, not all unit direction vectors. */
   public static readonly ray3d: Ray3d[] = [
     Sample.createRay(0, 0, 0, 1, 0, 0),
     Sample.createRay(0, 0, 0, 0, 1, 0),
     Sample.createRay(0, 0, 0, 0, 0, 1),
     Sample.createRay(0, 0, 0, 1, 2, 0),
     Sample.createRay(1, 2, 3, 4, 2, -1)];
-  /** Assorted angles.  All prinicipal directions, some others included. */
+  /** Assorted angles.  All principal directions, some others included. */
   public static readonly angle: Angle[] = [
     Angle.createDegrees(0),
     Angle.createDegrees(90),
@@ -457,9 +457,9 @@ export class Sample {
     Range3d.createXYZXYZ(1, 2, 3, -2, -4, -1)];
   /** Assorted Matrix3d:
    * * identity
-   * * roation around x
+   * * rotation around x
    * * rotation around general vector
-   * * uniformscale
+   * * uniform scale
    * * nonuniform scale (including negative scales!)
    */
   public static createMatrix3dArray(): Matrix3d[] {
@@ -476,7 +476,7 @@ export class Sample {
       Matrix3d.createScale(1, 1, -1),
       Matrix3d.createScale(2, 3, 4)];
   }
-  /** Assorted invertibel transforms. */
+  /** Assorted invertible transforms. */
   public static createInvertibleTransforms(): Transform[] {
     return [
       Transform.createIdentity(),
@@ -493,10 +493,10 @@ export class Sample {
 
   /** Return an array of Matrix3d with various skew and scale.  This includes at least:
    * * identity
-   * * 3 disinct diagonals.
+   * * 3 distinct diagonals.
    * * The distinct diagonal base with smaller value added to
    *    other 6 spots in succession.
-   * * the distinct diagonals with all others also smaller nonzeros.
+   * * the distinct diagonals with all others also smaller non-zeros.
    */
   public static createScaleSkewMatrix3d(): Matrix3d[] {
     return [
@@ -548,7 +548,7 @@ export class Sample {
   public static createSingularMatrix3d(): Matrix3d[] {
     const vectorU = Vector3d.create(2, 3, 6);
     const vectorV = Vector3d.create(-1, 5, 2);
-    const vectorUplusV = vectorU.plus(vectorV);
+    const vectorUPlusV = vectorU.plus(vectorV);
     const vector0 = Vector3d.createZero();
     return [
       Matrix3d.createZero(),
@@ -561,9 +561,9 @@ export class Sample {
       Matrix3d.createColumns(vector0, vectorU, vectorV),
       Matrix3d.createColumns(vectorV, vector0, vector0),
       // third column dependent
-      Matrix3d.createColumns(vectorU, vectorV, vectorUplusV),
-      Matrix3d.createColumns(vectorU, vectorUplusV, vectorV),
-      Matrix3d.createColumns(vectorUplusV, vectorV, vectorU),
+      Matrix3d.createColumns(vectorU, vectorV, vectorUPlusV),
+      Matrix3d.createColumns(vectorU, vectorUPlusV, vectorV),
+      Matrix3d.createColumns(vectorUPlusV, vectorV, vectorU),
       // two independent with duplicate
       Matrix3d.createColumns(vectorU, vectorV, vectorU),
       Matrix3d.createColumns(vectorU, vectorU, vectorV),
@@ -744,8 +744,8 @@ export class Sample {
     return result;
   }
   /**
-   * Append numPhase teeth.  Each tooth starts with dxLow dwell at inital y, then sloped rise, then dwell at top, then sloped fall
-   * If no points are present, start with 000.  (this happends in pushMove) Otherwise start from final point.
+   * Append numPhase teeth.  Each tooth starts with dxLow dwell at initial y, then sloped rise, then dwell at top, then sloped fall
+   * If no points are present, start with 000.  (this happens in pushMove) Otherwise start from final point.
    * @param points point array to receive points
    * @param dxLow starting step along x direction
    * @param riseX width of rising and falling parts
@@ -770,7 +770,7 @@ export class Sample {
    * @param riseX x part of outbound rise and fall
    * @param riseY y part of outbound rise and fall
    * @param dxHigh high outbound dwell
-   * @param numPhaseOutbound number of phases outbuond.  Final phase followed by dxLow dwell.
+   * @param numPhaseOutbound number of phases outbound.  Final phase followed by dxLow dwell.
    * @param dyFinal rise after final dwell.
    * @param dxLowReturn dwell at return high
    * @param riseXReturn rise x part of return
@@ -813,6 +813,35 @@ export class Sample {
       }
     }
   }
+
+  /** Assorted regions with arc boundaries
+   * * full circle
+   * * with varying sweep:
+   *    * partial arc with single chord closure
+   *    * partial arc with 2-edge closure via center
+   */
+  public static createArcRegions(): Loop[] {
+    const result = [];
+    const center = Point3d.create(0, 0, 0);
+    for (const sweep of [
+      AngleSweep.createStartEndDegrees(0, 360),
+      AngleSweep.createStartEndDegrees(-20, 20),
+      AngleSweep.createStartEndDegrees(0, 90),
+      AngleSweep.createStartEndDegrees(0, 180),
+    ]) {
+      const arc0 = Arc3d.createXY(Point3d.create(0, 0), 2.0, sweep);
+      if (arc0.sweep.isFullCircle) {
+        result.push(Loop.create(arc0));
+      } else {
+        const chord = LineSegment3d.create(arc0.endPoint(), arc0.startPoint());
+        result.push(Loop.create(arc0, chord));
+        result.push(Loop.create(arc0, LineString3d.create(arc0.endPoint(), center, arc0.startPoint())));
+      }
+
+    }
+    return result;
+  }
+
   /** Assorted loops in xy plane:
    * * unit square
    * * rectangle
@@ -825,17 +854,20 @@ export class Sample {
     result.push(Sample.createLShapedPolygon(0, 0, 5, 4, 1, 2));
     return result;
   }
-  /** Assorted `ParityReigon` objects */
+  /** Assorted `ParityRegion` objects */
   public static createSimpleParityRegions(): ParityRegion[] {
     const pointC = Point3d.create(-5, 0, 0);
     const point0 = Point3d.create(0, 0, 0);
     const point1 = Point3d.create(1, 2, 0);
     const point2 = Point3d.create(6, 4, 0);
+    const point3 = Point3d.create(1, 5, 0);
+    const point4 = Point3d.create(8, 3, 0);
     const ax = 10.0;
     const ay = 8.0;
     const bx = 3.0;
     const by = 2.0;
     const r2 = 0.5;
+    const r2A = 2.5;
     const result = [
       ParityRegion.create(
         Loop.create(
@@ -848,6 +880,16 @@ export class Sample {
         Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
         Loop.create(Arc3d.createXY(point2, r2))),
+      ParityRegion.create(
+        Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
+        Loop.create(Arc3d.createXY(point2, r2)),
+        Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
+      ParityRegion.create(
+        Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
+        Loop.create(Arc3d.create(point4, Vector3d.create(r2, 0), Vector3d.create(0, r2A))),
+        Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
     ];
     return result;
   }
@@ -855,9 +897,15 @@ export class Sample {
   public static createSimpleUnions(): UnionRegion[] {
     const parityRegions = Sample.createSimpleParityRegions();
     const loops = Sample.createSimpleLoops();
+    const ax = 3.0;
+    const ay = 1.0;
+    const bx = 4.0;
+    const by = 2.0;
     const result = [
       UnionRegion.create(loops[0], parityRegions[0]),
-    ];
+      UnionRegion.create(
+        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), ax, ay)),
+        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 2 * ay, 0), bx, by)))];
     return result;
   }
   /** Assorted unstructured curve sets. */
@@ -962,7 +1010,7 @@ export class Sample {
           mesh.addParamUV(i, j);
       }
     }
-    let color = 10; // arbitrrily start at color 10 so colorIndex is different from color.
+    let color = 10; // arbitrarily start at color 10 so colorIndex is different from color.
     // Push elements to index array (vertices are calculated using i and j positioning for each point)
     let thisColorIndex = 0;
     for (let j = 0; j + 1 < numYVertices; j++) {
@@ -1184,7 +1232,7 @@ export class Sample {
     return result;
   }
   /**
-   * Create an array of primitives with an arc centerd at origin and a line segment closing back to the arc start.
+   * Create an array of primitives with an arc centered at origin and a line segment closing back to the arc start.
    * This can be bundled into Path or Loop by caller.
    */
   public static createCappedArcPrimitives(radius: number, startDegrees: number, endDegrees: number): CurvePrimitive[] {
@@ -1424,13 +1472,13 @@ export class Sample {
   /**
    * For each edge of points, construct a transform (with scale, rotate, and translate) that spreads the patter out along the edge.
    * Repeat recursively for each edge
-   * @returns Returns an array of recusively generated fractal points
+   * @returns Returns an array of recursively generated fractal points
    * @param poles level-0 (coarse) polygon whose edges are to be replaced by recursive fractals
    * @param pattern pattern to map to each edge of poles (and to edges of the recursion)
    * @param numRecursion  number of recursions
    * @param perpendicularFactor factor to apply to perpendicular sizing.
    */
-  public static createRecursvieFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[] {
+  public static createRecursiveFractalPolygon(poles: Point3d[], pattern: Point2d[], numRecursion: number, perpendicularFactor: number): Point3d[] {
     const points: Point3d[] = [];
     Sample.pushIfDistinct(points, poles[0]);
     for (let i = 0; i + 1 < poles.length; i++) {
@@ -1457,11 +1505,11 @@ export class Sample {
       Point3d.create(0.6, 1, 0),
       Point3d.create(),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
 
   /** create a diamond with convex fractal */
-  public static createFractalDiamonConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
+  public static createFractalDiamondConvexPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
     const pattern: Point2d[] = [
       Point2d.create(),
       Point2d.create(0.3, 0.05),
@@ -1476,9 +1524,9 @@ export class Sample {
       Point3d.create(-1, 0, 0),
       Point3d.create(0, -1, 0),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
-  /** Create fracta on a sqaure, with pattern shfit to both directions. */
+  /** Create l on a square, with pattern shift to both directions. */
   public static createFractalSquareReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
     const pattern: Point2d[] = [
       Point2d.create(),
@@ -1494,7 +1542,7 @@ export class Sample {
       Point3d.create(0, 1, 0),
       Point3d.create(0, 0, 0),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
   /** Create a fractal on a non-convex base and reversing pattern */
   public static createFractalHatReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
@@ -1515,10 +1563,10 @@ export class Sample {
       Point3d.create(0, 1, 0),
       Point3d.create(0, 0, 0),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
   /** Create a fractal on a primary L shape with a reversing pattern */
-  public static createFractalLReversingPatterh(numRecursion: number, perpendicularFactor: number): Point3d[] {
+  public static createFractalLReversingPattern(numRecursion: number, perpendicularFactor: number): Point3d[] {
     const pattern: Point2d[] = [
       Point2d.create(),
       Point2d.create(0.25, 0),
@@ -1535,7 +1583,7 @@ export class Sample {
       Point3d.create(0, 3, 0),
       Point3d.create(),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
 
   /** Fractal with fewer concavity changes.... */
@@ -1556,7 +1604,7 @@ export class Sample {
       Point3d.create(0, 3, 0),
       Point3d.create(),
     ];
-    return Sample.createRecursvieFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
+    return Sample.createRecursiveFractalPolygon(poles, pattern, numRecursion, perpendicularFactor);
   }
   /** append interpolated points from the array tail to the target. */
   public static appendSplits(points: Point3d[], target: Point3d, numSplit: number, includeTarget: boolean) {
@@ -1619,10 +1667,10 @@ export class Sample {
     return geometry;
   }
   /** Assorted transition spirals
-   * * (All combinations of bearing radius bearing radius length subsests.)
+   * * (All combinations of bearing radius bearing radius length subsets.)
    */
   public static createSimpleTransitionSpirals(): TransitionSpiral3d[] {
-    // 5 spirals exercise the intricate "4 out of 5" input ruls for spirals . ..
+    // 5 spirals exercise the intricate "4 out of 5" input rules for spirals . ..
     const r1 = 1000.0;
     const r0 = 0.0;
     const averageCurvature = TransitionSpiral3d.averageCurvatureR0R1(r0, r1);
@@ -1707,21 +1755,21 @@ export class Sample {
     const result = [];
     // one singleton per basic curve type ...
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0)))));
+      Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0))))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(Arc3d.createCircularStartMiddleEnd(
-        Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0))!)));
+        Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0))!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(LineString3d.create(pointsA))));
+      Path.create(LineString3d.create(pointsA)))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!)));
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
-      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!)));
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(
         LineSegment3d.create(pointsA[0], pointsA[1]),
         Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
-        LineSegment3d.create(pointsA[3], pointsA[4]))));
+        LineSegment3d.create(pointsA[3], pointsA[4])))!);
     return result;
   }
   /**
@@ -1822,7 +1870,7 @@ export class Sample {
 
   /**
    * Create edges of a range box.
-   * * Linestrings on low and high z
+   * * Line strings on low and high z
    * * single lines on each low z to high z edge.
    * * @param range (possibly null) range
    */
@@ -1913,7 +1961,7 @@ export class Sample {
    * @param sweep start and end angles of sweep.
    * @param numRadialEdges number of edges from center to arc
    * @param numArcEdges number of edges along arc
-   * @param addCLosure true to repeat center as closure point
+   * @param addClosure true to repeat center as closure point
    */
   public static createCutPie(x0: number, y0: number, radius: number, sweep: AngleSweep, numRadialEdges: number, numArcEdges: number, addClosure = false): Point3d[] {
 
@@ -1941,7 +1989,7 @@ export class Sample {
    * * base polygon has vertices (0,0), (ax,0), (2*ax,0), (2* ax,ay), (ax,ay), (0,ay), (0,0).
    * * shift the x coordinates of vertices 1,4 by indicated amounts (0-based numbering)
    * * shift the y coordinates for points 1,2,3,4 by indicated amounts (in 0-based numbering)
-   * * This is useful for testing non-y-monootonic face situations.
+   * * This is useful for testing non-y-monotonic face situations.
    * * Return as points.
    * @param dy1
    * @param dy2
@@ -1977,7 +2025,7 @@ export class Sample {
     return segments;
   }
   /**
-   * Create a star by alternating radii (with equal anguar steps)
+   * Create a star by alternating radii (with equal angular steps)
    * @param r0 first point radius
    * @param r1 second point radius
    * @param numPoint number of points

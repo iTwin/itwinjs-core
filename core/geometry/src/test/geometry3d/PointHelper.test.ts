@@ -42,7 +42,7 @@ function equivalentCircleRadius(centroidData: Ray3d): number {
   return Math.sqrt(centroidData.a === undefined ? 0.0 : centroidData.a / Math.PI);
 }
 describe("FrameBuilder.HelloWorld", () => {
-  it("FrameBuilder.HellowWorld", () => {
+  it("FrameBuilder.HelloWorld", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
@@ -78,7 +78,7 @@ describe("FrameBuilder.HelloWorld", () => {
       builder.announcePoint(point2);
       ck.testUndefined(builder.getValidatedFrame(true), "frame in progress");
       const rFrame = builder.getValidatedFrame(false);
-      if (ck.testPointer(rFrame, "expect righ handed frame") && rFrame
+      if (ck.testPointer(rFrame, "expect right handed frame") && rFrame
         && ck.testBoolean(true, rFrame.matrix.isRigid(), "good frame")) {
         const inverse = rFrame.inverse();
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
@@ -141,7 +141,7 @@ describe("FrameBuilder.HelloWorld", () => {
 });
 
 describe("FrameBuilder.HelloWorldB", () => {
-  it("FrameBuilder.HellowWorld", () => {
+  it("FrameBuilder.HelloWorld", () => {
     const ck = new Checker();
 
     const nullRangeLocalToWorld = FrameBuilder.createLocalToWorldTransformInRange(Range3d.createNull(), AxisScaleSelect.Unit, 0, 0, 0, 2.0);
@@ -216,7 +216,7 @@ describe("MomentData.HelloWorld", () => {
     // Checker.noisy.momentData = true;
 
     // Test undefined/empty returns
-    const mData = MomentData.pointsToPrincipalAxes([]);
+    const mData = MomentData.pointsToPrincipalAxes([])!;
     ck.testTrue(mData.origin.isAlmostZero);
     const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0,
       1, 1, 1, 0,
@@ -255,7 +255,7 @@ describe("MomentData.HelloWorld", () => {
           options.minStrokesPerPrimitive = 16;
           arc.emitStrokes(ls, options);
           ls.popPoint(); // eliminate the closure point -- now the center really is the centroid
-          const moments = MomentData.pointsToPrincipalAxes(ls.points);
+          const moments = MomentData.pointsToPrincipalAxes(ls.points)!;
           if (Checker.noisy.momentData) {
             console.log("RawMoments Diagonal", moments.sums.diagonal().toJSON());
             console.log("origin", moments.localToWorldMap.origin);
@@ -275,6 +275,9 @@ describe("MomentData.HelloWorld", () => {
             "Radii for Symmetric points on ellipse scale as axis lengths");
           if (Geometry.isAlmostEqualNumber(radiusA, radiusB)) {
             ck.testCoordinate(radiusA, moments.radiusOfGyration.z, "Circle radius Of gyration is radius");
+            // extra call for debugger . . .
+            MomentData.pointsToPrincipalAxes(ls.points)!;
+
           }
         }
       }
@@ -392,8 +395,8 @@ describe("PolygonOps", () => {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
         const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
         const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
-        ck.testExactNumber(v, c0, "INOUT in point array");
-        ck.testExactNumber(v, c1, "INOUT in graph face");
+        ck.testExactNumber(v, c0, "in/out in point array");
+        ck.testExactNumber(v, c1, "in/out in graph face");
       }
       if (node0 === faceSeed)
         break;
@@ -408,7 +411,7 @@ describe("PolygonOps", () => {
    */
   it("GeneralInOut", () => {
     const ck = new Checker();
-    const points = Sample.createFractalDiamonConvexPattern(1, 0.34);
+    const points = Sample.createFractalDiamondConvexPattern(1, 0.34);
     const graph = new HalfEdgeGraph();
     const faceSeed = Triangulator.createFaceLoopFromCoordinates(graph, points, true, false)!;
     // NOTE -- do NOT test true mid edge points -- classifier is fragile on non-principal lines
@@ -421,8 +424,8 @@ describe("PolygonOps", () => {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
         const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
         const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
-        ck.testExactNumber(v, c0, "INOUT in point array");
-        ck.testExactNumber(v, c1, "INOUT in graph face");
+        ck.testExactNumber(v, c0, "in/out in point array");
+        ck.testExactNumber(v, c1, "in/out in graph face");
       }
       if (node0 === faceSeed)
         break;
@@ -465,7 +468,7 @@ describe("Point3dArray", () => {
 
   it("MiscArrayOps", () => {
     const ck = new Checker();
-    const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const pointsA = Sample.createFractalDiamondConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
@@ -508,15 +511,15 @@ describe("Point3dArray", () => {
 
   it("Point4dArray", () => {
     const ck = new Checker();
-    const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const pointsA = Sample.createFractalDiamondConvexPattern(1, -0.5);
     const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
       Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
     frame.multiplyPoint3dArrayInPlace(pointsA);
     const weights = [];
     const amplitude = 0.25;
-    const dtheta = 0.1;
+    const dTheta = 0.1;
     for (let i = 0; i < pointsA.length; i++)
-      weights.push(1.0 + amplitude * Math.cos(i * dtheta));
+      weights.push(1.0 + amplitude * Math.cos(i * dTheta));
     const xyzw = Point4dArray.packPointsAndWeightsToFloat64Array(pointsA, weights);
     ck.testExactNumber(4.0 * weights.length, xyzw.length, "Point4dArray.packToFloat64Array length");
     const point4dB = Point4dArray.unpackToPoint4dArray(xyzw);
@@ -642,8 +645,8 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3), Point3d.create(6, 2, 9), Point3d.create(6, 2, 0), Point3d.create(-4, 2, 8)]);
     const a = carrier.length;
-    // These methdos should return undefined if any index is bad.
-    // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any pariticular arg only has to be tested in one direction)
+    // These methods should return undefined if any index is bad.
+    // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any particular arg only has to be tested in one direction)
     ck.testUndefined(carrier.getPoint3dAtCheckedPointIndex(-1));
     ck.testUndefined(carrier.getPoint3dAtCheckedPointIndex(a));
     ck.testUndefined(carrier.getVector3dAtCheckedVectorIndex(-1));
@@ -672,7 +675,7 @@ describe("Point3dArray", () => {
 
   it("Point2dArray", () => {
     const ck = new Checker();
-    const pointsA = Sample.createFractalDiamonConvexPattern(1, -0.5);
+    const pointsA = Sample.createFractalDiamondConvexPattern(1, -0.5);
     const numA = pointsA.length;
     const numB = Point2dArray.pointCountExcludingTrailingWraparound(pointsA);
     ck.testExactNumber(0, Point2dArray.pointCountExcludingTrailingWraparound([]));
@@ -826,14 +829,14 @@ describe("PolygonAreas", () => {
     ];
     const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointA));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius (centroidA)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)));
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
     const a = 2.0;
     const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a))!;
     const pointB = scaleTransform.multiplyPoint3dArray(pointA);
     const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius (centroidB)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius(centroidB)));
     ck.testPoint3d(centroidA.origin, centroidB.origin, "origin is invariant after scale around origin");
     ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
     ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
@@ -843,7 +846,7 @@ describe("PolygonAreas", () => {
     const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
     const centroidC1 = centroidA.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointC));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius (centroidC)));
+    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius(centroidC)));
     ck.testPoint3d(centroidC.origin, centroidC1.origin);
     ck.testVector3d(centroidC.direction, centroidC1.direction);
     ck.testCoordinate((centroidA as any).a, (centroidC as any).a);

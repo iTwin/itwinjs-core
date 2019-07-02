@@ -9,27 +9,29 @@ import {
   BentleyError,
   ClientRequestContext,
   compareNumbers,
+  compareStrings,
+  compareBooleans,
   IModelStatus,
-  JsonUtils,
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
-  BackgroundMapType, BackgroundMapProps, GeoCoordStatus,
+  BackgroundMapSettings, BackgroundMapType, BackgroundMapProviderName, GeoCoordStatus,
 } from "@bentley/imodeljs-common";
-import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYAndZ, XYZProps } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile } from "./TileTree";
+import { Range3dProps, Range3d, Range1d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { TileLoader, TileTree } from "./TileTree";
+import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
-import { DecorateContext } from "../ViewContext";
+import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 import { GeoConverter } from "../GeoServices";
-import { TiledGraphicsProvider } from "../TiledGraphicsProvider";
+import { BingElevationProvider } from "./BingElevation";
 
 // this interface is implemented in two ways:
 // LinearTransformChildCreator is used when the range of the iModel is small, such as a building, when an approximation will work.
@@ -42,8 +44,9 @@ interface ChildCreator {
 // this is the simple version that is appropriate when the iModel covers a small area.
 class LinearTransformChildCreator implements ChildCreator {
   public mercatorToDb: Transform;
+  private _heightRange?: Range1d;
 
-  constructor(_iModel: IModelConnection, groundBias: number) {
+  constructor(private _iModel: IModelConnection, groundBias: number, private _heightProvider?: BingElevationProvider) {
     // calculate mercatorToDb.
     const ecefLocation: EcefLocation = _iModel.ecefLocation!;
     const dbToEcef = ecefLocation.getTransform();
@@ -64,7 +67,7 @@ class LinearTransformChildCreator implements ChildCreator {
   }
 
   // gets longitude in a number between 0 and 1, corresponding to the coordinate system of the tiles.
-  private longitudeToPixelFraction (longitude: number) {
+  private longitudeToPixelFraction(longitude: number) {
     return (longitude + Angle.piRadians) / Angle.pi2Radians;
   }
 
@@ -99,6 +102,8 @@ class LinearTransformChildCreator implements ChildCreator {
     const level = quadId.level + 1;
     const column = quadId.column * 2;
     const row = quadId.row * 2;
+    if (!this._heightRange && this._heightProvider)
+      this._heightRange = await this._heightProvider.getRange(this._iModel);
 
     const tileProps: WebMapTileProps[] = [];
     for (let i = 0; i < 2; i++) {
@@ -110,7 +115,7 @@ class LinearTransformChildCreator implements ChildCreator {
         this.mercatorToDb.multiplyPoint3dArrayInPlace(corners);
 
         const childId: string = level + "_" + (column + i) + "_" + (row + j);
-        tileProps.push(new WebMapTileProps(childId, level, corners));
+        tileProps.push(new WebMapTileProps(childId, level, corners, this._heightRange));
       }
     }
     return Promise.resolve(tileProps);
@@ -153,12 +158,14 @@ class GeoTransformChildCreator implements ChildCreator {
   // A deferred Promise dispatched once tile selection completes, resolving when all geocoord conversion is complete.
   private _promise?: Promise<void>;
 
-  constructor(_iModel: IModelConnection, groundBias: number) {
+  private _heightRange?: Range1d;
+
+  constructor(private _iModel: IModelConnection, groundBias: number, private _heightProvider?: BingElevationProvider) {
     this._converter = _iModel.geoServices.getConverter("WGS84");
     this._groundBias = groundBias;
 
     // a geographic transform doesn't work well outside a reasonable range, so use the linearChildCreator for the large-range tiles.
-    this._linearChildCreator = new LinearTransformChildCreator(_iModel, groundBias);
+    this._linearChildCreator = new LinearTransformChildCreator(_iModel, groundBias, this._heightProvider);
   }
 
   public async getChildren(parentQuad: QuadId): Promise<WebMapTileProps[]> {
@@ -216,7 +223,10 @@ class GeoTransformChildCreator implements ChildCreator {
         }
 
         const childId: string = level + "_" + (column + iCol) + "_" + (row + iRow);
-        tileProps.push(new WebMapTileProps(childId, level, corners));
+        if (this._heightProvider && !this._heightRange)
+          this._heightRange = await this._heightProvider.getRange(this._iModel);
+
+        tileProps.push(new WebMapTileProps(childId, level, corners, this._heightRange));
       }
     }
 
@@ -301,7 +311,7 @@ class WebMapTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public yAxisUp = true;
   public isBackgroundMap = true;
-  public maxTilesToSkip = 4;
+  public maxTilesToSkip = 10;
   public constructor(groundBias: number) {
     const corners: Point3d[] = [];
     corners[0] = new Point3d(-10000000, -10000000, groundBias);
@@ -319,30 +329,41 @@ class WebMapTileProps implements TileProps {
   public readonly range: Range3dProps;
   public readonly contentRange?: Range3dProps;  // not used for WebMap tiles.
   public readonly maximumSize: number;
-  public readonly sizeMultiplier: number = 1.0;
   public readonly isLeaf: boolean = false;
   public readonly corners: Point3d[];
 
-  constructor(thisId: string, level: number, corners: Point3d[]) {
+  constructor(thisId: string, level: number, corners: Point3d[], heightRange?: Range1d) {
     this.corners = corners;
-    this.range = Range3d.createArray(corners);
+
+    if (heightRange) {
+      const range = Range3d.createArray(corners);
+      range.low.z = heightRange.low;
+      range.high.z = heightRange.high;
+      this.range = range;
+    } else
+      this.range = Range3d.createArray(corners);
+
     this.contentId = thisId;
     this.maximumSize = (0 === level) ? 0.0 : 256;
   }
 }
 
 class WebMapTileLoader extends TileLoader {
-  private _providerInitializing?: Promise<void>;
-  private _providerInitialized: boolean = false;
   private _childTileCreator: ChildCreator;
+  private _heightProvider?: BingElevationProvider;
 
-  constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number, gcsConverterAvailable: boolean) {
+  public get imageryProvider(): ImageryProvider {
+    return this._imageryProvider;
+  }
+
+  constructor(private _imageryProvider: ImageryProvider, private _iModel: IModelConnection, groundBias: number, gcsConverterAvailable: boolean, applyTerrain: boolean) {
     super();
     const useLinearTransform: boolean = !gcsConverterAvailable || WebMapTileLoader.selectLinearChildCreator(_iModel);
+    this._heightProvider = applyTerrain ? new BingElevationProvider() : undefined;
     if (useLinearTransform) {
-      this._childTileCreator = new LinearTransformChildCreator(_iModel, groundBias);
+      this._childTileCreator = new LinearTransformChildCreator(_iModel, groundBias, this._heightProvider);
     } else {
-      this._childTileCreator = new GeoTransformChildCreator(_iModel, groundBias);
+      this._childTileCreator = new GeoTransformChildCreator(_iModel, groundBias, this._heightProvider);
     }
   }
 
@@ -360,16 +381,7 @@ class WebMapTileLoader extends TileLoader {
     return this._childTileCreator.getChildren(quadId);
   }
 
-  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
-    if (!this._providerInitialized) {
-      if (undefined === this._providerInitializing)
-        this._providerInitializing = this._imageryProvider.initialize();
-
-      await this._providerInitializing;
-      this._providerInitialized = true;
-      this._providerInitializing = undefined;
-    }
-
+  public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
     const quadId = new QuadId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
@@ -382,9 +394,15 @@ class WebMapTileLoader extends TileLoader {
     const content: Tile.Content = {};
     const system = IModelApp.renderSystem;
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
-    if (undefined !== texture) {
-      // we put the corners property on WebMapTiles
-      const corners = (tile as any).corners;
+    if (undefined === texture)
+      return content;
+
+    // we put the corners property on WebMapTiles
+    const corners = (tile as any).corners;
+    if (undefined !== this._heightProvider) {
+      const quadId = new QuadId(tile.contentId);
+      content.graphic = await this._heightProvider.getGraphic(quadId.getLatLongRange(), corners, texture, system);
+    } else {
       content.graphic = system.createTile(texture, corners);
     }
 
@@ -402,7 +420,7 @@ class WebMapTileLoader extends TileLoader {
     }
   }
 
-  public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
+  public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
   public get parentsAndChildrenExclusive(): boolean { return false; }
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Background; }
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
@@ -423,22 +441,19 @@ class WebMapTileLoader extends TileLoader {
 }
 
 /** @internal */
+
+/** @internal */
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 export abstract class ImageryProvider {
-  public mapType: BackgroundMapType;
   protected _requestContext = new ClientRequestContext("");
-
-  constructor(mapType: BackgroundMapType) {
-    this.mapType = mapType;
-  }
 
   public abstract get tileWidth(): number;
   public abstract get tileHeight(): number;
   public abstract get minimumZoomLevel(): number;
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
-  public abstract getCopyrightMessage(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport): HTMLElement | undefined;
-  public abstract getCopyrightImage(tileProvider: BaseTiledMapProvider): HTMLImageElement | undefined;
+  public abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
+  public abstract getCopyrightImage(tileProvider: MapTileTreeReference): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -450,11 +465,7 @@ export abstract class ImageryProvider {
 
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    let tileUrl: string = this.constructUrl(row, column, zoomLevel);
-
-    if (!tileUrl.includes("https"))
-      tileUrl = tileUrl.replace("http", "https");
-
+    const tileUrl: string = this.constructUrl(row, column, zoomLevel);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
       const tileResponse: Response = await request(this._requestContext, tileUrl, tileRequestOptions);
@@ -481,11 +492,39 @@ export abstract class ImageryProvider {
       return undefined;
     }
   }
+
+  public decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void {
+    const copyrightImage = this.getCopyrightImage(tileProvider);
+    if (copyrightImage && 0 !== copyrightImage.naturalWidth && 0 !== copyrightImage.naturalHeight) {
+      const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
+      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+        ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
+      };
+      context.addCanvasDecoration({ position, drawDecoration });
+    }
+
+    const copyrightMessage = this.getCopyrightMessage(tileProvider, context.screenViewport);
+    if (copyrightMessage) {
+      const decorationDiv = context.decorationDiv;
+      decorationDiv.appendChild(copyrightMessage);
+      const boundingRect = copyrightMessage.getBoundingClientRect();
+      const style = copyrightMessage.style;
+      style.display = "block";
+      style.position = "absolute";
+      style.left = (decorationDiv.clientWidth - (boundingRect.width + 15)) + "px";
+      style.top = (decorationDiv.clientHeight - (boundingRect.height + 5)) + "px";
+      style.color = "silver";
+      style.backgroundColor = "transparent";
+      style.pointerEvents = "initial";
+      style.zIndex = "50";
+    }
+  }
 }
 
-/** @internal */
-// this class provides a method for converting the tile row, column, and zoom level to the EPSG3857 cartesian coordinates that some
-// tile servers require. The getEPSG3857Extent method is usually used in the constructUrl method.
+/** this class provides a method for converting the tile row, column, and zoom level to the EPSG3857 cartesian coordinates that some
+ * tile servers require. The getEPSG3857Extent method is usually used in the constructUrl method.
+ * @internal
+ */
 export abstract class ImageryProviderEPSG3857 extends ImageryProvider {
 
   // calculates the projected x cartesian coordinate in EPSG:3857from the longitude in EPSG:4326 (WGS84)
@@ -522,10 +561,6 @@ export abstract class ImageryProviderEPSG3857 extends ImageryProvider {
     return { left, right, bottom, top };
   }
 }
-
-// ------------------------------------------------------------------------------
-// Classes for the Bing Imagery Provider
-// ------------------------------------------------------------------------------
 
 // Represents one range of geography and tile zoom levels for a bing data provider
 class Coverage {
@@ -569,6 +604,12 @@ class BingAttribution {
   }
 }
 
+// in deployed applications, we can only make https requests, but the Bing Maps metadata request returns templates with "http:".
+// This function fixes those.
+function replaceHttpWithHttps(originalUrl: string) {
+  return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
+}
+
 // Our ImageryProvider for Bing Maps.
 class BingImageryProvider extends ImageryProvider {
   private _urlTemplate?: string;
@@ -581,9 +622,11 @@ class BingImageryProvider extends ImageryProvider {
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
   private _logoImage?: HTMLImageElement;
+  public readonly mapType: BackgroundMapType;
 
   constructor(mapType: BackgroundMapType) {
-    super(mapType);
+    super();
+    this.mapType = mapType;
     this._zoomMin = this._zoomMax = 0;
     this._tileHeight = this._tileWidth = 0;
   }
@@ -648,9 +691,10 @@ class BingImageryProvider extends ImageryProvider {
     return matchingAttributions;
   }
 
-  private showAttributions(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport) {
+  private showAttributions(tileProvider: MapTileTreeReference, viewport: ScreenViewport, event: MouseEvent) {
     // our "this" is the BingImageryProvider for which we want to show the data provider attribution.
     // We need to get the tiles that are used in the view.
+    event.stopPropagation();
     const tiles: Tile[] = tileProvider.getTilesForView(viewport);
     const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
     let dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
@@ -660,12 +704,18 @@ class BingImageryProvider extends ImageryProvider {
     IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
   }
 
-  public getCopyrightImage(_tileProvider: BaseTiledMapProvider): HTMLImageElement | undefined { return this._logoImage; }
+  public getCopyrightImage(_tileProvider: MapTileTreeReference): HTMLImageElement | undefined { return this._logoImage; }
 
-  public getCopyrightMessage(tileProvider: BaseTiledMapProvider, viewport: ScreenViewport): HTMLElement | undefined {
+  public getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
     copyrightElement.className = "bgmap-copyright";
     copyrightElement.onclick = this.showAttributions.bind(this, tileProvider, viewport);
+    // stop propagation of all mouse related events so they don't go through to the view.
+    copyrightElement.onmousemove = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseenter = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseout = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmousedown = (event: MouseEvent) => { event.stopPropagation(); };
+    copyrightElement.onmouseup = (event: MouseEvent) => { event.stopPropagation(); };
     copyrightElement.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
     copyrightElement.style.textDecoration = "underline";
     copyrightElement.style.cursor = "pointer";
@@ -703,10 +753,11 @@ class BingImageryProvider extends ImageryProvider {
     const requestOptions: RequestOptions = {
       method: "GET",
     };
+
     try {
       const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
-      this._logoUrl = bingResponseProps.brandLogoUri;
+      this._logoUrl = replaceHttpWithHttps(bingResponseProps.brandLogoUri);
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];
       const thisResourceProps = thisResourceSetProps.resources[0];
@@ -714,7 +765,7 @@ class BingImageryProvider extends ImageryProvider {
       this._zoomMax = thisResourceProps.zoomMax;
       this._tileHeight = thisResourceProps.imageHeight;
       this._tileWidth = thisResourceProps.imageWidth;
-      this._urlTemplate = thisResourceProps.imageUrl.replace("{culture}", "en-US"); // NEEDSWORK - get locale from somewhere.
+      this._urlTemplate = replaceHttpWithHttps(thisResourceProps.imageUrl.replace("{culture}", "en-US")); // NEEDSWORK - get locale from somewhere.
       this._urlSubdomains = thisResourceProps.imageUrlSubdomains;
       // read the list of Bing's data suppliers and the range of data they provide. Used in calculation of copyright message.
       this.readAttributions(thisResourceProps.imageryProviders);
@@ -722,8 +773,6 @@ class BingImageryProvider extends ImageryProvider {
       // read the Bing logo data, used in getCopyrightImage
       if (undefined !== this._logoUrl && 0 < this._logoUrl.length) {
         this._logoImage = new Image();
-        if (!this._logoUrl.includes("https"))
-          this._logoUrl = this._logoUrl.replace("http", "https");
         this._logoImage.src = this._logoUrl;
       }
 
@@ -757,16 +806,13 @@ class BingImageryProvider extends ImageryProvider {
   }
 }
 
-// ------------------------------------------------------------------------------
-// Classes for the Mapbox Imagery Provider
-// ------------------------------------------------------------------------------
 class MapBoxImageryProvider extends ImageryProvider {
   private _zoomMin: number;
   private _zoomMax: number;
   private _baseUrl: string;
 
   constructor(mapType: BackgroundMapType) {
-    super(mapType);
+    super();
     this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
       case BackgroundMapType.Street:
@@ -803,9 +849,9 @@ class MapBoxImageryProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(_tileProvider: BaseTiledMapProvider): HTMLImageElement | undefined { return undefined; }
+  public getCopyrightImage(_tileProvider: MapTileTreeReference): HTMLImageElement | undefined { return undefined; }
 
-  public getCopyrightMessage(_tileProvider: BackgroundMapProvider, _viewport: ScreenViewport): HTMLElement | undefined {
+  public getCopyrightMessage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");
     copyrightElement.innerText = IModelApp.i18n.translate("IModelJs:BackgroundMap.MapBoxCopyright");
     copyrightElement.className = "bgmap-copyright";
@@ -816,172 +862,206 @@ class MapBoxImageryProvider extends ImageryProvider {
   public async initialize(): Promise<void> { }
 }
 
-const enum GcsConverterStatus { Uninitialized, Pending, NotAvailable, Available }
-
 /** Methods and properties common to both BackgroundMapProviders and OverlayMapProviders
  * @internal
  */
-export class BaseTiledMapProvider {
-  protected _iModel: IModelConnection;
-  protected _tileTree?: TileTree;
-  protected _imageryProvider?: ImageryProvider;
-  protected _groundBias: number;
-  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  private _gcsConverterStatus: GcsConverterStatus = GcsConverterStatus.Uninitialized;
+interface BackgroundMapTreeId {
+  providerName: BackgroundMapProviderName;
+  mapType: BackgroundMapType;
+  groundBias: number;
+  applyTerrain: boolean;
+}
 
-  constructor(iModel: IModelConnection, groundBias: number) {
-    this._groundBias = groundBias;
-    this._iModel = iModel;
-  }
-
-  public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this._tileTree = new TileTree(TileTree.paramsFromJSON(props, this._iModel, true, loader, ""));
-    this._loadStatus = TileTree.LoadStatus.Loaded;
-  }
-
-  public getPlane(): Plane3dByOriginAndUnitNormal {
-    return Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0.0, 0.0, this._groundBias));  // TBD.... use this.groundBias when clone problem is sorted for Point3d
-  }
-
-  public getTilesForView(viewport: ScreenViewport): Tile[] {
-    let displayTiles: Tile[] = [];
-    if (this._tileTree) {
-      const sceneContext = viewport.createSceneContext();
-      sceneContext.extendedFrustumPlane = this.getPlane();
-      displayTiles = this._tileTree.selectTilesForScene(sceneContext);
-    }
-    return displayTiles;
-  }
-
-  private testGcsConverter() {
-    this._gcsConverterStatus = GcsConverterStatus.Pending;
-    const converter = this._iModel.geoServices.getConverter("WGS84");
-    const requestProps = new Array<XYZProps>(1);
-    requestProps[0] = { x: 0, y: 0, z: 0 };
-    converter.getIModelCoordinatesFromGeoCoordinates(requestProps).then((responseProps) => {
-      this._gcsConverterStatus = (responseProps.iModelCoords.length !== 1 || responseProps.iModelCoords[0].s === GeoCoordStatus.NoGCSDefined) ? GcsConverterStatus.NotAvailable : GcsConverterStatus.Available;
-      IModelApp.viewManager.onNewTilesReady();
-    }).catch((_) => {
-      this._gcsConverterStatus = GcsConverterStatus.NotAvailable;
-      IModelApp.viewManager.onNewTilesReady();
-    });
-  }
-
-  protected loadTileTree(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded !== this._loadStatus)
-      return this._loadStatus;
-
-    if (this._iModel.ecefLocation === undefined) {
-      return this._loadStatus;
-    }
-    if (GcsConverterStatus.Uninitialized === this._gcsConverterStatus)
-      this.testGcsConverter();
-
-    if (GcsConverterStatus.Pending === this._gcsConverterStatus)
-      return this._loadStatus;
-
-    const loader = new WebMapTileLoader(this._imageryProvider!, this._iModel, this._groundBias, this._gcsConverterStatus === GcsConverterStatus.Available);
-    const tileTreeProps = new WebMapTileTreeProps(this._groundBias);
-    this.setTileTree(tileTreeProps, loader);
-    return this._loadStatus;
-  }
-
-  public decorate(context: DecorateContext) {
-    if (!this._imageryProvider)
-      return;
-
-    const copyrightImage = this._imageryProvider.getCopyrightImage(this);
-    if (copyrightImage && 0 !== copyrightImage.naturalWidth && 0 !== copyrightImage.naturalHeight) {
-      const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
-      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-        ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
-      };
-      context.addCanvasDecoration({ position, drawDecoration });
+class BackgroundMapTreeSupplier implements TileTree.Supplier {
+  public compareTileTreeIds(lhs: BackgroundMapTreeId, rhs: BackgroundMapTreeId): number {
+    let cmp = compareStrings(lhs.providerName, rhs.providerName);
+    if (0 === cmp) {
+      cmp = compareNumbers(lhs.mapType, rhs.mapType);
+      if (0 === cmp) {
+        cmp = compareNumbers(lhs.groundBias, rhs.groundBias);
+        if (0 === cmp)
+          cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
+      }
     }
 
-    const copyrightMessage = this._imageryProvider.getCopyrightMessage(this, context.screenViewport);
-    if (copyrightMessage) {
-      const decorationDiv = context.decorationDiv;
-      decorationDiv.appendChild(copyrightMessage);
-      const boundingRect = copyrightMessage.getBoundingClientRect();
-      const style = copyrightMessage.style;
-      style.display = "block";
-      style.position = "absolute";
-      style.left = (decorationDiv.clientWidth - (boundingRect.width + 15)) + "px";
-      style.top = (decorationDiv.clientHeight - (boundingRect.height + 5)) + "px";
-      style.color = "silver";
-      style.backgroundColor = "transparent";
-      style.pointerEvents = "initial";
+    return cmp;
+  }
+
+  public async createTileTree(id: BackgroundMapTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    // ###TODO: Doesn't seem like each tile tree should need its own imagery provider instance...
+    let imageryProvider;
+    switch (id.providerName) {
+      case "BingProvider":
+        imageryProvider = new BingImageryProvider(id.mapType);
+        break;
+      case "MapBoxProvider":
+        imageryProvider = new MapBoxImageryProvider(id.mapType);
+        break;
     }
+
+    if (undefined === imageryProvider)
+      return undefined;
+
+    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.applyTerrain, iModel);
   }
 }
 
-/** This class is the specialization of BasedTiledMapProvider used for Background Maps. In that case, the ImageryProvider is constructed
- * internally using the BackgroundMapProps persisted to the iModel.
- * @internal
- */
-export class BackgroundMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
-  public providerName: string;
-  public mapType: BackgroundMapType;
+const backgroundMapTreeSupplier = new BackgroundMapTreeSupplier();
 
-  // constructs the BackgroundMapProvider from the props persisted in the iModel.
-  public constructor(json: BackgroundMapProps, iModel: IModelConnection) {
-    super(iModel, JsonUtils.asDouble(json.groundBias, 0.0));
-    this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
-    this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
+/** Better if folks implement their own TileTree.Supplier which can share tiles... */
+class ImageryTreeSupplier implements TileTree.Supplier {
+  public readonly provider: ImageryProvider;
 
-    // JSON may specify MapType.None (0) which is not defined in enum and is not meaningful.
-    // (May also specify any other arbitrary meaningless integer value).
-    // If so, use default
-    switch (this.mapType) {
-      case BackgroundMapType.Street:
-      case BackgroundMapType.Aerial:
-      case BackgroundMapType.Hybrid:
-        break;
-      default:
-        this.mapType = BackgroundMapType.Hybrid;
-        break;
-    }
-
-    // get the map provider.
-    if ("BingProvider" === this.providerName) {
-      this._imageryProvider = new BingImageryProvider(this.mapType);
-    } else if ("MapBoxProvider" === this.providerName) {
-      this._imageryProvider = new MapBoxImageryProvider(this.mapType);
-    }
-    if (this._imageryProvider === undefined)
-      throw new BentleyError(IModelStatus.BadModel, "WebMap provider invalid");
+  public constructor(provider: ImageryProvider) {
+    this.provider = provider;
   }
 
-  public getTileTree(viewport: Viewport): TiledGraphicsProvider.Tree | undefined {
-    if (!viewport.viewFlags.backgroundMap || undefined === viewport.displayStyle.backgroundMapPlane)
-      return undefined;
+  public compareTileTreeIds(lhs: number, rhs: number) { return compareNumbers(lhs, rhs); }
 
-    this.loadTileTree();
-    return (undefined === this._tileTree) ? undefined : { tileTree: this._tileTree, plane: this.getPlane() };
-  }
-
-  public equalsProps(props: BackgroundMapProps): boolean {
-    const providerName = JsonUtils.asString(props.providerName, "BingProvider");
-    const groundBias = JsonUtils.asDouble(props.groundBias, 0.0);
-    const mapType = undefined !== props.providerData ? JsonUtils.asInt(props.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
-
-    return providerName === this.providerName && groundBias === this._groundBias && mapType === this.mapType;
+  public async createTileTree(groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined> {
+    return createTileTreeFromImageryProvider(this.provider, groundBias, false, iModel);
   }
 }
 
 /** @internal */
-// this class is the specialization of BasedTiledMapProvider used for Overlay layers. In this case the
-// creator of the Overlay must specify the ImageryProvider.
-export class OverlayMapProvider extends BaseTiledMapProvider implements TiledGraphicsProvider.Provider {
+// Represents the service that is providing map tiles for Web Mercator models (background maps).
+export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise<TileTree | undefined> {
+  if (undefined === iModel.ecefLocation)
+    return undefined;
 
-  public constructor(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection) {
-    super(iModel, groundBias);
-    this._imageryProvider = imageryProvider;
+  await imageryProvider.initialize();
+
+  // Determine if we have a usable GCS.
+  const converter = iModel.geoServices.getConverter("WGS84");
+  const requestProps: XYZProps[] = [{ x: 0, y: 0, z: 0 }];
+  let haveConverter;
+  try {
+    const responseProps = await converter.getIModelCoordinatesFromGeoCoordinates(requestProps);
+    haveConverter = responseProps.iModelCoords.length === 1 && responseProps.iModelCoords[0].s !== GeoCoordStatus.NoGCSDefined;
+  } catch (_) {
+    haveConverter = false;
   }
 
-  public getTileTree(_viewport: Viewport): TiledGraphicsProvider.Tree | undefined {
-    this.loadTileTree();
-    return (undefined === this._tileTree) ? undefined : { tileTree: this._tileTree, plane: this.getPlane() };
+  const loader = new WebMapTileLoader(imageryProvider, iModel, groundBias, haveConverter, applyTerrain);
+  const tileTreeProps = new WebMapTileTreeProps(groundBias);
+  return new TileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, ""));
+}
+
+/** A reference to a TileTree used for drawing tiled map graphics into a Viewport.
+ * @internal
+ */
+export abstract class MapTileTreeReference extends TileTree.Reference {
+  private _plane?: {
+    plane: Plane3dByOriginAndUnitNormal,
+    height: number,
+  };
+
+  protected abstract get _groundBias(): number;
+  protected abstract get _graphicType(): TileTree.GraphicType;
+  protected abstract get _imageryProvider(): ImageryProvider | undefined;
+
+  public get plane(): Plane3dByOriginAndUnitNormal {
+    const height = this._groundBias;
+    if (undefined === this._plane || this._plane.height !== height)
+      this._plane = { height, plane: Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, height)) };
+
+    return this._plane.plane;
   }
+
+  /** Map tiles do not contribute to the range used by "fit view". */
+  public unionFitRange(_range: Range3d): void { }
+
+  /** Select the tiles that would be displayed in the viewport. */
+  public getTilesForView(viewport: Viewport): Tile[] {
+    let tiles: Tile[] = [];
+    const tree = this.treeOwner.tileTree;
+    if (undefined !== tree) {
+      const sceneContext = viewport.createSceneContext();
+      sceneContext.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tiles = tree.selectTilesForScene(sceneContext));
+    }
+
+    return tiles;
+  }
+
+  /** Add copyright info to the viewport. */
+  public decorate(context: DecorateContext): void {
+    const provider = this._imageryProvider;
+    if (undefined !== provider)
+      provider.decorate(context, this);
+  }
+
+  /** Draw the tiles into the viewport. */
+  public addToScene(context: SceneContext): void {
+    const tree = this.treeOwner.load();
+    if (undefined !== tree)
+      context.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tree.drawScene(context));
+  }
+}
+
+/** A reference to a TileTree used for drawing a background map. To change the type of tiles drawn simply modify the `settings` property.
+ * @internal
+ */
+export class BackgroundMapTileTreeReference extends MapTileTreeReference {
+  public settings: BackgroundMapSettings;
+  private readonly _iModel: IModelConnection;
+  private readonly _forDrape: boolean;
+
+  public constructor(settings: BackgroundMapSettings, iModel: IModelConnection, forDrape = false) {
+    super();
+    this.settings = settings;
+    this._iModel = iModel;
+    this._forDrape = forDrape;
+  }
+
+  public get treeOwner(): TileTree.Owner {
+    const id = {
+      providerName: this.settings.providerName,
+      mapType: this.settings.mapType,
+      groundBias: this.settings.groundBias,
+      applyTerrain: !this._forDrape && this.settings.applyTerrain,
+    };
+
+    return this._iModel.tiles.getTileTreeOwner(id, backgroundMapTreeSupplier);
+  }
+
+  protected get _groundBias() { return this.settings.groundBias; }
+  protected get _graphicType() { return TileTree.GraphicType.BackgroundMap; }
+  protected get _imageryProvider(): ImageryProvider | undefined {
+    const tree = this.treeOwner.tileTree;
+    return undefined !== tree ? (tree.loader as WebMapTileLoader).imageryProvider : undefined;
+  }
+}
+
+/** A specialization of MapTileTreeReference associated with a specific ImageryProvider. Provided mostly as a convenience.
+ * The ImageryProvider, graphic type, and/or ground bias can be changed to cause different tiles to be displayed.
+ * @internal
+ */
+export class MapImageryTileTreeReference extends MapTileTreeReference {
+  public groundBias: number;
+  public applyTerrain: boolean;
+  public provider: ImageryProvider;
+  public graphicType: TileTree.GraphicType;
+  protected readonly _iModel: IModelConnection;
+  private _supplier: ImageryTreeSupplier;
+
+  public constructor(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection, graphicType: TileTree.GraphicType = TileTree.GraphicType.Overlay) {
+    super();
+    this.groundBias = groundBias;
+    this.applyTerrain = applyTerrain;
+    this.provider = imageryProvider;
+    this.graphicType = graphicType;
+    this._iModel = iModel;
+    this._supplier = new ImageryTreeSupplier(imageryProvider);
+  }
+
+  public get treeOwner(): TileTree.Owner {
+    if (this.provider !== this._supplier.provider)
+      this._supplier = new ImageryTreeSupplier(this.provider);
+
+    return this._iModel.tiles.getTileTreeOwner(this.groundBias, this._supplier);
+  }
+
+  protected get _groundBias() { return this.groundBias; }
+  protected get _graphicType() { return this.graphicType; }
+  protected get _imageryProvider() { return this.provider; }
 }

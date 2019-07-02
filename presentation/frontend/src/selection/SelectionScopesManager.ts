@@ -6,7 +6,7 @@
 
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, SelectionScope, RpcRequestsHandler } from "@bentley/presentation-common";
+import { KeySet, SelectionScope, RpcRequestsHandler, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].
@@ -73,7 +73,7 @@ export class SelectionScopesManager {
 
     // compute selection in batches to avoid HTTP 413
     const keys = new KeySet();
-    const batchSize = 10000;
+    const batchSize = DEFAULT_KEYS_BATCH_SIZE;
     const batchesCount = Math.ceil(ids.length / batchSize);
     const batchKeyPromises = [];
     for (let batchIndex = 0; batchIndex < batchesCount; ++batchIndex) {

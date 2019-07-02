@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { DbOpcode, Id64, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
@@ -57,12 +57,36 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
-  public static onInsert(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_id: string): void { }
-  public static onUpdate(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
-  public static onUpdated(_props: ModelProps): void { }
-  public static onDelete(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
-  public static onDeleted(_props: ModelProps): void { }
+  /** Called before a new model is inserted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onInsert(_props: ModelProps): void { }
+  /** Called after a new model is inserted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onInserted(_id: string): void { }
+  /** Called before a model is updated.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onUpdate(_props: ModelProps): void { }
+  /** Called after a model is updated.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onUpdated(_props: ModelProps): void { }
+  /** Called before a model is deleted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onDelete(_props: ModelProps): void { }
+  /** Called after a model is deleted.
+   * @throws [[IModelError]] if there is a problem
+   * @beta
+   */
+  protected static onDeleted(_props: ModelProps): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 

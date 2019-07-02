@@ -10,7 +10,9 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 import TestUtils from "../TestUtils";
-import { ViewSelector, ViewUtilities } from "../../ui-framework";
+import { ViewSelector } from "../../ui-framework";
+
+// cSpell:ignore Spatials
 
 describe("ViewSelector", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -27,20 +29,26 @@ describe("ViewSelector", () => {
     wrapper.unmount();
   });
 
-  it("should recognize spatial view", () => {
-    expect(ViewUtilities.isSpatial("SpatialViewDefinition")).to.be.true;
-    expect(ViewUtilities.isSpatial("OrthographicViewDefinition")).to.be.true;
-    expect(ViewUtilities.isSpatial("")).to.be.false;
-  });
+  it("should set Show settings by ViewSelector.updateShowSettings", () => {
+    const wrapper = enzyme.mount(
+      <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />,
+    );
 
-  it("should recognize drawing view", () => {
-    expect(ViewUtilities.isDrawing("DrawingViewDefinition")).to.be.true;
-    expect(ViewUtilities.isDrawing("")).to.be.false;
-  });
+    const vs = wrapper.find(ViewSelector);
+    expect(vs).to.not.be.undefined;
 
-  it("should recognize sheet view", () => {
-    expect(ViewUtilities.isSheet("SheetViewDefinition")).to.be.true;
-    expect(ViewUtilities.isSheet("")).to.be.false;
+    expect(vs.state("showSpatials")).to.be.true;
+    expect(vs.state("showDrawings")).to.be.true;
+    expect(vs.state("showSheets")).to.be.true;
+    expect(vs.state("showUnknown")).to.be.true;
+
+    ViewSelector.updateShowSettings(false, false, false, false);
+
+    expect(vs.state("showSpatials")).to.be.false;
+    expect(vs.state("showDrawings")).to.be.false;
+    expect(vs.state("showSheets")).to.be.false;
+    expect(vs.state("showUnknown")).to.be.false;
+    wrapper.unmount();
   });
 
 });

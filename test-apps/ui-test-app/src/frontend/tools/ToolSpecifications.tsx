@@ -230,7 +230,12 @@ export class AppTools {
     });
   }
 
-  private static _detailedMessage = "This is a detailed message with a line<br>break and <b>bold</b>, <i>italic</i> and <span class='red-text'>red</span> text.";
+  private static get _detailedMessage(): HTMLElement {
+    const fragment = document.createRange().createContextualFragment("This is a detailed message with a line<br>break and <b>bold</b>, <i>italic</i> and <span class='red-text'>red</span> text.");
+    const span = document.createElement("span");
+    span.appendChild(fragment);
+    return span;
+  }
 
   public static get infoMessageCommand() {
     return new CommandItemDef({
@@ -250,12 +255,20 @@ export class AppTools {
     });
   }
 
-  private static _longMessage =
-    "<ol>" +
-    "<li>" + AppTools._detailedMessage + "</li>" +
-    "<li>" + AppTools._detailedMessage + "</li>" +
-    "</ol>" +
-    "For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>";
+  private static get _longMessage(): HTMLElement {
+    const div = document.createElement("div");
+    const ol = document.createElement("ol");
+    let li = document.createElement("li");
+    li.appendChild(AppTools._detailedMessage);
+    ol.appendChild(li);
+    li = document.createElement("li");
+    li.appendChild(AppTools._detailedMessage);
+    ol.appendChild(li);
+    div.appendChild(ol);
+    const fragment = document.createRange().createContextualFragment("For more details, <a href='https://www.google.com/' target='_blank'>Google it!</a>");
+    div.appendChild(fragment);
+    return div;
+  }
 
   public static get errorMessageCommand() {
     return new CommandItemDef({
@@ -294,7 +307,10 @@ export class AppTools {
     });
   }
 
-  private static _detailMsg = "This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation. <br />For more info, <a href='http://www.google.com' target='_blank'>Google it!</a>";
+  private static get _detailMsg() {
+    const doc = new DOMParser().parseFromString("<span>This is a description of the alert with lots and lots of words that explains what the user did & what they can do to remedy the situation. <br />For more info, <a href='http://www.google.com' target='_blank'>Google it!</a><span>", "text/html");
+    return doc.documentElement;
+  }
   public static get warningMessageStickyCommand() {
     return new CommandItemDef({
       commandId: "warningMessage",
@@ -369,6 +385,11 @@ export class AppTools {
   }
 
   public static get openMessageBoxCommand() {
+    const textNode = document.createTextNode("This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.");
+    const message = document.createElement("div");
+    message.appendChild(textNode);
+    message.appendChild(this._longMessage);
+
     return new CommandItemDef({
       commandId: "openMessageBox",
       iconSpec: "icon-info",
@@ -376,7 +397,7 @@ export class AppTools {
       execute: () => {
         // tslint:disable-next-line:no-floating-promises
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok,
-          "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result." + this._longMessage,
+          message,
           MessageBoxIconType.Information)
           .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },
@@ -384,13 +405,18 @@ export class AppTools {
   }
 
   public static get openMessageBoxCommand2() {
+    const textNode = document.createTextNode("This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.");
+    const message = document.createElement("div");
+    message.appendChild(textNode);
+    message.appendChild(this._longMessage);
+
     return new CommandItemDef({
       commandId: "openMessageBox2",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: async () => {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
-          "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result." + this._longMessage,
+          message,
           MessageBoxIconType.Warning);
         window.alert("Closing message box ... value is " + value);
       },

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, BeTimePoint, AbandonedError, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -19,8 +19,12 @@ import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings } from "./Tool";
+import {
+  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled,
+  InputCollector, InputSource, InteractiveTool, Tool, CoordinateLockOverrides, ToolSettings,
+} from "./Tool";
 import { ViewTool } from "./ViewTool";
+import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
 /** @public */
 export enum StartOrResume { Start = 1, Resume = 2 }
@@ -30,59 +34,38 @@ export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend =
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
 
-/** Class that assists in maintaining the state of tool settings properties for the current session
- *  @internal
+/** Class that maintains the state of tool settings properties for the current session
+ * @internal
  */
 export class ToolSettingsState {
-
-  /** Initialize single tool settings value
-   * @internal
-   */
+  /** Initialize single tool settings value */
   public initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
-    if (item) {
-      const key = `${toolId}:${item.propertyName}`;
-      const savedValue = window.sessionStorage.getItem(key);
-      if (savedValue) {
-        const readValue = JSON.parse(savedValue) as ToolSettingsValue;
-        // set the primitive value to the saved value - note: tool settings only support primitive values.
-        item.value.value = readValue.value;
-        if (readValue.hasDisplayValue)
-          item.value.displayValue = readValue.displayValue;
-      }
+    const key = `${toolId}:${item.propertyName}`;
+    const savedValue = window.sessionStorage.getItem(key);
+    if (null !== savedValue) {
+      const readValue = JSON.parse(savedValue) as ToolSettingsValue;
+      // set the primitive value to the saved value - note: tool settings only support primitive values.
+      item.value.value = readValue.value;
+      if (readValue.hasDisplayValue)
+        item.value.displayValue = readValue.displayValue;
     }
   }
 
-  /** Initialize an array of tool settings values
-   *  @internal
-   */
+  /** Initialize an array of tool settings values */
   public initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    if (tsProps && tsProps.length) {
-      tsProps.forEach((item: ToolSettingsPropertyItem) => {
-        this.initializeToolSettingProperty(toolId, item);
-      });
-    }
+    tsProps.forEach((item: ToolSettingsPropertyItem) => this.initializeToolSettingProperty(toolId, item));
   }
 
-  /** Save single tool settings value
-   * @internal
-   */
+  /** Save single tool settings value */
   public saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
-    if (item) {
-      const key = `${toolId}:${item.propertyName}`;
-      const objectAsString = JSON.stringify(item.value);
-      window.sessionStorage.setItem(key, objectAsString);
-    }
+    const key = `${toolId}:${item.propertyName}`;
+    const objectAsString = JSON.stringify(item.value);
+    window.sessionStorage.setItem(key, objectAsString);
   }
 
-  /** Save an array of tool settings values
-   * @internal
-   */
+  /** Save an array of tool settings values */
   public saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    if (tsProps && tsProps.length) {
-      tsProps.forEach((item: ToolSettingsPropertyItem) => {
-        this.saveToolSettingProperty(toolId, item);
-      });
-    }
+    tsProps.forEach((item: ToolSettingsPropertyItem) => this.saveToolSettingProperty(toolId, item));
   }
 }
 
@@ -342,6 +325,8 @@ export class ToolAdmin {
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
   private _modifierKey = BeModifierKeys.None;
+  private static _tileTreePurgeTime?: BeTimePoint;
+  private static _tileTreePurgeInterval?: BeDuration;
   /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
    * @see [[startDefaultTool]]
    * @internal
@@ -371,6 +356,53 @@ export class ToolAdmin {
   public acsPlaneSnapLock = false;
   /** If ACS Plane Lock is on, standard view rotations are relative to the ACS instead of global. */
   public acsContextLock = false;
+
+  /** Options for how uncaught exceptions should be handled.
+   * @beta
+   */
+  public static exceptionOptions = {
+    /** log exception to Logger */
+    log: true,
+    /** Show an alert box explaining that a problem happened */
+    alertBox: true,
+    /** include the "gory details" (e.g. stack trace) */
+    details: true,
+    /** break into debugger (only works if debugger is already opened) */
+    launchDebugger: true,
+  };
+
+  /** A function that catches exceptions occurring inside ToolAdmin.eventLoop.
+   * @note If you wish to entirely replace this method, you can just assign to your own function, e.g.:
+   * ```ts
+   * ToolAdmin.exceptionHandler = (exception: any): Promise<any> => {
+   *  ... your implementation here
+   * }
+   * ```
+   * @beta
+   */
+  public static async exceptionHandler(exception: any): Promise<any> {
+    const opts = ToolAdmin.exceptionOptions;
+    const msg: string = undefined !== exception.stack ? exception.stack : exception.toString();
+    if (opts.log)
+      Logger.logError("imodeljs-frontend.unhandledException", msg);
+
+    if (opts.launchDebugger) // this does nothing if the debugger window is not already opened
+      debugger; // tslint:disable-line:no-debugger
+
+    if (!opts.alertBox)
+      return;
+
+    let out = "<h2>" + IModelApp.i18n.translate("iModelJs:Errors.ReloadPage") + "</h2>";
+    if (opts.details) {
+      out += "<h3>" + IModelApp.i18n.translate("iModelJs:Errors.Details") + "</h3><h4>";
+      msg.split("\n").forEach((line) => out += line + "<br>");
+      out += "</h4>";
+    }
+
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, div, MessageBoxIconType.Critical);
+  }
 
   private static _wantEventLoop = false;
   private static readonly _removals: VoidFunction[] = [];
@@ -431,6 +463,12 @@ export class ToolAdmin {
   public startEventLoop() {
     if (!ToolAdmin._wantEventLoop) {
       ToolAdmin._wantEventLoop = true;
+      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
+      if (undefined !== treeExpirationTime) {
+        ToolAdmin._tileTreePurgeInterval = treeExpirationTime;
+        ToolAdmin._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
+      }
+
       requestAnimationFrame(ToolAdmin.eventLoop);
     }
   }
@@ -664,8 +702,20 @@ export class ToolAdmin {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
-      case "mouseenter": return this.onMouseEnter(event.vp!);
-      case "mouseleave": return this.onMouseLeave(event.vp!);
+      case "mouseover": {
+        // handle the mouseover (which is similar to mouseenter) only if the target is our canvas.
+        if (event.ev.target === event.vp!.canvas) {
+          return this.onMouseEnter(event.vp!);
+        }
+        return;
+      }
+      case "mouseout": {
+        // handle the mouseout (which is similar to mouseleave) only if the target is our canvas.
+        if (event.ev.target === event.vp!.canvas) {
+          return this.onMouseLeave(event.vp!);
+        }
+        return;
+      }
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
       case "keyup": return this.onKeyTransition(event, false);
@@ -685,25 +735,37 @@ export class ToolAdmin {
       return; // we're still working on the previous event.
 
     try {
-      this._processingEvent = true; // we can't allow any further event processing until the current event completes.
+      this._processingEvent = true;  // we can't allow any further event processing until the current event completes.
       await this.onTimerEvent();     // timer events are also suspended by asynchronous tool events. That's necessary since they can be asynchronous too.
       await this.processNextEvent();
-    } catch (error) {
-      throw error; // enable this in debug only.
+    } catch (exception) {
+      await ToolAdmin.exceptionHandler(exception); // we don't attempt to exit here
     } finally {
       this._processingEvent = false; // this event is now finished. Allow processing next time through.
     }
   }
 
   /** The main event processing loop for Tools (and rendering). */
-  private static eventLoop(): void {
+  private static eventLoop() {
     if (!ToolAdmin._wantEventLoop) // flag turned on at startup
       return;
 
-    IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+    try {
+      IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+      IModelApp.viewManager.renderLoop();
+      IModelApp.tileAdmin.process();
 
-    IModelApp.viewManager.renderLoop();
-    IModelApp.tileAdmin.process();
+      if (undefined !== ToolAdmin._tileTreePurgeTime && ToolAdmin._tileTreePurgeTime.milliseconds < Date.now()) {
+        const now = BeTimePoint.now();
+        ToolAdmin._tileTreePurgeTime = now.plus(ToolAdmin._tileTreePurgeInterval!);
+        IModelApp.viewManager.purgeTileTrees(now.minus(ToolAdmin._tileTreePurgeInterval!));
+      }
+    } catch (exception) {
+      ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
+        close(); // this does nothing in a web browser, closes electron.
+      });
+      return; // unrecoverable after exception, don't request any further frames.
+    }
 
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
@@ -894,7 +956,12 @@ export class ToolAdmin {
       return;   // we're inside a pickable decoration, don't send event to tool
     }
 
-    await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
+    try {
+      await IModelApp.accuSnap.onMotion(ev); // wait for AccuSnap before calling fromButton
+    } catch (error) {
+      if (error instanceof AbandonedError) return; // expected, not a problem. Just ignore this motion and return.
+      throw error; // unknown error
+    }
 
     current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);
@@ -1272,10 +1339,11 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.setInputCollector(newTool);
+    // it is important to raise event after setInputCollector is called
+    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1323,7 +1391,6 @@ export class ToolAdmin {
     }
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.All;
@@ -1333,6 +1400,8 @@ export class ToolAdmin {
 
     this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setViewTool(newTool);
+    // it is important to raise event after setViewTool is called
+    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
   }
 
   /** @internal */
@@ -1356,7 +1425,6 @@ export class ToolAdmin {
     this.exitInputCollector();
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
     this.setIncompatibleViewportCursor(true); // Don't restore this
     IModelApp.viewManager.invalidateDecorationsAllViews();
 
@@ -1366,11 +1434,12 @@ export class ToolAdmin {
     IModelApp.accuDraw.onPrimitiveToolInstall();
     IModelApp.accuSnap.onStartTool();
 
-    if (undefined === newTool)
-      return;
-
-    this.setCursor(IModelApp.viewManager.crossHairCursor);
-    this.setPrimitiveTool(newTool);
+    if (undefined !== newTool) {
+      this.setCursor(IModelApp.viewManager.crossHairCursor);
+      this.setPrimitiveTool(newTool);
+    }
+    // it is important to raise event after setPrimitiveTool is called
+    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
   }
 
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.

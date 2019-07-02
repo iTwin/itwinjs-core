@@ -26,6 +26,7 @@ export enum NativePlatformRequestTypes {
 
 /** @internal */
 export interface NativePlatformDefinition extends IDisposable {
+  forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void>;
   setupRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
@@ -68,6 +69,17 @@ export const createDefaultNativePlatform = (id?: string): new () => NativePlatfo
     public dispose() {
       this._nativeAddon.dispose();
     }
+    public async forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void> {
+      return new Promise((resolve: () => void, reject: () => void) => {
+        requestContext.enter();
+        this._nativeAddon.forceLoadSchemas(db, (result: IModelJsNative.ECPresentationStatus) => {
+          if (result === IModelJsNative.ECPresentationStatus.Success)
+            resolve();
+          else
+            reject();
+        });
+      });
+    }
     public setupRulesetDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
     }
@@ -92,8 +104,8 @@ export const createDefaultNativePlatform = (id?: string): new () => NativePlatfo
       this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(requestContext: ClientRequestContext, db: any, options: string): Promise<string> {
-      requestContext.enter();
       return new Promise((resolve, reject) => {
+        requestContext.enter();
         this._nativeAddon.handleRequest(db, options, (response) => {
           try {
             resolve(this.handleResult(response));

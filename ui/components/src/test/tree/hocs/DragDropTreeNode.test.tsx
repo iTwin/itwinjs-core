@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import { render, cleanup } from "react-testing-library";
+import { render, cleanup } from "@testing-library/react";
 import { DragDropTreeNodeComponent, DragDropTreeNode } from "../../../ui-components/tree/hocs/DragDropTreeNode";
 import { DragSourceProps, DropTargetProps } from "../../../ui-components/dragdrop/DragDropDef";
 

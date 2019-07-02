@@ -60,20 +60,31 @@ import { ResizeHandle } from "@src/widget/rectangular/ResizeHandle";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
 import { TabGroup, HandleMode } from "@src/widget/rectangular/tab/Group";
 import { Tab, TabMode } from "@src/widget/rectangular/tab/Tab";
-import { Stacked, HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
+import { Stacked, HorizontalAnchor, VerticalAnchor, VerticalAnchorHelpers } from "@src/widget/Stacked";
 import { Tools as ToolsWidget } from "@src/widget/Tools";
-import { NineZone, getDefaultNineZoneProps, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
-import { DefaultStateManager } from "@src/zones/state/Manager";
-import { WidgetProps, DraggingWidgetProps, Widget } from "@src/zones/state/Widget";
-import { TargetType, TargetZoneProps } from "@src/zones/state/Target";
-import { ZonePropsBase, DropTarget, StatusZoneManager, WidgetZone } from "@src/zones/state/Zone";
+import { NineZone, getDefaultZonesManagerProps, ZonesManagerProps, WidgetZoneIndex, ZonesManagerWidgets } from "@src/zones/manager/Zones";
+import { WidgetProps, DraggingWidgetProps, Widget } from "@src/zones/manager/Widget";
+import { TargetType, TargetZoneProps } from "@src/zones/manager/Target";
+import { DropTarget, WidgetZone, StatusZoneManagerHelper } from "@src/zones/manager/Zone";
 import { MergeTarget } from "@src/zones/target/Merge";
 import { BackTarget } from "@src/zones/target/Back";
+import { SplitterTarget } from "@src/zones/target/Splitter";
+import { SplitterPaneTarget } from "@src/zones/target/SplitterPane";
+import { StagePanelTarget } from "@src/zones/target/StagePanel";
 import { Zone } from "@src/zones/Zone";
 import { Zones } from "@src/zones/Zones";
 import { Outline } from "@src/zones/Outline";
 import { Tooltip, offsetAndContainInContainer } from "@src/popup/Tooltip";
 import { withContainIn } from "@src/base/WithContainIn";
+import { Splitter } from "@src/stage-panels/Splitter";
+import { StagePanel, StagePanelType, StagePanelTypeHelpers } from "@src/stage-panels/StagePanel";
+import { StagePanels } from "@src/stage-panels/StagePanels";
+import { NestedStagePanelKey } from "@src/stage-panels/manager/NestedStagePanels";
+import { NineZoneStagePanelsManagerProps, getDefaultNineZoneStagePanelsManagerProps } from "@src/manager/StagePanels";
+import { NineZoneNestedStagePanelsManagerProps } from "@src/manager/NestedStagePanels";
+import { NineZoneManager, NineZoneManagerProps } from "@src/manager/NineZone";
+import { NineZoneStagePanelManagerProps } from "@src/manager/StagePanel";
+import { StagePanelsManager } from "@src/stage-panels/manager/StagePanels";
 import "./Zones.scss";
 
 // tslint:disable-next-line:variable-name
@@ -321,7 +332,7 @@ interface StatusZoneExampleProps extends MessageProps {
   isInFooterMode: boolean;
   message: VisibleMessage;
   onHideMessage: () => void;
-  onTargetChanged: TargetChangedHandler;
+  onTargetChanged: TargetChangedFn;
   onOpenWidgetChange: (widget: FooterWidget) => void;
   openWidget: FooterWidget;
   outlineBounds: RectangleProps | undefined;
@@ -346,11 +357,15 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   private _toolAssistanceTarget = React.createRef<HTMLDivElement>();
 
   public render() {
+    const bounds = Rectangle.create(this.props.bounds);
     return (
       <>
         <Zone
+          bounds={this.props.isInFooterMode ? undefined : this.props.bounds}
           isInFooterMode={this.props.isInFooterMode}
-          bounds={this.props.bounds}
+          style={this.props.isInFooterMode ? {
+            height: `${bounds.getHeight()}px`,
+          } : undefined}
         >
           <Footer
             isInFooterMode={this.props.isInFooterMode}
@@ -479,7 +494,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
         </Zone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
-          zoneIndex={StatusZoneManager.id}
+          zoneIndex={StatusZoneManagerHelper.id}
           dropTarget={this.props.dropTarget}
           onTargetChanged={this.props.onTargetChanged}
         />
@@ -594,79 +609,96 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   }
 }
 
-interface FloatingZoneWidgetProps {
-  bounds: RectangleProps;
-  contentRef: React.RefObject<HTMLDivElement>;
+interface FloatingWidgetProps {
   draggingWidget: DraggingWidgetProps | undefined;
+  fillZone: boolean;
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
   horizontalAnchor: HorizontalAnchor;
-  onResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+  isCollapsed: boolean;
+  isFloating: boolean;
+  isInStagePanel: boolean;
+  onResize: ((zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void) | undefined;
   onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
-  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
   verticalAnchor: VerticalAnchor;
-  zone: ZonePropsBase;
+  widgets: ReadonlyArray<WidgetZoneIndex>;
+  zonesWidgets: ZonesManagerWidgets;
 }
 
-class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
+class FloatingWidget extends React.PureComponent<FloatingWidgetProps> {
   private _widget = React.createRef<Stacked>();
 
   public render() {
-    const isOpen = this.props.zone.widgets.some((w) => w.tabIndex >= 0);
-    const isDragged = this.props.draggingWidget && this.props.draggingWidget.id === this.props.zone.id;
+    const openWidget = this.props.widgets.find((wId) => this.props.zonesWidgets[wId].tabIndex >= 0);
+    const isDragged = this.props.widgets.some((wId) => !!this.props.draggingWidget && this.props.draggingWidget.id === wId);
     return (
-      <Zone bounds={this.props.bounds}>
-        <Stacked
-          contentRef={this.props.contentRef}
-          fillZone={this.props.zone.isLayoutChanged}
-          horizontalAnchor={this.props.horizontalAnchor}
-          isDragged={isDragged}
-          isFloating={this.props.zone.floating ? true : false}
-          isOpen={isOpen}
-          onResize={this._handleResize}
-          ref={this._widget}
-          tabs={
-            <FloatingZoneTabs
-              anchor={this.props.horizontalAnchor}
-              draggingWidget={this.props.draggingWidget}
-              isOpen={isOpen}
-              onTabClick={this.props.onTabClick}
-              onTabDragStart={this._handleTabDragStart}
-              onTabDragEnd={this.props.onTabDragEnd}
-              onTabDrag={this.props.onTabDrag}
-              zone={this.props.zone}
-            />
-          }
-          verticalAnchor={this.props.verticalAnchor}
-        />
-      </Zone >
+      <Stacked
+        contentRef={openWidget ? this.props.getWidgetContentRef(openWidget) : undefined}
+        fillZone={this.props.fillZone}
+        horizontalAnchor={this.props.horizontalAnchor}
+        isCollapsed={this.props.isCollapsed}
+        isDragged={isDragged}
+        isFloating={this.props.isFloating}
+        isOpen={!!openWidget}
+        isTabBarVisible={this.props.isInStagePanel}
+        onResize={this.props.isInStagePanel ? undefined : this._handleResize}
+        ref={this._widget}
+        tabs={
+          <FloatingZoneTabs
+            horizontalAnchor={this.props.horizontalAnchor}
+            draggingWidget={this.props.draggingWidget}
+            isCollapsed={this.props.isCollapsed}
+            isInStagePanel={this.props.isInStagePanel}
+            isOpen={!!openWidget}
+            onTabClick={this.props.onTabClick}
+            onTabDragStart={this._handleTabDragStart}
+            onTabDragEnd={this.props.onTabDragEnd}
+            onTabDrag={this.props.onTabDrag}
+            verticalAnchor={this.props.verticalAnchor}
+            widgets={this.props.widgets}
+            zonesWidgets={this.props.zonesWidgets}
+          />
+        }
+        verticalAnchor={this.props.verticalAnchor}
+      />
     );
   }
 
   private _handleResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this.props.onResize(this.props.zone.id, x, y, handle, filledHeightDiff);
+    this.props.onResize && this.props.onResize(this.props.widgets[0], x, y, handle, filledHeightDiff);
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTab: RectangleProps) => {
     if (!this._widget.current)
       return;
 
-    const firstTab = Rectangle.create(firstTabBounds).topLeft();
-    const widget = Rectangle.create(this._widget.current.getBounds()).topLeft();
-    const offset = widget.getOffsetTo(firstTab);
-    this.props.onTabDragStart(widgetId, tabId, initialPosition, offset);
+    const firstTabBounds = Rectangle.create(firstTab);
+    const stackedWidgetBounds = Rectangle.create(this._widget.current.getBounds());
+    const offsetToFirstTab = stackedWidgetBounds.topLeft().getOffsetTo(firstTabBounds.topLeft());
+    let widgetBounds;
+    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor))
+      widgetBounds = stackedWidgetBounds.offsetX(offsetToFirstTab.x);
+    else
+      widgetBounds = stackedWidgetBounds.offsetY(offsetToFirstTab.y);
+    this.props.onTabDragStart(widgetId, tabId, initialPosition, widgetBounds);
   }
 }
 
 interface FloatingZoneTabsProps {
-  anchor: HorizontalAnchor;
   draggingWidget: DraggingWidgetProps | undefined;
+  horizontalAnchor: HorizontalAnchor;
+  isCollapsed: boolean;
+  isInStagePanel: boolean;
   isOpen: boolean;
   onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
   onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
-  zone: ZonePropsBase;
+  zonesWidgets: ZonesManagerWidgets;
+  verticalAnchor: VerticalAnchor;
+  widgets: ReadonlyArray<WidgetZoneIndex>;
 }
 
 class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
@@ -674,25 +706,31 @@ class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
     const tabs: JSX.Element[] = [];
     let i = -1;
 
-    for (const widget of this.props.zone.widgets) {
+    for (const widgetId of this.props.widgets) {
       i++;
       const widgetTabs = (
         <FloatingZoneWidgetTabs
-          key={widget.id}
-          anchor={this.props.anchor}
           draggingWidget={this.props.draggingWidget}
+          horizontalAnchor={this.props.horizontalAnchor}
+          isCollapsed={this.props.isCollapsed}
+          isInStagePanel={this.props.isInStagePanel}
           isOpen={this.props.isOpen}
-          isStacked={this.props.zone.widgets.length > 1}
+          isStacked={this.props.widgets.length > 1}
+          key={widgetId}
           onTabClick={this.props.onTabClick}
           onTabDragStart={this.props.onTabDragStart}
           onTabDragEnd={this.props.onTabDragEnd}
           onTabDrag={this.props.onTabDrag}
-          widget={widget}
+          verticalAnchor={this.props.verticalAnchor}
+          widget={this.props.zonesWidgets[widgetId]}
         />
       );
 
       if (i !== 0)
-        tabs.push(<TabSeparator key={`separator_${i}`} />);
+        tabs.push(<TabSeparator
+          isHorizontal={VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)}
+          key={`separator_${i}`}
+        />);
       tabs.push(widgetTabs);
     }
 
@@ -701,14 +739,17 @@ class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
 }
 
 interface FloatingZoneWidgetTabsProps {
-  anchor: HorizontalAnchor;
   draggingWidget: DraggingWidgetProps | undefined;
+  horizontalAnchor: HorizontalAnchor;
+  isCollapsed: boolean;
+  isInStagePanel: boolean;
   isOpen: boolean;
   isStacked: boolean;
   onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
   onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
+  verticalAnchor: VerticalAnchor;
   widget: WidgetProps;
 }
 
@@ -728,7 +769,9 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
   private getTab(tabId: number, mode: TabMode, lastPosition: PointProps | undefined) {
     return (
       <FloatingZoneWidgetTab
-        anchor={this.props.anchor}
+        horizontalAnchor={this.props.horizontalAnchor}
+        isCollapsed={this.props.isCollapsed}
+        isInStagePanel={this.props.isInStagePanel}
         lastPosition={lastPosition}
         mode={mode}
         onClick={this.props.onTabClick}
@@ -736,7 +779,8 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
         onDragEnd={this.props.onTabDragEnd}
         onDrag={this.props.onTabDrag}
         tabId={tabId}
-        tab={tabId === 1 ? this._firstTab : undefined}
+        tab={tabId === 0 ? this._firstTab : undefined}
+        verticalAnchor={this.props.verticalAnchor}
         widgetId={this.props.widget.id}
       />
     );
@@ -754,40 +798,46 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
     const lastPosition = this.props.draggingWidget && this.props.draggingWidget.id === this.props.widget.id ?
       this.props.draggingWidget.lastPosition : undefined;
     const tabIndex = this.props.draggingWidget ? this.props.draggingWidget.tabIndex : -1;
-    const mode1 = !this.props.isOpen ? TabMode.Closed : this.props.widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
-    const mode2 = !this.props.isOpen ? TabMode.Closed : this.props.widget.tabIndex === 2 ? TabMode.Active : TabMode.Open;
-    const lastPosition1 = tabIndex === 1 ? lastPosition : undefined;
-    const lastPosition2 = tabIndex === 2 ? lastPosition : undefined;
+    const mode1 = !this.props.isOpen ? TabMode.Closed
+      : this.props.widget.tabIndex === 0 ? TabMode.Active : TabMode.Open;
+    const mode2 = !this.props.isOpen ? TabMode.Closed
+      : this.props.widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
+    const lastPosition1 = tabIndex === 0 ? lastPosition : undefined;
+    const lastPosition2 = tabIndex === 1 ? lastPosition : undefined;
     const handleMode = this.getTabHandleMode();
     switch (this.props.widget.id) {
       case 4: {
         return (
           <TabGroup
-            anchor={this.props.anchor}
             handle={handleMode}
+            horizontalAnchor={this.props.horizontalAnchor}
+            isCollapsed={this.props.isCollapsed}
+            verticalAnchor={this.props.verticalAnchor}
           >
-            {this.getTab(1, mode1, lastPosition1)}
-            {this.getTab(2, mode2, lastPosition2)}
+            {this.getTab(0, mode1, lastPosition1)}
+            {this.getTab(1, mode2, lastPosition2)}
           </TabGroup>
         );
       }
       case 6: {
-        return this.getTab(1, mode1, lastPosition1);
+        return this.getTab(0, mode1, lastPosition1);
       }
       case 7: {
-        return this.getTab(1, mode1, lastPosition1);
+        return this.getTab(0, mode1, lastPosition1);
       }
       case 8: {
-        return this.getTab(1, mode1, lastPosition1);
+        return this.getTab(0, mode1, lastPosition1);
       }
       case 9: {
         return (
           <TabGroup
-            anchor={this.props.anchor}
             handle={handleMode}
+            horizontalAnchor={this.props.horizontalAnchor}
+            isCollapsed={this.props.isCollapsed}
+            verticalAnchor={this.props.verticalAnchor}
           >
-            {this.getTab(1, mode1, lastPosition1)}
-            {this.getTab(2, mode2, lastPosition2)}
+            {this.getTab(0, mode1, lastPosition1)}
+            {this.getTab(1, mode2, lastPosition2)}
           </TabGroup>
         );
       }
@@ -797,7 +847,9 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
 }
 
 interface FloatingZoneWidgetTabProps {
-  anchor: HorizontalAnchor;
+  horizontalAnchor: HorizontalAnchor;
+  isCollapsed: boolean;
+  isInStagePanel: boolean;
   lastPosition: PointProps | undefined;
   mode: TabMode;
   onClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
@@ -806,6 +858,7 @@ interface FloatingZoneWidgetTabProps {
   onDrag: (dragged: PointProps) => void;
   tabId: number;
   tab?: React.RefObject<Tab>;
+  verticalAnchor: VerticalAnchor;
   widgetId: WidgetZoneIndex;
 }
 
@@ -813,7 +866,9 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
   public render() {
     return (
       <Tab
-        anchor={this.props.anchor}
+        horizontalAnchor={this.props.horizontalAnchor}
+        isCollapsed={this.props.isCollapsed}
+        isProtruding={!this.props.isInStagePanel}
         lastPosition={this.props.lastPosition}
         mode={this.props.mode}
         onClick={this._handleClick}
@@ -821,6 +876,7 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
         onDragEnd={this.props.onDragEnd}
         onDrag={this.props.onDrag}
         ref={this.props.tab}
+        verticalAnchor={this.props.verticalAnchor}
       >
         {placeholderIcon}
       </Tab>
@@ -836,13 +892,11 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
   }
 }
 
-type TargetChangedHandler = (target: TargetZoneProps | undefined) => void;
-
 interface TargetExampleProps {
   bounds: RectangleProps;
   dropTarget: DropTarget;
   zoneIndex: WidgetZoneIndex;
-  onTargetChanged: TargetChangedHandler;
+  onTargetChanged: TargetChangedFn;
 }
 
 class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
@@ -1173,6 +1227,7 @@ interface Widget7Tab1ContentProps {
   onOpenActivityMessage: () => void;
   onOpenToastMessage: () => void;
   onShowTooltip: () => void;
+  onToggleBottomMostPanel: () => void;
   onToggleFooterMode: () => void;
 }
 
@@ -1188,18 +1243,22 @@ class Widget7Tab1Content extends React.PureComponent<Widget7Tab1ContentProps> {
           Show Toast Message
         </BlueButton>
         <br />
-        <br />
         <BlueButton
           onClick={this.props.onShowTooltip}
         >
           Show Tooltip
         </BlueButton>
         <br />
-        <br />
         <BlueButton
           onClick={this.props.onToggleFooterMode}
         >
           Change Footer Mode
+        </BlueButton>
+        <br />
+        <BlueButton
+          onClick={this.props.onToggleBottomMostPanel}
+        >
+          Show Bottom Most Panel
         </BlueButton>
       </>
     );
@@ -1270,7 +1329,7 @@ class Widget9Tab1Content extends React.PureComponent {
 interface WidgetContentExampleProps extends Widget6Tab1ContentProps, Widget7Tab1ContentProps {
   anchor: HorizontalAnchor;
   isDisplayed: boolean;
-  renderTo: React.RefObject<Element>;
+  renderTo: Element | undefined;
   tabIndex: number;
   widgetId: WidgetZoneIndex;
 }
@@ -1280,24 +1339,19 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
   private _widgetContent = React.createRef<WidgetContent>();
 
   public componentDidMount() {
-    if (!this.props.renderTo.current)
+    if (!this.props.renderTo)
       return;
-    this._content.style.display = this.props.isDisplayed ? null : "none";
-    this.props.renderTo.current.appendChild(this._content);
+    this.props.renderTo.appendChild(this._content);
   }
 
   public componentDidUpdate(prevProps: WidgetContentExampleProps) {
-    if (this.props.isDisplayed !== prevProps.isDisplayed) {
-      this._content.style.display = this.props.isDisplayed ? null : "none";
-    }
-
     if (prevProps.renderTo === this.props.renderTo)
       return;
 
-    if (!this.props.renderTo.current)
+    if (!this.props.renderTo)
       return;
 
-    this.props.renderTo.current.appendChild(this._content);
+    this.props.renderTo.appendChild(this._content);
     this._widgetContent.current && this._widgetContent.current.forceUpdate();
   }
 
@@ -1322,6 +1376,7 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
             onOpenActivityMessage={this.props.onOpenActivityMessage}
             onOpenToastMessage={this.props.onOpenToastMessage}
             onShowTooltip={this.props.onShowTooltip}
+            onToggleBottomMostPanel={this.props.onToggleBottomMostPanel}
             onToggleFooterMode={this.props.onToggleFooterMode} />
         );
         break;
@@ -1332,13 +1387,13 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
       }
       case 9: {
         switch (this.props.tabIndex) {
-          case 1: {
+          case 0: {
             content = (
               <Widget9Tab1Content />
             );
             break;
           }
-          case 2: {
+          case 1: {
             content = "Hello world 2!";
             break;
           }
@@ -1350,6 +1405,7 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
       anchor={this.props.anchor}
       content={content}
       ref={this._widgetContent}
+      style={this.props.isDisplayed ? {} : { display: "none" }}
     />, this._content);
   }
 }
@@ -1835,6 +1891,7 @@ interface BackstageItemExampleProps {
   id: number;
   isActive?: boolean;
   isDisabled?: boolean;
+  label: string;
   onClick: (id: number) => void;
 }
 
@@ -1847,7 +1904,7 @@ class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps
         isDisabled={this.props.isDisabled}
         onClick={this._handleClick}
       >
-        {`Item ${this.props.id}`}
+        {this.props.label}
       </BackstageItem>
     );
   }
@@ -1888,28 +1945,27 @@ class BackstageExample extends React.PureComponent<BackstageExampleProps, Backst
         <BackstageItemExample
           id={0}
           isActive={this.state.activeItem === 0}
+          label="Zones"
           onClick={this._handleItemClick}
         />
         <BackstageItemExample
           id={1}
           isActive={this.state.activeItem === 1}
-          onClick={this._handleItemClick}
           isDisabled
-        />
-        <BackstageItemExample
-          id={2}
-          isActive={this.state.activeItem === 2}
+          label="Disabled"
           onClick={this._handleItemClick}
         />
         <BackstageSeparator />
         <BackstageItemExample
-          id={3}
-          isActive={this.state.activeItem === 3}
+          id={2}
+          isActive={this.state.activeItem === 2}
+          label="Item 2"
           onClick={this._handleItemClick}
         />
         <BackstageItemExample
-          id={4}
-          isActive={this.state.activeItem === 4}
+          id={3}
+          isActive={this.state.activeItem === 3}
+          label="Item 3"
           onClick={this._handleItemClick}
         />
       </Backstage>
@@ -1926,8 +1982,189 @@ class BackstageExample extends React.PureComponent<BackstageExampleProps, Backst
   }
 }
 
+interface StagePanelTargetExampleProps {
+  type: ExampleStagePanelType;
+  onTargetChanged: (target: ExampleStagePanelType | undefined) => void;
+}
+
+class StagePanelTargetExample extends React.PureComponent<StagePanelTargetExampleProps> {
+  public render() {
+    const type = getStagePanelType(this.props.type);
+    return (
+      <StagePanelTarget
+        onTargetChanged={this._handleTargetChanged}
+        type={type}
+      />
+    );
+  }
+
+  private _handleTargetChanged = (isTargeted: boolean) => {
+    this.props.onTargetChanged(isTargeted ? this.props.type : undefined);
+  }
+}
+
+interface SplitterTargetExampleProps {
+  isVertical: boolean;
+  isVisible: boolean;
+  onTargetChanged: (target: ExampleStagePanelType | undefined) => void;
+  type: ExampleStagePanelType;
+  widgetCount: number;
+}
+
+class SplitterTargetExample extends React.PureComponent<SplitterTargetExampleProps> {
+  public render() {
+    return (
+      <SplitterTarget
+        isVertical={this.props.isVertical}
+        onTargetChanged={this._handleTargetChanged}
+        style={{
+          ...this.props.isVisible ? {} : { display: "none" },
+        }}
+        paneCount={this.props.widgetCount}
+      />
+    );
+  }
+
+  private _handleTargetChanged = (isTargeted: boolean) => {
+    this.props.onTargetChanged(isTargeted ? this.props.type : undefined);
+  }
+}
+
+interface StagePanelWidgetProps extends FloatingWidgetProps {
+  isTargetVisible: boolean;
+  onTargetChanged: SplitterPaneTargetChangedFn;
+  paneIndex: number;
+  type: ExampleStagePanelType;
+}
+
+class StagePanelWidget extends React.PureComponent<StagePanelWidgetProps> {
+  public render() {
+    const { ...props } = this.props;
+    return (
+      <div style={{ height: "100%", position: "relative" }}>
+        <FloatingWidget
+          {...props}
+        />
+        {this.props.isTargetVisible && <SplitterPaneTarget
+          onTargetChanged={this._handleTargetChanged}
+        />}
+      </div>
+    );
+  }
+
+  private _handleTargetChanged = (isTargeted: boolean) => {
+    const target = isTargeted ? this.props.paneIndex : undefined;
+    this.props.onTargetChanged(target, this.props.type);
+  }
+}
+
+interface WidgetStagePanelProps {
+  draggingWidget: DraggingWidgetProps | undefined;
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  onInitialize: (size: number, type: ExampleStagePanelType) => void;
+  onResize: (resizeBy: number, type: ExampleStagePanelType) => void;
+  onStagePanelTargetChanged: (target: ExampleStagePanelType | undefined) => void;
+  onPaneTargetChanged: SplitterPaneTargetChangedFn;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  onToggleCollapse: (panel: ExampleStagePanelType) => void;
+  panel: NineZoneStagePanelManagerProps;
+  target: TargetZoneProps | undefined;
+  type: ExampleStagePanelType;
+  widgets: ZonesManagerWidgets;
+}
+
+class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
+  private _measurer = React.createRef<HTMLDivElement>();
+
+  public componentDidMount(): void {
+    this.initialize();
+  }
+
+  public componentDidUpdate(): void {
+    this.initialize();
+  }
+
+  public render() {
+    const type = getStagePanelType(this.props.type);
+    const isVertical = StagePanelTypeHelpers.isVertical(type);
+    const isSplitterTargetVisible = !!this.props.draggingWidget && !this.props.target;
+    return (
+      <StagePanel
+        onResize={this._handleResize}
+        onToggleCollapse={this._handleToggleCollapse}
+        size={this.props.panel.isCollapsed ? undefined : this.props.panel.size}
+        type={type}
+      >
+        <div
+          ref={this._measurer}
+          style={{ width: "100%", height: "100%", position: "absolute", zIndex: -1 }}
+        />
+        <SplitterTargetExample
+          isVertical={isVertical}
+          isVisible={isSplitterTargetVisible}
+          onTargetChanged={this.props.onStagePanelTargetChanged}
+          type={this.props.type}
+          widgetCount={this.props.panel.panes.length}
+        />
+        <Splitter
+          isGripHidden={this.props.panel.isCollapsed}
+          isVertical={isVertical}
+        >
+          {this.props.panel.panes.map((pane, index) => <StagePanelWidget
+            draggingWidget={undefined}
+            fillZone={true}
+            getWidgetContentRef={this.props.getWidgetContentRef}
+            horizontalAnchor={this.props.widgets[pane.widgets[0]].horizontalAnchor}
+            isCollapsed={this.props.panel.isCollapsed}
+            isFloating={false}
+            isInStagePanel={true}
+            isTargetVisible={!!this.props.draggingWidget}
+            key={index}
+            onResize={undefined}
+            onTabClick={this.props.onTabClick}
+            onTabDrag={this.props.onTabDrag}
+            onTabDragEnd={this.props.onTabDragEnd}
+            onTabDragStart={this.props.onTabDragStart}
+            onTargetChanged={this.props.onPaneTargetChanged}
+            paneIndex={index}
+            type={this.props.type}
+            verticalAnchor={this.props.widgets[pane.widgets[0]].verticalAnchor}
+            widgets={pane.widgets}
+            zonesWidgets={this.props.widgets}
+          />)}
+        </Splitter>
+      </StagePanel>
+    );
+  }
+
+  private _handleResize = (resizeBy: number) => {
+    this.props.onResize(resizeBy, this.props.type);
+  }
+
+  private _handleToggleCollapse = () => {
+    this.props.onToggleCollapse(this.props.type);
+  }
+
+  private initialize() {
+    if (this.props.panel.size !== undefined)
+      return;
+    if (!this._measurer.current)
+      return;
+    const clientRect = this._measurer.current.getBoundingClientRect();
+    const type = getStagePanelType(this.props.type);
+    const size = StagePanelTypeHelpers.isVertical(type) ? clientRect.width : clientRect.height;
+    this.props.onInitialize(size, this.props.type);
+  }
+}
+
 type WidgetTabDragFn = (dragged: PointProps) => void;
 type ZoneResizeFn = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+type StagePanelResizeFn = (resizeBy: number, stagePanelType: ExampleStagePanelType) => void;
+type SplitterPaneTargetChangedFn = (paneIndex: number | undefined, stagePanelType: ExampleStagePanelType) => void;
+type TargetChangedFn = (target: TargetZoneProps | undefined) => void;
 
 const placeholderIcon = (
   <i className="icon icon-placeholder" />
@@ -1956,6 +2193,79 @@ const getTabCount = (zone: WidgetZoneIndex): number => {
   return 0;
 };
 
+enum ExampleStagePanelType {
+  Bottom,
+  BottomMost,
+  Left,
+  Right,
+  Top,
+}
+
+type InnerStagePanelType = ExampleStagePanelType.Left | ExampleStagePanelType.Top | ExampleStagePanelType.Right | ExampleStagePanelType.Bottom;
+type OuterStagePanelType = ExampleStagePanelType.BottomMost;
+
+interface BottomMostPanel extends NineZoneStagePanelManagerProps {
+  readonly isVisible: boolean;
+}
+
+interface OuterPanels extends NineZoneStagePanelsManagerProps {
+  readonly bottom: BottomMostPanel;
+}
+
+interface ExampleNestedStagePanelsProps extends NineZoneNestedStagePanelsManagerProps {
+  readonly panels:
+  { readonly [id in "inner"]: NineZoneStagePanelsManagerProps } &
+  { readonly [id in "outer"]: OuterPanels };
+}
+
+interface ExampleZonesManagerProps extends NineZoneManagerProps {
+  readonly nested: ExampleNestedStagePanelsProps;
+}
+
+const getStagePanelType = (type: ExampleStagePanelType): StagePanelType => {
+  switch (type) {
+    case ExampleStagePanelType.Bottom:
+    case ExampleStagePanelType.BottomMost:
+      return StagePanelType.Bottom;
+    case ExampleStagePanelType.Left:
+      return StagePanelType.Left;
+    case ExampleStagePanelType.Right:
+      return StagePanelType.Right;
+    case ExampleStagePanelType.Top:
+      return StagePanelType.Top;
+  }
+};
+
+const getNestedStagePanel = (type: ExampleStagePanelType): NestedStagePanelKey<ExampleNestedStagePanelsProps> => {
+  switch (type) {
+    case ExampleStagePanelType.Bottom:
+      return {
+        id: "inner",
+        type: StagePanelType.Bottom,
+      };
+    case ExampleStagePanelType.BottomMost:
+      return {
+        id: "outer",
+        type: StagePanelType.Bottom,
+      };
+    case ExampleStagePanelType.Left:
+      return {
+        id: "inner",
+        type: StagePanelType.Left,
+      };
+    case ExampleStagePanelType.Right:
+      return {
+        id: "inner",
+        type: StagePanelType.Right,
+      };
+    case ExampleStagePanelType.Top:
+      return {
+        id: "inner",
+        type: StagePanelType.Top,
+      };
+  }
+};
+
 const hiddenZoneTools: HiddenZoneTools = {
   1: {
     horizontal: {
@@ -1967,7 +2277,6 @@ const hiddenZoneTools: HiddenZoneTools = {
       },
       toolSettings: {
         id: "toolSettings",
-        isActive: true,
       },
     },
     vertical: {
@@ -2205,143 +2514,183 @@ const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
 
 const initialTheme: Theme = "light";
 
-interface State {
-  contentBounds: { [id in WidgetZoneIndex]?: RectangleProps };
-  isBackstageOpen: boolean;
+interface ZonesExampleProps {
+  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
   isTooltipVisible: boolean;
   message: VisibleMessage;
-  nineZone: NineZoneProps;
+  zones: ZonesManagerProps;
+  onAppButtonClick: () => void;
+  onCloseBottomMostPanel: () => void;
+  onHideMessage: () => void;
+  onLayout: () => void;
+  onOpenWidgetChange: (openWidget: FooterWidget) => void;
+  onResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+  onStagePanelInitialize: (size: number, type: ExampleStagePanelType) => void;
+  onStagePanelResize: (resizeBy: number, type: ExampleStagePanelType) => void;
+  onStagePanelTargetChanged: (target: ExampleStagePanelType | undefined) => void;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  onToggleCollapse: (panel: ExampleStagePanelType) => void;
+  onTargetChanged: TargetChangedFn;
+  onPaneTargetChanged: SplitterPaneTargetChangedFn;
+  onTooltipTimeout: () => void;
+  onZoneResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
   openWidget: FooterWidget;
-  theme: Theme;
-  toolSettingsMode: ToolSettingsMode;
-  tools: ZoneTools | HiddenZoneTools;
+  stagePanels: ExampleNestedStagePanelsProps;
   toastMessageKey: number;
+  zonesMeasurer: React.Ref<HTMLDivElement>;
 }
 
-export default class ZonesExample extends React.PureComponent<{}, State> {
-  private _handleWidgetTabDrag: ScheduleFn<WidgetTabDragFn>;
-  private _handleZoneResize: ScheduleFn<ZoneResizeFn>;
-  private _contentRefs = new Map<WidgetZoneIndex, React.RefObject<HTMLDivElement>>();
+interface ZonesExampleState {
+  toolSettingsMode: ToolSettingsMode;
+  tools: ZoneTools | HiddenZoneTools;
+}
 
-  public readonly state: State = {
-    contentBounds: {},
-    isBackstageOpen: false,
-    isTooltipVisible: false,
-    message: VisibleMessage.None,
-    nineZone: DefaultStateManager.mergeZone(9, 6,
-      DefaultStateManager.setAllowsMerging(4, false,
-        getDefaultNineZoneProps(),
-      ),
-    ),
-    openWidget: FooterWidget.None,
-    theme: initialTheme,
-    toastMessageKey: 0,
+export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesExampleState> {
+  public readonly state: ZonesExampleState = {
     tools: zoneTools,
     toolSettingsMode: ToolSettingsMode.Open,
   };
 
-  public constructor(p: {}) {
-    super(p);
-
-    this._handleWidgetTabDrag = rafSchedule((dragged: PointProps) => {
-      this.setState((prevState) => ({
-        nineZone: DefaultStateManager.handleWidgetTabDrag(dragged, prevState.nineZone),
-      }));
-    });
-    this._handleZoneResize = rafSchedule((zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-      this.setState((prevState) => ({
-        nineZone: DefaultStateManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
-      }));
-    });
-  }
-
   public componentDidMount(): void {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
-    }));
-
     window.addEventListener("resize", this._handleWindowResize, true);
+
+    this.props.onLayout();
   }
 
   public componentWillUnmount(): void {
-    this._handleWidgetTabDrag.cancel();
     document.removeEventListener("resize", this._handleWindowResize, true);
   }
 
   public render() {
-    const nineZone = new NineZone(this.state.nineZone);
-    const zoneIds = Object.keys(this.state.nineZone.zones)
+    const nineZone = new NineZone(this.props.zones);
+    const zoneIds = Object.keys(this.props.zones.zones)
       .map((key) => Number(key) as WidgetZoneIndex);
-    const tabs = zoneIds.reduce<Array<{ id: number, widget: Widget }>>((prev, zoneId) => {
-      const widget = nineZone.getWidget(zoneId);
-      const tabCount = getTabCount(zoneId);
-      for (let i = 1; i <= tabCount; i++) {
-        prev.push({ id: i, widget });
-      }
-      return prev;
-    }, []);
+    const size = Rectangle.create(this.props.zones.bounds).getSize();
     return (
-      <div
-        className={"nzdemo-pages-zones"}
-      >
-        <Content />
-        <Zones>
-          <TooltipExample
-            containerSize={this.state.nineZone.size}
-            isTooltipVisible={this.state.isTooltipVisible || false}
-            onTooltipTimeout={this._handleTooltipTimeout}
-          />
-          {zoneIds.map((zoneId) => this.getZone(zoneId, nineZone))}
-          {tabs.map((tab) => {
-            return (
-              <WidgetContentExample
-                anchor={tab.widget.zone.horizontalAnchor}
-                isDisplayed={tab.widget.props.tabIndex === tab.id}
-                key={`${tab.widget.props.id}_${tab.id}`}
-                onChangeTheme={this._handleChangeTheme}
-                onOpenActivityMessage={this._handleOpenActivityMessage}
-                onOpenToastMessage={this._handleOpenToastMessage}
-                onShowTooltip={this._handleShowTooltip}
-                onToggleFooterMode={this._handleToggleFooterMode}
-                renderTo={this.getContentRef(tab.widget.zone.props.id)}
-                tabIndex={tab.id}
-                theme={this.state.theme}
-                widgetId={tab.widget.props.id}
-              />
-            );
-          })}
-        </Zones>
-        <BackstageExample
-          isOpen={this.state.isBackstageOpen}
-          onClose={this._handleBackstageClose}
+      <Zones style={{
+        position: "absolute",
+        display: "flex",
+        flexDirection: "column",
+      }}>
+        <TooltipExample
+          containerSize={size}
+          isTooltipVisible={this.props.isTooltipVisible}
+          onTooltipTimeout={this.props.onTooltipTimeout}
         />
-      </div>
+        <StagePanels
+          bottomPanel={this.renderOuterStagePanel(ExampleStagePanelType.BottomMost)}
+        >
+          <StagePanels
+            bottomPanel={this.renderStagePanel(ExampleStagePanelType.Bottom)}
+            leftPanel={this.renderStagePanel(ExampleStagePanelType.Left)}
+            rightPanel={this.renderStagePanel(ExampleStagePanelType.Right)}
+            topPanel={this.renderStagePanel(ExampleStagePanelType.Top)}
+          >
+            <div
+              ref={this.props.zonesMeasurer}
+              style={{
+                height: "100%",
+                position: "relative",
+              }}
+            >
+              {zoneIds.map((zoneId) => this.renderZone(zoneId, nineZone))}
+            </div>
+          </StagePanels>
+        </StagePanels>
+        {this.renderStatusZone(nineZone.getStatusZone())}
+      </Zones>
     );
   }
 
-  private getZone(zoneId: WidgetZoneIndex, nineZone: NineZone) {
+  private renderStagePanel(exampleType: InnerStagePanelType) {
+    const draggingWidget = this.props.zones.draggingWidget;
+    const type = getStagePanelType(exampleType);
+    const panel = StagePanelsManager.getPanel(type, this.props.stagePanels.panels.inner);
+    if (panel.panes.length === 0) {
+      if (!draggingWidget)
+        return undefined;
+      return (
+        <StagePanelTargetExample
+          onTargetChanged={this.props.onStagePanelTargetChanged}
+          type={exampleType}
+        />
+      );
+    }
+
+    return (
+      <WidgetStagePanel
+        draggingWidget={draggingWidget}
+        getWidgetContentRef={this.props.getWidgetContentRef}
+        onInitialize={this.props.onStagePanelInitialize}
+        onPaneTargetChanged={this.props.onPaneTargetChanged}
+        onResize={this.props.onStagePanelResize}
+        onStagePanelTargetChanged={this.props.onStagePanelTargetChanged}
+        onTabClick={this.props.onTabClick}
+        onTabDragStart={this.props.onTabDragStart}
+        onTabDragEnd={this.props.onTabDragEnd}
+        onTabDrag={this.props.onTabDrag}
+        onToggleCollapse={this.props.onToggleCollapse}
+        panel={panel}
+        target={this.props.zones.target}
+        type={exampleType}
+        widgets={this.props.zones.widgets}
+      />
+    );
+  }
+
+  private renderOuterStagePanel(exampleType: OuterStagePanelType) {
+    const type = getStagePanelType(exampleType);
+    if (exampleType === ExampleStagePanelType.BottomMost && this.props.stagePanels.panels.outer.bottom.isVisible) {
+      return (
+        <StagePanel
+          type={type}
+        >
+          <div
+            style={{
+              background: "#eee",
+              padding: "10px 20px",
+              display: "grid",
+              alignItems: "center",
+              gridAutoFlow: "column",
+              gridAutoColumns: "1fr auto",
+              boxSizing: "border-box",
+            }}
+          >
+            Custom content of bottom most panel.
+          <HollowButton onClick={this.props.onCloseBottomMostPanel} style={{ float: "right" }}>X</HollowButton>
+          </div>
+        </StagePanel>
+      );
+    }
+    return undefined;
+  }
+
+  private renderZone(zoneId: WidgetZoneIndex, nineZone: NineZone) {
     switch (zoneId) {
       case 1:
-        return this.getZone1();
+        return this.renderZone1();
       case 2:
-        return this.getZone2();
+        return this.renderZone2();
       case 3:
-        return this.getZone3();
+        return this.renderZone3();
       case 8:
-        return this.getStatusZone(nineZone.getStatusZone());
+        return undefined;
       default:
-        return this.getFloatingZone(nineZone.getWidgetZone(zoneId));
+        return this.renderFloatingZone(nineZone.getWidgetZone(zoneId));
     }
   }
 
-  private getZone1() {
+  private renderZone1() {
     const zoneId = 1;
     return (
       <Zone1
-        bounds={this.state.nineZone.zones[zoneId].bounds}
+        bounds={this.props.zones.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
         key={zoneId}
-        onAppButtonClick={this._handleAppButtonClick}
+        onAppButtonClick={this.props.onAppButtonClick}
         onHistoryItemClick={this._handleHistoryItemClick}
         onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
         onOpenPanelGroup={this._handleExpandPanelGroup}
@@ -2354,11 +2703,11 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private getZone2() {
+  private renderZone2() {
     const zoneId = 2;
     return (
       <Zone
-        bounds={this.state.nineZone.zones[zoneId].bounds}
+        bounds={this.props.zones.zones[zoneId].bounds}
         key={zoneId}
       >
         {this.state.tools[1].horizontal.toolSettings.isActive ?
@@ -2371,11 +2720,11 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private getZone3() {
+  private renderZone3() {
     const zoneId = 3;
     return (
       <Zone3
-        bounds={this.state.nineZone.zones[zoneId].bounds}
+        bounds={this.props.zones.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
         key={zoneId}
         onHistoryItemClick={this._handleHistoryItemClick}
@@ -2391,10 +2740,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private getStatusZone(zone: StatusZoneManager) {
+  private renderStatusZone(zone: StatusZoneManagerHelper) {
     const isRectangularWidget = zone.props.widgets.length > 1;
     if (isRectangularWidget)
-      return this.getFloatingZone(zone);
+      return this.renderFloatingZone(zone);
 
     const outlineBounds = zone.getGhostOutlineBounds();
     const dropTarget = zone.getDropTarget();
@@ -2406,69 +2755,72 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         dropTarget={dropTarget}
         isInFooterMode={zone.props.isInFooterMode}
         key={zone.id}
-        message={this.state.message}
-        onTargetChanged={this._handleTargetChanged}
+        message={this.props.message}
+        onHideMessage={this.props.onHideMessage}
+        onOpenWidgetChange={this.props.onOpenWidgetChange}
+        onTargetChanged={this.props.onTargetChanged}
+        openWidget={this.props.openWidget}
         outlineBounds={outlineBounds}
-        onHideMessage={this._handleHideMessage}
-        onOpenWidgetChange={this._handleOpenWidgetChange}
-        openWidget={this.state.openWidget}
         targetBounds={zone.props.bounds}
-        toastMessageKey={this.state.toastMessageKey}
+        toastMessageKey={this.props.toastMessageKey}
       />
     );
   }
 
-  private getFloatingZone(zone: WidgetZone) {
+  private renderFloatingZone(zone: WidgetZone) {
     const bounds = zone.props.floating ? zone.props.floating.bounds : zone.props.bounds;
-    const outlineBounds = zone.getGhostOutlineBounds();
     const dropTarget = zone.getDropTarget();
-    const draggingWidget = zone.nineZone.draggingWidget && zone.nineZone.draggingWidget.zone.id === zone.id ?
-      zone.nineZone.draggingWidget.props : undefined;
     const floating = zone.props.floating;
-    const style: React.CSSProperties | undefined = floating ? { zIndex: floating.stackId } : undefined;
+    const zIndex: React.CSSProperties | undefined = floating ? { zIndex: floating.stackId } : undefined;
+    const draggingWidget = zone.nineZone.draggingWidget && zone.nineZone.draggingWidget.zone && zone.nineZone.draggingWidget.zone.id === zone.id ?
+      zone.nineZone.draggingWidget.props : undefined;
+    const outlineBounds = zone.getGhostOutlineBounds();
+    const widgets = zone.getWidgets();
+    const widget = widgets.length > 0 ? widgets[0] : undefined;
     return (
-      <span
+      <React.Fragment
         key={zone.id}
-        style={style}
       >
-        <FloatingZoneWidget
+        <Zone
           bounds={bounds}
-          contentRef={this.getContentRef(zone.id)}
-          draggingWidget={draggingWidget}
-          horizontalAnchor={zone.horizontalAnchor}
-          onResize={this._handleZoneResize}
-          onTabClick={this._handleWidgetTabClick}
-          onTabDragStart={this._handleWidgetTabDragStart}
-          onTabDragEnd={this._handleWidgetTabDragEnd}
-          onTabDrag={this._handleWidgetTabDrag}
-          verticalAnchor={zone.verticalAnchor}
-          zone={zone.props}
-        />
+          isFloating={floating ? true : false}
+          style={zIndex}
+        >
+          {widget && <FloatingWidget
+            draggingWidget={draggingWidget}
+            fillZone={zone.props.isLayoutChanged || !!zone.props.floating}
+            getWidgetContentRef={this.props.getWidgetContentRef}
+            horizontalAnchor={widget.props.horizontalAnchor}
+            isCollapsed={false}
+            isFloating={!!zone.props.floating}
+            isInStagePanel={false}
+            key={zone.id}
+            onResize={this.props.onResize}
+            onTabClick={this.props.onTabClick}
+            onTabDrag={this.props.onTabDrag}
+            onTabDragEnd={this.props.onTabDragEnd}
+            onTabDragStart={this.props.onTabDragStart}
+            verticalAnchor={widget.props.verticalAnchor}
+            widgets={zone.props.widgets}
+            zonesWidgets={this.props.zones.widgets}
+          />}
+        </Zone>
         <ZoneTargetExample
           bounds={zone.props.bounds}
           dropTarget={dropTarget}
           zoneIndex={zone.id}
-          onTargetChanged={this._handleTargetChanged}
+          onTargetChanged={this.props.onTargetChanged}
         />
         {outlineBounds && <Outline bounds={outlineBounds} />}
-      </span>
+      </React.Fragment>
     );
   }
 
-  private getContentRef(widget: WidgetZoneIndex) {
-    const ref = this._contentRefs.get(widget);
-    if (ref)
-      return ref;
-    const newRef = React.createRef<HTMLDivElement>();
-    this._contentRefs.set(widget, newRef);
-    return newRef;
-  }
-
-  private locateTool(location: ToolLocation, state: State): Tool {
+  private locateTool(location: ToolLocation, state: ZonesExampleState): Tool {
     return state.tools[location.zoneKey][location.directionKey][location.toolId];
   }
 
-  private findToolLocation(predicate: (tool: Tool) => boolean, state: State): ToolLocation | undefined {
+  private findToolLocation(predicate: (tool: Tool) => boolean, state: ZonesExampleState): ToolLocation | undefined {
     for (const zoneKey of zoneKeys) {
       for (const directionKey of directionKeys) {
         const tools = state.tools[zoneKey][directionKey];
@@ -2487,21 +2839,21 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return undefined;
   }
 
-  private findTool(predicate: (tool: Tool) => boolean, state: State): Tool | undefined {
+  private findTool(predicate: (tool: Tool) => boolean, state: ZonesExampleState): Tool | undefined {
     const location = this.findToolLocation(predicate, state);
     if (!location)
       return undefined;
     return this.locateTool(location, state);
   }
 
-  private getToolLocation(toolId: string, state: State): ToolLocation {
+  private getToolLocation(toolId: string, state: ZonesExampleState): ToolLocation {
     const toolLocation = this.findToolLocation((tool) => tool.id === toolId, state);
     if (!toolLocation)
       throw new ReferenceError();
     return toolLocation;
   }
 
-  private getLocationOfToolWithOpenPanel(state: State) {
+  private getLocationOfToolWithOpenPanel(state: ZonesExampleState) {
     return this.findToolLocation((tool) => {
       if (isToolGroup(tool) && tool.isPanelOpen)
         return true;
@@ -2509,7 +2861,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }, state);
   }
 
-  private getActiveTool(state: State): Tool | undefined {
+  private getActiveTool(state: ZonesExampleState): Tool | undefined {
     return this.findTool((tool) => {
       if (tool.isActive)
         return true;
@@ -2517,19 +2869,19 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }, state);
   }
 
-  private getToolWithOpenPanel(state: State): Tool | undefined {
+  private getToolWithOpenPanel(state: ZonesExampleState): Tool | undefined {
     const location = this.getLocationOfToolWithOpenPanel(state);
     if (!location)
       return undefined;
     return this.locateTool(location, state);
   }
 
-  private getTool(toolId: string, state: State): Tool {
+  private getTool(toolId: string, state: ZonesExampleState): Tool {
     const location = this.getToolLocation(toolId, state);
     return this.locateTool(location, state);
   }
 
-  private toggleIsDisabledForSomeTools(isDisabled: boolean, state: State): State {
+  private toggleIsDisabledForSomeTools(isDisabled: boolean, state: ZonesExampleState): ZonesExampleState {
     return {
       ...state,
       tools: {
@@ -2562,7 +2914,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     };
   }
 
-  private toggleIsHiddenForSomeTools(isHidden: boolean, state: State): State {
+  private toggleIsHiddenForSomeTools(isHidden: boolean, state: ZonesExampleState): ZonesExampleState {
     return {
       ...state,
       tools: {
@@ -2614,7 +2966,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     };
   }
 
-  private deactivateTool(toolId: string, state: State): State {
+  private deactivateTool(toolId: string, state: ZonesExampleState): ZonesExampleState {
     const tool = this.getTool(toolId, state);
     if (!tool.isActive)
       return state;
@@ -2648,7 +3000,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return state;
   }
 
-  private activateTool(toolId: string, state: State): State {
+  private activateTool(toolId: string, state: ZonesExampleState): ZonesExampleState {
     const location = this.getToolLocation(toolId, state);
     const tool = this.locateTool(location, state);
     if (!isToolGroup(tool)) {
@@ -2687,7 +3039,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return state;
   }
 
-  private closePanel(toolId: string, state: State): State {
+  private closePanel(toolId: string, state: ZonesExampleState): ZonesExampleState {
     const tool = this.getTool(toolId, state);
     if (!isToolGroup(tool))
       return state;
@@ -2716,7 +3068,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return state;
   }
 
-  private openPanel(toolId: string, state: State): State {
+  private openPanel(toolId: string, state: ZonesExampleState): ZonesExampleState {
     const tool = this.getTool(toolId, state);
     if (!isToolGroup(tool))
       return state;
@@ -2741,12 +3093,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         },
       },
     };
-  }
-
-  private _handleTooltipTimeout = () => {
-    this.setState(() => ({
-      isTooltipVisible: false,
-    }));
   }
 
   private _handleToolClick = (toolId: string) => {
@@ -2830,18 +3176,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleAppButtonClick = () => {
-    this.setState(() => ({
-      isBackstageOpen: true,
-    }));
-  }
-
-  private _handleBackstageClose = () => {
-    this.setState(() => ({
-      isBackstageOpen: false,
-    }));
-  }
-
   private _handleHistoryItemClick = (item: HistoryItem) => {
     this.setState((prevState) => {
       const location = this.getToolLocation(item.toolId, prevState);
@@ -2910,42 +3244,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleWindowResize = () => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
-    }));
-  }
-
-  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
-    }));
-
-    if (widgetId === StatusZoneManager.id)
-      this._handleWidgetTabDragEnd();
-  }
-
-  private _handleWidgetTabDragEnd = () => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.handleWidgetTabDragEnd(prevState.nineZone),
-    }));
-  }
-
-  private _handleTargetChanged = (target: TargetZoneProps | undefined) => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.handleTargetChanged(target, prevState.nineZone),
-    }));
-  }
-
-  private _handleShowTooltip = () => {
-    this.setState(() => ({
-      isTooltipVisible: true,
-    }));
+    this.props.onLayout();
   }
 
   private _handleExpandPanelGroup = (toolId: string, trayId: string | undefined) => {
@@ -3009,6 +3308,307 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
+  private _handleToolSettingsTabClick = () => {
+    this.setState((prevState) => ({
+      toolSettingsMode: prevState.toolSettingsMode === ToolSettingsMode.Minimized ? ToolSettingsMode.Open : ToolSettingsMode.Minimized,
+    }));
+  }
+}
+
+interface ZonesPageState {
+  isBackstageOpen: boolean;
+  isTooltipVisible: boolean;
+  message: VisibleMessage;
+  nineZone: ExampleZonesManagerProps;
+  openWidget: FooterWidget;
+  theme: Theme;
+  toastMessageKey: number;
+  widgetIdToContent: Partial<{ [id in WidgetZoneIndex]: HTMLDivElement | undefined }>;
+}
+
+const defaultNineZoneStagePanelsManagerProps = getDefaultNineZoneStagePanelsManagerProps();
+
+export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
+  private _handleTabDrag: ScheduleFn<WidgetTabDragFn>;
+  private _handleZoneResize: ScheduleFn<ZoneResizeFn>;
+  private _handleStagePanelResize: ScheduleFn<StagePanelResizeFn>;
+
+  private _nineZone = new NineZoneManager();
+  private _widgetContentRefs = new Map<WidgetZoneIndex, React.Ref<HTMLDivElement>>();
+  private _zonesMeasurer = React.createRef<HTMLDivElement>();
+
+  public readonly state: ZonesPageState = {
+    isBackstageOpen: false,
+    isTooltipVisible: false,
+    message: VisibleMessage.None,
+    nineZone: {
+      nested: {
+        panels: {
+          inner: defaultNineZoneStagePanelsManagerProps,
+          outer: {
+            ...defaultNineZoneStagePanelsManagerProps,
+            bottom: {
+              ...defaultNineZoneStagePanelsManagerProps.bottom,
+              isVisible: false,
+            },
+          },
+        },
+      },
+      zones: this._nineZone.getZonesManager().setAllowsMerging(4, false,
+        getDefaultZonesManagerProps(),
+      ),
+    },
+    openWidget: FooterWidget.None,
+    theme: initialTheme,
+    toastMessageKey: 0,
+    widgetIdToContent: {},
+  };
+
+  public constructor(p: {}) {
+    super(p);
+
+    this._handleTabDrag = rafSchedule((dragged: PointProps) => {
+      this.setState((prevState) => {
+        const zones = this._nineZone.getZonesManager().handleWidgetTabDrag(dragged, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
+    });
+    this._handleZoneResize = rafSchedule((zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+      this.setState((prevState) => {
+        const zones = this._nineZone.getZonesManager().handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone.zones);
+        if (zones === prevState.nineZone.zones)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            zones,
+          },
+        };
+      });
+    });
+    this._handleStagePanelResize = rafSchedule((resizeBy: number, type: ExampleStagePanelType) => {
+      const panel = getNestedStagePanel(type);
+      this.setState((prevState) => {
+        const nested = this._nineZone.getNestedPanelsManager().resize(panel, resizeBy, prevState.nineZone.nested);
+        if (nested === prevState.nineZone.nested)
+          return null;
+        return {
+          nineZone: {
+            ...prevState.nineZone,
+            nested,
+          },
+        };
+      });
+    });
+  }
+
+  public componentWillUnmount(): void {
+    this._handleTabDrag.cancel();
+    this._handleZoneResize.cancel();
+  }
+
+  public componentDidUpdate() {
+    if (!this._zonesMeasurer.current)
+      return;
+    const bounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
+    if (bounds.equals(this.state.nineZone.zones.bounds))
+      return;
+    this._handleLayout();
+  }
+
+  public render() {
+    const nineZone = new NineZone(this.state.nineZone.zones);
+    const zoneIds = Object.keys(this.state.nineZone.zones.zones)
+      .map((key) => Number(key) as WidgetZoneIndex);
+    const tabs = zoneIds.reduce<Array<{ id: number, widget: Widget }>>((prev, zoneId) => {
+      const widget = nineZone.getWidget(zoneId);
+      const tabCount = getTabCount(zoneId);
+      for (let i = 0; i <= tabCount; i++) {
+        prev.push({
+          id: i,
+          widget,
+        });
+      }
+      return prev;
+    }, []);
+    return (
+      <>
+        <Content />
+        <ZonesExample
+          getWidgetContentRef={this._getWidgetContentRef}
+          isTooltipVisible={this.state.isTooltipVisible}
+          message={this.state.message}
+          zones={this.state.nineZone.zones}
+          onAppButtonClick={this._handleAppButtonClick}
+          onCloseBottomMostPanel={this._handleToggleBottomMostPanel}
+          onHideMessage={this._handleHideMessage}
+          onLayout={this._handleLayout}
+          onOpenWidgetChange={this._handleOpenWidgetChange}
+          onResize={this._handleZoneResize}
+          onStagePanelInitialize={this._handleStagePanelInitialize}
+          onStagePanelResize={this._handleStagePanelResize}
+          onStagePanelTargetChanged={this._handleStagePanelTargetChanged}
+          onPaneTargetChanged={this._handlePaneTargetChanged}
+          onTabClick={this._handleTabClick}
+          onTabDrag={this._handleTabDrag}
+          onTabDragEnd={this._handleTabDragEnd}
+          onTabDragStart={this._handleTabDragStart}
+          onTargetChanged={this._handleTargetChanged}
+          onToggleCollapse={this._handleStagePanelToggleCollapse}
+          onTooltipTimeout={this._handleTooltipTimeout}
+          onZoneResize={this._handleZoneResize}
+          openWidget={this.state.openWidget}
+          stagePanels={this.state.nineZone.nested}
+          toastMessageKey={this.state.toastMessageKey}
+          zonesMeasurer={this._zonesMeasurer}
+        />
+        {tabs.map((tab) => {
+          return (
+            <WidgetContentExample
+              anchor={tab.widget.props.horizontalAnchor}
+              isDisplayed={tab.widget.props.tabIndex === tab.id}
+              key={`${tab.widget.props.id}_${tab.id}`}
+              onChangeTheme={this._handleChangeTheme}
+              onOpenActivityMessage={this._handleOpenActivityMessage}
+              onOpenToastMessage={this._handleOpenToastMessage}
+              onShowTooltip={this._handleShowTooltip}
+              onToggleBottomMostPanel={this._handleToggleBottomMostPanel}
+              onToggleFooterMode={this._handleToggleFooterMode}
+              renderTo={this.state.widgetIdToContent[tab.widget.props.id]}
+              tabIndex={tab.id}
+              theme={this.state.theme}
+              widgetId={tab.widget.props.id}
+            />
+          );
+        })}
+        <BackstageExample
+          isOpen={this.state.isBackstageOpen}
+          onClose={this._handleBackstageClose}
+        />
+      </>
+    );
+  }
+
+  private _getWidgetContentRef = (widget: WidgetZoneIndex) => {
+    const ref = this._widgetContentRefs.get(widget);
+    if (ref)
+      return ref;
+    const newRef = (el: HTMLDivElement | null) => {
+      this.setState((prevState) => ({
+        widgetIdToContent: {
+          ...prevState.widgetIdToContent,
+          [widget]: el === null ? undefined : el,
+        },
+      }));
+    };
+    this._widgetContentRefs.set(widget, newRef);
+    return newRef;
+  }
+
+  private _handleBackstageClose = () => {
+    this.setState(() => ({ isBackstageOpen: false }));
+  }
+
+  private _handleAppButtonClick = () => {
+    this.setState(() => ({ isBackstageOpen: true }));
+  }
+
+  private _handleTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
+    this.setState((prevState) => {
+      const nineZone = this._nineZone.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
+      if (nineZone === prevState.nineZone)
+        return null;
+      return {
+        nineZone,
+      };
+    });
+  }
+
+  private _handleTabDragEnd = () => {
+    this.setState((prevState) => {
+      const nineZone = this._nineZone.handleWidgetTabDragEnd(prevState.nineZone);
+      if (nineZone === prevState.nineZone)
+        return null;
+      return {
+        nineZone,
+      };
+    });
+  }
+
+  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => {
+    this.setState((prevState) => {
+      const nineZone = this._nineZone.handleWidgetTabDragStart({
+        initialPosition,
+        widgetBounds,
+        widgetId,
+        tabId,
+      }, prevState.nineZone);
+      if (nineZone === prevState.nineZone)
+        return null;
+      return {
+        nineZone,
+      };
+    });
+
+    if (widgetId === StatusZoneManagerHelper.id)
+      this._handleTabDragEnd();
+  }
+
+  private _handleTargetChanged = (target: TargetZoneProps | undefined) => {
+    this.setState((prevState) => {
+      const zones = this._nineZone.getZonesManager().handleTargetChanged(target, prevState.nineZone.zones);
+      if (zones === prevState.nineZone.zones)
+        return null;
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
+  }
+
+  private _handleToggleFooterMode = () => {
+    this.setState((prevState) => {
+      const zones = this._nineZone.getZonesManager().setIsInFooterMode(!prevState.nineZone.zones.zones[StatusZoneManagerHelper.id].isInFooterMode, prevState.nineZone.zones);
+      const nineZone = zones === prevState.nineZone.zones ? prevState.nineZone : { ...prevState.nineZone, zones };
+      const openWidget = FooterWidget.None;
+      if (nineZone === prevState.nineZone && prevState.openWidget)
+        return null;
+      return {
+        nineZone,
+        openWidget,
+      };
+    });
+  }
+
+  private _handleLayout = () => {
+    if (!this._zonesMeasurer.current)
+      return;
+    const bounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
+    this.setState((prevState) => {
+      if (bounds.equals(prevState.nineZone.zones.bounds))
+        return null;
+
+      const zones = this._nineZone.getZonesManager().layout(bounds, prevState.nineZone.zones);
+      if (zones === prevState.nineZone.zones)
+        return null;
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          zones,
+        },
+      };
+    });
+  }
+
   private _handleChangeTheme = () => {
     this.setState((prevState) => {
       const theme = prevState.theme === "light" ? "dark" : "light";
@@ -3020,16 +3620,32 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleToggleFooterMode = () => {
-    this.setState((prevState) => ({
-      nineZone: DefaultStateManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZoneManager.id].isInFooterMode, prevState.nineZone),
-      openWidget: FooterWidget.None,
-    }));
+  private _handleToggleBottomMostPanel = () => {
+    this.setState((prevState) => {
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          nested: {
+            ...prevState.nineZone.nested,
+            panels: {
+              ...prevState.nineZone.nested.panels,
+              outer: {
+                ...prevState.nineZone.nested.panels.outer,
+                bottom: {
+                  ...prevState.nineZone.nested.panels.outer.bottom,
+                  isVisible: !prevState.nineZone.nested.panels.outer.bottom.isVisible,
+                },
+              },
+            },
+          },
+        },
+      };
+    });
   }
 
-  private _handleHideMessage = () => {
+  private _handleShowTooltip = () => {
     this.setState(() => ({
-      message: VisibleMessage.None,
+      isTooltipVisible: true,
     }));
   }
 
@@ -3046,15 +3662,75 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
+  private _handleTooltipTimeout = () => {
+    this.setState(() => ({
+      isTooltipVisible: false,
+    }));
+  }
+
   private _handleOpenWidgetChange = (openWidget: FooterWidget) => {
     this.setState(() => ({
       openWidget,
     }));
   }
 
-  private _handleToolSettingsTabClick = () => {
-    this.setState((prevState) => ({
-      toolSettingsMode: prevState.toolSettingsMode === ToolSettingsMode.Minimized ? ToolSettingsMode.Open : ToolSettingsMode.Minimized,
+  private _handleHideMessage = () => {
+    this.setState(() => ({
+      message: VisibleMessage.None,
     }));
+  }
+
+  private _handleStagePanelInitialize = (size: number, type: ExampleStagePanelType) => {
+    const panel = getNestedStagePanel(type);
+    this.setState((prevState) => {
+      const nested = this._nineZone.getNestedPanelsManager().setSize(panel, size, prevState.nineZone.nested);
+      if (nested === prevState.nineZone.nested)
+        return null;
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          nested,
+        },
+      };
+    });
+  }
+
+  private _handleStagePanelTargetChanged = (type: ExampleStagePanelType | undefined) => {
+    let target;
+    if (type !== undefined) {
+      const panel = getNestedStagePanel(type);
+      target = {
+        panelId: panel.id,
+        panelType: panel.type,
+      };
+    }
+    this._nineZone.setPanelTarget(target);
+  }
+
+  private _handlePaneTargetChanged = (paneIndex: number | undefined, type: ExampleStagePanelType) => {
+    const panel = getNestedStagePanel(type);
+    this._nineZone.setPaneTarget(paneIndex === undefined ? undefined : {
+      paneIndex,
+      panelId: panel.id,
+      panelType: panel.type,
+    });
+  }
+
+  private _handleStagePanelToggleCollapse = (type: ExampleStagePanelType) => {
+    const panel = getNestedStagePanel(type);
+    this.setState((prevState) => {
+      const prevPanels = prevState.nineZone.nested.panels[panel.id];
+      const prevPanel = StagePanelsManager.getPanel(panel.type, prevPanels);
+      const nested = this._nineZone.getNestedPanelsManager().setIsCollapsed(panel, !prevPanel.isCollapsed, prevState.nineZone.nested);
+      if (nested === prevState.nineZone.nested)
+        return null;
+
+      return {
+        nineZone: {
+          ...prevState.nineZone,
+          nested,
+        },
+      };
+    });
   }
 }

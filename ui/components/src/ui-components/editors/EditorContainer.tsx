@@ -102,6 +102,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
     editorNode = this._propertyEditor.reactElement;
 
+    // istanbul ignore else
     if (React.isValidElement(editorNode)) {
       return React.cloneElement(editorNode, editorProps);
     }
@@ -145,12 +146,14 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private onPressEscape(e: React.KeyboardEvent): void {
-    e.stopPropagation();
+    if (this._editorRef && this._editorRef === document.activeElement)
+      e.stopPropagation();
     this._commitCancel();
   }
 
   private onPressEnter(e: React.KeyboardEvent): void {
-    e.stopPropagation();
+    if (this._editorRef && this._editorRef === document.activeElement)
+      e.stopPropagation();
     this._commit();   // tslint:disable-line: no-floating-promises
   }
 
@@ -160,6 +163,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   }
 
   private async isNewValueValid(value: PropertyValue): Promise<boolean> {
+    // istanbul ignore else
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
       if (validateResult.encounteredError) {
@@ -178,16 +182,20 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
   private _commit = async () => {
     const newValue = await this.getEditor().getPropertyValue();
+    // istanbul ignore else
     if (newValue) {
       const isValid = await this.isNewValueValid(newValue);
+      // istanbul ignore else
       if (isValid) {
         let doCommit = true;
+        // istanbul ignore else
         if (this._propertyEditor && this.props.propertyRecord) {
           const commitResult = await this._propertyEditor.commitValue(newValue, this.props.propertyRecord);
           if (commitResult.encounteredError)
             doCommit = false;
         }
 
+        // istanbul ignore else
         if (doCommit) {
           this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue });
         }

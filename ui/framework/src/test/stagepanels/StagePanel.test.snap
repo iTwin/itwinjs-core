@@ -1,8 +1,165 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`StagePanel renders correctly 1`] = `
-<div
-  className="uifw-stagepanel"
-  style={Object {}}
+exports[`StagePanel SplitterPaneTarget should render 1`] = `
+<SplitterPaneTarget
+  onTargetChanged={[Function]}
 />
+`;
+
+exports[`StagePanel should not render invisible widget definition react elements 1`] = `
+<StagePanel
+  className="uifw-stagepanel"
+  onResize={[Function]}
+  onToggleCollapse={[Function]}
+>
+  <div
+    style={
+      Object {
+        "height": "100%",
+        "position": "absolute",
+        "width": "100%",
+        "zIndex": -1,
+      }
+    }
+  />
+  <SplitterTarget
+    onTargetChanged={[Function]}
+    paneCount={1}
+    style={
+      Object {
+        "display": "none",
+      }
+    }
+  />
+  <Splitter
+    isGripHidden={[Function]}
+  />
+</StagePanel>
+`;
+
+exports[`StagePanel should not render w/o panes and target 1`] = `""`;
+
+exports[`StagePanel should not render w/o runtime props 1`] = `""`;
+
+exports[`StagePanel should render SplitterPaneTarget 1`] = `
+<StagePanel
+  className="uifw-stagepanel"
+  onResize={[Function]}
+  onToggleCollapse={[Function]}
+>
+  <div
+    style={
+      Object {
+        "height": "100%",
+        "position": "absolute",
+        "width": "100%",
+        "zIndex": -1,
+      }
+    }
+  />
+  <SplitterTarget
+    onTargetChanged={[Function]}
+    paneCount={1}
+    style={Object {}}
+  />
+  <Splitter
+    isGripHidden={[Function]}
+  >
+    <div
+      key="w-0"
+      style={
+        Object {
+          "height": "100%",
+          "position": "relative",
+        }
+      }
+    >
+      <WidgetStack
+        fillZone={true}
+        getWidgetContentRef={[Function]}
+        isCollapsed={[Function]}
+        isFloating={false}
+        isInStagePanel={true}
+        widgetChangeHandler={[Function]}
+        widgets={[Function]}
+        zoneDefProvider={[Function]}
+        zonesWidgets={[Function]}
+      />
+      <SplitterPaneTarget
+        onTargetChanged={[Function]}
+        paneIndex={0}
+      />
+    </div>
+  </Splitter>
+</StagePanel>
+`;
+
+exports[`StagePanel should render StagePanelTarget 1`] = `
+<StagePanelTarget
+  onTargetChanged={[Function]}
+/>
+`;
+
+exports[`StagePanel should render collapsed StagePanel 1`] = `
+<StagePanel
+  className="uifw-stagepanel"
+  onResize={[Function]}
+  onToggleCollapse={[Function]}
+>
+  <div
+    style={
+      Object {
+        "height": "100%",
+        "position": "absolute",
+        "width": "100%",
+        "zIndex": -1,
+      }
+    }
+  />
+  <SplitterTarget
+    onTargetChanged={[Function]}
+    paneCount={2}
+    style={
+      Object {
+        "display": "none",
+      }
+    }
+  />
+  <Splitter
+    isGripHidden={[Function]}
+  >
+    <div
+      key="wd-0"
+      style={
+        Object {
+          "display": "none",
+          "height": "100%",
+        }
+      }
+    >
+      <Component />
+    </div>
+    <div
+      key="w-0"
+      style={
+        Object {
+          "height": "100%",
+          "position": "relative",
+        }
+      }
+    >
+      <WidgetStack
+        fillZone={true}
+        getWidgetContentRef={[Function]}
+        isCollapsed={[Function]}
+        isFloating={false}
+        isInStagePanel={true}
+        widgetChangeHandler={[Function]}
+        widgets={[Function]}
+        zoneDefProvider={[Function]}
+        zonesWidgets={[Function]}
+      />
+    </div>
+  </Splitter>
+</StagePanel>
 `;

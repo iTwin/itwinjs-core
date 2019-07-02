@@ -188,7 +188,7 @@ export namespace IModelJson {
      * * The right side contains two vectors in an array.
      * * The first vector gives the x axis direction
      * * * This is normalized to unit length.
-     * * The second vector gives the positive y direction inthe xy plane.
+     * * The second vector gives the positive y direction in the xy plane.
      * * * This vector is adjusted to be unit length and perpendicular to the x direction.
      */
     xyVectors?: [XYZProps, XYZProps];
@@ -197,7 +197,7 @@ export namespace IModelJson {
      * * The right side contains two vectors in an array.
      * * The first vector gives the z axis direction
      * * * This is normalized to unit length.
-     * * The second vector gives the positive x direction inthe zx plane.
+     * * The second vector gives the positive x direction in the zx plane.
      * * * This vector is adjusted to be unit length and perpendicular to the z direction.
      */
     zxVectors?: [XYZProps, XYZProps];
@@ -210,7 +210,7 @@ export namespace IModelJson {
   export interface ArcByVectorProps {
     /** Arc center point */
     center: XYZProps;
-    /** Vector from center to 0-degree point (commonly callled major axis vector) */
+    /** Vector from center to 0-degree point (commonly called major axis vector) */
     vectorX: XYZProps;
     /** Vector from center to 90-degree point (common called minor axis vector) */
     vectorY: XYZProps;
@@ -288,7 +288,7 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for a surface with ruled sweeps between corresponding curves on successvie contours
+   * Interface for a surface with ruled sweeps between corresponding curves on successive contours
    * @public
    */
   export interface RuledSweepProps {
@@ -413,7 +413,7 @@ export namespace IModelJson {
     /** optional y radius */
     radiusY?: number;
 
-    /** optonal radius at poles.  */
+    /** optional radius at poles.  */
     radiusZ?: number;
 
     /** optional sweep range for latitude.  Default latitude limits are [-90,90 ] degrees. */
@@ -427,7 +427,7 @@ export namespace IModelJson {
    * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
    * * Both radii are required.
    * * axes are required
-   * * Axis definintion is
+   * * Axis definition is
    * * xy plane contains the major circle
    * * x axis points from donut hole center to flow center at start of pipe.
    * * z axis points through the hole.
@@ -464,7 +464,7 @@ export namespace IModelJson {
    * Interface for an indexed mesh.
    * * IMPORTANT: All indices are one-based.
    * * i.e. vertex index given as 11 appears at index 10 in the data array.
-   * * This is to allow a negated index to mean "don't draw the followinge edge"
+   * * This is to allow a negated index to mean "don't draw the following edge"
    * * Although negative indices are not allowed for normalIndex, colorIndex, or paramIndex, the "one based" style
    *     is used for them so that all indices within the indexedMesh json object are handled similarly.
    * * In all index arrays, a ZERO indicates "end of facet".
@@ -489,7 +489,7 @@ export namespace IModelJson {
     /** ONE BASED ZERO TERMINATED array of color indices. ZERO is terminator for single facet. */
     colorIndex?: [number];
   }
-  /** parser servoces for "iModelJson" schema
+  /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
    * * 2: parse json fragment to strongly typed geometry: `const g = reader.parse (fragment)`
    * @public
@@ -854,7 +854,7 @@ export namespace IModelJson {
 
     /** parse indexed mesh content to an IndexedPolyface instance */
     public static parseIndexedMesh(data?: any): any | undefined {
-      // {Coord:[[x,y,z],. . . ],   -- simple xyz for each ponit
+      // {Coord:[[x,y,z],. . . ],   -- simple xyz for each point
       // CoordIndex[1,2,3,0]    -- zero-terminated, one based !!!
       if (data.hasOwnProperty("point") && Array.isArray(data.point)
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
@@ -1071,7 +1071,7 @@ export namespace IModelJson {
       // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
       const radiusY = Reader.parseNumberProperty(json, "radiusX", radiusX);
       const radiusZ = Reader.parseNumberProperty(json, "radiusX", radiusX);
-      const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undfined!!
+      const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
 
       const axes = Reader.parseOrientation(json, true)!;
 
@@ -1269,7 +1269,7 @@ export namespace IModelJson {
      */
     public handleTransitionSpiral(data: TransitionSpiral3d): any {
       // TODO: HANDLE NONRIGID TRANSFORM !!
-      // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the orignial data
+      // the spiral may have indication of how it was defined.  If so, use defined/undefined state of the original data
       // as indication of what current data to use.  (Current data may have changed due to transforms.)
       const originalProperties = data.originalProperties;
 
@@ -1850,7 +1850,7 @@ export namespace IModelJson {
       }
       return members;
     }
-    /** Convert GeomeryQuery data (array or single instance) to instance to tagged json */
+    /** Convert GeometryQuery data (array or single instance) to instance to tagged json */
     public emit(data: any): any {
       if (Array.isArray(data))
         return this.emitArray(data);

@@ -35,6 +35,9 @@ describe("Point2d", () => {
     ck.testTrue(Point2d.create(epsilon, epsilon).isAlmostEqualMetric(alwaysZero), "is almost zero (epsilon)");
     ck.testPoint2d(alwaysZero, alwaysZeroA);
 
+    const p0 = Point2d.createFrom(undefined);
+    ck.testExactNumber(0, p0.maxAbs());
+
     ck.checkpoint("Point2d.zeros");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -281,16 +284,30 @@ describe("Point2d", () => {
     const v = Vector2d.create(3, 1);
     const b = a.plus(u);
     ck.testCoordinate(u.dotProduct(v), v.dotProductStartEnd(a, b));
-
+    const defaultFraction = 101.5;
+    ck.testExactNumber(defaultFraction, b.fractionOfProjectionToLine(a, a, defaultFraction));
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("MiscC", () => {
+  it("MiscD", () => {
     const ck = new bsiChecker.Checker();
     const u = Vector2d.create(5, 3);
     const v0 = Vector2d.create(0, 0);
     ck.testExactNumber(0, u.fractionOfProjectionToVector(v0));
+
+    const v1 = Vector2d.createFrom(new Float64Array([u.x, u.y]));
+    const v2 = Vector2d.createFrom(new Float64Array([u.x]));
+    ck.testVector2d(u, v1);
+    const v3 = Vector2d.createFrom(new Float64Array(0));
+    ck.testVector2d(v3, v0);
+    ck.testVector2d(v2, Vector2d.create(u.x, 0));
+
     ck.testUndefined(u.safeDivideOrNull(0));
+    ck.testUndefined(v0.scaleToLength(1));
+
+    const q1 = Vector2d.create(1, 2).normalize()!;
+    const r1 = q1.scale(-1.0);
+    ck.testUndefined(Vector2d.createOffsetBisector(q1, r1, 2.0), "undefined bisector for opposite normals");
 
     expect(ck.getNumErrors()).equals(0);
   });

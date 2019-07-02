@@ -36,7 +36,7 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
-import { ScheduleAnimationFrontstage} from "./frontstages/ScheduleAnimationFrontstage";
+import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
 
 /** Example Ui Configuration for an iModelJS App
@@ -387,7 +387,6 @@ export class AppUi {
       execute: () => {
         const isVisible = UiFramework.getIsUiVisible();
         UiFramework.setIsUiVisible(!isVisible);
-        // IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "F11", "Click F11 to restore view!"));
       },
     });
   }

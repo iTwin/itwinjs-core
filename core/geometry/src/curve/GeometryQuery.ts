@@ -65,7 +65,7 @@ export abstract class GeometryQuery {
           if (!childrenA[i].isAlmostEqual(childrenB[i])) return false;
         }
         return true;
-      } else if (childrenA || childrenB) {  // CurveCollections satr with empty arrays for children.  So these null pointer cases are never reached.
+      } else if (childrenA || childrenB) {  // CurveCollections start with empty arrays for children.  So these null pointer cases are never reached.
         return false;   // plainly different .
       } else {
         // both children null. call it equal?   This class should probably have implemented.

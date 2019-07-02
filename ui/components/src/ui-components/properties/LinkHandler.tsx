@@ -50,7 +50,7 @@ function renderText(text: string, record: PropertyRecord): React.ReactNode {
   for (const match of matches) {
     // If matches overlap there must be something wrong with the matcher
     if (lastIndex > match.start)
-      throw new BentleyError(BentleyStatus.ERROR, "renderAnchorTag: matcher returned overlapping matches");
+      throw new BentleyError(BentleyStatus.ERROR, "renderText: matcher returned overlapping matches");
 
     if (lastIndex < match.start)
       parts.push(text.substring(lastIndex, match.start));

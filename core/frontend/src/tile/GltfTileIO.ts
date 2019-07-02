@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { Tile } from "./TileTree";
+import { Tile } from "./Tile";
 import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
@@ -598,7 +598,7 @@ export namespace GltfTileIO {
       const materialName = JsonUtils.asString(primitive.material);
       const hasBakedLighting = undefined === primitive.attributes.NORMAL;
       const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
-      const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue, hasBakedLighting) : undefined;
+      const displayParams = this.createDisplayParams(materialValue, hasBakedLighting);
       if (undefined === displayParams)
         return undefined;
 

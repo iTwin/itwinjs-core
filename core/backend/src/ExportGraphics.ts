@@ -28,8 +28,12 @@ export interface ExportGraphicsMesh {
 export interface ExportGraphicsInfo {
   /** The element ID for the element the graphics originated from */
   elementId: Id64String;
+  /** ID for the [SubCategory]($imodeljs-backend) for these graphics  */
+  subCategory: Id64String;
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
   color: number;
+  /** If defined, ID for the [RenderMaterialElement]($imodeljs-backend) for these graphics */
+  materialId?: Id64String;
   /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
   textureId?: Id64String;
   /** The mesh for these graphics */

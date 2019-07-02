@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "react-testing-library";
+import { render } from "@testing-library/react";
 import { expect } from "chai";
 import { Checkbox } from "../../../ui-core/inputs/checkbox/Checkbox";
 import { InputStatus } from "../../../ui-core/inputs/InputStatus";
@@ -12,7 +12,13 @@ describe("Checkbox", () => {
   it("renders", () => {
     const checkbox = render(<Checkbox />);
 
-    expect(checkbox.container.innerHTML).to.matchSnapshot();
+    expect(checkbox.container.querySelector("input[type='checkbox']")).not.to.be.null;
+  });
+
+  it("renders with id", () => {
+    const checkbox = render(<Checkbox id="test" />);
+
+    expect(checkbox.container.querySelector("#test")).not.to.be.null;
   });
 
   it("renders with label", () => {

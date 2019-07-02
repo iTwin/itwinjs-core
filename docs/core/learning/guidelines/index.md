@@ -1,6 +1,7 @@
 # Tips and Guidelines for iModel.js
 
 * [TypeScript Coding Guideline](./typescript-coding-guidelines.md)
+* [API Release Tags](./release-tags-guidelines.md)
 * [Markdown Introduction](./markdown-intro.md)
 * [NPM Scripts](./npm-scripts-guidelines.md)
 

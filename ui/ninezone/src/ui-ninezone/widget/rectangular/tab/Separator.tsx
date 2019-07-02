@@ -13,6 +13,7 @@ import "./Separator.scss";
  * @alpha
  */
 export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
+  readonly isHorizontal?: boolean;
 }
 
 /** Rectangular widget tab separator. Used in [[Stacked]] component.
@@ -22,6 +23,7 @@ export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-separator",
+      this.props.isHorizontal && "nz-horizontal",
       this.props.className);
 
     return (

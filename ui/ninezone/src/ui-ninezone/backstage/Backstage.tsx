@@ -84,10 +84,8 @@ export class Backstage extends React.PureComponent<BackstageProps> {
   }
 
   private _onEsc = (event: KeyboardEvent): void => {
-    if (this.props.isOpen) {
-      if (event.key === "Escape") {
-        this._onClose();
-      }
+    if (this.props.isOpen && event.key === "Escape") {
+      this._onClose();
     }
   }
 }

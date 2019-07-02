@@ -28,6 +28,7 @@ export abstract class ItemDefBase {
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   public isActive: boolean = false;
+  public betaBadge: boolean = false;
   public applicationData?: any;
 
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
@@ -42,9 +43,12 @@ export abstract class ItemDefBase {
     me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
+    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;
 
-    if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;
-    if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
+    if (itemProps.applicationData !== undefined)
+      me.applicationData = itemProps.applicationData;
+    if (itemProps.iconSpec)
+      me.iconSpec = itemProps.iconSpec;
 
     me._label = PropsHelper.getStringSpec(itemProps.label, itemProps.labelKey);
     me._tooltip = PropsHelper.getStringSpec(itemProps.tooltip, itemProps.tooltipKey);

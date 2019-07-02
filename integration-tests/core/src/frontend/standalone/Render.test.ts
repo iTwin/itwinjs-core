@@ -12,11 +12,13 @@ import {
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
+  GeoConverter,
   OffScreenViewport,
   SpatialViewState,
   Viewport,
   ViewRect,
 } from "@bentley/imodeljs-frontend";
+import { Point2d } from "@bentley/geometry-core";
 
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
@@ -130,7 +132,7 @@ describe("Render mirukuru", () => {
       // With lighting off, pixels should be either pure black (background) or pure white (rectangle)
       // NB: Shouldn't really modify view flags in place but meh.
       const vf = vp.view.viewFlags;
-      vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.lighting = false;
       vp.invalidateRenderPlan();
       await vp.drawFrame();
 
@@ -160,13 +162,52 @@ describe("Render mirukuru", () => {
     });
   });
 
+  it("should read image at expected sizes", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      let imgBuffer = vp.readImage();
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 2), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 4), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 2), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+
+      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 4), true);
+      expect(imgBuffer).to.not.be.undefined;
+      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
+      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
+      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
+      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
+    });
+  });
+
   it("should override symbology", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
       const elemId = "0x29";
       const subcatId = "0x18";
       const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
 
       type AddFeatureOverrides = (overrides: FeatureSymbology.Overrides, viewport: Viewport) => void;
       class RenderTestOverrideProvider implements FeatureOverrideProvider {
@@ -292,7 +333,7 @@ describe("Render mirukuru", () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
       const vf = vp.view.viewFlags;
-      vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
+      vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
       vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
 
       await vp.waitForAllTilesToRender();
@@ -377,6 +418,35 @@ describe("Render mirukuru", () => {
       expect(range).to.be.undefined;
       expect(myRange.minimum).to.equal(1);
       expect(myRange.maximum).to.equal(0);
+    });
+  });
+
+  it("should use GCS to transform map tiles", async () => {
+    // Project extents must be large enough to prevent linear transform from being used.
+    const extents = imodel.projectExtents.clone();
+    const linearRangeSquared = extents.diagonal().magnitudeSquared();
+    if (linearRangeSquared < 1000 * 1000) {
+      extents.scaleAboutCenterInPlace(1000);
+      imodel.projectExtents = extents;
+    }
+
+    expect(imodel.projectExtents.diagonal().magnitudeSquared()).least(1000 * 1000);
+
+    const fullRect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
+      const vf = vp.viewFlags.clone();
+      vf.backgroundMap = true;
+      vp.viewFlags = vf;
+
+      await vp.waitForAllTilesToRender();
+      const mapTreeRef = vp.displayStyle.backgroundMap;
+      const mapTree = mapTreeRef.treeOwner.tileTree!;
+      expect(mapTree).not.to.be.undefined;
+
+      const loader = mapTree.loader; // instance of non-exported class WebMapTileLoader;
+      const childCreator = (loader as any)._childTileCreator; // instance of non-exported class GeoTransformChildCreator
+      const converter = childCreator._converter;
+      expect(converter).instanceof(GeoConverter);
     });
   });
 });

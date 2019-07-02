@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 "use strict";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+// ------------------------------- NOTE -----------------------------------
+// Do not edit buildIModelJsModule.js !!!
+// It is compiled from buildIModelJsModule.ts and is under source code control
+// so it can be reliably made into an npm binary (see "bin" in package.json).
+// ------------------------------- NOTE -----------------------------------
 const path = require("path");
 const fs = require("fs");
 const yargs = require("yargs");

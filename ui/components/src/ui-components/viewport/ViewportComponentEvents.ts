@@ -99,8 +99,15 @@ export class ViewportComponentEvents {
     if (undefined !== this._removeListener)
       return;
 
-    if (IModelApp.viewManager)  // Not set in unit test environment
-      this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
+    this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
+  }
+
+  /** @internal - for unit testing */
+  public static terminate() {
+    if (this._removeListener) {
+      this._removeListener();
+      this._removeListener = undefined;
+    }
   }
 
   public static face = Face.None;
@@ -134,14 +141,14 @@ export class ViewportComponentEvents {
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
-    if (viewport.view) {
-      this.origin.setFrom(viewport.view.getOrigin());
-      this.extents.setFrom(viewport.view.getExtents());
-    }
-    this.rotationMatrix.setFrom(viewport.rotation);
-
     // When handling onViewChanged, use setTimeout
     setTimeout(() => {
+      if (viewport.view) {
+        this.origin.setFrom(viewport.view.getOrigin());
+        this.extents.setFrom(viewport.view.getExtents());
+      }
+      this.rotationMatrix.setFrom(viewport.rotation);
+
       this.onViewRotationChangeEvent.emit({ viewport, animationTime });
     });
   }

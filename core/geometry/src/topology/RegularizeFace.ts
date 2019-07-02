@@ -7,9 +7,9 @@
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
-
+//   /* tslint:disable:no-console */
 /**
- * * Contexty for regularizing single faces.
+ * * Context for regularizing single faces.
  * @internal
  */
 export class RegularizationContext {
@@ -83,6 +83,50 @@ export class RegularizationContext {
       nodeA = nodeB;
     } while (nodeA !== faceSeed);
   }
+
+  /**
+   * Collect (and classify) all the edges in an array.
+   * * The various arrays are collected: upEdges, downEdges, topPeaks, bottomPeaks, upChains, downChains
+   * @param candidateEdges array of edges.
+   */
+  public collectVerticalEventFromEdgesInAndArray(candidateEdges: HalfEdge[]) {
+    let nodeA;
+    let nodeB;
+    let nodeC;
+    let abUp;
+    let bcUp;
+    this.upEdges.length = 0;
+    this.downEdges.length = 0;
+    this.topPeaks.length = 0;
+    this.bottomPeaks.length = 0;
+    this.localMin.length = 0;
+    this.localMax.length = 0;
+    for (nodeA of candidateEdges) {
+      nodeB = nodeA.faceSuccessor;
+      nodeC = nodeB.faceSuccessor;
+      abUp = HalfEdgeGraphOps.compareNodesYXUp(nodeA, nodeB) < 0;
+      bcUp = HalfEdgeGraphOps.compareNodesYXUp(nodeB, nodeC) < 0;
+      if (abUp) {
+        this.upEdges.push(nodeA);
+        if (!bcUp) {
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) < 0)
+            this.localMax.push(nodeB);
+          else
+            this.topPeaks.push(nodeB);
+        }
+
+      } else { // ab is DOWN
+        this.downEdges.push(nodeA);
+        if (bcUp) {
+          if (HalfEdgeGraphOps.crossProductToTargets(nodeB, nodeA, nodeC) > 0)
+            this.bottomPeaks.push(nodeB);
+          else
+            this.localMin.push(nodeB);
+        }
+      }
+    }
+  }
+
   private swapArrays() {
     let save = this.downEdges; this.downEdges = this.upEdges; this.upEdges = save;
     save = this.localMax; this.localMax = this.localMin; this.localMin = save;
@@ -110,7 +154,10 @@ export class RegularizationContext {
       if (rightBase === node || rightTop === node)
         continue;
       // for horizontal edge cases -- require edges ends to have strict sign change (no zeros!!)
-      if (HalfEdgeGraphOps.compareNodesYXUp(node, rightBase) * HalfEdgeGraphOps.compareNodesYXUp(node, rightTop) > 0)
+      const cRight = HalfEdgeGraphOps.compareNodesYXUp(node, rightBase);
+      const cTop = HalfEdgeGraphOps.compareNodesYXUp(node, rightTop);
+      // console.log(node.id, rightBase.id, rightTop.id, cRight, cTop);
+      if (cRight * cTop >= 0)
         continue;
       const fraction = HalfEdge.horizontalScanFraction01(rightBase, y0);
       if (fraction !== undefined) {
@@ -206,15 +253,16 @@ export class RegularizationContext {
    * @param upSweep true to do the upward sweep.
    * @param downSweep true to do the downward sweep.
    */
-  public regularizeFace(faceSeed: HalfEdge, upSweep: boolean = true, downSweep: boolean = true) {
+  private runRegularization(upSweep: boolean = true, downSweep: boolean = true) {
     if (upSweep) {
-      this.collectVerticalEventsAroundFace(faceSeed);
       this.bottomPeaks.sort(HalfEdgeGraphOps.compareNodesYXUp);
       for (const bottomPeak of this.bottomPeaks) {
+        // console.log("SEARCH", bottomPeak.id, [bottomPeak.x, bottomPeak.y]);
         if (!HalfEdgeGraphOps.isDownPeak(bottomPeak))
           continue;
         const target = this.downwardConnectionFromBottomPeak(bottomPeak);
         if (target !== undefined) {
+          // console.log("join", bottomPeak.id, [bottomPeak.x, bottomPeak.y], target.id, [target.x, target.y]);
           this.joinNodes(bottomPeak, target);
         }
       }
@@ -237,6 +285,28 @@ export class RegularizationContext {
       this.swapArrays();
     }
   }
+
+  /**
+   * Regularize a single face.
+   * * Insert edge from any downward interior vertex to something lower
+   * * Insert an edge from each upward interior vertex to something higher.
+   * * The face is split into smaller faces
+   * * Each final face has at most one "min" and one "max", and is easy to triangulate with a bottom to top sweep.
+   * * Normal usage is to sweep in both directions, i.e. use the default (true,true) for the upSweep and downSweep parameters.
+   * @param faceSeed any representative half edge on the face
+   * @param upSweep true to do the upward sweep.
+   * @param downSweep true to do the downward sweep.
+   */
+  public regularizeFace(faceSeed: HalfEdge, upSweep: boolean = true, downSweep: boolean = true) {
+    this.collectVerticalEventsAroundFace(faceSeed);
+    this.runRegularization(upSweep, downSweep);
+  }
+
+  public regularizeGraph(upSweep: boolean = true, downSweep: boolean = true) {
+    this.collectVerticalEventFromEdgesInAndArray(this.graph.allHalfEdges);
+    this.runRegularization(upSweep, downSweep);
+  }
+
   /** test if a single face is monotone;  if so, return its (single) min */
   public static isMonotoneFace(seed: HalfEdge): HalfEdge | undefined {
     let numMin = 0;
@@ -249,10 +319,12 @@ export class RegularizationContext {
       const ab = HalfEdgeGraphOps.compareNodesYXUp(nodeA, nodeB);
       const bc = HalfEdgeGraphOps.compareNodesYXUp(nodeB, nodeC);
       if (ab * bc <= 0) {
-        if (ab > 0) numMax++;
-        if (bc > 0) {
+        if (ab > 0) {
           numMin++;
           nodeMin = nodeB;
+        }
+        if (bc > 0) {
+          numMax++;
         }
       }
     } while ((nodeA = nodeA.faceSuccessor) !== seed);
