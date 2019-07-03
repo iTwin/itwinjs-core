@@ -205,6 +205,7 @@ export declare namespace IModelJsNative {
     public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
     public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
+    public static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
   }
 
   /**
