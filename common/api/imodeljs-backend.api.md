@@ -2251,6 +2251,8 @@ export namespace IModelJsNative {
         // (undocumented)
         startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
         // (undocumented)
+        static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
+        // (undocumented)
         updateElement(elemProps: string): IModelStatus;
         // (undocumented)
         updateElementAspect(aspectProps: string): IModelStatus;
