@@ -461,6 +461,8 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     categories: Id64String[];
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
@@ -1195,11 +1197,15 @@ export class Element extends Entity implements ElementProps {
     // @internal (undocumented)
     static readonly className: string;
     readonly code: Code;
+    // @alpha
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delete(): void;
     federationGuid?: GuidString;
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    // @alpha
+    getPredecessorIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -1509,6 +1515,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     category: Id64String;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -1523,6 +1531,8 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     placement: Placement2d;
     // @internal (undocumented)
@@ -1537,6 +1547,8 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     placement: Placement3d;
     // @internal (undocumented)
@@ -2657,8 +2669,13 @@ export class IModelTransformer {
     excludeElementCategory(sourceCategoryId: Id64String): void;
     excludeElementClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
+    findMissingPredecessors(sourceElement: Element): Id64Set;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    protected formatElementForLogger(elementProps: ElementProps): string;
+    protected formatIdForLogger(id: Id64String): string;
+    protected formatModelForLogger(modelProps: ModelProps): string;
+    protected formatRelationshipForLogger(relProps: RelationshipProps): string;
     protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
     importAll(): void;
     importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
@@ -2669,18 +2686,23 @@ export class IModelTransformer {
     importModel(sourceModeledElementId: Id64String): void;
     importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
-    importRelationships(): void;
+    importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
+    importRelationships(sourceRelClassFullName: string): void;
+    importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldExcludeElement(sourceElement: Element): boolean;
+    protected skipElement(sourceElement: Element): void;
+    protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
@@ -3185,6 +3207,8 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
@@ -3651,6 +3675,8 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
     // @internal (undocumented)
@@ -3978,6 +4004,8 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     categorySelectorId: Id64String;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     displayStyleId: Id64String;
     isDrawingView(): this is DrawingViewDefinition;
@@ -3998,6 +4026,8 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     baseModelId: Id64String;
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;

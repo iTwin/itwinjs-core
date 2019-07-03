@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
@@ -13,8 +13,8 @@ import { assert } from "chai";
 import * as hash from "object-hash";
 import * as path from "path";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
+  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
+  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
@@ -99,12 +99,14 @@ class TestIModelTransformer extends IModelTransformer {
   /** Count the number of Elements inserted in this callback */
   protected onElementInserted(sourceElement: Element, targetElementIds: Id64Array): void {
     this.numElementsInserted += targetElementIds.length;
+    targetElementIds.forEach((targetElementId: Id64String) => assert.isTrue(Id64.isValidId64(targetElementId)));
     super.onElementInserted(sourceElement, targetElementIds);
   }
 
   /** Count the number of Elements updated in this callback */
   protected onElementUpdated(sourceElement: Element, targetElementIds: Id64Array): void {
     this.numElementsUpdated += targetElementIds.length;
+    targetElementIds.forEach((targetElementId: Id64String) => assert.isTrue(Id64.isValidId64(targetElementId)));
     super.onElementUpdated(sourceElement, targetElementIds);
   }
 
@@ -503,9 +505,16 @@ describe("IModelTransformer", () => {
   let testDataManager: TestDataManager;
 
   before(async () => {
+    // create test data
     testDataManager = new TestDataManager();
     await testDataManager.createSourceDb();
     await testDataManager.prepareTargetDb();
+    // initialize logging
+    if (false) {
+      Logger.initializeToConsole();
+      Logger.setLevelDefault(LogLevel.Error);
+      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+    }
   });
 
   after(async () => {
@@ -521,6 +530,12 @@ describe("IModelTransformer", () => {
 
   function countExternalSourceAspects(iModelDb: IModelDb): number {
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ExternalSourceAspect.classFullName}`, (statement: ECSqlStatement): number => {
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+    });
+  }
+
+  function countRelationships(iModelDb: IModelDb): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ElementRefersToElements.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
   }
@@ -575,6 +590,9 @@ describe("IModelTransformer", () => {
     let numElementsExcluded: number;
 
     if (true) { // initial import
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Initial Import");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
@@ -585,6 +603,7 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
       assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementCalls);
       assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
+      assert.isAtLeast(countRelationships(testDataManager.targetDb), 1);
       numElementsExcluded = transformer.numElementsExcluded;
       testDataManager.targetDb.saveChanges();
       testDataManager.assertTargetDbContents();
@@ -594,6 +613,10 @@ describe("IModelTransformer", () => {
     const aspectCount: number = countExternalSourceAspects(testDataManager.targetDb);
 
     if (true) { // second import with no changes to source, should be a no-op
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport (no-op)");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
@@ -609,6 +632,10 @@ describe("IModelTransformer", () => {
 
     if (true) { // update source db, then import again
       testDataManager.updateSourceDb();
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport after sourceDb update");
+      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
