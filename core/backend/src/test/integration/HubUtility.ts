@@ -209,18 +209,23 @@ export class HubUtility {
     throw new Error(whichCs + " - .cs file not found in directory " + dir);
   }
 
+  /** Get the pathname of the briefcasein the supplied directory - assumes a standard layout of the supplied directory */
+  public static getBriefcasePathname(iModelDir: string): string {
+    const seedPathname = HubUtility.getSeedPathname(iModelDir);
+    return path.join(iModelDir, path.basename(seedPathname));
+  }
+
   /** Validate all change set operations on an iModel on disk - the supplied directory contains a sub folder
    * with the seed files, change sets, etc. in a standard format. This tests merging the change sets, reversing them,
    * and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
   public static validateAllChangeSetOperationsOnDisk(iModelDir: string) {
-    const seedPathname = HubUtility.getSeedPathname(iModelDir);
-    const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
+    const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
-    HubUtility.createStandaloneIModel(iModelPathname, iModelDir);
-    const iModel: IModelDb = IModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
+    HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
+    const iModel: IModelDb = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
@@ -378,7 +383,7 @@ export class HubUtility {
       if (!IModelJsFs.existsSync(changeSetPathname)) {
         throw new Error("Cannot find the ChangeSet file: " + changeSetPathname);
       }
-      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, changeSetJson.index, changeSetPathname, changeSetJson.changesType === ChangesType.Schema));
+      tokens.push(new ChangeSetToken(changeSetJson.id, changeSetJson.parentId, +changeSetJson.index, changeSetPathname, changeSetJson.changesType === ChangesType.Schema));
     }
 
     return tokens;
