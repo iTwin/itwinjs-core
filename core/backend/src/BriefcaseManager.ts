@@ -719,27 +719,27 @@ export class BriefcaseManager {
       await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname);
       requestContext.enter();
 
+      const perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
+      // Setup briefcase
+      // TODO: Only need to setup briefcase id for the ReadWrite case after the hub properly sets up these checkpoints
+      // The following function set the briefcaseId with  sync=off which should be safe for this case. It make open faster.
+      let res: DbResult = IModelHost.platform.DgnDb.unsafeSetBriefcaseId(briefcase.pathname, briefcase.briefcaseId, briefcase.iModelId, briefcase.contextId);
+      if (DbResult.BE_SQLITE_OK !== res)
+        throw new IModelError(res, "Unable setup briefcase id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
+      perfLogger.dispose();
+
       // Open checkpoint
       const nativeDb = new IModelHost.platform.DgnDb();
-      let res: DbResult = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
+      res = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
       assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId);
 
-      // Setup briefcase
-      // TODO: Only need to setup briefcase id for the ReadWrite case after the hub properly sets up these checkpoints
-      const perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
-      res = nativeDb.saveProjectGuid(briefcase.contextId);
-      if (DbResult.BE_SQLITE_OK !== res)
-        throw new IModelError(res, "Unable to save context id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      res = nativeDb.setDbGuid(briefcase.iModelId);
-      if (DbResult.BE_SQLITE_OK !== res)
-        throw new IModelError(res, "Unable to setup iModel id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
-      if (DbResult.BE_SQLITE_OK !== res)
-        throw new IModelError(res, "Unable to setup briefcase id", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
+      // verify that all following values were set correctly by unsafeSetBriefcaseId()
+      assert(nativeDb.getBriefcaseId() === briefcase.briefcaseId);
+      assert(nativeDb.getDbGuid() === briefcase.iModelId);
+      assert(nativeDb.queryProjectGuid() === briefcase.contextId);
 
-      perfLogger.dispose();
       briefcase.setNativeDb(nativeDb);
       await this.initBriefcaseFromHub(requestContext, briefcase);
 
