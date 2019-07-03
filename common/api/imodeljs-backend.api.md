@@ -1755,7 +1755,9 @@ export class IModelDb extends IModel {
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMetaData(classFullName: string): EntityMetaData;
+    // @deprecated
     importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
+    importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
     // @internal
@@ -2096,6 +2098,8 @@ export namespace IModelJsNative {
         // (undocumented)
         exportGraphics(exportProps: ExportGraphicsProps): DbResult;
         // (undocumented)
+        exportSchemas(exportDirectory: string): DbResult;
+        // (undocumented)
         extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
         // (undocumented)
         extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
@@ -2158,7 +2162,7 @@ export namespace IModelJsNative {
         // (undocumented)
         importFunctionalSchema(): DbResult;
         // (undocumented)
-        importSchema(schemaPathname: string): DbResult;
+        importSchemas(schemaFileNames: string[]): DbResult;
         // (undocumented)
         inBulkOperation(): boolean;
         // (undocumented)
@@ -2669,7 +2673,7 @@ export namespace IModelJsNative {
     }
 }
 
-// @alpha (undocumented)
+// @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     dispose(): void;
@@ -2701,6 +2705,7 @@ export class IModelTransformer {
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(sourceRelClassFullName: string): void;
+    importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;

@@ -18,6 +18,7 @@ import {
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
   PhysicalElement, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 /** Specialization of IModelTransformer for testing */
@@ -584,6 +585,32 @@ describe("IModelTransformer", () => {
     assert.isTrue(isEqualHash(placementProps1, placementProps2), "Should have same hash");
     placementProps2.bbox!.high.z = 3;
     assert.isFalse(isEqualHash(placementProps1, placementProps2), "Should recurse into nested objects to detect difference");
+  });
+
+  it.skip("should clone test file", async () => {
+    // open source iModel
+    const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const sourceDb: IModelDb = IModelDb.openSnapshot(sourceFileName);
+    const numSourceElements: number = countElements(sourceDb);
+    assert.exists(sourceDb);
+    assert.isAtLeast(numSourceElements, 12);
+    // create target iModel
+    const targetDbFile: string = path.join(KnownTestLocations.outputDir, "Clone-Target.bim");
+    if (IModelJsFs.existsSync(targetDbFile)) {
+      IModelJsFs.removeSync(targetDbFile);
+    }
+    const targetDb: IModelDb = IModelDb.createSnapshot(targetDbFile, { rootSubject: { name: "Clone-Target" } });
+    assert.exists(targetDb);
+    // import
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.importSchemas(new BackendRequestContext());
+    transformer.importAll();
+    transformer.dispose();
+    const numTargetElements: number = countElements(targetDb);
+    assert.isAtLeast(numTargetElements, numSourceElements);
+    // clean up
+    sourceDb.closeSnapshot();
+    targetDb.closeSnapshot();
   });
 
   it("should import", async () => {

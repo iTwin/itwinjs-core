@@ -904,6 +904,14 @@ export class IModelDb extends IModel {
     }
   }
 
+  /** Import a single ECSchema.
+   * @see importSchemas
+   * @deprecated It is better to import a collection of schemas together rather than individually.
+   */
+  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
+    return this.importSchemas(requestContext, [schemaFileName]);
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
    * this method must first obtain the schema lock from the IModel server.
@@ -913,12 +921,12 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
+  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
     if (this.isStandalone) {
-      const status = this.briefcase.nativeDb.importSchema(schemaFileName);
+      const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
       return;
     }
 
@@ -927,9 +935,9 @@ export class IModelDb extends IModel {
     await this.concurrencyControl.lockSchema(requestContext);
     requestContext.enter();
 
-    const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
+    const stat = this.briefcase.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
 
     try {
