@@ -15,6 +15,10 @@ describe("ViewUtilities", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should get bis base class name", () => {
     const bisBaseClass = ViewUtilities.getBisBaseClass("xyz:SheetViewDefinition");
     expect(bisBaseClass).to.eq("SheetViewDefinition");

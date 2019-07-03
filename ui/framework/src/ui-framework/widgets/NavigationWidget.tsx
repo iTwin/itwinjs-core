@@ -201,8 +201,9 @@ class NavigationWidgetWithDef extends React.Component<Props> {
 
   public render(): React.ReactNode {
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar(`[${activeStageName}]NavigationWidget-horizontal`);
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar(`[${activeStageName}]NavigationWidget-vertical`);
 
     return (
       <NZ_ToolsWidget isNavigation

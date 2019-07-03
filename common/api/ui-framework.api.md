@@ -2022,6 +2022,14 @@ export interface KeyboardShortcutProps extends ItemProps {
     shortcuts?: KeyboardShortcutProps[];
 }
 
+// @alpha
+export class KeyinBrowser extends React_2.PureComponent<{}, BrowserState> {
+    // @internal
+    constructor(props: any);
+    // @internal (undocumented)
+    render(): React_2.ReactNode;
+    }
+
 // @public
 export interface LabelProps {
     label?: string | StringGetter;
@@ -3268,9 +3276,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalPanelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    renderHorizontalToolbar: () => React_2.ReactNode;
+    renderHorizontalToolbar: (toolbarId: string) => React_2.ReactNode;
     // (undocumented)
-    renderVerticalToolbar: () => React_2.ReactNode;
+    renderVerticalToolbar: (toolbarId: string) => React_2.ReactNode;
     // (undocumented)
     verticalDirection: Direction;
     // (undocumented)

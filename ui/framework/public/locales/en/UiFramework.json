@@ -5,6 +5,12 @@
   "iModelPanel": {
     "noIModels": "There are no IModels in Project {{projectName}}"
   },
+  "keyinbrowser": {
+    "keyin": "Key-in",
+    "args": "Arguments",
+    "argsTip": "'|' separated arguments",
+    "execute": "Execute"
+  },
   "general": {
     "sheet": "Sheet",
     "of": "of",

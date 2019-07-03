@@ -52,6 +52,7 @@ import {
   ContentLayoutManager,
   SavedViewLayout,
   SavedViewLayoutProps,
+  KeyinBrowser,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -481,14 +482,25 @@ class FrontstageToolWidget extends React.Component {
     IModelApp.tools.run("Measure.Distance");
   }
 
+  //  /** Get the CustomItemDef for PopupButton  */
+  //  private get _popupButtonItemDef() {
+  //    return new CustomItemDef({
+  //      reactElement: (
+  //        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
+  //          <div style={{ width: "200px", height: "100px" }}>
+  //            hello world!
+  //          </div>
+  //        </PopupButton>
+  //      ),
+  //    });
+  //  }
+
   /** Get the CustomItemDef for PopupButton  */
-  private get _popupButtonItemDef() {
+  private get _keyinBrowserButtonItemDef() {
     return new CustomItemDef({
       reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
-          <div style={{ width: "200px", height: "100px" }}>
-            hello world!
-          </div>
+        <PopupButton iconSpec="icon-process" label="Keyin Browser" betaBadge={true}>
+          <KeyinBrowser />
         </PopupButton>
       ),
     });
@@ -503,9 +515,10 @@ class FrontstageToolWidget extends React.Component {
         execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
         betaBadge: true,
       }),
-      this._popupButtonItemDef,
+      this._keyinBrowserButtonItemDef,
       AppTools.tool1,
       new ConditionalItemDef({
+        conditionalId: "Conditional-tool-2",
         items: [AppTools.tool2],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._enabledTestStateFunc,
@@ -514,8 +527,10 @@ class FrontstageToolWidget extends React.Component {
       AppTools.toolWithSettings,
       AppTools.toggleHideShowItemsCommand,
       new ConditionalItemDef({
+        conditionalId: "Conditional-formatting",
         items: [
           new GroupItemDef({
+            groupId: "tool-formatting-setting",
             labelKey: "SampleApp:buttons.toolGroup",
             iconSpec: "icon-placeholder",
             items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],

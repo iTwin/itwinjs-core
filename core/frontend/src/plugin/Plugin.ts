@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Plugins */
 import * as semver from "semver";
-import { IModelApp } from "./IModelApp";
-import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "./NotificationManager";
+import { IModelApp } from "../IModelApp";
+import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { Logger } from "@bentley/bentleyjs-core";
 
 const loggerCategory = "imodeljs-frontend.Plugin";

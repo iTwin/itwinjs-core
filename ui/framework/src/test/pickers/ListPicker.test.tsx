@@ -55,6 +55,10 @@ describe("ListPicker", () => {
     listItems.push(emptyContainerItem);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("rendering", () => {
     it("should render correctly", () => {
       enzyme.shallow(

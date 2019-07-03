@@ -66,6 +66,10 @@ describe("StatusBar", () => {
     notifications = new AppNotificationManager();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("StatusBar should mount", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();

@@ -37,18 +37,13 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
  */
 export class Select extends React.PureComponent<SelectProps> {
   public render(): JSX.Element {
+    const { required, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
-    const defaultValue =
-      this.props.defaultValue ||                    // first try this.props.defaultValue
-      this.props.value && this.props.value + "" ||  // else use current value
-      showPlaceholder && "" ||                      // otherwise, if placeholder should show, show nothing
-      "";
-    const required = showPlaceholder || this.props.required;
+    const isRequired = showPlaceholder || required;
     const options = this.props.options;
     return (
-      <select {...this.props}
-        defaultValue={defaultValue}
-        required={required}
+      <select {...otherProps}
+        required={isRequired}
         className={classnames("uicore-inputs-select", this.props.className)}
         style={this.props.style}>
         {showPlaceholder &&

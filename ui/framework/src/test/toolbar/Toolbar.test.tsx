@@ -65,6 +65,10 @@ describe("<Toolbar />", async () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   afterEach(cleanup);
 
   it("should render", async () => {

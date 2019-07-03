@@ -18,6 +18,7 @@ describe("TileLoadingIndicator", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   it("should render correctly", () => {

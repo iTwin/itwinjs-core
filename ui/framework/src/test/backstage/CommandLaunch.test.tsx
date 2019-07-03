@@ -25,6 +25,10 @@ describe("Backstage", () => {
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("<CommandLaunchBackstageItem />", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();

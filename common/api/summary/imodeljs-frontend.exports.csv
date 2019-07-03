@@ -10,6 +10,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
+alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
@@ -61,6 +62,8 @@ internal;Clips
 public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
+alpha;ConditionalDisplaySpecification
+alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
 alpha;ConversionData 
@@ -163,6 +166,7 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
+alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
@@ -223,6 +227,8 @@ beta;PlanarClassifierMap = Map
 internal;PlanarClassifiers
 public;class Plugin
 public;PluginAdmin
+alpha;PluginUiManager
+alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
@@ -327,6 +333,8 @@ internal;TileTreeDiscloser
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin
+alpha;ToolbarItemInsertSpec 
+alpha;ToolInsertSpec 
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
@@ -340,6 +348,8 @@ public;ToolTipOptions
 public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
+alpha;UiItemNode
+alpha;UiProviderRegisteredEventArgs
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection

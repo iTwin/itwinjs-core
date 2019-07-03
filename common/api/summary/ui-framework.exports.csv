@@ -173,6 +173,7 @@ public;KeyboardShortcutMenu
 public;KeyboardShortcutMenuEvent 
 public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
+alpha;KeyinBrowser 
 public;LabelProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 

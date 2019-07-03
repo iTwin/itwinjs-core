@@ -43,6 +43,10 @@ describe("StagePanel", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should initialize stage panel def location", () => {
     const sut = new StagePanelDef();
     StagePanel.initializeStagePanelDef(sut, {

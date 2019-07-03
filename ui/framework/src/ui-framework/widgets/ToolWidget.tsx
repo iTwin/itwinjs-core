@@ -15,6 +15,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
+import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
@@ -131,18 +132,26 @@ class ToolWidgetWithDef extends React.Component<Props> {
     });
   }
 
+  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
+    // force update when list of registered UiPluginProvides change
+    this.forceUpdate();
+  }
+
   public componentDidMount() {
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public render(): React.ReactNode {
     const button = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar(`[${activeStageName}]ToolWidget-horizontal`);
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar(`[${activeStageName}]ToolWidget-vertical`);
 
     return (
       <NZ_ToolsWidget

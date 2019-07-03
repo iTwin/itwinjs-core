@@ -56,6 +56,10 @@ describe("SelectionScopeField", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("SelectionScopeField with default data", () => {
     const component = render(<Provider store={TestUtils.store}>
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />

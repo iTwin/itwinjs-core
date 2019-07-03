@@ -15,6 +15,10 @@ describe("StandardRotationNavigationAid", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("<StandardRotationNavigationAid />", () => {
 
     it("should render", () => {

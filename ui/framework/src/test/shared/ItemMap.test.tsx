@@ -13,6 +13,10 @@ describe("ItemMap & ItemList", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("ItemMap", () => {
 
     it("constructor should add an item correctly", () => {

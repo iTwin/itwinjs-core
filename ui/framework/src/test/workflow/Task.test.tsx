@@ -25,6 +25,10 @@ describe("Task", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Task should activate Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
       public get frontstage(): React.ReactElement<FrontstageProps> {

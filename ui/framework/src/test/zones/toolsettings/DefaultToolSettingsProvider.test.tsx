@@ -74,6 +74,10 @@ describe("DefaultToolUiSettingsProvider", () => {
     ToolUiManager.useDefaultToolSettingsProvider = false;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("starting a tool with undefined tool settings", async () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;

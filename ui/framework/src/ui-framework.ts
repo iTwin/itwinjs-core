@@ -50,6 +50,8 @@ export * from "./ui-framework/dialog/ModelessDialog";
 export * from "./ui-framework/dialog/ModelessDialogManager";
 export * from "./ui-framework/dialog/StandardMessageBox";
 
+export * from "./ui-framework/keyinbrowser/KeyinBrowser";
+
 export * from "./ui-framework/dragdrop/DragDropLayerManager";
 export * from "./ui-framework/dragdrop/ZoneTargets";
 

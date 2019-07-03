@@ -774,6 +774,14 @@ export enum ACSType {
     Spherical = 3
 }
 
+// @alpha
+export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
+    // (undocumented)
+    execute: () => void;
+    // (undocumented)
+    itemId: string;
+}
+
 // @alpha (undocumented)
 export enum ActiveClipStatus {
     // (undocumented)
@@ -1545,6 +1553,24 @@ export enum CompassMode {
     Polar = 0,
     // (undocumented)
     Rectangular = 1
+}
+
+// @alpha
+export interface ConditionalDisplaySpecification {
+    // (undocumented)
+    syncEventIds: string[];
+    // (undocumented)
+    testFunc: () => boolean;
+    // (undocumented)
+    type: ConditionalDisplayType;
+}
+
+// @alpha
+export enum ConditionalDisplayType {
+    // (undocumented)
+    enable = 1,
+    // (undocumented)
+    visibility = 0
 }
 
 // @internal (undocumented)
@@ -3234,6 +3260,16 @@ export enum InputSource {
     Unknown = 0
 }
 
+// @alpha
+export interface InsertSpec {
+    // (undocumented)
+    condition?: ConditionalDisplaySpecification;
+    insertBefore?: boolean;
+    // (undocumented)
+    label: string;
+    relativeToolIdPath?: string;
+}
+
 // @internal
 export interface InstancedGraphicParams {
     readonly count: number;
@@ -4369,6 +4405,21 @@ export class PluginAdmin {
     static loadPlugin(packageName: string, args?: string[]): Promise<Plugin>;
     static register(plugin: Plugin): string[] | undefined;
     }
+
+// @alpha
+export class PluginUiManager {
+    static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
+    static getToolbarItems(toolBarId: string, itemIds: UiItemNode): ToolbarItemInsertSpec[];
+    static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
+    static register(uiProvider: PluginUiProvider): void;
+    static unregister(uiProviderId: string): void;
+}
+
+// @alpha
+export interface PluginUiProvider {
+    readonly id: string;
+    provideToolbarItems?: (toolBarId: string, itemIds: UiItemNode) => ToolbarItemInsertSpec[];
+}
 
 // @beta
 export namespace Primitives {
@@ -6919,6 +6970,20 @@ export class ToolAdmin {
     readonly viewTool: ViewTool | undefined;
     }
 
+// @alpha
+export interface ToolbarItemInsertSpec extends InsertSpec {
+    // (undocumented)
+    icon: string;
+    // (undocumented)
+    isActionItem: boolean;
+}
+
+// @alpha
+export interface ToolInsertSpec extends ToolbarItemInsertSpec {
+    // (undocumented)
+    toolId: string;
+}
+
 // @public (undocumented)
 export type ToolList = ToolType[];
 
@@ -7083,6 +7148,21 @@ export class TwoWayViewportSync {
     connect(view1: Viewport, view2: Viewport): void;
     disconnect(): void;
     }
+
+// @alpha
+export class UiItemNode {
+    constructor(id?: string);
+    // (undocumented)
+    children: UiItemNode[];
+    // (undocumented)
+    id: string;
+}
+
+// @alpha
+export interface UiProviderRegisteredEventArgs {
+    // (undocumented)
+    providerId: string;
+}
 
 // @internal
 export enum UsesDragSelect {

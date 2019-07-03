@@ -13,6 +13,10 @@ describe("Widget", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const wrapper = mount(<Widget id="widget" defaultState={WidgetState.Open} applicationData={{ key: "value" }} />);
     wrapper.unmount();

@@ -13,6 +13,10 @@ describe("Zone", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     mount(<Zone />);
   });
