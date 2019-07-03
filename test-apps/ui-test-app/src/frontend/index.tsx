@@ -43,6 +43,8 @@ import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 
+const testPluginUiProvider = false;
+if (testPluginUiProvider) {
 /** alpha test code */
 class TestUiProvider implements PluginUiProvider {
   public readonly id = "TestUiProvider";
@@ -138,6 +140,7 @@ class TestUiProvider implements PluginUiProvider {
 }
 
 PluginUiManager.register(new TestUiProvider());
+}
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
