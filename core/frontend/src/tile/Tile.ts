@@ -798,7 +798,8 @@ export namespace Tile {
         return;
 
       const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-      const branch = this.context.createGraphicBranch(this.graphics, this.location, this.clipVolume, classifierOrDrape);
+      const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
+      const branch = this.context.createGraphicBranch(this.graphics, this.location, opts);
 
       this.context.outputGraphic(branch);
     }

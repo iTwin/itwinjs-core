@@ -17,4 +17,10 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
   }
 
   public abstract getTileTree(viewport: Viewport): TileTree.Reference | undefined;
+
+  public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTree.Reference) => void): void {
+    const ref = this.getTileTree(viewport);
+    if (undefined !== ref)
+      func(ref);
+  }
 }

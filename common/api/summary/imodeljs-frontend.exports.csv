@@ -131,6 +131,7 @@ internal;GeoServices
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GraphicBranch 
+internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
@@ -297,6 +298,7 @@ public;SnapStatus
 beta;SpatialClassifiers
 public;SpatialLocationModelState 
 public;SpatialModelState 
+internal;SpatialModelTileTrees
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 

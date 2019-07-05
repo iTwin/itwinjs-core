@@ -488,14 +488,17 @@ export namespace Pixel {
     public readonly planarity: Planarity;
     /** @internal */
     public readonly featureTable?: PackedFeatureTable;
+    /** @internal */
+    public readonly iModel?: IModelConnection;
 
     /** @internal */
-    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable) {
+    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection) {
       this.feature = feature;
       this.distanceFraction = distanceFraction;
       this.type = type;
       this.planarity = planarity;
       this.featureTable = featureTable;
+      this.iModel = iModel;
     }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
@@ -851,6 +854,15 @@ export interface InstancedGraphicParams {
   readonly symbologyOverrides?: Uint8Array;
 }
 
+/** Options passed to [[RenderSystem.createGraphicBranch]].
+ * @internal
+ */
+export interface GraphicBranchOptions {
+  clipVolume?: RenderClipVolume;
+  classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
+  iModel?: IModelConnection;
+}
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -1008,7 +1020,7 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: RenderClipVolume, classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape): RenderGraphic;
+  public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal

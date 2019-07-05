@@ -8,7 +8,8 @@ import { Id64, BeTimePoint, IDisposable, dispose, assert } from "@bentley/bentle
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList, PackedFeature, PackedFeatureTable, RenderMemory } from "../System";
+import { IModelConnection } from "../../IModelConnection";
+import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, PackedFeature, PackedFeatureTable, RenderMemory } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -32,7 +33,7 @@ function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;
   public readonly target: Target;
-  private _lastOverridesUpdated: BeTimePoint = BeTimePoint.now();
+  private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
   private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
   private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
   public lutParams: LUTParams = new LUTParams(1, 1);
@@ -247,24 +248,28 @@ export class FeatureOverrides implements IDisposable {
     this.lut = undefined;
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
+    this._mostRecentSymbologyOverrides = ovrs;
     const hilite = this.target.hilites;
     this.lut = this._initialize(map, ovrs, hilite, this.target.flashed);
-    this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
+    this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }
 
   public update(features: PackedFeatureTable) {
-    const styleLastUpdated = this.target.overridesUpdateTime;
+    let ovrs: FeatureSymbology.Overrides | undefined = this.target.currentFeatureSymbologyOverrides;
+    const ovrsUpdated = ovrs !== this._mostRecentSymbologyOverrides;
+    if (ovrsUpdated)
+      this._mostRecentSymbologyOverrides = ovrs;
+    else
+      ovrs = undefined;
+
     const flashLastUpdated = this.target.flashedUpdateTime;
-    const ovrsUpdated = this._lastOverridesUpdated.before(styleLastUpdated);
     const hiliteLastUpdated = this.target.hiliteUpdateTime;
     const hiliteUpdated = this._lastHiliteUpdated.before(hiliteLastUpdated);
 
-    const ovrs = ovrsUpdated ? this.target.currentFeatureSymbologyOverrides : undefined;
     const hilite = this.target.hilites;
     if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
       this._update(features, this.lut!, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
 
-      this._lastOverridesUpdated = styleLastUpdated;
       this._lastFlashUpdated = flashLastUpdated;
       this._lastHiliteUpdated = hiliteLastUpdated;
     }
@@ -279,13 +284,32 @@ export abstract class Graphic extends RenderGraphic {
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
 
+/** Transiently assigned to a Batch while rendering a frame, reset afterward. Used to provide context for pick IDs.
+ * @internal
+ */
+export interface BatchContext {
+  batchId: number;
+  iModel?: IModelConnection;
+}
+
 /** @internal */
 export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
-  public batchId: number = 0; // Transient ID assigned while rendering a frame, reset afterward.
+  private readonly _context: BatchContext = { batchId: 0 };
   private _overrides: FeatureOverrides[] = [];
+
+  public get batchId() { return this._context.batchId; }
+  public get batchIModel() { return this._context.iModel; }
+  public setContext(batchId: number, iModel: IModelConnection | undefined) {
+    this._context.batchId = batchId;
+    this._context.iModel = iModel;
+  }
+  public resetContext() {
+    this._context.batchId = 0;
+    this._context.iModel = undefined;
+  }
 
   public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
     super();
@@ -365,22 +389,27 @@ export class Branch extends Graphic {
   public planarClassifier?: PlanarClassifier;
   public textureDrape?: TextureDrape;
   public readonly animationId?: number;
+  public readonly iModel?: IModelConnection; // used chiefly for readPixels to identify context of picked Ids.
 
-  public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags, classifierOrDrape?: PlanarClassifier | TextureDrape) {
+  public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
-    this.clips = clips;
-
-    if (undefined !== classifierOrDrape) {
-      if (classifierOrDrape instanceof PlanarClassifier)
-        this.planarClassifier = classifierOrDrape;
-      else
-        this.textureDrape = classifierOrDrape;
-    }
 
     if (undefined !== viewFlags)
       branch.setViewFlags(viewFlags);
+
+    if (undefined !== opts) {
+      this.clips = opts.clipVolume as any;
+      this.iModel = opts.iModel;
+
+      if (undefined !== opts.classifierOrDrape) {
+        if (opts.classifierOrDrape instanceof PlanarClassifier)
+          this.planarClassifier = opts.classifierOrDrape;
+        else
+          this.textureDrape = opts.classifierOrDrape as TextureDrape;
+      }
+    }
   }
 
   public dispose() { this.branch.dispose(); }
@@ -397,7 +426,7 @@ export class Branch extends Graphic {
 /** @internal */
 export class WorldDecorations extends Branch {
   public constructor(viewFlags: ViewFlags) {
-    super(new GraphicBranch(), Transform.identity, undefined, viewFlags);
+    super(new GraphicBranch(), Transform.identity, viewFlags);
 
     // World decorations ignore all the symbology overrides for the "scene" geometry...
     this.branch.symbologyOverrides = new FeatureSymbology.Overrides();

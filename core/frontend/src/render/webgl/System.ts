@@ -10,18 +10,19 @@ import {
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
 } from "@bentley/geometry-core";
 import {
-  InstancedGraphicParams,
-  RenderGraphic,
   GraphicBranch,
-  RenderSystem,
-  RenderDiagnostics,
-  RenderTarget,
-  RenderClipVolume,
-  RenderPlanarClassifier,
+  GraphicBranchOptions,
   GraphicList,
+  InstancedGraphicParams,
   PackedFeatureTable,
-  WebGLExtensionName,
+  RenderClipVolume,
+  RenderDiagnostics,
+  RenderGraphic,
+  RenderPlanarClassifier,
   RenderSolarShadowMap,
+  RenderSystem,
+  RenderTarget,
+  WebGLExtensionName,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -56,7 +57,6 @@ import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
 import { SpatialViewState } from "../../ViewState";
@@ -646,7 +646,10 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, classifierOrDrape?: PlanarClassifier | TextureDrape): RenderGraphic { return new Branch(branch, transform, clips, undefined, classifierOrDrape); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
+    return new Branch(branch, transform, undefined, options);
+  }
+
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {

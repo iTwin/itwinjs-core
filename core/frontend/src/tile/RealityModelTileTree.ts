@@ -142,7 +142,7 @@ class RealityTreeReference extends TileTree.Reference {
 
   public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
     const tree = this.treeOwner.tileTree;
-    if (undefined === tree)
+    if (undefined === tree || hit.iModel !== tree.iModel)
       return undefined;
 
     const map = tree.loader.getBatchIdMap();

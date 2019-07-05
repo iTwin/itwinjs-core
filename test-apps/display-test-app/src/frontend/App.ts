@@ -6,7 +6,7 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  SnapMode, ToolTipOptions, TileAdmin, IModelAppOptions,
+  SnapMode, ToolTipOptions, TileAdmin, IModelAppOptions, SelectionTool,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
@@ -113,6 +113,16 @@ class Notifications extends NotificationManager {
   }
 }
 
+export class SVTSelectionTool extends SelectionTool {
+  public static toolId = "SVTSelect";
+  protected initSelectTool() {
+    super.initSelectTool();
+
+    // ###TODO Want to do this only if version comparison enabled, but meh.
+    IModelApp.locateManager.options.allowExternalIModels = true;
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -129,6 +139,9 @@ export class DisplayTestApp {
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);
+    SVTSelectionTool.register(svtToolNamespace);
+
+    IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

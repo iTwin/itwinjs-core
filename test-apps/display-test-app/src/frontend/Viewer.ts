@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ElectronRpcConfiguration } from "@bentley/imodeljs-common";
 import {
   imageBufferToPngDataUrl,
   IModelApp,
@@ -28,6 +27,8 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
+import { emulateVersionComparison } from "./VersionComparison";
+import { selectFileName } from "./FileOpen";
 
 const wantRealityModels = false;
 
@@ -97,8 +98,8 @@ class DebugTools extends ToolBarDropDown {
         tooltip: "Emphasize selected elements",
       }));
     } else {
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-cancel",
+      this._element.appendChild(createImageButton({
+        src: "fit-to-view.svg",
         click: () => zoomToSelectedElements(IModelApp.viewManager.selectedView!),
         tooltip: "Zoom to selected elements",
       }));
@@ -109,11 +110,19 @@ class DebugTools extends ToolBarDropDown {
       click: async () => this.doMarkup(),
       tooltip: "Create Markup for View",
     }));
+
     this._element.appendChild(createToolButton({
       className: "bim-icon-work",
       click: async () => PluginAdmin.loadPlugin("startWebWorkerPlugin.js"),
       tooltip: "Start Web Worker Test",
     }));
+
+    this._element.appendChild(createToolButton({
+      className: "bim-icon-isolate",
+      click: () => emulateVersionComparison(IModelApp.viewManager.selectedView!),
+      tooltip: "Emulate version comparison",
+    }));
+
     parent.appendChild(this._element);
   }
 
@@ -139,14 +148,6 @@ class DebugTools extends ToolBarDropDown {
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
   protected _open(): void { this._element.style.display = "flex"; }
   protected _close(): void { this._element.style.display = "none"; }
-}
-
-// Only want the following imports if we are using electron and not a browser -----
-// tslint:disable-next-line:variable-name
-let remote: any;
-if (ElectronRpcConfiguration.isElectron) {
-  // tslint:disable-next-line:no-var-requires
-  remote = require("electron").remote;
 }
 
 export interface ViewerProps {
@@ -247,7 +248,7 @@ export class Viewer {
 
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
-      click: () => IModelApp.tools.run("Select"),
+      click: () => IModelApp.tools.run("SVTSelect"),
       tooltip: "Element selection",
     }));
 
@@ -374,10 +375,6 @@ export class Viewer {
     this.views.clear();
   }
 
-  private async openIModel(filename: string): Promise<void> {
-    this._imodel = await IModelConnection.openSnapshot(filename);
-  }
-
   private async buildViewList(): Promise<void> {
     await this.views.populate(this._imodel);
     this._viewPicker.populate(this.views);
@@ -385,9 +382,17 @@ export class Viewer {
 
   private async resetIModel(filename: string): Promise<void> {
     await this.withSpinner(async () => {
+      let newIModel;
+      try {
+        newIModel = await IModelConnection.openSnapshot(filename);
+      } catch (err) {
+        alert(err.toString());
+        return;
+      }
+
       IModelApp.viewManager.dropViewport(this.viewport, false);
       await this.clearViews();
-      await this.openIModel(filename);
+      this._imodel = newIModel;
       await this.buildViewList();
       const view = await this.views.getDefaultView(this._imodel);
       await this.openView(view);
@@ -395,31 +400,13 @@ export class Viewer {
   }
 
   private async selectIModel(): Promise<void> {
-    if (ElectronRpcConfiguration.isElectron) {  // Electron
-      const options = {
-        properties: ["openFile"],
-        filters: [{ name: "IModels", extensions: ["ibim", "bim"] }],
-      };
-      remote.dialog.showOpenDialog(options, async (filePaths?: string[]) => {
-        if (undefined !== filePaths)
-          await this.resetIModel(filePaths[0]);
-      });
-    } else {  // Browser
-      if (undefined === this._fileDirectoryPath || !document.createEvent) { // Do not have standalone path for files or support for document.createEvent... request full file path
-        const filePath = prompt("Enter the full local path of the iModel you wish to open:");
-        if (filePath !== null) {
-          try {
-            await this.resetIModel(filePath);
-          } catch {
-            alert("Error - The file path given is invalid.");
-            this.hideSpinner();
-          }
-        }
-      } else {  // Was given a base path for all standalone files. Let them select file using file selector
-        const selector = document.getElementById("browserFileSelector");
-        const evt = document.createEvent("MouseEvents");
-        evt.initEvent("click", true, false);
-        selector!.dispatchEvent(evt);
+    const filename = selectFileName();
+    if (undefined !== filename) {
+      try {
+        await this.resetIModel(filename);
+      } catch (_) {
+        alert("Error - could not open file.");
+        this.hideSpinner();
       }
     }
   }

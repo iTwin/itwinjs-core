@@ -262,14 +262,15 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     viewFlags.ambientOcclusion = false;
     viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
 
-    const batchState = new BatchState();
+    const stack = new BranchStack();
+    const batchState = new BatchState(stack);
     System.instance.applyRenderState(state);
     const prevPlan = target.plan;
 
     target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
     target.branchStack.setViewFlags(viewFlags);
 
-    const renderCommands = new RenderCommands(target, new BranchStack(), batchState);
+    const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics);
 
     System.instance.frameBufferStack.execute(this._fbo, true, () => {
