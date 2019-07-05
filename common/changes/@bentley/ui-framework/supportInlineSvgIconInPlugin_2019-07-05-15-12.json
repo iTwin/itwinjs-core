@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add basic support to display an svg file for an toolbar item image.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}
