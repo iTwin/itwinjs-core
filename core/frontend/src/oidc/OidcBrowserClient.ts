@@ -6,7 +6,7 @@
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
-import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
+import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger, WebStorageStateStore } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -262,7 +262,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 
   /** Set to true if the user has signed in, but the token has expired and requires a refresh */
   public get hasExpired(): boolean {
-    return !!this._accessToken; // Always silently refreshed
+    return !this._accessToken; // Always silently refreshed
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
@@ -310,6 +310,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       query_status_response_type: "id_token token",
       scope: this._configuration.scope,
       loadUserInfo: true,
+      userStore: new WebStorageStateStore({ store: window.localStorage }),
     };
     return userManagerSettings;
   }
