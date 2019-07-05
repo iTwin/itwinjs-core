@@ -5,7 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, withOnOutsideClick } from "@bentley/ui-core";
 import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally, Size } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
@@ -13,7 +13,7 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/
 import "./ListPicker.scss";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = withContainIn(Group);
+const ContainedGroup = withOnOutsideClick(withContainIn(Group));
 
 /** Enum for the list picker item type
  * @beta
@@ -284,15 +284,27 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
 
     return (
       <ContainedGroup
-        title={this.props.title}
         className="ListPickerContainer"
-        containFn={containHorizontally}
         columns={
           <GroupColumn className="ListPicker-column">
             {this.props.items.map(listItemToElement)}
           </GroupColumn>}
+        containFn={containHorizontally}
+        onOutsideClick={this._handleOnOutsideClick}
+        title={this.props.title}
       />
     );
+  }
+
+  private _handleOnOutsideClick = () => {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        expanded: false,
+      };
+    });
+
+    this.props.onExpanded && this.props.onExpanded(false);
   }
 }
 
