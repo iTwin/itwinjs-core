@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-clients_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Added feature tracking info to userInfo obtained by OidcBrowserClient. "
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-clients_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-clients-backend",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-clients-backend_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AzCopy version detect issue fixed"
+          },
+          {
+            "comment": "Remove sensitive information from download/upload url for logging purpose"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-clients-backend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",
