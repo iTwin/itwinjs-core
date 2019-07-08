@@ -1368,6 +1368,11 @@ export class Entity implements EntityProps {
 }
 
 // @beta
+export namespace ExportGraphics {
+    export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
+}
+
+// @beta
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @beta
@@ -1395,6 +1400,50 @@ export interface ExportGraphicsProps {
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
+    partInstanceArray?: ExportPartInstanceProps[];
+}
+
+// @beta
+export interface ExportPartDisplayProps {
+    // (undocumented)
+    categoryId: Id64String;
+    // (undocumented)
+    elmTransparency: number;
+    // (undocumented)
+    lineColor: number;
+    // (undocumented)
+    materialId: Id64String;
+    // (undocumented)
+    subCategoryId: Id64String;
+}
+
+// @beta
+export type ExportPartFunction = (info: ExportPartInfo) => void;
+
+// @beta
+export interface ExportPartGraphicsProps {
+    angleTol?: number;
+    chordTol?: number;
+    displayProps: ExportPartDisplayProps;
+    elementId: Id64String;
+    maxEdgeLength?: number;
+    onPartGraphics: ExportPartFunction;
+}
+
+// @beta
+export interface ExportPartInfo {
+    color: number;
+    materialId?: Id64String;
+    mesh: ExportGraphicsMesh;
+    textureId?: Id64String;
+}
+
+// @beta
+export interface ExportPartInstanceProps {
+    displayProps: ExportPartDisplayProps;
+    partId: Id64String;
+    partInstanceId: Id64String;
+    transform?: Float64Array;
 }
 
 // @public
@@ -1743,6 +1792,8 @@ export class IModelDb extends IModel {
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     // @beta
     exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+    // @beta
+    exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
     // (undocumented)
     readonly fontMap: FontMap;
@@ -2097,6 +2148,8 @@ export namespace IModelJsNative {
         executeTest(testName: string, params: string): string;
         // (undocumented)
         exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+        // (undocumented)
+        exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
         // (undocumented)
         exportSchemas(exportDirectory: string): DbResult;
         // (undocumented)
