@@ -404,7 +404,6 @@ export class BezierCurve3d extends BezierCurveBase {
     clone(): BezierCurve3d;
     clonePartialCurve(f0: number, f1: number): BezierCurve3d | undefined;
     cloneTransformed(transform: Transform): BezierCurve3d;
-    computeStrokeCountForOptions(options?: StrokeOptions): number;
     copyPointsAsLineString(): LineString3d;
     static create(data: Point3d[] | Point2d[]): BezierCurve3d | undefined;
     static createOrder(order: number): BezierCurve3d;
@@ -425,7 +424,6 @@ export class BezierCurve3d extends BezierCurveBase {
 export class BezierCurve3dH extends BezierCurveBase {
     clone(): BezierCurve3dH;
     cloneTransformed(transform: Transform): BezierCurve3dH;
-    computeStrokeCountForOptions(options?: StrokeOptions): number;
     static create(data: Point3d[] | Point4d[] | Point2d[]): BezierCurve3dH | undefined;
     static createOrder(order: number): BezierCurve3dH;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -451,7 +449,7 @@ export class BezierCurve3dH extends BezierCurveBase {
 export abstract class BezierCurveBase extends CurvePrimitive {
     protected constructor(blockSize: number, data: Float64Array);
     protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number): void;
-    abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
+    computeStrokeCountForOptions(options?: StrokeOptions): number;
     copyPolesAsJsonArray(): any[];
     readonly degree: number;
     emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void;
@@ -1157,7 +1155,7 @@ export abstract class CurveChain extends CurveCollection {
     readonly children: CurvePrimitive[];
     cloneStroked(options?: StrokeOptions): AnyCurve;
     protected _curves: CurvePrimitive[];
-    abstract cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
+    cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
@@ -2345,7 +2343,6 @@ export class Loop extends CurveChain {
     static create(...curves: CurvePrimitive[]): Loop;
     static createArray(curves: CurvePrimitive[]): Loop;
     static createPolygon(points: GrowableXYZArray | Point3d[]): Loop;
-    cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
     dgnBoundaryType(): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     isInner: boolean;
@@ -2858,7 +2855,6 @@ export class Path extends CurveChain {
     cloneStroked(options?: StrokeOptions): AnyCurve;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
-    cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
     dgnBoundaryType(): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     isSameGeometryClass(other: GeometryQuery): boolean;
