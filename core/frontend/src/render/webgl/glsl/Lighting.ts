@@ -6,11 +6,9 @@
 
 import {
   ProgramBuilder,
-  VariableType,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
-import { Material } from "../Material";
 
 const computeSimpleLighting = `
 void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal, vec3 toEye, vec3 lightDir, float lightIntensity, float specularExponent) {
@@ -69,38 +67,13 @@ const applyLighting = `
   return baseColor;
 `;
 
-const computeMaterial = `
-  mat_weights = uu_material;
-  mat_specular = uu_specular;
-`;
-
-/** @internal */
+/** NB: addMaterial() sets up the mat_* variables used by applyLighting.
+ * @internal
+ */
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 
   const frag = builder.frag;
-  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
-  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
-
-  frag.addUniform("uu_material", VariableType.Vec2, (shader) => {
-    shader.addGraphicUniform("uu_material", (uniform, params) => {
-      const material = params.target.currentViewFlags.materials ? params.geometry.material : undefined;
-      const weights = undefined !== material ? material.weights : Material.default.weights;
-      uniform.setUniform2fv(weights);
-    });
-  });
-
-  frag.addUniform("uu_specular", VariableType.Vec4, (shader) => {
-    shader.addGraphicUniform("uu_specular", (uniform, params) => {
-      let mat = params.target.currentViewFlags.materials ? params.geometry.material : undefined;
-      if (undefined === mat)
-        mat = Material.default;
-
-      uniform.setUniform4fv(mat.specular);
-    });
-  });
-
-  frag.addInitializer(computeMaterial);
 
   frag.addFunction(computeSimpleLighting);
   frag.set(FragmentShaderComponent.ApplyLighting, applyLighting);

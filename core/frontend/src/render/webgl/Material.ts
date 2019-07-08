@@ -6,57 +6,82 @@
 
 import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 
-/** @internal */
+/** Parameters describing a single material. The parameters used are:
+ *  - diffuse color rgb (vec3).
+ *  - alpha (float in [0..1])
+ *  - is rgb overridden (bool)
+ *  - is alpha overridden (bool)
+ *  - specular exponent (float).
+ *  - specular color (vec3).
+ *  - specular weight (float in [0..1])
+ *  - diffuse weight (float in [0..1])
+ *  - texture weight (float in [0..1])
+ *
+ * These are compressed into a vec4 and a float. Floats in [0..1] become integers in [0..255] and are concatenated using bitwise operations into 24-bit integer values.
+ * The result is:
+ *  uniform float: specular weight
+ *  uniform vec4: the rest:
+ *    x: rgb
+ *    y: weights
+ *      0: texture
+ *      1: diffuse
+ *      2: specular
+ *    z: specular rgb
+ *    w: alpha and override flags
+ *      0: alpha
+ *      1: flags (bit 1: rgb overridden, bit 2: alpha overridden)
+ *
+ * This format is primarily used to mirror that used by material atlases (textures which contain multiple materials) as those are more heavily constrained by limits
+ * on number of varying vectors - but it also reduces the number of uniforms required for singular materials.
+ * @internal
+ */
 export class Material extends RenderMaterial {
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
 
-  public readonly diffuseUniform = new Float32Array(4); // [red, green, blue, overridden]
-  public readonly reflectColor?: ColorDef;
-  public readonly alphaUniform = new Float32Array(2); // [alpha, overridden]
-  public readonly specular = new Float32Array(4); // [red, green, blue, exponent]
-  public readonly weights = new Float32Array(2);  // [diffuse weight, specular weight]
+  public readonly overridesRgb: boolean;
+  public readonly overridesAlpha: boolean;
+  public get hasTranslucency() { return this.overridesAlpha; } // NB: This used to check alpha < 1.0 but that is *always* true if overridesAlpha is true (see constructor).
+  public readonly integerUniforms = new Float32Array(4);
+  public readonly specularExponent: number;
 
-  public get textureWeight(): number { return undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0; }
-  public get overridesRgb(): boolean { return 1.0 === this.diffuseUniform[3]; }
-  public get overridesAlpha(): boolean { return 1.0 === this.alphaUniform[1]; }
-  public get hasTranslucency(): boolean { return this.overridesAlpha && this.alphaUniform[0] < 1.0; }
+  public constructor(params: RenderMaterial.Params) {
+    super(params);
 
-  public constructor(materialParams: RenderMaterial.Params) {
-    super(materialParams);
+    const rgb = params.diffuseColor;
+    this.overridesRgb = undefined !== rgb;
+    if (undefined !== rgb)
+      this.setRgb(rgb, 0);
 
-    this.diffuseUniform[3] = undefined !== materialParams.diffuseColor ? 1.0 : 0.0;
-    if (undefined !== materialParams.diffuseColor) {
-      const diffRgb = materialParams.diffuseColor.colors;
-      this.diffuseUniform[0] = diffRgb.r / 255;
-      this.diffuseUniform[1] = diffRgb.g / 255;
-      this.diffuseUniform[2] = diffRgb.b / 255;
-    } else {
-      this.diffuseUniform[0] = this.diffuseUniform[1] = this.diffuseUniform[2] = 1.0;
-    }
+    const scale = (value: number) => Math.floor(value * 255 + 0.5);
+    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
+    this.setInteger(scale(textureWeight), scale(params.diffuse), scale(params.specular), 1);
 
-    this.specular[3] = materialParams.specularExponent;
-    if (materialParams.specularColor) {
-      const specRgb = materialParams.specularColor.colors;
-      this.specular[0] = specRgb.r / 255;
-      this.specular[1] = specRgb.g / 255;
-      this.specular[2] = specRgb.b / 255;
-    } else {
-      this.specular[0] = this.specular[1] = this.specular[2] = 1.0;
-    }
+    if (undefined !== params.specularColor)
+      this.setRgb(params.specularColor, 2);
+    else
+      this.setInteger(255, 255, 255, 2);
 
-    if (materialParams.reflectColor)
-      this.reflectColor = materialParams.reflectColor.clone();
+    const alpha = 1.0 - params.transparency; // params.transparency of 0.0 indicates alpha not overridden.
+    this.overridesAlpha = 1.0 !== alpha;
+    const flags = (this.overridesRgb ? 1 : 0) + (this.overridesAlpha ? 2 : 0);
+    this.setInteger(scale(alpha), flags, 0, 3);
 
-    this.weights[0] = materialParams.diffuse;
-    this.weights[1] = materialParams.specular;
+    this.specularExponent = params.specularExponent;
+  }
 
-    if (0.0 !== materialParams.transparency) {
-      this.alphaUniform[0] = 1.0 - materialParams.transparency;
-      this.alphaUniform[1] = 1.0;
-    } else {
-      this.alphaUniform[0] = 1.0;
-      this.alphaUniform[1] = 0.0;
-    }
+  private setInteger(loByte: number, midByte: number, hiByte: number, index: number): void {
+    const clamp = (x: number) => Math.floor(Math.min(255, (Math.max(x, 0))));
+
+    loByte = clamp(loByte);
+    midByte = clamp(midByte);
+    hiByte = clamp(hiByte);
+
+    this.integerUniforms[index] = loByte + midByte * 256 + hiByte * 256 * 256;
+  }
+
+  private setRgb(rgb: ColorDef, index: number): void {
+    const colors = rgb.colors;
+    this.setInteger(colors.r, colors.g, colors.b, index);
   }
 }
 

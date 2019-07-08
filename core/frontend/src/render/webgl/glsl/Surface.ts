@@ -49,11 +49,35 @@ const applyMaterialOverrides = `
   return mix(matColor, g_surfaceTexel, textureWeight);
 `;
 
-const computeMaterialValues = `
-  mat_rgb = uu_matRgb;
-  mat_alpha = uu_matAlpha;
-  mat_texture_weight = uu_textureWeight;
-`
+const unpackMaterialParam = `
+vec3 unpackMaterialParam(float f) {
+  vec3 v;
+  v.z = floor(f / 256.0 / 256.0);
+  v.y = floor((f - v.z * 256.0 * 256.0) / 256.0);
+  v.x = floor(f - v.z * 256.0 * 256.0 - v.y * 256.0);
+  return v;
+}`;
+
+const unpackAndNormalizeMaterialParam = `
+vec3 unpackAndNormalizeMaterialParam(float f) {
+  return unpackMaterialParam(f) / 255.0;
+}`;
+
+const decodeMaterialParams = `
+void decodeMaterialParams(vec4 params, float specularExponent) {
+  vec2 alphaAndFlags = unpackMaterialParam(params.w).xy;
+  float rgbOverridden = float(1.0 == alphaAndFlags.y || 3.0 == alphaAndFlags.y);
+  float alphaOverridden = float(alphaAndFlags.y >= 2.0);
+
+  mat_rgb = vec4(unpackAndNormalizeMaterialParam(params.x), rgbOverridden);
+  mat_alpha = vec2(alphaAndFlags.x / 255.0, alphaOverridden);
+
+  vec3 weights = unpackAndNormalizeMaterialParam(params.y);
+  mat_texture_weight = weights.x;
+  mat_weights = weights.yz;
+
+  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.z), specularExponent);
+}`;
 
 /** @internal */
 export function addMaterial(frag: FragmentShaderBuilder): void {
@@ -63,27 +87,28 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
   frag.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_texture_weight", VariableType.Float);
+  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
+  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
-  frag.addUniform("uu_matRgb", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("uu_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform4fv(mat.diffuseUniform);
-    });
-  });
-  frag.addUniform("uu_matAlpha", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("uu_matAlpha", (uniform, params) => {
+  frag.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
       const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform2fv(mat.alphaUniform);
-    });
-  });
-  frag.addUniform("uu_textureWeight", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("uu_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform1f(mat.textureWeight);
+      uniform.setUniform4fv(mat.integerUniforms);
     });
   });
 
-  frag.addInitializer(computeMaterialValues);
+  frag.addUniform("u_specularExponent", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_specularExponent", (uniform, params) => {
+      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
+      uniform.setUniform1f(mat.specularExponent);
+    });
+  });
+
+  frag.addFunction(unpackMaterialParam);
+  frag.addFunction(unpackAndNormalizeMaterialParam);
+  frag.addFunction(decodeMaterialParams);
+  frag.addInitializer("decodeMaterialParams(u_materialParams, u_specularExponent);");
+
   frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
 }
 
