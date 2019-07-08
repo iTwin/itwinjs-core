@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry } from "@bentley/geometry-core";
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry, Box, Range3d } from "@bentley/geometry-core";
+import { Id64String, Id64, BentleyStatus } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity, GeometryStreamProps,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity, GeometryStreamProps, MassPropertiesRequestProps, MassPropertiesOperation,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../../imodeljs-backend";
+import { GeometryPart, IModelDb, LineStyleDefinition, Platform, BackendRequestContext } from "../../imodeljs-backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -881,4 +881,95 @@ describe("GeometryStream", () => {
       assert.isDefined(entry.brep);
     }
   });
+});
+
+describe("Mass Properties", () => {
+  let imodel: IModelDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+  });
+
+  after(() => {
+    imodel.closeStandalone();
+  });
+
+  it("volume", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const box = Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(1.0, 1.0, 1.0)), true);
+    assert.isFalse(undefined === box);
+
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(box!);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const requestProps: MassPropertiesRequestProps = {
+      operation: MassPropertiesOperation.AccumulateVolumes,
+      candidates: [newId],
+    };
+
+    const requestContext = new BackendRequestContext();
+    const result = await imodel.getMassProperties(requestContext, requestProps);
+    assert.isTrue(BentleyStatus.SUCCESS === result.status);
+    assert.isTrue(1.0 === result.volume);
+    assert.isTrue(6.0 === result.area);
+    assert.isTrue(Point3d.fromJSON(result.centroid).isAlmostEqual(Point3d.create(0.5, 0.5, 0.5)));
+  });
+
+  it("area", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(shape);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const testElem = imodel.elements.createElement(elementProps);
+    const newId = imodel.elements.insertElement(testElem);
+    imodel.saveChanges();
+
+    const requestProps: MassPropertiesRequestProps = {
+      operation: MassPropertiesOperation.AccumulateAreas,
+      candidates: [newId],
+    };
+
+    const requestContext = new BackendRequestContext();
+    const result = await imodel.getMassProperties(requestContext, requestProps);
+    assert.isTrue(BentleyStatus.SUCCESS === result.status);
+    assert.isTrue(1.0 === result.area);
+    assert.isTrue(4.0 === result.perimeter);
+    assert.isTrue(Point3d.fromJSON(result.centroid).isAlmostEqual(Point3d.create(0.5, 0.5, 0.0)));
+  });
+
 });

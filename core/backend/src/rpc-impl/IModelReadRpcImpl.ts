@@ -11,6 +11,7 @@ import {
   ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, ImageSourceFormat, IModelProps,
   IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelToken, IModelTokenProps, ModelProps, RpcInterface, RpcManager,
   SnapRequestProps, SnapResponseProps, ViewStateProps, IModel, IModelVersion, QueryLimit, QueryQuota, QueryResponse, QueryPriority,
+  MassPropertiesRequestProps, MassPropertiesResponseProps,
 } from "@bentley/imodeljs-common";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
@@ -171,6 +172,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async cancelSnap(tokenProps: IModelTokenProps, sessionId: string): Promise<void> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
     return IModelDb.find(iModelToken).cancelSnap(sessionId);
+  }
+
+  public async getMassProperties(tokenProps: IModelTokenProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const requestContext = ClientRequestContext.current;
+    return IModelDb.find(iModelToken).getMassProperties(requestContext, props);
   }
 
   public async getToolTipMessage(tokenProps: IModelTokenProps, id: string): Promise<string[]> {
