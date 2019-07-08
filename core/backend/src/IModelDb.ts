@@ -1436,7 +1436,7 @@ export namespace IModelDb {
 
       const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (val.error)
-        throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggerCategory);
+        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
       elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
       jsClass.onInserted(elProps, iModel);
@@ -1454,7 +1454,7 @@ export namespace IModelDb {
 
       const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps));
       if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, "error updating element id " + elProps.id, Logger.logWarning, loggerCategory);
+        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
       jsClass.onUpdated(elProps, iModel);
     }
@@ -1472,7 +1472,7 @@ export namespace IModelDb {
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+          throw new IModelError(error, "Error deleting element", Logger.logWarning, loggerCategory, () => ({ elementId: props.id }));
 
         jsClass.onDeleted(props, iModel);
       });
@@ -1535,9 +1535,15 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(aspectProps, iModel);
+
+      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
+        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
+
+      jsClass.onInserted(aspectProps, iModel);
     }
 
     /** Update an exist ElementAspect within the iModel.
@@ -1545,20 +1551,33 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(aspectProps, iModel);
+
+      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory);
+        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
+
+      jsClass.onUpdated(aspectProps, iModel);
     }
 
     /** Delete one or more ElementAspects from this iModel.
-     * @param ids The set of Ids of the element(s) to be deleted
-     * @throws [[IModelError]]
+     * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
+     * @throws [[IModelError]] if unable to delete the ElementAspect.
      */
-    public deleteAspect(ids: Id64Arg): void {
-      Id64.toIdSet(ids).forEach((id) => {
-        const status = this._iModel.nativeDb.deleteElementAspect(id);
+    public deleteAspect(aspectInstanceIds: Id64Arg): void {
+      const iModel = this._iModel;
+      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
+        const aspectProps = this._queryAspect(aspectInstanceId, ElementAspect.classFullName);
+        const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+        jsClass.onDelete(aspectProps, iModel);
+
+        const status = iModel.nativeDb.deleteElementAspect(aspectInstanceId);
         if (status !== IModelStatus.Success)
-          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory);
+          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId }));
+
+        jsClass.onDeleted(aspectProps, iModel);
       });
     }
   }

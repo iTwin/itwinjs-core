@@ -1252,6 +1252,18 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     static readonly className: string;
     // (undocumented)
     element: RelatedElement;
+    // @beta
+    protected static onDelete(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onDeleted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInsert(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInserted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdate(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdated(_props: ElementAspectProps, _iModel: IModelDb): void;
     // @internal (undocumented)
     toJSON(): ElementAspectProps;
 }
@@ -1882,7 +1894,7 @@ export namespace IModelDb {
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element>(elProps: ElementProps): T;
-        deleteAspect(ids: Id64Arg): void;
+        deleteAspect(aspectInstanceIds: Id64Arg): void;
         deleteElement(ids: Id64Arg): void;
         getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
