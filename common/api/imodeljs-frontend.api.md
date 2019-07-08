@@ -1593,6 +1593,8 @@ export enum ContextMode {
 export class ContextRealityModelState {
     constructor(props: ContextRealityModelProps, iModel: IModelConnection);
     // (undocumented)
+    readonly classifiers: SpatialClassifiers | undefined;
+    // (undocumented)
     readonly description: string;
     // (undocumented)
     readonly iModel: IModelConnection;
@@ -1647,7 +1649,7 @@ export enum CoordSystem {
 }
 
 // @internal (undocumented)
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference;
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference;
 
 // @internal (undocumented)
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
@@ -5716,10 +5718,22 @@ export enum SnapStatus {
 export class SpatialClassifiers {
     [Symbol.iterator](): Iterator<SpatialClassificationProps.Classifier>;
     // @internal
-    constructor(jsonContainer: any);
+    constructor(jsonContainer: SpatialClassifiersContainer);
     active: SpatialClassificationProps.Classifier | undefined;
     readonly length: number;
-    push(classifier: SpatialClassificationProps.Classifier): void;
+    push(classifier: SpatialClassificationProps.Classifier): SpatialClassificationProps.Classifier | undefined;
+}
+
+// @internal (undocumented)
+export interface SpatialClassifiersContainer {
+    // (undocumented)
+    classifiers?: SpatialClassificationProps.Properties[];
+}
+
+// @internal (undocumented)
+export abstract class SpatialClassifierTileTreeReference extends TileTree.Reference {
+    // (undocumented)
+    abstract readonly classifiers: SpatialClassifiers;
 }
 
 // @public

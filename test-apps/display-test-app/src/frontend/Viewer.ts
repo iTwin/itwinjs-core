@@ -18,7 +18,6 @@ import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { DebugPanel } from "./DebugPanel";
 import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
-import { RealityModelPicker } from "./RealityModelPicker";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
@@ -27,10 +26,9 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
+import { ClassificationsPanel } from "./ClassificationsPanel";
 import { emulateVersionComparison } from "./VersionComparison";
 import { selectFileName } from "./FileOpen";
-
-const wantRealityModels = false;
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
@@ -214,18 +212,6 @@ export class Viewer {
       },
     });
 
-    if (wantRealityModels) {
-      this.toolBar.addDropDown({
-        className: "bim-icon-model",
-        tooltip: "Reality models",
-        createDropDown: async (container: HTMLElement) => {
-          const picker = new RealityModelPicker(this.viewport, container);
-          await picker.populate();
-          return picker;
-        },
-      });
-    }
-
     this.toolBar.addDropDown({
       className: "bim-icon-categories",
       tooltip: "Categories",
@@ -252,6 +238,12 @@ export class Viewer {
       tooltip: "Element selection",
     }));
 
+    this.toolBar.addItem(createToolButton({
+      className: "rd-icon-measure-distance",
+      click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
+      tooltip: "Measure distance",
+    }));
+
     this.toolBar.addDropDown({
       className: "bim-icon-settings",
       createDropDown: async (container: HTMLElement) => {
@@ -273,14 +265,6 @@ export class Viewer {
       tooltip: "Window area",
     }));
 
-    const walk = createImageButton({
-      src: "walk.svg",
-      click: () => IModelApp.tools.run("View.Walk", this.viewport),
-      tooltip: "Walk",
-    });
-    this._3dOnly.push(walk);
-    this.toolBar.addItem(walk);
-
     this.toolBar.addItem(createImageButton({
       src: "rotate-left.svg",
       click: () => IModelApp.tools.run("View.Rotate", this.viewport),
@@ -292,6 +276,14 @@ export class Viewer {
       createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
       tooltip: "Standard rotations",
     });
+
+    const walk = createImageButton({
+      src: "walk.svg",
+      click: () => IModelApp.tools.run("View.Walk", this.viewport),
+      tooltip: "Walk",
+    });
+    this._3dOnly.push(walk);
+    this.toolBar.addItem(walk);
 
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-undo",
@@ -305,12 +297,6 @@ export class Viewer {
       tooltip: "View undo",
     }));
 
-    this.toolBar.addItem(createToolButton({
-      className: "rd-icon-measure-distance",
-      click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
-      tooltip: "Measure distance",
-    }));
-
     this.toolBar.addDropDown({
       className: "bim-icon-animation",
       createDropDown: async (container: HTMLElement) => new AnimationPanel(this.viewport, container),
@@ -318,15 +304,25 @@ export class Viewer {
     });
 
     this.toolBar.addDropDown({
-      className: "bim-icon-isolate",
-      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
-      tooltip: "Override feature symbology",
-    });
-
-    this.toolBar.addDropDown({
       className: "bim-icon-viewtop",
       tooltip: "Sectioning tools",
       createDropDown: async (container: HTMLElement) => new SectionsPanel(this.viewport, container),
+    });
+
+    this.toolBar.addDropDown({
+      className: "bim-icon-property-data",
+      tooltip: "Spatial Classification",
+      createDropDown:  async (container: HTMLElement) => {
+        const panel = new ClassificationsPanel(this.viewport, container);
+        await panel.populate();
+        return panel;
+      },
+    });
+
+    this.toolBar.addDropDown({
+      className: "bim-icon-isolate",
+      createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
+      tooltip: "Override feature symbology",
     });
 
     this.toolBar.addDropDown({
