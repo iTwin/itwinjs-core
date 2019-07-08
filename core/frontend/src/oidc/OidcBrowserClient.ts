@@ -300,17 +300,19 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 
   private async getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
-      authority: await this.getUrl(requestContext),
+      authority: this._configuration.authority || await this.getUrl(requestContext),
       client_id: this._configuration.clientId,
       redirect_uri: this._configuration.redirectUri,
       silent_redirect_uri: this._configuration.redirectUri,
       post_logout_redirect_uri: this._configuration.postSignoutRedirectUri,
       automaticSilentRenew: true,
-      response_type: "id_token token",
-      query_status_response_type: "id_token token",
+      response_type: this._configuration.responseType || "id_token token",
+      query_status_response_type: this._configuration.responseType || "id_token token",
       scope: this._configuration.scope,
       loadUserInfo: true,
       userStore: new WebStorageStateStore({ store: window.localStorage }),
+      clockSkew: this._configuration.clockSkew,
+      metadata: this._configuration.metadata,
     };
     return userManagerSettings;
   }

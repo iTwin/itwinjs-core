@@ -1214,9 +1214,17 @@ export abstract class OidcClient extends Client {
 
 // @beta
 export interface OidcFrontendClientConfiguration {
+    // @internal
+    authority?: string;
     clientId: string;
+    // @internal
+    clockSkew?: number;
+    // @internal
+    metadata?: any;
     postSignoutRedirectUri?: string;
     redirectUri: string;
+    // @internal
+    responseType?: string;
     scope: string;
 }
 
