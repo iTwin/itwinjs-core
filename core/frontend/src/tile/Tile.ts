@@ -777,7 +777,7 @@ export namespace Tile {
       this.drape = context.getTextureDrape(root.modelId);
 
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
-      if (IModelApp.renderSystem.options.cullAgainstActiveVolume && context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
+      if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
         this.viewClip = context.viewport.view.getViewClip();
     }
 

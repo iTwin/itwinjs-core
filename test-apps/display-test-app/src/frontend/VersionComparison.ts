@@ -64,7 +64,7 @@ async function determineChangedElems(iModel: IModelConnection, revision: IModelC
   return { inserted, deleted, updated };
 }
 
-const changedTransparency = 10;
+const changedTransparency = 16; // NB: This will appear more transparent due to use of "fade-out" mode (flat alpha weight).
 const unchangedAppearance = FeatureSymbology.Appearance.fromJSON({
   rgb: new RgbColor(80, 80, 80),
   transparency: 0.7,

@@ -1132,28 +1132,28 @@ export namespace RenderSystem {
   export interface Options {
     /** WebGL extensions to be explicitly disabled, regardless of whether or not the WebGL implementation supports them.
      * This is chiefly useful for testing code which only executes in the absence of particular extensions.
+     *
+     * Default value: undefined
+     *
      * @internal
      */
     disabledExtensions?: WebGLExtensionName[];
-    /** Specifies whether to use optimized surface shaders when edge display is not important. If set to true, then in 3d views the optimized shaders will be used if:
-     *  - Render mode is wireframe; or
-     *  - Render mode is smooth shade and visible edges are turned off.
-     * @internal
-     */
-    enableOptimizedSurfaceShaders?: boolean;
-    /** If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
-     * @internal
-     */
-    cullAgainstActiveVolume?: boolean;
+
     /** If true, preserve the shader source code as internal strings, useful for debugging purposes.
+     *
+     * Default value: false
+     *
      * @internal
      */
     preserveShaderSourceCode?: boolean;
+
     /** If true display solar shadows.
-     *      * @internal
+     *
+     * Default value: false
+     *
+     * @internal
      */
     displaySolarShadows?: boolean;
-
   }
 }
 

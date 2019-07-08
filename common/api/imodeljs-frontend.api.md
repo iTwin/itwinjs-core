@@ -5045,13 +5045,9 @@ export namespace RenderSystem {
     // @beta
     export interface Options {
         // @internal
-        cullAgainstActiveVolume?: boolean;
-        // @internal
         disabledExtensions?: WebGLExtensionName[];
         // @internal
         displaySolarShadows?: boolean;
-        // @internal
-        enableOptimizedSurfaceShaders?: boolean;
         // @internal
         preserveShaderSourceCode?: boolean;
     }
@@ -6624,6 +6620,8 @@ export abstract class TileAdmin {
     // @beta
     static create(props?: TileAdmin.Props): TileAdmin;
     // @internal (undocumented)
+    abstract readonly disableMagnification: boolean;
+    // @internal (undocumented)
     abstract readonly emptyViewportSet: TileAdmin.ViewportSet;
     // @internal (undocumented)
     abstract readonly enableInstancing: boolean;
@@ -6661,14 +6659,12 @@ export abstract class TileAdmin {
     abstract readonly tileExpirationTime: BeDuration;
     // @internal (undocumented)
     abstract readonly tileTreeExpirationTime: BeDuration | undefined;
-    // @internal (undocumented)
-    abstract readonly useProjectExtents: boolean;
 }
 
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
-        disableThrottling?: boolean;
+        disableMagnification?: boolean;
         enableInstancing?: boolean;
         maxActiveRequests?: number;
         // @internal
@@ -6676,8 +6672,6 @@ export namespace TileAdmin {
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
-        // @internal
-        useProjectExtents?: boolean;
     }
     export interface Statistics {
         numActiveRequests: number;
