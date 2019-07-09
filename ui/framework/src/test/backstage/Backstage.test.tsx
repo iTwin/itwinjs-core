@@ -26,6 +26,10 @@ describe("Backstage", () => {
     SyncUiEventDispatcher.initialize();   // To process Backstage events
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("<Backstage />", () => {
     it("should render - isVisible", () => {
       const wrapper = mount(<Backstage isVisible={true} />);

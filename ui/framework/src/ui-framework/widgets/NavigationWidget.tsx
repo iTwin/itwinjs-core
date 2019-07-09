@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
 import { CommonProps, UiError } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
@@ -189,20 +189,27 @@ class NavigationWidgetWithDef extends React.Component<Props> {
     this.setState((_prevState) => ({ navigationAidId: args.navigationAidId, imodel: args.iModelConnection }));
   }
 
+  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
+    // force update when list of registered UiPluginProvides change
+    this.forceUpdate();
+  }
   public componentDidMount() {
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
+    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
+    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public render(): React.ReactNode {
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar(`[${activeStageName}]NavigationWidget-horizontal`);
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar(`[${activeStageName}]NavigationWidget-vertical`);
 
     return (
       <NZ_ToolsWidget isNavigation

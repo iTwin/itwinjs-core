@@ -12,6 +12,10 @@ describe("WidgetFactory", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("appButton support", () => {
     const props: AnyWidgetProps = {
       classId: "ToolWidget",

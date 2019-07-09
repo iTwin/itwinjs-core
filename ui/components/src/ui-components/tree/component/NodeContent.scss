@@ -5,19 +5,24 @@
 @import "@bentley/ui-core/lib/ui-core/index";
 
 .components-tree-node-description {
-  color: $uicore-gray;
+  color: $buic-foreground-disabled;
   font-size: $uicore-font-size-small;
   margin-top: 4px;
 
   &.with-editor {
-    margin-top: 0;
+    margin: 0;
+    padding-top: 1px;
   }
 }
 
 .components-tree-node-content {
-  display: inline-block;
+  height: 24px;
+  line-height: $uicore-font-size-small;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   &.with-description {
-    padding: 5px 0;
+    height: 43px;
   }
 }

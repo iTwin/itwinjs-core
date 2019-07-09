@@ -14,6 +14,7 @@ import { IModelTokenProps, IModelProps } from "../IModel";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
 import { IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { ViewStateProps } from "../ViewProps";
 import { QueryPriority, QueryResponse, QueryLimit, QueryQuota } from "../Paging";
@@ -38,7 +39,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.0.0";
+  public static interfaceVersion = "1.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -64,6 +65,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async requestSnap(_iModelToken: IModelTokenProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async cancelSnap(_iModelToken: IModelTokenProps, _sessionId: string): Promise<void> { return this.forward(arguments); }
+  /** @beta */
+  public async getMassProperties(_iModelToken: IModelTokenProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */

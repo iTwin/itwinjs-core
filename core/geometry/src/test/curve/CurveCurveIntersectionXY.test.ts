@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { CurveCurve, CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
+import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { LineString3d } from "../../curve/LineString3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Checker } from "../Checker";
@@ -51,7 +52,7 @@ function testIntersectionsXY(
   if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
     const n = intersections.dataA.length;
     if (n < minExpected || n > maxExpected) {
-      ck.announceError("intersction count out of range", n, minExpected, maxExpected);
+      ck.announceError("intersection count out of range", n, minExpected, maxExpected);
     }
     if (testCoordinates) {
       for (let i = 0; i < n; i++) {
@@ -77,7 +78,7 @@ function testIntersectionsXY(
   return ck.getNumErrors() === baseErrorCount;
 }
 
-describe("CurveCurve", () => {
+describe("CurveCurveXY", () => {
 
   it("LineLineMapped", () => {
     const ck = new Checker();
@@ -117,7 +118,6 @@ describe("CurveCurve", () => {
 
       }
     }
-    ck.checkpoint("CurveCurve.LineLine");
     expect(ck.getNumErrors()).equals(0);
   });
 

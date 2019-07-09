@@ -56,4 +56,4 @@ This gives them the same first class *reporting* functionality as with Elements.
 ElementAspects are often used when the same set of properties needs to be stored for Elements that live in different parts of the class hierarchy.
 However, if the data is more ad-hoc, then Element `JsonProperties` are probably more appropriate.
 
-> Next: [Model Fundamentals](./model-fundamentals.md)
+> Next: [Mixins](./mixins.md)

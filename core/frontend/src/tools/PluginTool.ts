@@ -5,7 +5,7 @@
 /** @module Tools */
 
 import { Tool } from "./Tool";
-import { PluginAdmin } from "../Plugin";
+import { PluginAdmin } from "../plugin/Plugin";
 import { IModelApp } from "../IModelApp";
 
 /** An Immediate Tool that starts the process of loading an iModelJs plugin. */

@@ -26,6 +26,10 @@ export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:
   if (!props.iconSpec) return null;
 
   if (typeof props.iconSpec === "string") {
+    // if string begins with "src:" then we assume it specifies file path or url
+    if (props.iconSpec.startsWith("src:") && props.iconSpec.length > 4)
+      return (<img className="uifw-item-svg-icon" src={props.iconSpec.slice(4)} />);
+
     const className = "icon " + props.iconSpec;
     return (<i className={className} />);
   }

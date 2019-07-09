@@ -93,4 +93,4 @@ Each iModel Bridge job should create a `DefinitionModel` for its Categories. Tha
 
 iModel Bridges should respect and use the standard SpatialCategories defined by the Domains.
 
-> Next: [Data Evolution](./appendix-a-data-evolution-across-time.md)
+> Next: [Schema Customization](./schema-customization.md)

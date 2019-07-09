@@ -36,6 +36,11 @@ describe("Table", () => {
   const cellClassName = "div.components-table-cell";
   const selectedCellClassName = "div.components-table-cell.is-selected";
 
+  const borderTopClassName = "border-top";
+  const borderRightClassName = "border-right";
+  const borderBottomClassName = "border-bottom";
+  const borderLeftClassName = "border-left";
+
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
     for (const column of columns) {
@@ -334,7 +339,7 @@ describe("Table", () => {
         actualItems.push(iteratorResult.value);
         iteratorResult = await iterator!.next();
       }
-      expect(expectedItemKeys.length).to.be.equal(actualItems.length);
+      expect(actualItems.length).to.be.equal(expectedItemKeys.length);
       for (let i = 0; i < expectedItemKeys.length; i++) {
         expect(actualItems.find((x) => x.key === expectedItemKeys[i], "expectedItemKeys[" + i + "]")).to.not.be.undefined;
       }
@@ -355,31 +360,49 @@ describe("Table", () => {
       }
     };
 
-    before(() => {
-      // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
-      // tslint:disable-next-line:no-string-literal
-      if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
+    function expectCellBorders(cell: enzyme.ReactWrapper<enzyme.HTMLAttributes>, expectedBorders: string[]) {
+      const remainingBorders = new Set([borderTopClassName, borderRightClassName, borderBottomClassName, borderLeftClassName]);
+      for (const border of expectedBorders) {
+        expect(cell.hasClass(border)).to.be.true;
+        remainingBorders.delete(border);
+      }
+
+      for (const border of remainingBorders) {
+        expect(cell.hasClass(border)).to.be.false;
+      }
+    }
+
+    const onRowsSelectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
+    const onRowsDeselectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
+    let selectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
+    let deselectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
+
+    const onCellsSelectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>>();
+    const onCellsDeselectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>>();
+    let selectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
+    let deselectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
+
+    beforeEach(() => {
+      onRowsSelectedCallbackMock.reset();
+      onRowsDeselectedCallbackMock.reset();
+      onRowsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
+      onRowsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
+
+      onCellsSelectedCallbackMock.reset();
+      onCellsDeselectedCallbackMock.reset();
+      onCellsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
+      onCellsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
     });
 
     describe("row", () => {
 
-      const onRowsSelectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
-      const onRowsDeselectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
-
-      let selectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
-      let deselectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
-
       beforeEach(async () => {
-        onRowsSelectedCallbackMock.reset();
-        onRowsDeselectedCallbackMock.reset();
-
-        onRowsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
-        onRowsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
-
         table = enzyme.mount(<Table
           dataProvider={dataProviderMock.object}
           onRowsSelected={onRowsSelectedCallbackMock.object}
           onRowsDeselected={onRowsDeselectedCallbackMock.object}
+          onCellsSelected={onCellsSelectedCallbackMock.object}
+          onCellsDeselected={onCellsDeselectedCallbackMock.object}
           tableSelectionTarget={TableSelectionTarget.Row}
           onRowsLoaded={onRowsLoaded}
         />);
@@ -587,25 +610,82 @@ describe("Table", () => {
         expect(selectedCells.length).to.be.equal(0);
       });
 
+      it("does not restore row selection when switching back from cell selection mode", async () => {
+        // Select a row while in row selection mode
+        const row = table.find(rowClassName).first();
+        row.simulate("click");
+        await verifyRowIterator(["0"], selectedRowsIterator);
+
+        // Switch to cell selection mode and select a cell
+        table.setProps({ tableSelectionTarget: TableSelectionTarget.Cell });
+        const cell = table.find(cellClassName).at(3);
+        cell.simulate("click");
+        await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
+        expect(table.find(selectedRowClassName).length).to.equal(0);
+
+        // Switch back to row selection mode and check selections
+        table.setProps({ tableSelectionTarget: TableSelectionTarget.Row });
+        expect(table.find(selectedRowClassName).length).to.be.equal(0);
+      });
+
+      describe("border styles", () => {
+
+        it("adds outer borders", async () => {
+          // Select a middle row
+          table.find(rowClassName).at(1).simulate("click");
+          await verifyRowIterator(["1"], selectedRowsIterator);
+
+          const row = table.find(selectedRowClassName).first();
+          // Bottom border is not drawn here - it is drawn as top border on the row below
+          expectCellBorders(row.find(cellClassName).at(0), [borderTopClassName, borderLeftClassName]);
+          expectCellBorders(row.find(cellClassName).at(1), [borderTopClassName]);
+          expectCellBorders(row.find(cellClassName).at(2), [borderTopClassName, borderRightClassName]);
+
+          const rowBelow = table.find(rowClassName).at(2);
+          rowBelow.find(cellClassName).forEach((cell) => expectCellBorders(cell, [borderTopClassName]));
+        });
+
+        it("adds top border styles when the first row is selected", async () => {
+          // Select the first row
+          table.find(rowClassName).first().simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+
+          const firstRow = table.find(rowClassName).first();
+          firstRow.find(cellClassName).forEach((cell) => expect(cell.hasClass(borderTopClassName)).to.be.true);
+        });
+
+        it("adds bottom border styles when the last row is selected", async () => {
+          // Select the last row
+          table.find(rowClassName).last().simulate("click");
+          await verifyRowIterator(["9"], selectedRowsIterator);
+
+          const lastRow = table.find(rowClassName).last();
+          lastRow.find(cellClassName).forEach((cell) => expect(cell.hasClass(borderBottomClassName)).to.be.true);
+        });
+
+        it("does not add borders in between consecutively selected rows ", async () => {
+          table.setProps({ selectionMode: SelectionMode.Multiple });
+
+          // Select the first and the second rows
+          table.find(rowClassName).at(0).simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          table.find(rowClassName).at(1).simulate("click");
+          await verifyRowIterator(["1"], selectedRowsIterator);
+
+          const rows = table.find(rowClassName);
+          rows.at(0).find(cellClassName).forEach((cell) => expect(cell.hasClass(borderBottomClassName)).to.be.false);
+          rows.at(1).find(cellClassName).forEach((cell) => expect(cell.hasClass(borderTopClassName)).to.be.false);
+        });
+      });
     });
 
     describe("cell", () => {
 
-      const onCellsSelectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>>();
-      const onCellsDeselectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>>();
-
-      let selectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
-      let deselectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
-
       beforeEach(async () => {
-        onCellsSelectedCallbackMock.reset();
-        onCellsDeselectedCallbackMock.reset();
-
-        onCellsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
-        onCellsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
-
         table = enzyme.mount(<Table
           dataProvider={dataProviderMock.object}
+          onRowsSelected={onRowsSelectedCallbackMock.object}
+          onRowsDeselected={onRowsDeselectedCallbackMock.object}
           onCellsSelected={onCellsSelectedCallbackMock.object}
           onCellsDeselected={onCellsDeselectedCallbackMock.object}
           tableSelectionTarget={TableSelectionTarget.Cell}
@@ -885,6 +965,113 @@ describe("Table", () => {
         table.update();
         const selectedRows = table.find(selectedRowClassName);
         expect(selectedRows.length).to.be.equal(0);
+      });
+
+      it("does not restore cell selection when switching back from row selection mode", async () => {
+        // Select a cell while in cell selection mode
+        const cell = table.find(cellClassName).first();
+        cell.simulate("click");
+        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+
+        // Switch to row selection mode and select a row
+        table.setProps({ tableSelectionTarget: TableSelectionTarget.Row });
+        const row = table.find(rowClassName).at(1);
+        row.simulate("click");
+        await verifyRowIterator(["1"], selectedRowsIterator);
+        expect(table.find(selectedCellClassName).length).to.be.equal(0);
+
+        // Switch back to cell selection mode and check selections
+        table.setProps({ tableSelectionTarget: TableSelectionTarget.Cell });
+        expect(table.find(selectedCellClassName).length).to.be.equal(0);
+      });
+
+      describe("border styles", () => {
+
+        it("adds outer borders", async () => {
+          // Select a middle cell
+          table.find(cellClassName).at(4).simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key1" }], selectedCellsIterator);
+
+          const selectedCell = table.find(selectedCellClassName).first();
+          // Bottom border is not drawn here - it is drawn as top border on the cell below
+          expectCellBorders(selectedCell, [borderTopClassName, borderRightClassName, borderLeftClassName]);
+
+          const cellBelow = table.find(cellClassName).at(7);
+          expectCellBorders(cellBelow, [borderTopClassName]);
+        });
+
+        it("adds top border style when cell in the first row is selected", async () => {
+          // Select the first cell in the first row
+          table.find(cellClassName).first().simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+
+          const cell = table.find(selectedCellClassName).first();
+          expect(cell.hasClass(borderTopClassName)).to.be.true;
+        });
+
+        it("adds right border style when cell in the last column is selected", async () => {
+          // Select the last cell in the first row
+          table.find(cellClassName).at(2).simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key2" }], selectedCellsIterator);
+
+          const cell = table.find(selectedCellClassName).first();
+          expect(cell.hasClass(borderRightClassName)).to.be.true;
+        });
+
+        it("adds bottom border style when cell in the last row is selected", async () => {
+          // Select the first cell the last row
+          table.find(cellClassName).at(27).simulate("click");
+          await verifyCellIterator([{ rowKey: "9", columnKey: "key0" }], selectedCellsIterator);
+
+          const cell = table.find(selectedCellClassName).first();
+          expect(cell.hasClass(borderBottomClassName)).to.be.true;
+        });
+
+        it("adds left border style when cell in the first column is selected", async () => {
+          // Select the first cell in the first row
+          table.find(cellClassName).first().simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+
+          const cell = table.find(selectedCellClassName).first();
+          expect(cell.hasClass(borderLeftClassName)).to.be.true;
+        });
+
+        it("does not add borders in between consecutively selected cells ", async () => {
+          table.setProps({ selectionMode: SelectionMode.Multiple });
+
+          // Select nodes in a "+" pattern
+          table.find(cellClassName).at(1).simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key1" }], selectedCellsIterator);
+          table.find(cellClassName).at(3).simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
+          table.find(cellClassName).at(4).simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key1" }], selectedCellsIterator);
+          table.find(cellClassName).at(5).simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key2" }], selectedCellsIterator);
+          table.find(cellClassName).at(7).simulate("click");
+          await verifyCellIterator([{ rowKey: "2", columnKey: "key1" }], selectedCellsIterator);
+
+          // Note: bottom borders are drawn as top borders on nodes below
+
+          // Expect border on three sides on node 1
+          expectCellBorders(table.find(cellClassName).at(1), [borderTopClassName, borderRightClassName, borderLeftClassName]);
+
+          // Expect border on three sides on node 3
+          expectCellBorders(table.find(cellClassName).at(3), [borderTopClassName, borderLeftClassName]);
+          expectCellBorders(table.find(cellClassName).at(6), [borderTopClassName]);
+
+          // Expect no border on node 4
+          expectCellBorders(table.find(cellClassName).at(4), []);
+
+          // Expect border on three sides on node 5
+          expectCellBorders(table.find(cellClassName).at(5), [borderTopClassName, borderRightClassName]);
+          expectCellBorders(table.find(cellClassName).at(8), [borderTopClassName]);
+
+          // Expect border on three sides on node 7
+          expectCellBorders(table.find(cellClassName).at(7), [borderRightClassName, borderLeftClassName]);
+          expectCellBorders(table.find(cellClassName).at(10), [borderTopClassName]);
+        });
+
       });
 
     });

@@ -15,6 +15,10 @@ describe("SignIn", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const spyMethod = sinon.spy();
     const wrapper = mount(<SignIn onSignedIn={spyMethod} />);

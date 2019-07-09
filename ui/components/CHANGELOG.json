@@ -2,6 +2,75 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@bentley/ui-components_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Tree: Fix an issue whith multiselection where shift-selecting nodes would not select anything."
+          },
+          {
+            "comment": "Tree: Add ability to check or uncheck multiple selected nodes' checkboxes all at once."
+          },
+          {
+            "comment": "BeInspireTree: Fix an issue with calling `updateNodesCheckboxes()` while handling `ModelLoaded` event"
+          },
+          {
+            "comment": "Tree: Correct TreeProps.checkboxInfo documentation."
+          },
+          {
+            "comment": "Allow Line Weight to be selected via Up/Down arrow keys once popup is open."
+          },
+          {
+            "comment": "Updated react-data-grid import statement"
+          },
+          {
+            "comment": "Added prefixes to Dialog & ContextMenu positioning CSS classes"
+          },
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Call filterclear when the user enters an empty search string and clicks Search."
+          },
+          {
+            "comment": "Added autofocus to the FilteringInput component."
+          },
+          {
+            "comment": "Remove inner focus outline that is only displayed in Firefox."
+          },
+          {
+            "comment": "Update WeightPicker."
+          },
+          {
+            "comment": "Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose."
+          },
+          {
+            "comment": "Save & Restore View Layouts"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "Temporarily lowered ui-components coverage thresholds"
+          },
+          {
+            "comment": "BeInspireTree: Fix an issue with delay-loaded child nodes sometimes being assigned to expired node objects."
+          },
+          {
+            "comment": "Tree: Fix child node checkbox events affecting parent node's checkbox state"
+          },
+          {
+            "comment": "Improve test coverage."
+          },
+          {
+            "comment": "ui-component unit tests. NumericInput strict=true default."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/ui-components_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

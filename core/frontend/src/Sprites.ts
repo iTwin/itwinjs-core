@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
+import { Logger } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { ImageSource } from "@bentley/imodeljs-common";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
 import { CanvasDecoration } from "./render/System";
 import { DecorateContext } from "./ViewContext";
@@ -42,9 +44,13 @@ export class Sprite {
    */
   constructor(src: ImageSource | string) {
     this.loadPromise = (typeof src === "string") ? imageElementFromUrl(src) : imageElementFromImageSource(src);
-    this.loadPromise.then((image) => { // tslint:disable-line:no-floating-promises
+    this.loadPromise.then((image) => {
       this.image = image;
       this.size.set(image.naturalWidth, image.naturalHeight);
+    }).catch((err) => {
+      const str = err.toString();
+      console.log(str); // tslint:disable-line: no-console
+      Logger.logError(FrontendLoggerCategory.Package + ".sprites", str);
     });
   }
 }
@@ -101,10 +107,10 @@ export class SpriteLocation implements CanvasDecoration {
     this._alpha = alpha;
     this._viewport = viewport;
     viewport.worldToView(locationWorld, this.position);
-    sprite.loadPromise.then(() => { // tslint:disable-line:no-floating-promises
+    sprite.loadPromise.then(() => {
       if (this._viewport === viewport) // was this deactivated while we were loading?
         viewport.invalidateDecorations();
-    });
+    }).catch(() => this._viewport = undefined); // sprite was not loaded properly
   }
 
   /** Turn this SpriteLocation off so it will no longer show. */

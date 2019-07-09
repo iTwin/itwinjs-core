@@ -1,6 +1,17 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Reorganize docs script output
+- Add functions `KeySet.forEach` and `KeySet.forEachBatch`
+- Downgrade json-schema-faker dependency to version `0.5.0-rc16` as `rc17` causes some tests to crash
+- Add "String" value specification for `InstanceLabelOverride` rule
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

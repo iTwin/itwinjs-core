@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "catch load errors for Sprites",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

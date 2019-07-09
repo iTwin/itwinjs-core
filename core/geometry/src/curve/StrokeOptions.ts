@@ -124,6 +124,17 @@ export class StrokeOptions {
     }
     return minCount;
   }
+  /** return stroke count which is the larger of existing count or count needed for circular arc chord tol with given arc length and radians
+   */
+  public applyChordTolToLengthAndRadians(minCount: number, length: number, sweepRadians: number): number {
+    if (this.chordTol && this.chordTol > 0.0) {
+      const radius = Geometry.conditionalDivideFraction(length, sweepRadians);
+      if (radius !== undefined)
+        return this.applyChordTol(minCount, radius, sweepRadians);
+    }
+    return minCount;
+  }
+
   /** return stroke count which is the larger of existing count or `this.minStrokesPerPrimitive` */
   public applyMinStrokesPerPrimitive(minCount: number): number {
     if (this.minStrokesPerPrimitive !== undefined && Number.isFinite(this.minStrokesPerPrimitive)

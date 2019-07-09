@@ -45,15 +45,15 @@ export interface FeatureOverrideProvider {
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-/** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying a [[TileTree.Reference]] capable of loading and drawing the graphics.
+/** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTree.Reference]]s capable of loading and drawing the graphics.
  * Typical use cases involve drawing cartographic imagery like weather, traffic conditions, etc.
  * @see [[MapTileTreeReference]] and [[MapImageryTileTreeReference]] for examples of ways to create a TileTree reference.
  * @see [[Viewport.addTiledGraphicsProvider]] and [[Viewport.dropTiledGraphicsProvider]].
  * @internal
  */
 export interface TiledGraphicsProvider {
-  /** Return the tile tree to be drawn in the specified Viewport. */
-  getTileTree(viewport: Viewport): TileTree.Reference | undefined;
+  /** Apply the supplied function to each [[TileTree.Reference]] to be drawn in the specified Viewport. */
+  forEachTileTreeRef(viewport: Viewport, func: (ref: TileTree.Reference) => void): void;
 }
 
 /** Viewport synchronization flags. Synchronization is handled internally - do not use directly.
@@ -74,21 +74,61 @@ export class SyncFlags {
   public get isValidRotatePoint(): boolean { return this._rotatePoint; }
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
-  public invalidateDecorations(): void { this._decorations = false; }
-  public invalidateScene(): void { this._scene = false; this.invalidateDecorations(); this.invalidateAnimationFraction(); }
-  public invalidateRenderPlan(): void { this._renderPlan = false; this.invalidateScene(); }
-  public invalidateController(): void { this._controller = false; this.invalidateRenderPlan(); }
-  public invalidateRotatePoint(): void { this._rotatePoint = false; }
-  public invalidateAnimationFraction(): void { this._animationFraction = false; }
-  public invalidateRedrawPending(): void { this._redrawPending = false; }
-  public setValidDecorations(): void { this._decorations = true; }
-  public setValidScene(): void { this._scene = true; }
-  public setValidController(): void { this._controller = true; }
-  public setValidRenderPlan(): void { this._renderPlan = true; }
-  public setValidRotatePoint(): void { this._rotatePoint = true; }
-  public setValidAnimationFraction(): void { this._animationFraction = true; }
-  public setRedrawPending(): void { this._redrawPending = true; }
-  public initFrom(other: SyncFlags): void { this._decorations = other._decorations; this._scene = other._scene; this._renderPlan = other._renderPlan; this._controller = other._controller; this._rotatePoint = other._rotatePoint; this._animationFraction = other._animationFraction; this._redrawPending = other._redrawPending; }
+  public invalidateDecorations(): void {
+    this._decorations = false;
+  }
+  public invalidateScene(): void {
+    this._scene = false;
+    this.invalidateDecorations();
+    this.invalidateAnimationFraction();
+  }
+  public invalidateRenderPlan(): void {
+    this._renderPlan = false;
+    this.invalidateScene();
+  }
+  public invalidateController(): void {
+    this._controller = false;
+    this.invalidateRenderPlan();
+  }
+  public invalidateRotatePoint(): void {
+    this._rotatePoint = false;
+  }
+  public invalidateAnimationFraction(): void {
+    this._animationFraction = false;
+  }
+  public invalidateRedrawPending(): void {
+    this._redrawPending = false;
+  }
+  public setValidDecorations(): void {
+    this._decorations = true;
+  }
+  public setValidScene(): void {
+    this._scene = true;
+  }
+  public setValidController(): void {
+    this._controller = true;
+  }
+  public setValidRenderPlan(): void {
+    this._renderPlan = true;
+  }
+  public setValidRotatePoint(): void {
+    this._rotatePoint = true;
+  }
+  public setValidAnimationFraction(): void {
+    this._animationFraction = true;
+  }
+  public setRedrawPending(): void {
+    this._redrawPending = true;
+  }
+  public initFrom(other: SyncFlags): void {
+    this._decorations = other._decorations;
+    this._scene = other._scene;
+    this._renderPlan = other._renderPlan;
+    this._controller = other._controller;
+    this._rotatePoint = other._rotatePoint;
+    this._animationFraction = other._animationFraction;
+    this._redrawPending = other._redrawPending;
+  }
 }
 
 /** @see [[ChangeFlags]]
@@ -1450,10 +1490,10 @@ export abstract class Viewport implements IDisposable {
 
   private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
     this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
-      if (enableAllSubCategories) {
+      if (enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
-        this._changeFlags.setViewedCategories();
-      }
+
+      this._changeFlags.setViewedCategories();
     });
   }
 
@@ -1623,7 +1663,11 @@ export abstract class Viewport implements IDisposable {
       return;
 
     // Need to redraw once models are available. Don't want to trigger events again.
-    return this.iModel.models.load(models).then(() => this.invalidateScene());
+    return this.iModel.models.load(models).then(() => {
+      this.invalidateScene();
+      if (this.view.isSpatialView())
+        this.view.markModelSelectorChanged();
+    });
   }
 
   /** @internal */
@@ -1825,11 +1869,8 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   protected forEachTiledGraphicsProviderTree(func: (ref: TileTree.Reference) => void): void {
-    for (const provider of this._tiledGraphicsProviders) {
-      const ref = provider.getTileTree(this);
-      if (undefined !== ref)
-        func(ref);
-    }
+    for (const provider of this._tiledGraphicsProviders)
+      provider.forEachTileTreeRef(this, (ref) => func(ref));
   }
 
   /** @internal */
@@ -1849,10 +1890,17 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.add(provider);
+    this.invalidateScene();
   }
   /** @internal */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.delete(provider);
+    this.invalidateScene();
+  }
+
+  /** @internal */
+  public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
+    return this._tiledGraphicsProviders.has(provider);
   }
 
   /** @internal */
@@ -2313,7 +2361,11 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public computeViewRange(): Range3d {
     this.setupFromView(); // can't proceed if viewport isn't valid (not active)
-    return this.view.computeFitRange();
+    const fitRange = this.view.computeFitRange();
+    this.forEachTiledGraphicsProviderTree((ref) => {
+      ref.unionFitRange(fitRange);
+    });
+    return fitRange;
   }
 
   /** @internal */

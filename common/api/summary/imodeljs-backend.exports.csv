@@ -96,10 +96,16 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
+beta;ExportGraphics
 beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 beta;ExportGraphicsInfo
 beta;ExportGraphicsMesh
 beta;ExportGraphicsProps
+beta;ExportPartDisplayProps
+beta;ExportPartFunction = (info: ExportPartInfo) => void
+beta;ExportPartGraphicsProps
+beta;ExportPartInfo
+beta;ExportPartInstanceProps
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
 public;class FunctionalBreakdownElement 
@@ -123,6 +129,7 @@ public;Graphic3d
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
 public;class GraphicalElement3d 
+public;GraphicalElement3dRepresentsElement 
 public;class GraphicalModel2d 
 public;class GraphicalType2d 
 public;Group 

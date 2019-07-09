@@ -3,8 +3,12 @@ ignore: true
 ---
 # NextVersion
 
-## Update to TypeScript 3.5
+## Updates to Authorization
 
-For the 1.0 release, iModel.js was using TypeScript 3.2. In order to take advantage of recent improvements, iModel.js has moved up to TypeScript 3.5. One of the main features of interest was the incremental build support. TypeScript 3.5 also includes some enhanced error checking over what was available in 3.2. This makes it easier to identify potential problems, but also may mean that source code that successfully compiled using 3.2 may require minor adjustments to compile using 3.5.
+* [OidcBrowserClient]($frontend) now uses local storage instead of session storage to store access tokens. The state of the authorization would therefore now be preserved if the browser was closed and reopened.<br/>
+**Note**: For this to work, it's required that the user not have modified the browser settings to clear local storage on exit.
 
-Please see the [TypeScript Roadmap](https://github.com/Microsoft/TypeScript/wiki/Roadmap) for more details.
+* [OidcBrowserClient]($frontend) can now be used in authorization code workflows. A new responseType parameter can be set to "code" to support these workflows. This also requires a new client to be registered.
+*
+* [OidcAgentClient]($clients-backend) is now available as beta (it was marked internal earlier). Using the client requires an Agent registration and potential changes to the Connect Project settings - see more documentation in [OidcAgentClient]($clients-backend).
+

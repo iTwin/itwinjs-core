@@ -15,6 +15,14 @@ import {
 } from "../../ui-framework";
 
 describe("<PopupButton />", async () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   afterEach(cleanup);
 
   it("should render", async () => {

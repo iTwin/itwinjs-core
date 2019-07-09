@@ -11,9 +11,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
@@ -201,54 +199,6 @@ export class BezierCurve3dH extends BezierCurveBase {
       return this._polygon.isAlmostEqual(other._polygon);
     }
     return false;
-  }
-  /**
-   * Assess length and turn to determine a stroke count.
-   * @param options stroke options structure.
-   */
-  public computeStrokeCountForOptions(options?: StrokeOptions): number {
-    // ugh.   for pure 3d case, local dx,dy,dz vars worked efficiently.
-    // managing the weights is tricky, so just do the easy code with temporary point vars.
-    this.getPolePoint3d(0, this._workPoint0);
-    this.getPolePoint3d(1, this._workPoint1);
-    let numStrokes = 1;
-    if (this._workPoint0 && this._workPoint1) {
-      let dx0 = this._workPoint1.x - this._workPoint0.x;
-      let dy0 = this._workPoint1.y - this._workPoint0.y;
-      let dz0 = this._workPoint1.z - this._workPoint0.z;
-      let dx1, dy1, dz1; // first differences of leading edge
-      let sumRadians = 0.0;
-      let thisLength = Geometry.hypotenuseXYZ(dx0, dy0, dz0);
-      this._workPoint1.setFromPoint3d(this._workPoint0);
-      let sumLength = thisLength;
-      let maxLength = thisLength;
-      let maxRadians = 0.0;
-      let thisRadians;
-      for (let i = 2; this.getPolePoint3d(i, this._workPoint1); i++) {
-        dx1 = this._workPoint1.x - this._workPoint0.x;
-        dy1 = this._workPoint1.y - this._workPoint0.y;
-        dz1 = this._workPoint1.z - this._workPoint0.z;
-        thisRadians = Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
-        sumRadians += thisRadians;
-        maxRadians = Geometry.maxAbsXY(thisRadians, maxRadians);
-        thisLength = Geometry.hypotenuseXYZ(dx1, dy1, dz1);
-        sumLength += thisLength;
-        maxLength = Geometry.maxXY(maxLength, thisLength);
-        dx0 = dx1;
-        dy0 = dy1;
-        dz0 = dz1;
-        this._workPoint0.setFrom(this._workPoint1);
-      }
-      const length1 = maxLength * this.degree;    // This may be larger than sumLength
-      const length2 = Math.sqrt(length1 * sumLength);  // This is in between
-      let radians1 = maxRadians * (this.degree - 1);  // As if worst case keeps happening.
-      if (this.degree < 3)
-        radians1 *= 3;  // so quadratics aren't understroked
-      const radians2 = Math.sqrt(radians1 * sumRadians);
-      numStrokes = StrokeOptions.applyAngleTol(options,
-        StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
-    }
-    return numStrokes;
   }
   /** Second step of double dispatch:  call `handler.handleBezierCurve3dH(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

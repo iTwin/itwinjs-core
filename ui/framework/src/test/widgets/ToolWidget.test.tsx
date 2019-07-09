@@ -20,8 +20,60 @@ import {
   CoreTools,
   ItemList,
   FrontstageManager,
+  GroupItemDef,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
+import { PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec } from "@bentley/imodeljs-frontend";
+
+class TestUiProvider implements PluginUiProvider {
+  public readonly id = "TestUiProvider";
+  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+    if (toolBarId === "[TestFrontstage]ToolWidget-horizontal") {
+      const firstActionSpec: ActionItemInsertSpec = {
+        relativeToolIdPath: "Select",
+        insertBefore: true,
+        isActionItem: true,
+        itemId: "h1-test-action-tool",
+        execute: (): void => {
+          // tslint:disable-next-line: no-console
+          console.log("Got Here!");
+        },
+        icon: "icon-developer",
+        label: "test action tool (relative)",
+      };
+      return [firstActionSpec];
+    }
+    if (toolBarId === "[TestFrontstage]ToolWidget-vertical") {
+      const firstActionSpec: ActionItemInsertSpec = {
+        relativeToolIdPath: "testGroup\\View.Fit",
+        insertBefore: false,
+        isActionItem: true,
+        itemId: "v1-test-action-tool",
+        execute: (): void => {
+          // tslint:disable-next-line: no-console
+          console.log("Got Here!");
+        },
+        icon: "icon-developer",
+        label: "test action tool (relative)",
+      };
+
+      const lastActionSpec: ActionItemInsertSpec = {
+        insertBefore: false,
+        isActionItem: true,
+        itemId: "v2-test-action-tool",
+        execute: (): void => {
+          // tslint:disable-next-line: no-console
+          console.log("Got Here!");
+        },
+        icon: "icon-developer",
+        label: "test action tool (last)",
+      };
+      return [firstActionSpec, lastActionSpec];
+    }
+
+    return [];
+  }
+}
 
 describe("ToolWidget", () => {
 
@@ -69,6 +121,10 @@ describe("ToolWidget", () => {
         }
       />;
 
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   const backstageToggleCommand =
@@ -138,8 +194,19 @@ describe("ToolWidget", () => {
   });
 
   it("ToolWidget should render with an item list", () => {
+    const group1 = new GroupItemDef({
+      groupId: "testGroup",
+      label: "Tool Group",
+      iconSpec: "icon-placeholder",
+      items: [CoreTools.selectElementCommand, CoreTools.fitViewCommand],
+      itemsInColumn: 4,
+    });
+
     const hItemList = new ItemList([CoreTools.selectElementCommand]);
-    const vItemList = new ItemList([CoreTools.fitViewCommand]);
+    const vItemList = new ItemList([CoreTools.fitViewCommand, group1]);
+
+    const testUiProvider = new TestUiProvider();
+    PluginUiManager.register(testUiProvider);
 
     const wrapper = mount(
       <ToolWidget
@@ -149,6 +216,7 @@ describe("ToolWidget", () => {
       />,
     );
     wrapper.unmount();
+    PluginUiManager.unregister(testUiProvider.id);
   });
 
   it("ToolWidget should support update", () => {

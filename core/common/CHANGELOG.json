@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-common_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for applying terrain to background map."
+          },
+          {
+            "comment": "Minor error fixed."
+          },
+          {
+            "comment": "Initial implementation of the LinearReferencing typescript domain"
+          },
+          {
+            "comment": "Adding domain classes for all relationships in the LinearReferencing schema."
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-common_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

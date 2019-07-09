@@ -24,6 +24,10 @@ describe("ActionItemButton", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   beforeEach(async () => {
     testCommand =
       new CommandItemDef({

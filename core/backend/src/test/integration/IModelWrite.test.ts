@@ -135,11 +135,25 @@ describe("IModelWriteTest (#integration)", () => {
     const secondIModel: IModelDb = await IModelDb.open(secondUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     const neutralObserverIModel: IModelDb = await IModelDb.open(neutralObserverUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     assert.notEqual(firstIModel, secondIModel);
+    assert.equal(firstIModel.briefcase.nativeDb.getBriefcaseId(), firstIModel.briefcase.briefcaseId);
+    assert.isAbove(firstIModel.briefcase.briefcaseId, 0);
+    assert.equal(secondIModel.briefcase.nativeDb.getBriefcaseId(), secondIModel.briefcase.briefcaseId);
+    assert.isAbove(secondIModel.briefcase.briefcaseId, 0);
+    assert.equal(neutralObserverIModel.briefcase.nativeDb.getBriefcaseId(), neutralObserverIModel.briefcase.briefcaseId);
+    assert.isAbove(neutralObserverIModel.briefcase.briefcaseId, 0);
 
     // Set up optimistic concurrency. Note the defaults are:
     firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
+
+    // Check that the policy has been setup correctly
+    let secondPolicy = secondIModel.concurrencyControl.getPolicy();
+    assert.isDefined(secondPolicy);
+    assert.isTrue(secondPolicy instanceof ConcurrencyControl.OptimisticPolicy);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.updateVsUpdate, ConcurrencyControl.OnConflict.RejectIncomingChange);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.updateVsDelete, ConcurrencyControl.OnConflict.AcceptIncomingChange);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.deleteVsUpdate, ConcurrencyControl.OnConflict.RejectIncomingChange);
 
     // firstUser: create model, category, and element el1
     const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(firstUserRequestContext, firstIModel);
@@ -150,6 +164,14 @@ describe("IModelWriteTest (#integration)", () => {
 
     // secondUser: pull and merge
     await secondIModel.pullAndMergeChanges(secondUserRequestContext);
+
+    // Validate that the policy has been setup correctly after pullAndMerge (that causes the briefcase to reopen)
+    secondPolicy = secondIModel.concurrencyControl.getPolicy();
+    assert.isDefined(secondPolicy);
+    assert.isTrue(secondPolicy instanceof ConcurrencyControl.OptimisticPolicy);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.updateVsUpdate, ConcurrencyControl.OnConflict.RejectIncomingChange);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.updateVsDelete, ConcurrencyControl.OnConflict.AcceptIncomingChange);
+    assert.equal((secondPolicy as ConcurrencyControl.OptimisticPolicy).conflictResolution.deleteVsUpdate, ConcurrencyControl.OnConflict.RejectIncomingChange);
 
     // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
 

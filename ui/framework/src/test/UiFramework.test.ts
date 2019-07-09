@@ -66,18 +66,21 @@ describe("UiFramework", () => {
     expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
     expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
     expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
+    TestUtils.terminateUiFramework();
   });
 
   it("IsUiVisible", async () => {
     await TestUtils.initializeUiFramework();
     UiFramework.setIsUiVisible(false);
     expect(UiFramework.getIsUiVisible()).to.be.false;
+    TestUtils.terminateUiFramework();
   });
 
   it("ColorTheme", async () => {
     await TestUtils.initializeUiFramework();
     UiFramework.setColorTheme(ColorTheme.Dark);
     expect(UiFramework.getColorTheme()).to.eq(ColorTheme.Dark);
+    TestUtils.terminateUiFramework();
   });
 
   it("test selection scope state data", async () => {
@@ -89,6 +92,7 @@ describe("UiFramework", () => {
     // since "file" is not a valid scope the active scope should still be element
     UiFramework.setActiveSelectionScope("file");
     expect(UiFramework.getActiveSelectionScope()).to.equal("element");
+    TestUtils.terminateUiFramework();
   });
 
   it("WidgetOpacity", async () => {
@@ -96,6 +100,7 @@ describe("UiFramework", () => {
     const testValue = 0.50;
     UiFramework.setWidgetOpacity(testValue);
     expect(UiFramework.getWidgetOpacity()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
   });
 
   it("ActiveIModelId", async () => {
@@ -103,6 +108,7 @@ describe("UiFramework", () => {
     const testValue = "Test";
     UiFramework.setActiveIModelId(testValue);
     expect(UiFramework.getActiveIModelId()).to.eq(testValue);
+    TestUtils.terminateUiFramework();
   });
 });
 

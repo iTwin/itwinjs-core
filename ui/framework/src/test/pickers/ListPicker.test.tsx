@@ -55,6 +55,10 @@ describe("ListPicker", () => {
     listItems.push(emptyContainerItem);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("rendering", () => {
     it("should render correctly", () => {
       enzyme.shallow(
@@ -284,6 +288,26 @@ describe("ListPicker", () => {
         />,
       );
       component.unmount();
+    });
+
+    it("should close on outside click", () => {
+      const spy = sinon.spy();
+      const component = enzyme.mount<ListPickerBase>(
+        <ListPickerBase
+          title={title}
+          items={listItems}
+          setEnabled={setEnabled}
+          onExpanded={spy}
+        />,
+      );
+      component.setState({ expanded: true });
+
+      const click = document.createEvent("MouseEvent");
+      click.initEvent("click");
+      document.dispatchEvent(click);
+
+      component.state().expanded.should.false;
+      spy.calledOnceWithExactly(false);
     });
   });
 

@@ -21,6 +21,10 @@ describe("WidgetControl", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   const widgetProps: WidgetProps = {
     id: "test-widget",
     classId: TestWidget,

@@ -32,6 +32,18 @@ describe("Segment1d", () => {
     const ck = new Checker();
     verifySegment(ck, 1, 3);
     verifySegment(ck, 2, -5);
+    const a = 0.1;
+    const b = 1.4;
+    const s01 = Segment1d.create(0, 1);
+    const s10 = Segment1d.create(1, 0);
+    const sab = Segment1d.create(a, b);
+
+    ck.testTrue(s01.isExact01, "exact01");
+    ck.testTrue(s10.isExact01Reversed, "exact01Reversed");
+    ck.testFalse(s10.isExact01, "exact01");
+    ck.testFalse(s01.isExact01Reversed, "exact01Reversed");
+    ck.testFalse(sab.isExact01, "exact01 not");
+    ck.testFalse(sab.isExact01Reversed, "exact01Reversed not");
     ck.checkpoint("Segment1d.Create");
     expect(ck.getNumErrors()).equals(0);
   });

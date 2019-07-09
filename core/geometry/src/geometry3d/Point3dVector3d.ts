@@ -205,6 +205,8 @@ export class XYZ implements XYAndZ {
   }
   /** Multiply the x, y, z parts by scale. */
   public scaleInPlace(scale: number) { this.x *= scale; this.y *= scale; this.z *= scale; }
+  /** add to x, y, z parts */
+  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0) { this.x += dx; this.y += dy; this.z += dz; }
   /** Clone strongly typed as Point3d */
   public cloneAsPoint3d() { return Point3d.create(this.x, this.y, this.z); }
   /** Return a (full length) vector from this point to other */

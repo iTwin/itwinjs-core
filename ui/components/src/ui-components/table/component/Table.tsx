@@ -333,7 +333,8 @@ export class Table extends React.Component<TableProps, TableState> {
       return;
     }
     if (this.props.isCellSelected !== previousProps.isCellSelected
-      || this.props.isRowSelected !== previousProps.isRowSelected) {
+      || this.props.isRowSelected !== previousProps.isRowSelected
+      || this.props.tableSelectionTarget !== previousProps.tableSelectionTarget) {
       this.updateSelectedRows();
       this.updateSelectedCells();
     }
@@ -902,8 +903,8 @@ export class Table extends React.Component<TableProps, TableState> {
       let onMouseDown: ((e: React.MouseEvent) => void) | undefined;
       let className: string | undefined;
 
+      const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
       if (this._tableSelectionTarget === TableSelectionTarget.Cell) {
-        const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
         const selectionHandler = this.createCellItemSelectionHandler(cellKey);
         const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
         onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
@@ -911,10 +912,10 @@ export class Table extends React.Component<TableProps, TableState> {
         onMouseDown = () => {
           this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
         };
-        isSelected = this.isCellSelected(cellKey);
-        className = classnames(isSelected ? "is-selected" : "is-hover-enabled");
+        className = classnames({ "is-selected": this.isCellSelected(cellKey) });
       }
 
+      className = classnames(className, this.getCellBorderStyle(cellKey));
       cells[column.key] = (
         <TableCell
           className={className}
@@ -936,6 +937,68 @@ export class Table extends React.Component<TableProps, TableState> {
     return cells;
   }
 
+  private getCellBorderStyle(key: CellKey): string {
+    const isCellSelected = (cellKey: CellKey): boolean => {
+      if (this._tableSelectionTarget === TableSelectionTarget.Row) {
+        return this._selectedRowIndices.has(cellKey.rowIndex);
+      }
+
+      return this.isCellSelected(cellKey);
+    };
+
+    const cellIsSelected = isCellSelected(key);
+    const columnIndex = this.state.columns.findIndex((column) => key.columnKey === column.key);
+
+    const isTopBorderVisible = (): boolean => {
+      if (key.rowIndex === 0) {
+        return cellIsSelected;
+      }
+
+      if (cellIsSelected) {
+        return !isCellSelected({ rowIndex: key.rowIndex - 1, columnKey: key.columnKey });
+      }
+
+      // Bottom border is rendered by drawing the top border on the node below
+      // Check if the node above needs its bottom border drawn
+      return isCellSelected({ rowIndex: key.rowIndex - 1, columnKey: key.columnKey });
+    };
+
+    const isRightBorderVisible = (): boolean => {
+      if (!cellIsSelected) {
+        return false;
+      }
+
+      if (columnIndex === this.state.columns.length - 1) {
+        return true;
+      }
+
+      return !isCellSelected({ rowIndex: key.rowIndex, columnKey: this.state.columns[columnIndex + 1].key });
+    };
+
+    const isBottomBorderVisible = (): boolean => {
+      return cellIsSelected && key.rowIndex === this.state.rowsCount - 1;
+    };
+
+    const isLeftBorderVisible = (): boolean => {
+      if (!cellIsSelected) {
+        return false;
+      }
+
+      if (columnIndex === 0) {
+        return true;
+      }
+
+      return !isCellSelected({ rowIndex: key.rowIndex, columnKey: this.state.columns[columnIndex - 1].key });
+    };
+
+    return classnames({
+      "border-top": isTopBorderVisible(),
+      "border-right": isRightBorderVisible(),
+      "border-bottom": isBottomBorderVisible(),
+      "border-left": isLeftBorderVisible(),
+    });
+  }
+
   private _createRowRenderer = () => {
     return (props: { row: RowProps, [k: string]: React.ReactNode }) => {
       const renderRow = this.props.renderRow ? this.props.renderRow : this.renderRow;
@@ -954,7 +1017,7 @@ export class Table extends React.Component<TableProps, TableState> {
         const cells = this.createRowCells(rowProps, isSelected);
         const row = renderRow(rowProps.item, { ...reactDataGridRowProps, cells, isSelected });
         return <div
-          className={classnames("components-table-row", !isSelected && "is-hover-enabled")}
+          className={classnames("components-table-row")}
           onClickCapture={onClick}
           onMouseMove={onMouseMove}
           onMouseDown={onMouseDown}
@@ -1110,9 +1173,18 @@ export class Table extends React.Component<TableProps, TableState> {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
     const visibleColumns = this._getVisibleColumns();
+    const tableClassName = classnames(
+      "components-table",
+      this.props.className,
+      {
+        "hide-header": this.props.hideHeader,
+        "row-selection": this.props.tableSelectionTarget === TableSelectionTarget.Row,
+        "cell-selection": this.props.tableSelectionTarget === TableSelectionTarget.Cell,
+      },
+    );
     return (
       <>
-        <div className={classnames("components-table", this.props.hideHeader && "hide-header", this.props.className)} style={this.props.style}
+        <div className={tableClassName} style={this.props.style}
           onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
           {this.props.showHideColumns &&
             <ShowHideMenu

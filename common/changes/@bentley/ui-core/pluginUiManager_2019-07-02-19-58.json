@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update styles on Select and Input components.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "bill.steinbock@bentley.com"
+}

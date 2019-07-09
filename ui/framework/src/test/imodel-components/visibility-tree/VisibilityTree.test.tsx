@@ -363,6 +363,17 @@ describe("VisibilityTree", () => {
 
         describe("subject", () => {
 
+          it("return disabled when active view is not spatial", async () => {
+            const node = createSubjectNode();
+            const vpMock = mockViewport();
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              const result = handler.getDisplayStatus(node);
+              expect(isPromiseLike(result)).to.be.true;
+              if (isPromiseLike(result))
+                expect(await result).to.include({ isDisplayed: false, isDisabled: true });
+            });
+          });
+
           it("return false when all models are not displayed", async () => {
             const node = createSubjectNode();
             const key = node.__key.instanceKey;
@@ -460,6 +471,16 @@ describe("VisibilityTree", () => {
         });
 
         describe("model", () => {
+
+          it("return disabled when active view is not spatial", async () => {
+            const node = createModelNode();
+            const vpMock = mockViewport();
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              const result = handler.getDisplayStatus(node);
+              expect(isPromiseLike(result)).to.be.false;
+              expect(result).to.include({ isDisplayed: false, isDisabled: true });
+            });
+          });
 
           it("return true when displayed", async () => {
             const node = createModelNode();
@@ -1117,52 +1138,78 @@ describe("VisibilityTree", () => {
 
       describe("visibility change callback", () => {
 
-        it("calls the callback on `onAlwaysDrawnChanged` event", () => {
+        it("calls the callback on `onAlwaysDrawnChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onAlwaysDrawnChanged: evt });
           const spy = sinon.spy();
-          using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), (_) => {
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
             evt.raiseEvent(vpMock.object);
+            await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onNeverDrawnChanged` event", () => {
+        it("calls the callback on `onNeverDrawnChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onNeverDrawnChanged: evt });
           const spy = sinon.spy();
-          using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), (_) => {
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
             evt.raiseEvent(vpMock.object);
+            await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedCategoriesChanged` event", () => {
+        it("calls the callback on `onViewedCategoriesChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedCategoriesChanged: evt });
           const spy = sinon.spy();
-          using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), (_) => {
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
             evt.raiseEvent(vpMock.object);
+            await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedModelsChanged` event", () => {
+        it("calls the callback on `onViewedModelsChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedModelsChanged: evt });
           const spy = sinon.spy();
-          using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), (_) => {
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
             evt.raiseEvent(vpMock.object);
+            await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });
 
-        it("calls the callback on `onViewedCategoriesPerModelChanged` event", () => {
+        it("calls the callback on `onViewedCategoriesPerModelChanged` event", async () => {
           const evt = new BeEvent();
           const vpMock = mockViewport({ onViewedCategoriesPerModelChanged: evt });
           const spy = sinon.spy();
-          using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), (_) => {
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
             evt.raiseEvent(vpMock.object);
+            await new Promise((resolve) => setTimeout(resolve));
+            expect(spy).to.be.calledOnce;
+          });
+        });
+
+        it("calls the callback once when multiple affecting events are fired", async () => {
+          const evts = {
+            onViewedCategoriesPerModelChanged: new BeEvent<(vp: Viewport) => void>(),
+            onViewedCategoriesChanged: new BeEvent<(vp: Viewport) => void>(),
+            onViewedModelsChanged: new BeEvent<(vp: Viewport) => void>(),
+            onAlwaysDrawnChanged: new BeEvent<() => void>(),
+            onNeverDrawnChanged: new BeEvent<() => void>(),
+          };
+          const vpMock = mockViewport({ ...evts });
+          const spy = sinon.spy();
+          await using(createHandler({ viewport: vpMock.object, onVisibilityChange: spy }), async (_) => {
+            evts.onViewedCategoriesPerModelChanged.raiseEvent(vpMock.object);
+            evts.onViewedCategoriesChanged.raiseEvent(vpMock.object);
+            evts.onViewedModelsChanged.raiseEvent(vpMock.object);
+            evts.onAlwaysDrawnChanged.raiseEvent();
+            evts.onNeverDrawnChanged.raiseEvent();
+            await new Promise((resolve) => setTimeout(resolve));
             expect(spy).to.be.calledOnce;
           });
         });

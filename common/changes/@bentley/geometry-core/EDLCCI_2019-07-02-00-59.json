@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Full 3d intersection CurveCurve.intersectionXYZ (no bsplines)",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

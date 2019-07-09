@@ -13,6 +13,10 @@ describe("Backstage", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("<SeparatorBackstageItem />", () => {
     it("SeparatorBackstageItem should render", () => {
       mount(<SeparatorBackstageItem />);

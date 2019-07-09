@@ -28,7 +28,8 @@
     "ByApp": "Element not valid for tool",
     "Transient": "Decoration is not valid for this tool",
     "NotSnappable": "SubCategory has snapping turned off",
-    "NotLocatable": "SubCategory has locate turned off"
+    "NotLocatable": "SubCategory has locate turned off",
+    "ExternalIModel": "iModel is not locatable"
   },
   "Element": {
     "Id": "Id",
@@ -54,7 +55,7 @@
     "UnableToLoad": "Unable to load Plugin {{pluginName}}"
   },
   "Errors": {
-    "ReloadPage": "😞 Oops, something went horribly wrong - we suggest you reload the page.",
+    "ReloadPage": "😞 Oops, something went horribly wrong - please reload the page.",
     "Details": "In case you're interested in the gory details:"
   }
 }

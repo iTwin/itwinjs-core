@@ -5,6 +5,12 @@
   "iModelPanel": {
     "noIModels": "There are no IModels in Project {{projectName}}"
   },
+  "keyinbrowser": {
+    "keyin": "Key-in",
+    "args": "Arguments",
+    "argsTip": "'|' separated arguments",
+    "execute": "Execute"
+  },
   "general": {
     "sheet": "Sheet",
     "of": "of",
@@ -149,8 +155,12 @@
     },
     "tooltips": {
       "subject": {
+        "nonSpatialView": "Active view is not spatial",
         "atLeastOneModelVisible": "At least one model is visible",
         "allModelsHidden": "All models are hidden"
+      },
+      "model": {
+        "nonSpatialView": "Active view is not spatial"
       },
       "category": {
         "modelNotDisplayed": "Can't control category display if model is not displayed",

@@ -33,6 +33,10 @@ describe("WidgetStack", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   class TestWidget1 extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);

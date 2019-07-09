@@ -48,6 +48,7 @@ import {
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { IModelApp } from "../IModelApp";
 
 // tslint:disable:no-const-enum
 
@@ -213,7 +214,7 @@ export namespace IModelTileIO {
       } else {
         // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
         // can be adversely affected by quantization issues when zooming in closely.
-        const canSkipSubdivision = this._is3d && header.tolerance <= maxLeafTolerance;
+        const canSkipSubdivision = this._is3d && header.tolerance <= maxLeafTolerance && !IModelApp.tileAdmin.disableMagnification;
         if (canSkipSubdivision) {
           if (completeTile && 0 === header.numElementsExcluded && header.numElementsIncluded <= minElementsPerTile) {
             const containsCurves = 0 !== (header.flags & IModelTileIO.Flags.ContainsCurves);

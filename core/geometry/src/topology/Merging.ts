@@ -31,31 +31,6 @@ export class GraphSplitData {
  */
 export class HalfEdgeGraphOps {
 
-  // SORTING FUNCTIONS (compare methods used by sort() in larger algorithms) -----------------------------------------------------------
-
-  /** Compare function for sorting X, Y, and (optional) sortAngle components of nodes. */
-  public static compareNodeXYTheta(a: HalfEdge, b: HalfEdge) {
-    // Check x's
-    if (!Geometry.isSameCoordinate(a.x, b.x))
-      if (a.x < b.x)
-        return -1;
-      else if (a.x > b.x)
-        return 1;
-    // Check y's
-    if (!Geometry.isSameCoordinate(a.y, b.y))
-      if (a.y < b.y)
-        return -1;
-      else if (a.y > b.y)
-        return 1;
-    if (a.sortAngle !== undefined && b.sortAngle !== undefined) {
-      // Check theta
-      if (a.sortAngle < b.sortAngle)
-        return -1;
-      else if (a.z > b.z)
-        return 1;
-    }
-    return 0;
-  }
   /** Compare function for sorting with primary y compare, secondary  x compare. */
   public static compareNodesYXUp(a: HalfEdge, b: HalfEdge) {
     // Check y's
@@ -149,19 +124,7 @@ export class HalfEdgeGraphOps {
 
     }
   }
-  /**
-   * Compute and save sort angle in all nodes of the graph.
-   * * the sort angle is the atan2 of the vector to face successor.
-   * * Hence the sort angle range is -PI to PI
-   * @param graph graph to update.
-   */
-  public static setXYSortAnglesInGraph(graph: HalfEdgeGraph) {
-    let node1;
-    for (const node0 of graph.allHalfEdges) {
-      node1 = node0.faceSuccessor;
-      node0.sortAngle = Math.atan2((node1.y - node0.y), (node1.x - node0.x));
-    }
-  }
+
   /**
    * * Visit all nodes in `graph`.
    * * invoke `pinch(node, vertexPredecessor)`

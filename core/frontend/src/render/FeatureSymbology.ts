@@ -187,6 +187,11 @@ export namespace FeatureSymbology {
      * @see [[setAlwaysDrawn]]
      */
     public isAlwaysDrawnExclusive = false;
+    /** If true, the always-drawn elements are drawn even if their subcategories are not visible.
+     * @see [[setAlwaysDrawn]]
+     * @alpha
+     */
+    public alwaysDrawnIgnoresSubCategory = true;
 
     /** Overrides applied to any feature not explicitly overridden. @internal */
     protected _defaultOverrides = Appearance.defaults;
@@ -227,6 +232,11 @@ export namespace FeatureSymbology {
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
     /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
     public get lineWeights(): boolean { return this._lineWeights; }
+
+    /** @internal */
+    public get neverDrawn() { return this._neverDrawn; }
+    /** @internal */
+    public get alwaysDrawn() { return this._alwaysDrawn; }
 
     /** @internal */
     protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
@@ -273,7 +283,11 @@ export namespace FeatureSymbology {
     /** Specify the Ids of elements which should never be drawn in this view. */
     public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
     /** Specify the Ids of elements which should always be drawn in this view. */
-    public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean) { copyIdSetToUint32Set(this._alwaysDrawn, ids); this.isAlwaysDrawnExclusive = exclusive; }
+    public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory = true) {
+      copyIdSetToUint32Set(this._alwaysDrawn, ids);
+      this.isAlwaysDrawnExclusive = exclusive;
+      this.alwaysDrawnIgnoresSubCategory = ignoreSubCategory;
+    }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
     public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
@@ -320,7 +334,7 @@ export namespace FeatureSymbology {
 
       let subCatApp;
       if (Id64.isValidUint32Pair(subcatLo, subcatHi)) {
-        if (!alwaysDrawn && !this.isSubCategoryVisibleInModel(subcatLo, subcatHi, modelLo, modelHi))
+        if ((!alwaysDrawn || !this.alwaysDrawnIgnoresSubCategory) && !this.isSubCategoryVisibleInModel(subcatLo, subcatHi, modelLo, modelHi))
           return undefined;
 
         subCatApp = this.getSubCategoryOverrides(subcatLo, subcatHi);

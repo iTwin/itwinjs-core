@@ -1,6 +1,19 @@
 # Change Log - @bentley/imodeljs-markup
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- (imodeljs-markup merge)
+- fix for broken build from svg.js
+- Clear flashed element (if it's selected) before deleting or adding to group.
+- lock to version 3.0.13 of svg.js package
+- Support drag box selection for markup. Support multiselect of markup using touch input.
+- Use left/right direction for inside/overlap selection to match element select tool and to support touch move.
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

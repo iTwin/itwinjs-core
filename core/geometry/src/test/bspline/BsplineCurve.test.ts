@@ -30,6 +30,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Point4d } from "../../geometry4d/Point4d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { prettyPrint } from "../testFunctions";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:
  *  * (order-1) leading and trailing clamp values.
@@ -55,7 +56,7 @@ function buildClampedSteppedKnots(numPoints: number, order: number, step: number
  * where there are:
  *  * (order-1) leading and trailing values, uniformly stepped
  *  * internal knots with given step.
- *  * traling values wrap with period N
+ *  * trailing values wrap with period N
  */
 function buildWrappableSteppedKnots(numInterval: number, order: number, step: number): number[] {
   const knots = [];
@@ -112,7 +113,7 @@ function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number)
   }
   return points;
 }
-/** Check if the linestring edgelengths and angle meet stroke options demands
+/** Check if the linestring edgeLengths and angle meet stroke options demands
  * @param edgeLengthFactor factor to apply to edgeLength conditions
  * @param angleFactor factor to apply to angle conditions
  */
@@ -260,7 +261,7 @@ describe("BsplineCurve", () => {
 
   it("DoubleKnots", () => {
     // stroke a bcurve with double knots .. bug was that the double knot intervals generated 0 or undefined stroke coordinates.
-    // Be sure the curve is all in one quadrant so 00 is NOT in the storke range.
+    // Be sure the curve is all in one quadrant so 00 is NOT in the stroke range.
     const ck = new Checker();
     const bcurve = BSplineCurve3d.create(
       [Point3d.create(1, 0),
@@ -394,7 +395,7 @@ describe("BsplineCurve", () => {
         // Alter the ray z so it is not perpendicular ..
         // tangentRay.direction.z += 0.02;
         const intersections: CurveLocationDetail[] = [];
-        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!;  // This renormalizes.
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!;  // This normalizes.
         curve.appendPlaneIntersectionPoints(plane, intersections);
         if (intersections.length > 1)
           curve.appendPlaneIntersectionPoints(plane, intersections);
@@ -560,7 +561,7 @@ describe("BsplineCurve", () => {
           bcurve3d.fractionToPoint(u);
           bcurve4d.fractionToPoint(u);
         }
-        // mess up poles first, then knots to reach failure branchs in closure tests ...
+        // mess up poles first, then knots to reach failure branches in closure tests ...
         wrappedPoleArray[0].x += 0.1;
         const bcurve3dA = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
         bcurve3dA.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
@@ -626,5 +627,64 @@ describe("BsplineCurve", () => {
       const strokes = path.getPackedStrokes(options);
       console.log(prettyPrint(strokes!.getPoint3dArray()));
     }
+  });
+  // problem: concept station observes under-stroked parabolas.
+  it("StrokeParabola", () => {
+    const ck = new Checker();
+    const x2 = 100.0;
+    const allGeometry: GeometryQuery[] = [];
+    let x0Out = 0.0;
+    for (let i = 0; ; i++) {
+      let options;
+      if (i === 0) {
+        options = undefined;
+      } else if (i === 1)
+        options = StrokeOptions.createForCurves();
+      else if (i === 2)
+        options = StrokeOptions.createForFacets();
+      else if (i === 3) {
+        options = StrokeOptions.createForCurves();
+        options.angleTol = Angle.createDegrees(5.0);
+      } else if (i === 4) {
+        options = StrokeOptions.createForCurves();
+        options.angleTol = Angle.createDegrees(2.5);
+      } else if (i === 5) {
+        options = StrokeOptions.createForCurves();
+        options.chordTol = 0.2;
+      } else if (i === 6) {
+        options = StrokeOptions.createForCurves();
+        options.chordTol = 0.02;
+      } else if (i === 7) {
+        options = StrokeOptions.createForCurves();
+        options.maxEdgeLength = 10.0;
+      } else
+        break;
+
+      for (const x1 of [30, 50, 80, 95]) {
+        let y0Out = 0.0;
+        const shift = 10.0;
+        for (const y2 of [10, 40, 80]) {
+          //          const poles = [[0, 0, 0], [x1, 0, 0], [x2, y2, 0]];
+          const poles = [Point3d.create(0, 0, 0), Point3d.create(x1, 0, 0), Point3d.create(x2, y2, 0)];
+          const bcurve = BSplineCurve3d.createUniformKnots(GrowableXYZArray.create(poles), 3)!;
+          const bezier = BezierCurve3d.create(poles)!;
+          const strokes = LineString3d.create();
+          const bezierStrokes = LineString3d.create();
+          bcurve.emitStrokes(strokes, options);
+          bezier.emitStrokes(bezierStrokes, options);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, x0Out, y0Out, 0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, strokes, x0Out, y0Out, 0);
+
+          GeometryCoreTestIO.captureGeometry(allGeometry, bezier, x0Out, y0Out + shift, 0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bezierStrokes, x0Out, y0Out + shift, 0);
+          ck.testExactNumber(strokes.numPoints (), bezierStrokes.numPoints (), "bezier stroke counts the same for isolated and bspline");
+          y0Out += 100;
+        }
+        x0Out += 100;
+      }
+      x0Out += 200;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "StrokeParabola");
+    expect(ck.getNumErrors()).equals(0);
   });
 });

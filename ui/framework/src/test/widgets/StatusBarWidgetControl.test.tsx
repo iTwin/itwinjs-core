@@ -46,7 +46,10 @@ describe("StatusBarWidgetControl", () => {
       isStatusBar: true,
     });
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+  });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("StatusBarWidgetControl should be instantiated", () => {

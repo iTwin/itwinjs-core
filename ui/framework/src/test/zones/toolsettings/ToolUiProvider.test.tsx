@@ -63,6 +63,10 @@ describe("ToolUiProvider", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
+    after(() => {
+      TestUtils.terminateUiFramework();
+    });
+
     class Frontstage1 extends FrontstageProvider {
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (

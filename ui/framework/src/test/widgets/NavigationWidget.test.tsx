@@ -31,6 +31,10 @@ describe("NavigationWidget", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   const widgetProps: AnyWidgetProps = {
     id: "navigationWidget",
     classId: "NavigationWidget",

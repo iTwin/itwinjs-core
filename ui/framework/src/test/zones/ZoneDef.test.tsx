@@ -12,6 +12,10 @@ describe("ZoneDef", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Defaults, widgetDefs & widgetCount", () => {
     const zoneDef = new ZoneDef();
     zoneDef.addWidgetDef(new WidgetDef({

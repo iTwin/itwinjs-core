@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { System } from "./System";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { ClippingType } from "../System";
@@ -96,7 +95,7 @@ export class TechniqueFlags {
       // These are only useful if the geometry defines feature Ids.
       // In 3d, if we're only displaying surfaces or edges, not both, don't bother, unless forceSurfaceDiscard is true.
       this.isEdgeTestNeeded = this.hasFeatures ? (this.isClassified ? IsEdgeTestNeeded.No : IsEdgeTestNeeded.Yes) : IsEdgeTestNeeded.No;
-      if (!target.currentViewFlags.forceSurfaceDiscard && target.is3d && !target.isReadPixelsInProgress && System.instance.enableOptimizedSurfaceShaders && this.isEdgeTestNeeded) {
+      if (!target.currentViewFlags.forceSurfaceDiscard && target.is3d && !target.isReadPixelsInProgress && this.isEdgeTestNeeded) {
         switch (target.currentViewFlags.renderMode) {
           case RenderMode.Wireframe:
             // We're only displaying edges (ignoring filled planar regions)
@@ -104,7 +103,7 @@ export class TechniqueFlags {
             break;
           case RenderMode.SmoothShade:
             if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion) {
-              // We're only display surfaces (ignoring filled planar regions). NB: Filled text with outline is handled by gl.polygonOffset().
+              // We're only displaying surfaces (ignoring filled planar regions). NB: Filled text with outline is handled by gl.polygonOffset().
               this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
             }
             break;

@@ -55,6 +55,10 @@ describe("SelectionInfoField", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("SelectionInfoField should render with 0", () => {
     const component = render(<Provider store={TestUtils.store}>
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />

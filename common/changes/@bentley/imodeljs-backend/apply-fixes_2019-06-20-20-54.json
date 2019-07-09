@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Apply change sets at the backend in a non-blocking worker thread. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

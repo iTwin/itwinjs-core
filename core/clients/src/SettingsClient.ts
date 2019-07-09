@@ -20,7 +20,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public static readonly searchKey: string = "ProductSettingsService.RP";
   /**
    * Creates an instance of ConnectSettingsClient.
-   * @param deploymentEnv Deployment environment.
    */
   public constructor(public applicationId: string) { super(); }
 

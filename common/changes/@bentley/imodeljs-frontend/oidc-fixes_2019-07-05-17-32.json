@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

@@ -252,6 +252,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "export-gltf",
+      "projectFolder": "test-apps/export-gltf",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "export-obj",
       "projectFolder": "test-apps/export-obj",
       "reviewCategory": "internal",

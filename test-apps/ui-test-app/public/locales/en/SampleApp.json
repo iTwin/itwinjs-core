@@ -139,11 +139,13 @@
     "defaultWidgetOpacity": "Default Widget Opacity",
     "clearSelection": "Clear Selection",
     "saveContentLayout": "Save Content Layout",
-    "restoreContentLayout": "Restore Content Layout"
+    "restoreContentLayout": "Restore Content Layout",
+    "cmdKeyinDialog": "Command Key-in",
+    "opencmdKeyinDialog": "Open command key-in dialog"
   },
   "tools": {
     "ToolWithSettings": {
-      "keyin": "ToolWithSettings",
+      "keyin": "Tool With Settings",
       "description": "Demo Tool with Settings",
       "flyover": "Tool with Settings",
       "Prompts": {
@@ -166,7 +168,7 @@
       }
     },
     "Tool1": {
-      "keyin": "Tool1",
+      "keyin": "Test Tool1",
       "description": "Test1 tool",
       "flyover": "Tool1",
       "Prompts": {
@@ -174,7 +176,7 @@
       }
     },
     "Tool2": {
-      "keyin": "Tool2",
+      "keyin": "Test Tool2",
       "description": "Test2 tool",
       "flyover": "Tool2",
       "Prompts": {
@@ -193,7 +195,7 @@
       }
     },
     "AppSelect": {
-      "keyin": "Select",
+      "keyin": "App Select Element",
       "description": "Element Selection",
       "flyover": "Select"
     },

@@ -139,6 +139,16 @@ describe("Tree", () => {
       };
     });
 
+    it("marks selected node wrappers", async () => {
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps } selectedNodes={["0"]} />), renderSpy, 2);
+      const selectedNodes = getSelectedNodes();
+      expect(selectedNodes.length).to.eq(1);
+
+      const selectedNode = selectedNodes[0];
+      expect(getNodeLabel(selectedNode)).to.eq("0");
+      expect(selectedNode.parentElement!.classList.contains("is-selected")).to.be.true;
+    });
+
     describe("with Single selection mode", () => {
 
       beforeEach(async () => {
@@ -1016,6 +1026,22 @@ describe("Tree", () => {
       expect(checkboxClickSpy).to.have.been.calledTwice;
     });
 
+    it("checking child node doesn't affect the parent", async () => {
+      // all nodes checked by default
+      const checkboxInfo = () => ({ isVisible: true, state: CheckBoxState.On });
+      const props = {
+        ...defaultCheckboxTestsProps,
+        dataProvider: createDataProvider(["0"]),
+        checkboxInfo,
+      };
+      await waitForUpdate(() => renderedTree = render(<Tree {...props} />), renderSpy, 2);
+
+      // uncheck the checkbox and verify parent node is still checked
+      await waitForUpdate(() => fireEvent.click(getNode("0-a").checkbox!), renderSpy);
+      expect(getNode("0-a").checkbox!.checked).to.be.false;
+      expect(getNode("0").checkbox!.checked).to.be.true;
+    });
+
     it("checks auto-expanded child nodes", async () => {
       const dataProvider = new TestTreeDataProvider([
         {
@@ -1437,7 +1463,7 @@ describe("Tree", () => {
       expect(nodes[1].style.height).is.not.null;
       expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
 
-      expect(+nodes[0].style.height!.replace("px", "")).to.equal(24);
+      expect(+nodes[0].style.height!.replace("px", "")).to.equal(25);
       expect(+nodes[1].style.height!.replace("px", "")).to.equal(44);
     });
   });

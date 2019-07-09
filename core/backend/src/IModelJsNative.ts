@@ -7,7 +7,7 @@ import {
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
-import { ExportGraphicsProps } from "./ExportGraphics";
+import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
 import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
 
@@ -104,7 +104,6 @@ export declare namespace IModelJsNative {
     public abandonCreateChangeSet(): void;
     public addPendingChangeSet(changeSetId: string): DbResult;
     public appendBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest): void;
-    public applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
     public attachChangeCache(changeCachePath: string): DbResult;
     public beginMultiTxnOperation(): DbResult;
     public briefcaseManagerEndBulkOperation(): RepositoryStatus;
@@ -115,8 +114,7 @@ export declare namespace IModelJsNative {
     public cancelTo(txnId: TxnIdString): IModelStatus;
     public closeIModel(): void;
     public createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
-    public createIModel(accessToken: string, appVersion: string, projectId: GuidString, fileName: string, props: string): DbResult;
-    public createStandaloneIModel(fileName: string, props: string): DbResult;
+    public createIModel(fileName: string, props: string): DbResult;
     public deleteElement(elemIdJson: string): IModelStatus;
     public deleteElementAspect(aspectIdJson: string): IModelStatus;
     public deleteLinkTableRelationship(props: string): DbResult;
@@ -128,6 +126,8 @@ export declare namespace IModelJsNative {
     public endMultiTxnOperation(): DbResult;
     public executeTest(testName: string, params: string): string;
     public exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+    public exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+    public exportSchemas(exportDirectory: string): DbResult;
     public extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractChangeSummary(changeCacheFile: ECDb, changesetFilePath: string): ErrorStatusOrResult<DbResult, string>;
@@ -157,8 +157,9 @@ export declare namespace IModelJsNative {
     public getUndoString(): string;
     public hasFatalTxnError(): boolean;
     public hasUnsavedChanges(): boolean;
+    public hasSavedChanges(): boolean;
     public importFunctionalSchema(): DbResult;
-    public importSchema(schemaPathname: string): DbResult;
+    public importSchemas(schemaFileNames: string[]): DbResult;
     public inBulkOperation(): boolean;
     public insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
     public insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;
@@ -167,10 +168,12 @@ export declare namespace IModelJsNative {
     public insertModel(modelProps: string): ErrorStatusOrResult<IModelStatus, string>;
     public isChangeCacheAttached(): boolean;
     public isOpen(): boolean;
+    public isReadonly(): boolean;
     public isRedoPossible(): boolean;
     public isTxnIdValid(txnId: TxnIdString): boolean;
     public isUndoPossible(): boolean;
     public logTxnError(fatal: boolean): void;
+    public getMassProperties(props: string): string;
     public openIModel(dbName: string, mode: OpenMode): DbResult;
     public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     public queryFirstTxnId(): TxnIdString;
@@ -205,6 +208,47 @@ export declare namespace IModelJsNative {
     public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
     public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
+    public static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
+  }
+
+  /**
+   * Utility to apply change sets (synchronously or asynchronously)
+   * @internal
+   */
+  export class ApplyChangeSetsRequest {
+    /* Create a new asynchronous request */
+    constructor(db: DgnDb);
+    /** Reads the change sets to be applied asynchronously */
+    public readChangeSets(changeSetTokens: string): ChangeSetStatus;
+    /** Returns true if any of the change sets that were read contain schema changes */
+    public containsSchemaChanges(): boolean;
+    /**
+     * Close the briefcase, backing up any state that are required at/after open
+     * - needs to be done before applying change sets asynchronously
+     */
+    public closeBriefcase(): void;
+    /**
+     * Apply change sets asynchronously
+     * Notes:
+     * - the Db must be closed prior to this call (using the CloseBriefcase call in this utility)
+     * - ReadChangeSets must have been called prior to this call
+     * - the Db must be reopened after this call (using the OpenBriefcase call in this utility)
+     */
+    public doApplyAsync(callback: (status: ChangeSetStatus) => void, applyOption: ChangeSetApplyOption): void;
+    /**
+     * Reopen the briefcase, restoring any backed up state
+     * - needs to be done after applying change sets asynchronously.
+     */
+    public reopenBriefcase(openMode: OpenMode): DbResult;
+
+    /**
+     * Apply change sets synchronously
+     *  Notes:
+     *  - the briefcase must be open
+     *  - causes the briefcase to be closed and reopened *if* the change set contains schema changes
+     *  - the change sets should not be to large to cause a potential timeout since the operation blocks the main thread
+     */
+    public static doApplySync(db: DgnDb, changeSetTokens: string, applyOption: ChangeSetApplyOption): ChangeSetStatus;
   }
 
   export class ECDb implements IDisposable, IConcurrentQueryManager {

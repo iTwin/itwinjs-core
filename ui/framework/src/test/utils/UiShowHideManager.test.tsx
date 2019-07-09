@@ -27,6 +27,10 @@ describe("UiShowHideManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("getters and setters", () => {
 
     it("autoHideUi should return default of false", () => {
@@ -138,7 +142,7 @@ describe("UiShowHideManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(UiShowHideManager.isUiVisible).to.eq(true);
 
-      await TestUtils.tick(25);
+      await TestUtils.tick(100);
       expect(UiShowHideManager.isUiVisible).to.eq(false);
     });
 

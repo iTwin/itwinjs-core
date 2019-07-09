@@ -20,6 +20,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Complex } from "../numerics/Complex";
 
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { prettyPrint } from "./testFunctions";
 
 /* tslint:disable:variable-name no-console*/
 
@@ -57,7 +58,7 @@ export class Checker {
     boxMap: false,
     rotMatrixAxisAndAngle: false,
     map4d: false,
-    bsijsonValuesQuick: false,
+    bsiJsonValuesQuick: false,
     testTransitionSpiral: true,
     newtonRtoRD: false,
     ACSArrows: false,
@@ -97,6 +98,15 @@ export class Checker {
     if (Geometry.isSamePoint3d(dataA, dataB))
       return this.announceOK();
     this.announceError("expect same Point3d", dataA, dataB, params);
+    return false;
+  }
+  /** test if `transformAToB * dataA` matches pointB */
+  public testTransformedPoint3d(transformAToB: Transform, dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
+    const dataA1 = transformAToB.multiplyPoint3d(dataA);
+    if (Geometry.isSamePoint3d(dataA1, dataB))
+      return this.announceOK();
+    this.announceError("expect same transformed Point3d",
+      prettyPrint(transformAToB) + "*" + prettyPrint(dataA) + " ==>" + prettyPrint(dataA1) + " =?=" + prettyPrint(dataB), params);
     return false;
   }
 
@@ -241,6 +251,14 @@ export class Checker {
     return false;
   }
 
+  public testBetween(dataA: number, dataB: number, dataC: number, ...params: any[]): boolean {
+    if ((dataB - dataA) * (dataC - dataB) >= 0.0)
+      return this.announceOK();
+    this.announceError("Expect dataB in [dataA, dataC]", [dataA, dataB, dataC], params);
+
+    return false;
+  }
+
   public testLT(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA < dataB)
       return this.announceOK();
@@ -299,6 +317,12 @@ export class Checker {
 
   public testCoordinate(dataA: number, dataB: number, ...params: any[]): boolean {
     if (Geometry.isSameCoordinate(dataA, dataB))
+      return this.announceOK();
+    return this.announceError("Expect same coordinate", dataA, dataB, params);
+  }
+
+  public testCoordinateWithToleranceFactor(dataA: number, dataB: number, toleranceFactor: number, ...params: any[]): boolean {
+    if (Geometry.isSameCoordinateWithToleranceFactor(dataA, dataB, toleranceFactor))
       return this.announceOK();
     return this.announceError("Expect same coordinate", dataA, dataB, params);
   }

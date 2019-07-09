@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
-import { Geometry } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
@@ -23,8 +22,9 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 export class Loop extends CurveChain {
   /** tag value that can be set to true for user code to mark inner and outer loops. */
   public isInner: boolean = false;
-  /** Test if `other` is an instance of `Loop` */
+  /** test if `other` is a `Loop` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Loop; }
+  /** Test if `other` is an instance of `Loop` */
   public constructor() { super(); }
   /**
    * Create a loop from variable length list of CurvePrimitives
@@ -66,15 +66,6 @@ export class Loop extends CurveChain {
   /** invoke `processor.announceLoop(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceLoop(this, indexInParent);
-  }
-  /** Return the curve primitive identified by `index`, with cyclic indexing. */
-  public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
-    const n = this.children.length;
-    if (n >= 1) {
-      index = Geometry.modulo(index, this.children.length);
-      return this.children[index];
-    }
-    return undefined;
   }
   /** Create a new `Loop` with no children */
   public cloneEmptyPeer(): Loop { return new Loop(); }

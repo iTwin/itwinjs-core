@@ -22,11 +22,11 @@ exports[`VisibilityTree #integration renders component with real data and no act
           <div
             class="ReactVirtualized__Grid__innerScrollContainer"
             role="rowgroup"
-            style="width: auto; height: 48px; max-width: 200px; max-height: 48px; overflow: hidden; position: relative;"
+            style="width: auto; height: 50px; max-width: 200px; max-height: 50px; overflow: hidden; position: relative;"
           >
             <div
               class="node-wrapper"
-              style="height: 24px; left: 0px; position: absolute; top: 0px; width: 100%;"
+              style="height: 25px; left: 0px; position: absolute; top: 0px; width: 100%;"
             >
               <div
                 class="core-tree-node"
@@ -64,7 +64,7 @@ exports[`VisibilityTree #integration renders component with real data and no act
             </div>
             <div
               class="node-wrapper"
-              style="height: 24px; left: 0px; position: absolute; top: 24px; width: 100%;"
+              style="height: 25px; left: 0px; position: absolute; top: 25px; width: 100%;"
             >
               <div
                 class="core-tree-node"
@@ -784,11 +784,11 @@ exports[`VisibilityTree #unit <VisibilityTree /> should match snapshot 1`] = `
             <div
               class="ReactVirtualized__Grid__innerScrollContainer"
               role="rowgroup"
-              style="width: auto; height: 24px; max-width: 200px; max-height: 24px; overflow: hidden; position: relative;"
+              style="width: auto; height: 25px; max-width: 200px; max-height: 25px; overflow: hidden; position: relative;"
             >
               <div
                 class="node-wrapper"
-                style="height: 24px; left: 0px; position: absolute; top: 0px; width: 100%;"
+                style="height: 25px; left: 0px; position: absolute; top: 0px; width: 100%;"
               >
                 <div
                   class="core-tree-node"

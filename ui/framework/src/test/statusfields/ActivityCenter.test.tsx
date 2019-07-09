@@ -49,6 +49,10 @@ describe("ActivityCenter", () => {
 
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Status Bar with ActivityCenterField should mount", () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();

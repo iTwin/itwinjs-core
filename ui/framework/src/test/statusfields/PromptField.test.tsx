@@ -51,6 +51,10 @@ describe("PromptField", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   // cSpell:Ignore TOOLPROMPT
   it("Status Bar with PromptField should mount", () => {
     const wrapper = mount(<Provider store={TestUtils.store}>

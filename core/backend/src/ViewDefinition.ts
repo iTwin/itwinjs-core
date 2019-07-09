@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
 
-import { Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
@@ -174,7 +174,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   public static get className(): string { return "ModelSelector"; }
 
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
-  public models: string[];
+  public models: Id64String[];
   /** @internal */
   constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
   /** @internal */
@@ -182,6 +182,11 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
+  }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
   }
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -235,7 +240,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   /** @internal */
   public static get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
-  public categories: string[];
+  public categories: Id64String[];
   /** @internal */
   constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
   /** @internal */
@@ -243,6 +248,11 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -322,6 +332,13 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     json.categorySelectorId = this.categorySelectorId;
     json.displayStyleId = this.displayStyleId;
     return json;
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.categorySelectorId);
+    predecessorIds.add(this.displayStyleId);
   }
 
   /** Type guard for `instanceof ViewDefinition3d`  */
@@ -416,6 +433,11 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
+  }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.modelSelectorId);
   }
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
@@ -521,7 +543,11 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     val.angle = this.angle;
     return val;
   }
-
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.baseModelId);
+  }
   /** Load this view's DisplayStyle2d from the IModelDb. */
   public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }

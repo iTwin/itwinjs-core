@@ -16,6 +16,10 @@ describe("SignOutModalFrontstage", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const stage = new SignOutModalFrontstage(new MockAccessToken());
     const title = stage.title;

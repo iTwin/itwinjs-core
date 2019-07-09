@@ -25,6 +25,10 @@ describe("WidgetDef", () => {
     ConfigurableUiManager.registerControl("WidgetDefTest", TestWidget);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("optional properties", () => {
     const widgetProps: WidgetProps = {
       defaultState: WidgetState.Open,

@@ -2,20 +2,25 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError } from "@bentley/imodeljs-common";
+import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
-import { ExternalSourceAspect, ElementAspect } from "./ElementAspect";
+import { ElementAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, KnownLocations } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
-/** @alpha */
+/** Base class used to transform a source iModel into a different target iModel.
+ * @alpha
+ */
 export class IModelTransformer {
   /** The read-only source iModel. */
   protected _sourceDb: IModelDb;
@@ -31,6 +36,8 @@ export class IModelTransformer {
   protected _excludedElementCategoryIds = new Set<Id64String>();
   /** The set of classes of Elements that will be excluded (polymorphically) from transformation to the target iModel. */
   protected _excludedElementClasses = new Set<typeof Element>();
+  /** The set of Elements that were skipped during a prior transformation pass. */
+  protected _skippedElementIds = new Set<Id64String>();
 
   /** Construct a new IModelImporter
    * @param sourceDb The source IModelDb
@@ -165,7 +172,13 @@ export class IModelTransformer {
    */
   protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void { }
 
-  /** Called after processing a source Element when that processing caused an Element to be excluded from the target iModel.
+  /** Called after it was determined that it was not possible to import a source Element. This is usually because one or more required predecessors has not been imported yet.
+   * @param sourceElement The source Element that was skipped.
+   * @note A subclass can override this method to be notified after an Element has been skipped.
+   */
+  protected onElementSkipped(_sourceElement: Element): void { }
+
+  /** Called after processing a source Element when that processing caused an Element to be purposely excluded from the target iModel.
    * @param _sourceElement The source Element that was excluded from transformation.
    * @note A subclass can override this method to be notified after an Element has been excluded.
    */
@@ -178,22 +191,51 @@ export class IModelTransformer {
    */
   protected shouldExcludeElement(sourceElement: Element): boolean {
     if (this._excludedElementIds.has(sourceElement.id)) {
-      Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Id`);
+      Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by Id`);
       return true;
     }
     if (sourceElement.category) {
       if (this._excludedElementCategoryIds.has(sourceElement.category)) {
-        Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by Category [${sourceElement.category}]`);
+        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by Category [${this.formatIdForLogger(sourceElement.category)}]`);
         return true;
       }
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (sourceElement instanceof excludedElementClass) {
-        Logger.logInfo(loggerCategory, `Exclude ${sourceElement.classFullName} [${sourceElement.id}] by class`);
+        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by class`);
         return true;
       }
     }
     return false;
+  }
+
+  /** Format an Id for the Logger. The base implementation returns a hex string.
+   * @note This can be overridden if an integer (to match SQLite Expert) or base-36 string (to match UI) is desired instead.
+   */
+  protected formatIdForLogger(id: Id64String): string {
+    return id;
+  }
+
+  /** Format a Relationship for the Logger. */
+  protected formatRelationshipForLogger(relProps: RelationshipProps): string {
+    return `${relProps.classFullName} sourceId=[${this.formatIdForLogger(relProps.sourceId)}] targetId=[${this.formatIdForLogger(relProps.targetId)}]`;
+  }
+
+  /** Format a Model for the Logger. */
+  protected formatModelForLogger(modelProps: ModelProps): string {
+    return `${modelProps.classFullName} [${this.formatIdForLogger(modelProps.id!)}]`;
+  }
+
+  /** Format an Element for the Logger. */
+  protected formatElementForLogger(elementProps: ElementProps): string {
+    const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
+    return `${elementProps.classFullName} ${namePiece}[${this.formatIdForLogger(elementProps.id!)}]`;
+  }
+
+  /** Mark the specified Element as skipped so its processing can be deferred. */
+  protected skipElement(sourceElement: Element): void {
+    this._skippedElementIds.add(sourceElement.id);
+    Logger.logInfo(loggerCategory, `(Source) Skipped ${this.formatElementForLogger(sourceElement)}`);
   }
 
   /** Transform the specified sourceElement into ElementProps for the target iModel.
@@ -221,7 +263,7 @@ export class IModelTransformer {
     }
     const targetElementId: Id64String = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
     this.remapElement(sourceAspectProps.identifier, targetElementId);
-    Logger.logInfo(loggerCategory, `Inserted ${targetElementProps.classFullName}-${targetElementProps.code.value}-${targetElementId}`);
+    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatElementForLogger(targetElementProps)}`);
     sourceAspectProps.element.id = targetElementId;
     this._targetDb.elements.insertAspect(sourceAspectProps);
   }
@@ -236,6 +278,7 @@ export class IModelTransformer {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
     this._targetDb.elements.updateElement(targetElementProps);
+    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementForLogger(targetElementProps)}`);
     ExternalSourceAspect.deleteForElement(this._targetDb, sourceAspectProps.scope.id, targetElementProps.id);
     this._targetDb.elements.insertAspect(sourceAspectProps);
   }
@@ -258,11 +301,24 @@ export class IModelTransformer {
     return true;
   }
 
+  /** Determine if any predecessors have not been imported yet. */
+  public findMissingPredecessors(sourceElement: Element): Id64Set {
+    const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
+    predecessorIds.forEach((elementId: Id64String) => {
+      const targetElementId: Id64String = this.findTargetElementId(elementId);
+      if (Id64.isValidId64(targetElementId)) {
+        predecessorIds.delete(elementId);
+      }
+    });
+    return predecessorIds;
+  }
+
   /** Import the specified Element and its child Elements (if applicable).
    * @param sourceElementId Identifies the Element from the source iModel to import.
    * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
   public importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
+    Logger.logTrace(loggerCategory, `--> importElement(${this.formatIdForLogger(sourceElementId)})`);
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     if (this.shouldExcludeElement(sourceElement)) {
       this.onElementExcluded(sourceElement);
@@ -282,6 +338,12 @@ export class IModelTransformer {
         }
       }
     } else {
+      const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement); // WIP: move into transformElement?
+      if (missingPredecessorIds.size > 0) {
+        this.skipElement(sourceElement);
+        this.onElementSkipped(sourceElement);
+        return; // skipping an element will also skip its children or sub-models
+      }
       const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
       targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(transformedElementProps[0].code));
       if (targetElementId === undefined) {
@@ -313,6 +375,9 @@ export class IModelTransformer {
    */
   public importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
     const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
+    if (childElementIds.length > 0) {
+      Logger.logTrace(loggerCategory, `--> importChildElements(${this.formatIdForLogger(sourceElementId)})`);
+    }
     for (const childElementId of childElementIds) {
       this.importElement(childElementId, targetScopeElementId);
     }
@@ -323,6 +388,7 @@ export class IModelTransformer {
    * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
   public importModels(modeledElementClass: string, targetScopeElementId: Id64String): void {
+    Logger.logTrace(loggerCategory, `--> importModels(${modeledElementClass})`);
     const sql = `SELECT ECInstanceId AS id FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -342,6 +408,7 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   public importModel(sourceModeledElementId: Id64String): void {
+    Logger.logTrace(loggerCategory, `--> importModel(${this.formatIdForLogger(sourceModeledElementId)})`);
     const targetModeledElementId = this.findTargetElementId(sourceModeledElementId);
     try {
       if (this._targetDb.models.getModelProps(targetModeledElementId)) {
@@ -349,11 +416,12 @@ export class IModelTransformer {
       }
     } catch (error) {
       // catch NotFound error and insertModel
-      const modelProps = this._sourceDb.models.getModelProps(sourceModeledElementId);
+      const modelProps: ModelProps = this._sourceDb.models.getModelProps(sourceModeledElementId);
       modelProps.modeledElement.id = targetModeledElementId;
       modelProps.id = targetModeledElementId;
       modelProps.parentModel = this.findTargetElementId(modelProps.parentModel!);
       this._targetDb.models.insertModel(modelProps);
+      Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatModelForLogger(modelProps)}`);
     }
   }
 
@@ -362,6 +430,7 @@ export class IModelTransformer {
    * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
   public importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void {
+    Logger.logTrace(loggerCategory, `--> importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", sourceModeledElementId);
@@ -372,30 +441,64 @@ export class IModelTransformer {
     });
   }
 
+  /** Import elements that were skipped in a prior pass */
+  public importSkippedElements(): void {
+    Logger.logTrace(loggerCategory, `--> importSkippedElements(), numSkipped=${this._skippedElementIds.size}`);
+    this._skippedElementIds.forEach((elementId: Id64String) => {
+      this._skippedElementIds.delete(elementId);
+      this.importElement(elementId, IModel.rootSubjectId /* WIP */);
+    });
+    if (this._skippedElementIds.size > 0) {
+      throw new IModelError(IModelStatus.BadRequest, "Not all skipped elements could be processed", Logger.logError, loggerCategory);
+    }
+  }
+
   /** Imports all relationships that subclass from BisCore:ElementRefersToElements */
-  public importRelationships(): void {
-    const sql = `SELECT ECInstanceId AS id FROM ${ElementRefersToElements.classFullName}`;
+  public importRelationships(sourceRelClassFullName: string): void {
+    Logger.logTrace(loggerCategory, `--> importRelationships(${sourceRelClassFullName})`);
+    const sql = `SELECT ECInstanceId AS id FROM ${sourceRelClassFullName}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        const relationshipProps = this._sourceDb.relationships.getInstanceProps<RelationshipProps>(ElementRefersToElements.classFullName, row.id);
-        relationshipProps.sourceId = this.findTargetElementId(relationshipProps.sourceId);
-        relationshipProps.targetId = this.findTargetElementId(relationshipProps.targetId);
-        if (Id64.isValidId64(relationshipProps.sourceId) && Id64.isValidId64(relationshipProps.targetId)) {
-          try {
-            // check for an existing relationship
-            this._targetDb.relationships.getInstanceProps<RelationshipProps>(relationshipProps.classFullName, { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId });
-          } catch (error) {
-            // catch NotFound error and insert relationship
-            this._targetDb.relationships.insertInstance(relationshipProps);
-          }
-        }
+        const sourceRelInstanceId: Id64String = statement.getValue(0).getId();
+        this.importRelationship(sourceRelClassFullName, sourceRelInstanceId);
       }
     });
   }
 
+  /** Import a relationship from the source iModel into the target iModel. */
+  public importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void {
+    const relationshipProps = this._sourceDb.relationships.getInstanceProps<RelationshipProps>(sourceRelClassFullName, sourceRelInstanceId);
+    Logger.logTrace(loggerCategory, `--> importRelationship(${relationshipProps.classFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
+    relationshipProps.sourceId = this.findTargetElementId(relationshipProps.sourceId);
+    relationshipProps.targetId = this.findTargetElementId(relationshipProps.targetId);
+    if (Id64.isValidId64(relationshipProps.sourceId) && Id64.isValidId64(relationshipProps.targetId)) {
+      try {
+        // check for an existing relationship
+        this._targetDb.relationships.getInstanceProps<RelationshipProps>(relationshipProps.classFullName, { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId });
+      } catch (error) {
+        // catch NotFound error and insert relationship
+        this._targetDb.relationships.insertInstance(relationshipProps);
+        Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
+      }
+    }
+  }
+
+  /** Import all schemas from the source iModel into the target iModel. */
+  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
+    IModelJsFs.mkdirSync(schemasDir);
+    try {
+      this._sourceDb.nativeDb.exportSchemas(schemasDir);
+      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
+      await this._targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+    } finally {
+      IModelJsFs.removeSync(schemasDir);
+    }
+  }
+
   /** Import all fonts from the source iModel into the target iModel. */
   public importFonts(): void {
+    Logger.logTrace(loggerCategory, `--> importFonts()`);
     for (const font of this._sourceDb.fontMap.fonts.values()) {
       this._importContext.importFont(font.id);
     }
@@ -403,6 +506,7 @@ export class IModelTransformer {
 
   /** Import all CodeSpecs from the source iModel into the target iModel. */
   public importCodeSpecs(): void {
+    Logger.logTrace(loggerCategory, `--> importCodeSpecs()`);
     const sql = `SELECT Name FROM BisCore:CodeSpec`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -415,7 +519,7 @@ export class IModelTransformer {
   /** Import a single CodeSpec from the source iModel into the target iModel. */
   public importCodeSpec(codeSpecName: string): void {
     if (this._excludedCodeSpecNames.has(codeSpecName)) {
-      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpecName}`);
+      Logger.logInfo(loggerCategory, `(Source) Excluding CodeSpec: ${codeSpecName}`);
       this.onCodeSpecExcluded(codeSpecName);
       return;
     }
@@ -434,6 +538,7 @@ export class IModelTransformer {
     this.importModels(InformationPartitionElement.classFullName, targetScopeElementId);
     this.importModels(Drawing.classFullName, targetScopeElementId);
     this.importModels(Sheet.classFullName, targetScopeElementId);
-    this.importRelationships();
+    this.importSkippedElements();
+    this.importRelationships(ElementRefersToElements.classFullName);
   }
 }

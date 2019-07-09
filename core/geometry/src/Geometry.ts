@@ -208,6 +208,11 @@ export class Geometry {
       return Math.abs(x - y) < Math.abs(tol);
     return Math.abs(x - y) < Geometry.smallMetricDistance;
   }
+  /** Boolean test for metric coordinate near-equality, with toleranceFactor applied to the usual smallMetricDistance */
+  public static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean {
+    return Geometry.isSameCoordinate(x, y, toleranceFactor * Geometry.smallMetricDistance);
+  }
+
   /** Boolean test for metric coordinate near-equality of x, y pair */
   public static isSameCoordinateXY(x0: number, y0: number, x1: number, y1: number, tol: number = Geometry.smallMetricDistance): boolean {
     let d = x1 - x0;
@@ -243,7 +248,7 @@ export class Geometry {
    * Lexical comparison of (a.x,a.y) (b.x,b.y) with x as first test, y second.
    * * This is appropriate for a horizontal sweep in the plane.
    */
-  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ) {
+  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -258,7 +263,7 @@ export class Geometry {
    * Lexical comparison of (a.x,a.y) (b.x,b.y) with y as first test, x second.
    * * This is appropriate for a vertical sweep in the plane.
    */
-  public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ) {
+  public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
     if (a.y < b.y)
       return -1;
     else if (a.y > b.y)
@@ -272,7 +277,7 @@ export class Geometry {
   /**
    * Lexical test, based on x first, y second, z third.
    */
-  public static lexicalXYZLessThan(a: XYZ, b: XYZ) {
+  public static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -296,12 +301,12 @@ export class Geometry {
   /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
    * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
   */
-  public static isAlmostEqualNumber(a: number, b: number) {
+  public static isAlmostEqualNumber(a: number, b: number): boolean {
     const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
     return Math.abs(a - b) <= Geometry.smallAngleRadians * sumAbs;
   }
   /** Toleranced equality test, using caller-supplied tolerance. */
-  public static isDistanceWithinTol(distance: number, tol: number) {
+  public static isDistanceWithinTol(distance: number, tol: number): boolean {
     return Math.abs(distance) <= Math.abs(tol);
   }
   /** Toleranced equality test, using `smallMetricDistance` tolerance. */
@@ -364,20 +369,20 @@ export class Geometry {
   }
 
   /** Return the hypotenuse `sqrt(x*x + y*y)`. This is much faster than `Math.hypot(x,y)`. */
-  public static hypotenuseXY(x: number, y: number) { return Math.sqrt(x * x + y * y); }
+  public static hypotenuseXY(x: number, y: number): number { return Math.sqrt(x * x + y * y); }
   /** Return the squared `hypotenuse (x*x + y*y)`. */
-  public static hypotenuseSquaredXY(x: number, y: number) { return x * x + y * y; }
+  public static hypotenuseSquaredXY(x: number, y: number): number { return x * x + y * y; }
   /** Return the square of x */
-  public static square(x: number) { return x * x; }
+  public static square(x: number): number { return x * x; }
 
   /** Return the hypotenuse `sqrt(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseXYZ(x: number, y: number, z: number) { return Math.sqrt(x * x + y * y + z * z); }
+  public static hypotenuseXYZ(x: number, y: number, z: number): number { return Math.sqrt(x * x + y * y + z * z); }
   /** Return the squared hypotenuse `(x*x + y*y + z*z)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZ(x: number, y: number, z: number) { return x * x + y * y + z * z; }
+  public static hypotenuseSquaredXYZ(x: number, y: number, z: number): number { return x * x + y * y + z * z; }
   /** Return the (full 4d) hypotenuse `sqrt(x*x + y*y + z*z + w*w)`. This is much faster than `Math.hypot(x,y,z,w)`. */
-  public static hypotenuseXYZW(x: number, y: number, z: number, w: number) { return Math.sqrt(x * x + y * y + z * z + w * w); }
+  public static hypotenuseXYZW(x: number, y: number, z: number, w: number): number { return Math.sqrt(x * x + y * y + z * z + w * w); }
   /** Return the squared hypotenuse `(x*x + y*y + z*z+w*w)`. This is much faster than `Math.hypot(x,y,z)`. */
-  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number) { return x * x + y * y + z * z + w * w; }
+  public static hypotenuseSquaredXYZW(x: number, y: number, z: number, w: number): number { return x * x + y * y + z * z + w * w; }
   /**
    * Return the distance between xy points given as numbers.
    * @param x0 x coordinate of point 0
@@ -460,7 +465,7 @@ export class Geometry {
   public static tripleProductXYW(
     columnA: XAndY, weightA: number,
     columnB: XAndY, weightB: number,
-    columnC: XAndY, weightC: number) {
+    columnC: XAndY, weightC: number): number {
     return Geometry.tripleProduct(
       columnA.x, columnB.x, columnC.x,
       columnA.y, columnB.y, columnC.y,
@@ -473,7 +478,7 @@ export class Geometry {
   public static tripleProductPoint4dXYW(
     columnA: Point4d,
     columnB: Point4d,
-    columnC: Point4d) {
+    columnC: Point4d): number {
     return Geometry.tripleProduct(
       columnA.x, columnB.x, columnC.x,
       columnA.y, columnB.y, columnC.y,
@@ -539,7 +544,7 @@ export class Geometry {
     const axis = order <= AxisOrder.ZXY ? order + index : (order - AxisOrder.XZY) - index;
     return Geometry.cyclic3dAxis(axis);
   }
-  /** Return (a modulo period), e.g. for use as a cyclid index.  Both a and period may be negative. */
+  /** Return (a modulo period), e.g. for use as a cyclic index.  Both a and period may be negative. */
   public static modulo(a: number, period: number): number {
     if (period <= 0) {
       if (period === 0)

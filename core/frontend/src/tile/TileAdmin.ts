@@ -42,9 +42,9 @@ export abstract class TileAdmin {
 
   /** @internal */
   public abstract get enableInstancing(): boolean;
-
   /** @internal */
-  public abstract get useProjectExtents(): boolean;
+  public abstract get disableMagnification(): boolean;
+
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
   /** @internal */
@@ -158,15 +158,6 @@ export namespace TileAdmin {
      */
     maxActiveRequests?: number;
 
-    /** If true, the [[TileAdmin]] will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests.
-     * This is not recommended - it eliminates any ability to cancel requests for tiles which are no longer needed, and will swamp
-     * the network with requests.
-     *
-     * Default value: false
-     * @note If this is defined and true, `maxActiveRequests` is ignored.
-     */
-    disableThrottling?: boolean;
-
     /** If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance.
      *
      * Default value: true
@@ -189,16 +180,6 @@ export namespace TileAdmin {
      * @internal
      */
     maximumMajorTileFormatVersion?: number;
-
-    /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
-     * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
-     * Setting this option to `true` will instead base the range of the tree on the project extents.
-     *
-     * Default value: false
-     *
-     * @internal
-     */
-    useProjectExtents?: boolean;
 
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.
@@ -227,6 +208,18 @@ export namespace TileAdmin {
      * @alpha
      */
     tileTreeExpirationTime?: number;
+
+    /** When producing child tiles for a given tile, two refinement strategies are considered:
+     *  - Subdivision: typical oct- or quad-tree subdivision into 8 or 4 smaller child tiles; and
+     *  - Magnification: production of a single child tile of the same size as the parent but with twice the level of detail
+     * The magnification strategy can in some cases produce extremely large, detailed tiles, because the heuristic which decides which strategy to use considers that if
+     * a tile contains fewer than some "small" number of elements, it is not worth subdividing, and instead chooses magnification - but element sizes vary **wildly**.
+     *
+     * If this option is defined and true, the magnification strategy will never be chosen.
+     *
+     * Default value: false
+     */
+    disableMagnification?: boolean;
   }
 
   /** A set of [[Viewport]]s.
@@ -358,11 +351,10 @@ class Admin extends TileAdmin {
   private readonly _requestsPerViewport = new RequestsPerViewport();
   private readonly _uniqueViewportSets = new UniqueViewportSets();
   private _maxActiveRequests: number;
-  private readonly _throttle: boolean;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
-  private readonly _useProjectExtents: boolean;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -407,13 +399,11 @@ class Admin extends TileAdmin {
     if (undefined === options)
       options = {};
 
-    this._throttle = !options.disableThrottling;
     this._maxActiveRequests = undefined !== options.maxActiveRequests ? options.maxActiveRequests : 10;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = undefined !== options.enableInstancing ? options.enableInstancing : true;
+    this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
-
-    this._useProjectExtents = !!options.useProjectExtents;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
       if (undefined === seconds)
@@ -434,7 +424,7 @@ class Admin extends TileAdmin {
   }
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
-  public get useProjectExtents() { return this._useProjectExtents; }
+  public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
 
@@ -475,9 +465,6 @@ class Admin extends TileAdmin {
 
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
 
-    if (!this._throttle)
-      return;
-
     // Cancel any previously pending requests which are no longer needed.
     for (const queued of previouslyPending)
       if (queued.viewports.isEmpty)
@@ -510,10 +497,7 @@ class Admin extends TileAdmin {
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
-          if (this._throttle)
-            this._pendingRequests.push(request);
-          else
-            this.dispatch(request);
+          this._pendingRequests.push(request);
         }
       } else {
         const req = tile.request;

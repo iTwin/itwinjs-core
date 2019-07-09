@@ -10,6 +10,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
+alpha;ActionItemInsertSpec 
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
@@ -61,13 +62,15 @@ internal;Clips
 public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
+alpha;ConditionalDisplaySpecification
+alpha;ConditionalDisplayType
 internal;ContextMode
 internal;ContextRealityModelState
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
@@ -128,6 +131,7 @@ internal;GeoServices
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GraphicBranch 
+internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
@@ -163,6 +167,7 @@ internal;Tiles
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
+alpha;InsertSpec
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
@@ -223,6 +228,8 @@ beta;PlanarClassifierMap = Map
 internal;PlanarClassifiers
 public;class Plugin
 public;PluginAdmin
+alpha;PluginUiManager
+alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
@@ -289,8 +296,11 @@ public;SnapHeat
 public;SnapMode
 public;SnapStatus
 beta;SpatialClassifiers
+internal;SpatialClassifiersContainer
+internal;class SpatialClassifierTileTreeReference 
 public;SpatialLocationModelState 
 public;SpatialModelState 
+internal;SpatialModelTileTrees
 public;SpatialViewState 
 public;Sprite
 public;SpriteLocation 
@@ -327,6 +337,8 @@ internal;TileTreeDiscloser
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin
+alpha;ToolbarItemInsertSpec 
+alpha;ToolInsertSpec 
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
@@ -340,6 +352,8 @@ public;ToolTipOptions
 public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
+alpha;UiItemNode
+alpha;UiProviderRegisteredEventArgs
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection

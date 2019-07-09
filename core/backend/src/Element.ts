@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
-import { Transform, Range3d } from "@bentley/geometry-core";
-import { DrawingModel } from "./Model";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
   InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
+import { Entity } from "./Entity";
+import { IModelDb } from "./IModelDb";
+import { DrawingModel } from "./Model";
+import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
@@ -118,6 +118,31 @@ export class Element extends Entity implements ElementProps {
     return val;
   }
 
+  /** Collect the Ids of this element's *predecessors* at this level of the class hierarchy.
+   * A *predecessor* is an element that had to be inserted before this element could have been inserted. This is important for cloning operations.
+   * @note This should be overridden at each level the class hierarchy that introduces predecessors.
+   * @see getPredecessorIds
+   * @alpha
+   */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    predecessorIds.add(this.model); // The modeledElement is a predecessor
+    if (this.code.scope && Id64.isValidId64(this.code.scope))
+      predecessorIds.add(this.code.scope); // The element that scopes the code is a predecessor
+    if (this.parent)
+      predecessorIds.add(this.parent.id); // A parent element is a predecessor
+  }
+
+  /** Get the Ids of this element's *predecessors*. A *predecessor* is an element that had to be inserted before this element could have been inserted.
+   * This is important for cloning operations.
+   * @see collectPredecessorIds
+   * @alpha
+   */
+  public getPredecessorIds(): Id64Set {
+    const predecessorIds = new Set<Id64String>();
+    this.collectPredecessorIds(predecessorIds);
+    return predecessorIds;
+  }
+
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
@@ -202,6 +227,12 @@ export abstract class GeometricElement extends Element implements GeometricEleme
       val.geom = this.geom;
     return val;
   }
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    predecessorIds.add(this.category);
+    // TODO: GeometryPartIds?
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -229,6 +260,13 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     if (this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
     return val;
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (this.typeDefinition)
+      predecessorIds.add(this.typeDefinition.id);
   }
 }
 
@@ -266,6 +304,13 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     if (this.typeDefinition)
       val.typeDefinition = this.typeDefinition;
     return val;
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    if (this.typeDefinition)
+      predecessorIds.add(this.typeDefinition.id);
   }
 }
 

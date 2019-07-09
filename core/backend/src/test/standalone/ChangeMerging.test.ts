@@ -10,6 +10,7 @@ import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-co
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsNative } from "../../IModelJsNative";
+import { IModelHost } from "../../IModelHost";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeSet(imodel: IModelDb): ChangeSetToken {
@@ -33,7 +34,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 }
 
 function applyOneChangeSet(imodel: IModelDb, cstoken: ChangeSetToken) {
-  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.applyChangeSets(JSON.stringify([cstoken]), ChangeSetApplyOption.Merge);
+  const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(imodel.briefcase!.nativeDb!, JSON.stringify([cstoken]), ChangeSetApplyOption.Merge);
   imodel.onChangesetApplied.raiseEvent();
   assert.equal(status, ChangeSetStatus.Success);
 }

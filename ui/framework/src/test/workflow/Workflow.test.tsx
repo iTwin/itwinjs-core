@@ -76,6 +76,10 @@ describe("Workflow & WorkflowManager", () => {
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("Workflow", () => {
 
     it("loadWorkflows & findWorkflow", () => {

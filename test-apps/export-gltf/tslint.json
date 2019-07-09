@@ -1,0 +1,3 @@
+{
+  "extends": "@bentley/build-tools/tslint.json"
+}

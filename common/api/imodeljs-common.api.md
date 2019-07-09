@@ -4644,6 +4644,9 @@ export namespace SpatialClassificationProps {
         Off = 0,
         On = 1
     }
+    export function equalClassifiers(lhs: Classifier, rhs: Classifier): boolean;
+    export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
+    export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
         constructor(inside?: Display, outside?: Display);
         // (undocumented)

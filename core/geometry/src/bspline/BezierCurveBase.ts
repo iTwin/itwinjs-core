@@ -20,6 +20,8 @@ import { LineString3d } from "../curve/LineString3d";
 import { KnotVector } from "./KnotVector";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.
  * * This has a Bezier1dNd polygon as a member, and implements dimension-independent methods
@@ -55,13 +57,13 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   public reverseInPlace(): void { this._polygon.reverseInPlace(); }
   /** saturate the pole in place, using knot intervals from `spanIndex` of the `knotVector` */
   public saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean {
-    const boolstat = this._polygon.saturateInPlace(knotVector, spanIndex);
-    if (boolstat) {
+    const boolStat = this._polygon.saturateInPlace(knotVector, spanIndex);
+    if (boolStat) {
       this.setInterval(
         knotVector.spanFractionToFraction(spanIndex, 0.0),
         knotVector.spanFractionToFraction(spanIndex, 1.0));
     }
-    return boolstat;
+    return boolStat;
   }
   /** (property accessor) Return the polynomial degree (one less than order) */
   public get degree(): number {
@@ -88,8 +90,6 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * * ( The parent range should have been previously defined with `setInterval`)
    */
   public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
-  /** Return a stroke count appropriate for given stroke options. */
-  public abstract computeStrokeCountForOptions(options?: StrokeOptions): number;
 
   /** append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class*/
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
@@ -163,7 +163,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * * Ignore members corresponding to args that are 0 or negative.
    * @param primaryBezierOrder order of expected bezier
    * @param orderA length of _workCoffsA (simple array)
-   * @param orderB length of _workdCoffsB (simple array)
+   * @param orderB length of _workCoffsB (simple array)
    */
   protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
     if (primaryBezierOrder > 0) {
@@ -184,6 +184,59 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       else
         this._workCoffsB = new Float64Array(orderB);
     }
+  }
+  /**
+   * Assess length and turn to determine a stroke count.
+   * * this method is used by both BSplineCurve3d and BSplineCurve3dH.
+   * * points are accessed via getPolePoint3d.
+   *   * Hence a zero-weight pole will be a problem
+   * @param options stroke options structure.
+   */
+  public computeStrokeCountForOptions(options?: StrokeOptions): number {
+
+    this.getPolePoint3d(0, this._workPoint0);
+    this.getPolePoint3d(1, this._workPoint1);
+    let numStrokes = 1;
+    if (this._workPoint0 && this._workPoint1) {
+      let dx0 = this._workPoint1.x - this._workPoint0.x;
+      let dy0 = this._workPoint1.y - this._workPoint0.y;
+      let dz0 = this._workPoint1.z - this._workPoint0.z;
+      let dx1, dy1, dz1; // first differences of leading edge
+      let sumRadians = 0.0;
+      let thisLength = Geometry.hypotenuseXYZ(dx0, dy0, dz0);
+      this._workPoint1.setFromPoint3d(this._workPoint0);
+      let sumLength = thisLength;
+      let maxLength = thisLength;
+      let maxRadians = 0.0;
+      let thisRadians;
+      for (let i = 2; this.getPolePoint3d(i, this._workPoint1); i++) {
+        dx1 = this._workPoint1.x - this._workPoint0.x;
+        dy1 = this._workPoint1.y - this._workPoint0.y;
+        dz1 = this._workPoint1.z - this._workPoint0.z;
+        thisRadians = Angle.radiansBetweenVectorsXYZ(dx0, dy0, dz0, dx1, dy1, dz1);
+        sumRadians += thisRadians;
+        maxRadians = Geometry.maxAbsXY(thisRadians, maxRadians);
+        thisLength = Geometry.hypotenuseXYZ(dx1, dy1, dz1);
+        sumLength += thisLength;
+        maxLength = Geometry.maxXY(maxLength, thisLength);
+        dx0 = dx1;
+        dy0 = dy1;
+        dz0 = dz1;
+        this._workPoint0.setFrom(this._workPoint1);
+      }
+      const length1 = maxLength * this.degree;    // This may be larger than sumLength
+      const length2 = Math.sqrt(length1 * sumLength);  // This is in between
+      let radians1 = maxRadians * (this.degree - 1);  // As if worst case keeps happening.
+      if (this.degree < 3)
+        radians1 *= 3;  // so quadratics aren't under-stroked
+      const radians2 = Math.sqrt(radians1 * sumRadians);
+      numStrokes = StrokeOptions.applyAngleTol(options,
+        StrokeOptions.applyMaxEdgeLength(options, this.degree, length2), radians2, 0.1);
+      if (options) {
+        numStrokes = options.applyChordTolToLengthAndRadians(numStrokes, sumLength, radians1);
+      }
+    }
+    return numStrokes;
   }
 
 }

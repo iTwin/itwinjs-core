@@ -74,4 +74,31 @@ export namespace SpatialClassificationProps {
   export interface Properties extends Classifier {
     isActive: boolean;
   }
+
+  /** Returns true if two FlagsProps are equivalent
+   * @beta
+   */
+  export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean {
+    if (lhs === rhs)
+      return true;
+
+    return lhs.inside === rhs.inside && lhs.outside === rhs.outside && lhs.selected === rhs.selected;
+  }
+
+  /** Returns true if two Classifiers are equivalent.
+   * @beta
+   */
+  export function equalClassifiers(lhs: Classifier, rhs: Classifier): boolean {
+    if (lhs === rhs)
+      return true;
+
+    return lhs.modelId === rhs.modelId && lhs.expand === rhs.expand && equalFlags(lhs.flags, rhs.flags) && lhs.name === rhs.name;
+  }
+
+  /** Returns true if two Properties are equivalent.
+   * @beta
+   */
+  export function equalProperties(lhs: Properties, rhs: Properties): boolean {
+    return equalClassifiers(lhs, rhs) && lhs.isActive === rhs.isActive;
+  }
 }
