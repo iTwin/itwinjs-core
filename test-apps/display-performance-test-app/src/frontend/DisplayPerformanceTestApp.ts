@@ -151,12 +151,12 @@ function getRenderOpts(): string {
           }
         });
         break;
-      case "enableOptimizedSurfaceShaders":
-        if (value) optString += "+optSurf";
-        break;
-      case "cullAgainstActiveVolume":
-        if (value) optString += "+cullActVol";
-        break;
+      // case "enableOptimizedSurfaceShaders": // No longer supported
+      //   if (value) optString += "+optSurf";
+      //   break;
+      // case "cullAgainstActiveVolume": // No longer supported
+      //   if (value) optString += "+cullActVol";
+      //   break;
       case "preserveShaderSourceCode":
         if (value) optString += "+shadeSrc";
         break;
@@ -174,9 +174,9 @@ function getTileProps(): string {
   let tilePropsStr = "";
   for (const [key, value] of Object.entries(curTileProps)) {
     switch (key) {
-      case "disableThrottling":
-        if (value) tilePropsStr += "-throt";
-        break;
+      // case "disableThrottling": // No longer supported
+      //   if (value) tilePropsStr += "-throt";
+      //   break;
       case "elideEmptyChildContentRequests":
         if (value) tilePropsStr += "+elide";
         break;
@@ -188,6 +188,9 @@ function getTileProps(): string {
         break;
       case "retryInterval":
         if (value) tilePropsStr += "+retry" + value;
+        break;
+      case "disableMagnification":
+        if (value) tilePropsStr += "-mag";
         break;
       default:
         if (value) tilePropsStr += "+" + key;
