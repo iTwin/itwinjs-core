@@ -44,7 +44,12 @@ export const enum IsClassified { No, Yes }
 
 /** @internal */
 export const enum IsEdgeTestNeeded { No, Yes }
+
+/** @internal */
 export const enum IsShadowable { No, Yes }
+
+/** @internal */
+export const enum HasMaterialAtlas { No, Yes}
 
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
@@ -58,6 +63,7 @@ export class TechniqueFlags {
   public isInstanced: IsInstanced = IsInstanced.No;
   public isClassified: IsClassified = IsClassified.No;
   public isShadowable: IsShadowable = IsShadowable.No;
+  public hasMaterialAtlas: HasMaterialAtlas = HasMaterialAtlas.No;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -66,7 +72,7 @@ export class TechniqueFlags {
 
   public get hasClip(): boolean { return this.clip.type !== ClippingType.None; }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, hasMaterialAtlas = HasMaterialAtlas.No): void {
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
       this.initForHilite(target.clipDef, instanced, (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No);
     } else {
@@ -77,6 +83,7 @@ export class TechniqueFlags {
       this.isInstanced = instanced;
       this.isClassified = classified;
       this.isShadowable = shadowable;
+      this.hasMaterialAtlas = hasMaterialAtlas;
 
       if (undefined !== target.currentOverrides)
         this.featureMode = FeatureMode.Overrides;
@@ -118,6 +125,7 @@ export class TechniqueFlags {
     this.isClassified = IsClassified.No;
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
+    this.hasMaterialAtlas = HasMaterialAtlas.No;
     this.clip.type = ClippingType.None;
     this.clip.numberOfPlanes = 0;
   }
@@ -129,6 +137,7 @@ export class TechniqueFlags {
   public setClassified(classified: boolean) {
     this.isClassified = classified ? IsClassified.Yes : IsClassified.No;
   }
+  public setHasMaterialAtlas(has: boolean) { this.hasMaterialAtlas = has ? HasMaterialAtlas.Yes : HasMaterialAtlas.No; }
 
   public get isHilite() { return this._isHilite; }
   public initForHilite(clip: ClipDef, instanced: IsInstanced, classified: IsClassified) {
@@ -139,6 +148,7 @@ export class TechniqueFlags {
     this.isAnimated = IsAnimated.No;
     this.isInstanced = instanced;
     this.isClassified = classified;
+    this.hasMaterialAtlas = HasMaterialAtlas.No;
     this.clip = clip;
   }
 
@@ -152,6 +162,7 @@ export class TechniqueFlags {
     if (this.hasClip) parts.push("clip");
     if (this.isShadowable) parts.push("shadowable");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
+    if (this.hasMaterialAtlas) parts.push("materialAtlas");
     return parts.join("; ");
   }
 
