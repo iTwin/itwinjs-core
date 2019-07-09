@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
@@ -48,7 +48,13 @@ export class MeshData implements IDisposable {
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
     this.texture = params.surface.texture as Texture;
-    this.material = params.surface.material as Material;
+    if (undefined !== params.surface.material) {
+      if (params.surface.material.isAtlas)
+        assert(false, "###TODO material atlas");
+      else
+        this.material = params.surface.material.material as Material;
+    }
+
     this.type = params.surface.type;
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;

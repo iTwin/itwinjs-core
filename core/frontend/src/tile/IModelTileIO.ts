@@ -8,6 +8,7 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import {
+  createSurfaceMaterial,
   VertexTable,
   VertexIndices,
   PointStringParams,
@@ -665,7 +666,7 @@ export namespace IModelTileIO {
         indices,
         fillFlags: displayParams.fillFlags,
         hasBakedLighting: false,
-        material: displayParams.material,
+        material: createSurfaceMaterial(displayParams.material),
         texture,
       };
     }

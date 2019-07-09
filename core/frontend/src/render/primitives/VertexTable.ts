@@ -467,13 +467,37 @@ export function isValidSurfaceType(value: number): boolean {
 }
 
 /** @internal */
+export interface SurfaceRenderMaterial {
+  readonly isAtlas: false;
+  readonly material: RenderMaterial;
+}
+
+/** @internal */
+export interface SurfaceMaterialAtlas {
+  readonly isAtlas: true;
+  readonly hasTranslucency: boolean;
+  readonly vertexTableOffset: number;
+}
+
+/** @internal */
+export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
+
+/** @internal */
+export function createSurfaceMaterial(source: RenderMaterial | undefined /* ###TODO | MaterialAtlas */): SurfaceMaterial | undefined {
+  if (undefined === source)
+    return undefined;
+  else
+    return { isAtlas: false, material: source };
+}
+
+/** @internal */
 export interface SurfaceParams {
   readonly type: SurfaceType;
   readonly indices: VertexIndices;
   readonly fillFlags: FillFlags;
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
-  readonly material?: RenderMaterial;
+  readonly material?: SurfaceMaterial;
 }
 
 /**
@@ -667,13 +691,14 @@ export class MeshParams {
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
 
     const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
+
     const surface: SurfaceParams = {
       type: builder.type,
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
       hasBakedLighting: args.hasBakedLighting,
       texture: args.texture,
-      material: args.material,
+      material: createSurfaceMaterial(args.material),
     };
 
     const edges = convertEdges(args);
