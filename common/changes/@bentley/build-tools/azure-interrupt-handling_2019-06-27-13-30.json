@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Closing STDIN no longer kills child processes created using simpleSpawn",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "robertas.maleckas@bentley.com"
+}
