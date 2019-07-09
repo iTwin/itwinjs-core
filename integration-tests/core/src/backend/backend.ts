@@ -16,6 +16,8 @@ RpcConfiguration.developmentMode = true;
 
 // Start the backend
 const hostConfig = new IModelHostConfiguration();
+hostConfig.concurrentQuery.concurrent = 2;
+hostConfig.concurrentQuery.pollInterval = 5;
 IModelHost.startup(hostConfig);
 
 Logger.initializeToConsole();
