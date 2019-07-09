@@ -96,6 +96,8 @@ import { Lock } from '@bentley/imodeljs-clients';
 import { Logger } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
+import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
+import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
@@ -1817,6 +1819,7 @@ export class IModelDb extends IModel {
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
+    getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @deprecated
     importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
@@ -2194,6 +2197,8 @@ export namespace IModelJsNative {
         getIModelCoordinatesFromGeoCoordinates(points: string): string;
         // (undocumented)
         getIModelProps(): string;
+        // (undocumented)
+        getMassProperties(props: string): string;
         // (undocumented)
         getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)

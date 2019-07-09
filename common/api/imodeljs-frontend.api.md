@@ -101,6 +101,8 @@ import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
+import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
+import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
@@ -3157,6 +3159,8 @@ export class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     readonly geoServices: GeoServices;
+    // @beta
+    getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     // @alpha
     readonly hilited: HiliteSet;
