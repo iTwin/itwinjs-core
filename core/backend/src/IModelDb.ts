@@ -13,7 +13,7 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority, QueryLimit, QueryQuota, RpcPendingResponse,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority, QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -1152,6 +1152,13 @@ export class IModelDb extends IModel {
       request.cancelSnap();
       this._snaps.delete(sessionId);
     }
+  }
+
+  /** Get the mass properties for the supplied elements */
+  public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
+    requestContext.enter();
+    const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
+    return JSON.parse(resultString) as MassPropertiesResponseProps;
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */

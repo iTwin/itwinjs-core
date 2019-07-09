@@ -173,6 +173,7 @@ export declare namespace IModelJsNative {
     public isTxnIdValid(txnId: TxnIdString): boolean;
     public isUndoPossible(): boolean;
     public logTxnError(fatal: boolean): void;
+    public getMassProperties(props: string): string;
     public openIModel(dbName: string, mode: OpenMode): DbResult;
     public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
     public queryFirstTxnId(): TxnIdString;
