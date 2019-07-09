@@ -61,32 +61,32 @@ function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMa
   const alphaOverridden = alphaAndFlags.y >= 2.0 ? 1.0 : 0.0;
 
   const rgb = unpackAndNormalizeMaterialParam(params.x);
-  const mat_rgb = { x: rgb.x, y: rgb.y, z: rgb.z, w: rgbOverridden };
-  const mat_alpha = { x: alphaAndFlags.x / 255.0, alphaOverridden };
+  const matRgb = { x: rgb.x, y: rgb.y, z: rgb.z, w: rgbOverridden };
+  const matAlpha = { x: alphaAndFlags.x / 255.0, alphaOverridden };
 
   const weights = unpackAndNormalizeMaterialParam(params.y);
-  const mat_weights = { x: weights.y, y: weights.z };
-  const mat_texture_weight = weights.x;
+  const matWeights = { x: weights.y, y: weights.z };
+  const matTextureWeight = weights.x;
 
   const specularColor = unpackAndNormalizeMaterialParam(params.z);
-  const mat_specular = { x: specularColor.x, y: specularColor.y, z: specularColor.z, w: specularExponent };
+  const matSpecular = { x: specularColor.x, y: specularColor.y, z: specularColor.z, w: specularExponent };
 
   return {
-    diffuseColor: rgbOverridden ? colorFromVec(mat_rgb) : undefined,
-    specularColor: colorFromVec(mat_specular),
-    diffuse: mat_weights.x,
-    specular: mat_weights.y,
-    specularExponent: mat_specular.w,
-    transparency: 1.0 - mat_alpha.x,
+    diffuseColor: rgbOverridden ? colorFromVec(matRgb) : undefined,
+    specularColor: colorFromVec(matSpecular),
+    diffuse: matWeights.x,
+    specular: matWeights.y,
+    specularExponent: matSpecular.w,
+    transparency: 1.0 - matAlpha.x,
     rgbOverridden: 0.0 !== rgbOverridden,
     alphaOverridden: 0.0 !== alphaOverridden,
-    textureWeight: mat_texture_weight,
+    textureWeight: matTextureWeight,
     unusedByte: alphaAndFlags.z,
   };
 }
 
 function expectEqualFloats(expected: number, actual: number): void {
-  const epsilon = 2.0/255.0 - 1.0/255.0;
+  const epsilon = 1.0 / 255.0;
   expect(Math.abs(expected - actual)).to.be.at.most(epsilon, "Expected: " + expected + " Actual: " + actual);
 }
 
