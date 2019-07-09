@@ -18,7 +18,6 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { RenderMemory } from "../System";
 import { ColorInfo } from "./ColorInfo";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
 import { Material } from "./Material";
@@ -79,8 +78,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   // Intended to be overridden by specific subclasses
   public get material(): Material | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
-  public set uniformFeatureIndices(_value: number) { }
-  public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
+  public get hasFeatures(): boolean { return false; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {

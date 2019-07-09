@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
+import { FeatureIndexType, QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";
 import { PolylineParams } from "../primitives/VertexTable";
 import { Target } from "./Target";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { AttributeHandle } from "./Handle";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { LineCode } from "./EdgeOverrides";
 import { VertexLUT } from "./VertexLUT";
 import { ColorInfo } from "./ColorInfo";
@@ -24,7 +23,7 @@ import { RenderMemory } from "../System";
 /** @internal */
 export class PolylineGeometry extends LUTGeometry {
   public vertexParams: QParams3d;
-  public features?: FeaturesInfo;
+  private readonly _hasFeatures: boolean;
   public lineWeight: number;
   public lineCode: number;
   public type: PolylineTypeFlags;
@@ -36,7 +35,7 @@ export class PolylineGeometry extends LUTGeometry {
   private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams) {
     super();
     this.vertexParams = params.vertices.qparams;
-    this.features = FeaturesInfo.createFromVertexTable(params.vertices);
+    this._hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     this.lineWeight = params.weight;
     this.lineCode = LineCode.valueFromLinePixels(params.linePixels);
     this.type = params.type;
@@ -100,7 +99,7 @@ export class PolylineGeometry extends LUTGeometry {
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
   public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
+  public get hasFeatures() { return this._hasFeatures; }
 
   protected _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.getEdgeWeight(params, this.lineWeight) : this.lineWeight;

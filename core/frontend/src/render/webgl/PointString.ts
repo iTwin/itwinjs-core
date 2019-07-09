@@ -5,14 +5,13 @@
 /** @module WebGL */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { QParams3d } from "@bentley/imodeljs-common";
+import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
 import { Target } from "./Target";
 import { LUTGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { PointStringParams } from "../primitives/VertexTable";
 import { VertexLUT } from "./VertexLUT";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { AttributeHandle, BufferHandle } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -22,27 +21,27 @@ import { RenderMemory } from "../System";
 /** @internal */
 export class PointStringGeometry extends LUTGeometry {
   public readonly vertexParams: QParams3d;
-  public readonly features: FeaturesInfo | undefined;
+  private readonly _hasFeatures: boolean;
   public readonly weight: number;
   public readonly lut: VertexLUT;
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, features?: FeaturesInfo) {
+  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean) {
     super();
     this.numIndices = numIndices;
     this.indices = indices;
     this.lut = lut;
     this.vertexParams = qparams;
     this.weight = weight;
-    this.features = features;
+    this._hasFeatures = hasFeatures;
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
+  public get hasFeatures() { return this._hasFeatures; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
   public bindVertexArray(attr: AttributeHandle): void {
     attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
@@ -65,7 +64,8 @@ export class PointStringGeometry extends LUTGeometry {
     if (undefined === lut)
       return undefined;
 
-    return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, FeaturesInfo.createFromVertexTable(params.vertices));
+    const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures);
   }
 
   public dispose() {

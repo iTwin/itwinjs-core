@@ -15,7 +15,6 @@ export * from "./render/webgl/Diagnostics";
 export * from "./render/webgl/DrawCommand";
 export * from "./render/webgl/EdgeOverrides";
 export * from "./render/webgl/FeatureDimensions";
-export * from "./render/webgl/FeaturesInfo";
 export * from "./render/webgl/FloatRGBA";
 export * from "./render/webgl/FrameBuffer";
 export * from "./render/webgl/GL";

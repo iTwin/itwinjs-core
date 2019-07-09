@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { Target, PrimitiveVisibility } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
@@ -74,10 +73,7 @@ export class Primitive extends Graphic {
     return this.cachedGeometry.getRenderPass(target);
   }
 
-  public get featureIndexType(): FeatureIndexType {
-    const feature = this.cachedGeometry.featuresInfo;
-    return undefined !== feature ? feature.type : FeatureIndexType.Empty;
-  }
+  public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
 
   public get usesMaterialColor(): boolean {
     const materialData = this.cachedGeometry.material;
@@ -94,7 +90,6 @@ export class Primitive extends Graphic {
     }
   }
 
-  public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
   public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
   public get isInstanced(): boolean { return this.cachedGeometry.isInstanced; }
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }

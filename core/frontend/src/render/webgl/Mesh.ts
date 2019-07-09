@@ -11,7 +11,6 @@ import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouettePa
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { Graphic, Batch } from "./Graphic";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
 import { FloatPreMulRgba } from "./FloatRGBA";
@@ -19,7 +18,7 @@ import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { Material } from "./Material";
 import { Texture } from "./Texture";
-import { FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
@@ -30,7 +29,8 @@ import { InstanceBuffers } from "./InstancedGeometry";
 /** @internal */
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
-  public features?: FeaturesInfo;
+  public readonly hasFeatures: boolean;
+  public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
   public readonly material?: Material;
   public readonly type: SurfaceType;
@@ -42,7 +42,11 @@ export class MeshData implements IDisposable {
 
   private constructor(lut: VertexLUT, params: MeshParams) {
     this.lut = lut;
-    this.features = FeaturesInfo.createFromVertexTable(params.vertices);
+
+    this.hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
+      this.uniformFeatureId = params.vertices.uniformFeatureID;
+
     this.texture = params.surface.texture as Texture;
     this.material = params.surface.material as Material;
     this.type = params.surface.type;
@@ -129,9 +133,6 @@ export class MeshGraphic extends Graphic {
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
   public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
 
-  public setUniformFeatureIndices(id: number): void {
-    this.meshData.features = FeaturesInfo.createUniform(id);
-  }
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
 
@@ -148,7 +149,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.mesh.features; }
+  public get hasFeatures() { return this.mesh.hasFeatures; }
   public get surfaceType() { return this.mesh.type; }
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }
