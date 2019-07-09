@@ -67,7 +67,7 @@ function getFeatureIndex(instanced: boolean): string {
   return `
   float getFeatureIndex() {
     g_featureIndex = ` + computeFeatureIndex(instanced) + `;
-    return decodeUInt32(g_featureIndex.xyz);
+    return decodeUInt24(g_featureIndex.xyz);
   }`;
 }
 

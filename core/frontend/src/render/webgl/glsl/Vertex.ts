@@ -13,7 +13,7 @@ import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
 
 const initializeVertLUTCoords = `
-  g_vertexLUTIndex = decodeUInt32(a_pos);
+  g_vertexLUTIndex = decodeUInt24(a_pos);
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 
@@ -144,7 +144,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
   vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
-  vert.addFunction(GLSLDecode.uint32);
+  vert.addFunction(GLSLDecode.uint24);
   vert.addFunction(GLSLDecode.uint16);
   if (vert.usesInstancedGeometry) {
     vert.addFunction(unquantizeVertexPositionFromLUTPrelude + unquantizeVertexPositionFromLUTPostlude);

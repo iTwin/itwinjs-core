@@ -15,8 +15,8 @@ float decodeUInt16(vec2 v) {
 }
 `;
 
-  export const uint32 = `
-float decodeUInt32(vec3 v) {
+export const uint24 = `
+float decodeUInt24(vec3 v) {
   v = v * vec3(1.0, 256.0, 256.0*256.0); // v.y <<= 8; v.z <<= 16
   return dot(v, vec3(1.0)); // v.x+v.y+v.z => v.x | v.y | v.z
 }

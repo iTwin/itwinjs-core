@@ -217,7 +217,7 @@ function addCommon(prog: ProgramBuilder) {
 
 const decodePosition = `
 vec4 decodePosition(vec3 baseIndex) {
-  float index = decodeUInt32(baseIndex);
+  float index = decodeUInt24(baseIndex);
   vec2 tc = compute_vert_coords(index);
   vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;

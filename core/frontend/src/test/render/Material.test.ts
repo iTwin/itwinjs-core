@@ -135,7 +135,7 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
   return params;
 }
 
-describe.only("Material", () => {
+describe("Material", () => {
   it("should pack and unpack parameters", () => {
     expectMaterialParams(makeMaterialParams({
       diffuseColor: ColorDef.black,

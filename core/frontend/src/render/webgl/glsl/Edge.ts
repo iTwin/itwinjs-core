@@ -23,7 +23,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IsInstanced, IsAnimated } from "../TechniqueFlags";
 
 const decodeEndPointAndQuadIndices = `
-  g_otherIndex = decodeUInt32(a_endPointAndQuadIndices.xyz);
+  g_otherIndex = decodeUInt24(a_endPointAndQuadIndices.xyz);
   vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
