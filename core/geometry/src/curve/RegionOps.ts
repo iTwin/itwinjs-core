@@ -17,6 +17,8 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { PolygonWireOffsetContext } from "./PolygonOffsetContext";
+import { CurveCollection } from "./CurveCollection";
 
 /**
  * base class for callbacks during region sweeps.
@@ -305,4 +307,18 @@ export class RegionOps {
       (inA: boolean, inB: boolean) => (inA && !inB));
   }
 
+  /** Construct a wire (not area!!) that is offset from given polyline or polygon.
+   * * This is a simple wire offset, not an area.
+   * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not guarantee a simple area offset.
+   * * The construction algorithm is subject to being changed, resulting in different (hopefully better) self-intersection behavior on the future.
+   * @param points a single loop or path
+   * @param wrap true to include wraparound
+   * @param offsetDistance distance of offset from wire.  Positive is left.
+   * @alpha
+   */
+  public constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
+    const context = new PolygonWireOffsetContext();
+    return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
+
+  }
 }

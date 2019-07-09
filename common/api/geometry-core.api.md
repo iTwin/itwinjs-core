@@ -341,7 +341,7 @@ export class BagOfCurves extends CurveCollection {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     getChild(i: number): AnyCurve | undefined;
     isSameGeometryClass(other: GeometryQuery): boolean;
-    tryAddChild(child: AnyCurve): boolean;
+    tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
 // @public
@@ -1160,7 +1160,7 @@ export abstract class CurveChain extends CurveCollection {
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
     reverseChildrenInPlace(): void;
-    tryAddChild(child: AnyCurve): boolean;
+    tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
 // @public
@@ -1213,7 +1213,7 @@ export abstract class CurveCollection extends GeometryQuery {
     readonly isOpenPath: boolean;
     maxGap(): number;
     sumLengths(): number;
-    abstract tryAddChild(child: AnyCurve): boolean;
+    abstract tryAddChild(child: AnyCurve | undefined): boolean;
     tryTransformInPlace(transform: Transform): boolean;
 }
 
@@ -2837,7 +2837,7 @@ export class ParityRegion extends CurveCollection {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     getChild(i: number): Loop | undefined;
     isSameGeometryClass(other: GeometryQuery): boolean;
-    tryAddChild(child: AnyCurve): boolean;
+    tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
 // @internal
@@ -3750,6 +3750,7 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;

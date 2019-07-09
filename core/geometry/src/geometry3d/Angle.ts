@@ -324,11 +324,11 @@ export class Angle implements BeJSONFunctions {
      * @param dotUV dot product of vectorU with vectorV
      */
     public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
-        const rcos = dotUU - dotVV;
-        const rsin = 2.0 * dotUV;
-        if (favorZero && Math.abs(rsin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
+        const rCos = dotUU - dotVV;
+        const rSin = 2.0 * dotUV;
+        if (favorZero && Math.abs(rSin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
             return { c: 1.0, s: 0.0, radians: 0.0 };
-        return Angle.trigValuesToHalfAngleTrigValues(rcos, rsin);
+        return Angle.trigValuesToHalfAngleTrigValues(rCos, rSin);
     }
     /**
      * * Returns the angle between two vectors, with the vectors given as xyz components
