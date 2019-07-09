@@ -92,14 +92,16 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
+      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.integerUniforms);
     });
   });
 
   frag.addUniform("u_specularExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_specularExponent", (uniform, params) => {
-      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
+      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform1f(mat.specularExponent);
     });
   });

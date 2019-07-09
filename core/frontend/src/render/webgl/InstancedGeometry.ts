@@ -154,7 +154,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get hasAnimation() { return this._repr.hasAnimation; }
   public get qOrigin() { return this._repr.qOrigin; }
   public get qScale() { return this._repr.qScale; }
-  public get material() { return this._repr.material; }
+  public get materialInfo() { return this._repr.materialInfo; }
   public get polylineBuffers() { return this._repr.polylineBuffers; }
   public get isEdge() { return this._repr.isEdge; }
   public get hasFeatures() { return this._buffers.hasFeatures; }

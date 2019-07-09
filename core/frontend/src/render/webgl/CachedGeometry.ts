@@ -20,7 +20,7 @@ import { RenderMemory } from "../System";
 import { ColorInfo } from "./ColorInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
-import { Material } from "./Material";
+import { MaterialInfo } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
@@ -76,7 +76,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public abstract dispose(): void;
 
   // Intended to be overridden by specific subclasses
-  public get material(): Material | undefined { return undefined; }
+  public get materialInfo(): MaterialInfo | undefined { return undefined; }
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
 

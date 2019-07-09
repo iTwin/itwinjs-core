@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
@@ -16,7 +16,7 @@ import { Primitive } from "./Primitive";
 import { FloatPreMulRgba } from "./FloatRGBA";
 import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
 import { Target } from "./Target";
-import { Material } from "./Material";
+import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Texture } from "./Texture";
 import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { System } from "./System";
@@ -32,7 +32,7 @@ export class MeshData implements IDisposable {
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
-  public readonly material?: Material;
+  public readonly materialInfo?: MaterialInfo;
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
@@ -48,12 +48,7 @@ export class MeshData implements IDisposable {
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
     this.texture = params.surface.texture as Texture;
-    if (undefined !== params.surface.material) {
-      if (params.surface.material.isAtlas)
-        assert(false, "###TODO material atlas");
-      else
-        this.material = params.surface.material.material as Material;
-    }
+    this.materialInfo = createMaterialInfo(params.surface.material);
 
     this.type = params.surface.type;
     this.fillFlags = params.surface.fillFlags;
@@ -382,7 +377,7 @@ export class SurfaceGeometry extends MeshGeometry {
     if (this.isClassifier)
       return RenderPass.Classification;
 
-    const mat = this.isLit ? this.mesh.material : undefined;
+    const mat = this.isLit ? this.mesh.materialInfo : undefined;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
 
@@ -396,17 +391,19 @@ export class SurfaceGeometry extends MeshGeometry {
         return RenderPass.None;
       }
     }
+
     if (!this.isGlyph) {
       if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
         return opaquePass;
       }
     }
+
     if (undefined !== this.texture && this.wantTextures(target, true)) {
       if (this.texture.hasTranslucency)
         return RenderPass.Translucent;
 
       // material may have texture weight < 1 - if so must account for material or element alpha below
-      if (undefined === mat || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
+      if (undefined === mat || mat.isAtlas || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
         return opaquePass;
     }
 
@@ -432,7 +429,8 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.wantTextures(target, this.isTextured);
   }
-  public get material(): Material | undefined { return this.mesh.material; }
+
+  public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;

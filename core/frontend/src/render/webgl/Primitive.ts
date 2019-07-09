@@ -75,11 +75,6 @@ export class Primitive extends Graphic {
 
   public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
 
-  public get usesMaterialColor(): boolean {
-    const materialData = this.cachedGeometry.material;
-    return undefined !== materialData && (materialData.overridesRgb || materialData.overridesAlpha);
-  }
-
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {

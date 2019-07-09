@@ -5,6 +5,7 @@
 /** @module WebGL */
 
 import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
@@ -37,6 +38,9 @@ import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
  */
 export class Material extends RenderMaterial {
   public static readonly default: Material = new Material(RenderMaterial.Params.defaults);
+
+  // Used for type-switching vs MaterialAtlas
+  public readonly isAtlas: false = false;
 
   public readonly overridesRgb: boolean;
   public readonly overridesAlpha: boolean;
@@ -86,3 +90,18 @@ export class Material extends RenderMaterial {
 }
 
 Object.freeze(Material.default);
+
+/** Describes the material associated with a surface.
+ * @internal
+ */
+export type MaterialInfo = Material | SurfaceMaterialAtlas;
+
+/** @internal */
+export function createMaterialInfo(source: SurfaceMaterial | undefined): MaterialInfo | undefined {
+  if (undefined === source)
+    return undefined;
+  else if (source.isAtlas)
+    return source;
+  else
+    return source.material as Material;
+}
