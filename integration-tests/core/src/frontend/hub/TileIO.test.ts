@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { ModelProps, RelatedElementProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
@@ -322,7 +322,7 @@ describe("TileIO (WebGL)", () => {
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(Primitive);
         const plinePrim = batch.graphic as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
@@ -351,7 +351,7 @@ describe("TileIO (WebGL)", () => {
 
         expect(list.graphics[0]).to.be.instanceOf(Primitive);
         let plinePrim = list.graphics[0] as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
@@ -365,7 +365,7 @@ describe("TileIO (WebGL)", () => {
 
         expect(list.graphics[1]).to.be.instanceOf(Primitive);
         plinePrim = list.graphics[1] as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.NonUniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
