@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, IsEdgeTestNeeded, FeatureMode, IsShadowable } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, TechniqueFlags } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
@@ -332,14 +332,15 @@ const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.wh
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 /** @internal */
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable, isEdgeTestNeeded: IsEdgeTestNeeded): ProgramBuilder {
-  const builder = createCommon(isInstanced, isAnimated, isClassified, isShadowable);
+export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
   addShaderFlags(builder);
 
+  const feat = flags.featureMode;
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat);
-  addSurfaceDiscard(builder, feat, isEdgeTestNeeded, isClassified);
-  addNormal(builder, isAnimated);
+  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified);
+  addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
@@ -351,7 +352,7 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
     });
   });
 
-  addTexture(builder, isAnimated);
+  addTexture(builder, flags.isAnimated);
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
@@ -376,10 +377,10 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   if (FeatureMode.None === feat) {
     builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   } else {
-    if (isClassified)
+    if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
     builder.frag.addFunction(GLSLDecode.depthRgb);
-    if (isEdgeTestNeeded || isClassified)
+    if (flags.isEdgeTestNeeded || flags.isClassified)
       addPickBufferOutputs(builder.frag);
     else
       addAltPickBufferOutputs(builder.frag);

@@ -7,7 +7,7 @@
 import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
-import { IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
+import { HasMaterialAtlas, IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
 import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
 import { Target } from "./Target";
@@ -201,8 +201,9 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kOpaque = 0;
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
-  private static readonly _kFeature = 4;
-  private static readonly _kEdgeTestNeeded = 8; // only when hasFeatures
+  private static readonly _kMaterialAtlas = 4;
+  private static readonly _kFeature = 8;
+  private static readonly _kEdgeTestNeeded = 16; // only when hasFeatures
   private static readonly _kAnimated = numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
   private static readonly _kShadowable = SurfaceTechnique._kAnimated + numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
   private static readonly _kHilite = SurfaceTechnique._kShadowable + numFeatureVariants(SurfaceTechnique._kFeature) + SurfaceTechnique._kEdgeTestNeeded;
@@ -218,21 +219,25 @@ class SurfaceTechnique extends VariedTechnique {
       for (let hasAnimOrShadow = HasAnimationOrShadows.Neither; hasAnimOrShadow <= HasAnimationOrShadows.Shadows; hasAnimOrShadow++) {
         const iAnimate = HasAnimationOrShadows.Animation === hasAnimOrShadow ? IsAnimated.Yes : IsAnimated.No;
         const shadowable = HasAnimationOrShadows.Shadows === hasAnimOrShadow ? IsShadowable.Yes : IsShadowable.No;
-        for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
-          for (const featureMode of featureModes) {
-            if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-              flags.reset(featureMode, instanced, shadowable);
-              flags.isAnimated = iAnimate;
-              flags.isEdgeTestNeeded = edgeTestNeeded;
-              const builder = createSurfaceBuilder(featureMode, flags.isInstanced, flags.isAnimated, IsClassified.No, flags.isShadowable, flags.isEdgeTestNeeded);
-              addMonochrome(builder.frag);
-              addMaterial(builder.frag);
+        for (let hasMaterialAtlas = HasMaterialAtlas.No; hasMaterialAtlas <= HasMaterialAtlas.Yes; hasMaterialAtlas++) {
+          for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
+            for (const featureMode of featureModes) {
+              if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                flags.reset(featureMode, instanced, shadowable);
+                flags.isAnimated = iAnimate;
+                flags.isEdgeTestNeeded = edgeTestNeeded;
+                flags.hasMaterialAtlas = hasMaterialAtlas;
 
-              addSurfaceDiscardByAlpha(builder.frag);
-              this.addShader(builder, flags, gl);
+                const builder = createSurfaceBuilder(flags);
+                addMonochrome(builder.frag);
+                addMaterial(builder.frag);
 
-              builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
-              this.addTranslucentShader(builder, flags, gl);
+                addSurfaceDiscardByAlpha(builder.frag);
+                this.addShader(builder, flags, gl);
+
+                builder.frag.unset(FragmentShaderComponent.DiscardByAlpha);
+                this.addTranslucentShader(builder, flags, gl);
+              }
             }
           }
         }
@@ -245,7 +250,7 @@ class SurfaceTechnique extends VariedTechnique {
         flags.reset(featureMode, IsInstanced.No, shadowable);
         flags.isClassified = IsClassified.Yes;
 
-        const builder = createSurfaceBuilder(featureMode, IsInstanced.No, IsAnimated.No, IsClassified.Yes, flags.isShadowable, flags.isEdgeTestNeeded);
+        const builder = createSurfaceBuilder(flags);
         addMonochrome(builder.frag);
         addMaterial(builder.frag);
         addSurfaceDiscardByAlpha(builder.frag);
@@ -275,15 +280,12 @@ class SurfaceTechnique extends VariedTechnique {
 
     assert(flags.hasFeatures || flags.isEdgeTestNeeded === IsEdgeTestNeeded.No);
     let index = flags.isTranslucent ? SurfaceTechnique._kTranslucent : SurfaceTechnique._kOpaque;
-    if (flags.isInstanced)
-      index += SurfaceTechnique._kInstanced;
+    index += SurfaceTechnique._kInstanced * flags.isInstanced;
+    index += SurfaceTechnique._kMaterialAtlas * flags.hasMaterialAtlas;
     index += SurfaceTechnique._kFeature * flags.featureMode;
-    if (flags.isEdgeTestNeeded)
-      index += SurfaceTechnique._kEdgeTestNeeded;
-    if (flags.isAnimated)
-      index += SurfaceTechnique._kAnimated;
-    if (flags.isShadowable)
-      index += SurfaceTechnique._kShadowable;
+    index += SurfaceTechnique._kEdgeTestNeeded * flags.isEdgeTestNeeded;
+    index += SurfaceTechnique._kAnimated * flags.isAnimated;
+    index += SurfaceTechnique._kShadowable * flags.isShadowable;
 
     return index;
   }
