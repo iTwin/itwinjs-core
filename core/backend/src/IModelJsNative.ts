@@ -7,7 +7,7 @@ import {
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
-import { ExportGraphicsProps } from "./ExportGraphics";
+import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
 import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
 
@@ -126,6 +126,8 @@ export declare namespace IModelJsNative {
     public endMultiTxnOperation(): DbResult;
     public executeTest(testName: string, params: string): string;
     public exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+    public exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+    public exportSchemas(exportDirectory: string): DbResult;
     public extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractChangeSummary(changeCacheFile: ECDb, changesetFilePath: string): ErrorStatusOrResult<DbResult, string>;
@@ -157,7 +159,7 @@ export declare namespace IModelJsNative {
     public hasUnsavedChanges(): boolean;
     public hasSavedChanges(): boolean;
     public importFunctionalSchema(): DbResult;
-    public importSchema(schemaPathname: string): DbResult;
+    public importSchemas(schemaFileNames: string[]): DbResult;
     public inBulkOperation(): boolean;
     public insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
     public insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;

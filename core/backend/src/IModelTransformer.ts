@@ -2,20 +2,25 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
 import { ElementAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, KnownLocations } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { ElementRefersToElements, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
-/** @alpha */
+/** Base class used to transform a source iModel into a different target iModel.
+ * @alpha
+ */
 export class IModelTransformer {
   /** The read-only source iModel. */
   protected _sourceDb: IModelDb;
@@ -475,6 +480,19 @@ export class IModelTransformer {
         this._targetDb.relationships.insertInstance(relationshipProps);
         Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
       }
+    }
+  }
+
+  /** Import all schemas from the source iModel into the target iModel. */
+  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
+    IModelJsFs.mkdirSync(schemasDir);
+    try {
+      this._sourceDb.nativeDb.exportSchemas(schemasDir);
+      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
+      await this._targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+    } finally {
+      IModelJsFs.removeSync(schemasDir);
     }
   }
 

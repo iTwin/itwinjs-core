@@ -163,12 +163,14 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 
 class PrimaryTreeReference extends TileTree.Reference {
   private readonly _view: ViewState;
+  private readonly _model: GeometricModelState;
   private _id: PrimaryTreeId;
   private _owner: TileTree.Owner;
 
   public constructor(view: ViewState, model: GeometricModelState) {
     super();
     this._view = view;
+    this._model = model;
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
@@ -186,7 +188,7 @@ class PrimaryTreeReference extends TileTree.Reference {
         treeId: newId,
       };
 
-      this._owner = primaryTreeSupplier.getOwner(this._id, this._view.iModel);
+      this._owner = primaryTreeSupplier.getOwner(this._id, this._model.iModel);
     }
 
     return this._owner;

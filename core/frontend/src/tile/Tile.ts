@@ -777,7 +777,7 @@ export namespace Tile {
       this.drape = context.getTextureDrape(root.modelId);
 
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
-      if (IModelApp.renderSystem.options.cullAgainstActiveVolume && context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
+      if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
         this.viewClip = context.viewport.view.getViewClip();
     }
 
@@ -798,7 +798,8 @@ export namespace Tile {
         return;
 
       const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-      const branch = this.context.createGraphicBranch(this.graphics, this.location, this.clipVolume, classifierOrDrape);
+      const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
+      const branch = this.context.createGraphicBranch(this.graphics, this.location, opts);
 
       this.context.outputGraphic(branch);
     }

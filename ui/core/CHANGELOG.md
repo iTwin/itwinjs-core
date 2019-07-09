@@ -1,6 +1,22 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- #137898 - It is not possible to turn on/off checkbox by clicking on label
+- Added prefixes to Dialog & ContextMenu to CSS classes for positioning
+- Copied source from react-numeric-input and converted to TypeScript for internal control
+- Modified regex for NumericInput
+- Allow CSS selector string to specify item in FocusTrap to receive focus.
+- Reverted ContextMenuDirection and DialogAlignment breaking changes
+- Update to TypeScript 3.5
+- ui-core unit tests
+- ui-core unit tests
+- ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

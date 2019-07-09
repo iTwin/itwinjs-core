@@ -28,7 +28,8 @@
     "ByApp": "Element not valid for tool",
     "Transient": "Decoration is not valid for this tool",
     "NotSnappable": "SubCategory has snapping turned off",
-    "NotLocatable": "SubCategory has locate turned off"
+    "NotLocatable": "SubCategory has locate turned off",
+    "ExternalIModel": "iModel is not locatable"
   },
   "Element": {
     "Id": "Id",

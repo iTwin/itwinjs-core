@@ -1,6 +1,38 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Added beta badge support to toolbar buttons and widget tabs
+- Cleaned up console warnings
+- Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired.
+- Added prefixes to Dialog & ContextMenu to CSS classes for positioning
+- Removed missing group descriptions
+- Added support for 'HTMLElement | string' for message strings
+- Fixed Minimum/Maximum window toast message spam
+- Update tests.
+- Fixed ActionButtonItemDef random key unit test
+- Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose.
+- Save & Restore View Layouts
+- Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
+- Added *.svg to .npmignore file
+- #137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool.
+- Update to TypeScript 3.5
+- Fix model selector view sync problem
+- Added MessageManager.addToMessageCenter. ui-framework unit tests.
+- Reuse ui-ninezone stage panels.
+- Visibility Tree: Auto-expand root node
+- Visibility Tree: Fix incorrect category status when category is displayed directly under subject
+- Visibility Tree: Use a more fool-proof node type checking
+- Visibility Tree: Update subject node icons
+- Visibility Tree: Disable subjects and models if active view is not spatial
+- Visibility Tree: Avoid re-rendering the tree multiple times when receiving multiple view change notifications in a row
+- The VisibilityTree component now ensures displayed models are loaded.
+- Added ViewSelector.updateShowSettings to control which view types are displayed
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

@@ -23,7 +23,7 @@ import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
-import { createClassifierTileTreeReference, SpatialClassifiers } from "../SpatialClassification";
+import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference, SpatialClassifiers } from "../SpatialClassification";
 import { SceneContext } from "../ViewContext";
 import { RenderMemory } from "../render/System";
 
@@ -89,87 +89,8 @@ class RealityTreeSupplier implements TileTree.Supplier {
 
 const realityTreeSupplier = new RealityTreeSupplier();
 
-/** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].  */
-class RealityTreeReference extends TileTree.Reference {
-  public readonly treeOwner: TileTree.Owner;
-  private readonly _name: string;
-  private readonly _url: string;
-  private readonly _classifier?: TileTree.Reference;
-  private _mapDrapeTree?: TileTree.Reference;
-
-  public constructor(props: RealityModelTileTree.ReferenceProps) {
-    super();
-    let transform;
-    if (undefined !== props.tilesetToDbTransform) {
-      const tf = Transform.fromJSON(props.tilesetToDbTransform);
-      if (!tf.isIdentity)
-        transform = tf;
-    }
-
-    const treeId = { url: props.url, transform, modelId: props.modelId };
-    this.treeOwner = realityTreeSupplier.getOwner(treeId, props.iModel);
-    this._name = undefined !== props.name ? props.name : "";
-    this._url = props.url;
-
-    if (undefined !== props.classifiers)
-      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel);
-  }
-
-  public addToScene(context: SceneContext): void {
-    // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (undefined !== this._classifier)
-      this._classifier.addToScene(context);
-
-    const tree = this.treeOwner.tileTree;
-    if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
-      // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
-      context.addBackgroundDrapedModel(tree);
-    }
-
-    super.addToScene(context);
-  }
-
-  public discloseTileTrees(trees: TileTreeSet): void {
-    super.discloseTileTrees(trees);
-
-    if (undefined !== this._classifier)
-      trees.disclose(this._classifier);
-
-    if (undefined !== this._mapDrapeTree)
-      trees.disclose(this._mapDrapeTree);
-  }
-
-  public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
-    const tree = this.treeOwner.tileTree;
-    if (undefined === tree)
-      return undefined;
-
-    const map = tree.loader.getBatchIdMap();
-    const batch = undefined !== map ? map.getBatchProperties(hit.sourceId) : undefined;
-    if (undefined === batch && tree.modelId !== hit.sourceId)
-      return undefined;
-
-    const strings = [];
-    strings.push(this._name ? this._name : this._url);
-    if (batch !== undefined)
-      for (const key of Object.keys(batch))
-        strings.push(key + ": " + batch[key]);
-
-    return strings.join("<br>");
-  }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    super.collectStatistics(stats);
-
-    const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
-    if (undefined !== tree)
-      tree.collectStatistics(stats);
-  }
-}
-
 /** @internal */
-export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): TileTree.Reference {
+export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
   return new RealityTreeReference(props);
 }
 
@@ -390,6 +311,10 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiers;
   }
 
+  export abstract class Reference extends TileTree.Reference {
+    public abstract get classifiers(): SpatialClassifiers | undefined;
+  }
+
   export async function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined> {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
@@ -426,6 +351,89 @@ export namespace RealityModelTileTree {
       rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
 
     return new RealityModelTileTreeProps(json, tileClient, rootTransform);
+  }
+}
+
+/** Supplies a reality data [[TileTree]] from a URL. May be associated with a persistent [[GeometricModelState]], or attached at run-time via a [[ContextRealityModelState]].
+ * @internal
+ */
+class RealityTreeReference extends RealityModelTileTree.Reference {
+  public readonly treeOwner: TileTree.Owner;
+  private readonly _name: string;
+  private readonly _url: string;
+  private readonly _classifier?: SpatialClassifierTileTreeReference;
+  private _mapDrapeTree?: TileTree.Reference;
+
+  public constructor(props: RealityModelTileTree.ReferenceProps) {
+    super();
+    let transform;
+    if (undefined !== props.tilesetToDbTransform) {
+      const tf = Transform.fromJSON(props.tilesetToDbTransform);
+      if (!tf.isIdentity)
+        transform = tf;
+    }
+
+    const treeId = { url: props.url, transform, modelId: props.modelId };
+    this.treeOwner = realityTreeSupplier.getOwner(treeId, props.iModel);
+    this._name = undefined !== props.name ? props.name : "";
+    this._url = props.url;
+
+    if (undefined !== props.classifiers)
+      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel);
+  }
+
+  public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+
+  public addToScene(context: SceneContext): void {
+    // NB: The classifier must be added first, so we can find it when adding our own tiles.
+    if (undefined !== this._classifier)
+      this._classifier.addToScene(context);
+
+    const tree = this.treeOwner.tileTree;
+    if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
+      // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
+      this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
+      context.addBackgroundDrapedModel(tree);
+    }
+
+    super.addToScene(context);
+  }
+
+  public discloseTileTrees(trees: TileTreeSet): void {
+    super.discloseTileTrees(trees);
+
+    if (undefined !== this._classifier)
+      this._classifier.discloseTileTrees(trees);
+
+    if (undefined !== this._mapDrapeTree)
+      this._mapDrapeTree.discloseTileTrees(trees);
+  }
+
+  public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
+    const tree = this.treeOwner.tileTree;
+    if (undefined === tree || hit.iModel !== tree.iModel)
+      return undefined;
+
+    const map = tree.loader.getBatchIdMap();
+    const batch = undefined !== map ? map.getBatchProperties(hit.sourceId) : undefined;
+    if (undefined === batch && tree.modelId !== hit.sourceId)
+      return undefined;
+
+    const strings = [];
+    strings.push(this._name ? this._name : this._url);
+    if (batch !== undefined)
+      for (const key of Object.keys(batch))
+        strings.push(key + ": " + batch[key]);
+
+    return strings.join("<br>");
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    super.collectStatistics(stats);
+
+    const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
+    if (undefined !== tree)
+      tree.collectStatistics(stats);
   }
 }
 

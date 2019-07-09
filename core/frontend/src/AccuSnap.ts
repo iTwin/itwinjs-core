@@ -260,8 +260,13 @@ export class AccuSnap implements Decorator {
     if (IModelApp.tentativePoint.isActive) {
       if (!this._doSnapping || !this._searchForExtendedIntersections)
         return false;
+
       const snaps = this.getActiveSnapModes();
-      for (const snap of snaps) { if (snap === SnapMode.Intersection) return true; }
+      for (const snap of snaps) {
+        if (snap === SnapMode.Intersection)
+          return true;
+      }
+
       return false;
     }
 
@@ -616,7 +621,7 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
-    if (undefined !== thisHit.subCategoryId) {
+    if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
         if (out) out.snapStatus = SnapStatus.NotSnappable;
@@ -649,7 +654,7 @@ export class AccuSnap implements Decorator {
     if (snapModes.includes(SnapMode.Intersection)) {
       if (undefined !== hitList) {
         for (const hit of hitList.hits) {
-          if (thisHit.sourceId === hit.sourceId)
+          if (thisHit.sourceId === hit.sourceId || thisHit.iModel !== hit.iModel)
             continue;
 
           if (!hit.isElementHit) {
@@ -678,7 +683,7 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const result = await thisHit.viewport.iModel.requestSnap(requestProps);
+    const result = await thisHit.iModel.requestSnap(requestProps);
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)

@@ -220,7 +220,7 @@ class PrimitiveCommand extends DrawCommand {
   public get primitive(): Primitive { return this._primitive; }
 
   public execute(exec: ShaderProgramExecutor): void {
-    if (!System.instance.options.cullAgainstActiveVolume || !exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
+    if (!exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
       this._primitive.draw(exec);
   }
 }

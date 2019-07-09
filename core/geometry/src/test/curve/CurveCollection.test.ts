@@ -4,12 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Sample } from "../../serialization/GeometrySamples";
-import { CurveCollection } from "../../curve/CurveCollection";
+import { CurveCollection} from "../../curve/CurveCollection";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { Range3d } from "../../geometry3d/Range";
+import { Loop } from "../../curve/Loop";
+import { Path } from "../../curve/Path";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
 // import { prettyPrint } from "./testFunctions";
 // import { CurveLocationDetail } from "../curve/CurvePrimitive";
 /* tslint:disable:no-console */
@@ -98,6 +102,32 @@ describe("CurveCollection", () => {
     ck.testLE(0, counts.nonLinearFalse, "BagOfCurves samples should have some linear-only");
     ck.testLE(0, counts.nonLinearTrue, "BagOfCurves samples should have some nonLinear");
     ck.checkpoint("CurveCollection.hasNonLinearPrimitives");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("CyclicIndex", () => {
+    const ck = new Checker();
+    const loop = Loop.create();
+    ck.testUndefined(loop.cyclicCurvePrimitive(0), "cyclicCurvePrimitive returns undefined in empty loop");
+    const path = Path.create();
+    ck.testUndefined(path.cyclicCurvePrimitive(0), "cyclicCurvePrimitive returns undefined in empty path");
+    const line = LineSegment3d.createXYZXYZ(1, 2, 3, 6, 2, 3);
+    const linestring = LineString3d.create([[6, 2, 3], [5, 3, 9], [1, 2, 3]]);
+    loop.tryAddChild(line);
+    loop.tryAddChild(linestring);
+    path.tryAddChild(line);
+    path.tryAddChild(linestring);
+
+    ck.testPointer(loop.cyclicCurvePrimitive(0), "cyclicCurvePrimitive in singleton loop");
+    ck.testPointer(path.cyclicCurvePrimitive(0), "cyclicCurvePrimitive in singleton path");
+    for (const g of [loop, path]) {
+      const n = g.children.length;
+      for (let k = 0; k < n; k++) {
+        const c0 = g.cyclicCurvePrimitive(k);
+        for (let i = -2; i < 4; i++) {
+          ck.testTrue(loop.cyclicCurvePrimitive(k + i * n) === c0, "cyclicCurvePrimitive ");
+        }
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Deprecate IModelDb.importSchema in favor of IModelDb.importSchemas",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

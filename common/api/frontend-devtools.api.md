@@ -428,6 +428,8 @@ export interface TextBoxProps {
     // (undocumented)
     id: string;
     // (undocumented)
+    inline?: boolean;
+    // (undocumented)
     label?: string;
     // (undocumented)
     parent?: HTMLElement;

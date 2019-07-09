@@ -122,17 +122,14 @@ async function main() {
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
-    cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
     preserveShaderSourceCode: configuration.preserveShaderSourceCode,
     displaySolarShadows: configuration.displaySolarShadows,
-    enableOptimizedSurfaceShaders: configuration.enableOptimizedSurfaceShaders,
   };
 
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
-
-  if (configuration.useProjectExtents)
-    DisplayTestApp.tileAdminProps.useProjectExtents = true;
+  if (configuration.disableMagnification)
+    DisplayTestApp.tileAdminProps.disableMagnification = true;
 
   DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 

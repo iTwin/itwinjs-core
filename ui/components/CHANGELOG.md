@@ -1,6 +1,32 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Tree: Fix an issue whith multiselection where shift-selecting nodes would not select anything.
+- Tree: Add ability to check or uncheck multiple selected nodes' checkboxes all at once.
+- BeInspireTree: Fix an issue with calling `updateNodesCheckboxes()` while handling `ModelLoaded` event
+- Tree: Correct TreeProps.checkboxInfo documentation.
+- Allow Line Weight to be selected via Up/Down arrow keys once popup is open.
+- Updated react-data-grid import statement
+- Added prefixes to Dialog & ContextMenu positioning CSS classes
+- Removed missing group descriptions
+- Call filterclear when the user enters an empty search string and clicks Search.
+- Added autofocus to the FilteringInput component.
+- Remove inner focus outline that is only displayed in Firefox.
+- Update WeightPicker.
+- Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose.
+- Save & Restore View Layouts
+- Update to TypeScript 3.5
+- Temporarily lowered ui-components coverage thresholds
+- BeInspireTree: Fix an issue with delay-loaded child nodes sometimes being assigned to expired node objects.
+- Tree: Fix child node checkbox events affecting parent node's checkbox state
+- Improve test coverage.
+- ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT
