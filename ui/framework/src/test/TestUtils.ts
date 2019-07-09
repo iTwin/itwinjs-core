@@ -13,10 +13,11 @@ import {
   ConfigurableUiManager,
   ContentLayoutProps,
   ContentGroupProps,
+  combineReducers,
 } from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
-import { Store, createStore, combineReducers } from "redux";
+import { Store, createStore } from "redux";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 import { ToolUiManager } from "../ui-framework/zones/toolsettings/ToolUiManager";
 import { SyncUiEventDispatcher } from "../ui-framework/syncui/SyncUiEventDispatcher";
@@ -76,17 +77,17 @@ export class TestUtils {
 
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
-        this._rootReducer = combineReducers<RootState>({
+        this._rootReducer = combineReducers({
           sampleAppState: SampleAppReducer,
           testDifferentFrameworkKey: FrameworkReducer,
-        } as any);
+        });
 
       } else {
         // this is the rootReducer for the test application.
-        this._rootReducer = combineReducers<RootState>({
+        this._rootReducer = combineReducers({
           sampleAppState: SampleAppReducer,
           frameworkState: FrameworkReducer,
-        } as any);
+        });
       }
 
       this.store = createStore(this._rootReducer,
