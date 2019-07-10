@@ -26,7 +26,7 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable
  *    y: weights
  *      0: diffuse
  *      1: specular
- *      2: ambient
+ *      2: unused
  *    z: specular rgb
  *    w: alpha and override flags
  *      0: alpha
@@ -57,7 +57,7 @@ export class Material extends RenderMaterial {
       this.setRgb(rgb, 0);
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
-    this.setInteger(scale(params.diffuse), scale(params.specular), scale(params.ambient), 1);
+    this.setInteger(scale(params.diffuse), scale(params.specular), 0, 1);
 
     if (undefined !== params.specularColor)
       this.setRgb(params.specularColor, 2);

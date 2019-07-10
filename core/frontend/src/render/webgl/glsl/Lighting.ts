@@ -19,7 +19,7 @@ void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal,
 }
 `;
 
-// mat_weights: x=diffuse y=specular z=ambient
+// mat_weights: x=diffuse y=specular
 const applyLighting = `
   if (isSurfaceBitSet(kSurfaceBit_ApplyLighting) && baseColor.a > 0.0) {
     // Lighting algorithms written in terms of non-pre-multiplied alpha...
@@ -37,11 +37,11 @@ const applyLighting = `
     vec3 specularColor = specular.rgb;
     float specularExp = specular.a;
 
-    const vec3 defaultWeights = vec3(.6, .4, .2);
-    vec3 weights = mix(mat_weights, defaultWeights, useDefaults);
-    float diffuseWeight = weights.r;
-    float specularWeight = weights.g;
-    float ambientWeight = 1.0; // ###TODO weights.b;
+    const vec2 defaultWeights = vec2(.6, .4);
+    vec2 weights = mix(mat_weights, defaultWeights, useDefaults);
+    float diffuseWeight = weights.x;
+    float specularWeight = weights.y;
+    float ambientWeight = 1.0; // NB: MicroStation ignores material's ambient weight, values are usually dumb.
 
     vec3 litColor = vec3(0.0);
 

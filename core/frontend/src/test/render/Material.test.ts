@@ -46,13 +46,13 @@ interface MaterialParams {
   specular: number;
   specularExponent: number;
   specularColor?: ColorDef;
-  ambient: number;
 }
 
 interface DecodedMaterialParams extends MaterialParams {
   rgbOverridden: boolean;
   alphaOverridden: boolean;
   textureWeight: number;
+  unusedByte: number;
 }
 
 function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMaterialParams {
@@ -75,7 +75,7 @@ function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMa
     specularColor: colorFromVec(matSpecular),
     diffuse: matWeights.x,
     specular: matWeights.y,
-    ambient: matWeights.z,
+    unusedByte: matWeights.z,
     specularExponent: matSpecular.w,
     transparency: 1.0 - matAlpha.x,
     rgbOverridden: 0.0 !== rgbOverridden,
@@ -120,7 +120,7 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   expect(actual.alphaOverridden).to.equal(0.0 !== expected.transparency);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
-  expectEqualFloats(expected.ambient, actual.ambient);
+  expect(actual.unusedByte).to.equal(0);
   expectEqualFloats(expected.specular, actual.specular);
   expectEqualFloats(expected.transparency, actual.transparency);
 }
@@ -140,7 +140,6 @@ describe("Material", () => {
       diffuseColor: ColorDef.black,
       diffuse: 0.0,
       transparency: 0.0,
-      ambient: 0.0,
       specular: 0.0,
       specularExponent: 0.0,
       specularColor: ColorDef.black,
@@ -150,7 +149,6 @@ describe("Material", () => {
       diffuseColor: ColorDef.white,
       diffuse: 1.0,
       transparency: 1.0,
-      ambient: 1.0,
       specular: 1.0,
       specularExponent: 1234.5,
       specularColor: ColorDef.white,
@@ -160,7 +158,6 @@ describe("Material", () => {
       diffuseColor: ColorDef.red,
       diffuse: 0.95,
       transparency: 0.12,
-      ambient: 0.05,
       specular: 0.7,
       specularExponent: -5.4321,
       specularColor: ColorDef.blue,
