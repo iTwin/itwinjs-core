@@ -1178,8 +1178,8 @@ export class Table extends React.Component<TableProps, TableState> {
       this.props.className,
       {
         "hide-header": this.props.hideHeader,
-        "row-selection": this.props.tableSelectionTarget === TableSelectionTarget.Row,
-        "cell-selection": this.props.tableSelectionTarget === TableSelectionTarget.Cell,
+        "row-selection": this._tableSelectionTarget === TableSelectionTarget.Row,
+        "cell-selection": this._tableSelectionTarget === TableSelectionTarget.Cell,
       },
     );
     return (
