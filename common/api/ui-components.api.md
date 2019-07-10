@@ -2795,6 +2795,7 @@ export interface TreeNodeItem {
 
 // @public
 export interface TreeProps extends CommonProps {
+    bulkCheckboxActionsDisabled?: boolean;
     // @beta
     cellEditing?: EditableTreeProps;
     checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
