@@ -508,10 +508,10 @@ class DefaultConfigs {
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
     if (jsonData.csvFormat) this.csvFormat = jsonData.csvFormat;
     if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
-    if (jsonData.viewName) {
+    if (jsonData.viewName)
       this.viewName = jsonData.viewName;
-      this.viewStatePropsString = undefined;
-    }
+    if (jsonData.extViewName)
+      this.viewName = jsonData.extViewName;
     if (jsonData.viewString) {
       // If there is a viewString, put its name in the viewName property so that it gets used in the filename, etc.
       this.viewName = jsonData.viewString._name;
@@ -743,7 +743,7 @@ async function signIn(): Promise<boolean> {
   return true;
 }
 
-async function loadIModel(testConfig: DefaultConfigs) {
+async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
 
@@ -766,7 +766,7 @@ async function loadIModel(testConfig: DefaultConfigs) {
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
-      return;
+      return false;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
@@ -781,13 +781,18 @@ async function loadIModel(testConfig: DefaultConfigs) {
   }
 
   // open the specified view
-  if (undefined === testConfig.viewStatePropsString) {
-    await loadView(activeViewState, testConfig.viewName!);
-  } else if (undefined !== testConfig.extViewName) {
-    await loadExternalView(activeViewState, testConfig.extViewName);
-  } else {
+  if (undefined !== testConfig.viewStatePropsString)
     await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements, testConfig.overrideElements);
-  }
+  else if (undefined !== testConfig.extViewName)
+    await loadExternalView(activeViewState, testConfig.extViewName);
+  else if (undefined !== testConfig.viewName)
+    await loadView(activeViewState, testConfig.viewName);
+  else
+    return false;
+
+  // Make sure the view was set up.  If not (probably because the name wasn't found anywhere) just skip this test.
+  if (undefined === activeViewState.viewState)
+    return false;
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -833,6 +838,8 @@ async function loadIModel(testConfig: DefaultConfigs) {
     theViewport!.markSelectionSetDirty();
     theViewport!.renderFrame();
   }
+
+  return true;
 }
 
 async function closeIModel(isSnapshot: boolean) {
@@ -992,7 +999,11 @@ async function runTest(testConfig: DefaultConfigs) {
   restartIModelApp(testConfig);
 
   // Open and finish loading model
-  await loadIModel(testConfig);
+  const loaded = await loadIModel(testConfig);
+  if (!loaded) {
+    await closeIModel(testConfig.iModelLocation !== undefined);
+    return; // could not properly open the given model or saved view so skip test
+  }
 
   if (testConfig.testType === "image" || testConfig.testType === "both") {
     updateTestNames(testConfig, undefined, true); // Update the list of image test names
