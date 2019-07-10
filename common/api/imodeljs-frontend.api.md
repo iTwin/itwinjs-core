@@ -3023,14 +3023,14 @@ export function imageElementFromImageSource(source: ImageSource): Promise<HTMLIm
 // @public
 export function imageElementFromUrl(url: string): Promise<HTMLImageElement>;
 
-// @internal (undocumented)
+// @internal
 export abstract class ImageryProvider {
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): string;
     // (undocumented)
     decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void;
     // (undocumented)
-    abstract getCopyrightImage(tileProvider: MapTileTreeReference): HTMLImageElement | undefined;
+    abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
     // (undocumented)
     abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
     // (undocumented)
