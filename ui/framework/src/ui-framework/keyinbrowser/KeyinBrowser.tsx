@@ -9,6 +9,7 @@ import * as React from "react";
 import { LabeledSelect, LabeledInput, Button } from "@bentley/ui-core";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
+import { ToolbarButtonHelper } from "../utils/ToolbarButtonHelper";
 import "./KeyinBrowser.scss";
 
 /**
@@ -30,7 +31,9 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
   private _argsLabel = UiFramework.translate("keyinbrowser.args");
   private _argsTip = UiFramework.translate("keyinbrowser.argsTip");
   private _executeLabel = UiFramework.translate("keyinbrowser.execute");
+  private _toolLabel = UiFramework.translate("keyinbrowser.label");
   private _toolIdKey = "keyinbrowser:keyin";
+  private _parentDiv: HTMLDivElement | null = null;
 
   /** @internal */
   constructor(props: any) {
@@ -69,7 +72,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
 
   private getToolKeyinMap(): { [key: string]: string } {
     const keyins: { [key: string]: string } = {};
-    IModelApp.tools.getToolList().forEach((tool: typeof Tool) => keyins[tool.toolId] = tool.keyin);
+    IModelApp.tools.getToolList().sort((a: typeof Tool, b: typeof Tool) => a.keyin.localeCompare(b.keyin)).forEach((tool: typeof Tool) => keyins[tool.toolId] = tool.keyin);
     return keyins;
   }
 
@@ -101,6 +104,12 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
         IModelApp.tools.run(foundTool.toolId, args);
       }
     }
+    if (this._parentDiv) {
+      // This is a hack to toggle the display of the panel
+      const button = ToolbarButtonHelper.getToolbarButtonByTitle(this._toolLabel);
+      if (button)
+        button.click();
+    }
   }
 
   private _onKeyinSelected = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -116,7 +125,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
   /** @internal */
   public render(): React.ReactNode {
     return (
-      <div className="uif-keyinbrowser-div">
+      <div className="uif-keyinbrowser-div" ref={(element) => { this._parentDiv = element; }}>
         <LabeledSelect label={this._toolIdLabel} data-testid="uif-keyin-select" id="uif-keyin-select" value={this.state.currentToolId} onChange={this._onKeyinSelected} options={this.state.keyins} />
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs} data-testid="uif-keyin-arguments" id="uif-keyin-arguments" type="text" onChange={this._onArgumentsChange} />
         <Button data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>

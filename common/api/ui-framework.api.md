@@ -840,6 +840,8 @@ export class CoreTools {
     static readonly fitViewCommand: ToolItemDef;
     // (undocumented)
     static readonly flyViewCommand: ToolItemDef;
+    // @beta
+    static readonly keyinBrowserButtonItemDef: CustomItemDef;
     // (undocumented)
     static readonly panViewCommand: ToolItemDef;
     // (undocumented)
@@ -3352,6 +3354,16 @@ export class Toolbar extends React_2.Component<ToolbarProps> {
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @beta
+export class ToolbarButtonHelper {
+    static getAppButton(): HTMLButtonElement | null;
+    static getToolbarButtonByTitle(title: string): HTMLButtonElement | null;
+    static searchHorizontalToolbarsByTitle(title: string): HTMLButtonElement | null;
+    // (undocumented)
+    static searchToolbarsByTitle(title: string, horizontal: boolean): HTMLButtonElement | null;
+    static searchVerticalToolbarsByTitle(title: string): HTMLButtonElement | null;
+}
 
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {

@@ -319,6 +319,7 @@ internal;TileLoadingIndicator
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
 internal;Toolbar 
+beta;ToolbarButtonHelper
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 

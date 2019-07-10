@@ -6,6 +6,7 @@
     "noIModels": "There are no IModels in Project {{projectName}}"
   },
   "keyinbrowser": {
+    "label": "Keyin Browser",
     "keyin": "Key-in",
     "args": "Arguments",
     "argsTip": "'|' separated arguments",

@@ -13,12 +13,11 @@ import { ItemList } from "../shared/ItemMap";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { Toolbar } from "../toolbar/Toolbar";
 import { Orientation } from "@bentley/ui-core";
-import { PluginUiManager, UiItemNode, ActionItemInsertSpec, ToolInsertSpec, ToolbarItemInsertSpec, IModelApp } from "@bentley/imodeljs-frontend";
+import { PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, BadgeType } from "@bentley/imodeljs-frontend";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { AnyItemDef } from "../shared/ItemProps";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ConditionalItemDef } from "../shared/ConditionalItemDef";
-// import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  * @public
@@ -48,21 +47,29 @@ export class ToolbarWidgetDefBase extends WidgetDef {
 
   private createItemDefFromInsertSpec(spec: ToolbarItemInsertSpec): ItemDefBase | undefined {
     // istanbul ignore else
-    if (spec.isActionItem) {
+    if (ToolbarItemType.ActionButton === spec.itemType) {
       const actionSpec = spec as ActionItemInsertSpec;
       return new CommandItemDef({
         commandId: actionSpec.itemId,
         iconSpec: actionSpec.icon,
         label: actionSpec.label,
         execute: actionSpec.execute,
+        betaBadge: actionSpec.badge ? actionSpec.badge === BadgeType.TechnicalPreview : false,
       });
-    } else {
-      const toolSpec = spec as ToolInsertSpec;
-      return new CommandItemDef({
-        commandId: toolSpec.toolId,
-        iconSpec: toolSpec.icon,
-        label: toolSpec.label,
-        execute: () => { IModelApp.tools.run(toolSpec.toolId); },
+    } else if (ToolbarItemType.GroupButton === spec.itemType) {
+      const groupSpec = spec as GroupItemInsertSpec;
+      const childItems: AnyItemDef[] = [];
+      groupSpec.items.forEach((childSpec: ToolbarItemInsertSpec) => {
+        const childItem = this.createItemDefFromInsertSpec(childSpec) as AnyItemDef;
+        if (childItem)
+          childItems.push(childItem);
+      });
+      return new GroupItemDef({
+        groupId: groupSpec.itemId,
+        iconSpec: groupSpec.icon,
+        label: groupSpec.label,
+        betaBadge: groupSpec.badge ? groupSpec.badge === BadgeType.TechnicalPreview : false,
+        items: childItems,
       });
     }
 

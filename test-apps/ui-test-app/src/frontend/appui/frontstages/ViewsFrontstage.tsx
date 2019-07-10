@@ -47,15 +47,13 @@ import {
   ItemList,
   ToolItemDef,
   ConditionalItemDef,
-  PopupButton,
-  CustomItemDef,
   ContentLayoutManager,
   SavedViewLayout,
   SavedViewLayoutProps,
+  CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
   CursorPopup,
-  KeyinBrowser,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -521,17 +519,6 @@ class FrontstageToolWidget extends React.Component {
   //    });
   //  }
 
-  /** Get the CustomItemDef for PopupButton  */
-  private get _keyinBrowserButtonItemDef() {
-    return new CustomItemDef({
-      reactElement: (
-        <PopupButton iconSpec="icon-process" label="Keyin Browser" betaBadge={true}>
-          <KeyinBrowser />
-        </PopupButton>
-      ),
-    });
-  }
-
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
       AppTools.appSelectElementCommand,
@@ -541,7 +528,7 @@ class FrontstageToolWidget extends React.Component {
         execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
         betaBadge: true,
       }),
-      this._keyinBrowserButtonItemDef,
+      CoreTools.keyinBrowserButtonItemDef,
       AppTools.tool1,
       new ConditionalItemDef({
         conditionalId: "Conditional-tool-2",
@@ -647,6 +634,7 @@ class FrontstageNavigationWidget extends React.Component {
   /** Get the CustomItemDef for ViewSelector  */
   private get _viewSelectorItemDef() {
     return new CustomItemDef({
+      customId: "sampleApp:viewSelector",
       reactElement: (
         <ViewSelector
           imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}

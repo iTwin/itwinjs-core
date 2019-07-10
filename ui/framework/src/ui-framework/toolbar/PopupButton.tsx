@@ -14,8 +14,8 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { Icon } from "../shared/IconComponent";
 import { UiFramework } from "../UiFramework";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-// import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import { BetaBadge } from "../betabadge/BetaBadge";
 
@@ -119,6 +119,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    // istanbul ignore else
+    if (e.key === "Escape") {
+      this.minimize();
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
   /** Renders PopupButton */
   public render() {
     if (!this.state.isVisible)
@@ -133,6 +141,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
         <Item
           title={this.label}
           onClick={this._toggleIsExpanded}
+          onKeyDown={this._handleKeyDown}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
           betaBadge={this.props.betaBadge && <BetaBadge />}

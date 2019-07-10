@@ -25,6 +25,7 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
+alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
 internal;BatchedTileIdMap
@@ -136,6 +137,7 @@ public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
 public;GraphicType
 public;GridOrientationType
+alpha;GroupItemInsertSpec 
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -338,7 +340,7 @@ internal;TileTreeSet
 public;Tool
 public;ToolAdmin
 alpha;ToolbarItemInsertSpec 
-alpha;ToolInsertSpec 
+alpha;ToolbarItemType
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings

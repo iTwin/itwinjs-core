@@ -781,7 +781,7 @@ export interface ActionItemInsertSpec extends ToolbarItemInsertSpec {
     // (undocumented)
     execute: () => void;
     // (undocumented)
-    itemId: string;
+    readonly itemType: ToolbarItemType.ActionButton;
 }
 
 // @alpha (undocumented)
@@ -1149,6 +1149,12 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
     settings: BackgroundMapSettings;
     // (undocumented)
     readonly treeOwner: TileTree.Owner;
+}
+
+// @alpha
+export enum BadgeType {
+    None = 0,
+    TechnicalPreview = 1
 }
 
 // @beta
@@ -2760,6 +2766,14 @@ export enum GridOrientationType {
     WorldXY = 1,
     WorldXZ = 3,
     WorldYZ = 2
+}
+
+// @alpha
+export interface GroupItemInsertSpec extends ToolbarItemInsertSpec {
+    // (undocumented)
+    items: ToolbarItemInsertSpec[];
+    // (undocumented)
+    readonly itemType: ToolbarItemType.GroupButton;
 }
 
 // @internal (undocumented)
@@ -7033,16 +7047,16 @@ export class ToolAdmin {
 
 // @alpha
 export interface ToolbarItemInsertSpec extends InsertSpec {
-    // (undocumented)
+    badge?: BadgeType;
     icon: string;
-    // (undocumented)
-    isActionItem: boolean;
+    itemId: string;
+    itemType: ToolbarItemType;
 }
 
 // @alpha
-export interface ToolInsertSpec extends ToolbarItemInsertSpec {
-    // (undocumented)
-    toolId: string;
+export enum ToolbarItemType {
+    ActionButton = 0,
+    GroupButton = 1
 }
 
 // @public (undocumented)

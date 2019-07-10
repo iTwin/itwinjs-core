@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec,
+  IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
@@ -35,6 +35,7 @@ import { Tool2 } from "./tools/Tool2";
 import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { UiProviderTool } from "./tools/UiProviderTool";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -42,105 +43,6 @@ import { configure as mobxConfigure } from "mobx";
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
-
-const testPluginUiProvider = false;
-if (testPluginUiProvider) {
-  /** alpha test code */
-  class TestUiProvider implements PluginUiProvider {
-    public readonly id = "TestUiProvider";
-    public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
-      // tslint:disable-next-line: no-console
-      // console.log(`Requesting tools for toolbar ${toolBarId}`);
-
-      if ("[ViewsFrontstage]ToolWidget-horizontal" === toolBarId) {
-        const firstActionSpec: ActionItemInsertSpec = {
-          insertBefore: true,
-          isActionItem: true,
-          itemId: "first-test-action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (first)",
-        };
-
-        const middleActionSpec: ActionItemInsertSpec = {
-          insertBefore: true,
-          relativeToolIdPath: "Tool1",
-          isActionItem: true,
-          itemId: "middle-test- action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (middle)",
-        };
-
-        const lastActionSpec: ActionItemInsertSpec = {
-          insertBefore: false,
-          isActionItem: true,
-          itemId: "last-test-action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (last)",
-        };
-
-        const nestedActionSpec: ActionItemInsertSpec = {
-          insertBefore: false,
-          relativeToolIdPath: "Conditional-formatting\\tool-formatting-setting\\toggleLengthFormat",
-          isActionItem: true,
-          itemId: "nested-test-action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (nested)",
-        };
-        return [firstActionSpec, middleActionSpec, lastActionSpec, nestedActionSpec];
-
-      } else if ("[ViewsFrontstage]NavigationWidget-horizontal" === toolBarId) {
-        const navHorizontalSpec: ActionItemInsertSpec = {
-          insertBefore: true,
-          relativeToolIdPath: "View.Pan",
-          isActionItem: true,
-          itemId: "nav1-test-action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (navH)",
-        };
-        return [navHorizontalSpec];
-
-      } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
-        const navVerticalSpec: ActionItemInsertSpec = {
-          insertBefore: false,
-          relativeToolIdPath: "View.Fly",
-          isActionItem: true,
-          itemId: "nav2-test-action-tool",
-          execute: (): void => {
-            // tslint:disable-next-line: no-console
-            console.log("Got Here!");
-          },
-          icon: "icon-developer",
-          label: "test action tool (navV)",
-        };
-        return [navVerticalSpec];
-      }
-
-      return [];
-    }
-  }
-
-  PluginUiManager.register(new TestUiProvider());
-}
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -316,6 +218,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AppSelectTool.register();
     AnalysisAnimationTool.register(this.sampleAppNamespace);
+    UiProviderTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }

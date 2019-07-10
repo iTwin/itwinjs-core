@@ -4,20 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-// cSpell:ignore configurableui
+import * as React from "react";
+
+// cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
   WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool,
   ViewClipDecorationProvider,
 } from "@bentley/imodeljs-frontend";
+import { PopupButton } from "./toolbar/PopupButton";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
+import { CustomItemDef } from "./shared/CustomItemDef";
+import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
  */
 // istanbul ignore next
 export class CoreTools {
+  /** Get the CustomItemDef for PopupButton
+   * @beta
+   */
+  public static get keyinBrowserButtonItemDef() {
+    return new CustomItemDef({
+      customId: "uif:keyinbrowser",
+      reactElement: (
+        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" betaBadge={true} >
+          <KeyinBrowser />
+        </PopupButton>
+      ),
+    });
+  }
+
   public static get fitViewCommand() {
     return new ToolItemDef({
       toolId: FitViewTool.toolId,

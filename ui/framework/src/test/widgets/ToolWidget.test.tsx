@@ -23,16 +23,19 @@ import {
   GroupItemDef,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec } from "@bentley/imodeljs-frontend";
+import {
+  PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec,
+  GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType,
+} from "@bentley/imodeljs-frontend";
 
 class TestUiProvider implements PluginUiProvider {
   public readonly id = "TestUiProvider";
   public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
     if (toolBarId === "[TestFrontstage]ToolWidget-horizontal") {
       const firstActionSpec: ActionItemInsertSpec = {
+        itemType: ToolbarItemType.ActionButton,
         relativeToolIdPath: "Select",
         insertBefore: true,
-        isActionItem: true,
         itemId: "h1-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
@@ -45,9 +48,9 @@ class TestUiProvider implements PluginUiProvider {
     }
     if (toolBarId === "[TestFrontstage]ToolWidget-vertical") {
       const firstActionSpec: ActionItemInsertSpec = {
+        itemType: ToolbarItemType.ActionButton,
         relativeToolIdPath: "testGroup\\View.Fit",
         insertBefore: false,
-        isActionItem: true,
         itemId: "v1-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
@@ -58,8 +61,8 @@ class TestUiProvider implements PluginUiProvider {
       };
 
       const lastActionSpec: ActionItemInsertSpec = {
+        itemType: ToolbarItemType.ActionButton,
         insertBefore: false,
-        isActionItem: true,
         itemId: "v2-test-action-tool",
         execute: (): void => {
           // tslint:disable-next-line: no-console
@@ -68,7 +71,17 @@ class TestUiProvider implements PluginUiProvider {
         icon: "icon-developer",
         label: "test action tool (last)",
       };
-      return [firstActionSpec, lastActionSpec];
+
+      const groupActionSpec: GroupItemInsertSpec = {
+        itemType: ToolbarItemType.GroupButton,
+        insertBefore: false,
+        itemId: "v2-test-group-button",
+        icon: "icon-developer",
+        label: "test group",
+        items: [lastActionSpec, firstActionSpec],
+      };
+
+      return [firstActionSpec, groupActionSpec];
     }
 
     return [];
