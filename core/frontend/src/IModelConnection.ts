@@ -15,7 +15,7 @@ import {
   IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, ModelProps, ModelQueryParams, QueryLimit,
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
   RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
-  ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
+  ViewDefinitionProps, ViewQueryParams, WipRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -467,6 +467,11 @@ export class IModelConnection extends IModel {
    * @note callers must gracefully handle Promise rejected with AbandonedError
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> { return this._toolTipRpc.request(id); }
+
+  /** Request element mass properties from the backend.
+   * @beta
+   */
+  public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> { return IModelReadRpcInterface.getClient().getMassProperties(this.iModelToken.toJSON(), requestProps); }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
    * @param spatial A point in the iModel's spatial coordinates

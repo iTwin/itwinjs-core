@@ -22,6 +22,7 @@ export * from "./IModelVersion";
 export * from "./Lighting";
 export * from "./CommonLoggerCategory";
 export * from "./MaterialProps";
+export * from "./MassProperties";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
 export * from "./QPoint";

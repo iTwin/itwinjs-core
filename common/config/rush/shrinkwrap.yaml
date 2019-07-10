@@ -1,6 +1,6 @@
 dependencies:
   '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
-  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.137.0
+  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.139.0
   '@microsoft/api-extractor': 7.1.5
   '@openid/appauth': 1.2.4
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -351,12 +351,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-I5nW8AhGpOXGCCNYGc+p7ExQIBxRFnS2fd/d862bNOKvmoEPjYPcfIjsfdy0ujagYOIYPczKgD9l3FsgTkAzKA==
-  /@babel/runtime/7.5.2:
-    dependencies:
-      regenerator-runtime: 0.13.2
-    dev: false
-    resolution:
-      integrity: sha512-9M29wrrP7//JBGX70+IrDuD1w4iOYhUGpJNMQJVNAXue+cFeFlMTqBECouIziXPUphlgrfjcfiEpGX4t0WGK4g==
   /@babel/runtime/7.5.3:
     dependencies:
       regenerator-runtime: 0.13.2
@@ -591,7 +585,7 @@ packages:
       integrity: sha512-Ix3dobG2DvdK5f2SHtZdiiLwi+G0RDuDfwA4tZ1eqTGoiopia8JIfeWGeA0h2frFHcLDXnYvNiVGtW4y6cSDig==
   /@testing-library/dom/5.5.1:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       '@sheerun/mutationobserver-shim': 0.3.2
       aria-query: 3.0.0
       pretty-format: 24.8.0
@@ -603,7 +597,7 @@ packages:
       integrity: sha512-FEKxR51dCBixz8WoIlTHJucLYlVSZ4oMaWcnbID8SKRy+07JNACwUDHzpeeQv0853Hme91niHnvNebwGWZu21w==
   /@testing-library/react/8.0.4:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       '@testing-library/dom': 5.5.1
     dev: false
     engines:
@@ -615,7 +609,7 @@ packages:
       integrity: sha512-omm4D00Z0aMaWfPRRP4X6zIaOVb0Kf1Yc1H5VE4id9D0pQRiBcTtmjbN0kZgT8rQGxHhVAuv1NuwFwMTwKzFqg==
   /@testing-library/react/8.0.4/react-dom@16.8.6+react@16.8.6:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       '@testing-library/dom': 5.5.1
       react: 16.8.6
       react-dom: /react-dom/16.8.6/react@16.8.6
@@ -990,7 +984,7 @@ packages:
       '@types/hoist-non-react-statics': 3.3.1
       '@types/react': 16.8.23
       hoist-non-react-statics: 3.3.0
-      redux: 4.0.2
+      redux: 4.0.3
     dev: false
     resolution:
       integrity: sha512-owqNahzE8en/jR4NtrUJDJya3tKru7CIEGSRL/pVS84LtSCdSoT7qZTkrbBd3S4Lp11sAp+7LsvxIeONJVKMnw==
@@ -3813,7 +3807,7 @@ packages:
       asap: 2.0.6
       invariant: 2.2.4
       lodash: 4.17.11
-      redux: 4.0.2
+      redux: 4.0.3
     dev: false
     resolution:
       integrity: sha1-O4PRONDV4mXHPsl43sXh7UQdxmU=
@@ -3842,7 +3836,7 @@ packages:
       integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==
   /dom-helpers/3.4.0:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
     dev: false
     resolution:
       integrity: sha512-LnuPJ+dwqKDIyotW1VzmOZ5TONUN7CwkCR5hrgawTUbkBGYdeoNLZo6nNfGkCrjtE1nXXaj7iMMpDa8/d9WoIA==
@@ -5624,7 +5618,7 @@ packages:
       integrity: sha512-Nc6YNECYpxyJABGYJAyw7dBAYbXEuIzwzkqoJnwbc1nIpCiN+3ioYf0XrBnLiyyG0JLuJhpPtt2iTSbXiKLoyA==
   /history/4.9.0:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       loose-envify: 1.4.0
       resolve-pathname: 2.2.0
       tiny-invariant: 1.0.5
@@ -10097,7 +10091,7 @@ packages:
       integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==
   /react-compound-slider/1.2.2:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       d3-array: 1.2.4
       prop-types: 15.7.2
       warning: 3.0.0
@@ -10108,7 +10102,7 @@ packages:
       integrity: sha512-G2wD5CTjAOTjCnslpfjopB5qU6Kg0//3ChPifezSGtMali/1M/CRDCJAh6SQOgyDaQlNi/QV1Noo8Tvnjy2gcg==
   /react-compound-slider/1.2.2/react@16.8.6:
     dependencies:
-      '@babel/runtime': 7.5.2
+      '@babel/runtime': 7.5.3
       d3-array: 1.2.4
       prop-types: 15.7.2
       react: 16.8.6
@@ -10648,13 +10642,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-z5Fqsf1fHxbfsggi3W7H9zDCr94=
-  /redux/4.0.2:
-    dependencies:
-      loose-envify: 1.4.0
-      symbol-observable: 1.2.0
-    dev: false
-    resolution:
-      integrity: sha512-oAiFLWYQhbpSvzjcVfgQ90MlZ0u6uDIHFK41Q0/BnCfjEg96SACzwUFwDVUKz/LP/SwJORGaFY8AM5wOB/zf0A==
   /redux/4.0.3:
     dependencies:
       loose-envify: 1.4.0
@@ -14492,7 +14479,7 @@ packages:
     version: 0.0.0
   'file:projects/imodeljs-backend.tgz':
     dependencies:
-      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.137.0
+      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.139.0
       '@types/chai': 4.1.7
       '@types/form-data': 2.2.1
       '@types/formidable': 1.0.31
@@ -14530,7 +14517,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-WpXdQZiiIPqc6H/rKutDzcDFp2uvxea90D53UX51Rwqxlm79s7Wm4mE6jVxfYCYPzbWN9kteIQNOgB1N37Kefg==
+      integrity: sha512-fsSoCeQjCb979sMP93+7Z+OXjMR/yWHDtzwTbmS3Q7XGJ008uNlZOI8jsOepwlU/ppH/iiDi7wJibUaz/pmPFA==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -15513,21 +15500,21 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.22.tgz'
     version: 0.0.22
-  npm.bentley.com/@bentley/imodeljs-native/0.137.0:
+  npm.bentley.com/@bentley/imodeljs-native/0.139.0:
     dev: false
     name: '@bentley/imodeljs-native'
     requiresBuild: true
     resolution:
-      integrity: sha1-AnC1/tn9uJFC2qlnalYEI3Ef+vI=
+      integrity: sha1-CphzXNWwk/VpnkGFXISYHIphcFw=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.137.0.tgz'
-    version: 0.137.0
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.139.0.tgz'
+    version: 0.139.0
 registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/icons-generic-webfont': ^0.0.22
-  '@bentley/imodeljs-native': ~0.137.0
+  '@bentley/imodeljs-native': ~0.139.0
   '@microsoft/api-extractor': 7.1.5
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'

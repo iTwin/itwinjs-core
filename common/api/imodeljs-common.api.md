@@ -2452,6 +2452,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps>;
+    // @beta (undocumented)
+    getMassProperties(_iModelToken: IModelTokenProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
@@ -2802,6 +2804,45 @@ export interface MarshalingBinaryMarker {
 export namespace MarshalingBinaryMarker {
     // (undocumented)
     export function createDefault(): MarshalingBinaryMarker;
+}
+
+// @beta
+export enum MassPropertiesOperation {
+    AccumulateAreas = 1,
+    AccumulateLengths = 0,
+    AccumulateVolumes = 2
+}
+
+// @beta
+export interface MassPropertiesRequestProps {
+    // (undocumented)
+    candidates?: Id64Array;
+    // (undocumented)
+    operation: MassPropertiesOperation;
+}
+
+// @beta
+export interface MassPropertiesResponseProps {
+    // (undocumented)
+    area?: number;
+    // (undocumented)
+    centroid?: XYZProps;
+    // (undocumented)
+    ixy?: number;
+    // (undocumented)
+    ixz?: number;
+    // (undocumented)
+    iyz?: number;
+    // (undocumented)
+    length?: number;
+    // (undocumented)
+    moments?: XYZProps;
+    // (undocumented)
+    perimeter?: number;
+    // (undocumented)
+    status: BentleyStatus;
+    // (undocumented)
+    volume?: number;
 }
 
 // @public
