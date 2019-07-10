@@ -176,7 +176,7 @@ export class ShaderVariable {
  * @internal
  */
 export class ShaderVariables {
-  public readonly list: ShaderVariable[] = new Array<ShaderVariable>();
+  protected list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
   public find(name: string): ShaderVariable | undefined { return this.list.find((v: ShaderVariable) => v.name === name); }
@@ -441,23 +441,26 @@ export const enum ShaderBuilderFlags {
  * @internal
  */
 export class ShaderBuilder extends ShaderVariables {
-  public readonly components = new Array<string | undefined>();
-  public readonly functions: string[] = new Array<string>();
-  public readonly extensions: string[] = new Array<string>();
+  protected components = new Array<string | undefined>();
+  protected functions: string[] = [];
+  protected extensions: string[] = [];
+  protected macros: string[] = [];
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
-  private _initializers: string[] = new Array<string>();
+  protected initializers: string[] = new Array<string>();
 
   public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
   public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
 
-  public get initializers(): string[] { return this._initializers; }
-  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
+  public addInitializer(initializer: string): void { this.initializers.push(initializer); }
 
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
     super();
     this.components.length = maxComponents;
     this._flags = flags;
+    this.addMacro("#version 100");
+    this.addDefine("TEXTURE", "texture2D");
+    this.addDefine("TEXTURE_CUBE", "textureCube");
   }
 
   protected addComponent(index: number, component: string): void {
@@ -502,20 +505,22 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public addExtension(extName: string): void {
-    if (-1 === this.extensions.indexOf(extName)) {
+    if (-1 === this.extensions.indexOf(extName))
       this.extensions.push(extName);
-    }
   }
 
-  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
+  public addMacro(macro: string): void {
+    if (-1 === this.macros.indexOf(macro))
+      this.macros.push(macro);
+  }
+
+  public addDefine(name: string, value: string): void {
+    const macro = "#define " + name + " " + value;
+    this.addMacro(macro);
+  }
+
+  protected buildPreludeCommon(): SourceBuilder {
     const src = new SourceBuilder();
-
-    src.addline("#version 100");
-    src.addline("#define TEXTURE texture2D");
-    src.addline("#define TEXTURE_CUBE textureCube");
-
-    if (maxClippingPlanes > 0)
-      src.addline("#define MAX_CLIPPING_PLANES " + maxClippingPlanes);
 
     // Header comment
     src.newline();
@@ -524,16 +529,13 @@ export class ShaderBuilder extends ShaderVariables {
       src.newline();
     }
 
-    // Extensions
-    let needMultiDrawBuffers = false;
-    for (const ext of this.extensions) {
-      if (ext === "GL_EXT_draw_buffers") {
-        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_buffers unsupported");
-        needMultiDrawBuffers = true;
-      }
+    // Macros
+    for (const macro of this.macros)
+      src.addline(macro);
 
+    // Extensions
+    for (const ext of this.extensions)
       src.addline("#extension " + ext + " : enable");
-    }
 
     // Default precisions
     src.addline("precision highp float;");
@@ -543,31 +545,6 @@ export class ShaderBuilder extends ShaderVariables {
     // Variable declarations
     src.add(this.buildDeclarations());
 
-    if (!isFrag) {
-      src.addline("#define MAT_NORM g_nmx");
-      if (!this.usesInstancedGeometry) {
-        src.addline("#define MAT_MV u_mv");
-        src.addline("#define MAT_MVP u_mvp");
-        src.addline("#define MAT_MODEL u_modelMatrix");
-      } else {
-        src.addline("#define MAT_MV g_mv");
-        src.addline("#define MAT_MVP g_mvp");
-        src.addline("#define MAT_MODEL g_instancedModelMatrix");
-      }
-    } else {
-      src.addline("#define FragColor gl_FragColor");
-      if (needMultiDrawBuffers) {
-        src.addline("#define FragColor0 gl_FragData[0]");
-        src.addline("#define FragColor1 gl_FragData[1]");
-        src.addline("#define FragColor2 gl_FragData[2]");
-        src.addline("#define FragColor3 gl_FragData[3]");
-      }
-
-      if (isLit) {
-        // ###TODO: Source Lighting
-      }
-    }
-
     // Functions
     for (const func of this.functions) {
       src.add(func);
@@ -576,6 +553,16 @@ export class ShaderBuilder extends ShaderVariables {
       src.newline();
 
     return src;
+  }
+
+  protected copyCommon(src: ShaderBuilder): void {
+    this.headerComment = src.headerComment;
+    this.initializers = [...src.initializers];
+    this.components = [...src.components];
+    this.functions = [...src.functions];
+    this.extensions = [...src.extensions];
+    this.list = [...src.list];
+    this.macros = [...src.macros];
   }
 }
 
@@ -612,14 +599,22 @@ export const enum VertexShaderComponent {
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
 
-  public get computedVarying(): string[] { return this._computedVarying; }
-
   private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(VertexShaderComponent.COUNT, flags);
-    if (this.usesInstancedGeometry)
+
+    this.addDefine("MAT_NORM", "g_nmx");
+    if (this.usesInstancedGeometry) {
       addInstancedModelMatrixRTC(this);
+      this.addDefine("MAT_MV", "g_mv");
+      this.addDefine("MAT_MVP", "g_mvp");
+      this.addDefine("MAT_MODEL", "g_instancedModelMatrix");
+    } else {
+      this.addDefine("MAT_MV", "u_mv");
+      this.addDefine("MAT_MVP", "u_mvp");
+      this.addDefine("MAT_MODEL", "u_modelMatrix");
+    }
 
     addPosition(this, this.usesVertexTable);
   }
@@ -690,6 +685,11 @@ export class VertexShaderBuilder extends ShaderBuilder {
     prelude.addMain(main.source);
     return prelude.source;
   }
+
+  public copyFrom(src: VertexShaderBuilder): void {
+    this.copyCommon(src);
+    this._computedVarying = [...src._computedVarying];
+  }
 }
 
 /** Describes the optional and required components which can be assembled into complete
@@ -754,10 +754,24 @@ export const enum FragmentShaderComponent {
  * @internal
  */
 export class FragmentShaderBuilder extends ShaderBuilder {
-  public maxClippingPlanes: number = 0;
+  private _maxClippingPlanes = 0;
+  public get maxClippingPlanes() { return this._maxClippingPlanes; }
+  public set maxClippingPlanes(max: number) {
+    if (max === this._maxClippingPlanes)
+      return;
+
+    this._maxClippingPlanes = max;
+    const macroIndex = this.macros.findIndex(x => x.startsWith("#define MAX_CLIPPING_PLANES"));
+    if (-1 !== macroIndex)
+      this.macros[macroIndex] = "#define MAX_CLIPPING_PLANES " + max;
+    else
+      this.addDefine("MAX_CLIPPING_PLANES", max.toString());
+  }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
+
+    this.addDefine("FragColor", "gl_FragColor");
   }
 
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
@@ -767,11 +781,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public addDrawBuffersExtension(): void {
     assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
     this.addExtension("GL_EXT_draw_buffers");
+    for (let i = 0; i < 4; i++)
+      this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
   }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
-    const prelude = this.buildPrelude(undefined !== applyLighting);
+    const prelude = this.buildPrelude();
 
     const computeBaseColor = this.get(FragmentShaderComponent.ComputeBaseColor);
     assert(undefined !== computeBaseColor);
@@ -882,9 +898,14 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     return prelude.source;
   }
 
-  private buildPrelude(isLit: boolean): SourceBuilder {
+  private buildPrelude(): SourceBuilder {
     assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
-    return this.buildPreludeCommon(true, isLit, this.maxClippingPlanes);
+    return this.buildPreludeCommon();
+  }
+
+  public copyFrom(src: FragmentShaderBuilder): void {
+    this.copyCommon(src);
+    this.maxClippingPlanes = src.maxClippingPlanes;
   }
 }
 
@@ -1057,36 +1078,8 @@ export class ProgramBuilder {
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
     const clone = new ProgramBuilder(this._flags);
-
-    // Copy from vertex builder
-    clone.vert.headerComment = this.vert.headerComment;
-    for (let i = 0; i < this.vert.computedVarying.length; i++)
-      clone.vert.computedVarying[i] = this.vert.computedVarying[i];
-    for (let i = 0; i < this.vert.initializers.length; i++)
-      clone.vert.initializers[i] = this.vert.initializers[i];
-    for (let i = 0; i < this.vert.components.length; i++)
-      clone.vert.components[i] = this.vert.components[i];
-    for (let i = 0; i < this.vert.functions.length; i++)
-      clone.vert.functions[i] = this.vert.functions[i];
-    for (let i = 0; i < this.vert.extensions.length; i++)
-      clone.vert.extensions[i] = this.vert.extensions[i];
-    for (let i = 0; i < this.vert.list.length; i++)
-      clone.vert.list[i] = this.vert.list[i];
-
-    // Copy from fragment builder
-    clone.frag.headerComment = this.frag.headerComment;
-    clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
-    for (let i = 0; i < this.frag.components.length; i++)
-      clone.frag.components[i] = this.frag.components[i];
-    for (let i = 0; i < this.frag.functions.length; i++)
-      clone.frag.functions[i] = this.frag.functions[i];
-    for (let i = 0; i < this.frag.extensions.length; i++)
-      clone.frag.extensions[i] = this.frag.extensions[i];
-    for (let i = 0; i < this.frag.list.length; i++)
-      clone.frag.list[i] = this.frag.list[i];
-    for (let i = 0; i < this.frag.initializers.length; i++)
-      clone.frag.initializers[i] = this.frag.initializers[i];
-
+    clone.vert.copyFrom(this.vert);
+    clone.frag.copyFrom(this.frag);
     return clone;
   }
 }

@@ -19,6 +19,7 @@ void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal,
 }
 `;
 
+// mat_weights: x=diffuse y=specular z=ambient
 const applyLighting = `
   if (isSurfaceBitSet(kSurfaceBit_ApplyLighting) && baseColor.a > 0.0) {
     // Lighting algorithms written in terms of non-pre-multiplied alpha...
@@ -36,10 +37,11 @@ const applyLighting = `
     vec3 specularColor = specular.rgb;
     float specularExp = specular.a;
 
-    const vec2 defaultWeights = vec2(.6, .4); // diffuse, specular
-    vec2 weights = mix(mat_weights, defaultWeights, useDefaults);
+    const vec3 defaultWeights = vec3(.6, .4, .2);
+    vec3 weights = mix(mat_weights, defaultWeights, useDefaults);
     float diffuseWeight = weights.r;
     float specularWeight = weights.g;
+    float ambientWeight = 1.0; // ###TODO weights.b;
 
     vec3 litColor = vec3(0.0);
 
@@ -53,7 +55,7 @@ const applyLighting = `
     const float directionalIntensity = 0.92;
     const float ambientIntensity = 0.2;
     litColor += directionalIntensity * diffuseWeight * diffuseIntensity * baseColor.rgb + specularIntensity * specularWeight * specularColor;
-    litColor.rgb += ambientIntensity * baseColor.rgb;
+    litColor.rgb += (ambientIntensity * ambientWeight) * baseColor.rgb;
 
     // Clamp while preserving hue.
     float maxIntensity = max(litColor.r, max(litColor.g, litColor.b));

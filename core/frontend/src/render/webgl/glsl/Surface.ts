@@ -65,16 +65,15 @@ vec3 unpackAndNormalizeMaterialParam(float f) {
 
 const decodeMaterialParams = `
 void decodeMaterialParams(vec4 params, float specularExponent) {
-  vec2 alphaAndFlags = unpackMaterialParam(params.w).xy;
+  vec3 alphaAndFlags = unpackMaterialParam(params.w);
   float rgbOverridden = float(1.0 == alphaAndFlags.y || 3.0 == alphaAndFlags.y);
   float alphaOverridden = float(alphaAndFlags.y >= 2.0);
 
   mat_rgb = vec4(unpackAndNormalizeMaterialParam(params.x), rgbOverridden);
   mat_alpha = vec2(alphaAndFlags.x / 255.0, alphaOverridden);
+  mat_texture_weight = alphaAndFlags.z / 255.0;
 
-  vec3 weights = unpackAndNormalizeMaterialParam(params.y);
-  mat_texture_weight = weights.x;
-  mat_weights = weights.yz;
+  mat_weights = unpackAndNormalizeMaterialParam(params.y);
 
   mat_specular = vec4(unpackAndNormalizeMaterialParam(params.z), specularExponent);
 }`;
@@ -87,7 +86,7 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
   frag.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_texture_weight", VariableType.Float);
-  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
+  frag.addGlobal("mat_weights", VariableType.Vec3); // diffuse, specular
   frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
   frag.addUniform("u_materialParams", VariableType.Vec4, (prog) => {

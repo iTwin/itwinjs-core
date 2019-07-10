@@ -20,13 +20,13 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable
  *
  * These are compressed into a vec4 and a float. Floats in [0..1] become integers in [0..255] and are concatenated using bitwise operations into 24-bit integer values.
  * The result is:
- *  uniform float: specular weight
+ *  uniform float: specular exponent
  *  uniform vec4: the rest:
  *    x: rgb
  *    y: weights
- *      0: texture
- *      1: diffuse
- *      2: specular
+ *      0: diffuse
+ *      1: specular
+ *      2: ambient
  *    z: specular rgb
  *    w: alpha and override flags
  *      0: alpha
@@ -57,8 +57,7 @@ export class Material extends RenderMaterial {
       this.setRgb(rgb, 0);
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
-    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
-    this.setInteger(scale(textureWeight), scale(params.diffuse), scale(params.specular), 1);
+    this.setInteger(scale(params.diffuse), scale(params.specular), scale(params.ambient), 1);
 
     if (undefined !== params.specularColor)
       this.setRgb(params.specularColor, 2);
@@ -68,7 +67,8 @@ export class Material extends RenderMaterial {
     const alpha = 1.0 - params.transparency; // params.transparency of 0.0 indicates alpha not overridden.
     this.overridesAlpha = 1.0 !== alpha;
     const flags = (this.overridesRgb ? 1 : 0) + (this.overridesAlpha ? 2 : 0);
-    this.setInteger(scale(alpha), flags, 0, 3);
+    const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
+    this.setInteger(scale(alpha), flags, scale(textureWeight), 3);
 
     this.specularExponent = params.specularExponent;
   }

@@ -46,13 +46,13 @@ interface MaterialParams {
   specular: number;
   specularExponent: number;
   specularColor?: ColorDef;
+  ambient: number;
 }
 
 interface DecodedMaterialParams extends MaterialParams {
   rgbOverridden: boolean;
   alphaOverridden: boolean;
   textureWeight: number;
-  unusedByte: number;
 }
 
 function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMaterialParams {
@@ -63,10 +63,9 @@ function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMa
   const rgb = unpackAndNormalizeMaterialParam(params.x);
   const matRgb = { x: rgb.x, y: rgb.y, z: rgb.z, w: rgbOverridden };
   const matAlpha = { x: alphaAndFlags.x / 255.0, alphaOverridden };
+  const matTextureWeight = alphaAndFlags.z / 255.0;
 
-  const weights = unpackAndNormalizeMaterialParam(params.y);
-  const matWeights = { x: weights.y, y: weights.z };
-  const matTextureWeight = weights.x;
+  const matWeights = unpackAndNormalizeMaterialParam(params.y);
 
   const specularColor = unpackAndNormalizeMaterialParam(params.z);
   const matSpecular = { x: specularColor.x, y: specularColor.y, z: specularColor.z, w: specularExponent };
@@ -76,12 +75,12 @@ function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMa
     specularColor: colorFromVec(matSpecular),
     diffuse: matWeights.x,
     specular: matWeights.y,
+    ambient: matWeights.z,
     specularExponent: matSpecular.w,
     transparency: 1.0 - matAlpha.x,
     rgbOverridden: 0.0 !== rgbOverridden,
     alphaOverridden: 0.0 !== alphaOverridden,
     textureWeight: matTextureWeight,
-    unusedByte: alphaAndFlags.z,
   };
 }
 
@@ -120,8 +119,8 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
   expect(actual.alphaOverridden).to.equal(0.0 !== expected.transparency);
 
-  expect(actual.unusedByte).to.equal(0);
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
+  expectEqualFloats(expected.ambient, actual.ambient);
   expectEqualFloats(expected.specular, actual.specular);
   expectEqualFloats(expected.transparency, actual.transparency);
 }
@@ -141,6 +140,7 @@ describe("Material", () => {
       diffuseColor: ColorDef.black,
       diffuse: 0.0,
       transparency: 0.0,
+      ambient: 0.0,
       specular: 0.0,
       specularExponent: 0.0,
       specularColor: ColorDef.black,
@@ -150,6 +150,7 @@ describe("Material", () => {
       diffuseColor: ColorDef.white,
       diffuse: 1.0,
       transparency: 1.0,
+      ambient: 1.0,
       specular: 1.0,
       specularExponent: 1234.5,
       specularColor: ColorDef.white,
@@ -159,6 +160,7 @@ describe("Material", () => {
       diffuseColor: ColorDef.red,
       diffuse: 0.95,
       transparency: 0.12,
+      ambient: 0.05,
       specular: 0.7,
       specularExponent: -5.4321,
       specularColor: ColorDef.blue,
