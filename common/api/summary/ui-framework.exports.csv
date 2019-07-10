@@ -86,6 +86,13 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
+alpha;CursorDirection
+alpha;CursorDirectionParts
+alpha;CursorInformation
+alpha;CursorPopup 
+alpha;CursorPopupProps
+alpha;CursorUpdatedEvent 
+alpha;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
 public;DeepReadonly

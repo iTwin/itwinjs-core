@@ -64,7 +64,7 @@ export interface PopupProps extends CommonProps {
   ariaLabel?: string;
   /** set focus to popup - default to not set focus */
   moveFocus?: boolean;
-  /** Element to receive focus, specified by React.RefObject or CSS selector string. if undefined and moveFocus is true then focus is moved to first focusable element */
+  /** Element to receive focus, specified by React.RefObject or CSS selector string. If undefined and moveFocus is true then focus is moved to first focusable element. */
   focusTarget?: React.RefObject<HTMLElement> | string;
 }
 

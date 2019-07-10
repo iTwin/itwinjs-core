@@ -113,6 +113,9 @@ export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";
 export * from "./ui-framework/toolbar/ToolButton";
 
+export * from "./ui-framework/cursor/CursorInformation";
+export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
+
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
 export * from "./ui-framework/timeline/SolarTimelineDataProvider";
@@ -176,6 +179,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description ContentView
  * Classes for working with a Content View, Group, Layout or Control
+ */
+/**
+ * @docs-group-description Cursor
+ * Cursor related information, components and events
  */
 /**
  * @docs-group-description Dialog

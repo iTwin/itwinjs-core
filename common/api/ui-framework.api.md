@@ -58,6 +58,7 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
+import { Point } from '@bentley/ui-ninezone';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
@@ -904,6 +905,100 @@ export interface CubeNavigationAidProps extends CommonProps {
     iModelConnection: IModelConnection;
     // @internal (undocumented)
     onAnimationEnd?: () => void;
+}
+
+// @alpha (undocumented)
+export enum CursorDirection {
+    // (undocumented)
+    Bottom = 1,
+    // (undocumented)
+    BottomLeft = 257,
+    // (undocumented)
+    BottomRight = 17,
+    // (undocumented)
+    Left = 256,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 16,
+    // (undocumented)
+    Top = 4096,
+    // (undocumented)
+    TopLeft = 4352,
+    // (undocumented)
+    TopRight = 4112
+}
+
+// @alpha (undocumented)
+export enum CursorDirectionParts {
+    // (undocumented)
+    Bottom = 1,
+    // (undocumented)
+    Left = 256,
+    // (undocumented)
+    Right = 16,
+    // (undocumented)
+    Top = 4096
+}
+
+// @alpha
+export class CursorInformation {
+    // @internal
+    static clearCursorDirections(): void;
+    // (undocumented)
+    static readonly cursorDirection: CursorDirection;
+    // (undocumented)
+    static cursorPosition: Point;
+    // (undocumented)
+    static readonly cursorX: number;
+    // (undocumented)
+    static readonly cursorY: number;
+    // (undocumented)
+    static getRelativePositionFromCursorDirection(cursorDirection: CursorDirection): RelativePosition;
+    // (undocumented)
+    static handleMouseMove(point: Point): void;
+    // (undocumented)
+    static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
+}
+
+// @alpha
+export class CursorPopup extends React_2.Component<CommonProps, CursorPopupState> {
+    // @internal
+    constructor(props: CommonProps);
+    static close(apply: boolean): void;
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    static open(content: React_2.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition, props?: CursorPopupProps): void;
+    // @internal (undocumented)
+    render(): JSX.Element | null;
+    static update(content: React_2.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition): void;
+    static updatePosition(pt: Point, offset: number, relativePosition: RelativePosition): void;
+}
+
+// @alpha
+export interface CursorPopupProps {
+    // (undocumented)
+    onApply?: () => void;
+    // (undocumented)
+    onClose?: () => void;
+    // (undocumented)
+    title?: string;
+}
+
+// @alpha
+export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> {
+}
+
+// @alpha
+export interface CursorUpdatedEventArgs {
+    // (undocumented)
+    direction: CursorDirection;
+    // (undocumented)
+    newPt: Point;
+    // (undocumented)
+    oldPt: Point;
 }
 
 // @beta
@@ -1962,9 +2057,9 @@ export class KeyboardShortcutManager {
     // (undocumented)
     static closeShortcutsMenu(): void;
     // (undocumented)
-    static cursorX: number;
+    static readonly cursorX: number;
     // (undocumented)
-    static cursorY: number;
+    static readonly cursorY: number;
     // (undocumented)
     static displayShortcutsMenu(): void;
     // (undocumented)

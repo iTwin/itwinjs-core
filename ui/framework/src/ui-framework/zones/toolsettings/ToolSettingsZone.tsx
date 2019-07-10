@@ -76,7 +76,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   }
 
   public render(): React.ReactNode {
-    if (FrontstageManager.activeToolAssistanceNode || FrontstageManager.activeToolSettingsNode) {
+    if (FrontstageManager.activeToolSettingsNode) {
       const divStyle: React.CSSProperties = {
         display: "grid",
         justifyItems: "center",
@@ -120,8 +120,9 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   }
 
   private getToolSettingsWidget(): React.ReactNode {
-    const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
-    if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed)
+    if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
+      const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
+
       return (
         <ToolSettingsTab
           onClick={this._processClick}
@@ -132,6 +133,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
           {this.getToolSettingsButton()}
         </ToolSettingsTab>
       );
+    }
 
     return (
       <ToolSettings
@@ -147,36 +149,6 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       </ToolSettings>
     );
   }
-
-  // private getToolAssistanceButton() {
-  //   if (FrontstageManager.activeToolAssistanceNode) {
-  //     return (
-  //       <Item
-  //         key="1"
-  //         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolAssistance}
-  //         onClick={
-  //           () => {
-  //             this.setState((prevState) => {
-  //               let toolSettingsZoneContent = ToolSettingsZoneContent.Closed;
-
-  //               if (prevState.toolSettingsZoneContent === ToolSettingsZoneContent.Closed ||
-  //                 prevState.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings)
-  //                 toolSettingsZoneContent = ToolSettingsZoneContent.ToolAssistance;
-
-  //               return {
-  //                 toolSettingsZoneContent,
-  //               };
-  //             });
-  //           }
-  //         }
-  //       >
-  //         <i className="icon icon-help" />
-  //       </Item>
-  //     );
-  //   }
-
-  //   return null;
-  // }
 
   private getToolSettingsButton(): React.ReactNode {
     let button: React.ReactNode;

@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+
 import TestUtils from "../TestUtils";
+
+import { Point } from "@bentley/ui-ninezone";
 import {
   KeyboardShortcutProps,
   CommandItemDef,
@@ -14,7 +17,9 @@ import {
   KeyboardShortcutContainer,
   ConfigurableUiManager,
 } from "../../ui-framework";
+
 import { KeyboardShortcutMenu } from "../../ui-framework/keyboardshortcut/KeyboardShortcutMenu";
+import { CursorInformation } from "../../ui-framework/cursor/CursorInformation";
 
 describe("KeyboardShortcut", () => {
 
@@ -208,8 +213,7 @@ describe("KeyboardShortcut", () => {
     });
 
     it("Should maintain cursor X & Y", () => {
-      KeyboardShortcutManager.cursorX = 100;
-      KeyboardShortcutManager.cursorY = 200;
+      CursorInformation.cursorPosition = new Point(100, 200);
 
       expect(KeyboardShortcutManager.cursorX).to.eq(100);
       expect(KeyboardShortcutManager.cursorY).to.eq(200);

@@ -11,6 +11,7 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { KeyboardShortcutMenu } from "./KeyboardShortcutMenu";
 import { UiFramework } from "../UiFramework";
+import { CursorInformation } from "../cursor/CursorInformation";
 
 /** Enumeration for Function Keys
  * @public
@@ -251,8 +252,6 @@ export class KeyboardShortcutContainer {
 export class KeyboardShortcutManager {
 
   private static _shortcuts: KeyboardShortcutContainer = new KeyboardShortcutContainer();
-  private static _cursorX = 0;
-  private static _cursorY = 0;
 
   public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]) {
     shortcutList.forEach((shortcutProps: KeyboardShortcutProps) => {
@@ -313,10 +312,7 @@ export class KeyboardShortcutManager {
     });
   }
 
-  public static get cursorX(): number { return this._cursorX; }
-  public static set cursorX(x: number) { this._cursorX = x; }
-
-  public static get cursorY(): number { return this._cursorY; }
-  public static set cursorY(y: number) { this._cursorY = y; }
+  public static get cursorX(): number { return CursorInformation.cursorX; }
+  public static get cursorY(): number { return CursorInformation.cursorY; }
 
 }

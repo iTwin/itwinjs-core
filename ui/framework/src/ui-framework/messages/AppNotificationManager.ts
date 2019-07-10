@@ -116,7 +116,7 @@ export class AppNotificationManager extends NotificationManager {
   }
 
   /** Show a ToolTip window.
-   * @param el       The HTMLElement that that anchors the toolTip.
+   * @param el       The HTMLElement that anchors the toolTip.
    * @param message  The message to display inside the ToolTip
    * @param pt       An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
    * @param options  Options that supply additional information about how the ToolTip should function.

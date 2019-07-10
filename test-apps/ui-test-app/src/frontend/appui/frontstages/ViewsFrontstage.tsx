@@ -52,6 +52,9 @@ import {
   ContentLayoutManager,
   SavedViewLayout,
   SavedViewLayoutProps,
+  CursorInformation,
+  CursorUpdatedEventArgs,
+  CursorPopup,
   KeyinBrowser,
 } from "@bentley/ui-framework";
 
@@ -409,16 +412,15 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
         if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+          // Create props for the Layout, ContentGroup and ViewStates
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
             (contentProps: ContentProps) => {
               if (contentProps.applicationData)
                 delete contentProps.applicationData;
             });
-          const serialized = JSON.stringify(savedViewLayoutProps);
-          // tslint:disable-next-line: no-console
-          console.log("SavedViewLayoutProps: ", serialized);
 
-          ViewsFrontstage.savedViewLayoutProps = serialized;
+          // Save the SavedViewLayoutProps
+          ViewsFrontstage.savedViewLayoutProps = JSON.stringify(savedViewLayoutProps);
         }
       },
     });
@@ -450,6 +452,30 @@ class FrontstageToolWidget extends React.Component {
         }
       },
     });
+  }
+
+  private get _startCursorPopup() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.startCursorPopup", execute: async () => {
+        const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
+        CursorPopup.open(FrontstageManager.activeToolSettingsNode, CursorInformation.cursorPosition, 20, relativePosition);
+        CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
+      },
+    });
+  }
+
+  private get _endCursorPopup() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
+        CursorPopup.close(false);
+        CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
+      },
+    });
+  }
+
+  private _handleCursorUpdated(args: CursorUpdatedEventArgs) {
+    const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
+    CursorPopup.updatePosition(args.newPt, 20, relativePosition);
   }
 
   /** example that hides the button if active content is not a 3d View */
@@ -565,7 +591,11 @@ class FrontstageToolWidget extends React.Component {
       new GroupItemDef({
         labelKey: "SampleApp:buttons.anotherGroup",
         iconSpec: "icon-placeholder",
-        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef, this._saveContentLayout, this._restoreContentLayout],
+        items: [
+          AppTools.tool1, AppTools.tool2, this._groupItemDef,
+          this._saveContentLayout, this._restoreContentLayout,
+          this._startCursorPopup, this._endCursorPopup,
+        ],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
         betaBadge: true,

@@ -60,7 +60,7 @@ interface ViewSelectorState {
   showUnknown: boolean;
 }
 
-/** Default properties of [[Backstage]] component.
+/** Default properties of [[ViewSelector]] component.
  * @beta
  */
 export type ViewSelectorDefaultProps = Pick<ViewSelectorProps, "showSpatials" | "showDrawings" | "showSheets" | "showUnknown">;

@@ -140,6 +140,8 @@
     "clearSelection": "Clear Selection",
     "saveContentLayout": "Save Content Layout",
     "restoreContentLayout": "Restore Content Layout",
+    "startCursorPopup": "Start Cursor Popup",
+    "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog"
   },
