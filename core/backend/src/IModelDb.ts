@@ -1154,7 +1154,9 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Get the mass properties for the supplied elements */
+  /** Get the mass properties for the supplied elements
+   * @beta
+   */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
     const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
