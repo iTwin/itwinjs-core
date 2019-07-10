@@ -521,7 +521,7 @@ export abstract class ViewManip extends ViewTool {
     if (!vp)
       return false;
     const testPtView = vp.worldToView(testPt);
-    const frustum = vp.getFrustum(CoordSystem.View, false);
+    const frustum = vp.getFrustum(CoordSystem.View);
 
     const screenRange = Point3d.create(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Choose handle location for for section plane that is visible in the view.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

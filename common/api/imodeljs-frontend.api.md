@@ -2036,6 +2036,8 @@ export namespace EditManipulator {
         // (undocumented)
         static getBoresite(origin: Point3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Ray3d;
         // (undocumented)
+        static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor?: number): boolean;
+        // (undocumented)
         static projectPointToLineInView(spacePt: Point3d, linePt: Point3d, lineDirection: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
         // (undocumented)
         static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw?: boolean, checkACS?: boolean): Point3d | undefined;
@@ -7377,6 +7379,8 @@ export class ViewClipControlArrow {
     direction: Vector3d;
     // (undocumented)
     fill?: ColorDef;
+    // (undocumented)
+    floatingOrigin?: Point3d;
     // (undocumented)
     name?: string;
     // (undocumented)

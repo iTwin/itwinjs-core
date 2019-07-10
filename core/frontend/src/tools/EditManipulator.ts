@@ -11,8 +11,9 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
 import { IModelConnection } from "../IModelConnection";
 import { SelectionSetEvent } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
-import { Viewport } from "../Viewport";
+import { Viewport, CoordSystem } from "../Viewport";
 import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { Npc } from "@bentley/imodeljs-common";
 
 /** A manipulator maintains a set of controls used to modify element(s) or pickable decorations.
  * Interactive modification is handled by installing an InputCollector tool.
@@ -181,6 +182,17 @@ export namespace EditManipulator {
       }
       direction.scaleToLength(-1.0, direction);
       return Ray3d.create(origin, direction);
+    }
+
+    public static isPointVisible(testPt: Point3d, vp: Viewport, borderPaddingFactor: number = 0.0): boolean {
+      const testPtView = vp.worldToView(testPt);
+      const frustum = vp.getFrustum(CoordSystem.View);
+      const screenRange = Point3d.create();
+      screenRange.x = frustum.points[Npc._000].distance(frustum.points[Npc._100]);
+      screenRange.y = frustum.points[Npc._000].distance(frustum.points[Npc._010]);
+      const xBorder = screenRange.x * borderPaddingFactor;
+      const yBorder = screenRange.y * borderPaddingFactor;
+      return (!(testPtView.x < xBorder || testPtView.x > (screenRange.x - xBorder) || testPtView.y < yBorder || testPtView.y > (screenRange.y - yBorder)));
     }
 
     public static projectPointToPlaneInView(spacePt: Point3d, planePt: Point3d, planeNormal: Vector3d, vp: Viewport, checkAccuDraw: boolean = false, checkACS: boolean = false): Point3d | undefined {
