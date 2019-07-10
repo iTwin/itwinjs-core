@@ -3563,6 +3563,7 @@ export class Marker implements CanvasDecoration {
     drawFunc?(ctx: CanvasRenderingContext2D): void;
     protected drawHilited(ctx: CanvasRenderingContext2D): boolean;
     protected _hiliteColor?: ColorDef;
+    htmlElement?: HTMLElement;
     image?: MarkerImage;
     imageOffset?: XAndY;
     imageSize?: XAndY;
@@ -3580,6 +3581,7 @@ export class Marker implements CanvasDecoration {
     onMouseMove(ev: BeButtonEvent): void;
     pick(pt: XAndY): boolean;
     position: Point3d;
+    protected positionHtml(): void;
     readonly rect: ViewRect;
     // (undocumented)
     protected _scaleFactor?: Point2d;

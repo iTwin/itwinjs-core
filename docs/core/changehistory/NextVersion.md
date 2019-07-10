@@ -3,6 +3,10 @@ ignore: true
 ---
 # NextVersion
 
+## Markers may now have HTML Decorations
+
+Markers are used to position decorations in a view that follow a position in world coordinates. Previously they could display World Decorations and Canvas Decorations. They may now also include an optional HTML Decoration by assigning the "htmlElement" member. See [Marker]($frontend) documentation for details.
+
 ## Updates to Authorization
 
 * [OidcBrowserClient]($frontend) now uses local storage instead of session storage to store access tokens. The state of the authorization would therefore now be preserved if the browser was closed and reopened.<br/>
