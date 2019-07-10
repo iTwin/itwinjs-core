@@ -16,7 +16,7 @@ import {
   AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
   GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalElement, PhysicalModel, PhysicalObject, Platform, SpatialCategory, SubCategory, Subject,
+  PhysicalElement, PhysicalModel, PhysicalObject, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -31,6 +31,7 @@ class TestIModelTransformer extends IModelTransformer {
   public numElementsUpdated = 0;
   public numElementsExcluded = 0;
 
+  public numRelationshipsExcluded = 0;
   public numCodeSpecsExcluded = 0;
 
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
@@ -46,6 +47,7 @@ class TestIModelTransformer extends IModelTransformer {
     super.excludeCodeSpec("ExtraCodeSpec");
     super.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
     super.excludeSubject("/Only in Source");
+    super.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
   }
 
   /** Initialize some CodeSpec remapping rules for testing */
@@ -97,6 +99,12 @@ class TestIModelTransformer extends IModelTransformer {
     super.onCodeSpecExcluded(codeSpecName);
   }
 
+  /** Count the number of Relationships excluded in this callback */
+  protected onRelationshipExcluded(sourceRelationship: Relationship): void {
+    this.numRelationshipsExcluded++;
+    super.onRelationshipExcluded(sourceRelationship);
+  }
+
   /** Count the number of Elements inserted in this callback */
   protected onElementInserted(sourceElement: Element, targetElementIds: Id64Array): void {
     this.numElementsInserted += targetElementIds.length;
@@ -130,6 +138,21 @@ class TestIModelTransformer extends IModelTransformer {
       }
     }
     return transformedElementProps;
+  }
+
+  /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
+  protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
+    const targetRelationshipProps: RelationshipProps = super.transformRelationship(sourceRelationship);
+    if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
+      targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
+      targetRelationshipProps.targetString = targetRelationshipProps.sourceString;
+      targetRelationshipProps.sourceString = undefined;
+      targetRelationshipProps.targetDouble = targetRelationshipProps.sourceDouble;
+      targetRelationshipProps.sourceDouble = undefined;
+      targetRelationshipProps.targetLong = targetRelationshipProps.sourceLong; // Id64 value was already remapped by super.transformRelationship()
+      targetRelationshipProps.sourceLong = undefined;
+    }
+    return targetRelationshipProps;
   }
 }
 
@@ -319,6 +342,25 @@ class TestDataManager {
     const drawingViewId = DrawingViewDefinition.insert(this.sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
     assert.isTrue(Id64.isValidId64(drawingViewId));
     this.sourceDb.saveChanges();
+    // Create instance of SourceRelToExclude to test relationship exclusion by class
+    const relationship1: Relationship = this.sourceDb.relationships.createInstance({
+      classFullName: "TestTransformerSource:SourceRelToExclude",
+      sourceId: spatialCategorySelectorId,
+      targetId: drawingCategorySelectorId,
+    });
+    const relationshipId1: Id64String = this.sourceDb.relationships.insertInstance(relationship1);
+    assert.isTrue(Id64.isValidId64(relationshipId1));
+    // Create instance of RelWithProps to test relationship property remapping
+    const relationship2: Relationship = this.sourceDb.relationships.createInstance({
+      classFullName: "TestTransformerSource:SourceRelWithProps",
+      sourceId: spatialCategorySelectorId,
+      targetId: drawingCategorySelectorId,
+      sourceString: "One",
+      sourceDouble: 1.1,
+      sourceLong: spatialCategoryId,
+    });
+    const relationshipId2: Id64String = this.sourceDb.relationships.insertInstance(relationship2);
+    assert.isTrue(Id64.isValidId64(relationshipId2));
   }
 
   public static createBox(size: Point3d): GeometryStreamProps {
@@ -445,6 +487,20 @@ class TestDataManager {
     assert.equal(physicalElement1.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.extraString, "Property should have been dropped during transformation");
+    // DrawingGraphic
+    const drawingGraphicId: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "DrawingGraphic");
+    this.assertTargetElement(drawingGraphicId);
+    // DrawingGraphicRepresentsElement
+    assert.exists(this.targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId, targetId: physicalObjectId1 }));
+    // TargetRelWithProps
+    const relWithProps: RelationshipProps = this.targetDb.relationships.getInstanceProps(
+      "TestTransformerTarget:TargetRelWithProps",
+      { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
+    );
+    assert.equal(relWithProps.targetString, "One");
+    assert.equal(relWithProps.targetDouble, 1.1);
+    // WIP - waiting for bug fix
+    // assert.equal(relWithProps.targetLong, xxx);
   }
 
   public static queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -615,6 +671,8 @@ describe("IModelTransformer", () => {
 
   it("should import", async () => {
     let numElementsExcluded: number;
+    let numRelationshipExcluded: number;
+    const numSourceRelationships: number = countRelationships(testDataManager.sourceDb);
 
     if (true) { // initial import
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
@@ -624,6 +682,7 @@ describe("IModelTransformer", () => {
       transformer.importAll();
       transformer.dispose();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
+      assert.isAbove(transformer.numRelationshipsExcluded, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
       assert.isAbove(transformer.numElementsUpdated, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
@@ -632,12 +691,15 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
       assert.isAtLeast(countRelationships(testDataManager.targetDb), 1);
       numElementsExcluded = transformer.numElementsExcluded;
+      numRelationshipExcluded = transformer.numRelationshipsExcluded;
       testDataManager.targetDb.saveChanges();
       testDataManager.assertTargetDbContents();
     }
 
-    const elementCount: number = countElements(testDataManager.targetDb);
-    const aspectCount: number = countExternalSourceAspects(testDataManager.targetDb);
+    const numTargetElements: number = countElements(testDataManager.targetDb);
+    const numTargetAspects: number = countExternalSourceAspects(testDataManager.targetDb);
+    const numTargetRelationships: number = countRelationships(testDataManager.targetDb);
+    assert.equal(numSourceRelationships, numTargetRelationships + numRelationshipExcluded);
 
     if (true) { // second import with no changes to source, should be a no-op
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
@@ -653,8 +715,9 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numInsertElementCalls, 0);
       assert.equal(transformer.numUpdateElementCalls, 0);
       assert.equal(transformer.numExcludedElementCalls, numElementsExcluded);
-      assert.equal(elementCount, countElements(testDataManager.targetDb), "Second import should not add elements");
-      assert.equal(aspectCount, countExternalSourceAspects(testDataManager.targetDb), "Second import should not add aspects");
+      assert.equal(numTargetElements, countElements(testDataManager.targetDb), "Second import should not add elements");
+      assert.equal(numTargetAspects, countExternalSourceAspects(testDataManager.targetDb), "Second import should not add aspects");
+      assert.equal(numTargetRelationships, countRelationships(testDataManager.targetDb), "Second import should not add relationships");
     }
 
     if (true) { // update source db, then import again
@@ -671,8 +734,9 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       testDataManager.targetDb.saveChanges();
       testDataManager.assertUpdatesInTargetDb();
-      assert.equal(elementCount, countElements(testDataManager.targetDb), "Third import should not add elements");
-      assert.equal(aspectCount, countExternalSourceAspects(testDataManager.targetDb), "Third import should not add aspects");
+      assert.equal(numTargetElements, countElements(testDataManager.targetDb), "Third import should not add elements");
+      assert.equal(numTargetAspects, countExternalSourceAspects(testDataManager.targetDb), "Third import should not add aspects");
+      assert.equal(numTargetRelationships, countRelationships(testDataManager.targetDb), "Third import should not add relationships");
     }
   });
 });

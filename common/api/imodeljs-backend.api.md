@@ -2755,9 +2755,11 @@ export class IModelTransformer {
     protected _excludedElementCategoryIds: Set<string>;
     protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
+    protected _excludedRelationshipClasses: Set<typeof Relationship>;
     excludeElement(sourceElementId: Id64String): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
     excludeElementClass(sourceClassFullName: string): void;
+    excludeRelationshipClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
     findMissingPredecessors(sourceElement: Element): Id64Set;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
@@ -2777,26 +2779,31 @@ export class IModelTransformer {
     importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
-    importRelationships(sourceRelClassFullName: string): void;
+    importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
     protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
+    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldExcludeElement(sourceElement: Element): boolean;
+    protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
+    protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
 }
 

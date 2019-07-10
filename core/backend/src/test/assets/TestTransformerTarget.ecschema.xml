@@ -11,4 +11,17 @@
         <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
     </ECEntityClass>
 
+    <ECRelationshipClass typeName="TargetRelWithProps" strength="referencing" modifier="None" description="For testing relationship property remapping." >
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Target>
+        <ECProperty propertyName="TargetString" typeName="string" description="A string property that should be remapped"/>
+        <ECProperty propertyName="TargetDouble" typeName="double" description="A double property that should be remapped"/>
+        <ECProperty propertyName="TargetLong" typeName="long" extendedTypeName="Id" description="A long property that should be remapped"/>
+    </ECRelationshipClass>
+
 </ECSchema>
