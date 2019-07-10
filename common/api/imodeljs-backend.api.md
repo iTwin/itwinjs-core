@@ -1819,6 +1819,7 @@ export class IModelDb extends IModel {
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
+    // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @deprecated
