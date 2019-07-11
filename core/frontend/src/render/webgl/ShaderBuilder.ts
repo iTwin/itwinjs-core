@@ -176,10 +176,10 @@ export class ShaderVariable {
  * @internal
  */
 export class ShaderVariables {
-  protected list: ShaderVariable[] = new Array<ShaderVariable>();
+  protected _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
-  public find(name: string): ShaderVariable | undefined { return this.list.find((v: ShaderVariable) => v.name === name); }
+  public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
 
   /** Add a new variable, if a variable with the same name does not already exist.  return true if added */
   public addVariable(v: ShaderVariable): boolean {
@@ -189,7 +189,7 @@ export class ShaderVariables {
       // assume same binding etc...
       return false;
     } else {
-      this.list.push(v);
+      this._list.push(v);
       return true;
     }
   }
@@ -217,7 +217,7 @@ export class ShaderVariables {
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";
-    for (const v of this.list) {
+    for (const v of this._list) {
       decls += v.buildDeclaration() + "\n";
     }
 
@@ -229,7 +229,7 @@ export class ShaderVariables {
    * to add the corresponding Uniform or Attribute object to the ShaderProgram.
    */
   public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
-    for (const v of this.list) {
+    for (const v of this._list) {
       // Some variables exist in both frag and vert shaders - only add them to the program once.
       if (v.hasBinding && (undefined === predefined || undefined === predefined.find(v.name))) {
         v.addBinding(prog);
@@ -237,7 +237,7 @@ export class ShaderVariables {
     }
   }
 
-  public get length(): number { return this.list.length; }
+  public get length(): number { return this._list.length; }
 
   private findSlot(variableSize: number, loopSize: number, registers: number[]): number {
     // Find the first available slot into which to insert this variable
@@ -267,7 +267,7 @@ export class ShaderVariables {
     let outStr = "";
     let slot = 0;
 
-    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    const varyings = this._list.filter((variable) => VariableScope.Varying === variable.scope);
     // Add in any built in vars that count as varyings if they are used
     if (fragSource.includes("gl_FragCoord")) {
       varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
@@ -335,7 +335,7 @@ export class ShaderVariables {
     const loopSize = 64;
     const registers = Array(loopSize + 1).fill(0);
 
-    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    const varyings = this._list.filter((variable) => VariableScope.Varying === variable.scope);
     // Add in any built in vars that count as varyings if they are used
     if (fragSource.includes("gl_FragCoord")) {
       varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
@@ -441,22 +441,22 @@ export const enum ShaderBuilderFlags {
  * @internal
  */
 export class ShaderBuilder extends ShaderVariables {
-  protected components = new Array<string | undefined>();
-  protected functions: string[] = [];
-  protected extensions: string[] = [];
-  protected macros: string[] = [];
+  protected _components = new Array<string | undefined>();
+  protected _functions: string[] = [];
+  protected _extensions: string[] = [];
+  protected _macros: string[] = [];
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
-  protected initializers: string[] = new Array<string>();
+  protected _initializers: string[] = new Array<string>();
 
   public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
   public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
 
-  public addInitializer(initializer: string): void { this.initializers.push(initializer); }
+  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
 
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
     super();
-    this.components.length = maxComponents;
+    this._components.length = maxComponents;
     this._flags = flags;
     this.addMacro("#version 100");
     this.addDefine("TEXTURE", "texture2D");
@@ -464,19 +464,19 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   protected addComponent(index: number, component: string): void {
-    assert(index < this.components.length);
+    assert(index < this._components.length);
 
     // assume if caller is replacing an existing component, they know what they're doing...
-    this.components[index] = component;
+    this._components[index] = component;
   }
   protected removeComponent(index: number) {
-    assert(index < this.components.length);
-    this.components[index] = undefined;
+    assert(index < this._components.length);
+    this._components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
-    assert(index < this.components.length);
-    return this.components[index];
+    assert(index < this._components.length);
+    return this._components[index];
   }
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
@@ -486,14 +486,14 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     if (undefined === this.findFunction(def)) {
-      this.functions.push(def);
+      this._functions.push(def);
     }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
-    const index = this.functions.indexOf(existing);
+    const index = this._functions.indexOf(existing);
     if (-1 !== index) {
-      this.functions[index] = replacement;
+      this._functions[index] = replacement;
     }
 
     assert(-1 !== index);
@@ -501,17 +501,17 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public findFunction(func: string): string | undefined {
-    return this.functions.find((f: string | undefined) => f === func);
+    return this._functions.find((f: string | undefined) => f === func);
   }
 
   public addExtension(extName: string): void {
-    if (-1 === this.extensions.indexOf(extName))
-      this.extensions.push(extName);
+    if (-1 === this._extensions.indexOf(extName))
+      this._extensions.push(extName);
   }
 
   public addMacro(macro: string): void {
-    if (-1 === this.macros.indexOf(macro))
-      this.macros.push(macro);
+    if (-1 === this._macros.indexOf(macro))
+      this._macros.push(macro);
   }
 
   public addDefine(name: string, value: string): void {
@@ -530,11 +530,11 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     // Macros
-    for (const macro of this.macros)
+    for (const macro of this._macros)
       src.addline(macro);
 
     // Extensions
-    for (const ext of this.extensions)
+    for (const ext of this._extensions)
       src.addline("#extension " + ext + " : enable");
 
     // Default precisions
@@ -546,10 +546,10 @@ export class ShaderBuilder extends ShaderVariables {
     src.add(this.buildDeclarations());
 
     // Functions
-    for (const func of this.functions) {
+    for (const func of this._functions) {
       src.add(func);
     }
-    if (0 !== this.functions.length)
+    if (0 !== this._functions.length)
       src.newline();
 
     return src;
@@ -557,12 +557,12 @@ export class ShaderBuilder extends ShaderVariables {
 
   protected copyCommon(src: ShaderBuilder): void {
     this.headerComment = src.headerComment;
-    this.initializers = [...src.initializers];
-    this.components = [...src.components];
-    this.functions = [...src.functions];
-    this.extensions = [...src.extensions];
-    this.list = [...src.list];
-    this.macros = [...src.macros];
+    this._initializers = [...src._initializers];
+    this._components = [...src._components];
+    this._functions = [...src._functions];
+    this._extensions = [...src._extensions];
+    this._list = [...src._list];
+    this._macros = [...src._macros];
   }
 }
 
@@ -641,7 +641,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
-    for (const init of this.initializers) {
+    for (const init of this._initializers) {
       main.addline("  {" + init + "  }\n");
     }
 
@@ -761,9 +761,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       return;
 
     this._maxClippingPlanes = max;
-    const macroIndex = this.macros.findIndex(x => x.startsWith("#define MAX_CLIPPING_PLANES"));
+    const macroIndex = this._macros.findIndex((x) => x.startsWith("#define MAX_CLIPPING_PLANES"));
     if (-1 !== macroIndex)
-      this.macros[macroIndex] = "#define MAX_CLIPPING_PLANES " + max;
+      this._macros[macroIndex] = "#define MAX_CLIPPING_PLANES " + max;
     else
       this.addDefine("MAX_CLIPPING_PLANES", max.toString());
   }
@@ -800,7 +800,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
-    for (const init of this.initializers) {
+    for (const init of this._initializers) {
       main.addline("  {" + init + "  }\n");
     }
 

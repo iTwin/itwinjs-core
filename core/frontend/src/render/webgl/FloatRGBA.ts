@@ -183,7 +183,7 @@ function scale(norm: number): number {
 function computeTbgr(r: number, g: number, b: number, a: number): number {
   r = scale(r);
   g = scale(g);
-  b = scale(b)
+  b = scale(b);
   const t = scale(1.0 - a);
 
   const tbgr = r | (g << 8) | (b << 16) | (t << 24);
@@ -284,7 +284,7 @@ export class FloatRgba2 extends FloatColor {
   }
 
   public get alpha(): number { return this._components[3]; }
-  public get hasTranslucency(): boolean { return 1.0 != this.alpha; }
+  public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
 
   public bind(uniform: UniformHandle): void {
     uniform.setUniform4fv(this._components);
