@@ -8,12 +8,12 @@ import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { MutableFloatRgba } from "../FloatRGBA";
+import { FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 const computeColor = "return vec4(u_hilite_color.rgb, 1.0);";
 
-const scratchHiliteColor: MutableFloatRgba = MutableFloatRgba.fromColorDef(ColorDef.white);
+const scratchHiliteColor = FloatRgba.fromColorDef(ColorDef.white);
 
 /** @internal */
 export function createCopyStencilProgram(context: WebGLRenderingContext): ShaderProgram {
@@ -26,7 +26,7 @@ export function createCopyStencilProgram(context: WebGLRenderingContext): Shader
       const vf = params.target.currentViewFlags;
       const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
       const hiliteColor = params.target.hiliteColor;
-      scratchHiliteColor.setRgbaValues(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
+      scratchHiliteColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
       scratchHiliteColor.bind(uniform);
     });
   });

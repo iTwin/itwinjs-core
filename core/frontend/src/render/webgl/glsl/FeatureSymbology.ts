@@ -27,7 +27,7 @@ import { UniformHandle } from "../Handle";
 import { GL } from "../GL";
 import { DrawParams } from "../DrawCommand";
 import { assert } from "@bentley/bentleyjs-core";
-import { MutableFloatRgba } from "../FloatRGBA";
+import { FloatRgba } from "../FloatRGBA";
 
 // tslint:disable:no-const-enum
 
@@ -233,7 +233,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   return true;
 }
 
-const scratchHiliteColor: MutableFloatRgba = MutableFloatRgba.fromColorDef(ColorDef.white);
+const scratchHiliteColor = FloatRgba.fromColorDef(ColorDef.white);
 
 /** @internal */
 export function addHiliteSettings(frag: FragmentShaderBuilder): void {
@@ -242,7 +242,7 @@ export function addHiliteSettings(frag: FragmentShaderBuilder): void {
       const vf = params.target.currentViewFlags;
       const useLighting = params.geometry.wantMixHiliteColorForFlash(vf, params.target);
       const hiliteColor = params.target.hiliteColor;
-      scratchHiliteColor.setRgbaValues(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
+      scratchHiliteColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, useLighting ? 1.0 : 0.0);
       scratchHiliteColor.bind(uniform);
     });
   });

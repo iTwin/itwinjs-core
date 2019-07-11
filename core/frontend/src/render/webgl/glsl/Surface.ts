@@ -29,7 +29,7 @@ import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 const sampleSurfaceTexture = `
@@ -327,7 +327,7 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
   });
 }
 
-const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.white);
+const scratchBgColor = FloatRgb.fromColorDef(ColorDef.white);
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 /** @internal */
@@ -346,7 +346,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
       const bgColor = params.target.bgColor.alpha === 0.0 ? blackColor : params.target.bgColor;
-      scratchBgColor.setRgbValues(bgColor.red, bgColor.green, bgColor.blue);
+      scratchBgColor.set(bgColor.red, bgColor.green, bgColor.blue);
       scratchBgColor.bind(uniform);
     });
   });

@@ -368,7 +368,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createUniform(target.bgColor);
+      return ColorInfo.createUniform(FloatPreMulRgba.fromFloatRgba(target.bgColor));
     else
       return this.colorInfo;
   }

@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { MutableFloatRgba } from "../FloatRGBA";
+import { FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 // The alpha component of the mono color is 1.0 if lit, 0.0 if unlit.
@@ -25,7 +25,7 @@ const applyMonochromeColor = `
   return mix(baseColor, monoColor, extractShaderBit(kShaderBit_Monochrome));
 `;
 
-const scratchMonoColor: MutableFloatRgba = MutableFloatRgba.fromColorDef(ColorDef.white);
+const scratchMonoColor = FloatRgba.fromColorDef(ColorDef.white);
 
 /** @internal */
 export function addMonochrome(frag: FragmentShaderBuilder): void {
@@ -33,7 +33,7 @@ export function addMonochrome(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_monoRgb", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_monoRgb", (uniform, params) => {
       const color = params.target.monoColor;
-      scratchMonoColor.setRgbaValues(color.red, color.green, color.blue, params.geometry.isLitSurface ? 1.0 : 0.0);
+      scratchMonoColor.set(color.red, color.green, color.blue, params.geometry.isLitSurface ? 1.0 : 0.0);
       scratchMonoColor.bind(uniform);
     });
   });

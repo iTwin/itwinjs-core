@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { FloatRgb2, FloatRgba2 } from "../../render/webgl/FloatRGBA";
+import { FloatRgb, FloatRgba } from "../../render/webgl/FloatRGBA";
 
 interface Rgb {
   red: number;
@@ -25,14 +25,19 @@ function expectRgb<T extends Rgb>(rgb: T, r: number, g: number, b: number) {
   expectComponent(rgb.blue, b);
 }
 
-function expectRgba(rgba: FloatRgba2, r: number, g: number, b: number, a: number) {
+function expectRgba(rgba: FloatRgba, r: number, g: number, b: number, a: number) {
   expectRgb(rgba, r, g, b);
   expectComponent(rgba.alpha, a);
 }
 
-describe("FloatRgb2", () => {
+describe("FloatRgb", () => {
+  it("should initialize to black", () => {
+    const rgb = new FloatRgb();
+    expect(rgb.tbgr).to.equal(ColorDef.black.tbgr);
+  });
+
   it("should create from ColorDef", () => {
-    const rgb = FloatRgb2.fromColorDef(ColorDef.black);
+    const rgb = FloatRgb.fromColorDef(ColorDef.black);
     expect(rgb.tbgr).to.equal(ColorDef.black.tbgr);
     expectRgb(rgb, 0, 0, 0);
 
@@ -53,7 +58,7 @@ describe("FloatRgb2", () => {
   });
 
   it("should create from components", () => {
-    const rgb = FloatRgb2.from(0, 0, 0);
+    const rgb = FloatRgb.from(0, 0, 0);
     expect(rgb.tbgr).to.equal(ColorDef.black.tbgr);
     expectRgb(rgb, 0, 0, 0);
 
@@ -64,11 +69,28 @@ describe("FloatRgb2", () => {
     expect(() => rgb.set(-1, -1, -1)).to.throw("Assert: Programmer Error");
     expect(() => rgb.set(2, 2, 2)).to.throw("Assert: Programmer Error");
   });
+
+  it("should convert to ColorDef", () => {
+    const scratch = new ColorDef();
+    const rgb = FloatRgb.fromColorDef(ColorDef.red);
+    expect(rgb.toColorDef().tbgr).to.equal(ColorDef.red.tbgr);
+
+    rgb.setColorDef(ColorDef.blue);
+    const def = rgb.toColorDef(scratch);
+    expect(def).to.equal(scratch);
+    expect(scratch.tbgr).to.equal(ColorDef.blue.tbgr);
+  });
 });
 
-describe("FloatRgba2", () => {
+describe("FloatRgba", () => {
+  it("should initialize to opaque black", () => {
+    const rgba = new FloatRgba();
+    expect(rgba.tbgr).to.equal(ColorDef.black.tbgr);
+    expect(rgba.hasTranslucency).to.be.false;
+  });
+
   it("should create from ColorDef", () => {
-    const rgba = FloatRgba2.fromColorDef(ColorDef.black);
+    const rgba = FloatRgba.fromColorDef(ColorDef.black);
     expect(rgba.tbgr).to.equal(ColorDef.black.tbgr);
     expectRgba(rgba, 0, 0, 0, 1);
     expect(rgba.hasTranslucency).to.be.false;
@@ -86,7 +108,7 @@ describe("FloatRgba2", () => {
   });
 
   it("should create from components", () => {
-    const rgba = FloatRgba2.from(0, 0, 0, 1);
+    const rgba = FloatRgba.from(0, 0, 0, 1);
     expect(rgba.tbgr).to.equal(ColorDef.black.tbgr);
     expectRgba(rgba, 0, 0, 0, 1);
     expect(rgba.hasTranslucency).to.be.false;
