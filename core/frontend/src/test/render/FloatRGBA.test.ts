@@ -36,7 +36,7 @@ class TestPreMulRgba extends FloatPreMulRgba {
 
 function expectComponent(actual: number, expected: number) {
   // Floating-point color types store components as 32-bit floats. Expect precision issues when comparing to 64-bit floats.
-  const epsilon = 0.00001;
+  const epsilon = 1.0 / 255.0;
   expect(Math.abs(expected - actual)).to.be.lessThan(epsilon);
 }
 
@@ -131,60 +131,77 @@ describe("FloatPreMulRgba", () => {
   });
 });
 
-class TestRgb2 extends FloatRgb2 {
-  public constructor(red: number, green: number, blue: number) {
-    super();
-    this.setColorDef(ColorDef.from(red, green, blue));
-  }
-}
-
 describe("FloatRgb2", () => {
-  it("should create and store rgb from ColorDef", () => {
-    let aFloatRgb = new TestRgb2(0, 0, 0);
+  it("should create from ColorDef", () => {
+    const rgb = FloatRgb2.fromColorDef(ColorDef.black);
+    expect(rgb.tbgr).to.equal(ColorDef.black.tbgr);
+    expectRgb(rgb, 0, 0, 0);
 
-    // Test fromColorDef function
-    let bFloatRgb = FloatRgb2.fromColorDef(ColorDef.from(0, 0, 0));
-    expectRgb(bFloatRgb, 0, 0, 0);
+    rgb.setColorDef(ColorDef.white);
+    expect(rgb.tbgr).to.equal(ColorDef.white.tbgr);
+    expectRgb(rgb, 1, 1, 1);
 
-    bFloatRgb = FloatRgb2.fromColorDef(ColorDef.from(51, 102, 255));
-    aFloatRgb = new TestRgb2(51, 102, 255);
-    expectEqualRgb(bFloatRgb, aFloatRgb);
+    rgb.setColorDef(ColorDef.blue);
+    expect(rgb.tbgr).to.equal(ColorDef.blue.tbgr);
+    expectRgb(rgb, 0, 0, 1);
+
+    // Transparency is ignored - always zero
+    const color = ColorDef.from(25, 192, 212, 200);
+    rgb.setColorDef(color);
+    expect(rgb.tbgr).not.to.equal(color.tbgr);
+    expectRgb(rgb, 25 / 255, 192 / 255, 212 / 255);
+    expect(rgb.tbgr).to.equal(0x00D4C019);
+  });
+
+  it("should create from components", () => {
+    const rgb = FloatRgb2.from(0, 0, 0);
+    expect(rgb.tbgr).to.equal(ColorDef.black.tbgr);
+    expectRgb(rgb, 0, 0, 0);
+
+    rgb.set(1, 1, 1);
+    expect(rgb.tbgr).to.equal(ColorDef.white.tbgr);
+    expectRgb(rgb, 1, 1, 1);
+
+    expect(() => rgb.set(-1, -1, -1)).to.throw("Assert: Programmer Error");
+    expect(() => rgb.set(2, 2, 2)).to.throw("Assert: Programmer Error");
   });
 });
 
-class TestRgba2 extends FloatRgba2 {
-  public constructor(red: number, green: number, blue: number, alpha: number) {
-    super();
-    this.setColorDef(ColorDef.from(red, green, blue, 255 - alpha));
-  }
-}
-
 describe("FloatRgba2", () => {
-  it("should create and store rgba in a variety of ways", () => {
-    let aFloatRgba = new TestRgba2(0, 0, 0, 0);
-    let bFloatRgba = new TestRgba2(0, 0, 0, 0);
-    expectEqualRgba(aFloatRgba, bFloatRgba);
+  it("should create from ColorDef", () => {
+    const rgba = FloatRgba2.fromColorDef(ColorDef.black);
+    expect(rgba.tbgr).to.equal(ColorDef.black.tbgr);
+    expectRgba(rgba, 0, 0, 0, 1);
+    expect(rgba.hasTranslucency).to.be.false;
 
-    // Test hasTranslucency function
-    aFloatRgba = new TestRgba2(0, 0, 0, 0);
-    expect(aFloatRgba.hasTranslucency).to.be.true;
-    aFloatRgba = new TestRgba2(0, 0, 0, 127);
-    expect(aFloatRgba.hasTranslucency).to.be.true;
-    aFloatRgba = new TestRgba2(0, 0, 0, 255);
-    expect(aFloatRgba.hasTranslucency).to.be.false;
+    rgba.setColorDef(ColorDef.white);
+    expect(rgba.tbgr).to.equal(ColorDef.white.tbgr);
+    expectRgba(rgba, 1, 1, 1, 1);
+    expect(rgba.hasTranslucency).to.be.false;
 
-    // Test fromColorDef function
-    bFloatRgba = FloatRgba2.fromColorDef(ColorDef.from(0, 0, 0));
-    expectRgba(bFloatRgba, 0, 0, 0, 1);
-    bFloatRgba = FloatRgba2.fromColorDef(ColorDef.from(51, 102, 255));
-    aFloatRgba = new TestRgba2(51, 102, 255, 255);
-    expectEqualRgba(aFloatRgba, bFloatRgba);
+    const color = ColorDef.from(25, 192, 212, 200);
+    rgba.setColorDef(color);
+    expect(rgba.tbgr).to.equal(color.tbgr);
+    expectRgba(rgba, 25 / 255, 192 / 255, 212 / 255, 55 / 255);
+    expect(rgba.hasTranslucency).to.be.true;
+  });
 
-    // Test equals function
-    aFloatRgba = new TestRgba2(51, 102, 255, 51);
-    bFloatRgba = new TestRgba2(51, 102, 255, 51);
-    expect(aFloatRgba.equals(bFloatRgba)).to.be.true;
-    bFloatRgba = new TestRgba2(51, 102, 255, 127);
-    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
+  it("should create from components", () => {
+    const rgba = FloatRgba2.from(0, 0, 0, 1);
+    expect(rgba.tbgr).to.equal(ColorDef.black.tbgr);
+    expectRgba(rgba, 0, 0, 0, 1);
+    expect(rgba.hasTranslucency).to.be.false;
+
+    rgba.set(1, 1, 1, 1);
+    expect(rgba.tbgr).to.equal(ColorDef.white.tbgr);
+    expect(rgba.hasTranslucency).to.be.false;
+
+    rgba.set(25 / 255, 192 / 255, 212 / 255, 200 / 255);
+    expect(rgba.tbgr).to.equal(0x37D4C019);
+    expectRgba(rgba, 25 / 255, 192 / 255, 212 / 255, 200 / 255);
+    expect(rgba.hasTranslucency).to.be.true;
+
+    expect(() => rgba.set(0.5, 0.5, 0.5, -1)).to.throw("Assert: Programmer Error");
+    expect(() => rgba.set(0.5, 0.5, 0.5, 1.1)).to.throw("Assert: Programmer Error");
   });
 });

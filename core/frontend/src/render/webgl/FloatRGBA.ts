@@ -202,10 +202,6 @@ export abstract class FloatColor {
   protected abstract maskTbgr(tbgr: number): number;
   protected abstract setComponents(r: number, g: number, b: number, a: number): void;
 
-  public equals(other: FloatColor): boolean {
-    return this._tbgr === other._tbgr;
-  }
-
   public get red() { return this._components[0]; }
   public get green() { return this._components[1]; }
   public get blue() { return this._components[2]; }
@@ -247,7 +243,7 @@ export class FloatRgb2 extends FloatColor {
     this.setRgbComponents(r, g, b);
   }
 
-  public setRgb(r: number, g: number, b: number) {
+  public set(r: number, g: number, b: number) {
     this.setRgbaComponents(r, g, b, 1);
   }
 
@@ -261,9 +257,9 @@ export class FloatRgb2 extends FloatColor {
     return rgb;
   }
 
-  public static fromRgb(r: number, g: number, b: number): FloatRgb2 {
+  public static from(r: number, g: number, b: number): FloatRgb2 {
     const rgb = new FloatRgb2();
-    rgb.setRgb(r, g, b);
+    rgb.set(r, g, b);
     return rgb;
   }
 }
@@ -283,7 +279,7 @@ export class FloatRgba2 extends FloatColor {
     this._components[3] = a;
   }
 
-  public setRgba(r: number, g: number, b: number, a: number) {
+  public set(r: number, g: number, b: number, a: number) {
     this.setRgbaComponents(r, g, b, a);
   }
 
@@ -300,9 +296,9 @@ export class FloatRgba2 extends FloatColor {
     return rgba;
   }
 
-  public static fromRgba(r: number, g: number, b: number, a: number): FloatRgba2 {
+  public static from(r: number, g: number, b: number, a: number): FloatRgba2 {
     const rgba = new FloatRgba2();
-    rgba.setRgba(r, g, b, a);
+    rgba.set(r, g, b, a);
     return rgba;
   }
 }
