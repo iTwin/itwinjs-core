@@ -164,7 +164,7 @@ export class Toolbar extends React.Component<ToolbarProps> {
   }
 
   private generateToolbarItems(itemList: ItemList, size: Size): React.ReactNode {
-    this._dimension = (this.props.orientation === Orientation.Horizontal ? size.width : size.height) - 1;
+    this._dimension = (this.props.orientation === Orientation.Horizontal ? size.width : size.height);
 
     const items = this.renderToolbarItems(itemList, this._checkForOverflow);
     this._checkForOverflow = true;

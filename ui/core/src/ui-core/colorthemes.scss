@@ -34,8 +34,8 @@ html[data-theme="light"] {
   --buic-foreground-warning-tint: rgb(249, 215, 171);
   --buic-foreground-primary-tone: rgb(000, 128, 206);
 
-  --buic-row-selection:           rgba(000, 139, 225, 0.2); // --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:               rgba(000, 139, 225, 0.1); // --buic-foreground-primary, 0.1 opacity
+  --buic-row-selection:           rgb(204, 232, 249); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:               rgb(229, 243, 252); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity
 
   --buic-inputs-border:           rgb(199, 204, 209);
   --buic-inputs-focus-boxshadow-gradient1:  rgba(000, 000, 000, 0);
@@ -71,8 +71,8 @@ html[data-theme="dark"] {
   --buic-foreground-warning-tint: rgb(249, 215, 171);
   --buic-foreground-primary-tone: rgb(69, 165, 224);
 
-  --buic-row-selection:           rgba(165, 215, 245, 0.2); // --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:               rgba(165, 215, 245, 0.1); // --buic-foreground-primary, 0.1 opacity
+  --buic-row-selection:           rgb(105, 127, 141); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:               rgb(098, 116, 128); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity
 
   --buic-inputs-border:           rgb(199, 204, 209);
   --buic-inputs-focus-boxshadow-gradient1:  rgba(199, 204, 209, 0);
