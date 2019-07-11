@@ -143,9 +143,8 @@ export class SchemaKey {
 
   public static parseString(fullName: string) {
     const keyPieces = fullName.split(".");
-    if (keyPieces.length !== 4) {
+    if (keyPieces.length !== 4)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName);
-    }
 
     const schemaName = keyPieces[0];
     const readVer = Number(keyPieces[1]);
@@ -211,7 +210,7 @@ export class SchemaKey {
 }
 
 /**
- * The SchemaItemKey contains an items name, type, and its schema.
+ * The SchemaItemKey contains a SchemaItem's name and SchemaKey.
  * @beta
  */
 export class SchemaItemKey {
@@ -225,7 +224,10 @@ export class SchemaItemKey {
 
   get schemaKey() { return this._schemaKey; }
   get name() { return this._name.name; }
+
   get schemaName() { return this.schemaKey.name; }
+
+  /** Returns the name in the format, {schemaName}.{name}. */
   get fullName() { return this.schemaName + "." + this.name; }
 
   /**
@@ -243,9 +245,9 @@ export class SchemaItemKey {
     return true;
   }
 
-  public matchesFullName(rhs: string): boolean {
+  public matchesFullName(name: string): boolean {
     const schemaVersion = this.schemaKey.version.toString().replace(/\./g, "\\.");
     const fullNameRegex = new RegExp(`^${this.schemaName}(\\.${schemaVersion})?[.:]${this.name}$`, "i");
-    return fullNameRegex.test(rhs);
+    return fullNameRegex.test(name);
   }
 }

@@ -48,7 +48,7 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   /** The unformatted message text associated with the diagnostic. Value is static across all instances. */
   messageText: string;
   /** The arguments used when formatted the diagnostic instance's message. */
-  messageArgs: ARGS;
+  messageArgs?: ARGS;
   /** The EC object associated with the diagnostic instance. */
   ecDefinition: TYPE;
   /** The schema where the diagnostic originated. */
@@ -71,7 +71,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
    * @param ecDefinition The EC object to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    */
-  constructor(ecDefinition: TYPE, messageArgs: ARGS) {
+  constructor(ecDefinition: TYPE, messageArgs?: ARGS) {
     this.ecDefinition = ecDefinition;
     this.messageArgs = messageArgs;
   }
@@ -90,7 +90,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
   /** The EC object to associate with the diagnostic. */
   public ecDefinition: TYPE;
   /** The arguments used when formatting the diagnostic message.  */
-  public messageArgs: ARGS;
+  public messageArgs?: ARGS;
 }
 
 /**
@@ -147,7 +147,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
  * @beta
  */
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
-  constructor(property: AnyProperty, messageArgs: ARGS) {
+  constructor(property: AnyProperty, messageArgs?: ARGS) {
     super(property, messageArgs);
   }
 

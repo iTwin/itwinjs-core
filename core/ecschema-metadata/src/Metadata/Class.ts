@@ -22,6 +22,7 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, LazyLoadedECClass } from "./../Interfaces";
 import { SchemaItemKey, SchemaKey } from "./../SchemaKey";
 import { assert } from "@bentley/bentleyjs-core";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -344,6 +345,40 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    if (undefined !== this.modifier)
+      itemElement.setAttribute("modifier", classModifierToString(this.modifier));
+
+    if (undefined !== this.baseClass) {
+      const baseClass = await this.baseClass;
+      const baseClassElement = schemaXml.createElement("BaseClass");
+      const baseClassName = XmlSerializationUtils.createXmlTypedName(this.schema, baseClass.schema, baseClass.name);
+      baseClassElement.textContent = baseClassName;
+      itemElement.appendChild(baseClassElement);
+    }
+
+    if (undefined !== this.properties) {
+      for (const prop of this.properties) {
+        const propXml = await prop.toXml(schemaXml);
+        itemElement.appendChild(propXml);
+      }
+    }
+
+    if (this._customAttributes) {
+      const caContainerElement = schemaXml.createElement("ECCustomAttributes");
+      for (const [name, attribute] of this._customAttributes) {
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        caContainerElement.appendChild(caElement);
+      }
+      itemElement.appendChild(caContainerElement);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(classProps: ClassProps) {

@@ -33,6 +33,7 @@ export enum ECObjectsStatus {
   ClassNotFound = ECOBJECTS_ERROR_BASE + 22,
   SchemaContextUndefined = ECOBJECTS_ERROR_BASE + 23,
   DifferentSchemaContexts = ECOBJECTS_ERROR_BASE + 24,
+  InvalidSchemaComparisonArgument = ECOBJECTS_ERROR_BASE + 25,
 }
 
 /** @internal */

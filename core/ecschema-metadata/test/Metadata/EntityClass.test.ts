@@ -15,6 +15,7 @@ import { Mixin } from "./../../src/Metadata/Mixin";
 import { RelationshipClass } from "./../../src/Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "./../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "./../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("EntityClass", () => {
   describe("get inherited properties", () => {
@@ -556,6 +557,35 @@ describe("EntityClass", () => {
         mixins: ["TestSchema.testMixin"],
       };
       expect(entityClassSerialization).to.deep.equal(expectedResult);
+    });
+  });
+
+  describe("toXml", () => {
+    const newDom = createEmptyXmlDocument();
+    const schemaJson = createSchemaJsonWithItems({
+      testMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.testClass",
+      },
+      testClass: {
+        schemaItemType: "EntityClass",
+        mixins: ["TestSchema.testMixin"],
+      },
+    });
+
+    it("should properly serialize", async () => {
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecschema);
+      const testClass = await ecschema.getItem<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = await testClass!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECEntityClass");
+
+      const baseClasses = getElementChildrenByTagName(serialized, "BaseClass");
+      assert.strictEqual(baseClasses.length, 1);
+
+      const mixin = baseClasses[0];
+      expect(mixin.textContent).to.eql("testMixin");
     });
   });
 });

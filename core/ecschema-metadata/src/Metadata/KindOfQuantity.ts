@@ -14,12 +14,8 @@ import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
-
-/**
- * @internal Don't know if this really needs to be exported.  Currently the format strings are parsed twice
- * this should be changed.
- */
-export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
+import { formatStringRgx, generateFormatString } from "./../utils/FormatEnums";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Typescript class representation of a KindOfQuantity.
@@ -146,12 +142,12 @@ export class KindOfQuantity extends SchemaItem {
     if (undefined === name)
       throw new ECObjectsError(ECObjectsStatus.InvalidECName, ``);
 
-    return new OverrideFormat(parent, name, precision, unitLabelOverrides);
+    return new OverrideFormat(parent, precision, unitLabelOverrides);
   }
 
   private async processPresentationUnits(presentationUnitsJson: string | string[]) {
     const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
-    for (const formatString of presUnitsArr) {
+    for (let formatString of presUnitsArr) {
       const presFormatOverride = this.parseFormatString(formatString);
 
       const format = await this.schema.lookupItem<Format>(presFormatOverride.name);
@@ -162,6 +158,9 @@ export class KindOfQuantity extends SchemaItem {
         this.addPresentationFormat(format);
         continue;
       }
+
+      // Resolve format string to full name
+      formatString = this.resolveFormatStringAlias(formatString, format.schema.name);
 
       let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.units) {
@@ -183,9 +182,18 @@ export class KindOfQuantity extends SchemaItem {
     }
   }
 
+  private resolveFormatStringAlias(formatString: string, schemaName: string): string {
+    const formatStringParts = formatString.split(":");
+    if (formatStringParts.length === 1)
+      return formatString;
+
+    formatStringParts.shift();
+    return schemaName + "." + formatStringParts.join(":");
+  }
+
   private processPresentationUnitsSync(presentationUnitsJson: string | string[]) {
     const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
-    for (const formatString of presUnitsArr) {
+    for (let formatString of presUnitsArr) {
       const presFormatOverride = this.parseFormatString(formatString);
 
       const format = this.schema.lookupItemSync<Format>(presFormatOverride.name);
@@ -196,6 +204,9 @@ export class KindOfQuantity extends SchemaItem {
         this.addPresentationFormat(format);
         continue;
       }
+
+      // Resolve format string to full name
+      formatString = this.resolveFormatStringAlias(formatString, format.schema.name);
 
       let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.units) {
@@ -226,6 +237,25 @@ export class KindOfQuantity extends SchemaItem {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    const persistenceUnit = await this.persistenceUnit;
+    if (undefined !== persistenceUnit) {
+      const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, persistenceUnit.schema, persistenceUnit.name);
+      itemElement.setAttribute("persistenceUnit", unitName);
+    }
+
+    if (undefined !== this.presentationUnits) {
+      const presUnitStrings = this.presentationUnits.map(generateFormatString);
+      itemElement.setAttribute("presentationUnits", presUnitStrings.join(";"));
+    }
+    itemElement.setAttribute("relativeError", this.relativeError.toString());
+
+    return itemElement;
+  }
+
   public deserializeSync(kindOfQuantityProps: KindOfQuantityProps) {
     super.deserializeSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
@@ -250,7 +280,7 @@ export class KindOfQuantity extends SchemaItem {
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
-    if (kindOfQuantityProps.presentationUnits)
+    if (undefined !== kindOfQuantityProps.presentationUnits)
       await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
 }

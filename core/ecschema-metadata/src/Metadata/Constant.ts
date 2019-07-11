@@ -12,6 +12,7 @@ import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedPhenomenon } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Constant is a specific type of Unit that represents a number.
@@ -46,6 +47,24 @@ export class Constant extends SchemaItem {
       schemaJson.numerator = this.numerator;
     schemaJson.denominator = this.denominator;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("definition", this.definition);
+    if (undefined !== this.numerator)
+      itemElement.setAttribute("numerator", this.numerator.toString());
+    if (undefined !== this.denominator)
+      itemElement.setAttribute("denominator", this.denominator.toString());
+
+    const phenomenon = await this.phenomenon;
+    if (undefined !== phenomenon) {
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
+      itemElement.setAttribute("phenomenon", phenomenonName);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(constantProps: ConstantProps) {

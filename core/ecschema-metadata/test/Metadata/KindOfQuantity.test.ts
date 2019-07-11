@@ -13,6 +13,7 @@ import { SchemaContext } from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 function createSchemaJson(koq: any) {
   return createSchemaJsonWithItems({
@@ -211,6 +212,7 @@ describe("KindOfQuantity", () => {
       assert.strictEqual(await unitOverride[0], unitFromSchema);
       assert.isUndefined(unitOverride[1]);
     });
+
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
       const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
@@ -327,7 +329,7 @@ describe("KindOfQuantity", () => {
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
       const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
         ...koqJson,
@@ -346,6 +348,41 @@ describe("KindOfQuantity", () => {
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
       const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
       expect(testKoq!.toJson(true, true)).to.not.have.property("presentationUnits");
+    });
+  });
+
+  describe("toXml", () => {
+    let schema: Schema;
+    let context: SchemaContext;
+    const newDom = createEmptyXmlDocument();
+
+    beforeEach(() => {
+      context = new SchemaContext();
+      schema = new Schema(context, "TestSchema", 1, 2, 3);
+      context.addLocater(new TestSchemaLocater());
+    });
+
+    const schemaJson = {
+      ...baseJson,
+      relativeError: 1.234,
+      persistenceUnit: "Formats.DefaultReal",
+      presentationUnits: [
+        "Formats.DoubleUnitFormat",
+        "Formats.QuadUnitFormat",
+      ],
+    };
+
+    it("should properly serialize", async () => {
+      schema = await Schema.fromJson(createSchemaJson(schemaJson), context);
+      const testKoq = await schema.getItem<KindOfQuantity>(schemaJson.name);
+
+      const serialized = await testKoq!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("KindOfQuantity");
+      expect(serialized.getAttribute("typeName")).to.eql("TestKindOfQuantity");
+      expect(serialized.getAttribute("relativeError")).to.eql("1.234");
+      expect(serialized.getAttribute("persistenceUnit")).to.eql("Formats:DefaultReal");
+      expect(serialized.getAttribute("presentationUnits")).to.eql(
+        "f:DoubleUnitFormat(6)[f:YRD|yard(s)][f:FT|feet];f:QuadUnitFormat(6)[f:MILE|mile(s)][f:YRD|yard(s)][f:FT|feet][f:IN|inch(es)]");
     });
   });
 });

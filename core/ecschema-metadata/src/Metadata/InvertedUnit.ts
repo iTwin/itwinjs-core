@@ -13,6 +13,7 @@ import { InvertedUnitProps } from "./../Deserialization/JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedUnit, LazyLoadedUnitSystem } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
@@ -36,6 +37,25 @@ export class InvertedUnit extends SchemaItem {
     schemaJson.invertsUnit = this.invertsUnit!.name;
     schemaJson.unitSystem = this.unitSystem!.name;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    const unitSystem = await this.unitSystem;
+    if (undefined !== unitSystem) {
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
+      itemElement.setAttribute("unitSystem", unitSystemName);
+    }
+
+    const invertsUnit = await this.invertsUnit;
+    if (undefined !== invertsUnit) {
+      const invertsUnitName = XmlSerializationUtils.createXmlTypedName(this.schema, invertsUnit.schema, invertsUnit.name);
+      itemElement.setAttribute("invertsUnit", invertsUnitName);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(invertedUnitProps: InvertedUnitProps) {

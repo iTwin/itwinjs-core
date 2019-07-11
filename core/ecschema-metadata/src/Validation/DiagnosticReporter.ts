@@ -132,10 +132,8 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   private formatMessage(diagnostic: AnyDiagnostic): string {
     let translatedMessage = this.translateMessage(diagnostic);
 
-    if (diagnostic.messageArgs.length > 0) {
+    if (diagnostic.messageArgs && diagnostic.messageArgs.length > 0)
       translatedMessage = this.formatStringFromArgs(translatedMessage, diagnostic.messageArgs);
-    }
-
     return translatedMessage;
   }
 
