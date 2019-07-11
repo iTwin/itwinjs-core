@@ -27,14 +27,14 @@ async function init() {
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeImpl({}, rpcInterfaces);
   } else {
-    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "integration-test", version: "v1.0" } }, rpcInterfaces);
+    const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "perf-tests", version: "v1.0" } }, rpcInterfaces);
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
     const server = new IModelJsExpressServer(rpcConfig.protocol);
     await server.initialize(port);
     // tslint:disable-next-line:no-console
-    console.log("Web backend for integration-tests listening on port " + port);
+    console.log("Web backend for perf-tests listening on port " + port);
   }
 }
 

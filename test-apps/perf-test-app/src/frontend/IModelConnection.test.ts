@@ -9,7 +9,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "./TestUsers";
 import { IModelConnection, MockRender, IModelApp } from "@bentley/imodeljs-frontend";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { TestRpcInterface } from "../common/RpcInterfaces";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -20,7 +20,6 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
 }
 
 describe("IModelConnection (#integration)", () => {
-  let iModel: IModelConnection;
   let testProjectId: string;
   let testIModelId: string;
 
@@ -38,25 +37,17 @@ describe("IModelConnection (#integration)", () => {
 
     testProjectId = await TestUtility.getTestProjectId("Bridge866");
     testIModelId = await TestUtility.getTestIModelId(testProjectId, "Building");
-
-    // iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
-    // await iModel.close();
   });
 
   after(async () => {
     await TestRpcInterface.getClient().saveReport();
-    if (iModel)
-      await iModel.close();
     MockRender.App.shutdown();
   });
 
   it("should be able to open an IModel", async () => {
-    const projectId = await TestUtility.getTestProjectId("Bridge866");
-    const iModelId = await TestUtility.getTestIModelId(projectId, "Building");
-
     // time to open an imodel with first revision
     const startTime = new Date().getTime();
-    const noVersionsIModel2 = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    const noVersionsIModel2 = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.first());
     const endTime = new Date().getTime();
     assert.isNotNull(noVersionsIModel2);
     assert.exists(noVersionsIModel2);
@@ -67,7 +58,7 @@ describe("IModelConnection (#integration)", () => {
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
-    const noVersionsIModel = await IModelConnection.open(projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    const noVersionsIModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     const endTime1 = new Date().getTime();
     assert.isNotNull(noVersionsIModel);
     assert.exists(noVersionsIModel);
@@ -78,7 +69,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("Execute a ECSQL Query", async () => {
-    iModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.exists(iModel);
 
     // time to execute a query
@@ -89,6 +80,8 @@ describe("IModelConnection (#integration)", () => {
     const info = { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" };
     await TestRpcInterface.getClient().addNewEntry("IntegrationPerformance", "ExecuteQuery", "Execution Time(s)", elapsedTime1, JSON.stringify(info));
     assert.equal(rows.length, 7);
+
+    await iModel.close();
   });
 
 });
