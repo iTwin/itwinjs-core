@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { FloatRgb, Rgba, FloatRgba, FloatPreMulRgba } from "../../render/webgl/FloatRGBA";
+import { FloatRgb, FloatRgb2, Rgba, FloatRgba, FloatRgba2, FloatPreMulRgba } from "../../render/webgl/FloatRGBA";
 
 interface Rgb {
   red: number;
@@ -50,12 +50,12 @@ function expectEqualRgb<T extends Rgb>(a: T, b: T) {
   expectRgb(a, b.red, b.green, b.blue);
 }
 
-function expectRgba(rgba: Rgba, r: number, g: number, b: number, a: number) {
+function expectRgba(rgba: Rgba | FloatRgba2, r: number, g: number, b: number, a: number) {
   expectRgb(rgba, r, g, b);
   expectComponent(rgba.alpha, a);
 }
 
-function expectEqualRgba(a: Rgba, b: Rgba) {
+function expectEqualRgba(a: Rgba | FloatRgba2, b: Rgba | FloatRgba2) {
   expectRgba(a, b.red, b.green, b.blue, b.alpha);
 }
 
@@ -128,5 +128,63 @@ describe("FloatPreMulRgba", () => {
     expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.true;
     bFloatPreMulRgba = new TestPreMulRgba(51, 102, 255, 127);
     expect(aFloatPreMulRgba.equals(bFloatPreMulRgba)).to.be.false;
+  });
+});
+
+class TestRgb2 extends FloatRgb2 {
+  public constructor(red: number, green: number, blue: number) {
+    super();
+    this.setColorDef(ColorDef.from(red, green, blue));
+  }
+}
+
+describe("FloatRgb2", () => {
+  it("should create and store rgb from ColorDef", () => {
+    let aFloatRgb = new TestRgb2(0, 0, 0);
+
+    // Test fromColorDef function
+    let bFloatRgb = FloatRgb2.fromColorDef(ColorDef.from(0, 0, 0));
+    expectRgb(bFloatRgb, 0, 0, 0);
+
+    bFloatRgb = FloatRgb2.fromColorDef(ColorDef.from(51, 102, 255));
+    aFloatRgb = new TestRgb2(51, 102, 255);
+    expectEqualRgb(bFloatRgb, aFloatRgb);
+  });
+});
+
+class TestRgba2 extends FloatRgba2 {
+  public constructor(red: number, green: number, blue: number, alpha: number) {
+    super();
+    this.setColorDef(ColorDef.from(red, green, blue, 255 - alpha));
+  }
+}
+
+describe("FloatRgba2", () => {
+  it("should create and store rgba in a variety of ways", () => {
+    let aFloatRgba = new TestRgba2(0, 0, 0, 0);
+    let bFloatRgba = new TestRgba2(0, 0, 0, 0);
+    expectEqualRgba(aFloatRgba, bFloatRgba);
+
+    // Test hasTranslucency function
+    aFloatRgba = new TestRgba2(0, 0, 0, 0);
+    expect(aFloatRgba.hasTranslucency).to.be.true;
+    aFloatRgba = new TestRgba2(0, 0, 0, 127);
+    expect(aFloatRgba.hasTranslucency).to.be.true;
+    aFloatRgba = new TestRgba2(0, 0, 0, 255);
+    expect(aFloatRgba.hasTranslucency).to.be.false;
+
+    // Test fromColorDef function
+    bFloatRgba = FloatRgba2.fromColorDef(ColorDef.from(0, 0, 0));
+    expectRgba(bFloatRgba, 0, 0, 0, 1);
+    bFloatRgba = FloatRgba2.fromColorDef(ColorDef.from(51, 102, 255));
+    aFloatRgba = new TestRgba2(51, 102, 255, 255);
+    expectEqualRgba(aFloatRgba, bFloatRgba);
+
+    // Test equals function
+    aFloatRgba = new TestRgba2(51, 102, 255, 51);
+    bFloatRgba = new TestRgba2(51, 102, 255, 51);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.true;
+    bFloatRgba = new TestRgba2(51, 102, 255, 127);
+    expect(aFloatRgba.equals(bFloatRgba)).to.be.false;
   });
 });

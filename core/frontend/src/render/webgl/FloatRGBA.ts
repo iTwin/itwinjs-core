@@ -271,6 +271,7 @@ export class FloatRgb2 extends FloatColor {
 export class FloatRgba2 extends FloatColor {
   protected constructor() {
     super(4);
+    this._components[3] = 1.0;
   }
 
   protected maskTbgr(tbgr: number) {
