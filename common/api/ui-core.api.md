@@ -94,8 +94,7 @@ export const Centered: React.FunctionComponent<CommonDivProps>;
 
 // @public
 export class Checkbox extends React.Component<CheckboxProps> {
-    constructor(props: CheckboxProps);
-    // @internal (undocumented)
+    // (undocumented)
     render(): JSX.Element;
 }
 

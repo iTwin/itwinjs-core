@@ -32,32 +32,15 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
  * @public
  */
 export class Checkbox extends React.Component<CheckboxProps> {
-  private _id: string = "";
-
-  constructor(props: CheckboxProps) {
-    super(props);
-
-    if (props.id)
-      this._id = props.id;
-    else
-      this._id = `core-checkbox-${Math.random().toString().replace(/0\./, "")}`;
-  }
-
-  /** @internal */
   public render() {
-    const { label, status, className, style, inputClassName, inputStyle, labelClassName, labelStyle, id, ...inputProps } = this.props;
-    const classNames = classnames(
-      "core-checkbox",
-      inputProps.disabled && "disabled",
-      status,
-      className,
-    );
+    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, ...inputProps } = this.props;
+    const checkBoxClass = classnames ("core-checkbox", status, className);
 
     return (
-      <span className={classNames} style={style} >
-        <input id={this._id} className={inputClassName} style={inputStyle} {...inputProps} type="checkbox" />
-        {label && <label htmlFor={this._id} className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}> {label} </label>}
-      </span>
+      <label className={checkBoxClass}>
+        <input type="checkbox" {...inputProps} disabled={inputProps.disabled} className={inputClassName} style={inputStyle}/>
+        <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>{this.props.label}</span>
+      </label>
     );
   }
 }

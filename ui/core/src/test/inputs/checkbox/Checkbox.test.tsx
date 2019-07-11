@@ -36,7 +36,6 @@ describe("Checkbox", () => {
   it("renders properly as disabled", () => {
     const checkbox = render(<Checkbox label="Test checkbox" disabled={true} />);
 
-    expect(checkbox.container.querySelector(".disabled"), "Checkbox class did not get set to 'disabled'").to.not.be.null;
-    expect(checkbox.container.querySelector("[disabled]"), "Checkbox tag did not get set as disabled").to.not.be.null;
+    expect((checkbox.container.childNodes[0] as HTMLElement).querySelector("[disabled]"), "Checkbox tag did not get set to 'disabled'").to.not.be.null;
   });
 });
