@@ -96,6 +96,7 @@ public;HasZ = Readonly
 public;IModelJson
 public;IndexedPolyface 
 public;IndexedPolyfaceVisitor 
+public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
 public;class IndexedXYZCollection
 public;InverseMatrixState
@@ -158,6 +159,7 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonOps
+public;PolylineOps
 internal;PowerPolynomial
 internal;Quadrature
 public;Range1d 

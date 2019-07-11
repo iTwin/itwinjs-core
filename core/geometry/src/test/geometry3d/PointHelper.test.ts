@@ -14,7 +14,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray, Point3dArrayCarrier } from "../../geometry3d/PointHelpers";
+import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } from "../../geometry3d/PointHelpers";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { MatrixTests } from "./Point3dVector3d.test";
@@ -643,7 +644,10 @@ describe("Point3dArray", () => {
 
   it("Point3dArrayCarrierBadIndex", () => {
     const ck = new Checker();
-    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3), Point3d.create(6, 2, 9), Point3d.create(6, 2, 0), Point3d.create(-4, 2, 8)]);
+    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3),
+    Point3d.create(6, 2, 9),
+    Point3d.create(6, 2, 0),
+    Point3d.create(-4, 2, 8)]);
     const a = carrier.length;
     // These methods should return undefined if any index is bad.
     // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any particular arg only has to be tested in one direction)
@@ -670,6 +674,45 @@ describe("Point3dArray", () => {
     ck.testUndefined(carrier.vectorIndexIndex(1, 30));
     ck.testUndefined(carrier.vectorXYAndZIndex(origin, -1));
     ck.testPointer(carrier.vectorXYAndZIndex(origin, 1));
+
+    const xyz1 = carrier.getPoint3dAtCheckedPointIndex(1)!;
+    const xyz3 = carrier.getPoint3dAtCheckedPointIndex(3)!;
+    const dA = carrier.distanceIndexIndex(1, 3);
+    const dA2 = carrier.distanceSquaredIndexIndex(1, 3);
+    ck.testCoordinate(xyz1.distanceSquared(xyz3), dA2, "distance indexIndex in carrier");
+    ck.testCoordinate(xyz1.distance(xyz3), dA, "distance indexIndex in carrier");
+
+    ck.testExactNumber(-2, carrier.distanceIndexIndex(0, 100, -2));
+    ck.testExactNumber(-2, carrier.distanceIndexIndex(1000, 0, -2));
+
+    ck.testExactNumber(-2, carrier.distanceSquaredIndexIndex(0, 100, -2));
+    ck.testExactNumber(-2, carrier.distanceSquaredIndexIndex(1000, 0, -2));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Point3dArrayCarrierPushPop", () => {
+    const ck = new Checker();
+    const carrierA = new Point3dArrayCarrier([]);
+    const carrierB = new Point3dArrayCarrier([]);
+    ck.testUndefined (carrierA.front (), "front() in empty array");
+    ck.testUndefined (carrierA.back (), "back() in empty array");
+    const zData = [10, 11, 12, 13, 14, 22];
+    for (let k = 0; k < zData.length; k++) {
+      carrierA.pushXYZ(k + 1, 2 * k + 5, zData[k]);
+      carrierB.push(Point3d.create(k + 1, 2 * k + 5, zData[k]));
+    }
+    ck.testPoint3d(carrierA.front()!, carrierB.front()!);
+    ck.testPoint3d(carrierA.back()!, carrierB.back()!);
+
+    for (let k = 1; k < zData.length; k++) {
+      carrierA.pop();
+      carrierB.pop();
+      ck.testPoint3d(carrierA.front()!, carrierB.front()!);
+      ck.testPoint3d(carrierA.back()!, carrierB.back()!);
+    }
+    ck.testExactNumber(1, carrierA.length);
+    ck.testExactNumber(1, carrierB.length);
     expect(ck.getNumErrors()).equals(0);
   });
 

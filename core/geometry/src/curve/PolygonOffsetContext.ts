@@ -123,7 +123,7 @@ class Joint {
         destination.tryAddChild(curve1);
       }
       return numOut++ < maxTest;
-    });
+    }, maxTest);
   }
   /** Execute `joint.annotateJointMode()` at all joints on the chain. */
   public static annotateChain(start: Joint, maxTest: number = 100) {

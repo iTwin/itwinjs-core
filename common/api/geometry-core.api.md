@@ -261,13 +261,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 
 // @public
 export interface ArcVectors {
-    // (undocumented)
     center: Point3d;
-    // (undocumented)
     sweep: AngleSweep;
-    // (undocumented)
     vector0: Vector3d;
-    // (undocumented)
     vector90: Vector3d;
 }
 
@@ -1660,7 +1656,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     }
 
 // @public
-export class GrowableXYZArray extends IndexedXYZCollection {
+export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     constructor(numPoints?: number);
     accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
     addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
@@ -2108,6 +2104,16 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
 }
 
 // @public
+export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
+    abstract back(result?: Point3d): Point3d | undefined;
+    abstract clear(): void;
+    abstract front(result?: Point3d): Point3d | undefined;
+    abstract pop(): void;
+    abstract push(data: XYAndZ): void;
+    abstract pushXYZ(x?: number, y?: number, z?: number): void;
+}
+
+// @public
 export abstract class IndexedXYCollection {
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined;
     abstract crossProductXAndYIndexIndex(origin: XAndY, indexA: number, indexB: number): number | undefined;
@@ -2123,6 +2129,8 @@ export abstract class IndexedXYZCollection {
     abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+    distanceIndexIndex(index0: number, index1: number, defaultDistance?: number): number;
+    distanceSquaredIndexIndex(index0: number, index1: number, defaultDistanceSquared?: number): number;
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     abstract readonly length: number;
@@ -3053,16 +3061,22 @@ export class Point3dArray {
     }
 
 // @public
-export class Point3dArrayCarrier extends IndexedXYZCollection {
+export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     constructor(data: Point3d[]);
     accumulateCrossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result: Vector3d): void;
+    back(result?: Point3d): Point3d | undefined;
+    clear(): void;
     crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     data: Point3d[];
+    front(result?: Point3d): Point3d | undefined;
     getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     isValidIndex(index: number): boolean;
     readonly length: number;
+    pop(): void;
+    push(data: Point3d): void;
+    pushXYZ(x?: number, y?: number, z?: number): void;
     vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
 }
@@ -3354,6 +3368,12 @@ export class PolygonOps {
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
     }
+
+// @public
+export class PolylineOps {
+    static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
+    static edgeLengthRange(points: Point3d[]): Range1d;
+}
 
 // @internal
 export class PowerPolynomial {

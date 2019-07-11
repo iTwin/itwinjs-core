@@ -11,7 +11,7 @@ import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 
 /**
- * abstract base class for access to XYZ data with indexed reference.
+ * abstract base class for read-only access to XYZ data with indexed reference.
  * * This allows algorithms to work with Point3d[] or GrowableXYZ.
  * ** GrowableXYZArray implements these for its data.
  * ** Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
@@ -83,4 +83,58 @@ export abstract class IndexedXYZCollection {
    * read-only property for number of XYZ in the collection.
    */
   public abstract get length(): number;
+  /**
+   * Return distance squared between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   *
+   */
+  public distanceSquaredIndexIndex(index0: number, index1: number, defaultDistanceSquared: number = Number.MAX_VALUE) {
+    const vector = this.vectorIndexIndex(index0, index1);
+    if (vector !== undefined)
+      return vector.magnitudeSquared();
+    return defaultDistanceSquared;
+  }
+  /**
+   * Return distance between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   */
+  public distanceIndexIndex(index0: number, index1: number, defaultDistance: number = Number.MAX_VALUE) {
+    const vector = this.vectorIndexIndex(index0, index1);
+    if (vector !== undefined)
+      return vector.magnitude();
+    return defaultDistance;
+  }
+
+}
+/**
+ * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
+ * @public
+ */
+export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
+  /** push a (clone of) point onto the collection
+   * * point itself is not pushed -- xyz data is extracted into the native form of the collection.
+   */
+  public abstract push(data: XYAndZ): void;
+  /**
+   * push a new point (given by coordinates) onto the collection
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param z z coordinate
+   */
+  public abstract pushXYZ(x?: number, y?: number, z?: number): void;
+  /** extract the final point */
+  public abstract back(result?: Point3d): Point3d | undefined;
+  /** extract the first point */
+  public abstract front(result?: Point3d): Point3d | undefined;
+  /** remove the final point. */
+  public abstract pop(): void;
+  /**  clear all entries */
+  public abstract clear(): void;
+
 }

@@ -19,6 +19,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 
 import { Range3d } from "../../geometry3d/Range";
 import { PolygonWireOffsetContext } from "../../curve/PolygonOffsetContext";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
 
 describe("RegionOps", () => {
 
@@ -59,18 +60,22 @@ describe("RegionOps", () => {
  * @param distances offset distances
  * @param distanceFactor factor to apply to distances.
  */
-function testPolygonOffset(polygons: Point3d[][], caseName: string,
-  distances: number[] = [-0.5, 0.5, 1.0, -1.0, -2.0],
-  distanceFactor: number = 1) {
+function testPolygonOffset(polygons: Point3d[][],
+  caseName: string,
+  distances: number[],
+  distanceFactor: number) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
   let y0 = 0;
-  const yStep = 20.0;
 
   const context = new PolygonWireOffsetContext();
   for (const points of polygons) {
+    const range = Range3d.createArray(points);
+    const yStep = 2.0 * range.yLength();
     y0 = 0.0;
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+    y0 += yStep;
     for (const closed of [false, true]) {
       if (closed && !points[0].isAlmostEqualMetric(points[points.length - 1]))
         continue;
@@ -87,6 +92,62 @@ function testPolygonOffset(polygons: Point3d[][], caseName: string,
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", caseName);
   expect(ck.getNumErrors()).equals(0);
 }
+
+/**
+ * Exercise PolygonWireOffset and output to a file.
+ * @param polygons polygons to offset
+ * @param caseName name to use for output file
+ * @param distances offset distances
+ * @param distanceFactor factor to apply to distances.
+ */
+function testFilteredPolygonOffset(polygons: Point3d[][],
+  caseName: string,
+  distances: number[],
+  filterFactor: number[]) {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  let x0 = 0;
+  let y0 = 0;
+
+  const context = new PolygonWireOffsetContext();
+  for (const points of polygons) {
+    const range = Range3d.createArray(points);
+    const yStep = 2.0 * range.yLength();
+    const xStep = 2.0 * range.xLength();
+    y0 = 0.0;
+    const closed = points[0].isAlmostEqual(points[points.length - 1]);
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+
+    x0 += xStep;
+    for (const offsetDistance of distances) {
+      y0 = 0.0;
+      // unfiltered offset
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+      const stickA0 = context.constructPolygonWireXYOffset(points, closed, offsetDistance);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA0!, x0, y0, 0);
+      const stickB0 = context.constructPolygonWireXYOffset(points, closed, -offsetDistance);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB0!, x0, y0, 0);
+      y0 += yStep;
+      for (const factor of filterFactor) {
+        const pointsA = PolylineOps.compressByChordError(points, factor * offsetDistance);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points[0], factor * offsetDistance, x0, y0, 0.0);
+        // overlay original, filter, and offset ...
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pointsA), x0, y0, 0);
+        const stickA = context.constructPolygonWireXYOffset(pointsA, closed, offsetDistance);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
+        const stickB = context.constructPolygonWireXYOffset(pointsA, closed, -offsetDistance);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickB!, x0, y0, 0);
+        y0 += yStep;
+      }
+      x0 += xStep;
+    }
+  }
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", caseName);
+  expect(ck.getNumErrors()).equals(0);
+}
+
 describe("PolygonOffset", () => {
 
   it("TestA", () => {
@@ -104,7 +165,7 @@ describe("PolygonOffset", () => {
       Point3d.create(6.6, 1)];
     const star1 = Sample.createStar(1, 1, 0, 4, 3, 3, true);
     const star2 = Sample.createStar(1, 1, 0, 5, 2, 5, true);
-    testPolygonOffset([rectangle0, star1, star2, wPoints], "TestA");
+    testPolygonOffset([rectangle0, star1, star2, wPoints], "TestA", [-0.5, 0.5, 1.0, -1.0, -2.0], 1.0);
 
   });
 
@@ -156,16 +217,20 @@ describe("PolygonOffset", () => {
   });
 
   it("TestFractals", () => {
-    const points = Sample.createFractalLMildConcavePatter(2, 0.9);
-    let r = Range3d.createArray(points);
+    const pointsA = Sample.createFractalLMildConcavePatter(2, 0.9);
+    let r = Range3d.createArray(pointsA);
     let a = r.xLength() * 0.02;
     let offsetDistances = [2 * a, a, -a, -2 * a];
-    testPolygonOffset([points], "MildConcaveFractal", offsetDistances, 1);
+    testPolygonOffset([pointsA], "MildConcaveFractal", offsetDistances, 1.0);
     const pointsB = Sample.createFractalHatReversingPattern(2, 0.9);
-    r = Range3d.createArray(points);
+    r = Range3d.createArray(pointsA);
     a = r.xLength() * 0.005;
     offsetDistances = [a, 2 * a, 4 * a];
     testPolygonOffset([pointsB], "FractalHatReverse", offsetDistances, 1);
+
+    const filterFactors = [0.5, 1.0, 1.5, 2.0];
+    testFilteredPolygonOffset([pointsA, pointsB], "filteredFractals", offsetDistances, filterFactors);
+
   });
 
 });

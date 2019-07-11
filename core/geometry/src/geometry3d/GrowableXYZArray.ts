@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d, Range1d } from "./Range";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -19,9 +19,9 @@ import { Point2d } from "./Point2dVector2d";
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public
  */
-export class GrowableXYZArray extends IndexedXYZCollection {
+export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /**
-   * array of packed xyzxyzxyz components
+   * array of packed xyz xyz xyz components
    */
   private _data: Float64Array;
   /**
