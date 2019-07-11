@@ -13,8 +13,8 @@ import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 import {
-  DropTarget, Zone as NZ_Zone, RectangleProps, ZonesManagerWidgets,
-  Outline, ZoneManagerProps, WidgetZoneIndex, DraggingWidgetProps,
+  ZoneTargetType, Zone as NZ_Zone, RectangleProps, ZonesManagerWidgetsProps,
+  Outline, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps,
 } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
@@ -22,15 +22,15 @@ import { CommonProps } from "@bentley/ui-core";
  * @internal
  */
 export interface FrameworkZoneProps extends CommonProps {
-  draggingWidget: DraggingWidgetProps | undefined;
-  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
-  dropTarget: DropTarget;
+  dropTarget: ZoneTargetType | undefined;
   fillZone?: boolean;
   isHidden: boolean;
-  widgets: ZonesManagerWidgets;
+  widgets: ZonesManagerWidgetsProps;
   zoneDefProvider: ZoneDefProvider;
   zoneProps: ZoneManagerProps;
 }
@@ -140,7 +140,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <WidgetStack
-        draggingWidget={this.props.draggingWidget}
+        draggedWidget={this.props.draggedWidget}
         fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         getWidgetContentRef={this.props.getWidgetContentRef}
         isCollapsed={false}

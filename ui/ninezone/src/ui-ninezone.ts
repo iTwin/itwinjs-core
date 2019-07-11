@@ -101,7 +101,6 @@ export * from "./ui-ninezone/widget/tools/button/Icon";
 
 export * from "./ui-ninezone/widget/rectangular/Content";
 export * from "./ui-ninezone/widget/rectangular/ResizeGrip";
-export * from "./ui-ninezone/widget/rectangular/ResizeHandle";
 
 export * from "./ui-ninezone/widget/rectangular/tab/Group";
 export * from "./ui-ninezone/widget/rectangular/tab/Separator";
@@ -116,14 +115,9 @@ export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
 export * from "./ui-ninezone/zones/Zones";
 
-export * from "./ui-ninezone/zones/manager/Target";
 export * from "./ui-ninezone/zones/manager/Widget";
 export * from "./ui-ninezone/zones/manager/Zone";
 export * from "./ui-ninezone/zones/manager/Zones";
-
-export * from "./ui-ninezone/zones/manager/layout/Layout";
-export * from "./ui-ninezone/zones/manager/layout/Layouts";
-export * from "./ui-ninezone/zones/manager/layout/Root";
 
 export * from "./ui-ninezone/zones/target/Back";
 export * from "./ui-ninezone/zones/target/Merge";

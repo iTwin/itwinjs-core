@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import {
   StagePanel as NZ_StagePanel, StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
   StagePanelTypeHelpers, NineZoneStagePanelManagerProps, StagePanelTarget, Splitter, ZonesManagerProps,
-  WidgetZoneIndex, SplitterTarget, SplitterPaneTarget as NZ_SplitterPaneTarget,
+  WidgetZoneId, SplitterTarget, SplitterPaneTarget as NZ_SplitterPaneTarget,
 } from "@bentley/ui-ninezone";
 import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -78,7 +78,7 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
  * @internal
  */
 export interface StagePanelRuntimeProps {
-  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;
   stagePanelChangeHandler: StagePanelChangeHandler;
@@ -133,8 +133,8 @@ export class StagePanel extends React.Component<StagePanelProps> {
 
     const className = classnames("uifw-stagepanel");
     const { panelDef, panel, zones, zoneDefProvider, getWidgetContentRef, widgetChangeHandler } = this.props.runtimeProps;
-    const draggingWidget = zones.draggingWidget;
-    const isTargetVisible = draggingWidget && this.props.allowedZones && this.props.allowedZones.some((z) => draggingWidget.id === z);
+    const draggedWidget = zones.draggedWidget;
+    const isTargetVisible = draggedWidget && this.props.allowedZones && this.props.allowedZones.some((z) => draggedWidget.id === z);
     const paneCount = panelDef.widgetCount + panel.panes.length;
     const type = getStagePanelType(panelDef.location);
     if (paneCount === 0) {
@@ -197,7 +197,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
                 style={{ height: "100%", position: "relative" }}
               >
                 <WidgetStack
-                  draggingWidget={undefined}
+                  draggedWidget={undefined}
                   fillZone={true}
                   getWidgetContentRef={getWidgetContentRef}
                   isCollapsed={panel.isCollapsed}

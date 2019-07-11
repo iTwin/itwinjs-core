@@ -21,10 +21,9 @@ import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DndComponentClass } from 'react-dnd';
-import { DraggingWidgetProps } from '@bentley/ui-ninezone';
+import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
-import { DropTarget } from '@bentley/ui-ninezone';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { Face } from '@bentley/ui-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
@@ -77,11 +76,9 @@ import { SnapMode } from '@bentley/imodeljs-frontend';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
-import { StatusZoneManagerProps } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
-import { TargetType } from '@bentley/ui-ninezone';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
@@ -96,11 +93,12 @@ import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
-import { WidgetZoneIndex } from '@bentley/ui-ninezone';
+import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
-import { ZonesManagerWidgets } from '@bentley/ui-ninezone';
+import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
+import { ZoneTargetType } from '@bentley/ui-ninezone';
 
 // @public
 export interface Action<T extends string> {
@@ -1276,7 +1274,7 @@ export interface DrawingNavigationCanvasProps {
 // @internal
 export interface EachWidgetProps {
     // (undocumented)
-    id: WidgetZoneIndex;
+    id: WidgetZoneId;
     // (undocumented)
     isStatusBar: boolean;
     // (undocumented)
@@ -1393,13 +1391,13 @@ export class FrameworkZone extends React_2.Component<FrameworkZoneProps, Framewo
 // @internal
 export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
-    draggingWidget: DraggingWidgetProps | undefined;
+    draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
-    dropTarget: DropTarget;
+    dropTarget: ZoneTargetType | undefined;
     // (undocumented)
     fillZone?: boolean;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
@@ -1409,7 +1407,7 @@ export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
-    widgets: ZonesManagerWidgets;
+    widgets: ZonesManagerWidgetsProps;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
     // (undocumented)
@@ -1451,7 +1449,7 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    getGhostOutlineBounds(zoneId: WidgetZoneIndex): RectangleProps | undefined;
+    getGhostOutlineBounds(zoneId: WidgetZoneId): RectangleProps | undefined;
     // (undocumented)
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // @alpha (undocumented)
@@ -1463,29 +1461,29 @@ export class FrontstageComposer extends React_2.Component<CommonProps, Frontstag
     // @alpha (undocumented)
     handlePanelTargetChange(panelLocation: StagePanelLocation | undefined): void;
     // (undocumented)
-    handleResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+    handleResize: (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void;
     // (undocumented)
-    handleTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+    handleTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
     // (undocumented)
     handleTabDrag: (dragged: PointProps) => void;
     // (undocumented)
     handleTabDragEnd: () => void;
     // (undocumented)
-    handleTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
+    handleTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
     // (undocumented)
-    handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void;
+    handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
     // @alpha (undocumented)
     handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
     // (undocumented)
-    handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean): void;
+    handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
     // (undocumented)
     handleZonesBoundsChange(bounds: RectangleProps): void;
     // (undocumented)
-    mergeZones(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex): void;
+    mergeZones(toMergeId: WidgetZoneId, targetId: WidgetZoneId): void;
     // (undocumented)
     render(): React_2.ReactNode;
     // (undocumented)
-    setZoneAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean): void;
+    setZoneAllowsMerging(zoneId: WidgetZoneId, allowsMerging: boolean): void;
     // @internal (undocumented)
     readonly state: Readonly<FrontstageComposerState>;
 }
@@ -3022,7 +3020,7 @@ export interface StagePanelProps {
 // @internal
 export interface StagePanelRuntimeProps {
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     panel: NineZoneStagePanelManagerProps;
     // (undocumented)
@@ -3136,9 +3134,11 @@ export class StatusBarZone extends React_2.Component<StatusBarZoneProps> {
 // @internal
 export interface StatusBarZoneProps extends CommonProps {
     // (undocumented)
-    dropTarget: DropTarget;
+    dropTarget: ZoneTargetType | undefined;
     // (undocumented)
     isHidden: boolean;
+    // (undocumented)
+    isInFooterMode: boolean;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
@@ -3148,7 +3148,7 @@ export interface StatusBarZoneProps extends CommonProps {
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
     // (undocumented)
-    zoneProps: StatusZoneManagerProps;
+    zoneProps: ZoneManagerProps;
 }
 
 // @public
@@ -3234,7 +3234,7 @@ export interface SyncUiProps {
 // @public
 export interface TargetChangeHandler {
     // (undocumented)
-    handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void;
+    handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
 }
 
 // @public
@@ -3837,15 +3837,15 @@ export const WIDGET_OPACITY_DEFAULT = 0.9;
 // @public
 export interface WidgetChangeHandler {
     // (undocumented)
-    handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
+    handleResize(zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number): void;
     // (undocumented)
-    handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number): void;
+    handleTabClick(widgetId: WidgetZoneId, tabIndex: number): void;
     // (undocumented)
     handleTabDrag(dragged: PointProps): void;
     // (undocumented)
     handleTabDragEnd(): void;
     // (undocumented)
-    handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetBounds: RectangleProps): void;
+    handleTabDragStart(widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps): void;
     // (undocumented)
     handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void;
 }
@@ -3976,11 +3976,11 @@ export class WidgetStack extends React_2.Component<WidgetStackProps> {
 // @internal
 export interface WidgetStackProps extends CommonProps {
     // (undocumented)
-    draggingWidget: DraggingWidgetProps | undefined;
+    draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
     fillZone: boolean;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     isCollapsed: boolean;
     // (undocumented)
@@ -3990,11 +3990,11 @@ export interface WidgetStackProps extends CommonProps {
     // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
-    widgets: ReadonlyArray<WidgetZoneIndex>;
+    widgets: ReadonlyArray<WidgetZoneId>;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
     // (undocumented)
-    zonesWidgets: ZonesManagerWidgets;
+    zonesWidgets: ZonesManagerWidgetsProps;
 }
 
 // @internal
@@ -4012,7 +4012,7 @@ export class WidgetStackTabGroup extends React_2.Component<WidgetStackTabGroupPr
 // @internal
 export interface WidgetStackTabGroupProps {
     // (undocumented)
-    draggingWidget: DraggingWidgetProps | undefined;
+    draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
@@ -4024,19 +4024,19 @@ export interface WidgetStackTabGroupProps {
     // (undocumented)
     isWidgetOpen: boolean;
     // (undocumented)
-    onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+    onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
     // (undocumented)
     onTabDrag: (dragged: PointProps) => void;
     // (undocumented)
     onTabDragEnd: () => void;
     // (undocumented)
-    onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+    onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
     // (undocumented)
     tabs: WidgetTabProps[];
     // (undocumented)
     verticalAnchor: VerticalAnchor;
     // (undocumented)
-    widgetId: WidgetZoneIndex;
+    widgetId: WidgetZoneId;
 }
 
 // @internal
@@ -4082,7 +4082,7 @@ export class WidgetStackTabs extends React_2.Component<WidgetStackTabsProps> {
 // @internal
 export interface WidgetStackTabsProps {
     // (undocumented)
-    draggingWidget: DraggingWidgetProps | undefined;
+    draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
     horizontalAnchor: HorizontalAnchor;
     // (undocumented)
@@ -4092,13 +4092,13 @@ export interface WidgetStackTabsProps {
     // (undocumented)
     isWidgetOpen: boolean;
     // (undocumented)
-    onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+    onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
     // (undocumented)
     onTabDrag: (dragged: PointProps) => void;
     // (undocumented)
     onTabDragEnd: () => void;
     // (undocumented)
-    onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+    onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
     // (undocumented)
     verticalAnchor: VerticalAnchor;
     // (undocumented)
@@ -4286,21 +4286,23 @@ export interface ZoneProps extends CommonProps {
 // @internal
 export interface ZoneRuntimeProps {
     // (undocumented)
-    draggingWidget: DraggingWidgetProps | undefined;
+    draggedWidget: DraggedWidgetManagerProps | undefined;
     // (undocumented)
-    dropTarget: DropTarget;
+    dropTarget: ZoneTargetType | undefined;
     // (undocumented)
-    getWidgetContentRef: (id: WidgetZoneIndex) => React_2.Ref<HTMLDivElement>;
+    getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     ghostOutline: RectangleProps | undefined;
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
+    isInFooterMode: boolean;
+    // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
-    widgets: ZonesManagerWidgets;
+    widgets: ZonesManagerWidgetsProps;
     // (undocumented)
     zoneDef: ZoneDef;
     // (undocumented)
@@ -4332,11 +4334,11 @@ export class ZoneTargets extends React_2.Component<ZoneTargetsProps> {
 // @internal
 export interface ZoneTargetsProps extends CommonProps {
     // (undocumented)
-    dropTarget: DropTarget;
+    dropTarget: ZoneTargetType | undefined;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;
     // (undocumented)
-    zoneId: WidgetZoneIndex;
+    zoneId: WidgetZoneId;
 }
 
 

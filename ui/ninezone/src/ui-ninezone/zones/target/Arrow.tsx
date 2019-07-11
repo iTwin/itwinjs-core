@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { WidgetZoneIndex } from "../manager/Zones";
+import { WidgetZoneId } from "../manager/Zones";
 import "./Arrow.scss";
 
 /** Properties of [[Arrow]] component.
@@ -15,7 +15,7 @@ import "./Arrow.scss";
  */
 export interface ArrowProps extends CommonProps {
   /** Describes arrow rotation. */
-  zoneIndex: WidgetZoneIndex;
+  zoneIndex: WidgetZoneId;
 }
 
 /** Arrow icon used in [[MergeTarget]], [[BackTarget]] components.

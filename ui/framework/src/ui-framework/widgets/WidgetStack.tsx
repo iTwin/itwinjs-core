@@ -7,8 +7,8 @@
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import {
-  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, PointProps,
-  TabSeparator, WidgetZoneIndex, TabMode, HandleMode, Rectangle, ZonesManagerWidgets, DraggingWidgetProps, RectangleProps, VerticalAnchorHelpers,
+  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, PointProps, TabSeparator,
+  WidgetZoneId, TabMode, HandleMode, Rectangle, DraggedWidgetManagerProps, RectangleProps, VerticalAnchorHelpers, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
 import { BetaBadge } from "../betabadge/BetaBadge";
 import { WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
@@ -31,7 +31,7 @@ export interface WidgetTabProps {
  * @internal
  */
 export interface EachWidgetProps {
-  id: WidgetZoneIndex;
+  id: WidgetZoneId;
   tabs: WidgetTabProps[];
   isStatusBar: boolean;
 }
@@ -40,16 +40,16 @@ export interface EachWidgetProps {
  * @internal
  */
 export interface WidgetStackProps extends CommonProps {
-  draggingWidget: DraggingWidgetProps | undefined;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
   fillZone: boolean;
-  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   isFloating: boolean;
   isCollapsed: boolean;
   isInStagePanel: boolean;
-  widgets: ReadonlyArray<WidgetZoneIndex>;
+  widgets: ReadonlyArray<WidgetZoneId>;
   widgetChangeHandler: WidgetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
-  zonesWidgets: ZonesManagerWidgets;
+  zonesWidgets: ZonesManagerWidgetsProps;
 }
 
 /** Widget stack React component.
@@ -116,7 +116,7 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
     const firstWidget = this.props.zonesWidgets[widgets[0].id];
     const horizontalAnchor = firstWidget.horizontalAnchor;
     const verticalAnchor = firstWidget.verticalAnchor;
-    const isDragged = widgets.some((w) => !!this.props.draggingWidget && this.props.draggingWidget.id === w.id);
+    const isDragged = widgets.some((w) => !!this.props.draggedWidget && this.props.draggedWidget.id === w.id);
     return (
       <NZ_WidgetStack
         className={this.props.className}
@@ -132,7 +132,7 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
         onResize={this.props.isInStagePanel ? undefined : this._handleOnWidgetResize}
         ref={this._widgetStack}
         tabs={<WidgetStackTabs
-          draggingWidget={this.props.draggingWidget}
+          draggedWidget={this.props.draggedWidget}
           horizontalAnchor={horizontalAnchor}
           isCollapsed={this.props.isCollapsed}
           isProtruding={!this.props.isInStagePanel}
@@ -150,11 +150,11 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
     );
   }
 
-  private _handleOnWidgetResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this.props.widgetChangeHandler.handleResize(this.props.widgets[0], x, y, handle, filledHeightDiff);
+  private _handleOnWidgetResize = (resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this.props.widgetChangeHandler.handleResize(this.props.widgets[0], resizeBy, handle, filledHeightDiff);
   }
 
-  private _handleTabDragStart = (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
+  private _handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
     if (!this._widgetStack.current)
       return;
 
@@ -174,7 +174,7 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
     this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
-  private _handleTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
+  private _handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
     this.props.widgetChangeHandler.handleTabClick(widgetId, tabIndex);
   }
 
@@ -187,15 +187,15 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
  * @internal
  */
 export interface WidgetStackTabsProps {
-  draggingWidget: DraggingWidgetProps | undefined;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
   horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
   isProtruding: boolean;
   isWidgetOpen: boolean;
-  onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
-  onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+  onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   verticalAnchor: VerticalAnchor;
   widgets: ReadonlyArray<EachWidgetProps>;
 }
@@ -212,7 +212,7 @@ export class WidgetStackTabs extends React.Component<WidgetStackTabsProps> {
             isHorizontal={VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)}
           />}
           <WidgetStackTabGroup
-            draggingWidget={this.props.draggingWidget}
+            draggedWidget={this.props.draggedWidget}
             horizontalAnchor={this.props.horizontalAnchor}
             isCollapsed={this.props.isCollapsed}
             isProtruding={this.props.isProtruding}
@@ -236,19 +236,19 @@ export class WidgetStackTabs extends React.Component<WidgetStackTabsProps> {
  * @internal
  */
 export interface WidgetStackTabGroupProps {
-  draggingWidget: DraggingWidgetProps | undefined;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
   horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
   isProtruding: boolean;
   isStacked: boolean;
   isWidgetOpen: boolean;
-  onTabClick: (widgetId: WidgetZoneIndex, tabIndex: number) => void;
+  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
-  onTabDragStart: (widgetId: WidgetZoneIndex, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+  onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   tabs: WidgetTabProps[];
   verticalAnchor: VerticalAnchor;
-  widgetId: WidgetZoneIndex;
+  widgetId: WidgetZoneId;
 }
 
 /** Widget tab group used in [[WidgetStackTabs]] component.
@@ -258,8 +258,8 @@ export class WidgetStackTabGroup extends React.Component<WidgetStackTabGroupProp
   private _firstTab = React.createRef<Tab>();
 
   public render(): React.ReactNode {
-    const isDragged = this.props.draggingWidget && this.props.draggingWidget.id === this.props.widgetId;
-    const lastPosition = isDragged ? this.props.draggingWidget!.lastPosition : undefined;
+    const isDragged = this.props.draggedWidget && this.props.draggedWidget.id === this.props.widgetId;
+    const lastPosition = isDragged ? this.props.draggedWidget!.lastPosition : undefined;
     const tabs = this.props.tabs.map((tab: WidgetTabProps, index: number) => {
       const mode = !this.props.isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
@@ -301,7 +301,7 @@ export class WidgetStackTabGroup extends React.Component<WidgetStackTabGroupProp
   }
 
   private getTabHandleMode() {
-    if (this.props.draggingWidget && this.props.draggingWidget.id === this.props.widgetId && this.props.draggingWidget.isUnmerge)
+    if (this.props.draggedWidget && this.props.draggedWidget.id === this.props.widgetId && this.props.draggedWidget.isUnmerge)
       return HandleMode.Visible;
 
     if (this.props.isStacked)

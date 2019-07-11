@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor and test ZonesManager.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

@@ -16,7 +16,7 @@ import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../fr
 import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
-import { isStatusZone, DropTarget, RectangleProps, ZoneManagerProps, ZonesManagerWidgets, WidgetZoneIndex, DraggingWidgetProps } from "@bentley/ui-ninezone";
+import { ZoneTargetType, RectangleProps, ZoneManagerProps, ZonesManagerWidgetsProps, WidgetZoneId, DraggedWidgetManagerProps } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Enum for [[Zone]] Location.
@@ -57,17 +57,18 @@ export interface ZoneProps extends CommonProps {
  * @internal
  */
 export interface ZoneRuntimeProps {
-  draggingWidget: DraggingWidgetProps | undefined;
-  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
+  dropTarget: ZoneTargetType | undefined;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  ghostOutline: RectangleProps | undefined;
+  isHidden: boolean;
+  isInFooterMode: boolean;
+  targetChangeHandler: TargetChangeHandler;
+  widgets: ZonesManagerWidgetsProps;
+  widgetChangeHandler: WidgetChangeHandler;
+  zoneDefProvider: ZoneDefProvider;
   zoneDef: ZoneDef;
   zoneProps: ZoneManagerProps;
-  widgetChangeHandler: WidgetChangeHandler;
-  targetChangeHandler: TargetChangeHandler;
-  zoneDefProvider: ZoneDefProvider;
-  ghostOutline: RectangleProps | undefined;
-  dropTarget: DropTarget;
-  isHidden: boolean;
-  widgets: ZonesManagerWidgets;
 }
 
 /** Zone React component.
@@ -131,7 +132,7 @@ export class Zone extends React.Component<ZoneProps> {
             isHidden={runtimeProps.isHidden} />
         );
       } else if (zoneDef.isStatusBar) {
-        if (!isStatusZone(runtimeProps.zoneProps))
+        if (runtimeProps.zoneProps.id !== 8)
           throw new TypeError();
 
         let widgetControl: StatusBarWidgetControl | undefined;
@@ -144,14 +145,15 @@ export class Zone extends React.Component<ZoneProps> {
         return (
           <StatusBarZone
             className={this.props.className}
-            style={this.props.style}
-            widgetControl={widgetControl}
-            zoneProps={runtimeProps.zoneProps}
-            widgetChangeHandler={runtimeProps.widgetChangeHandler}
-            targetChangeHandler={runtimeProps.targetChangeHandler}
-            targetedBounds={runtimeProps.ghostOutline}
             dropTarget={runtimeProps.dropTarget}
             isHidden={runtimeProps.isHidden}
+            isInFooterMode={runtimeProps.isInFooterMode}
+            style={this.props.style}
+            targetChangeHandler={runtimeProps.targetChangeHandler}
+            targetedBounds={runtimeProps.ghostOutline}
+            widgetChangeHandler={runtimeProps.widgetChangeHandler}
+            widgetControl={widgetControl}
+            zoneProps={runtimeProps.zoneProps}
           />
         );
       }
@@ -160,7 +162,7 @@ export class Zone extends React.Component<ZoneProps> {
     return (
       <FrameworkZone
         className={this.props.className}
-        draggingWidget={runtimeProps.draggingWidget}
+        draggedWidget={runtimeProps.draggedWidget}
         getWidgetContentRef={runtimeProps.getWidgetContentRef}
         style={this.props.style}
         zoneProps={runtimeProps.zoneProps}

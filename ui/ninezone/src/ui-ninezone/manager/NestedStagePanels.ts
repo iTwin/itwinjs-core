@@ -6,7 +6,7 @@
 
 import { NestedStagePanelsManagerProps, NestedStagePanelsManager, NestedStagePanelKey, NestedStagePanelsId } from "../stage-panels/manager/NestedStagePanels";
 import { NineZoneStagePanelsManagerProps, NineZoneStagePanelsManager } from "./StagePanels";
-import { WidgetZoneIndex } from "../zones/manager/Zones";
+import { WidgetZoneId } from "../zones/manager/Zones";
 
 /** Properties used by [[NineZoneNestedStagePanelsManager]].
  * @alpha
@@ -21,7 +21,7 @@ export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanels
 export class NineZoneNestedStagePanelsManager extends NestedStagePanelsManager {
   private _nzManagers?: Map<string | number, NineZoneStagePanelsManager>;
 
-  public addWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneIndex, panel: NestedStagePanelKey<TProps>, paneIndex: number | undefined, props: TProps): TProps {
+  public addWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneId, panel: NestedStagePanelKey<TProps>, paneIndex: number | undefined, props: TProps): TProps {
     const panels = props.panels[panel.id];
     const manager = this.getPanelsManager(panel.id);
     const updatedPanels = manager.addWidget(widget, panel.type, paneIndex, panels);
@@ -37,7 +37,7 @@ export class NineZoneNestedStagePanelsManager extends NestedStagePanelsManager {
     };
   }
 
-  public removeWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneIndex, panel: NestedStagePanelKey<TProps>, props: TProps): TProps {
+  public removeWidget<TProps extends NineZoneNestedStagePanelsManagerProps>(widget: WidgetZoneId, panel: NestedStagePanelKey<TProps>, props: TProps): TProps {
     const panels = props.panels[panel.id];
     const manager = this.getPanelsManager(panel.id);
     const updatedPanels = manager.removeWidget(widget, panel.type, panels);

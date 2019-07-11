@@ -7,7 +7,7 @@
 import { StagePanelsManagerProps, StagePanelsManager } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";
 import { NineZoneStagePanelManagerProps, NineZoneStagePanelManager, getDefaultNineZoneStagePanelManagerProps } from "./StagePanel";
-import { WidgetZoneIndex } from "../zones/manager/Zones";
+import { WidgetZoneId } from "../zones/manager/Zones";
 
 /** Properties used by [[NineZoneStagePanelsManager]].
  * @alpha
@@ -42,7 +42,7 @@ const panelPropertyNames = [
 export class NineZoneStagePanelsManager extends StagePanelsManager {
   private _nzManagers?: Map<StagePanelType, NineZoneStagePanelManager>;
 
-  public addWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneIndex, type: StagePanelType, paneIndex: number | undefined, props: TProps): TProps {
+  public addWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneId, type: StagePanelType, paneIndex: number | undefined, props: TProps): TProps {
     const panel = StagePanelsManager.getPanel(type, props);
     const updatedPanel = this.getPanelManager(type).addWidget(widget, paneIndex, panel);
     if (panel === updatedPanel)
@@ -55,7 +55,7 @@ export class NineZoneStagePanelsManager extends StagePanelsManager {
     };
   }
 
-  public removeWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneIndex, type: StagePanelType, props: TProps): TProps {
+  public removeWidget<TProps extends NineZoneStagePanelsManagerProps>(widget: WidgetZoneId, type: StagePanelType, props: TProps): TProps {
     const panel = StagePanelsManager.getPanel(type, props);
     const updatedPanel = this.getPanelManager(type).removeWidget(widget, panel);
     if (panel === updatedPanel)
@@ -68,7 +68,7 @@ export class NineZoneStagePanelsManager extends StagePanelsManager {
     };
   }
 
-  public findWidget<TProps extends NineZoneStagePanelsManagerProps>(widgetId: WidgetZoneIndex, props: TProps) {
+  public findWidget<TProps extends NineZoneStagePanelsManagerProps>(widgetId: WidgetZoneId, props: TProps) {
     const panels = panelPropertyNames.map((propName) => props[propName]);
     for (const [index, panel] of panels.entries()) {
       const panelPropertyName = panelPropertyNames[index];

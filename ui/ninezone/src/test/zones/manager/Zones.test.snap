@@ -2,12 +2,7 @@
 
 exports[`ZonesManager mergeZone should merge zone 1`] = `
 Object {
-  "bounds": Object {
-    "bottom": 0,
-    "left": 0,
-    "right": 0,
-    "top": 0,
-  },
+  "isInFooterMode": true,
   "widgets": Object {
     "1": Object {
       "horizontalAnchor": 0,
@@ -143,7 +138,7 @@ Object {
       ],
     },
     "8": Object {
-      "allowsMerging": false,
+      "allowsMerging": true,
       "bounds": Object {
         "bottom": 40,
         "left": 0,
@@ -151,7 +146,6 @@ Object {
         "top": 0,
       },
       "id": 8,
-      "isInFooterMode": true,
       "isLayoutChanged": false,
       "widgets": Array [
         8,

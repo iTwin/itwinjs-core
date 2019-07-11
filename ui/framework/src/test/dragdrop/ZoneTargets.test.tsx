@@ -9,12 +9,12 @@ import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import { ZoneTargets } from "../../ui-framework";
-import { DropTarget, WidgetZoneIndex, TargetType, MergeTarget, BackTarget } from "@bentley/ui-ninezone";
+import { WidgetZoneId, ZoneTargetType, MergeTarget, BackTarget } from "@bentley/ui-ninezone";
 
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();
   const handler = {
-    handleTargetChanged: (_zoneId: WidgetZoneIndex, _type: TargetType, _isTargeted: boolean): void => {
+    handleTargetChanged: (_zoneId: WidgetZoneId, _type: ZoneTargetType, _isTargeted: boolean): void => {
       spyMethod();
     },
   };
@@ -25,16 +25,16 @@ describe("ZoneTargets", () => {
 
   describe("DropTarget.Merge", () => {
     it("should render", () => {
-      mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Merge} targetChangeHandler={handler} />);
+      mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
     });
 
     it("renders correctly", () => {
-      shallow(<ZoneTargets zoneId={1} dropTarget={DropTarget.Merge} targetChangeHandler={handler} />).should.matchSnapshot();
+      shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />).should.matchSnapshot();
     });
 
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
-      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Merge} targetChangeHandler={handler} />);
+      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
       const target = wrapper.find(MergeTarget);
       target.prop("onTargetChanged")!(true);
       expect(spyMethod.calledOnce).to.be.true;
@@ -46,16 +46,16 @@ describe("ZoneTargets", () => {
 
   describe("DropTarget.Back", () => {
     it("should render", () => {
-      mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Back} targetChangeHandler={handler} />);
+      mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
     });
 
     it("renders correctly", () => {
-      shallow(<ZoneTargets zoneId={1} dropTarget={DropTarget.Back} targetChangeHandler={handler} />).should.matchSnapshot();
+      shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />).should.matchSnapshot();
     });
 
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
-      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={DropTarget.Back} targetChangeHandler={handler} />);
+      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
       const target = wrapper.find(BackTarget);
       target.prop("onTargetChanged")!(true);
       expect(spyMethod.calledOnce).to.be.true;
