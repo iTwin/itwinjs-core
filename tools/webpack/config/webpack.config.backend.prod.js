@@ -5,11 +5,9 @@
 "use strict";
 
 const path = require("path");
-const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const paths = require("./paths");
 const helpers = require("./helpers");
-const plugins = require("../scripts/utils/webpackPlugins");
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -37,7 +35,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   bail: true,
   // We generate sourcemaps in production. This is slow but gives good results.
   // You can exclude the *.map files from the build during deployment.
-  devtool: "source-map",
+  devtool: (process.env.DISABLE_SOURCE_MAPS) ? false : "source-map",
   module: {
     rules: [
       {
@@ -90,17 +88,6 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       }),
     ],
   },
-  plugins: [
-    // Find and bundle all license notices from package dependencies
-    new plugins.PrettyLicenseWebpackPlugin({
-      pattern: /.*/,
-      includeUndefined: true,
-      includePackagesWithoutLicense: true,
-      unacceptablePattern: /^L?GPL/i,
-      licenseFileOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseFileOverrides,
-      licenseTypeOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseTypeOverrides,
-    }),
-  ],
 });
 
 module.exports = helpers.getCustomizedWebpackConfig(paths.appWebpackConfigBackend, config);

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed default behavior of `build` command: source maps are no longer generated unless the `--sourceMap` argument is provided.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}
