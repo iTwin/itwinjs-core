@@ -57,7 +57,7 @@ const reverseWhiteOnWhite = `
 `;
 
 const computePickBufferOutputs = `
-  vec4 output0 = baseColor;
+  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
 
   // Fix interpolation errors despite all vertices sending exact same v_feature_id...
   ivec4 v_feature_id_i = ivec4(v_feature_id * 255.0 + 0.5);
@@ -67,7 +67,7 @@ const computePickBufferOutputs = `
 `;
 
 const computeAltPickBufferOutputs = `
-  vec4 output0 = baseColor;
+  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
 `;
@@ -128,8 +128,8 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 /** @internal */
 export namespace GLSLFragment {
   export const assignFragColor = "FragColor = baseColor;";
-
   export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
+  export const assignFragColorWithPreMultipliedAlpha = "FragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);";
 
   export const computeLinearDepth = `
 float computeLinearDepth(float eyeSpaceZ) {

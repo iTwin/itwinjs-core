@@ -369,7 +369,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addWhiteOnWhiteReversal(builder.frag);
 
   if (FeatureMode.None === feat) {
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColorWithPreMultipliedAlpha);
   } else {
     if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
