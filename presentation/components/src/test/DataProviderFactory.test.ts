@@ -6,6 +6,7 @@
 
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomContent, createRandomRuleset, createRandomDescriptor, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomPropertyRecord } from "./_helpers/UiComponents";
@@ -13,6 +14,7 @@ import { IPresentationPropertyDataProvider, PresentationTableDataProvider } from
 import { DataProvidersFactory, DataProvidersFactoryProps } from "../DataProvidersFactory";
 import { RulesetsFactory, Content, Item } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import { TypeConverterManager, TypeConverter } from "@bentley/ui-components";
 
 describe("DataProvidersFactory", () => {
 
@@ -31,6 +33,10 @@ describe("DataProvidersFactory", () => {
     propertiesProvider.reset();
     presentationManagerMock.reset();
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => moq.Mock.ofType<RulesetManager>().object);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   const getFactory = (): DataProvidersFactory => {
@@ -62,7 +68,6 @@ describe("DataProvidersFactory", () => {
 
     it("creates a provider with similar instances ruleset", async () => {
       const ruleset = await createRandomRuleset();
-      const description = "Test description";
 
       const field = createRandomPrimitiveField();
       const descriptor = createRandomDescriptor();
@@ -73,15 +78,48 @@ describe("DataProvidersFactory", () => {
       const record = createRandomPropertyRecord();
       record.property.name = field.name;
 
+      const typeConverterStub = sinon.createStubInstance(TypeConverter);
+      typeConverterStub.convertToString.returns("test str");
+      const getConverterStub = sinon.stub(TypeConverterManager, "getConverter").returns(typeConverterStub);
+
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
-      rulesetsFactoryMock.setup((x) => x.createSimilarInstancesRuleset(field, contentItem)).returns(() => ({ ruleset, description }));
+      rulesetsFactoryMock
+        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("a", "b", "c") }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
+      expect(getConverterStub).to.be.calledOnceWith("a");
+      expect(typeConverterStub.convertToString).to.be.calledOnceWith("b");
       expect(dataProvider).to.be.instanceOf(PresentationTableDataProvider);
       expect(dataProvider.rulesetId).to.eq(ruleset.id);
-      expect(dataProvider.description).to.eq(description);
+      expect(dataProvider.description).to.eq("test str");
       expect((dataProvider as any).shouldRequestContentForEmptyKeyset()).to.be.true;
+    });
+
+    it("uses record's display value for navigation properties", async () => {
+      const ruleset = await createRandomRuleset();
+
+      const field = createRandomPrimitiveField();
+      const descriptor = createRandomDescriptor();
+      descriptor.fields.push(field);
+      const contentItem = new Item([], "", "", undefined, { [field.name]: "test value" }, { [field.name]: "test display value" }, []);
+      propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));
+
+      const record = createRandomPropertyRecord();
+      record.property.name = field.name;
+
+      const getConverterStub = sinon.spy(TypeConverterManager, "getConverter");
+
+      const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
+      props = { rulesetsFactory: rulesetsFactoryMock.object };
+      rulesetsFactoryMock
+        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("navigation", "b", "c") }));
+
+      const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
+      expect(getConverterStub).to.not.be.called;
+      expect(dataProvider.description).to.eq("c");
     });
 
   });

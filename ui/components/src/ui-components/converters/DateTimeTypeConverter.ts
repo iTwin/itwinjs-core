@@ -10,18 +10,22 @@ import { TypeConverterManager } from "./TypeConverterManager";
 import { Primitives } from "@bentley/imodeljs-frontend";
 
 /**
- * Short Date Type Converter.
+ * DateTime Type Converter.
  * @public
  */
-export class ShortDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
+export abstract class DateTimeTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
   public convertToString(value?: Primitives.ShortDate) {
     if (value === undefined)
       return "";
 
-    if (typeof value !== "string" && value.toDateString)     // Is this a Date?
-      return value.toDateString();
-    else
-      return value.toString();
+    if (typeof value === "string")
+      value = new Date(value);
+
+    switch (this.getTimeFormat()) {
+      case TimeFormat.Short: return value.toLocaleDateString();
+      case TimeFormat.Long: return value.toLocaleString();
+    }
+    return value.toISOString();
   }
 
   private isDateValid(date: Date) {
@@ -39,6 +43,8 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
 
     return dateValue;
   }
+
+  protected abstract getTimeFormat(): TimeFormat;
 
   public get isLessGreaterType(): boolean { return true; }
 
@@ -69,8 +75,14 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
   public isGreaterThanOrEqualTo(a: Date, b: Date): boolean {
     return a.valueOf() >= b.valueOf();
   }
+}
 
-  protected getTimeFormat(): TimeFormat { return TimeFormat.None; }
+/**
+ * Short Date Type Converter.
+ * @public
+ */
+export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
+  protected getTimeFormat(): TimeFormat { return TimeFormat.Short; }
 }
 TypeConverterManager.registerConverter("shortdate", ShortDateTypeConverter);
 
@@ -78,7 +90,7 @@ TypeConverterManager.registerConverter("shortdate", ShortDateTypeConverter);
  * Date Time Type Converter.
  * @public
  */
-export class DateTimeTypeConverter extends ShortDateTypeConverter {
+export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
   protected getTimeFormat(): TimeFormat { return TimeFormat.Long; }
 }
 TypeConverterManager.registerConverter("dateTime", DateTimeTypeConverter);

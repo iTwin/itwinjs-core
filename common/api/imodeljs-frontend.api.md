@@ -4438,9 +4438,16 @@ export namespace Primitives {
     // (undocumented)
     export type Point = Point2d | Point3d;
     // (undocumented)
-    export type Point2d = string[];
+    export type Point2d = string[] | number[] | {
+        x: number;
+        y: number;
+    };
     // (undocumented)
-    export type Point3d = string[];
+    export type Point3d = string[] | number[] | {
+        x: number;
+        y: number;
+        z: number;
+    };
     // (undocumented)
     export type ShortDate = string | Date;
     // (undocumented)
