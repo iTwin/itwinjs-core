@@ -26,7 +26,7 @@ ECClass
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsclasses)||
+|Schema||[navigation](#schemaownsclasses)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -50,7 +50,7 @@ ECEnumeration
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsenumerations)||
+|Schema||[navigation](#schemaownsenumerations)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -72,7 +72,7 @@ ECProperty
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Class||[navigation](ecdbmeta.ecschema.md#classownslocalproperties)||
+|Class||[navigation](#classownslocalproperties)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -85,14 +85,14 @@ ECProperty
 |PrimitiveTypeMaxLength|Maximum length of strings or blobs.|int||
 |PrimitiveTypeMinValue|Minimum value of numeric primitives.|double||
 |PrimitiveTypeMaxValue|Maximum value of numeric primitives.|double||
-|Enumeration|ECPropertyKind::Primitive: Id of this property's ECEnumerationDef.|[navigation](ecdbmeta.ecschema.md#propertyhasenumeration)||
+|Enumeration|ECPropertyKind::Primitive: Id of this property's ECEnumerationDef.|[navigation](#propertyhasenumeration)||
 |ExtendedTypeName|ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Extended type name further describing PrimitiveType.|string||
-|StructClass|ECPropertyKind::Struct: ECClassId of property's struct type. ECPropertyKind::StructArray: ECClassId of array element struct type.|[navigation](ecdbmeta.ecschema.md#propertyhasstructtype)||
-|KindOfQuantity|ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Id of this property's KindOfQuantityDef.|[navigation](ecdbmeta.ecschema.md#propertyhaskindofquantity)||
-|Category|Id of this property's PropertyCategoryDef.|[navigation](ecdbmeta.ecschema.md#propertyhascategory)||
+|StructClass|ECPropertyKind::Struct: ECClassId of property's struct type. ECPropertyKind::StructArray: ECClassId of array element struct type.|[navigation](#propertyhasstructtype)||
+|KindOfQuantity|ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: Id of this property's KindOfQuantityDef.|[navigation](#propertyhaskindofquantity)||
+|Category|Id of this property's PropertyCategoryDef.|[navigation](#propertyhascategory)||
 |ArrayMinOccurs|ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray|int||
 |ArrayMaxOccurs|ECPropertyKind::PrimitiveArray or ECPropertyKind::StructArray|int||
-|NavigationRelationshipClass|ECPropertyKind::Navigation: ECClassId of property's relationship class.|[navigation](ecdbmeta.ecschema.md#propertyhasnavigationrelationshipclassid)||
+|NavigationRelationshipClass|ECPropertyKind::Navigation: ECClassId of property's relationship class.|[navigation](#propertyhasnavigationrelationshipclassid)||
 |NavigationDirection|ECPropertyKind::Navigation: Direction to follow the relationship defined in NonPrimitiveTypeClassId.|ECRelationshipDirection||
 
 ### ECRelationshipConstraintDef
@@ -105,13 +105,13 @@ ECProperty
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|RelationshipClass||[navigation](ecdbmeta.ecschema.md#relationshiphasconstraints)||
+|RelationshipClass||[navigation](#relationshiphasconstraints)||
 |RelationshipEnd||ECRelationshipEnd||
 |MultiplicityLowerLimit||int||
 |MultiplicityUpperLimit||int||
 |IsPolymorphic||boolean||
 |RoleLabel||string||
-|AbstractConstraintClass|ECClassId of base class for constraint classes of this constraint|[navigation](ecdbmeta.ecschema.md#relationshipconstrainthasabstractconstraintclass)||
+|AbstractConstraintClass|ECClassId of base class for constraint classes of this constraint|[navigation](#relationshipconstrainthasabstractconstraintclass)||
 
 ### ECSchemaDef
 
@@ -151,9 +151,9 @@ FormatCompositeUnit
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Format||[navigation](ecdbmeta.ecschema.md#formatownscompositeunits)||
+|Format||[navigation](#formatownscompositeunits)||
 |Label||string||
-|Unit||[navigation](ecdbmeta.ecschema.md#compositeunitreferstounit)||
+|Unit||[navigation](#compositeunitreferstounit)||
 |Ordinal|Position of the Composite Unit in its Format|int||
 
 ### FormatDef
@@ -170,7 +170,7 @@ Format
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsformats)||
+|Schema||[navigation](#schemaownsformats)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -191,7 +191,7 @@ KindOfQuantity
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownskindofquantities)||
+|Schema||[navigation](#schemaownskindofquantities)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -213,7 +213,7 @@ Phenomenon
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsphenomena)||
+|Schema||[navigation](#schemaownsphenomena)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -233,7 +233,7 @@ PropertyCategory
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownspropertycategories)||
+|Schema||[navigation](#schemaownspropertycategories)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -253,18 +253,18 @@ Unit
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsunits)||
+|Schema||[navigation](#schemaownsunits)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
-|UnitSystem||[navigation](ecdbmeta.ecschema.md#unitsystemhasunits)||
-|Phenomenon||[navigation](ecdbmeta.ecschema.md#phenomenonownsunits)||
+|UnitSystem||[navigation](#unitsystemhasunits)||
+|Phenomenon||[navigation](#phenomenonownsunits)||
 |Definition||string||
 |Numerator||double||
 |Denominator||double||
 |Offset||double||
 |IsConstant||boolean||
-|InvertingUnit|If this property is set, this UnitDef is an inverted unit. It inverts the unit specified by this property.|[navigation](ecdbmeta.ecschema.md#unithasinvertedunit)||
+|InvertingUnit|If this property is set, this UnitDef is an inverted unit. It inverts the unit specified by this property.|[navigation](#unithasinvertedunit)||
 
 ### UnitSystemDef
 
@@ -280,7 +280,7 @@ UnitSystem
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Schema||[navigation](ecdbmeta.ecschema.md#schemaownsunitsystems)||
+|Schema||[navigation](#schemaownsunitsystems)||
 |Name||string||
 |DisplayLabel||string||
 |Description||string||
@@ -309,7 +309,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 #### Target
 
@@ -321,7 +321,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### ClassHasBaseClasses
 
@@ -343,7 +343,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 #### Target
 
@@ -355,7 +355,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### ClassOwnsLocalProperties
 
@@ -377,7 +377,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 #### Target
 
@@ -389,7 +389,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 ### CompositeUnitRefersToUnit
 
@@ -411,7 +411,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [FormatCompositeUnitDef](ecdbmeta.ecschema.md#formatcompositeunitdef)
+- [FormatCompositeUnitDef](#formatcompositeunitdef)
 
 #### Target
 
@@ -423,7 +423,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 ### FormatOwnsCompositeUnits
 
@@ -445,7 +445,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [FormatDef](ecdbmeta.ecschema.md#formatdef)
+- [FormatDef](#formatdef)
 
 #### Target
 
@@ -457,7 +457,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [FormatCompositeUnitDef](ecdbmeta.ecschema.md#formatcompositeunitdef)
+- [FormatCompositeUnitDef](#formatcompositeunitdef)
 
 ### PhenomenonOwnsUnits
 
@@ -479,7 +479,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [PhenomenonDef](ecdbmeta.ecschema.md#phenomenondef)
+- [PhenomenonDef](#phenomenondef)
 
 #### Target
 
@@ -491,7 +491,7 @@ Relates a given ECClassId (Source) to all its base classes (recursively) (Target
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 ### PropertyHasCategory
 
@@ -515,7 +515,7 @@ Relates the property to its PropertyCategory.
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 #### Target
 
@@ -527,7 +527,7 @@ Relates the property to its PropertyCategory.
 
 ##### Constraint Classes
 
-- [PropertyCategoryDef](ecdbmeta.ecschema.md#propertycategorydef)
+- [PropertyCategoryDef](#propertycategorydef)
 
 ### PropertyHasEnumeration
 
@@ -551,7 +551,7 @@ ECPropertyKind::Enumeration: relates the property to its ECEnumeration.
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 #### Target
 
@@ -563,7 +563,7 @@ ECPropertyKind::Enumeration: relates the property to its ECEnumeration.
 
 ##### Constraint Classes
 
-- [ECEnumerationDef](ecdbmeta.ecschema.md#ecenumerationdef)
+- [ECEnumerationDef](#ecenumerationdef)
 
 ### PropertyHasKindOfQuantity
 
@@ -587,7 +587,7 @@ ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: relates the propert
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 #### Target
 
@@ -599,7 +599,7 @@ ECPropertyKind::Primitive or ECPropertyKind::PrimitiveArray: relates the propert
 
 ##### Constraint Classes
 
-- [KindOfQuantityDef](ecdbmeta.ecschema.md#kindofquantitydef)
+- [KindOfQuantityDef](#kindofquantitydef)
 
 ### PropertyHasNavigationRelationshipClassId
 
@@ -623,7 +623,7 @@ ECPropertyKind::Navigation: relates the navigation property to its backing Relat
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 #### Target
 
@@ -635,7 +635,7 @@ ECPropertyKind::Navigation: relates the navigation property to its backing Relat
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### PropertyHasStructType
 
@@ -659,7 +659,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECPropertyDef](ecdbmeta.ecschema.md#ecpropertydef)
+- [ECPropertyDef](#ecpropertydef)
 
 #### Target
 
@@ -671,7 +671,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### RelationshipConstraintHasAbstractConstraintClass
 
@@ -693,7 +693,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECRelationshipConstraintDef](ecdbmeta.ecschema.md#ecrelationshipconstraintdef)
+- [ECRelationshipConstraintDef](#ecrelationshipconstraintdef)
 
 #### Target
 
@@ -705,7 +705,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### RelationshipConstraintHasClasses
 
@@ -727,7 +727,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECRelationshipConstraintDef](ecdbmeta.ecschema.md#ecrelationshipconstraintdef)
+- [ECRelationshipConstraintDef](#ecrelationshipconstraintdef)
 
 #### Target
 
@@ -739,7 +739,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### RelationshipHasConstraints
 
@@ -761,7 +761,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 #### Target
 
@@ -773,7 +773,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECRelationshipConstraintDef](ecdbmeta.ecschema.md#ecrelationshipconstraintdef)
+- [ECRelationshipConstraintDef](#ecrelationshipconstraintdef)
 
 ### SchemaHasSchemaReferences
 
@@ -795,7 +795,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -807,7 +807,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 ### SchemaOwnsClasses
 
@@ -829,7 +829,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -841,7 +841,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECClassDef](ecdbmeta.ecschema.md#ecclassdef)
+- [ECClassDef](#ecclassdef)
 
 ### SchemaOwnsEnumerations
 
@@ -863,7 +863,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -875,7 +875,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECEnumerationDef](ecdbmeta.ecschema.md#ecenumerationdef)
+- [ECEnumerationDef](#ecenumerationdef)
 
 ### SchemaOwnsFormats
 
@@ -897,7 +897,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -909,7 +909,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [FormatDef](ecdbmeta.ecschema.md#formatdef)
+- [FormatDef](#formatdef)
 
 ### SchemaOwnsKindOfQuantities
 
@@ -931,7 +931,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -943,7 +943,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [KindOfQuantityDef](ecdbmeta.ecschema.md#kindofquantitydef)
+- [KindOfQuantityDef](#kindofquantitydef)
 
 ### SchemaOwnsPhenomena
 
@@ -965,7 +965,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -977,7 +977,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [PhenomenonDef](ecdbmeta.ecschema.md#phenomenondef)
+- [PhenomenonDef](#phenomenondef)
 
 ### SchemaOwnsPropertyCategories
 
@@ -999,7 +999,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -1011,7 +1011,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [PropertyCategoryDef](ecdbmeta.ecschema.md#propertycategorydef)
+- [PropertyCategoryDef](#propertycategorydef)
 
 ### SchemaOwnsUnitSystems
 
@@ -1033,7 +1033,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -1045,7 +1045,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitSystemDef](ecdbmeta.ecschema.md#unitsystemdef)
+- [UnitSystemDef](#unitsystemdef)
 
 ### SchemaOwnsUnits
 
@@ -1067,7 +1067,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [ECSchemaDef](ecdbmeta.ecschema.md#ecschemadef)
+- [ECSchemaDef](#ecschemadef)
 
 #### Target
 
@@ -1079,7 +1079,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 ### UnitHasInvertedUnit
 
@@ -1101,7 +1101,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 #### Target
 
@@ -1113,7 +1113,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 ### UnitSystemHasUnits
 
@@ -1135,7 +1135,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitSystemDef](ecdbmeta.ecschema.md#unitsystemdef)
+- [UnitSystemDef](#unitsystemdef)
 
 #### Target
 
@@ -1147,7 +1147,7 @@ ECPropertyKind::Struct: relates the struct property to its struct ECClass. ECPro
 
 ##### Constraint Classes
 
-- [UnitDef](ecdbmeta.ecschema.md#unitdef)
+- [UnitDef](#unitdef)
 
 ## Enumerations
 

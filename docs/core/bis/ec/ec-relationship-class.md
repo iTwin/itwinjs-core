@@ -47,7 +47,7 @@ BaseClass _(0..1)_
 
 [Target](#source-and-target) _(1..1)_
 
-# Source and Target
+## Source and Target
 
 The Source and Target of a relationship define the endpoint classes and their constraints. Each endpoint must define at least one ECEntityClass, the multiplicity, if the endpoint is polymorphic, and if more than one constraint class is defined, an Abstract Constraint.
 

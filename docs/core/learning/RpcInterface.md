@@ -2,7 +2,7 @@
 
 Table of Contents:
 
-* [Overview](#Overview)
+* [Overview](#overview)
 * Implementing RpcInterfaces
   * [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
   * [RpcInterface Performance](#rpcinterface-performance)
@@ -78,7 +78,7 @@ public static interfaceVersion = "1.2.3"; // The API version of the interface
 
 The `interfaceName` property specifies the immutable name of the interface. This string, rather than Javascript class name, is used to identify the interface when a request is sent from a frontend to a backend. That makes it safe to apply a tool such as Webpack to the frontend code, which may change the names of Javascript classes.
 
-See [below](#rpcinterface-version) for more on interface versioning.
+See [below](#rpcinterface-versioning) for more on interface versioning.
 
 The definition class must be in a directory or package that is accessible to both frontend and backend code. Note that the RpcInterface base class is defined in `@bentley/imodeljs-common`.
 
@@ -114,7 +114,7 @@ The impl method must obtain the ClientRequestContext by calling [ClientRequestCo
 
 The methods in the impl may have to transform certain argument types, such as IModelTokenProps, before they can be used by backend code.
 
-A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
+A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcinterfaces).
 
 *Example:*
 
@@ -124,7 +124,7 @@ A best practice is that an impl should be a thin layer on top of normal classes 
 
 Impls must be registered at runtime, as explained next.
 
-# RPC Configuration
+## RPC Configuration
 
 The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 

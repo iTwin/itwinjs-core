@@ -42,7 +42,7 @@ Represents an instance change in a change summary
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|Summary||[navigation](ecdbchange.ecschema.md#changesummarycontainsinstancechanges)||
+|Summary||[navigation](#changesummarycontainsinstancechanges)||
 |ChangedInstance|Key of the change instance|struct||
 |OpCode||OpCode||
 |IsIndirect|Change happened due to a foreign key action or trigger|boolean||
@@ -61,7 +61,7 @@ Represents an property value change of an instance change in a change summary
 
 |    Name    |    Description    |    Type    |      Extended Type     |
 |:-----------|:------------------|:-----------|:-----------------------|
-|InstanceChange||[navigation](ecdbchange.ecschema.md#instancechangeownspropertyvaluechanges)||
+|InstanceChange||[navigation](#instancechangeownspropertyvaluechanges)||
 |AccessString||string||
 |RawOldValue|Untyped old value|binary||
 |RawNewValue|Untyped new value|binary||
@@ -88,7 +88,7 @@ Represents an property value change of an instance change in a change summary
 
 ##### Constraint Classes
 
-- [ChangeSummary](ecdbchange.ecschema.md#changesummary)
+- [ChangeSummary](#changesummary)
 
 #### Target
 
@@ -100,7 +100,7 @@ Represents an property value change of an instance change in a change summary
 
 ##### Constraint Classes
 
-- [InstanceChange](ecdbchange.ecschema.md#instancechange)
+- [InstanceChange](#instancechange)
 
 ### InstanceChangeOwnsPropertyValueChanges
 
@@ -122,7 +122,7 @@ Represents an property value change of an instance change in a change summary
 
 ##### Constraint Classes
 
-- [InstanceChange](ecdbchange.ecschema.md#instancechange)
+- [InstanceChange](#instancechange)
 
 #### Target
 
@@ -134,7 +134,7 @@ Represents an property value change of an instance change in a change summary
 
 ##### Constraint Classes
 
-- [PropertyValueChange](ecdbchange.ecschema.md#propertyvaluechange)
+- [PropertyValueChange](#propertyvaluechange)
 
 ## Enumerations
 
