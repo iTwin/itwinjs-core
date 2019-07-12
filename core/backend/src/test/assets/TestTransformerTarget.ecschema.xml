@@ -22,6 +22,7 @@
         <ECProperty propertyName="TargetString" typeName="string" description="A string property that should be remapped"/>
         <ECProperty propertyName="TargetDouble" typeName="double" description="A double property that should be remapped"/>
         <ECProperty propertyName="TargetLong" typeName="long" extendedTypeName="Id" description="A long property that should be remapped"/>
+        <ECProperty propertyName="TargetGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that should be remapped"/>
     </ECRelationshipClass>
 
 </ECSchema>

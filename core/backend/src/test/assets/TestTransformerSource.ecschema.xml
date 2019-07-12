@@ -33,6 +33,7 @@
         <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="SourceLong" typeName="long" extendedTypeName="Id" description="A long property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that only exists in the source schema but should be remapped"/>
     </ECRelationshipClass>
 
 </ECSchema>

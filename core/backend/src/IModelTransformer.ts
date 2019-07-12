@@ -542,10 +542,9 @@ export class IModelTransformer {
     const targetRelationshipProps: RelationshipProps = sourceRelationship.toJSON();
     targetRelationshipProps.sourceId = this.findTargetElementId(sourceRelationship.sourceId);
     targetRelationshipProps.targetId = this.findTargetElementId(sourceRelationship.targetId);
-    sourceRelationship.forEachProperty((_propertyName: string, propertyMetaData: PropertyMetaData) => {
+    sourceRelationship.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        // WIP - need addon bug fix to convert Id64String to Long
-        // targetRelationshipProps[propertyName] = this.findTargetElementId(sourceRelationship[propertyName]);
+        targetRelationshipProps[propertyName] = this.findTargetElementId(sourceRelationship[propertyName]);
       }
     }, true);
     return targetRelationshipProps;

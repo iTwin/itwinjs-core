@@ -151,6 +151,8 @@ class TestIModelTransformer extends IModelTransformer {
       targetRelationshipProps.sourceDouble = undefined;
       targetRelationshipProps.targetLong = targetRelationshipProps.sourceLong; // Id64 value was already remapped by super.transformRelationship()
       targetRelationshipProps.sourceLong = undefined;
+      targetRelationshipProps.targetGuid = targetRelationshipProps.sourceGuid;
+      targetRelationshipProps.sourceGuid = undefined;
     }
     return targetRelationshipProps;
   }
@@ -358,6 +360,7 @@ class TestDataManager {
       sourceString: "One",
       sourceDouble: 1.1,
       sourceLong: spatialCategoryId,
+      sourceGuid: Guid.createValue(),
     });
     const relationshipId2: Id64String = this.sourceDb.relationships.insertInstance(relationship2);
     assert.isTrue(Id64.isValidId64(relationshipId2));
@@ -499,8 +502,8 @@ class TestDataManager {
     );
     assert.equal(relWithProps.targetString, "One");
     assert.equal(relWithProps.targetDouble, 1.1);
-    // WIP - waiting for bug fix
-    // assert.equal(relWithProps.targetLong, xxx);
+    assert.equal(relWithProps.targetLong, spatialCategoryId);
+    assert.isTrue(Guid.isV4Guid(relWithProps.targetGuid));
   }
 
   public static queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
