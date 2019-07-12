@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "When deleting a parent element, make sure there are onDelete/onDeleted callbacks for child elements",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}
