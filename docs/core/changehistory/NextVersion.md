@@ -16,3 +16,5 @@ Markers are used to position decorations in a view that follow a position in wor
 *
 * [OidcAgentClient]($clients-backend) is now available as beta (it was marked internal earlier). Using the client requires an Agent registration and potential changes to the Connect Project settings - see more documentation in [OidcAgentClient]($clients-backend).
 
+## Display system optimizations
+  * The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets.

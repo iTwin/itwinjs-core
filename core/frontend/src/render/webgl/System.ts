@@ -105,6 +105,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "EXT_color_buffer_float",
   "EXT_shader_texture_lod",
   "ANGLE_instanced_arrays",
+  "OES_vertex_array_object",
 ];
 
 /** Describes the rendering capabilities of the host system.
@@ -146,6 +147,7 @@ export class Capabilities {
   public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
+  public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -156,8 +158,17 @@ export class Capabilities {
     return (null !== extObj) ? extObj as T : undefined;
   }
 
-  public static readonly optionalFeatures: WebGLFeature[] = [WebGLFeature.MrtTransparency, WebGLFeature.MrtPick, WebGLFeature.DepthTexture, WebGLFeature.FloatRendering, WebGLFeature.Instancing];
-  public static readonly requiredFeatures: WebGLFeature[] = [WebGLFeature.UintElementIndex, WebGLFeature.MinimalTextureUnits];
+  public static readonly optionalFeatures: WebGLFeature[] = [
+    WebGLFeature.MrtTransparency,
+    WebGLFeature.MrtPick,
+    WebGLFeature.DepthTexture,
+    WebGLFeature.FloatRendering,
+    WebGLFeature.Instancing,
+  ];
+  public static readonly requiredFeatures: WebGLFeature[] = [
+    WebGLFeature.UintElementIndex,
+    WebGLFeature.MinimalTextureUnits,
+  ];
 
   private get _hasRequiredTextureUnits(): boolean { return this.maxFragTextureUnits >= 4 && this.maxVertTextureUnits >= 5; }
 
@@ -970,8 +981,7 @@ export class System extends RenderSystem {
           const wasInstanced = 0 !== (VertexAttribState.Instanced & oldState);
           const nowInstanced = 0 !== (VertexAttribState.Instanced & newState);
           if (wasInstanced !== nowInstanced) {
-            assert(undefined !== this._instancingExtension);
-            this._instancingExtension!.vertexAttribDivisorANGLE(i, nowInstanced ? 1 : 0);
+            this.vertexAttribDivisor(i, nowInstanced ? 1 : 0);
           }
         }
 
@@ -981,6 +991,11 @@ export class System extends RenderSystem {
       // Set the attribute back to disabled, but preserve the divisor.
       next[i] &= ~VertexAttribState.Enabled;
     }
+  }
+
+  public vertexAttribDivisor(index: number, divisor: number) {
+    assert(undefined !== this._instancingExtension);
+    this._instancingExtension!.vertexAttribDivisorANGLE(index, divisor);
   }
 
   public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {

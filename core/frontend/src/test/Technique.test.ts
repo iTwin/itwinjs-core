@@ -18,10 +18,11 @@ import {
   ViewportQuadGeometry,
   DrawParams,
   ShaderProgramParams,
+  AttributeMap,
 } from "../webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
-  const builder = new ProgramBuilder();
+  const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   builder.vert.set(VertexShaderComponent.ComputePosition, "return rawPos;");
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, "return vec4(1.0, 0.0, 0.5, 1.0);");
   builder.frag.set(FragmentShaderComponent.AssignFragData, "FragColor = baseColor;");

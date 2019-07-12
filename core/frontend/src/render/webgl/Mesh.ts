@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { IDisposable, dispose, assert } from "@bentley/bentleyjs-core";
 import { SurfaceFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
@@ -21,11 +21,12 @@ import { Material } from "./Material";
 import { Texture } from "./Texture";
 import { FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { System } from "./System";
-import { BufferHandle, AttributeHandle } from "./Handle";
+import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { InstanceBuffers } from "./InstancedGeometry";
+import { AttributeMap } from "./AttributeMap";
 
 /** @internal */
 export class MeshData implements IDisposable {
@@ -182,9 +183,11 @@ export abstract class MeshGeometry extends LUTGeometry {
 
 /** @internal */
 export class EdgeGeometry extends MeshGeometry {
+  public readonly buffers: BuffersContainer;
   protected readonly _indices: BufferHandle;
   protected readonly _endPointAndQuadIndices: BufferHandle;
 
+  public get lutBuffers() { return this.buffers; }
   public get asSurface() { return undefined; }
   public get asEdge() { return this; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
@@ -196,6 +199,7 @@ export class EdgeGeometry extends MeshGeometry {
   }
 
   public dispose() {
+    dispose(this.buffers);
     dispose(this._indices);
     dispose(this._endPointAndQuadIndices);
   }
@@ -204,18 +208,17 @@ export class EdgeGeometry extends MeshGeometry {
     stats.addVisibleEdges(this._indices.bytesUsed + this._endPointAndQuadIndices.bytesUsed);
   }
 
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
-  }
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this.buffers;
 
-  protected _draw(numInstances: number): void {
-    this._indices.bind(GL.Buffer.Target.ArrayBuffer);
+    bufs.bind();
     System.instance.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    bufs.unbind();
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
   protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Edge; }
+  public get techniqueId(): TechniqueId { return TechniqueId.Edge; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
@@ -223,6 +226,13 @@ export class EdgeGeometry extends MeshGeometry {
 
   protected constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Edge, false);
+    const attrEndPointAndQuadIndices = AttributeMap.findAttribute("a_endPointAndQuadIndices", TechniqueId.Edge, false);
+    assert(attrPos !== undefined);
+    assert(attrEndPointAndQuadIndices !== undefined);
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(endPointAndQuadsIndices, [BufferParameters.create(attrEndPointAndQuadIndices!.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._indices = indices;
     this._endPointAndQuadIndices = endPointAndQuadsIndices;
   }
@@ -250,12 +260,15 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     stats.addSilhouetteEdges(this._indices.bytesUsed + this._endPointAndQuadIndices.bytesUsed + this._normalPairs.bytesUsed);
   }
 
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }
+  public get techniqueId(): TechniqueId { return TechniqueId.SilhouetteEdge; }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
   public get normalPairs(): BufferHandle { return this._normalPairs; }
 
   private constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, normalPairs: BufferHandle, numIndices: number, mesh: MeshData) {
     super(indices, endPointAndQuadsIndices, numIndices, mesh);
+    const attrNormals = AttributeMap.findAttribute("a_normals", TechniqueId.SilhouetteEdge, false);
+    assert(attrNormals !== undefined);
+    this.buffers.addBuffer(normalPairs, [BufferParameters.create(attrNormals!.location, 4, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._normalPairs = normalPairs;
   }
 }
@@ -263,6 +276,8 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
 /** @internal */
 export class PolylineEdgeGeometry extends MeshGeometry {
   private _buffers: PolylineBuffers;
+
+  public get lutBuffers() { return this._buffers.buffers; }
 
   public static create(mesh: MeshData, polyline: TesselatedPolyline): PolylineEdgeGeometry | undefined {
     const buffers = PolylineBuffers.create(polyline);
@@ -280,19 +295,18 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return true; }
   protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
   protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
+  public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
   public get polylineBuffers(): PolylineBuffers { return this._buffers; }
 
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._buffers.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
-  }
-
-  protected _draw(numInstances: number): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
-    this._buffers.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers.buffers;
+
+    bufs.bind();
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    bufs.unbind();
   }
 
   private constructor(numIndices: number, buffers: PolylineBuffers, mesh: MeshData) {
@@ -308,7 +322,10 @@ function wantLighting(vf: ViewFlags) {
 
 /** @internal */
 export class SurfaceGeometry extends MeshGeometry {
+  private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
+
+  public get lutBuffers() { return this._buffers; }
 
   public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
@@ -316,6 +333,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public dispose() {
+    dispose(this._buffers);
     dispose(this._indices);
   }
 
@@ -333,28 +351,27 @@ export class SurfaceGeometry extends MeshGeometry {
   public get asEdge() { return undefined; }
   public get asSilhouette() { return undefined; }
 
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
-  }
-
-  protected _draw(numInstances: number): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
     const gl = system.context;
     const offset = RenderOrder.BlankingRegion === this.renderOrder;
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
+
     if (offset) {
       gl.enable(GL.POLYGON_OFFSET_FILL);
       gl.polygonOffset(1.0, 1.0);
     }
 
-    this._indices.bind(GL.Buffer.Target.ArrayBuffer);
+    bufs.bind();
     system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    bufs.unbind();
 
     if (offset) {
       gl.disable(GL.POLYGON_OFFSET_FILL);
     }
   }
 
-  public getTechniqueId(_target: Target) { return TechniqueId.Surface; }
+  public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get renderOrder(): RenderOrder {
@@ -473,6 +490,10 @@ export class SurfaceGeometry extends MeshGeometry {
 
   private constructor(indices: BufferHandle, numIndices: number, mesh: MeshData) {
     super(mesh, numIndices);
+    this._buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Surface, false);
+    assert(undefined !== attrPos);
+    this._buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this._indices = indices;
   }
 

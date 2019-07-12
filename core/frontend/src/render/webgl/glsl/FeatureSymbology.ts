@@ -24,7 +24,6 @@ import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { UniformHandle } from "../Handle";
-import { GL } from "../GL";
 import { DrawParams } from "../DrawCommand";
 import { assert } from "@bentley/bentleyjs-core";
 import { MutableFloatRgba } from "../FloatRGBA";
@@ -112,17 +111,6 @@ float computeLineCode() {
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec4);
   vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
-  if (vert.usesInstancedGeometry) {
-    vert.addAttribute("a_featureId", VariableType.Vec3, (prog) => {
-      prog.addAttribute("a_featureId", (attr, params) => {
-        const geom = params.geometry.asInstanced!;
-        assert(undefined !== geom);
-        assert(undefined !== geom.featureIds, "Cannot use feature shaders if no features");
-        if (undefined !== geom.featureIds)
-          attr.enableArray(geom.featureIds, 3, GL.DataType.UnsignedByte, false, 0, 0, true);
-      });
-    });
-  }
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa

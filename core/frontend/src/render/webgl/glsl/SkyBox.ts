@@ -10,6 +10,7 @@ import { TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Matrix3 } from "../Matrix";
 import { SkyBoxQuadsGeometry } from "../CachedGeometry";
+import { AttributeMap } from "../AttributeMap";
 
 const computeBaseColor = `return vec4(0, 0, 0, 0);`;
 const assignFragData = `FragColor = TEXTURE_CUBE(s_cube, v_texDir);`;
@@ -18,7 +19,7 @@ const computeTexDir = `v_texDir = rawPosition.xyz;`;
 
 /** @internal */
 export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
-  const prog = new ProgramBuilder();
+  const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode, Frustum, Npc } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Vector2d } from "@bentley/geometry-core";
-import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
+import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
@@ -25,6 +25,7 @@ import { Material } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
+import { AttributeMap } from "./AttributeMap";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
@@ -53,7 +54,7 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   protected _getLineCode(_params: ShaderProgramParams): number { return LineCode.solid; }
 
   // Returns the Id of the Technique used to render this geometry
-  public abstract getTechniqueId(target: Target): TechniqueId;
+  public abstract get techniqueId(): TechniqueId;
   // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
   public abstract getRenderPass(target: Target): RenderPass;
   // Returns the 'order' of this geometry, which determines how z-fighting is resolved.
@@ -69,8 +70,6 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public abstract get qOrigin(): Float32Array;
   /** Returns the scale of this geometry's quantization parameters. */
   public abstract get qScale(): Float32Array;
-  /** Binds this geometry's vertex data to the vertex attribute. */
-  public abstract bindVertexArray(handle: AttributeHandle): void;
   // Draws this geometry
   public abstract draw(): void;
 
@@ -147,13 +146,15 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
  * @internal
  */
 export abstract class LUTGeometry extends CachedGeometry {
+  public abstract get lutBuffers(): BuffersContainer;
+
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
   public get asLUT() { return this; }
 
-  protected abstract _draw(_numInstances: number): void;
+  protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void { this._draw(0); }
-  public drawInstanced(numInstances: number): void { this._draw(numInstances); }
+  public drawInstanced(numInstances: number, instanceBuffersContainer: BuffersContainer): void { this._draw(numInstances, instanceBuffersContainer); }
 
   // Override this if your color varies based on the target
   public getColor(_target: Target): ColorInfo { return this.lut.colorInfo; }
@@ -169,18 +170,24 @@ export abstract class LUTGeometry extends CachedGeometry {
  * @internal
  */
 export class IndexedGeometryParams implements IDisposable {
+  public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
   protected constructor(positions: QBufferHandle3d, indices: BufferHandle, numIndices: number) {
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
+    assert(attrPos !== undefined);
+    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(indices, []);
     this.positions = positions;
     this.indices = indices;
     this.numIndices = numIndices;
   }
 
-  public static create(positions: Uint16Array, qparams: QParams3d, indices: Uint32Array) {
-    const posBuf = QBufferHandle3d.create(qparams, positions);
+  public static create(positions: Uint16Array, qParams: QParams3d, indices: Uint32Array) {
+    const posBuf = QBufferHandle3d.create(qParams, positions);
     const indBuf = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
     if (undefined === posBuf || undefined === indBuf)
       return undefined;
@@ -192,6 +199,7 @@ export class IndexedGeometryParams implements IDisposable {
   }
 
   public dispose() {
+    dispose(this.buffers);
     dispose(this.positions);
     dispose(this.indices);
   }
@@ -212,12 +220,10 @@ export abstract class IndexedGeometry extends CachedGeometry {
     dispose(this._params);
   }
 
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
-  }
   public draw(): void {
-    this._params.indices.bind(GL.Buffer.Target.ElementArrayBuffer);
+    this._params.buffers.bind();
     System.instance.context.drawElements(GL.PrimitiveType.Triangles, this._params.numIndices, GL.DataType.UnsignedInt, 0);
+    this._params.buffers.unbind();
   }
 
   public get qOrigin() { return this._params.positions.origin; }
@@ -236,7 +242,7 @@ export class ClipMaskGeometry extends IndexedGeometry {
     stats.addClipVolume(this._params.positions.bytesUsed + this._params.indices.bytesUsed);
   }
 
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
+  public get techniqueId(): TechniqueId { return TechniqueId.ClipMask; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
 }
@@ -319,9 +325,14 @@ class SkyBoxQuads {
  * @internal
  */
 export class SkyBoxGeometryParams implements IDisposable {
+  public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
 
   protected constructor(positions: QBufferHandle3d) {
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", undefined, false);
+    assert(attrPos !== undefined);
+    this.buffers.addBuffer(positions, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.positions = positions;
   }
 
@@ -334,6 +345,7 @@ export class SkyBoxGeometryParams implements IDisposable {
   }
 
   public dispose() {
+    dispose(this.buffers);
     dispose(this.positions);
   }
 }
@@ -374,13 +386,9 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
     // Not interested in tracking this.
   }
 
-  public getTechniqueId(_target: Target) { return this._techniqueId; }
+  public get techniqueId(): TechniqueId { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
   public get renderOrder() { return RenderOrder.Surface; }
-
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._params.positions, 3, GL.DataType.UnsignedShort, false, 0, 0);
-  }
 
   public draw(): void {
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
@@ -458,7 +466,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
     return undefined !== params ? new ViewportQuadGeometry(params, techniqueId) : undefined;
   }
 
-  public getTechniqueId(_target: Target) { return this._techniqueId; }
+  public get techniqueId(): TechniqueId { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
   public get renderOrder() { return RenderOrder.Surface; }
 
@@ -497,12 +505,45 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   public readonly nadirColor: Float32Array;
   public readonly skyTexture?: RenderTexture;
   protected readonly _worldPosBuff: BufferHandle;
+  private _isWorldPosSet: boolean = false;
+
+  public initWorldPos(target: Target): void {
+    if (this._isWorldPosSet)
+      return;
+
+    this._isWorldPosSet = true;
+    this._setPointsFromFrustum(target.planFrustum);
+    this._worldPosBuff.bindData(this.worldPos, GL.Buffer.Usage.StreamDraw);
+    const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
+    assert(attrWorldPos !== undefined);
+    this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
+    }
+
+  private _setPointsFromFrustum(frustum: Frustum) {
+    const wp = this.worldPos;
+    let mid = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront));
+    wp[0] = mid.x;
+    wp[1] = mid.y;
+    wp[2] = mid.z;
+    mid = frustum.getCorner(Npc.RightBottomRear).interpolate(0.5, frustum.getCorner(Npc.RightBottomFront));
+    wp[3] = mid.x;
+    wp[4] = mid.y;
+    wp[5] = mid.z;
+    mid = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront));
+    wp[6] = mid.x;
+    wp[7] = mid.y;
+    wp[8] = mid.z;
+    mid = frustum.getCorner(Npc.LeftTopRear).interpolate(0.5, frustum.getCorner(Npc.LeftTopFront));
+    wp[9] = mid.x;
+    wp[10] = mid.y;
+    wp[11] = mid.z;
+  }
 
   protected constructor(params: IndexedGeometryParams, skybox: SkyBox.CreateParams, techniqueId: TechniqueId) {
     super(params, techniqueId);
 
     this.worldPos = new Float32Array(4 * 3);
-    this._worldPosBuff = new BufferHandle();
+    this._worldPosBuff = new BufferHandle(GL.Buffer.Target.ArrayBuffer);
     this.typeAndExponents = new Float32Array(3);
     this.zenithColor = new Float32Array(3);
     this.skyColor = new Float32Array(3);
@@ -571,12 +612,6 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
 
     const technique = undefined !== skybox.sphere ? TechniqueId.SkySphereTexture : TechniqueId.SkySphereGradient;
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
-  }
-
-  public get worldPosBuff() { return this._worldPosBuff; }
-
-  public bind() {
-    this._worldPosBuff.bindData(GL.Buffer.Target.ArrayBuffer, this.worldPos, GL.Buffer.Usage.StreamDraw);
   }
 
   public dispose() {
@@ -727,10 +762,29 @@ export class SingleTexturedViewportQuadGeometry extends TexturedViewportQuadGeom
 
 /** @internal */
 export class PolylineBuffers implements IDisposable {
+  public buffers: BuffersContainer;
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
   private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
+    this.buffers = BuffersContainer.create();
+
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.Polyline, false);
+    const attrPrevIndex = AttributeMap.findAttribute("a_prevIndex", TechniqueId.Polyline, false);
+    const attrNextIndex = AttributeMap.findAttribute("a_nextIndex", TechniqueId.Polyline, false);
+    const attrParam = AttributeMap.findAttribute("a_param", TechniqueId.Polyline, false);
+    assert(attrPos !== undefined);
+    assert(attrPrevIndex !== undefined);
+    assert(attrNextIndex !== undefined);
+    assert(attrParam !== undefined);
+
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(prevIndices, [BufferParameters.create(attrPrevIndex!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this.buffers.addBuffer(nextIndicesAndParams, [
+      BufferParameters.create(attrNextIndex!.location, 3, GL.DataType.UnsignedByte, false, 4, 0, false),
+      BufferParameters.create(attrParam!.location, 1, GL.DataType.UnsignedByte, false, 4, 3, false),
+    ]);
+
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
@@ -740,7 +794,6 @@ export class PolylineBuffers implements IDisposable {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
-
     return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
   }
 
@@ -749,6 +802,7 @@ export class PolylineBuffers implements IDisposable {
   }
 
   public dispose() {
+    dispose(this.buffers);
     dispose(this.indices);
     dispose(this.prevIndices);
     dispose(this.nextIndicesAndParams);
