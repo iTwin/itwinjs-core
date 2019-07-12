@@ -500,11 +500,20 @@ export class IModelTransformer {
     if (Id64.isValidId64(targetRelationshipProps.sourceId) && Id64.isValidId64(targetRelationshipProps.targetId)) {
       try {
         // check for an existing relationship
-        this._targetDb.relationships.getInstanceProps<RelationshipProps>(targetRelationshipProps.classFullName, { sourceId: targetRelationshipProps.sourceId, targetId: targetRelationshipProps.targetId });
+        const relSourceAndTarget = { sourceId: targetRelationshipProps.sourceId, targetId: targetRelationshipProps.targetId };
+        const relProps = this._targetDb.relationships.getInstanceProps<RelationshipProps>(targetRelationshipProps.classFullName, relSourceAndTarget);
+        // if relationship found, update it
+        targetRelationshipProps.id = relProps.id;
+        this.updateRelationship(targetRelationshipProps);
+        // WIP: need to determine if there is actually anything to update before an onUpdated callback makes sense
       } catch (error) {
         // catch NotFound error and insert relationship
-        const targetRelInstanceId: Id64String = this.insertRelationship(targetRelationshipProps);
-        this.onRelationshipInserted(sourceRelationship, targetRelInstanceId);
+        if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
+          const targetRelInstanceId: Id64String = this.insertRelationship(targetRelationshipProps);
+          this.onRelationshipInserted(sourceRelationship, targetRelInstanceId);
+        } else {
+          throw error;
+        }
       }
     }
   }
@@ -551,6 +560,17 @@ export class IModelTransformer {
     const targetRelInstanceId: Id64String = this._targetDb.relationships.insertInstance(targetRelationshipProps);
     Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
     return targetRelInstanceId;
+  }
+
+  /** Update the specified relationship in the target iModel.
+   * @note A subclass can override this method to provide custom update behavior.
+   */
+  protected updateRelationship(targetRelationshipProps: RelationshipProps): void {
+    if (!targetRelationshipProps.id) {
+      throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
+    }
+    this._targetDb.relationships.updateInstance(targetRelationshipProps);
+    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
   }
 
   /** Import all schemas from the source iModel into the target iModel. */

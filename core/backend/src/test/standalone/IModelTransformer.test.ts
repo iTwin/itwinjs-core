@@ -527,11 +527,13 @@ class TestDataManager {
   }
 
   public updateSourceDb(): void {
+    // Update Subject element
     const subjectId = this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(subjectId));
     const subject: Subject = this.sourceDb.elements.getElement<Subject>(subjectId);
     subject.description = "Subject description (Updated)";
     this.sourceDb.elements.updateElement(subject);
+    // Update spatialCategory element
     const definitionModelId = this.sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.sourceDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
     const spatialCategoryId = this.sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.sourceDb, definitionModelId, "SpatialCategory"))!;
@@ -539,6 +541,20 @@ class TestDataManager {
     const spatialCategory: SpatialCategory = this.sourceDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     spatialCategory.federationGuid = Guid.createValue();
     this.sourceDb.elements.updateElement(spatialCategory);
+    // Update relationship properties
+    const spatialCategorySelectorId = this.sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(this.sourceDb, definitionModelId, "SpatialCategories"))!;
+    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    const drawingCategorySelectorId = this.sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(this.sourceDb, definitionModelId, "DrawingCategories"))!;
+    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+    const relWithProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(
+      "TestTransformerSource:SourceRelWithProps",
+      { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
+    );
+    assert.equal(relWithProps.sourceString, "One");
+    assert.equal(relWithProps.sourceDouble, 1.1);
+    relWithProps.sourceString += "-Updated";
+    relWithProps.sourceDouble = 1.2;
+    this.sourceDb.relationships.updateInstance(relWithProps);
     this.sourceDb.saveChanges();
   }
 
@@ -555,6 +571,17 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const spatialCategory: SpatialCategory = this.targetDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     assert.exists(spatialCategory.federationGuid);
+    // assert TargetRelWithProps was updated
+    const spatialCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "SpatialCategories"))!;
+    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    const drawingCategorySelectorId = this.targetDb.elements.queryElementIdByCode(CategorySelector.createCode(this.targetDb, definitionModelId, "DrawingCategories"))!;
+    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+    const relWithProps: RelationshipProps = this.targetDb.relationships.getInstanceProps(
+      "TestTransformerTarget:TargetRelWithProps",
+      { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
+    );
+    assert.equal(relWithProps.targetString, "One-Updated");
+    assert.equal(relWithProps.targetDouble, 1.2);
   }
 }
 

@@ -2833,6 +2833,7 @@ export class IModelTransformer {
     protected transformElement(sourceElement: Element): ElementProps[];
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 
 // @internal @deprecated
