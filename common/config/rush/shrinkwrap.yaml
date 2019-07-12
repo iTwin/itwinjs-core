@@ -1,6 +1,6 @@
 dependencies:
   '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
-  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.139.0
+  '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.141.2
   '@microsoft/api-extractor': 7.1.5
   '@openid/appauth': 1.2.4
   '@rush-temp/bentleyjs-core': 'file:projects/bentleyjs-core.tgz'
@@ -51,7 +51,7 @@ dependencies:
   '@rush-temp/webpack-tools': 'file:projects/webpack-tools.tgz'
   '@rush-temp/webworker-test-app': 'file:projects/webworker-test-app.tgz'
   '@svgdotjs/svg.js': 3.0.13
-  '@testing-library/dom': 5.5.2
+  '@testing-library/dom': 5.5.3
   '@testing-library/react': 8.0.4
   '@types/body-parser': 1.17.0
   '@types/bunyan': 1.8.6
@@ -160,7 +160,7 @@ dependencies:
   faker: 4.1.0
   fast-sass-loader: 1.5.0
   file-loader: 1.1.11
-  fork-ts-checker-webpack-plugin: 1.3.7
+  fork-ts-checker-webpack-plugin: 1.4.0
   form-data: 2.3.2
   formidable: 1.2.1
   fs-extra: 6.0.1
@@ -582,7 +582,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-Ix3dobG2DvdK5f2SHtZdiiLwi+G0RDuDfwA4tZ1eqTGoiopia8JIfeWGeA0h2frFHcLDXnYvNiVGtW4y6cSDig==
-  /@testing-library/dom/5.5.2:
+  /@testing-library/dom/5.5.3:
     dependencies:
       '@babel/runtime': 7.5.4
       '@sheerun/mutationobserver-shim': 0.3.2
@@ -593,11 +593,11 @@ packages:
     engines:
       node: '>=8'
     resolution:
-      integrity: sha512-7Yrpqr67sN/+96tCEZx/0rZ/mD4/ShyF5Ve8eNWhfSJQf5uXyXqbMzDov+rrAqvk89cT/r8bal4XhHwAySH15A==
+      integrity: sha512-qHgb8vU3KjOO4GXkRdi70dpINNGRN6w3eyXDUZzScBthLFmVBoO5iFQvtlK2DiViTefKDeFwIQqJ7nxHmr/8lA==
   /@testing-library/react/8.0.4:
     dependencies:
       '@babel/runtime': 7.5.4
-      '@testing-library/dom': 5.5.2
+      '@testing-library/dom': 5.5.3
     dev: false
     engines:
       node: '>=8'
@@ -609,7 +609,7 @@ packages:
   /@testing-library/react/8.0.4/react-dom@16.8.6+react@16.8.6:
     dependencies:
       '@babel/runtime': 7.5.4
-      '@testing-library/dom': 5.5.2
+      '@testing-library/dom': 5.5.3
       react: 16.8.6
       react-dom: /react-dom/16.8.6/react@16.8.6
     dev: false
@@ -2146,7 +2146,7 @@ packages:
   /browserslist/3.2.8:
     dependencies:
       caniuse-lite: 1.0.30000983
-      electron-to-chromium: 1.3.188
+      electron-to-chromium: 1.3.190
     dev: false
     hasBin: true
     resolution:
@@ -2154,7 +2154,7 @@ packages:
   /browserslist/4.1.1:
     dependencies:
       caniuse-lite: 1.0.30000983
-      electron-to-chromium: 1.3.188
+      electron-to-chromium: 1.3.190
       node-releases: 1.1.25
     dev: false
     hasBin: true
@@ -2163,7 +2163,7 @@ packages:
   /browserslist/4.6.4:
     dependencies:
       caniuse-lite: 1.0.30000983
-      electron-to-chromium: 1.3.188
+      electron-to-chromium: 1.3.190
       node-releases: 1.1.25
     dev: false
     hasBin: true
@@ -3977,12 +3977,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-GJCAeDBKfREgkBtgrYSf9hQy9kTb3helv0zGdzqhM7iAkW8FA/ZF97VQDbwFiwIT8MQLLOe5VlPZOEvZAqtUAQ==
-  /ejs/2.6.2:
-    dev: false
-    engines:
-      node: '>=0.10.0'
-    resolution:
-      integrity: sha512-PcW2a0tyTuPHz3tWyYqtK6r1fZ3gp+3Sop8Ph+ZYN81Ob5rwmbHEzaqs10N3BEsaGTkh/ooniXK+WwszGlc2+Q==
   /electron-chromedriver/2.0.0:
     dependencies:
       electron-download: 4.1.1
@@ -4009,10 +4003,10 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-FjEWG9Jb/ppK/2zToP+U5dds114fM1ZOJqMAR4aXXL5CvyPE9fiqBK/9YcwC9poIFQTEJk/EM/zyRwziziRZrg==
-  /electron-to-chromium/1.3.188:
+  /electron-to-chromium/1.3.190:
     dev: false
     resolution:
-      integrity: sha512-tEQcughYIMj8WDMc59EGEtNxdGgwal/oLLTDw+NEqJRJwGflQvH3aiyiexrWeZOETP4/ko78PVr6gwNhdozvuQ==
+      integrity: sha512-cs9WnTnGBGnYYVFMCtLmr9jXNTOkdp95RLz5VhwzDn7dErg1Lnt9o4d01gEH69XlmRKWUr91Yu1hA+Hi8qW0PA==
   /electron/4.2.6:
     dependencies:
       '@types/node': 10.14.1
@@ -4933,7 +4927,7 @@ packages:
     dev: false
     resolution:
       integrity: sha1-+8cfDEGt6zf5bFd60e1C2P2sypE=
-  /fork-ts-checker-webpack-plugin/1.3.7:
+  /fork-ts-checker-webpack-plugin/1.4.0:
     dependencies:
       babel-code-frame: 6.26.0
       chalk: 2.4.2
@@ -4948,7 +4942,7 @@ packages:
       node: '>=6.11.5'
       yarn: '>=1.0.0'
     resolution:
-      integrity: sha512-n55O6fIIZrPdWFSQ0WYBs6Umdx0EatCvCM7xstegycDucnDQJmyUO9tc1lvabTh8ojL6a9aN/Sh0iFXZxq4mfA==
+      integrity: sha512-Sy8rowZZJuGbu5NoBhk+XiSFpspxt9vJO6XOvPNonajm+8SFddUM375697Sn5b3RVVu/xPD9fZyNHCIbFUGnRA==
   /form-data/2.3.2:
     dependencies:
       asynckit: 0.4.0
@@ -7157,14 +7151,6 @@ packages:
       node: '>= 0.8.0'
     resolution:
       integrity: sha1-OwmSTt+fCDwEkP3UwLxEIeBHZO4=
-  /license-webpack-plugin/1.5.0:
-    dependencies:
-      ejs: 2.6.2
-    dev: false
-    peerDependencies:
-      webpack-sources: '>=1.0.0'
-    resolution:
-      integrity: sha512-Of/H79rZqm2aeg4RnP9SMSh19qkKemoLT5VaJV58uH5AxeYWEcBgGFs753JEJ/Hm6BPvQVfIlrrjoBwYj8p7Tw==
   /lighthouse-logger/1.2.0:
     dependencies:
       debug: 2.6.9
@@ -11569,7 +11555,7 @@ packages:
   /spdx-correct/3.1.0:
     dependencies:
       spdx-expression-parse: 3.0.0
-      spdx-license-ids: 3.0.4
+      spdx-license-ids: 3.0.5
     dev: false
     resolution:
       integrity: sha512-lr2EZCctC2BNR7j7WzJ2FpDznxky1sjfxvvYEyzxNyb6lZXHODmEoJeFu4JupYlkfha1KZpJyoqiJ7pgA1qq8Q==
@@ -11580,14 +11566,14 @@ packages:
   /spdx-expression-parse/3.0.0:
     dependencies:
       spdx-exceptions: 2.2.0
-      spdx-license-ids: 3.0.4
+      spdx-license-ids: 3.0.5
     dev: false
     resolution:
       integrity: sha512-Yg6D3XpRD4kkOmTpdgbUiEJFKghJH03fiC1OPll5h/0sO6neh2jqRDVHOQ4o/LMea0tgCkbMgea5ip/e+MkWyg==
-  /spdx-license-ids/3.0.4:
+  /spdx-license-ids/3.0.5:
     dev: false
     resolution:
-      integrity: sha512-7j8LYJLeY/Yb6ACbQ7F76qy5jHkp0U6jgBfJsk97bwWlVUnUWsAgpyaCvo17h0/RQGnQ036tVDomiwoI4pDkQA==
+      integrity: sha512-J+FWzZoynJEXGphVIS+XEh3kFSjZX/1i9gFBaWQcB+/tmpe2qUsSBABpcxqxnAxFdiUFEgAX1bjYGQvIZmoz9Q==
   /spdy-transport/3.0.0:
     dependencies:
       debug: 4.1.1
@@ -14101,7 +14087,7 @@ packages:
     dev: false
     name: '@rush-temp/bentleyjs-core'
     resolution:
-      integrity: sha512-84SnRsDubN+9pnuQCVLIkHk8jTnz8V3LZ2V6X71QtLnDAfkwxEwYJgBUe8ZOC3DzfzpfVZYfd6RqA5ZQilgJyA==
+      integrity: sha512-s+nbBR5nKnqNkglBtVTHpLW7JLEVt8N7InoWnKdsvsnq4baH4W51l+ZbiAEaEhLFCffJvoDYAZ1uE4SN55r9cw==
       tarball: 'file:projects/bentleyjs-core.tgz'
     version: 0.0.0
   'file:projects/build-tools.tgz':
@@ -14186,7 +14172,7 @@ packages:
     dev: false
     name: '@rush-temp/certa'
     resolution:
-      integrity: sha512-h4NBrEBFLKqNU6OBocqC0LMgSeZz/x1FsQud0QeXij7l6pxX87f1jfHDC7joZslafu2NAD5MmNhxmiEkRJmKzw==
+      integrity: sha512-tERjr9xt0ANPbhEs1NOF6Da0FNE5v+JB7l2QaBK8RolEEwojYiMMNpuxfToV9eUohewGNk7PuFGMf0w2xKekCw==
       tarball: 'file:projects/certa.tgz'
     version: 0.0.0
   'file:projects/config-loader.tgz':
@@ -14202,7 +14188,7 @@ packages:
     dev: false
     name: '@rush-temp/config-loader'
     resolution:
-      integrity: sha512-LZ76FkrXtBucpBFI/Nu/KBKlra9QK9KshSg+au2M7QQNS7NQpTeyjdqlbo+bQNPhpl6uqeVpycLMNp+mDqaOSw==
+      integrity: sha512-uIg+5GIwhobc6oUqAMpiUhizsmsA37SRy2FlVk37v/yoKPmr3pz34jgIo887f7OwIvJI/pMbhmzFMZkf4rFaKg==
       tarball: 'file:projects/config-loader.tgz'
     version: 0.0.0
   'file:projects/core-integration-tests.tgz':
@@ -14227,7 +14213,7 @@ packages:
     dev: false
     name: '@rush-temp/core-integration-tests'
     resolution:
-      integrity: sha512-lZcWptwgMhLjI+3F9FOaZRP6O6zn/w06KhXrGhXILDo14Mkj5IBONs8+uLSAvNqlu511Y8b7AV9vVNgNw3+Efw==
+      integrity: sha512-Gh31RB0VY0Ky8ErLqurQqlvshciCPiY0FiNW0/8Ii5vIyY3XR34gj+e2f7OCIR+TmIXXclfHrk2kdlgx/UIQJA==
       tarball: 'file:projects/core-integration-tests.tgz'
     version: 0.0.0
   'file:projects/display-performance-test-app.tgz':
@@ -14251,7 +14237,7 @@ packages:
     dev: false
     name: '@rush-temp/display-performance-test-app'
     resolution:
-      integrity: sha512-naTBSVCt5b9oU12jGkIjWUHtP46WsZCPhKDtRHv+baCIf7xaxVixcD41PWd326GyHuTcvd6Ww42bg7Nb9TF3YA==
+      integrity: sha512-j+0bOau9iTkHnaQCWg4+zOLSWpLPhUJrr01iDbAJf738hwvoROuIQED29sZ92TQ30RN7QDqkOkp1EjxI6RaXeg==
       tarball: 'file:projects/display-performance-test-app.tgz'
     version: 0.0.0
   'file:projects/display-test-app.tgz':
@@ -14277,7 +14263,7 @@ packages:
     dev: false
     name: '@rush-temp/display-test-app'
     resolution:
-      integrity: sha512-GUYMLemM0fmXM8aKJYxpRk14GKZ+jJkc71v+q6bpV9sTCsDjvDHq08XGaaOIlpMFptgD4WSM7OgaNcHUYpulqQ==
+      integrity: sha512-GdLSHlv6TivPfyCPQuiy9jQNz4fJjdX7q2TC0fkwYKMW2TARP1StZs0AcOGrMf6QXKoR743KO3sFMRutq1OuGw==
       tarball: 'file:projects/display-test-app.tgz'
     version: 0.0.0
   'file:projects/ecschema-metadata.tgz':
@@ -14306,7 +14292,7 @@ packages:
     dev: false
     name: '@rush-temp/ecschema-metadata'
     resolution:
-      integrity: sha512-u1lVjxFo5tzGuo5a4UuNBOaabnWJBI/OCigT6exm1FD7C37kklfSAZsxEgzyQCLIqnZ58+RgU5e4yjvMSq8cEg==
+      integrity: sha512-lE5EsOxAf/NemBBZiOg1tMM2GOf4t9HTSh1K+rZfrQjHJ3TSsqbrJSNV902mWOmQQmsGIaCnC/GFiRNWcPm/ug==
       tarball: 'file:projects/ecschema-metadata.tgz'
     version: 0.0.0
   'file:projects/electron-manager.tgz':
@@ -14320,7 +14306,7 @@ packages:
     dev: false
     name: '@rush-temp/electron-manager'
     resolution:
-      integrity: sha512-Ob5FOw4bf1pis1aciXUxc9vQ+bjQrCCcLiRm1rlEczVhFXq2C3ETo7EKu/AVe23zn3uzS1KzTyHNI/KvBaoSkQ==
+      integrity: sha512-PdasZziJWsOy00CRQyjpwFR/NEKvlKb9rZzbD//ehFp3z+S1VkUsHYil5V9Ywr5wOW6dbztkAxpkrCDY6BhmUw==
       tarball: 'file:projects/electron-manager.tgz'
     version: 0.0.0
   'file:projects/example-code-app.tgz':
@@ -14360,7 +14346,7 @@ packages:
     dev: false
     name: '@rush-temp/example-code-app'
     resolution:
-      integrity: sha512-URVsF5Wi7a/hzyK92DIgz+DhGmzQaFVqRNpQy3driPFj/I5E1aeebeyF3KLsz3lm/lq2cqsW/mdwfSiKL5J6Ug==
+      integrity: sha512-T6mloDv8+o93uureu6Gu/VwKoC6H+fuDLzPr1TA9nNGcspBBJzmGcatsbFywHODBIGmyTidT/1IGPZzXxbZ0oA==
       tarball: 'file:projects/example-code-app.tgz'
     version: 0.0.0
   'file:projects/example-code-snippets.tgz':
@@ -14397,7 +14383,7 @@ packages:
     dev: false
     name: '@rush-temp/example-code-snippets'
     resolution:
-      integrity: sha512-lLnWG3CbTsc3R1mZX4/yp3Ilz22xZrShkcxkTTmJt8OpCHPzj8w9RZ6dQrZIpNkr8htgXUcow5iXvsvevQiMnQ==
+      integrity: sha512-RBkad7Zaf4vDtgL5AW5Z7pMr5k5aQqS7HEBcUPYuIqlyWeqoMu6gPzZGRDi2+E/AXTQThwJ8Lh+ebJsfDcNgtQ==
       tarball: 'file:projects/example-code-snippets.tgz'
     version: 0.0.0
   'file:projects/export-gltf.tgz':
@@ -14412,7 +14398,7 @@ packages:
     dev: false
     name: '@rush-temp/export-gltf'
     resolution:
-      integrity: sha512-JNl/9hwwyydYRMmanQ/DF6II/vsJV8vtCF7xuMoH8TjOSsOCU2KZup1FGWZ/5sYUwDJJH/DWhGqAeCPAaPwA+A==
+      integrity: sha512-LIidEZtQbGjevzyl4GIusO+f+nkN1XTfgo1EKUd3n9IKck4VLqF6CywYBgw+8j8QdG73S0zWyqkZVOMuIVzVGQ==
       tarball: 'file:projects/export-gltf.tgz'
     version: 0.0.0
   'file:projects/export-obj.tgz':
@@ -14427,7 +14413,7 @@ packages:
     dev: false
     name: '@rush-temp/export-obj'
     resolution:
-      integrity: sha512-5j7zHYvgCXgNBsS98iyl+81xiCIc21r8kffs1gNP3siA6Wd367WgMUmvcPGvsqVmXoWq7nWikd5aa5w7WIAn+w==
+      integrity: sha512-T43sRI0LuWfE0+Pw/LiMAKbEN6C5yUBd9NCgo+U4kuGDuiXQLuxlvy7mYYPxz3zv/+i5/2HOahKNApVJsjgufA==
       tarball: 'file:projects/export-obj.tgz'
     version: 0.0.0
   'file:projects/express-server.tgz':
@@ -14444,7 +14430,7 @@ packages:
     dev: false
     name: '@rush-temp/express-server'
     resolution:
-      integrity: sha512-KwXnnqcQyIxKF4lgLZVoBw4c89TAIbkQzTlHgGNURIFbFpUavy7B7BBEZ1s2QWy/4I84Anr/S9lQue/2v+A23A==
+      integrity: sha512-L1oI0zcfk1skx5ykriSt0a1uZTO5Ezj4PuDt/8do5uncXz3KtDzUqSUjmifkRG/sutTNgA3xX3FpYkIbWL7dvA==
       tarball: 'file:projects/express-server.tgz'
     version: 0.0.0
   'file:projects/frontend-devtools.tgz':
@@ -14457,7 +14443,7 @@ packages:
     dev: false
     name: '@rush-temp/frontend-devtools'
     resolution:
-      integrity: sha512-xqnH5dQRuUp86UC2EO9rS08WT7SXu4pLkU0rHyCPG3HL8pIvc6ssBwqBsCHl30CpF9UV6PeNeB/zFcs36XJLjg==
+      integrity: sha512-UAJcW5o6fQS/q5aDpN9bDiObVSULj3DphKLF5BfjiF3igunRXqUtNUt8wddmss31sZNAlV+7Wcyf1QdaYWpWlA==
       tarball: 'file:projects/frontend-devtools.tgz'
     version: 0.0.0
   'file:projects/geometry-core.tgz':
@@ -14479,7 +14465,7 @@ packages:
     dev: false
     name: '@rush-temp/geometry-core'
     resolution:
-      integrity: sha512-Zk50sziKmpzW6dvdE+s8bpBItZFPVxowsZCDuSaE6uxQDWA/Wi4REiKU3Rm2LI9O07AQLiva3F4GKgXKGEKWxg==
+      integrity: sha512-EmiHoVLtrx8mIRJdEDcE4f15EjvXFX9u9J8sczoi6QCh+T/ElaboEWFLUO6AoUSKcxuvp8tcYanx6H71wGSGog==
       tarball: 'file:projects/geometry-core.tgz'
     version: 0.0.0
   'file:projects/imodel-from-geojson.tgz':
@@ -14499,7 +14485,7 @@ packages:
     dev: false
     name: '@rush-temp/imodel-from-geojson'
     resolution:
-      integrity: sha512-JukmgD1LxFgo3zjzyTBPei2b3h5Fx/DZjp7thHKaG6Jnf2R7xtZjgMUbKUg4z00Rn4nlwvC/CZmQ7pQtNOporw==
+      integrity: sha512-x6hlF8rzU2Kxm/waDHTERHS11qCPOOVtsRM6vh2Doz/YzFkBMmnTyMRjspYgXIu7GfP45xfAU/OhLttmsi8Ftg==
       tarball: 'file:projects/imodel-from-geojson.tgz'
     version: 0.0.0
   'file:projects/imodel-from-reality-model.tgz':
@@ -14520,12 +14506,12 @@ packages:
     dev: false
     name: '@rush-temp/imodel-from-reality-model'
     resolution:
-      integrity: sha512-xGNYKPWcKu4th2HxpMr6DczSV7gN03+Elz4FJLhNjh6Evnu48ZiKQ8ckcp/rs3CIZemhzbFNqiuxWVxuCnjggQ==
+      integrity: sha512-Kn5Eu9X6Sp0l1H2jlrWOPWNj5h0napOBBVeQOfteCFHi24iZjhh0itwlm2L9uIvMKgVbeL4bwf5sZohOCEo2yg==
       tarball: 'file:projects/imodel-from-reality-model.tgz'
     version: 0.0.0
   'file:projects/imodeljs-backend.tgz':
     dependencies:
-      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.139.0
+      '@bentley/imodeljs-native': npm.bentley.com/@bentley/imodeljs-native/0.141.2
       '@types/chai': 4.1.7
       '@types/form-data': 2.2.1
       '@types/formidable': 1.0.31
@@ -14563,7 +14549,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-VKakrfvPX/OA8tXt2fVkfnJf2g5xdZSh20oERxMAruSRoyR2ZAEClEx1u3FshqgImsFT65xWgVDGQtbzTgD6Bw==
+      integrity: sha512-odK4DB3Xhcfec12GObWDarZWpQJoJxRwH1eE2qTcQHdXP/A1qIya3RPEJ2UfFf5AY3hxpcB2qWAQDwLK3t8RHQ==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -14600,7 +14586,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-clients-backend'
     resolution:
-      integrity: sha512-AcQTgS8R6+5Y5O6eFmnF2o6LGi8d7B/UtC9VU/mYpZtAXB0jX/fJQqxcn5/gicIkFUZizpfd6xAyqP++YhwqOQ==
+      integrity: sha512-oKt35vv9sEWeoj0KRRM7Q1ZBnNrsHSxiKoeyHzeQZEEtKSVTzSzXJkG0wFaP19AT8MRBzaWB23OLZvLr0cvFoQ==
       tarball: 'file:projects/imodeljs-clients-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients.tgz':
@@ -14634,7 +14620,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-clients'
     resolution:
-      integrity: sha512-r9EbxVZ9j9Hfkoiv/hnO2aLdHK9K85YyZUqeTfXTwDwEsTnt4c12zWvfMF2QpelYzSNIBfNlHo/NX4aylHHAlQ==
+      integrity: sha512-wivllyEBRNgd44fAZ0tVvdofzX1vY2eSgxrVOMlQ4eo5tMNXvyQQbhsfIdYD8HWbfL8s9faOVqMYWvIOP7FTmg==
       tarball: 'file:projects/imodeljs-clients.tgz'
     version: 0.0.0
   'file:projects/imodeljs-common.tgz':
@@ -14656,7 +14642,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-common'
     resolution:
-      integrity: sha512-Gxw4eZXv0KmkOBzRhMMB+qHTKSyb0ccJ8zUPsC8AuVjEx+D9TvSnbLyrSyMovY05UavEJvZD/4bvjz9SzJ/HMg==
+      integrity: sha512-Nl9taoXuzez9IMX/T0g3cfrxOsZs4AH8d19ON2bXaLtcS7S2Yyca1Mb7EB1v8jdcwFbW+ZR1GfqI/c8DUcan9g==
       tarball: 'file:projects/imodeljs-common.tgz'
     version: 0.0.0
   'file:projects/imodeljs-frontend.tgz':
@@ -14683,7 +14669,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-frontend'
     resolution:
-      integrity: sha512-o7hP1BPeL4XTI3n+7CKUxsc4fkvroD/GCLiUOR8wiABmDinCg2buDh1dxA0grxvYsdgOJak0irMB9bx2OO/XZQ==
+      integrity: sha512-YYGoza1wFB7S4UgskP1wfVZwH2VmPzi7+1xS2xwt31Gfz8JK8xIYuC+lDrJCnikT+BSE4FiysJcmOtRMwQKNDA==
       tarball: 'file:projects/imodeljs-frontend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-i18n.tgz':
@@ -14701,7 +14687,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-i18n'
     resolution:
-      integrity: sha512-XX+6+OUVUXYdS0WMWdgTe98z72ZExbPIxFdGPOMQ8CmqD8clsNZUgSGbM1p8FpFn1qx/71gSQmdXvps9U2fg8g==
+      integrity: sha512-MB8QPoJG+0hdlSeRHMHcWTe23FcKD56Eg9TpZVJYeWeelp+aPTolY4w7tfty+OeMx1TgxLwRhRiMcjAuKthcBA==
       tarball: 'file:projects/imodeljs-i18n.tgz'
     version: 0.0.0
   'file:projects/imodeljs-markup.tgz':
@@ -14723,7 +14709,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-markup'
     resolution:
-      integrity: sha512-zpTVXxzrjxTNCWh7ZjW3/rFKnKqPLejDyUNjx9Ren6hW014xNwxKk5/c1pk0lDlDf8XthAwlfZHjfaD7CI6reA==
+      integrity: sha512-IBHedXmDGk2Y4fUQQopxCPPvqXfwXeaCqLBHHsT3q+MrA2napytXfRLltntGYFVDqz9ZkAP5+3p9foMoNoXFMg==
       tarball: 'file:projects/imodeljs-markup.tgz'
     version: 0.0.0
   'file:projects/imodeljs-quantity.tgz':
@@ -14747,7 +14733,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-quantity'
     resolution:
-      integrity: sha512-0R/bWpjzZfmhr7vudwPytoxOSMrbFA7yuN0K7+THOpkTYLDNexmtLixyLdeMkto+h0qqVOHCGjJxTxntLHDzUg==
+      integrity: sha512-mBmSo4hvGVJ1rPFOWW8Fa80Yby9PZ+gW4Dk77K27T8Kc8iJQa7iKtfS5w2T+XTN37ssHjQlYauj/1nVemotTGQ==
       tarball: 'file:projects/imodeljs-quantity.tgz'
     version: 0.0.0
   'file:projects/imodeljs-webserver.tgz':
@@ -14765,7 +14751,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-webserver'
     resolution:
-      integrity: sha512-2RktSw0rahzq78kWUMNimpTh2tFRySyrXDRXf3vR/Ok6jj89QC/arW5XC+fKsuB8Dug6CPLv9MI9jY/Porhxow==
+      integrity: sha512-cIn+k7XOw6JoJDE3DsqLDvwQ+Sq6y5BBUtvdBNIa2ds69pUB2xA3SIcF/5tY9qwqjfO8KfSb1P6VsCjr2MLs2w==
       tarball: 'file:projects/imodeljs-webserver.tgz'
     version: 0.0.0
   'file:projects/logger-config.tgz':
@@ -14784,7 +14770,7 @@ packages:
     dev: false
     name: '@rush-temp/logger-config'
     resolution:
-      integrity: sha512-itEL4c/B/ICdkzyE2bCv6gWvNb9jAm48a2D5xXuj5ydf/xYHUTyfZQOzIZYvYCWPgqL/mdYmh5w4U17SJL+a5A==
+      integrity: sha512-hnnpFuYuGpG8fvavPHfOLCz2ChUXNtOEZV+M8qGbthU1Hp0EmNDS+lQBHz+asxeMnFUHr/uHm8IzwmRmx/FJ0w==
       tarball: 'file:projects/logger-config.tgz'
     version: 0.0.0
   'file:projects/perf-test-app.tgz':
@@ -14810,7 +14796,7 @@ packages:
     dev: false
     name: '@rush-temp/perf-test-app'
     resolution:
-      integrity: sha512-9v7fuWy0lg6kODfx8Lec0cEzOHPOetpCnuzS49DBqs9bEBR3bTkO+t+25lyKtCcJyXkvEsYp+4LluZgV9fMqcA==
+      integrity: sha512-qC829qsiaZXNW8NAcUG7oDVIqZtL8yy1JIjoiPN9N5NJ0GUDLaMuiNKwimRmOj4ZDgEORlO/gNlh97+SNFcMmw==
       tarball: 'file:projects/perf-test-app.tgz'
     version: 0.0.0
   'file:projects/perf-tools.tgz':
@@ -14824,7 +14810,7 @@ packages:
     dev: false
     name: '@rush-temp/perf-tools'
     resolution:
-      integrity: sha512-i7UNZei5Agy+32G8IrMBNrDVe/fHCQIX4409ePs03Xa/Hzs4ZxlGoEdSCx5PRTVi0V5qogNidAgsOres7THgFA==
+      integrity: sha512-DX30l6FCM8Q1w2UiWk+gJRif3gvZxwrv0jC6Eh5CvUQ9+JPJ6kAmNSY2wL/4dn+Ga/1Tnwew5xG1EQ0BDqp+Lw==
       tarball: 'file:projects/perf-tools.tgz'
     version: 0.0.0
   'file:projects/presentation-backend.tgz':
@@ -14859,7 +14845,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-backend'
     resolution:
-      integrity: sha512-+9GP9Sfh3efV5fY7x8TPF+HStYrooCEdoXfVj4G44i2hOsbU29wvz7VFQ75Vlt6/wnClaVO1VPOLqF6GAUXf8A==
+      integrity: sha512-bosUAENZ8CNMSw9V+kWaku6UgMAfeK94GbqRDSuZSFhJ7mZj7MyoQF+hcOD+vXU4IMO9Sv/pfJ7RX9mreA0MJQ==
       tarball: 'file:projects/presentation-backend.tgz'
     version: 0.0.0
   'file:projects/presentation-common.tgz':
@@ -14896,7 +14882,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-common'
     resolution:
-      integrity: sha512-nP+zNFkvyPr58tIXpd+c9GN6KcVlao1smr4JGFoBRPKKzdW+mqRBZ+bDa9UiEUaBey8FPpMmOZX2+RHJFITKjA==
+      integrity: sha512-qoYIAGPl1PD7aTpXrjjMM9YFJuA1azcH2aw7VmqlOuEYQCTFaOqS5xM4zAatiBb4Jcl7qPa1DFGCHNhflbM6lw==
       tarball: 'file:projects/presentation-common.tgz'
     version: 0.0.0
   'file:projects/presentation-components.tgz':
@@ -14938,7 +14924,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-components'
     resolution:
-      integrity: sha512-5nHH2yrHgN9v8tFOIS/wtxAEHa+2RfVWPL6PYtLu8PvgkhPymAFX4FPxsG1jkKR3rxUsKebt29bbGLPzww/Cjg==
+      integrity: sha512-f+4RUMPmzUla5zmdPzwb9pI9pDe///Z4xUr3JvcAvUk0bihNLPkHJkYfC8tOLh8wMCJg0uMRh7r/+x2O/CVaCg==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz':
@@ -14975,7 +14961,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-frontend'
     resolution:
-      integrity: sha512-u0PDZPzRfxgYBPI4c3fchNFpBmMHjsDdu+aewJ6SJxkUgG2DGaz+JByjsYTCawtzmJ7bhSry/pGgFmbLsvJAcw==
+      integrity: sha512-vQLrMSHIkCeKLO1f8p3f1CImuL03SokHMP4uP3mvWrZHQN32eS8dDyxuyoN7/HjDGW0vZCXsw5B6fRkzKSIjsA==
       tarball: 'file:projects/presentation-frontend.tgz'
     version: 0.0.0
   'file:projects/presentation-integration-tests.tgz':
@@ -15014,7 +15000,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-integration-tests'
     resolution:
-      integrity: sha512-k+kzHPTVeRGvphSzdyfZPTMaO8utcy183TVG766DiW66kCE09kjVieZv6UETDJR4a/hyFzPBrGJSZgX0m9Eqfw==
+      integrity: sha512-GEbhVvDoV5kN5qOYi2dY0y6BxLdBXeCfSPo8SjMjT0JvX3aQv7xy8lEFlX2nZ1UiiZyJJj+bJn1OXGzZ8yYVdQ==
       tarball: 'file:projects/presentation-integration-tests.tgz'
     version: 0.0.0
   'file:projects/presentation-test-app.tgz':
@@ -15040,7 +15026,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-test-app'
     resolution:
-      integrity: sha512-P0VwmchvzPC2gyq85D0KuDxyyaJdon0PM9WKDdyA6PG+k7h5v9iL3Z2SfQT3XIuc3bgTX6Wri5NAhHFkYRtaag==
+      integrity: sha512-Bg/vOAxBSUZBKWHGnbagaXObv+bEA/iUVrXpzrQcnYH4MM358hkreXawZB6XNK3NTyDHd5HaFG+j1D7mgfjZ3w==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz':
@@ -15071,7 +15057,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-testing'
     resolution:
-      integrity: sha512-eDVb51HcdXn+DnUxAWscp63Mu4WAn//09pLS1LywqrnBhKUH7rI3VMabFsR469AVTz73aQLanYbWHMh+3oU8uQ==
+      integrity: sha512-sstdr/FI+gVtPk2vF7vOmelLLMO0hKwFVUQ+xFKiV7rJuPaom8dvthRHuxgvI8rmo3EuI0nsJAv5XBDVb7jORw==
       tarball: 'file:projects/presentation-testing.tgz'
     version: 0.0.0
   'file:projects/rpc-integration-tests.tgz':
@@ -15098,7 +15084,7 @@ packages:
     dev: false
     name: '@rush-temp/rpc-integration-tests'
     resolution:
-      integrity: sha512-MePMXBBZ2O0Ek6Ch7j5iAJzMsrNtOuzaHxT/aMjIm2oi4Z+gK93roTW37At9CjlxsWtOz+OHiOFz4cHW/dpWdw==
+      integrity: sha512-34q1AmtwWC4quW7WowwLPM+cnSn0lbDoWSYDVmNq6lq/al3+EDJIoeaypJ8LCQHskw4jJ0+VhGHf39+6CfjCVg==
       tarball: 'file:projects/rpc-integration-tests.tgz'
     version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
@@ -15119,7 +15105,7 @@ packages:
     dev: false
     name: '@rush-temp/test-apps-analysis-importer'
     resolution:
-      integrity: sha512-WgtnsxqVT9yTRpWgGwf8zuNGlTGMgEqxGP70/09LtXuZjrvZ5ttbGuNGs/+BjVkdY4pw1XlBTW6pSsTgsvkmjA==
+      integrity: sha512-tWwvjgo9Zmd/2093rXiGR3AlK0s8lU2gJjnKLIuaPwRocu/EtME/97+T9uKTu0htzq7/j0C5mZOU/Qb3VOgy7w==
       tarball: 'file:projects/test-apps-analysis-importer.tgz'
     version: 0.0.0
   'file:projects/test-apps-synchro-schedule-importer.tgz':
@@ -15138,7 +15124,7 @@ packages:
     dev: false
     name: '@rush-temp/test-apps-synchro-schedule-importer'
     resolution:
-      integrity: sha512-gjZiHX3M/ZhESPKXXrCH2hvZAeil1mldJGkHJxdxFS9ASxSB+sziWsXbxg63K7ZfmD9ggB1e2j7rCtP0g0p61Q==
+      integrity: sha512-nOYHS0K4TqTgx4NLmbzHQDuJ2+2IUpzSHylK42YakA+dZOPitpsL/x+fBI8XoRNz7cebYGOc8DMM9tiQA1i2ng==
       tarball: 'file:projects/test-apps-synchro-schedule-importer.tgz'
     version: 0.0.0
   'file:projects/ui-components.tgz':
@@ -15210,7 +15196,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-components'
     resolution:
-      integrity: sha512-lHyq3sl7C2Ngn1XKajj44oabPI50vwsCncGT2cHJctS6rZphnel4/f4Qo6AmORma6UaFou9N4KUExqx5c/664g==
+      integrity: sha512-/KNppikpZLmGcmP0o6LpZsw7+ktgxscARuQSZl5DY0GJ8Ip7uQ4dALankVa+kf4UMy0jmUFyVszfvrzUn1LwIw==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz':
@@ -15260,13 +15246,13 @@ packages:
     dev: false
     name: '@rush-temp/ui-core'
     resolution:
-      integrity: sha512-jn5tLSJBKhxO7dOkt6d4b2Wfn/4SRlrw0R8w/ZgageeYposLFarUwnuj47vr5xptRoRIjOP+sWdBMS18YMO3Aw==
+      integrity: sha512-faVg/H1G7mZq4Xlah+2P4dNR0rxOtqjOZkKsYexwygLHKvFdwNCKIZwIWx56AaiJ62F97lYxyaNZXBoIaU8v1A==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz':
     dependencies:
       '@bentley/icons-generic-webfont': npm.bentley.com/@bentley/icons-generic-webfont/0.0.22
-      '@testing-library/dom': 5.5.2
+      '@testing-library/dom': 5.5.3
       '@testing-library/react': /@testing-library/react/8.0.4/react-dom@16.8.6+react@16.8.6
       '@types/chai': 4.1.7
       '@types/chai-as-promised': 7.1.0
@@ -15327,7 +15313,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-framework'
     resolution:
-      integrity: sha512-4ogxjFTJkyN5fYKzzQCp7FBL26QTB1WHp2QVNsj5Tf75/7Hc3TnOsWczKuYnbKqdLOpOgA4VCpcNfSBkpgCORw==
+      integrity: sha512-QxOXH2YU44nobVc0SmEMd6WNIe8X7Ux8Wfyq/XGmTNdWzX7H7U3RdvVuunO8HroqYrFKjh9Oga+2/lQKUyp/lw==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz':
@@ -15393,7 +15379,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-ninezone'
     resolution:
-      integrity: sha512-Qd/QlmX0BlYSIOi6K4AikKWnJvrXE7JjgTs1MshLLXehNgTwEKZ1gLjCVctKt8gcmnnYCrIGm8XjO6BEeVTnlw==
+      integrity: sha512-NtLWWqDoeIJBAaUeJTIx2trnDPUMKVvjaeko4CW/1wPsGCki0ZOv7AabSMd1BZ/hVJIQ9UYOw+g88IP97fj3mw==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz':
@@ -15428,7 +15414,7 @@ packages:
     dev: false
     name: '@rush-temp/ui-test-app'
     resolution:
-      integrity: sha512-VmwwWOnHyFHj/ambv7RDgU5g2hu46PTtjd/PckhX6kwxI0lcOdHw+4kfl3fVnneZZSAl4zL3cq6ZJRubJUlg6A==
+      integrity: sha512-5QDQEjDnhbFYPvZ+pIjJZFVBoYwNk8qNQtbfyeUbVkoiyXEGzPPGxTpf6f7MPHsLYwDyaTvdcuxFq1cSzF1JMQ==
       tarball: 'file:projects/ui-test-app.tgz'
     version: 0.0.0
   'file:projects/webpack-tools.tgz':
@@ -15462,14 +15448,13 @@ packages:
       exports-loader: 0.7.0
       fast-sass-loader: /fast-sass-loader/1.5.0/node-sass@4.12.0+webpack@4.35.3
       file-loader: /file-loader/1.1.11/webpack@4.35.3
-      fork-ts-checker-webpack-plugin: 1.3.7
+      fork-ts-checker-webpack-plugin: 1.4.0
       fs-extra: 6.0.1
       glob: 7.1.4
       html-webpack-plugin: /html-webpack-plugin/4.0.0-alpha.2/webpack@4.35.3
       imports-loader: 0.8.0
       istanbul-instrumenter-loader: /istanbul-instrumenter-loader/3.0.1/webpack@4.35.3
       jsdom: 11.12.0
-      license-webpack-plugin: 1.5.0
       lodash: 4.17.14
       mini-css-extract-plugin: /mini-css-extract-plugin/0.6.0/webpack@4.35.3
       mocha: 5.2.0
@@ -15522,7 +15507,7 @@ packages:
     dev: false
     name: '@rush-temp/webpack-tools'
     resolution:
-      integrity: sha512-QpoBEEGnpxziiZkb4p7OeorJKFABwa8H8Kqo0dJNmBgq5ukE63NJone+ukehA5br32Qx8LblBJ/sfFeDq8peCw==
+      integrity: sha512-kVb0KN4T/vzO1KnmN0c13qsf0wxSiJT3BwakugyutVyfRLLdbWyncTLMdv52saT2Lsod5dk3ggANerb0ghIi0w==
       tarball: 'file:projects/webpack-tools.tgz'
     version: 0.0.0
   'file:projects/webworker-test-app.tgz':
@@ -15535,7 +15520,7 @@ packages:
     dev: false
     name: '@rush-temp/webworker-test-app'
     resolution:
-      integrity: sha512-Kvhk4Y5Ia0NAGuQjL0ej+LHkJbDls2uTizwiRqTpYTRoWnNB+fHLzsX8IrDJ9fU+e3JnFVcXTvlR5pI42wBK+w==
+      integrity: sha512-W6/a6TJgIcE64/l2D1dxCNhPdd2NhcF5/F+UE1kl6c0xhteYTzSU8nDFzfk2bhYLF1f4BaZav3OeJ0xlbPSn3A==
       tarball: 'file:projects/webworker-test-app.tgz'
     version: 0.0.0
   npm.bentley.com/@bentley/icons-generic-webfont/0.0.22:
@@ -15546,21 +15531,21 @@ packages:
       registry: 'https://npm.bentley.com/npm/npm/'
       tarball: 'https://npm.bentley.com/npm/npm/@bentley/icons-generic-webfont/-/icons-generic-webfont-0.0.22.tgz'
     version: 0.0.22
-  npm.bentley.com/@bentley/imodeljs-native/0.139.0:
+  npm.bentley.com/@bentley/imodeljs-native/0.141.2:
     dev: false
     name: '@bentley/imodeljs-native'
     requiresBuild: true
     resolution:
-      integrity: sha1-CphzXNWwk/VpnkGFXISYHIphcFw=
+      integrity: sha1-3e4oEvLkN+xXFewO/+cwjQBr9WM=
       registry: 'https://npm.bentley.com/npm/npm/'
-      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.139.0.tgz'
-    version: 0.139.0
+      tarball: 'https://npm.bentley.com/npm/npm/@bentley/imodeljs-native/-/imodeljs-native-0.141.2.tgz'
+    version: 0.141.2
 registry: 'https://registry.npmjs.org/'
 shrinkwrapMinorVersion: 9
 shrinkwrapVersion: 3
 specifiers:
   '@bentley/icons-generic-webfont': ^0.0.22
-  '@bentley/imodeljs-native': ~0.139.0
+  '@bentley/imodeljs-native': ~0.141.2
   '@microsoft/api-extractor': 7.1.5
   '@openid/appauth': ^1.1.1
   '@rush-temp/bentleyjs-core': 'file:./projects/bentleyjs-core.tgz'
