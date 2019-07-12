@@ -23,7 +23,7 @@ import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
-import { ElementAspect } from "./ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
@@ -1531,11 +1531,18 @@ export namespace IModelDb {
       return this._iModel.constructEntity<ElementAspect>(aspectProps);
     }
 
-    /** Get the ElementAspect instances (by class name) that are related to the specified element.
+    /** Get the ElementAspect instances that are owned by the specified element.
+     * @param elementId Get ElementAspects associated with this Element
+     * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
+    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
+      if (undefined === aspectClassFullName) {
+        const uniqueAspects: ElementAspect[] = this._queryAspects(elementId, ElementUniqueAspect.classFullName);
+        const multiAspects: ElementAspect[] = this._queryAspects(elementId, ElementMultiAspect.classFullName);
+        return uniqueAspects.concat(multiAspects);
+      }
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassFullName);
       return aspects;
     }
 

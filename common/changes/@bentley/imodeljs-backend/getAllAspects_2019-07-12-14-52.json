@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "The className parameter to IModelDb.Element.getAspects is now optional to allow all aspects to be returned",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}
