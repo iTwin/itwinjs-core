@@ -357,7 +357,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         return null;
 
       const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
-      // const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
       const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, runtimeProps.nineZone.zones);
       const dropTarget = zonesManager.getDropTarget(zoneId, runtimeProps.nineZone.zones);
       const zoneRuntimeProps: ZoneRuntimeProps = {
@@ -497,10 +496,9 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   public componentDidMount() {
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
 
+    this._content.style.display = this.props.isHidden ? "none" : null;
     if (!this.props.renderTo)
       return;
-    this._content.style.display = this.props.isHidden ? "none" : null;
-
     this.props.renderTo.appendChild(this._content);
   }
 

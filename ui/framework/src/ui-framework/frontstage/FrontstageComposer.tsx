@@ -166,34 +166,32 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Top).collapseOffset = 0;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).minSize = 20;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).collapseOffset = 0;
-    widgetZoneIds
-      .map((key) => Number(key) as WidgetZoneId)
-      .forEach((zoneId: WidgetZoneId) => {
-        const zoneDef = this.getZoneDef(zoneId);
-        if (!zoneDef || zoneDef.zoneState !== ZoneState.Open)
-          return;
+    widgetZoneIds.forEach((zoneId: WidgetZoneId) => {
+      const zoneDef = this.getZoneDef(zoneId);
+      if (!zoneDef || zoneDef.zoneState !== ZoneState.Open)
+        return;
 
-        if (!zoneDef.allowsMerging)
-          this.setZoneAllowsMerging(zoneId, false);
+      if (!zoneDef.allowsMerging)
+        this.setZoneAllowsMerging(zoneId, false);
 
-        if (zoneDef.mergeWithZone)
-          this.mergeZones(zoneId, zoneDef.mergeWithZone);
+      if (zoneDef.mergeWithZone)
+        this.mergeZones(zoneId, zoneDef.mergeWithZone);
 
-        const zoneProps = nineZone.zones.zones[zoneId];
-        if (zoneProps.widgets.length >= 1) {
-          zoneProps.widgets.forEach((widgetId) => {
-            zoneDef.widgetDefs
-              .filter((widgetDef: WidgetDef) => {
-                return widgetDef.isVisible && !widgetDef.isToolSettings && !widgetDef.isStatusBar && !widgetDef.isFreeform;
-              })
-              .forEach((widgetDef: WidgetDef, tabIndex: number) => {
-                if (widgetDef.canOpen()) {
-                  this.handleWidgetStateChange(widgetId, tabIndex, true);
-                }
-              });
-          });
-        }
-      });
+      const zoneProps = nineZone.zones.zones[zoneId];
+      if (zoneProps.widgets.length >= 1) {
+        zoneProps.widgets.forEach((widgetId) => {
+          zoneDef.widgetDefs
+            .filter((widgetDef: WidgetDef) => {
+              return widgetDef.isVisible && !widgetDef.isToolSettings && !widgetDef.isStatusBar && !widgetDef.isFreeform;
+            })
+            .forEach((widgetDef: WidgetDef, tabIndex: number) => {
+              if (widgetDef.canOpen()) {
+                this.handleWidgetStateChange(widgetId, tabIndex, true);
+              }
+            });
+        });
+      }
+    });
   }
 
   private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
@@ -452,14 +450,14 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void {
     this.setState((prevState) => {
+      // TODO: temporary hack for BUG150122 (Widget tabs are not being re-rendered when WidgetDef changes)
+      let nineZone = prevState.nineZone;
       const widget = prevState.nineZone.zones.widgets[widgetId];
       if (isOpening && widget.tabIndex === tabIndex)
-        return null;
+        return { nineZone };
       if (!isOpening && widget.tabIndex !== tabIndex)
-        return null;
-      const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
-      if (nineZone === prevState.nineZone)
-        return null;
+        return { nineZone };
+      nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
       return {
         nineZone,
       };
