@@ -32,11 +32,10 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 
+// NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
-    // Textures do NOT contain premultiplied alpha. Multiply in shader.
-    vec4 texColor = TEXTURE(s_texture, v_texCoord);
-    return applyPreMultipliedAlpha(texColor);
+    return TEXTURE(s_texture, v_texCoord);
   }
 `;
 
@@ -44,7 +43,7 @@ const sampleSurfaceTexture = `
 const applyMaterialOverrides = `
   float useMatColor = 1.0 - extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
   vec4 matColor = mix(baseColor, vec4(mat_rgb.rgb * baseColor.a, baseColor.a), useMatColor * mat_rgb.a);
-  matColor = mix(matColor, adjustPreMultipliedAlpha(matColor, mat_alpha.x), useMatColor * mat_alpha.y);
+  matColor = mix(matColor, vec4(matColor.rgb, mat_alpha.x), useMatColor * mat_alpha.y);
   float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
   return mix(matColor, g_surfaceTexel, textureWeight);
 `;
@@ -80,9 +79,6 @@ void decodeMaterialParams(vec4 params, float specularExponent) {
 
 /** @internal */
 export function addMaterial(frag: FragmentShaderBuilder): void {
-  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
-
   frag.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   frag.addGlobal("mat_texture_weight", VariableType.Float);
@@ -258,7 +254,7 @@ const computeBaseColor = `
   vec4 glyphColor = surfaceColor;
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  vec3 color = glyphColor.rgb / max(0.0001, glyphColor.a); // revert premultiplied alpha
+  vec3 color = glyphColor.rgb;
   vec3 delta = (color + epsilon) - white;
 
   // set to black if almost white
@@ -310,7 +306,6 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
     });
   });
 
-  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {

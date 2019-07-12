@@ -50,10 +50,9 @@ export function addRenderTargetIndex(frag: FragmentShaderBuilder) {
 const reverseWhiteOnWhite = `
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  vec3 color = baseColor.rgb / max(0.0001, baseColor.a); // revert premultiplied alpha
+  vec3 color = baseColor.rgb;
   vec3 delta = (color + epsilon) - white;
   vec4 wowColor = vec4(baseColor.rgb * vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)), baseColor.a); // set to black if almost white
-  wowColor.rgb *= wowColor.a; // reapply premultiplied alpha
   return mix(baseColor, wowColor, floor(u_reverseWhiteOnWhite + 0.5));
 `;
 
@@ -131,30 +130,6 @@ export namespace GLSLFragment {
   export const assignFragColor = "FragColor = baseColor;";
 
   export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
-
-  export const revertPreMultipliedAlpha = `
-vec4 revertPreMultipliedAlpha(vec4 rgba) {
-  rgba.rgb /= max(0.0001, rgba.a);
-  return rgba;
-}
-`;
-
-  export const applyPreMultipliedAlpha = `
-vec4 applyPreMultipliedAlpha(vec4 rgba) {
-  rgba.rgb *= rgba.a;
-  return rgba;
-}
-`;
-
-  export const adjustPreMultipliedAlpha = `
-vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
-  float oldAlpha = rgba.a;
-  rgba.rgb /= max(0.0001, oldAlpha);
-  rgba.rgb *= newAlpha;
-  rgba.a = newAlpha;
-  return rgba;
-}
-`;
 
   export const computeLinearDepth = `
 float computeLinearDepth(float eyeSpaceZ) {

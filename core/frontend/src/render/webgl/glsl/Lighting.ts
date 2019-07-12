@@ -22,10 +22,6 @@ void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal,
 // mat_weights: x=diffuse y=specular
 const applyLighting = `
   if (isSurfaceBitSet(kSurfaceBit_ApplyLighting) && baseColor.a > 0.0) {
-    // Lighting algorithms written in terms of non-pre-multiplied alpha...
-    float alpha = baseColor.a;
-    baseColor.rgb /= alpha;
-
     // negate normal if not front-facing
     vec3 normal = normalize(v_n.xyz);
     normal *= 2.0 * float(gl_FrontFacing) - 1.0;
@@ -61,9 +57,6 @@ const applyLighting = `
     float maxIntensity = max(litColor.r, max(litColor.g, litColor.b));
 
     baseColor.rgb = litColor / max(1.0, maxIntensity);
-
-    // Restore pre-multiplied alpha...
-    baseColor.rgb *= alpha;
   }
 
   return baseColor;

@@ -10,23 +10,23 @@ import { addModelViewMatrix } from "./Vertex";
 import { addFrustum, addEyeSpace } from "./Common";
 import { System } from "../System";
 
+// See Weighted Blended Order-Independent Transparency for examples of different weighting functions:
+// http://jcgt.org/published/0002/02/09/
+// We are using Equation 10 from the above paper.  Equation 10 directly uses screen-space gl_FragCoord.z.
+// flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
+// computeLinearDepth() removes the perspective and puts z in linear [0..1]
 const computeAlphaWeight = `
 float computeAlphaWeight(float a, float flatAlpha) {
-  // See Weighted Blended Order-Independent Transparency for examples of different weighting functions:
-  // http://jcgt.org/published/0002/02/09/
-  // We are using Equation 10 from the above paper.  Equation 10 directly uses screen-space gl_FragCoord.z.
-
-  // flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
-  // computeLinearDepth() removes the perspective and puts z in linear [0..1]
   float z = mix(computeLinearDepth(v_eyeSpace.z), 1.0, flatAlpha);
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
 }
 `;
 
+// NB: Our blending algorithm uses pre-multiplied alpha
 const computeOutputs = `
   float flatAlpha = extractShaderBit(kShaderBit_OITFlatAlphaWeight);
   float scaleOutput = extractShaderBit(kShaderBit_OITScaleOutput);
-  vec3 Ci = baseColor.rgb;
+  vec3 Ci = baseColor.rgb * baseColor.a;
   float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
   float wzi = computeAlphaWeight(ai, flatAlpha);
 

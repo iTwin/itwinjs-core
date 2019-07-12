@@ -47,7 +47,7 @@ function createTarget(): Target | undefined {
   return System.instance!.createTarget(canvas!) as Target;
 }
 
-describe("Technique tests", () => {
+describe.only("Technique tests", () => {
   before(() => IModelApp.startup());
   after(() => IModelApp.shutdown());
 

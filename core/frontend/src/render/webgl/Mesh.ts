@@ -13,7 +13,7 @@ import { ColorInfo } from "./ColorInfo";
 import { Graphic, Batch } from "./Graphic";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
-import { FloatPreMulRgba } from "./FloatRGBA";
+import { FloatRgba } from "./FloatRGBA";
 import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { createMaterialInfo, MaterialInfo } from "./Material";
@@ -155,7 +155,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
-  public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
+  public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get lut() { return this.mesh.lut; }
@@ -368,7 +368,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createUniform(FloatPreMulRgba.fromFloatRgba(target.bgColor));
+      return ColorInfo.createUniform(target.bgColor);
     else
       return this.colorInfo;
   }

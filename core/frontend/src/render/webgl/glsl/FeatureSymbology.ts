@@ -225,6 +225,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (wantColor) {
     vert.addFunction(getSecondFeatureRgba);
     if (wantAlpha) {
+      addRenderPass(vert);
       addAlpha(vert);
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
     }
@@ -592,7 +593,8 @@ const computeFeatureOverrides = `
 // v_feature_alpha = -1.0 if alpha not overridden for feature.
 const applyFeatureColor = `
   vec4 color = mix(baseColor, vec4(v_feature_rgb.rgb * baseColor.a, baseColor.a), step(0.0, v_feature_rgb.r));
-  return mix(color, adjustPreMultipliedAlpha(color, v_feature_alpha), step(0.0, v_feature_alpha));
+  vec4 colorWithFeatureAlpha = vec4(color.rgb * v_feature_alpha, v_feature_alpha);
+  return mix(color, colorWithFeatureAlpha, step(0.0, v_feature_alpha));
 `;
 
 const applyFlash = `
@@ -607,7 +609,6 @@ vec4 doApplyFlash(float flashHilite, vec4 baseColor) {
   float isHilited = (flashHilite >= 2.0) ? 1.0 : 0.0;
 
   float hiliteRatio = u_hilite_settings.x * isHilited;
-  baseColor = revertPreMultipliedAlpha(baseColor);
   baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, hiliteRatio);
 
   const float maxBrighten = 0.2;
@@ -619,17 +620,13 @@ vec4 doApplyFlash(float flashHilite, vec4 baseColor) {
   vec3 tweenRgb = baseColor.rgb * (1.0 - hiliteFraction);
   tweenRgb += u_hilite_color.rgb * hiliteFraction;
 
-  vec4 color = vec4(mix(tweenRgb, brightRgb, u_hilite_color.a), baseColor.a);
-  return applyPreMultipliedAlpha(color);
+  return vec4(mix(tweenRgb, brightRgb, u_hilite_color.a), baseColor.a);
 }
 `;
 
 function addApplyFlash(frag: FragmentShaderBuilder) {
   addHiliteSettings(frag);
 
-  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
   frag.addFunction(doApplyFlash);
   frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
 
