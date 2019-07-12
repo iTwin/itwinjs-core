@@ -9,6 +9,7 @@ import {
   ProgramBuilder,
   VariableType,
   VertexShaderBuilder,
+  VertexShaderComponent,
 } from "../ShaderBuilder";
 import { addInstanceColor } from "./Instancing";
 
@@ -67,7 +68,8 @@ export function addColor(builder: ProgramBuilder, forwardBaseAlpha: boolean = fa
   if (forwardBaseAlpha)
     builder.addGlobal("g_baseAlpha", VariableType.Float);
 
-  builder.addFunctionComputedVarying("v_color", VariableType.Vec4, "computeColor", getComputeColor(builder.vert, forwardBaseAlpha));
+  builder.addVarying("v_color", VariableType.Vec4);
+  builder.vert.set(VertexShaderComponent.ComputeBaseColor, getComputeColor(builder.vert, forwardBaseAlpha));
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 }

@@ -578,6 +578,12 @@ export const enum VertexShaderComponent {
   CheckForEarlyDiscard,
   // (Optional) Compute feature overrides like visibility, rgb, transparency, line weight.
   ComputeFeatureOverrides,
+  // (Optional) Compute the vertex's base color. Requires the program to have a `varying vec4 v_color`.
+  // vec4 computeBaseColor()
+  ComputeBaseColor,
+  // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
+  // vec4 applyFeatureColor(vec4 baseColor)
+  ApplyFeatureColor,
   // (Optional) Return true if this vertex should be "discarded" (is not visible)
   // bool checkForDiscard()
   // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
@@ -664,6 +670,21 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("  computeFeatureOverrides();");
     }
 
+    const computeBaseColor = this.get(VertexShaderComponent.ComputeBaseColor);
+    if (undefined !== computeBaseColor) {
+      assert(undefined !== this.find("v_color"));
+      prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
+      main.addline("vec4 baseColor = computeBaseColor();");
+
+      const applyFeatureColor = this.get(VertexShaderComponent.ApplyFeatureColor);
+      if (undefined !== applyFeatureColor) {
+        prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
+        main.addline("baseColor = applyFeatureColor(baseColor);");
+      }
+
+      main.addline("v_color = baseColor;");
+    }
+
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
@@ -705,9 +726,6 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply material overrides to base color
   // vec4 applyMaterialOverrides(vec4 baseColor)
   ApplyMaterialOverrides,
-  // (Optional) Apply feature overrides to base color
-  // vec4 applyFeatureColor(vec4 baseColor)
-  ApplyFeatureColor,
   // (Optional) Adjust base color after material and/or feature overrides have been applied.
   // vec4 finalizeBaseColor(vec4 baseColor)
   FinalizeBaseColor,
@@ -834,12 +852,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
       main.addline("  baseColor = applySolarShadowMap(baseColor);");
     }
-    const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
-    if (undefined !== applyFeatureColor) {
-      prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
-      main.addline("  baseColor = applyFeatureColor(baseColor);");
-    }
-
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
