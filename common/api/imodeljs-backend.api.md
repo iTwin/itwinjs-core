@@ -1400,6 +1400,12 @@ export interface ExportGraphicsInfo {
 }
 
 // @beta
+export interface ExportGraphicsLines {
+    indices: Int32Array;
+    points: Float64Array;
+}
+
+// @beta
 export interface ExportGraphicsMesh {
     indices: Int32Array;
     normals: Float32Array;
@@ -1414,7 +1420,19 @@ export interface ExportGraphicsProps {
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
+    onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceProps[];
+}
+
+// @beta
+export type ExportLinesFunction = (info: ExportLinesInfo) => void;
+
+// @beta
+export interface ExportLinesInfo {
+    color: number;
+    elementId: Id64String;
+    lines: ExportGraphicsLines;
+    subCategory: Id64String;
 }
 
 // @beta
@@ -1442,6 +1460,7 @@ export interface ExportPartGraphicsProps {
     elementId: Id64String;
     maxEdgeLength?: number;
     onPartGraphics: ExportPartFunction;
+    onPartLineGraphics?: ExportPartLinesFunction;
 }
 
 // @beta
@@ -1458,6 +1477,15 @@ export interface ExportPartInstanceProps {
     partId: Id64String;
     partInstanceId: Id64String;
     transform?: Float64Array;
+}
+
+// @beta
+export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
+
+// @beta
+export interface ExportPartLinesInfo {
+    color: number;
+    lines: ExportGraphicsLines;
 }
 
 // @public
