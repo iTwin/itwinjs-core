@@ -472,7 +472,7 @@ class DefaultConfigs {
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = "D:\\output\\performanceData\\";
-      this.iModelName = "Wraith.ibim";
+      this.iModelName = "Wraith2.bim";
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
       this.testType = "timing";
@@ -771,8 +771,7 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
-    activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName: testConfig.iModelName!.replace(".ibim", "").replace(".bim", "") } as ConnectProjectConfiguration;
     activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
     activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
     if (activeViewState.iModel === undefined)
