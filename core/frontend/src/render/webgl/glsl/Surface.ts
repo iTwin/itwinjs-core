@@ -39,13 +39,17 @@ const sampleSurfaceTexture = `
   }
 `;
 
-// if this is a raster glyph, the sampled color has already been modified - do not modify further.
-const applyMaterialOverrides = `
+const applyMaterialColor = `
   float useMatColor = 1.0 - extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
-  vec4 matColor = mix(baseColor, vec4(mat_rgb.rgb * baseColor.a, baseColor.a), useMatColor * mat_rgb.a);
-  matColor = mix(matColor, vec4(matColor.rgb, mat_alpha.x), useMatColor * mat_alpha.y);
+  vec3 rgb = mix(baseColor.rgb, mat_rgb.rgb, useMatColor * mat_rgb.a);
+  float a = mix(baseColor.a, mat_alpha.x, useMatColor * mat_alpha.y);
+  return vec4(rgb, a);
+`;
+
+// if this is a raster glyph, the sampled color has already been modified - do not modify further.
+const applyTextureWeight = `
   float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
-  return mix(matColor, g_surfaceTexel, textureWeight);
+  return mix(baseColor, g_surfaceTexel, textureWeight);
 `;
 
 const unpackMaterialParam = `
@@ -62,36 +66,40 @@ vec3 unpackAndNormalizeMaterialParam(float f) {
   return unpackMaterialParam(f) / 255.0;
 }`;
 
-const decodeMaterialParams = `
+const decodeFragMaterialParams = `
 void decodeMaterialParams(vec4 params, float specularExponent) {
+  vec3 alphaAndFlags = unpackMaterialParam(params.w);
+  float alphaOverridden = float(alphaAndFlags.y >= 2.0);
+
+  mat_texture_weight = alphaAndFlags.z / 255.0;
+  mat_weights = unpackAndNormalizeMaterialParam(params.y).xy;
+  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.z), specularExponent);
+}`;
+
+const decodeVertMaterialParams = `
+void decodeMaterialParams(vec4 params) {
   vec3 alphaAndFlags = unpackMaterialParam(params.w);
   float rgbOverridden = float(1.0 == alphaAndFlags.y || 3.0 == alphaAndFlags.y);
   float alphaOverridden = float(alphaAndFlags.y >= 2.0);
 
   mat_rgb = vec4(unpackAndNormalizeMaterialParam(params.x), rgbOverridden);
   mat_alpha = vec2(alphaAndFlags.x / 255.0, alphaOverridden);
-  mat_texture_weight = alphaAndFlags.z / 255.0;
-
-  mat_weights = unpackAndNormalizeMaterialParam(params.y).xy;
-
-  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.z), specularExponent);
 }`;
 
 /** @internal */
-export function addMaterial(frag: FragmentShaderBuilder): void {
-  frag.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
-  frag.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
-  frag.addGlobal("mat_texture_weight", VariableType.Float);
-  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
-  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
-
-  frag.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
+export function addMaterial(builder: ProgramBuilder): void {
+  builder.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
       const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.integerUniforms);
     });
   });
+
+  const frag = builder.frag;
+  frag.addGlobal("mat_texture_weight", VariableType.Float);
+  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
+  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
   frag.addUniform("u_specularExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_specularExponent", (uniform, params) => {
@@ -103,10 +111,19 @@ export function addMaterial(frag: FragmentShaderBuilder): void {
 
   frag.addFunction(unpackMaterialParam);
   frag.addFunction(unpackAndNormalizeMaterialParam);
-  frag.addFunction(decodeMaterialParams);
+  frag.addFunction(decodeFragMaterialParams);
   frag.addInitializer("decodeMaterialParams(u_materialParams, u_specularExponent);");
 
-  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
+  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyTextureWeight);
+
+  const vert = builder.vert;
+  vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
+  vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
+  vert.addFunction(unpackMaterialParam);
+  vert.addFunction(unpackAndNormalizeMaterialParam);
+  vert.addFunction(decodeVertMaterialParams);
+  vert.addInitializer("decodeMaterialParams(u_materialParams);");
+  vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
 }
 
 const computePosition = `

@@ -581,6 +581,9 @@ export const enum VertexShaderComponent {
   // (Optional) Compute the vertex's base color. Requires the program to have a `varying vec4 v_color`.
   // vec4 computeBaseColor()
   ComputeBaseColor,
+  // (Optional - does nothing if ComputeBaseColor not specified) Apply material overrides to vertex color
+  // vec4 applyMaterialColor(vec4 baseColor)
+  ApplyMaterialColor,
   // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
   // vec4 applyFeatureColor(vec4 baseColor)
   ApplyFeatureColor,
@@ -675,6 +678,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       assert(undefined !== this.find("v_color"));
       prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
       main.addline("vec4 baseColor = computeBaseColor();");
+
+      const applyMaterialColor = this.get(VertexShaderComponent.ApplyMaterialColor);
+      if (undefined !== applyMaterialColor) {
+        prelude.addFunction("vec4 applyMaterialColor(vec4 baseColor)", applyMaterialColor);
+        main.addline("baseColor = applyMaterialColor(baseColor);");
+      }
 
       const applyFeatureColor = this.get(VertexShaderComponent.ApplyFeatureColor);
       if (undefined !== applyFeatureColor) {
