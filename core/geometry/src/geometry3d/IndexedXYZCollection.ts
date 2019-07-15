@@ -85,32 +85,21 @@ export abstract class IndexedXYZCollection {
   public abstract get length(): number;
   /**
    * Return distance squared between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
    * @param index0 first point index
    * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
-   *
    */
-  public distanceSquaredIndexIndex(index0: number, index1: number, defaultDistanceSquared: number = Number.MAX_VALUE) {
-    const vector = this.vectorIndexIndex(index0, index1);
-    if (vector !== undefined)
-      return vector.magnitudeSquared();
-    return defaultDistanceSquared;
-  }
+  public abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
   /**
    * Return distance between indicated points.
-   * * Concrete classes may be able to implement this without creating a temporary.
    * @param index0 first point index
    * @param index1 second point index
-   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
    */
-  public distanceIndexIndex(index0: number, index1: number, defaultDistance: number = Number.MAX_VALUE) {
-    const vector = this.vectorIndexIndex(index0, index1);
-    if (vector !== undefined)
-      return vector.magnitude();
-    return defaultDistance;
-  }
+  public abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
 
+  /** Adjust index into range by modulo with the length. */
+  public cyclicIndex(i: number): number {
+    return (i % this.length);
+  }
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.

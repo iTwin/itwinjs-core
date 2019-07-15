@@ -663,7 +663,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
-  /** Return the distance between two points in the array. */
+  /** Return the distance between two points in the array.
+   * @deprecated -- use distanceIndexIndex
+   */
   public distance(i: number, j: number): number | undefined {
     if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
       const i0 = 3 * i;
@@ -687,6 +689,43 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
+  /**
+   * Return distance squared between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   *
+   */
+  public distanceSquaredIndexIndex(i: number, j: number): number | undefined {
+    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+      const i0 = 3 * i;
+      const j0 = 3 * j;
+      return Geometry.hypotenuseSquaredXYZ(
+        this._data[j0] - this._data[i0],
+        this._data[j0 + 1] - this._data[i0 + 1],
+        this._data[j0 + 2] - this._data[i0 + 2]);
+    }
+    return undefined;
+  }
+  /**
+   * Return distance between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   */
+  public distanceIndexIndex(i: number, j: number): number | undefined {
+    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+      const i0 = 3 * i;
+      const j0 = 3 * j;
+      return Geometry.hypotenuseXYZ(
+        this._data[j0] - this._data[i0],
+        this._data[j0 + 1] - this._data[i0 + 1],
+        this._data[j0 + 2] - this._data[i0 + 2]);
+    }
+    return undefined;
+  }
   /** Return the distance between points in distinct arrays. */
   public static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined {
 

@@ -154,4 +154,38 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   public clear(): void {
     this.data.length = 0;
   }
+  /**
+   * Return distance squared between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   *
+   */
+  public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
+    const n = this.data.length;
+    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
+      return this.data[index0].distanceSquared(this.data[index1]);
+    }
+    return undefined;
+  }
+  /**
+   * Return distance between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   */
+  public distanceIndexIndex(index0: number, index1: number): number | undefined {
+    const n = this.data.length;
+    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
+      return this.data[index0].distance(this.data[index1]);
+    }
+    return undefined;
+  }
+  /** Adjust index into range by modulo with the length. */
+  public cyclicIndex(i: number): number {
+    return (i % this.length);
+  }
+
 }

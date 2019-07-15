@@ -1669,10 +1669,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
+    // @deprecated
     distance(i: number, j: number): number | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
+    distanceIndexIndex(i: number, j: number): number | undefined;
     distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined;
     static distanceRangeBetweenCorrespondingPoints(arrayA: GrowableXYZArray, arrayB: GrowableXYZArray): Range1d;
+    distanceSquaredIndexIndex(i: number, j: number): number | undefined;
     ensureCapacity(pointCapacity: number): void;
     evaluateUncheckedIndexDotProductXYZ(pointIndex: number, x: number, y: number, z: number): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -2129,8 +2132,9 @@ export abstract class IndexedXYZCollection {
     abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
-    distanceIndexIndex(index0: number, index1: number, defaultDistance?: number): number;
-    distanceSquaredIndexIndex(index0: number, index1: number, defaultDistanceSquared?: number): number;
+    cyclicIndex(i: number): number;
+    abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
+    abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
     abstract readonly length: number;
@@ -3068,7 +3072,10 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     clear(): void;
     crossProductIndexIndexIndex(originIndex: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
+    cyclicIndex(i: number): number;
     data: Point3d[];
+    distanceIndexIndex(index0: number, index1: number): number | undefined;
+    distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
     front(result?: Point3d): Point3d | undefined;
     getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;

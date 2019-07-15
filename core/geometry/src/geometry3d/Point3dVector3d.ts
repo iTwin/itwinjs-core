@@ -184,11 +184,11 @@ export class XYZ implements XYAndZ {
   /** Return the largest absolute value of any component */
   public maxAbs(): number { return Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z)); }
   /** Return the sqrt of the sum of squared x,y,z parts */
-  public magnitude(): number { return Math.hypot(this.x, this.y, this.z); }
+  public magnitude(): number { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z); }
   /** Return the sum of squared x,y,z parts */
   public magnitudeSquared(): number { return this.x * this.x + this.y * this.y + this.z * this.z; }
   /** Return sqrt of the sum of squared x,y parts */
-  public magnitudeXY(): number { return Math.hypot(this.x, this.y); }
+  public magnitudeXY(): number { return Math.sqrt(this.x * this.x + this.y * this.y); }
   /** Return the sum of squared x,y parts */
   public magnitudeSquaredXY(): number { return this.x * this.x + this.y * this.y; }
   /** exact equality test. */

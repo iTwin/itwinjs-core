@@ -679,14 +679,16 @@ describe("Point3dArray", () => {
     const xyz3 = carrier.getPoint3dAtCheckedPointIndex(3)!;
     const dA = carrier.distanceIndexIndex(1, 3);
     const dA2 = carrier.distanceSquaredIndexIndex(1, 3);
-    ck.testCoordinate(xyz1.distanceSquared(xyz3), dA2, "distance indexIndex in carrier");
-    ck.testCoordinate(xyz1.distance(xyz3), dA, "distance indexIndex in carrier");
+    ck.testFalse(dA === undefined);
+    ck.testFalse(dA2 === undefined);
+    ck.testCoordinate(xyz1.distanceSquared(xyz3), dA2!, "distance indexIndex in carrier");
+    ck.testCoordinate(xyz1.distance(xyz3), dA!, "distance indexIndex in carrier");
 
-    ck.testExactNumber(-2, carrier.distanceIndexIndex(0, 100, -2));
-    ck.testExactNumber(-2, carrier.distanceIndexIndex(1000, 0, -2));
+    ck.testUndefined(carrier.distanceIndexIndex(0, 100));
+    ck.testUndefined(carrier.distanceIndexIndex(1000, 0));
 
-    ck.testExactNumber(-2, carrier.distanceSquaredIndexIndex(0, 100, -2));
-    ck.testExactNumber(-2, carrier.distanceSquaredIndexIndex(1000, 0, -2));
+    ck.testUndefined(carrier.distanceSquaredIndexIndex(0, 100));
+    ck.testUndefined(carrier.distanceSquaredIndexIndex(1000, 0));
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -695,8 +697,8 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const carrierA = new Point3dArrayCarrier([]);
     const carrierB = new Point3dArrayCarrier([]);
-    ck.testUndefined (carrierA.front (), "front() in empty array");
-    ck.testUndefined (carrierA.back (), "back() in empty array");
+    ck.testUndefined(carrierA.front(), "front() in empty array");
+    ck.testUndefined(carrierA.back(), "back() in empty array");
     const zData = [10, 11, 12, 13, 14, 22];
     for (let k = 0; k < zData.length; k++) {
       carrierA.pushXYZ(k + 1, 2 * k + 5, zData[k]);
