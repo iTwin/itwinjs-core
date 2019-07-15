@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fallback to toString for Error derivative errors in tile upload",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "steve.wilson@bentley.com"
+}

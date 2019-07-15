@@ -186,7 +186,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
         const cache = CloudStorageTileCache.getCache();
         await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content);
       } catch (err) {
-        Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, JSON.stringify(err));
+        Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, (err instanceof Error) ? err.toString() : JSON.stringify(err));
       }
     });
   }
