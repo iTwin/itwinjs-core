@@ -49,7 +49,10 @@ const applyMaterialColor = `
 // if this is a raster glyph, the sampled color has already been modified - do not modify further.
 const applyTextureWeight = `
   float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
-  return mix(baseColor, g_surfaceTexel, textureWeight);
+  vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
+  rgba.rgb = mix(rgba.rgb, v_color.rgb, extractSurfaceBit(kSurfaceBit_OverrideRgb));
+  rgba.a = mix(rgba.a, v_color.a, extractSurfaceBit(kSurfaceBit_OverrideAlpha));
+  return rgba;
 `;
 
 const unpackMaterialParam = `
@@ -149,7 +152,7 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
   const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
 
-  addSurfaceFlags(builder, true);
+  addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No);
   if (classified) {
     addHilitePlanarClassifier(builder);
@@ -178,6 +181,8 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_TransparencyThreshold", VariableType.Float, "4.0");
   builder.addConstant("kSurfaceBit_BackgroundFill", VariableType.Float, "5.0");
   builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
+  builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
+  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.");
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceMask_HasTexture", VariableType.Float, "1.0");
@@ -187,6 +192,8 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_TransparencyThreshold", VariableType.Float, "16.0");
   builder.addConstant("kSurfaceMask_BackgroundFill", VariableType.Float, "32.0");
   builder.addConstant("kSurfaceMask_HasColorAndNormal", VariableType.Float, "64.0");
+  builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
+  builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
 
   builder.addFunction(GLSLCommon.extractNthBit);
   builder.addFunction(extractSurfaceBit);
@@ -195,7 +202,7 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
 
 const getSurfaceFlags = "return u_surfaceFlags;";
 
-const computeSurfaceFlags = `
+const computeBaseSurfaceFlags = `
   float flags = u_surfaceFlags;
   if (feature_ignore_material) {
     bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
@@ -204,9 +211,22 @@ const computeSurfaceFlags = `
 
     flags += kSurfaceMask_IgnoreMaterial;
   }
+`;
 
+const computeColorSurfaceFlags = `
+  if (feature_rgb.r >= 0.0)
+    flags += kSurfaceMask_OverrideRgb;
+
+  if (feature_alpha >= 0.0)
+    flags += kSurfaceMask_OverrideAlpha;
+`;
+
+const returnSurfaceFlags = `
   return flags;
 `;
+
+const computeSurfaceFlags = computeBaseSurfaceFlags + returnSurfaceFlags;
+const computeSurfaceFlagsWithColor = computeBaseSurfaceFlags + computeColorSurfaceFlags + returnSurfaceFlags;
 
 /** @internal */
 export const octDecodeNormal = `
@@ -279,8 +299,9 @@ const computeBaseColor = `
   return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(mat_texture_weight));
 `;
 
-function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {
-  builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", withFeatureOverrides ? computeSurfaceFlags : getSurfaceFlags);
+function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean, withFeatureColor: boolean) {
+  const compute = withFeatureOverrides ? (withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags) : getSurfaceFlags;
+  builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
@@ -343,7 +364,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   const feat = flags.featureMode;
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
-  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
+  addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
   addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified);
   addNormal(builder, flags.isAnimated);
 

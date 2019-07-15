@@ -132,11 +132,8 @@ const checkVertexDiscard = `
     return true;
 
   bool hasAlpha = 1.0 == u_hasAlpha;
-  if (feature_alpha > 0.0) {
-    const float s_minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
-    const float s_maxAlpha = (255.0 - s_minTransparency) / 255.0;
+  if (feature_alpha > 0.0)
     hasAlpha = feature_alpha < s_maxAlpha;
-  }
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
@@ -225,6 +222,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (wantColor) {
     vert.addFunction(getSecondFeatureRgba);
     if (wantAlpha) {
+      const minTransparency = 15.0; // NB: See DisplayParams.getMinTransparency() - this must match!
+      const maxAlpha = (255 - minTransparency) / 255;
+      vert.addConstant("s_maxAlpha", VariableType.Float, maxAlpha.toString());
+
       addRenderPass(vert);
       addAlpha(vert);
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);

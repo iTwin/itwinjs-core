@@ -20,6 +20,7 @@ import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
+import { DisplayParams } from "../primitives/DisplayParams";
 
 function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
   if (hilites.isEmpty)
@@ -138,6 +139,9 @@ export class FeatureOverrides implements IDisposable {
         flags |= OvrFlags.Alpha;
         let alpha = 1.0 - app.transparency;
         alpha = Math.floor(0xff * alpha + 0.5);
+        if ((0xff - alpha) < DisplayParams.minTransparency)
+          alpha = 0xff;
+
         data.setByteAtIndex(dataIndex + 7, alpha);
         if (0xff === alpha)
           this.anyOpaque = true;
