@@ -18,3 +18,11 @@ Markers are used to position decorations in a view that follow a position in wor
 
 ## Display system optimizations
   * The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets.
+
+## Enhancements to IModelDb.exportGraphics
+
+* [IModelDb.exportGraphics]($imodeljs-backend) can now optionally return information about [GeometryPart]($imodeljs-backend) instances encountered in a [GeometryStream]($common). [IModelDb.exportPartGraphics]($imodeljs-backend) can then be used to handle this information in a more efficient manner.
+
+* [IModelDb.exportGraphics]($imodeljs-backend) can now optionally return information about linework (or "open") geometry encountered in a GeometryStream.
+
+* An example GLTF 2.0 exporter demonstrating these features is now available under test-apps in the iModel.js monorepo.
