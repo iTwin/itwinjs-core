@@ -69,7 +69,6 @@
     "@types/node": "10.14.1",
     "@types/object-hash": "^1.2.0",
     "@types/semver": "^5.5.0",
-    "@types/form-data": "^2.2.1",
     "@types/multiparty": "^0.0.31",
     "@types/lru-cache": "^5.1.0",
     "asn1": "0.2.3",
@@ -90,7 +89,7 @@
   "dependencies": {
     "@bentley/imodeljs-native": "~0.142.0",
     "azure-storage": "^2.10.2",
-    "form-data": "2.3.2",
+    "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",
