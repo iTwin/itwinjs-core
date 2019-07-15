@@ -77,8 +77,8 @@ void decodeMaterialParams(vec3 params) {
 
 const decodeMaterialColor = `
 void decodeMaterialColor(vec4 rgba) {
-  mat_rgb = vec4(rgba.rgb, floor(rgba.r + 0.5));
-  mat_alpha = vec2(rgba.a, floor(rgba.a + 0.5));
+  mat_rgb = vec4(rgba.rgb, float(rgba.r >= 0.0));
+  mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
 }`;
 
 /** @internal */
