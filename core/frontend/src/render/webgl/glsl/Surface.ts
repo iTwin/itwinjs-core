@@ -84,25 +84,27 @@ void decodeMaterialColor(vec4 rgba) {
   mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
 }`;
 
+const computeMaterialParams = `
+  const vec3 defaults = vec3(16777215.0, 13.5, 16737945.0);
+  if (isSurfaceBitSet(kSurfaceBit_IgnoreMaterial))
+    return defaults;
+  else
+    return u_materialParams;
+`;
+
 /** @internal */
 export function addMaterial(builder: ProgramBuilder): void {
   const frag = builder.frag;
+  assert(undefined !== frag.find("v_surfaceFlags"));
+
   frag.addGlobal("mat_texture_weight", VariableType.Float);
   frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
   frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
-  frag.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
-      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-      uniform.setUniform3fv(mat.fragUniforms);
-    });
-  });
-
   frag.addFunction(unpackMaterialParam);
   frag.addFunction(unpackAndNormalizeMaterialParam);
   frag.addFunction(decodeFragMaterialParams);
-  frag.addInitializer("decodeMaterialParams(u_materialParams);");
+  frag.addInitializer("decodeMaterialParams(v_materialParams);");
 
   frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyTextureWeight);
 
@@ -118,9 +120,19 @@ export function addMaterial(builder: ProgramBuilder): void {
     });
   });
 
+  vert.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
+      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+      uniform.setUniform3fv(mat.fragUniforms);
+    });
+  });
+
   vert.addFunction(decodeMaterialColor);
   vert.addInitializer("decodeMaterialColor(u_materialColor);");
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
+
+  builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec3, "computeMaterialParams", computeMaterialParams);
 }
 
 const computePosition = `

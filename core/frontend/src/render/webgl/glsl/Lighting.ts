@@ -27,16 +27,11 @@ const applyLighting = `
     normal *= 2.0 * float(gl_FrontFacing) - 1.0;
     vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace.xyz), float(kFrustumType_Perspective == u_frustum.z));
 
-    float useDefaults = extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
-    const vec4 defaultSpecular = vec4(1.0, 1.0, 1.0, 43.2); // rgb, exponent
-    vec4 specular = mix(mat_specular, defaultSpecular, useDefaults);
-    vec3 specularColor = specular.rgb;
-    float specularExp = specular.a;
+    vec3 specularColor = mat_specular.rgb;
+    float specularExp = mat_specular.a;
 
-    const vec2 defaultWeights = vec2(.6, .4);
-    vec2 weights = mix(mat_weights, defaultWeights, useDefaults);
-    float diffuseWeight = weights.x;
-    float specularWeight = weights.y;
+    float diffuseWeight = mat_weights.x;
+    float specularWeight = mat_weights.y;
     float ambientWeight = 1.0; // NB: MicroStation ignores material's ambient weight, values are usually dumb.
 
     vec3 litColor = vec3(0.0);
