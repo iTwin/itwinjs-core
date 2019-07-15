@@ -32,6 +32,7 @@ import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
 import SVTRpcInterface from "../common/SVTRpcInterface";
+import { setTitle } from "./Title";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
@@ -166,11 +167,11 @@ async function main() {
       if (!signedIn)
         return;
     }
-
-    await openSnapshotIModel(activeViewState, configuration.iModelName!);
+    const iModelName = configuration.iModelName!;
+    await openSnapshotIModel(activeViewState, iModelName);
+    setTitle(iModelName);
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView();
-
   } catch (reason) {
     alert(reason);
     return;

@@ -29,6 +29,7 @@ import { SavedViewPicker } from "./SavedViews";
 import { ClassificationsPanel } from "./ClassificationsPanel";
 import { emulateVersionComparison } from "./VersionComparison";
 import { selectFileName } from "./FileOpen";
+import { setTitle } from "./Title";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
@@ -312,7 +313,7 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-property-data",
       tooltip: "Spatial Classification",
-      createDropDown:  async (container: HTMLElement) => {
+      createDropDown: async (container: HTMLElement) => {
         const panel = new ClassificationsPanel(this.viewport, container);
         await panel.populate();
         return panel;
@@ -400,6 +401,7 @@ export class Viewer {
     if (undefined !== filename) {
       try {
         await this.resetIModel(filename);
+        setTitle(filename);
       } catch (_) {
         alert("Error - could not open file.");
         this.hideSpinner();
