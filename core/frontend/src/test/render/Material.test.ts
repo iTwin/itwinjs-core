@@ -31,10 +31,6 @@ interface XYZ {
   z: number;
 }
 
-interface XYZW extends XYZ {
-  w: number;
-}
-
 function colorFromVec(vec: XYZ): ColorDef {
   return ColorDef.from(vec.x * 255, vec.y * 255, vec.z * 255);
 }
@@ -52,35 +48,30 @@ interface DecodedMaterialParams extends MaterialParams {
   rgbOverridden: boolean;
   alphaOverridden: boolean;
   textureWeight: number;
-  unusedByte: number;
 }
 
-function decodeMaterialParams(params: XYZW, specularExponent: number): DecodedMaterialParams {
-  const alphaAndFlags = unpackMaterialParam(params.w);
-  const rgbOverridden = (1.0 === alphaAndFlags.y || 3.0 === alphaAndFlags.y) ? 1.0 : 0.0;
-  const alphaOverridden = alphaAndFlags.y >= 2.0 ? 1.0 : 0.0;
+function decodeMaterialParams(params: XYZ, rgba: Float32Array): DecodedMaterialParams {
+  const specularColor = unpackAndNormalizeMaterialParam(params.x);
+  const specularExponent = params.y;
+  const matWeights = unpackAndNormalizeMaterialParam(params.z);
 
-  const rgb = unpackAndNormalizeMaterialParam(params.x);
-  const matRgb = { x: rgb.x, y: rgb.y, z: rgb.z, w: rgbOverridden };
-  const matAlpha = { x: alphaAndFlags.x / 255.0, alphaOverridden };
-  const matTextureWeight = alphaAndFlags.z / 255.0;
-
-  const matWeights = unpackAndNormalizeMaterialParam(params.y);
-
-  const specularColor = unpackAndNormalizeMaterialParam(params.z);
   const matSpecular = { x: specularColor.x, y: specularColor.y, z: specularColor.z, w: specularExponent };
 
+  const rgbOverridden = -1 !== rgba[0];
+  const diffuseColor = rgbOverridden ? ColorDef.from(rgba[0] * 255 + 0.5, rgba[1] * 255 + 0.5, rgba[2] * 255 + 0.5) : undefined;
+  const alphaOverridden = -1 !== rgba[3];
+  const transparency = alphaOverridden ? 1 - rgba[3] : 0;
+
   return {
-    diffuseColor: rgbOverridden ? colorFromVec(matRgb) : undefined,
+    diffuseColor,
     specularColor: colorFromVec(matSpecular),
     diffuse: matWeights.x,
     specular: matWeights.y,
-    unusedByte: matWeights.z,
+    textureWeight: matWeights.z,
     specularExponent: matSpecular.w,
-    transparency: 1.0 - matAlpha.x,
-    rgbOverridden: 0.0 !== rgbOverridden,
-    alphaOverridden: 0.0 !== alphaOverridden,
-    textureWeight: matTextureWeight,
+    transparency,
+    rgbOverridden,
+    alphaOverridden,
   };
 }
 
@@ -92,16 +83,15 @@ function expectEqualFloats(expected: number, actual: number): void {
 function expectMaterialParams(expected: RenderMaterial.Params): void {
   const material = new Material(expected);
   const shaderParams = {
-    x: material.integerUniforms[0],
-    y: material.integerUniforms[1],
-    z: material.integerUniforms[2],
-    w: material.integerUniforms[3],
+    x: material.fragUniforms[0],
+    y: material.fragUniforms[1],
+    z: material.fragUniforms[2],
   };
 
-  const actual = decodeMaterialParams(shaderParams, material.specularExponent);
+  const actual = decodeMaterialParams(shaderParams, material.rgba);
 
   expectEqualFloats(expected.diffuse, actual.diffuse);
-  expect(actual.specularExponent).to.equal(expected.specularExponent);
+  expectEqualFloats(actual.specularExponent, expected.specularExponent); // 64-bit => 32-bit
 
   if (undefined === expected.diffuseColor) {
     expect(actual.diffuseColor).to.be.undefined;
@@ -120,7 +110,6 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   expect(actual.alphaOverridden).to.equal(0.0 !== expected.transparency);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
-  expect(actual.unusedByte).to.equal(0);
   expectEqualFloats(expected.specular, actual.specular);
   expectEqualFloats(expected.transparency, actual.transparency);
 }
@@ -134,7 +123,7 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
   return params;
 }
 
-describe("Material", () => {
+describe.only("Material", () => {
   it("should pack and unpack parameters", () => {
     expectMaterialParams(makeMaterialParams({
       diffuseColor: ColorDef.black,

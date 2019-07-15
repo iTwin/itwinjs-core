@@ -251,7 +251,6 @@ export class ShaderVariables {
     return -1;
   }
 
-  /*
   // Return string of varying types with their theoretical slot numbers
   public checkMaxVaryingVectors(fragSource: string): string {
     // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
@@ -320,7 +319,6 @@ export class ShaderVariables {
         return "";
     }
   }
-  */
 
   // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
   public exceedsMaxVaryingVectors(fragSource: string): boolean {
@@ -1062,28 +1060,30 @@ export class ProgramBuilder {
     if (this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
-    /*
     // Debug output
-    const outSrc = true; // true for source out, false for just varying info
-    if (this.frag.headerComment) {
-      let tStr = "";
-      if (!outSrc) {
-        tStr = this.frag.headerComment + "\n";
-      }
-      const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
-      if (tStr2) {
-        if (outSrc) {
-          dbgLog("//===============================================================================================================");
-          dbgLog(vertSource);
-          dbgLog("//========= Varying Info =========");
-          dbgLog(tStr2);
-          dbgLog(fragSource);
-        } else {
-          dbgLog(tStr + tStr2);
+    const debugVaryings = false;
+    if (debugVaryings) {
+      const dbgLog = (x: string) => console.log(x);
+      const outSrc = false; // true for source out, false for just varying info
+      if (this.frag.headerComment) {
+        let tStr = "";
+        if (!outSrc) {
+          tStr = this.frag.headerComment + "\n";
+        }
+        const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
+        if (tStr2) {
+          if (outSrc) {
+            dbgLog("//===============================================================================================================");
+            dbgLog(vertSource);
+            dbgLog("//========= Varying Info =========");
+            dbgLog(tStr2);
+            dbgLog(fragSource);
+          } else {
+            dbgLog(tStr + tStr2);
+          }
         }
       }
     }
-    */
 
     const prog = new ShaderProgram(gl, vertSource, fragSource, this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);

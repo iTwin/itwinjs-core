@@ -6,6 +6,7 @@
 
 import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable";
+import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
@@ -18,19 +19,18 @@ import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable
  *  - diffuse weight (float in [0..1])
  *  - texture weight (float in [0..1])
  *
- * These are compressed into a vec4 and a float. Floats in [0..1] become integers in [0..255] and are concatenated using bitwise operations into 24-bit integer values.
+ * The rgb and alpha are applied in the vertex shader. Either can be negative, indicating the material does not override it.
+ *
+ * The rest are passed as a varying vec3 or uniform vec3 to be applied in the fragment shader.
+ * All but the specular exponent are compressed such that floats in [0..1] become integers in [0..255] and concatenated bitwise into 24-bit integer values.
+ *
  * The result is:
- *  uniform float: specular exponent
- *  uniform vec4: the rest:
- *    x: rgb
- *    y: weights
- *      0: diffuse
- *      1: specular
- *      2: unused
- *    z: specular rgb
- *    w: alpha and override flags
- *      0: alpha
- *      1: flags (bit 1: rgb overridden, bit 2: alpha overridden)
+ *  x: specular rgb
+ *  y: specular exponent
+ *  z: weights
+ *    0: diffuse
+ *    1: specular
+ *    2: texture
  *
  * This format is primarily used to mirror that used by material atlases (textures which contain multiple materials) as those are more heavily constrained by limits
  * on number of varying vectors - but it also reduces the number of uniforms required for singular materials.
@@ -41,36 +41,38 @@ export class Material extends RenderMaterial {
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas: false = false;
+  public readonly fragUniforms = new Float32Array(3);
+  public readonly rgba = new Float32Array(4);
 
-  public readonly overridesRgb: boolean;
-  public readonly overridesAlpha: boolean;
-  public get hasTranslucency() { return this.overridesAlpha; } // NB: This used to check alpha < 1.0 but that is *always* true if overridesAlpha is true (see constructor).
-  public readonly integerUniforms = new Float32Array(4);
-  public readonly specularExponent: number;
+  public get overridesRgb() { return this.rgba[0] >= 0; }
+  public get hasTranslucency() { return this.rgba[3] >= 0 && this.rgba[3] < 1; }
 
   public constructor(params: RenderMaterial.Params) {
     super(params);
 
-    const rgb = params.diffuseColor;
-    this.overridesRgb = undefined !== rgb;
-    if (undefined !== rgb)
-      this.setRgb(rgb, 0);
+    if (undefined !== params.diffuseColor) {
+      const rgb = FloatRgb.fromColorDef(params.diffuseColor);
+      this.rgba[0] = rgb.red;
+      this.rgba[1] = rgb.green;
+      this.rgba[2] = rgb.blue;
+    } else {
+      this.rgba[0] = this.rgba[1] = this.rgba[2] = -1;
+    }
 
-    const scale = (value: number) => Math.floor(value * 255 + 0.5);
-    this.setInteger(scale(params.diffuse), scale(params.specular), 0, 1);
+    // params.transparency of 0.0 indicates alpha no overridden. Indicated to shader as -1.
+    const alpha = 0.0 !== params.transparency ? 1.0 - params.transparency : -1;
+    this.rgba[3] = alpha;
 
     if (undefined !== params.specularColor)
-      this.setRgb(params.specularColor, 2);
+      this.setRgb(params.specularColor, 0);
     else
-      this.setInteger(255, 255, 255, 2);
+      this.setInteger(255, 255, 255, 0);
 
-    const alpha = 1.0 - params.transparency; // params.transparency of 0.0 indicates alpha not overridden.
-    this.overridesAlpha = 1.0 !== alpha;
-    const flags = (this.overridesRgb ? 1 : 0) + (this.overridesAlpha ? 2 : 0);
+    this.fragUniforms[1] = params.specularExponent;
+
+    const scale = (value: number) => Math.floor(value * 255 + 0.5);
     const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
-    this.setInteger(scale(alpha), flags, scale(textureWeight), 3);
-
-    this.specularExponent = params.specularExponent;
+    this.setInteger(scale(params.diffuse), scale(params.specular), scale(textureWeight), 2);
   }
 
   private setInteger(loByte: number, midByte: number, hiByte: number, index: number): void {
@@ -80,7 +82,7 @@ export class Material extends RenderMaterial {
     midByte = clamp(midByte);
     hiByte = clamp(hiByte);
 
-    this.integerUniforms[index] = loByte + midByte * 256 + hiByte * 256 * 256;
+    this.fragUniforms[index] = loByte + midByte * 256 + hiByte * 256 * 256;
   }
 
   private setRgb(rgb: ColorDef, index: number): void {

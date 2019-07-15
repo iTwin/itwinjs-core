@@ -67,62 +67,56 @@ vec3 unpackAndNormalizeMaterialParam(float f) {
 }`;
 
 const decodeFragMaterialParams = `
-void decodeMaterialParams(vec4 params, float specularExponent) {
-  vec3 alphaAndFlags = unpackMaterialParam(params.w);
-  float alphaOverridden = float(alphaAndFlags.y >= 2.0);
+void decodeMaterialParams(vec3 params) {
+  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.x), params.y);
 
-  mat_texture_weight = alphaAndFlags.z / 255.0;
-  mat_weights = unpackAndNormalizeMaterialParam(params.y).xy;
-  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.z), specularExponent);
+  vec3 weights = unpackAndNormalizeMaterialParam(params.z);
+  mat_weights = weights.xy;
+  mat_texture_weight = weights.z;
 }`;
 
-const decodeVertMaterialParams = `
-void decodeMaterialParams(vec4 params) {
-  vec3 alphaAndFlags = unpackMaterialParam(params.w);
-  float rgbOverridden = float(1.0 == alphaAndFlags.y || 3.0 == alphaAndFlags.y);
-  float alphaOverridden = float(alphaAndFlags.y >= 2.0);
-
-  mat_rgb = vec4(unpackAndNormalizeMaterialParam(params.x), rgbOverridden);
-  mat_alpha = vec2(alphaAndFlags.x / 255.0, alphaOverridden);
+const decodeMaterialColor = `
+void decodeMaterialColor(vec4 rgba) {
+  mat_rgb = vec4(rgba.rgb, floor(rgba.r + 0.5));
+  mat_alpha = vec2(rgba.a, floor(rgba.a + 0.5));
 }`;
 
 /** @internal */
 export function addMaterial(builder: ProgramBuilder): void {
-  builder.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
-      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-      uniform.setUniform4fv(mat.integerUniforms);
-    });
-  });
-
   const frag = builder.frag;
   frag.addGlobal("mat_texture_weight", VariableType.Float);
   frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
   frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
-  frag.addUniform("u_specularExponent", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_specularExponent", (uniform, params) => {
+  frag.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
       const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-      uniform.setUniform1f(mat.specularExponent);
+      uniform.setUniform3fv(mat.fragUniforms);
     });
   });
 
   frag.addFunction(unpackMaterialParam);
   frag.addFunction(unpackAndNormalizeMaterialParam);
   frag.addFunction(decodeFragMaterialParams);
-  frag.addInitializer("decodeMaterialParams(u_materialParams, u_specularExponent);");
+  frag.addInitializer("decodeMaterialParams(u_materialParams);");
 
   frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyTextureWeight);
 
   const vert = builder.vert;
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
-  vert.addFunction(unpackMaterialParam);
-  vert.addFunction(unpackAndNormalizeMaterialParam);
-  vert.addFunction(decodeVertMaterialParams);
-  vert.addInitializer("decodeMaterialParams(u_materialParams);");
+
+  vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_materialColor", (uniform, params) => {
+      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+      uniform.setUniform4fv(mat.rgba);
+    });
+  });
+
+  vert.addFunction(decodeMaterialColor);
+  vert.addInitializer("decodeMaterialColor(u_materialColor);");
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
 }
 
