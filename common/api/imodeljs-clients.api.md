@@ -1672,7 +1672,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
     byVersionId(versionId: GuidString): this;
 }
 
-// @alpha
+// @beta
 export type ThumbnailSize = "Small" | "Large";
 
 // @alpha
@@ -1918,7 +1918,6 @@ export class VersionHandler {
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changesetId: string): this;
     byName(name: string): this;
-    // @alpha
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
 

@@ -59,7 +59,7 @@ export enum ContentFlags {
   /** Each content record additionally has a display label */
   ShowLabels = 1 << 2,
 
-  /** All content records are merged into a single record (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
+  /** All content records are merged into a single record (see [Merging values]($docs/learning/terminology#value-merging)) */
   MergeResults = 1 << 3,
 
   /** Content has only distinct values */
