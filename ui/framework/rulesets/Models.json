@@ -26,10 +26,6 @@
                 "className": "ModelModelsElement"
               },
               "requiredDirection": "Forward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "Element"
-              },
               "isRequired": true,
               "alias": "modeledElement"
             }

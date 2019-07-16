@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Model Picker: Fix presentation ruleset",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}
