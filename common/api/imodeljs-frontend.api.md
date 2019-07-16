@@ -101,6 +101,7 @@ import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
+import { MassPropertiesOperation } from '@bentley/imodeljs-common';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
 import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -3638,6 +3639,16 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 // @alpha (undocumented)
+export class MeasureAreaTool extends MeasureElementTool {
+    // (undocumented)
+    protected getOperation(): MassPropertiesOperation;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
 export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedSegments: {
@@ -3669,6 +3680,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     protected getSnapPoints(): Point3d[] | undefined;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     // (undocumented)
     protected readonly _locationData: {
         point: Point3d;
@@ -3715,6 +3728,70 @@ export class MeasureDistanceTool extends PrimitiveTool {
 }
 
 // @alpha (undocumented)
+export abstract class MeasureElementTool extends PrimitiveTool {
+    // (undocumented)
+    protected readonly _acceptedIds: Id64Array;
+    // (undocumented)
+    protected readonly _acceptedMeasurements: MeasureMarker[];
+    // (undocumented)
+    protected readonly _checkedIds: Map<string, MassPropertiesResponseProps>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    doMeasureSelectedElements(viewport: Viewport): Promise<void>;
+    // (undocumented)
+    filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
+    // (undocumented)
+    protected getMarkerToolTip(responseProps: MassPropertiesResponseProps): Promise<HTMLElement>;
+    // (undocumented)
+    protected abstract getOperation(): MassPropertiesOperation;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onUndoPreviousStep(): Promise<boolean>;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected reportMeasurements(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    protected _totalMarker?: MeasureLabel;
+    // (undocumented)
+    protected _totalValue: number;
+    // (undocumented)
+    protected updateTotals(selectionSetResult?: MassPropertiesResponseProps): Promise<void>;
+    // (undocumented)
+    protected _useSelection: boolean;
+}
+
+// @alpha (undocumented)
+export class MeasureLengthTool extends MeasureElementTool {
+    // (undocumented)
+    protected getOperation(): MassPropertiesOperation;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
@@ -3726,6 +3803,8 @@ export class MeasureLocationTool extends PrimitiveTool {
     protected getMarkerToolTip(point: Point3d): Promise<HTMLElement>;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -3746,6 +3825,16 @@ export class MeasureLocationTool extends PrimitiveTool {
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
     protected showPrompt(): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export class MeasureVolumeTool extends MeasureElementTool {
+    // (undocumented)
+    protected getOperation(): MassPropertiesOperation;
+    // (undocumented)
+    onRestartTool(): void;
     // (undocumented)
     static toolId: string;
 }

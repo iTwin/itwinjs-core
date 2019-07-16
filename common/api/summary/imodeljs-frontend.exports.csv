@@ -194,8 +194,12 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+alpha;MeasureAreaTool 
 alpha;MeasureDistanceTool 
+alpha;class MeasureElementTool 
+alpha;MeasureLengthTool 
 alpha;MeasureLocationTool 
+alpha;MeasureVolumeTool 
 public;MessageBoxIconType
 public;MessageBoxType
 public;MessageBoxValue
