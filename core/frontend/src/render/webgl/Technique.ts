@@ -230,7 +230,7 @@ class SurfaceTechnique extends VariedTechnique {
 
                 const builder = createSurfaceBuilder(flags);
                 addMonochrome(builder.frag);
-                addMaterial(builder);
+                addMaterial(builder, hasMaterialAtlas);
 
                 addSurfaceDiscardByAlpha(builder.frag);
                 this.addShader(builder, flags, gl);
@@ -252,7 +252,7 @@ class SurfaceTechnique extends VariedTechnique {
 
         const builder = createSurfaceBuilder(flags);
         addMonochrome(builder.frag);
-        addMaterial(builder);
+        addMaterial(builder, HasMaterialAtlas.No);
         addSurfaceDiscardByAlpha(builder.frag);
 
         this.addShader(builder, flags, gl);

@@ -13,7 +13,7 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, TechniqueFlags } from "../TechniqueFlags";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
@@ -93,7 +93,7 @@ const computeMaterialParams = `
 `;
 
 /** @internal */
-export function addMaterial(builder: ProgramBuilder): void {
+export function addMaterial(builder: ProgramBuilder, _hasMaterialAtlas: HasMaterialAtlas): void {
   const frag = builder.frag;
   assert(undefined !== frag.find("v_surfaceFlags"));
 
