@@ -31,6 +31,7 @@ import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarCl
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { unpackFloat } from "./Clipping";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -89,11 +90,42 @@ const computeMaterialParams = `
   if (isSurfaceBitSet(kSurfaceBit_IgnoreMaterial))
     return defaults;
   else
-    return u_materialParams;
+    return getMaterialParams();
 `;
+const getUniformMaterialParams = `vec3 getMaterialParams() { return u_materialParams; }`;
+
+const readMaterialAtlas = `
+void readMaterialAtlas() {
+  float materialIndex = floor(TEXTURE(u_vertLUT, g_featureIndexCoords) * 255.0 + 0.5).w;
+  materialIndex += u_numColors;
+  materialIndex *= 4.0;
+  materialIndex += u_vertParams.z * u_vertParams.w;
+
+  vec2 tc = computeLUTCoords(materialIndex, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 rgba = TEXTURE(u_vertLUT, tc);
+
+  tc = computeLUTCoords(materialIndex + 1.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 weightsAndFlags = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+
+  tc = computeLUTCoords(materialIndex + 2.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec3 specularRgb = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5).rgb;
+
+  tc = computeLUTCoords(materialIndex + 3.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 packedSpecularExponent = TEXTURE(u_vertLUT, tc);
+
+  float flags = weightsAndFlags.w;
+  mat_rgb = vec4(rgba.rgb, float(flags == 1.0 || flags == 3.0));
+  mat_alpha = vec2(rgba.a, float(flags == 2.0 || flags == 3.0));
+
+  float specularExponent = unpackFloat(packedSpecularExponent);
+  float packedSpecularRgb = specularRgb.x + specularRgb.y * 256.0 + specularRgb.z * 256.0 * 256.0;
+  float packedWeights = weightsAndFlags.y + weightsAndFlags.z * 256.0 + weightsAndFlags.x * 256.0 * 256.0;
+  g_materialParams = vec3(packedSpecularRgb, specularExponent, packedWeights);
+}`;
+const getAtlasMaterialParams = `vec3 getMaterialParams() { return g_materialParams; }`;
 
 /** @internal */
-export function addMaterial(builder: ProgramBuilder, _hasMaterialAtlas: HasMaterialAtlas): void {
+export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
   const frag = builder.frag;
   assert(undefined !== frag.find("v_surfaceFlags"));
 
@@ -112,26 +144,48 @@ export function addMaterial(builder: ProgramBuilder, _hasMaterialAtlas: HasMater
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
 
-  vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_materialColor", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
-      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-      uniform.setUniform4fv(mat.rgba);
-    });
-  });
+  // ###TODO: Material atlas and instanced geometry.
+  if (builder.vert.usesInstancedGeometry)
+    hasMaterialAtlas = HasMaterialAtlas.No;
 
-  vert.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
-      const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-      uniform.setUniform3fv(mat.fragUniforms);
+  if (!hasMaterialAtlas) {
+    vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_materialColor", (uniform, params) => {
+        const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+        const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+        uniform.setUniform4fv(mat.rgba);
+      });
     });
-  });
 
-  vert.addFunction(decodeMaterialColor);
-  vert.addInitializer("decodeMaterialColor(u_materialColor);");
+    vert.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_materialParams", (uniform, params) => {
+        const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+        const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+        uniform.setUniform3fv(mat.fragUniforms);
+      });
+    });
+
+    vert.addFunction(decodeMaterialColor);
+    vert.addInitializer("decodeMaterialColor(u_materialColor);");
+    vert.addFunction(getUniformMaterialParams);
+  } else {
+    vert.addUniform("u_numColors", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_numColors", (uniform, params) => {
+        const info = params.geometry.materialInfo;
+        const numColors = undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
+        uniform.setUniform1f(numColors);
+      });
+    });
+
+    // ###TODO: Should not re-sample featureIndex+materialIndex if already sampled the other
+    vert.addGlobal("g_materialParams", VariableType.Vec3);
+    vert.addFunction(unpackFloat);
+    vert.addFunction(readMaterialAtlas);
+    vert.addInitializer("readMaterialAtlas();");
+    vert.addFunction(getAtlasMaterialParams);
+  }
+
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
-
   builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec3, "computeMaterialParams", computeMaterialParams);
 }
 

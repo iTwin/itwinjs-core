@@ -47,7 +47,7 @@ function createTarget(): Target | undefined {
   return System.instance!.createTarget(canvas!) as Target;
 }
 
-describe.only("Technique tests", () => {
+describe("Technique tests", () => {
   before(() => IModelApp.startup());
   after(() => IModelApp.shutdown());
 
@@ -75,6 +75,14 @@ describe.only("Technique tests", () => {
     const drawParams = new DrawParams();
     drawParams.init(progParams, geom!);
     target.techniques.draw(drawParams);
+  });
+
+  it.only("should compile material atlas program", () => {
+    const flags = new TechniqueFlags();
+    flags.setHasMaterialAtlas(true);
+    const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
+    const prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
   });
 
   // NB: this can potentially take a long time, especially on our mac build machines.

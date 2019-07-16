@@ -476,7 +476,7 @@ export interface SurfaceRenderMaterial {
 export interface SurfaceMaterialAtlas {
   readonly isAtlas: true;
   readonly hasTranslucency: boolean;
-  readonly vertexTableOffset: number;
+  readonly vertexTableOffset: number; // offset past the END of the vertex data; equivalently, number of 32-bit colors in color table preceding material atlas.
 }
 
 /** @internal */

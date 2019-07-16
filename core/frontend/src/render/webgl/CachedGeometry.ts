@@ -77,6 +77,11 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
 
   // Intended to be overridden by specific subclasses
   public get materialInfo(): MaterialInfo | undefined { return undefined; }
+  public get hasMaterialAtlas(): boolean {
+    const mat = this.materialInfo;
+    return undefined !== mat && mat.isAtlas;
+  }
+
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
 

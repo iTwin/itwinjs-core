@@ -90,6 +90,7 @@ export class Primitive extends Graphic {
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
   public get isEdge(): boolean { return this.cachedGeometry.isEdge; }
   public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
+  public get hasMaterialAtlas(): boolean { return this.cachedGeometry.hasMaterialAtlas; }
 
   public toPrimitive(): Primitive { return this; }
 
