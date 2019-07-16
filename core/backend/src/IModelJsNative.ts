@@ -449,7 +449,6 @@ export declare namespace IModelJsNative {
     public static markFeature(accessToken: string, featureEvent: NativeUlasClientFeatureEvent, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
   }
 
-
   export class DisableNativeAssertions implements IDisposable {
     constructor();
     public dispose(): void;
