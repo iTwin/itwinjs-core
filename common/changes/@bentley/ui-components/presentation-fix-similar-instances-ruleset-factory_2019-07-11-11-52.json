@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Change floating point converter to round-off numbers up to 2 decimal places",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}
