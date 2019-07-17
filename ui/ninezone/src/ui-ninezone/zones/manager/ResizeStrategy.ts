@@ -21,7 +21,7 @@ export interface ResizeStrategy {
 /** @internal */
 export abstract class GrowStrategy implements ResizeStrategy {
   public abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
-  public abstract getDistanceToRoot(bounds: RectangleProps): number;
+  public abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
   public abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
   public abstract getShrinkStrategy(): ResizeStrategy;
   public abstract resize(bounds: RectangleProps, growBy: number): RectangleProps;
@@ -33,7 +33,7 @@ export abstract class GrowStrategy implements ResizeStrategy {
     const zone = props.zones[zoneId];
     const zonesToShrink = this.getZonesToShrink(zoneId, props);
     if (zonesToShrink.length === 0) {
-      return this.getDistanceToRoot(zone.bounds);
+      return this.getDistanceToRoot(zone.bounds, props.zonesBounds);
     }
 
     return zonesToShrink.reduce((min, zoneToShrinkId) => {
@@ -79,7 +79,7 @@ export abstract class GrowStrategy implements ResizeStrategy {
     if (!zone.floating)
       throw new ReferenceError();
 
-    const distanceToRoot = this.getDistanceToRoot(zone.floating.bounds);
+    const distanceToRoot = this.getDistanceToRoot(zone.floating.bounds, props.zonesBounds);
     const growBy = Math.min(resizeBy, distanceToRoot);
 
     const bounds = this.resize(zone.floating.bounds, growBy);
@@ -121,8 +121,8 @@ export class GrowBottom extends GrowStrategy {
     return this.manager.bottomZones.getCurrent(zoneId, props);
   }
 
-  public getDistanceToRoot(bounds: RectangleProps) {
-    const root = Rectangle.createFromSize(this.manager.zonesBounds.getSize());
+  public getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps) {
+    const root = Rectangle.createFromSize(Rectangle.create(zonesBounds).getSize());
     return root.bottom - bounds.bottom;
   }
 
@@ -196,8 +196,8 @@ export class GrowRight extends GrowStrategy {
     return maxResize;
   }
 
-  public getDistanceToRoot(bounds: RectangleProps) {
-    const root = Rectangle.createFromSize(this.manager.zonesBounds.getSize());
+  public getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps) {
+    const root = Rectangle.createFromSize(Rectangle.create(zonesBounds).getSize());
     return root.right - bounds.right;
   }
 
@@ -218,7 +218,7 @@ export class GrowRight extends GrowStrategy {
 
 /** @internal */
 export abstract class ShrinkStrategy implements ResizeStrategy {
-  public abstract getDistanceToRoot(bounds: RectangleProps): number;
+  public abstract getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps): number;
   public abstract getDistanceToZoneToShrink(zoneId: WidgetZoneId, zoneToShrinkId: WidgetZoneId, props: ZonesManagerProps): number;
   public abstract getZonesToShrink(zoneId: WidgetZoneId, props: ZonesManagerProps): WidgetZoneId[];
   public abstract getShrinkStrategy(): ResizeStrategy;
@@ -237,7 +237,7 @@ export abstract class ShrinkStrategy implements ResizeStrategy {
     const maxShrinkSelfBy = this.getMaxShrinkSelfBy(zone.bounds);
     const zonesToShrink = this.getZonesToShrink(zoneId, props);
     if (zonesToShrink.length === 0) {
-      const distanceToRoot = this.getDistanceToRoot(zone.bounds);
+      const distanceToRoot = this.getDistanceToRoot(zone.bounds, props.zonesBounds);
       return maxShrinkSelfBy + distanceToRoot;
     }
 
@@ -342,8 +342,8 @@ export class ShrinkTop extends ShrinkVerticalStrategy {
     return this.manager.bottomZones.getCurrent(zoneId, props);
   }
 
-  public getDistanceToRoot(bounds: RectangleProps) {
-    const root = Rectangle.createFromSize(this.manager.zonesBounds.getSize());
+  public getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps) {
+    const root = Rectangle.createFromSize(Rectangle.create(zonesBounds).getSize());
     return root.bottom - bounds.bottom;
   }
 
@@ -395,8 +395,8 @@ export class ShrinkLeft extends ShrinkHorizontalStrategy {
     return this.manager.rightZones.getCurrent(zoneId, props);
   }
 
-  public getDistanceToRoot(bounds: RectangleProps) {
-    const root = Rectangle.createFromSize(this.manager.zonesBounds.getSize());
+  public getDistanceToRoot(bounds: RectangleProps, zonesBounds: RectangleProps) {
+    const root = Rectangle.createFromSize(Rectangle.create(zonesBounds).getSize());
     return root.right - bounds.right;
   }
 

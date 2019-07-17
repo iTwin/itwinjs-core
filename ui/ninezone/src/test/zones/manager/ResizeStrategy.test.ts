@@ -197,7 +197,6 @@ describe("GrowTop", () => {
   });
 
   it("should return distance to root", () => {
-    zonesManagerMock.setup((x) => x.zonesBounds).returns(() => new Rectangle());
     const sut = new GrowTop(zonesManagerMock.object);
     const distance = sut.getDistanceToRoot({ bottom: 0, left: 0, right: 0, top: 44 });
     distance.should.eq(44);
@@ -244,9 +243,8 @@ describe("GrowBottom", () => {
   });
 
   it("should return distance to root", () => {
-    zonesManagerMock.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 0, 155));
     const sut = new GrowBottom(zonesManagerMock.object);
-    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 0, 100));
+    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 0, 100), new Rectangle(0, 0, 0, 155));
     distance.should.eq(55);
   });
 
@@ -360,9 +358,8 @@ describe("GrowRight", () => {
   });
 
   it("should return distance to root", () => {
-    zonesManagerMock.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 100));
     const sut = new GrowRight(zonesManagerMock.object);
-    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 59));
+    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 59), new Rectangle(0, 0, 100));
     distance.should.eq(41);
   });
 
@@ -658,9 +655,8 @@ describe("ShrinkTop", () => {
   });
 
   it("should return distance to root", () => {
-    zonesManagerMock.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 0, 144));
     const sut = new ShrinkTop(zonesManagerMock.object);
-    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 0, 100));
+    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 0, 100), new Rectangle(0, 0, 0, 144));
     distance.should.eq(44);
   });
 
@@ -751,9 +747,8 @@ describe("ShrinkLeft", () => {
   });
 
   it("should return distance to root", () => {
-    zonesManagerMock.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 200));
     const sut = new ShrinkLeft(zonesManagerMock.object);
-    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 100));
+    const distance = sut.getDistanceToRoot(new Rectangle(0, 0, 100), new Rectangle(0, 0, 200));
     distance.should.eq(100);
   });
 

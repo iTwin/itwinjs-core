@@ -1105,11 +1105,11 @@ describe("ZonesManager", () => {
     it("should return initial bounds", () => {
       const zone = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
       const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][WidgetZoneId]>();
+      managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
       widgets.setup((x) => x[2]).returns(() => widget.object);
       zones.setup((x) => x[2]).returns(() => zone.object);
       zone.setup((x) => x.widgets).returns(() => [2]);
       const sut = new ZonesManager();
-      sinon.stub(sut, "zonesBounds").get(() => new Rectangle(100, 50, 766, 383));
       const initialBounds = sut.getInitialBounds(2, managerProps.object);
       initialBounds.left.should.eq(222);
       initialBounds.top.should.eq(0);
@@ -1121,11 +1121,11 @@ describe("ZonesManager", () => {
       const zone = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
       const widget = Moq.Mock.ofType<ZonesManagerProps["widgets"][WidgetZoneId]>();
       managerProps.setup((x) => x.isInFooterMode).returns(() => true);
+      managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 999, 285));
       widgets.setup((x) => x[3]).returns(() => widget.object);
       zones.setup((x) => x[3]).returns(() => zone.object);
       zone.setup((x) => x.widgets).returns(() => [3]);
       const sut = new ZonesManager();
-      sinon.stub(sut, "zonesBounds").get(() => new Rectangle(0, 0, 999, 285));
       const initialBounds = sut.getInitialBounds(3, managerProps.object);
       initialBounds.left.should.eq(666);
       initialBounds.top.should.eq(0);
@@ -1137,10 +1137,10 @@ describe("ZonesManager", () => {
       const z3 = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
       const z4 = Moq.Mock.ofType<ZonesManagerProps["zones"][WidgetZoneId]>();
       const w3 = Moq.Mock.ofType<ZonesManagerProps["widgets"][WidgetZoneId]>();
+      managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(0, 0, 999, 333));
       const sut = new ZonesManager();
       const getInitialBounds = sinon.stub(sut, "getInitialBounds").onSecondCall().returns(new Rectangle(678, 234, 987, 345));
       getInitialBounds.callThrough();
-      sinon.stub(sut, "zonesBounds").get(() => new Rectangle(0, 0, 999, 333));
       widgets.setup((x) => x[3]).returns(() => w3.object);
       zones.setup((x) => x[3]).returns(() => z3.object);
       zones.setup((x) => x[4]).returns(() => z4.object);
@@ -1187,17 +1187,17 @@ describe("ZonesManager", () => {
 
   describe("setZonesBounds", () => {
     it("should not modify props if last bounds are equal", () => {
+      managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
       const sut = new ZonesManager();
-      sinon.stub(sut, "zonesBounds").get(() => new Rectangle(100, 50, 766, 383));
       const newProps = sut.setZonesBounds(new Rectangle(100, 50, 766, 383), managerProps.object);
 
       (newProps === managerProps.object).should.true;
     });
 
     it("should offset floating zones", () => {
+      managerProps.setup((x) => x.zonesBounds).returns(() => new Rectangle(100, 50, 766, 383));
       const sut = new ZonesManager();
       const setZoneFloatingBounds = sinon.spy(sut, "setZoneFloatingBounds");
-      sinon.stub(sut, "zonesBounds").get(() => new Rectangle(100, 50, 766, 383));
       const newProps = sut.setZonesBounds(new Rectangle(120, 20, 766, 383), TestProps.floatingOpenedZone6);
 
       newProps.should.not.eq(TestProps.floatingOpenedZone6);

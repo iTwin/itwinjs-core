@@ -84,6 +84,7 @@ export interface ZonesManagerProps {
   readonly target?: ZonesManagerTargetProps;
   readonly widgets: ZonesManagerWidgetsProps;
   readonly zones: ZonesManagerZonesProps;
+  readonly zonesBounds: RectangleProps;
 }
 
 /** Returns default [[ZonesManagerProps]] object.
@@ -93,6 +94,12 @@ export const getDefaultZonesManagerProps = (): ZonesManagerProps => ({
   isInFooterMode: true,
   zones: getDefaultZonesManagerZonesProps(),
   widgets: getDefaultZonesManagerWidgetsProps(),
+  zonesBounds: {
+    bottom: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+  },
 });
 
 /** Array of all widget zone Ids.
@@ -161,7 +168,6 @@ export const getClosedWidgetTabIndex = (tabIndex: number) => {
  */
 export class ZonesManager {
   private _lastStackId = 1;
-  private _zonesBounds = new Rectangle();
   private _zoneManager?: ZoneManager;
   private _draggedWidgetManager?: DraggedWidgetManager;
 
@@ -238,8 +244,9 @@ export class ZonesManager {
     if (!zone.allowsMerging)
       return props;
 
+    const zonesBounds = Rectangle.create(props.zonesBounds);
     const unmergeBounds = this.getUnmergeWidgetBounds(zone.id, props);
-    const floatingBounds = Rectangle.create(widgetBounds).offset({ x: -this.zonesBounds.left, y: -this.zonesBounds.top });
+    const floatingBounds = Rectangle.create(widgetBounds).offset({ x: -zonesBounds.left, y: -zonesBounds.top });
 
     const isUnmerge = zone.widgets.length > 1;
 
@@ -421,12 +428,16 @@ export class ZonesManager {
   }
 
   public setZonesBounds(bounds: RectangleProps, props: ZonesManagerProps): ZonesManagerProps {
-    if (this.zonesBounds.equals(bounds))
+    const zonesBounds = Rectangle.create(props.zonesBounds);
+    if (zonesBounds.equals(bounds))
       return props;
 
     const newBounds = Rectangle.create(bounds);
-    const offset = newBounds.topLeft().getOffsetTo(Rectangle.create(this._zonesBounds).topLeft());
-    this._zonesBounds = newBounds;
+    const offset = newBounds.topLeft().getOffsetTo(Rectangle.create(props.zonesBounds).topLeft());
+    props = {
+      ...props,
+      zonesBounds: newBounds.toProps(),
+    };
 
     props = this.restoreLayout(props);
     for (const zId of widgetZoneIds) {
@@ -451,7 +462,8 @@ export class ZonesManager {
   }
 
   public getInitialBounds(zoneId: WidgetZoneId, props: ZonesManagerProps): RectangleProps {
-    const rootBounds = Rectangle.createFromSize(this.zonesBounds.getSize());
+    const zonesBounds = Rectangle.create(props.zonesBounds);
+    const rootBounds = Rectangle.createFromSize(zonesBounds.getSize());
     if (zoneId === 8 && props.isInFooterMode) {
       return new Rectangle(rootBounds.left, rootBounds.bottom - FOOTER_HEIGHT, rootBounds.right, rootBounds.bottom);
     }
@@ -547,11 +559,6 @@ export class ZonesManager {
         return draggedZone.bounds;
       }
     }
-  }
-
-  /** @internal */
-  public get zonesBounds() {
-    return this._zonesBounds;
   }
 
   /** @internal */

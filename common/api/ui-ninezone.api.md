@@ -2049,8 +2049,6 @@ export class ZonesManager {
     readonly topZones: TopZones;
     // @internal (undocumented)
     readonly zoneManager: ZoneManager;
-    // @internal (undocumented)
-    readonly zonesBounds: Rectangle;
     }
 
 // @beta
@@ -2065,6 +2063,8 @@ export interface ZonesManagerProps {
     readonly widgets: ZonesManagerWidgetsProps;
     // (undocumented)
     readonly zones: ZonesManagerZonesProps;
+    // (undocumented)
+    readonly zonesBounds: RectangleProps;
 }
 
 // @beta
