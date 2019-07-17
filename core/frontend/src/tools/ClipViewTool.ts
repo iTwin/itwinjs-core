@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray } from "@bentley/geometry-core";
+import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
@@ -1065,11 +1065,20 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
   private getClipData(): boolean {
     this._clip = this._clipShape = this._clipShapeExtents = this._clipPlanes = this._clipPlanesLoops = this._clipPlanesLoopsNoncontributing = undefined;
-    const clip = this._clipView.view.getViewClip();
+    let clip = this._clipView.view.getViewClip();
     if (undefined === clip)
       return false;
-    const clipShape = ViewClipTool.isSingleClipShape(clip);
+    let clipShape = ViewClipTool.isSingleClipShape(clip);
     if (undefined !== clipShape) {
+      if (clipShape.polygon.length > 5) {
+        const compressed = PolylineOps.compressByChordError(clipShape.polygon, 1.0e-5);
+        if (compressed.length < clipShape.polygon.length) {
+          clip = clip.clone();
+          clipShape = ViewClipTool.isSingleClipShape(clip)!;
+          clipShape.setPolygon(compressed);
+          this._clipView.view.setViewClip(clip);
+        }
+      }
       this._clipShapeExtents = ViewClipTool.getClipShapeExtents(clipShape, this._clipView.computeViewRange());
       this._clipShape = clipShape;
     } else {
