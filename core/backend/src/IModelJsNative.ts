@@ -10,6 +10,7 @@ import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } 
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
 import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
+import { UsageType } from "@bentley/imodeljs-clients";
 
 /** Logger categories used by the native addon
  * @internal
@@ -49,7 +50,6 @@ export declare namespace IModelJsNative {
 
   export const version: string;
   export let logger: Logger;
-  export function initializeRegion(region: number): void;
   export function setUseTileCache(useTileCache: boolean): void;
   export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
   export function storeObjectInVault(obj: any, id: string): void;
@@ -432,6 +432,23 @@ export declare namespace IModelJsNative {
     constructor();
     public doSnap(db: DgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public cancelSnap(): void;
+  }
+
+  export interface NativeUlasClientFeatureEvent {
+    featureId: string;
+    versionStr: string;
+    projectId?: string;
+  }
+  /** Authentication methods used by the native addon
+   * @internal
+   */
+  export enum AuthType {
+    None = 0, OIDC = 1, SAML = 2,
+  }
+  export class NativeUlasClient {
+    public static initializeRegion(region: number): void;
+    public static trackUsage(accessToken: string, appVersionStr: string, projectId: GuidString, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
+    public static markFeature(accessToken: string, featureEvent: NativeUlasClientFeatureEvent, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
   }
 
   export class DisableNativeAssertions implements IDisposable {
