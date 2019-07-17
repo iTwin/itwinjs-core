@@ -1,6 +1,7 @@
 # Point and Vector operations
 
 # Notes on compact table notation
+
 * Many arguments which might be strongly typed as `Point3d`, `Vector3d`, `Point3d`, `Vector3d` are weakly typed as `XYandZ` or `XandY`.
   * These allow any object that has `x` and `y ` properties to be passed as inputs.
 * Many methods have optional result args.
