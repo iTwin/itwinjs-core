@@ -6,23 +6,17 @@ This roadmap provides the *big picture* view of the development path for the iMo
 
 We will use the following themes (that may be adjusted from time-to-time according to your input) to drive the evolution of iModel.js:
 
-- Assume that every Digital Twin will be a heterogeneous amalgamation of data from many sources. iModel.js should be the library for bringing them together as seamlessly as possible.
-- Empower developers to create immersive experiences for Infrastructure Digital Twins.
-- Empower developers to create powerful Agents that react to changes to iModels as they are checked into the iModelHub.
-- Create a delightful developer experience through:
-  - broad support for popular hardware and operating environments
-  - thorough and accurate documentation
-  - helpful samples and tutorials
-  - quick turnaround on issues
-  - adherence to open source standards and norms where possible
-- Create a welcoming and inclusive ecosystem of innovation and enterprise.
-- Deliver new features, making them opt-in where possible.
-- Be as un-opinionated as possible by avoiding unnecessary dependencies
-- Remain focused on performance, scalability, security and extensibility.
+- Be the library for Digital Twins, bringing data from iModels and many other sources together seamlessly.
+- Empower Developers to write Digital Twin applications and services from scratch or integrate into existing applications.
+- Developing with iModel.js is enjoyable and productive.
+- Adhere to open source standards and norms where possible
+- Be the best library for visualization of large 3d models.
+- Build a welcoming and inclusive ecosystem of innovation and enterprise.
+- Performance, scalability, security and extensibility are more important than new features.
 
 ## Priorities for 2019-2020
 
-### Platforms (ranked according to development resources)
+### Expand the number of supported platforms (ranked according to development resources)
 
 >For currently supported platforms see [Supported Platforms](../learning/SupportedPlatforms.md)
 
@@ -40,29 +34,23 @@ We will use the following themes (that may be adjusted from time-to-time accordi
   1. Linux
   2. Windows
 
-### Interfaces to external systems
+### Interface better with External systems
 
-- Stream geometry to external frameworks and applications
-- Support for iModel Bridges
+- Provide a mechanism to expose content from an iModel to 3rd applications and frameworks
+- Improve the ability to write bridges that transform and import data from 3rd party file formats
 
-### IModel Transformations
+### Improve modeling of data within iModels
 
 - Support transformation and synchronization between iModels
+- Expand the scope of the delivered BIS schemas
+- Refine BIS documentation with a focus on the information needed by Bridge and Application developers
+- Support the visualization and extension of BIS schemas
 
-### Developer Tools
+### Improve developer experience
 
-- Docker for Linux development
-- Tools to explore an iModel using ECSql
-- Tools to view schemas and enable schema customization
+- Docker for Linux development and deployment support
+- Deliver a server side deployment example based on Kubernetes
+- Add more client side samples and improve clarity of existing examples
+- Incrementally bring all APIs out of @alpha and @beta and into the stable @public API [Release Tag Guidelines](../learning/guidelines/release-tags-guidelines.md)
 
-### Documentation and Examples
-
-- Create online "jsfiddle"-like examples that show how to use iModel.js
-- Add more examples and snippets to Learning and API documentation
-- Expand and refine BIS documentation with a focus on information needed by Bridge and Application developers.
-
-### Performance and Scalability
-
-- Display System improvements:
-
-### New Features
+>**We want your feedback** - What do you want us to work on most?  What are we doing that we could do better?  What should be on this roadmap but is not?  File an issue on [GitHub](https://github.com/imodeljs/imodeljs/issues) and let us know.
