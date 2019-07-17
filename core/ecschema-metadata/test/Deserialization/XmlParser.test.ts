@@ -12,7 +12,7 @@ import { createSchemaXmlWithItems, createSchemaJsonWithItems } from "../TestUtil
 import {
   EntityClassProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps,
   MixinProps, PhenomenonProps, ConstantProps, PrimitivePropertyProps, EnumerationPropertyProps, PrimitiveArrayPropertyProps, NavigationPropertyProps,
-  PropertyCategoryProps, SchemaProps, StructArrayPropertyProps,
+  PropertyCategoryProps, SchemaProps, StructArrayPropertyProps, SchemaReferenceProps,
 } from "../../src/Deserialization/JsonProps";
 import { CustomAttributeClass, Schema, SchemaContext } from "../../src/ecschema-metadata";
 import { CAProviderTuple } from "../../src/Deserialization/AbstractParser";
@@ -129,6 +129,20 @@ describe("XmlParser", () => {
   });
 
   describe("parseEntityClass", () => {
+    function testParseEntityClass(itemXml: string, itemName: string, expectedReferenceSchema: SchemaReferenceProps[], expectedEntityProps: EntityClassProps): void {
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem(itemName);
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass to be successful");
+
+      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
+      assert.deepEqual(actualReferenceSchema, expectedReferenceSchema);
+
+      const [, , itemElement] = findResult;
+      const actualProps = parser.parseEntityClass(itemElement);
+      assert.deepEqual(actualProps, expectedEntityProps);
+    }
+
     it("should parse props correctly", () => {
       const itemXml = `
       <ECEntityClass typeName="TestEntityClass" description="Test description" displayLabel="TestLabel" modifier="Abstract">
@@ -136,13 +150,6 @@ describe("XmlParser", () => {
         <BaseClass>TestMixin</BaseClass>
         <BaseClass>TestMixin2</BaseClass>
       </ECEntityClass>`;
-
-      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
-      const findResult = parser.findItem("TestEntityClass");
-      if (findResult === undefined)
-        throw new Error("Expected finding EntityClass to be successful");
-
-      const [, , itemElement] = findResult;
 
       const expectedProps = {
         label: "TestLabel",
@@ -152,8 +159,92 @@ describe("XmlParser", () => {
         mixins: ["TestSchema.TestMixin", "TestSchema.TestMixin2"],
       } as EntityClassProps;
 
-      const actualProps = parser.parseEntityClass(itemElement);
-      assert.deepEqual(actualProps, expectedProps);
+      testParseEntityClass(itemXml, "TestEntityClass", [], expectedProps);
+    });
+
+    it("item has schema alias:className base", async () => {
+      const itemXml = `
+        <ECSchemaReference name="BisCore" alias="bis" version="1.0.0"></ECSchemaReference>
+        <ECEntityClass typeName="Entity" description="Test class" displayLabel="Test" modifier="None">
+          <BaseClass>testschema:Element</BaseClass>
+          <BaseClass>testschema:Mixin1</BaseClass>
+          <BaseClass>testschema:Mixin2</BaseClass>
+          <ECProperty propertyName="intProps" typeName="int"/>
+          <ECProperty propertyName="stringProps" typeName="string"/>
+        </ECEntityClass>
+      `;
+
+      const expectedReferenceSchema = [
+        {
+          name: "BisCore",
+          version: "1.0.0"
+        } as SchemaReferenceProps
+      ];
+
+      const expectedProps = {
+        description: "Test class",
+        label: "Test",
+        modifier: "None",
+        baseClass: "TestSchema.Element",
+        mixins: ["TestSchema.Mixin1", "TestSchema.Mixin2"],
+      } as EntityClassProps;
+
+      testParseEntityClass(itemXml, "Entity", expectedReferenceSchema, expectedProps);
+    });
+
+    it("item has ref alias:className base", async () => {
+      const itemXml = `
+        <ECSchemaReference name="BisCore" alias="bis" version="1.0.0"></ECSchemaReference>
+        <ECSchemaReference name="CoreCustomAttribute" alias="CoreCA" version="1.0.0"></ECSchemaReference>
+        <ECEntityClass typeName="Entity" description="Test class" displayLabel="Test" modifier="None">
+          <BaseClass>bis:Element</BaseClass>
+          <BaseClass>bis:Mixin1</BaseClass>
+          <BaseClass>CoreCa:ElementMixin1</BaseClass>
+          <BaseClass>CorEcA:ElementMixin2</BaseClass>
+          <ECProperty propertyName="intProps" typeName="int"/>
+          <ECProperty propertyName="stringProps" typeName="string"/>
+        </ECEntityClass>
+      `;
+
+      const expectedReferenceSchema = [
+        {
+          name: "BisCore",
+          version: "1.0.0"
+        } as SchemaReferenceProps,
+        {
+          name: "CoreCustomAttribute",
+          version: "1.0.0"
+        } as SchemaReferenceProps
+      ];
+
+      const expectedProps = {
+        description: "Test class",
+        label: "Test",
+        modifier: "None",
+        baseClass: "BisCore.Element",
+        mixins: ["BisCore.Mixin1", "CoreCustomAttribute.ElementMixin1", "CoreCustomAttribute.ElementMixin2"],
+      } as EntityClassProps;
+
+      testParseEntityClass(itemXml, "Entity", expectedReferenceSchema, expectedProps);
+
+    });
+
+    it("item has invalid alias:className base", async () => {
+      const itemXml = `
+        <ECSchemaReference name="BisCore" alias="bis" version="1.0.0"></ECSchemaReference>
+        <ECEntityClass typeName="Entity" description="Test class" modifier="None">
+          <BaseClass>invalid:Element</BaseClass>
+          <ECProperty propertyName="intProps" typeName="int"/>
+          <ECProperty propertyName="stringProps" typeName="string"/>
+        </ECEntityClass>
+      `;
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("Entity");
+      if (findResult === undefined)
+        throw new Error("Expected finding Entity to be successful");
+
+      const [, , itemElement] = findResult;
+      expect(() => { parser.parseEntityClass(itemElement); }).to.throw("No valid schema found for alias invalid");
     });
   });
 
@@ -1021,7 +1112,7 @@ describe("XmlParser", () => {
       const expectedProps = {
         name: "TestStructArrayProperty",
         type: "structarrayproperty",
-        typeName: "TestSchema:TestStruct",
+        typeName: "TestSchema.TestStruct",
         minOccurs: 0,
         maxOccurs: 1000,
         label: undefined,

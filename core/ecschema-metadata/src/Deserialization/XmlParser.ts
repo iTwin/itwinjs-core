@@ -37,6 +37,8 @@ interface ECXmlVersion {
 export class XmlParser extends AbstractParser<Element> {
   private _rawSchema: Document;
   private _schemaName?: string;
+  private _schemaReferenceNames: Map<string, string>;
+  private _schemaAlias: string;
   private _schemaVersion?: string;
   private _xmlNamespace?: string;
   private _ecXmlVersion?: ECXmlVersion;
@@ -52,6 +54,12 @@ export class XmlParser extends AbstractParser<Element> {
 
     const schemaName = schemaInfo.getAttribute("schemaName");
     if (schemaName) this._schemaName = schemaName;
+
+    this._schemaAlias = "";
+    const schemaAlias = schemaInfo.getAttribute("alias");
+    if (schemaAlias) this._schemaAlias = schemaAlias;
+
+    this._schemaReferenceNames = new Map<string, string>();
 
     const schemaVersion = schemaInfo.getAttribute("version");
     if (schemaVersion) this._schemaVersion = schemaVersion;
@@ -727,10 +735,15 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private getSchemaReference(xmlElement: Element): SchemaReferenceProps {
+    const alias = this.getRequiredAttribute(xmlElement, "alias",
+      `The schema ${this._schemaName} has an invalid ECSchemaReference attribute. One of the references is missing the required 'alias' attribute.`);
     const name = this.getRequiredAttribute(xmlElement, "name",
       `The schema ${this._schemaName} has an invalid ECSchemaReference attribute. One of the references is missing the required 'name' attribute.`);
     const version = this.getRequiredAttribute(xmlElement, "version",
       `The schema ${this._schemaName} has an invalid ECSchemaReference attribute. One of the references is missing the required 'version' attribute.`);
+
+    if (!this._schemaReferenceNames.has(alias.toLowerCase()))
+      this._schemaReferenceNames.set(alias.toLowerCase(), name);
 
     return {
       name,
@@ -1193,6 +1206,14 @@ export class XmlParser extends AbstractParser<Element> {
 
   private getQualifiedTypeName(rawTypeName: string): string {
     const nameParts = rawTypeName.split(":");
-    return nameParts.length === 1 ? this._schemaName + "." + rawTypeName : rawTypeName;
+    if (nameParts.length !== 2)
+      return this._schemaName + "." + rawTypeName;
+
+    if (nameParts[0].toLowerCase() === this._schemaAlias.toLowerCase())
+      return this._schemaName + "." + nameParts[1];
+    if (this._schemaReferenceNames.has(nameParts[0].toLowerCase()))
+      return this._schemaReferenceNames.get(nameParts[0].toLowerCase()) + "." + nameParts[1];
+
+    throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
   }
 }
