@@ -108,7 +108,7 @@ export class AzureBlobStorage extends CloudStorageService {
           }
 
           if (!response.isSuccessful) {
-            reject(response.error);
+            reject(response);
           }
 
           resolve(result.etag);
