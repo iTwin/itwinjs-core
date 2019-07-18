@@ -29,7 +29,7 @@ export interface StatusBarZoneProps extends CommonProps {
 /** Status Bar Zone React component.
  * @internal
  */
-export class StatusBarZone extends React.Component<StatusBarZoneProps> {
+export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
   public render(): React.ReactNode {
     const bounds = Rectangle.create(this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds);
     return (

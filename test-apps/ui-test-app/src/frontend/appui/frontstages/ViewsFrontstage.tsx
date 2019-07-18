@@ -85,6 +85,14 @@ import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
+  private _leftPanel = {
+    widgets: [<Widget
+      iconSpec="icon-placeholder"
+      labelKey="SampleApp:widgets.VisibilityTree"
+      control={VisibilityTreeWidgetControl}
+      applicationData={{ iModelConnection: this.iModelConnection }}
+    />],
+  };
 
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
@@ -203,11 +211,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         leftPanel={
           <StagePanel
             size={280}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree"
-                control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} />,
-            ]}
+            widgets={this._leftPanel.widgets}
           />
         }
       />

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Convert Widget, Zone and StagePanel components to PureComponents.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "gerardas.butkevicius@bentley.com"
+}

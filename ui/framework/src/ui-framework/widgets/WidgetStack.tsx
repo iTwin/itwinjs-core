@@ -8,144 +8,90 @@ import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, PointProps, TabSeparator,
-  WidgetZoneId, TabMode, HandleMode, Rectangle, DraggedWidgetManagerProps, RectangleProps, VerticalAnchorHelpers, ZonesManagerWidgetsProps,
+  WidgetZoneId, TabMode, HandleMode, Rectangle, DraggedWidgetManagerProps, RectangleProps, VerticalAnchorHelpers,
 } from "@bentley/ui-ninezone";
 import { BetaBadge } from "../betabadge/BetaBadge";
-import { WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
+import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { Icon } from "../shared/IconComponent";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { WidgetDef, WidgetState } from "./WidgetDef";
 
 /** Properties for a [[WidgetStack]] Tab.
  * @internal
  */
-export interface WidgetTabProps {
-  betaBadge: boolean;
-  isActive: boolean;
-  iconSpec?: string | React.ReactNode;
-  title: string;
-  widgetName: string;
+export interface WidgetTab {
+  readonly betaBadge: boolean;
+  readonly iconSpec?: string | React.ReactNode;
+  readonly title: string;
 }
 
 /** Properties for a Widget in a [[WidgetStack]].
  * @internal
  */
-export interface EachWidgetProps {
-  id: WidgetZoneId;
-  tabs: WidgetTabProps[];
-  isStatusBar: boolean;
-}
+export type WidgetTabs = { readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab> };
 
 /** Properties for the [[WidgetStack]] React component.
  * @internal
  */
 export interface WidgetStackProps extends CommonProps {
+  activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   fillZone: boolean;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
-  isFloating: boolean;
+  horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
+  isFloating: boolean;
   isInStagePanel: boolean;
-  widgets: ReadonlyArray<WidgetZoneId>;
+  openWidgetId: WidgetZoneId | undefined;
+  verticalAnchor: VerticalAnchor;
   widgetChangeHandler: WidgetChangeHandler;
-  zoneDefProvider: ZoneDefProvider;
-  zonesWidgets: ZonesManagerWidgetsProps;
+  widgets: ReadonlyArray<WidgetZoneId>;
+  widgetTabs: WidgetTabs;
 }
 
 /** Widget stack React component.
  * @internal
  */
-export class WidgetStack extends React.Component<WidgetStackProps> {
+export class WidgetStack extends React.PureComponent<WidgetStackProps> {
   private _widgetStack = React.createRef<NZ_WidgetStack>();
 
   public render(): React.ReactNode {
-    let widgetDefToActivate: WidgetDef | undefined;
-    const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
-
-    this.props.widgets.forEach((wId) => {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(wId);
-      // istanbul ignore if
-      if (!zoneDef)
-        return;
-
-      const nzWidgetProps = this.props.zonesWidgets[wId];
-      const visibleWidgetDefs = zoneDef.widgetDefs
-        .filter((widgetDef: WidgetDef) => {
-          return widgetDef.isVisible && !widgetDef.isFloating;
-        });
-
-      if (!visibleWidgetDefs || 0 === visibleWidgetDefs.length)
-        return;
-
-      if (nzWidgetProps.tabIndex === -2) { // -2 is used when stage is initially created and we need to apply default widget state.
-        // No WidgetTab has been selected so find the first WidgetDef set to Open and use that as the widgetDefToActivate
-        for (const currentWidgetDef of visibleWidgetDefs) {
-          if (WidgetState.Open === currentWidgetDef.state) {
-            if (!widgetDefToActivate)
-              widgetDefToActivate = currentWidgetDef;
-          }
-        }
-      } else {
-        // if there was a state change in this zone then force the WidgetDef state to match that defined by the active tabIndex
-        for (let index = 0; index < visibleWidgetDefs.length; index++) {
-          if (nzWidgetProps.tabIndex === index)
-            widgetDefToActivate = visibleWidgetDefs[index];
-        }
-      }
-
-      widgets.push({
-        id: nzWidgetProps.id,
-        isStatusBar: zoneDef.isStatusBar,
-        tabs: visibleWidgetDefs.map((widgetDef: WidgetDef) => {
-          return {
-            betaBadge: widgetDef.betaBadge === undefined ? false : widgetDef.betaBadge,
-            isActive: widgetDef === widgetDefToActivate,
-            iconSpec: widgetDef.iconSpec,
-            title: widgetDef.label,
-            widgetName: widgetDef.id,
-          };
-        }),
-      });
-    });
-
-    if (widgets.length === 0)
+    const tabCount = this.props.widgets.reduce((acc, widgetId) => {
+      const tabs = this.props.widgetTabs[widgetId];
+      return acc + tabs.length;
+    }, 0);
+    if (tabCount === 0)
       return null;
-
-    const isWidgetOpen = widgets.some((w) => w.tabs.some((t) => t.isActive));
-    const openWidget = widgets.find((w) => this.props.zonesWidgets[w.id].tabIndex >= 0);
-    const firstWidget = this.props.zonesWidgets[widgets[0].id];
-    const horizontalAnchor = firstWidget.horizontalAnchor;
-    const verticalAnchor = firstWidget.verticalAnchor;
-    const isDragged = widgets.some((w) => !!this.props.draggedWidget && this.props.draggedWidget.id === w.id);
     return (
       <NZ_WidgetStack
         className={this.props.className}
         style={this.props.style}
-        contentRef={openWidget ? this.props.getWidgetContentRef(openWidget.id) : undefined}
+        contentRef={this.props.openWidgetId ? this.props.getWidgetContentRef(this.props.openWidgetId) : undefined}
         fillZone={this.props.fillZone || this.props.isInStagePanel}
-        horizontalAnchor={horizontalAnchor}
+        horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
         isTabBarVisible={this.props.isInStagePanel}
-        isDragged={isDragged}
+        isDragged={!!this.props.draggedWidget}
         isFloating={this.props.isFloating}
-        isOpen={isWidgetOpen}
+        isOpen={!!this.props.openWidgetId}
+        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         onResize={this.props.isInStagePanel ? undefined : this._handleOnWidgetResize}
         ref={this._widgetStack}
         tabs={<WidgetStackTabs
+          activeTabIndex={this.props.activeTabIndex}
           draggedWidget={this.props.draggedWidget}
-          horizontalAnchor={horizontalAnchor}
+          horizontalAnchor={this.props.horizontalAnchor}
           isCollapsed={this.props.isCollapsed}
           isProtruding={!this.props.isInStagePanel}
-          isWidgetOpen={isWidgetOpen}
           onTabClick={this._handleTabClick}
           onTabDrag={this._handleTabDrag}
           onTabDragEnd={this._handleTabDragEnd}
           onTabDragStart={this._handleTabDragStart}
-          verticalAnchor={verticalAnchor}
-          widgets={widgets}
+          openWidgetId={this.props.openWidgetId}
+          verticalAnchor={this.props.verticalAnchor}
+          widgets={this.props.widgets}
+          widgetTabs={this.props.widgetTabs}
         />}
-        verticalAnchor={verticalAnchor}
-        onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+        verticalAnchor={this.props.verticalAnchor}
       />
     );
   }
@@ -161,8 +107,9 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
     const tabBounds = Rectangle.create(firstTabBounds);
     const stackedWidgetBounds = Rectangle.create(this._widgetStack.current.getBounds());
     const offsetToFirstTab = stackedWidgetBounds.topLeft().getOffsetTo(tabBounds.topLeft());
+    const isHorizontal = this.props.verticalAnchor === VerticalAnchor.BottomPanel || this.props.verticalAnchor === VerticalAnchor.TopPanel;
     let widgetBounds;
-    if (VerticalAnchorHelpers.isHorizontal(this.props.zonesWidgets[widgetId].verticalAnchor))
+    if (isHorizontal)
       widgetBounds = stackedWidgetBounds.offsetX(offsetToFirstTab.x);
     else
       widgetBounds = stackedWidgetBounds.offsetY(offsetToFirstTab.y);
@@ -187,44 +134,52 @@ export class WidgetStack extends React.Component<WidgetStackProps> {
  * @internal
  */
 export interface WidgetStackTabsProps {
+  activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
   isProtruding: boolean;
-  isWidgetOpen: boolean;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
+  openWidgetId: WidgetZoneId | undefined;
   verticalAnchor: VerticalAnchor;
-  widgets: ReadonlyArray<EachWidgetProps>;
+  widgets: ReadonlyArray<WidgetZoneId>;
+  widgetTabs: WidgetTabs;
 }
 
 /** Tabs of [[WidgetStack]] component.
  * @internal
- */
-export class WidgetStackTabs extends React.Component<WidgetStackTabsProps> {
+ */
+export class WidgetStackTabs extends React.PureComponent<WidgetStackTabsProps> {
   public render(): React.ReactNode {
-    return this.props.widgets.map((widget, index) => {
+    let renderIndex = -1;
+    return this.props.widgets.map((widgetId) => {
+      const tabs = this.props.widgetTabs[widgetId];
+      if (tabs.length <= 0)
+        return null;
+      renderIndex++;
       return (
-        <React.Fragment key={widget.id}>
-          {index === 0 ? undefined : <TabSeparator
+        <React.Fragment key={widgetId}>
+          {renderIndex < 1 ? undefined : <TabSeparator
             isHorizontal={VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)}
           />}
           <WidgetStackTabGroup
+            activeTabIndex={this.props.activeTabIndex}
             draggedWidget={this.props.draggedWidget}
             horizontalAnchor={this.props.horizontalAnchor}
             isCollapsed={this.props.isCollapsed}
             isProtruding={this.props.isProtruding}
             isStacked={this.props.widgets.length > 1}
-            isWidgetOpen={this.props.isWidgetOpen}
             onTabClick={this.props.onTabClick}
             onTabDrag={this.props.onTabDrag}
             onTabDragEnd={this.props.onTabDragEnd}
             onTabDragStart={this.props.onTabDragStart}
-            tabs={widget.tabs}
+            openWidgetId={this.props.openWidgetId}
+            tabs={tabs}
             verticalAnchor={this.props.verticalAnchor}
-            widgetId={widget.id}
+            widgetId={widgetId}
           />
         </React.Fragment>
       );
@@ -236,17 +191,18 @@ export class WidgetStackTabs extends React.Component<WidgetStackTabsProps> {
  * @internal
  */
 export interface WidgetStackTabGroupProps {
+  activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
   isProtruding: boolean;
   isStacked: boolean;
-  isWidgetOpen: boolean;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
-  tabs: WidgetTabProps[];
+  openWidgetId: WidgetZoneId | undefined;
+  tabs: ReadonlyArray<WidgetTab>;
   verticalAnchor: VerticalAnchor;
   widgetId: WidgetZoneId;
 }
@@ -254,21 +210,22 @@ export interface WidgetStackTabGroupProps {
 /** Widget tab group used in [[WidgetStackTabs]] component.
  * @internal
  */
-export class WidgetStackTabGroup extends React.Component<WidgetStackTabGroupProps> {
+export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroupProps> {
   private _firstTab = React.createRef<Tab>();
 
   public render(): React.ReactNode {
-    const isDragged = this.props.draggedWidget && this.props.draggedWidget.id === this.props.widgetId;
-    const lastPosition = isDragged ? this.props.draggedWidget!.lastPosition : undefined;
-    const tabs = this.props.tabs.map((tab: WidgetTabProps, index: number) => {
-      const mode = !this.props.isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
+    const lastPosition = this.props.draggedWidget ? this.props.draggedWidget.lastPosition : undefined;
+    const isWidgetStackOpen = !!this.props.openWidgetId;
+    const isWidgetOpen = this.props.openWidgetId === this.props.widgetId;
+    const tabs = this.props.tabs.map((tab, index) => {
+      const mode = !isWidgetStackOpen ? TabMode.Closed : isWidgetOpen && this.props.activeTabIndex === index ? TabMode.Active : TabMode.Open;
       return (
         <WidgetStackTab
           horizontalAnchor={this.props.horizontalAnchor}
           iconSpec={tab.iconSpec}
+          index={index}
           isBetaBadgeVisible={tab.betaBadge}
           isCollapsed={this.props.isCollapsed}
-          index={index}
           isProtruding={this.props.isProtruding}
           key={`${this.props.widgetId}-${index}`}
           lastPosition={lastPosition}
@@ -347,7 +304,7 @@ export interface WidgetStackTabProps {
 /** Tab used in [[WidgetStackTabGroup]] component.
  * @internal
  */
-export class WidgetStackTab extends React.Component<WidgetStackTabProps> {
+export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
   public render(): React.ReactNode {
     return (
       <Tab

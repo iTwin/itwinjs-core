@@ -117,7 +117,6 @@ alpha;DrawingNavigationAidControl
 alpha;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
-internal;EachWidgetProps
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
@@ -125,6 +124,8 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;FaceCell 
 internal;FaceCellProps 
+internal;FrameworkStagePanel 
+internal;FrameworkStagePanelProps
 beta;FrameworkState
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
@@ -385,7 +386,8 @@ internal;WidgetStackTabsProps
 public;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
-internal;WidgetTabProps
+internal;WidgetTab
+internal;WidgetTabs =
 public;WidgetType
 public;Workflow 
 public;WorkflowActivatedEvent 

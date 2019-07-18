@@ -13,7 +13,7 @@ import {
   Zone,
   TitleBarButton,
 } from "@bentley/ui-ninezone";
-import { FrontstageManager, ToolActivatedEventArgs } from "../../frontstage/FrontstageManager";
+import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
@@ -30,9 +30,6 @@ enum ToolSettingsZoneContent {
  */
 interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
-  isPopoverOpen: boolean;
-  isNestedPopoverOpen: boolean;
-  toolId: string;
 }
 
 /** Properties for the [[ToolSettingsZone]] React component.
@@ -46,15 +43,12 @@ export interface ToolSettingsZoneProps extends CommonProps {
 /** Tool Settings Zone React component.
  * @internal
  */
-export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
+export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
   private _toolSettingsLabel: string;
 
   /** @internal */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
-    isPopoverOpen: false,
-    isNestedPopoverOpen: false,
-    toolId: "",
   };
 
   constructor(props: ToolSettingsZoneProps) {
@@ -71,8 +65,8 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
-  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
-    this.setState((_prevState, _props) => ({ toolId: args.toolId }));
+  private _handleToolActivatedEvent = () => {
+    this.forceUpdate();
   }
 
   public render(): React.ReactNode {

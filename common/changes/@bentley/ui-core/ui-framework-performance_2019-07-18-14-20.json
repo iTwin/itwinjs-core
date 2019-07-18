@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove excessive z-index CSS rule.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "gerardas.butkevicius@bentley.com"
+}

@@ -615,7 +615,7 @@ interface FloatingWidgetProps {
   isCollapsed: boolean;
   isFloating: boolean;
   isInStagePanel: boolean;
-  openWidget: WidgetZoneId | undefined;
+  openWidgetId: WidgetZoneId | undefined;
   onResize: ((zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void) | undefined;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
@@ -630,30 +630,30 @@ class FloatingWidget extends React.PureComponent<FloatingWidgetProps> {
   private _widget = React.createRef<Stacked>();
 
   public render() {
-    const isDragged = this.props.widgets.some((wId) => !!this.props.draggedWidget && this.props.draggedWidget.id === wId);
     return (
       <Stacked
-        contentRef={this.props.openWidget ? this.props.getWidgetContentRef(this.props.openWidget) : undefined}
+        contentRef={this.props.openWidgetId ? this.props.getWidgetContentRef(this.props.openWidgetId) : undefined}
         fillZone={this.props.fillZone}
         horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
-        isDragged={isDragged}
+        isDragged={!!this.props.draggedWidget}
         isFloating={this.props.isFloating}
-        isOpen={!!this.props.openWidget}
+        isOpen={!!this.props.openWidgetId}
         isTabBarVisible={this.props.isInStagePanel}
         onResize={this.props.isInStagePanel ? undefined : this._handleResize}
         ref={this._widget}
         tabs={
           <FloatingZoneTabs
-            horizontalAnchor={this.props.horizontalAnchor}
             draggedWidget={this.props.draggedWidget}
+            horizontalAnchor={this.props.horizontalAnchor}
             isCollapsed={this.props.isCollapsed}
             isInStagePanel={this.props.isInStagePanel}
+            isWidgetOpen={!!this.props.openWidgetId}
             onTabClick={this.props.onTabClick}
             onTabDragStart={this._handleTabDragStart}
             onTabDragEnd={this.props.onTabDragEnd}
             onTabDrag={this.props.onTabDrag}
-            openWidget={this.props.openWidget}
+            openWidgetId={this.props.openWidgetId}
             tabIndex={this.props.tabIndex}
             verticalAnchor={this.props.verticalAnchor}
             widgets={this.props.widgets}
@@ -692,7 +692,7 @@ interface FloatingZoneWidgetProps {
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
-  openWidget: WidgetZoneId | undefined;
+  openWidgetId: WidgetZoneId | undefined;
   tabIndex: number;
   widget: WidgetManagerProps | undefined;
   zone: ZoneManagerProps;
@@ -723,7 +723,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
           onTabDrag={this.props.onTabDrag}
           onTabDragEnd={this.props.onTabDragEnd}
           onTabDragStart={this.props.onTabDragStart}
-          openWidget={this.props.openWidget}
+          openWidgetId={this.props.openWidgetId}
           tabIndex={this.props.tabIndex}
           verticalAnchor={widget.verticalAnchor}
           widgets={zone.widgets}
@@ -738,7 +738,8 @@ interface FloatingZoneTabsProps {
   horizontalAnchor: HorizontalAnchor;
   isCollapsed: boolean;
   isInStagePanel: boolean;
-  openWidget: WidgetZoneId | undefined;
+  isWidgetOpen: boolean;
+  openWidgetId: WidgetZoneId | undefined;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
@@ -761,13 +762,14 @@ class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
           horizontalAnchor={this.props.horizontalAnchor}
           isCollapsed={this.props.isCollapsed}
           isInStagePanel={this.props.isInStagePanel}
-          isOpen={this.props.openWidget === widgetId}
           isStacked={this.props.widgets.length > 1}
+          isWidgetOpen={this.props.isWidgetOpen}
           key={widgetId}
           onTabClick={this.props.onTabClick}
           onTabDragStart={this.props.onTabDragStart}
           onTabDragEnd={this.props.onTabDragEnd}
           onTabDrag={this.props.onTabDrag}
+          isOpen={this.props.openWidgetId === widgetId}
           tabIndex={this.props.tabIndex}
           verticalAnchor={this.props.verticalAnchor}
           widgetId={widgetId}
@@ -792,6 +794,7 @@ interface FloatingZoneWidgetTabsProps {
   isCollapsed: boolean;
   isInStagePanel: boolean;
   isOpen: boolean;
+  isWidgetOpen: boolean;
   tabIndex: number;
   isStacked: boolean;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
@@ -844,13 +847,12 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
   }
 
   public render() {
-    const lastPosition = this.props.draggedWidget && this.props.draggedWidget.id === this.props.widgetId ?
-      this.props.draggedWidget.lastPosition : undefined;
+    const lastPosition = this.props.draggedWidget ? this.props.draggedWidget.lastPosition : undefined;
     const tabIndex = this.props.draggedWidget ? this.props.draggedWidget.tabIndex : -1;
-    const mode1 = !this.props.isOpen ? TabMode.Closed
-      : this.props.tabIndex === 0 ? TabMode.Active : TabMode.Open;
-    const mode2 = !this.props.isOpen ? TabMode.Closed
-      : this.props.tabIndex === 1 ? TabMode.Active : TabMode.Open;
+    const mode1 = !this.props.isWidgetOpen ? TabMode.Closed
+      : this.props.isOpen && this.props.tabIndex === 0 ? TabMode.Active : TabMode.Open;
+    const mode2 = !this.props.isWidgetOpen ? TabMode.Closed
+      : this.props.isOpen && this.props.tabIndex === 1 ? TabMode.Active : TabMode.Open;
     const lastPosition1 = tabIndex === 0 ? lastPosition : undefined;
     const lastPosition2 = tabIndex === 1 ? lastPosition : undefined;
     const handleMode = this.getTabHandleMode();
@@ -2108,8 +2110,9 @@ class StagePanelWidget extends React.PureComponent<StagePanelWidgetProps> {
 }
 
 interface WidgetStagePanelProps {
-  draggedWidget: DraggedWidgetManagerProps | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  isSplitterTargetVisible: boolean;
+  isZoneTargetVisible: boolean;
   onInitialize: (size: number, type: ExampleStagePanelType) => void;
   onResize: (resizeBy: number, type: ExampleStagePanelType) => void;
   onStagePanelTargetChanged: (target: ExampleStagePanelType | undefined) => void;
@@ -2120,7 +2123,6 @@ interface WidgetStagePanelProps {
   onTabDrag: (dragged: PointProps) => void;
   onToggleCollapse: (panel: ExampleStagePanelType) => void;
   panel: NineZoneStagePanelManagerProps;
-  target: ZonesManagerTargetProps | undefined;
   type: ExampleStagePanelType;
   widgets: ZonesManagerWidgetsProps;
 }
@@ -2139,7 +2141,6 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
   public render() {
     const type = getStagePanelType(this.props.type);
     const isVertical = StagePanelTypeHelpers.isVertical(type);
-    const isSplitterTargetVisible = !!this.props.draggedWidget && !this.props.target;
     return (
       <StagePanel
         onResize={this._handleResize}
@@ -2153,7 +2154,7 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
         />
         <SplitterTargetExample
           isVertical={isVertical}
-          isVisible={isSplitterTargetVisible}
+          isVisible={this.props.isSplitterTargetVisible}
           onTargetChanged={this.props.onStagePanelTargetChanged}
           type={this.props.type}
           widgetCount={this.props.panel.panes.length}
@@ -2174,7 +2175,7 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
                 isCollapsed={this.props.panel.isCollapsed}
                 isFloating={false}
                 isInStagePanel={true}
-                isTargetVisible={!!this.props.draggedWidget}
+                isTargetVisible={this.props.isZoneTargetVisible}
                 key={index}
                 onResize={undefined}
                 onTabClick={this.props.onTabClick}
@@ -2182,7 +2183,7 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
                 onTabDragEnd={this.props.onTabDragEnd}
                 onTabDragStart={this.props.onTabDragStart}
                 onTargetChanged={this.props.onPaneTargetChanged}
-                openWidget={openWidgetId}
+                openWidgetId={openWidgetId}
                 paneIndex={index}
                 tabIndex={tabIndex}
                 type={this.props.type}
@@ -2675,10 +2676,13 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
       );
     }
 
+    const isSplitterTargetVisible = !!draggedWidget && !this.props.zones.target;
+    const isZoneTargetVisible = !!draggedWidget;
     return (
       <WidgetStagePanel
-        draggedWidget={draggedWidget}
         getWidgetContentRef={this.props.getWidgetContentRef}
+        isSplitterTargetVisible={isSplitterTargetVisible}
+        isZoneTargetVisible={isZoneTargetVisible}
         onInitialize={this.props.onStagePanelInitialize}
         onPaneTargetChanged={this.props.onPaneTargetChanged}
         onResize={this.props.onStagePanelResize}
@@ -2689,7 +2693,6 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         onTabDrag={this.props.onTabDrag}
         onToggleCollapse={this.props.onToggleCollapse}
         panel={panel}
-        target={this.props.zones.target}
         type={exampleType}
         widgets={this.props.zones.widgets}
       />
@@ -2843,7 +2846,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
           onTabDrag={this.props.onTabDrag}
           onTabDragEnd={this.props.onTabDragEnd}
           onTabDragStart={this.props.onTabDragStart}
-          openWidget={openWidgetId}
+          openWidgetId={openWidgetId}
           tabIndex={tabIndex}
           widget={widget}
           zone={zone}
