@@ -26,29 +26,29 @@ $settings-rightpanel-width: 200px;
 .uifw-settings-item {
   display: flex;
 
-  >.panel {
+  > .panel {
     flex: 1;
     display: flex;
     box-sizing: border-box;
   }
 
-  >.left-panel {
+  > .left-panel {
     flex-direction: column;
     width: $settings-leftpanel-width;
     padding: 30px 50px 30px 30px;
 
-    >.title {
+    > .title {
       font-size: 18px;
     }
 
-    >.description {
+    > .description {
       margin-top: 10px;
       font-size: 12px;
       color: $buic-text-color-muted;
     }
   }
 
-  >.right-panel {
+  > .right-panel {
     align-items: center;
     width: $settings-rightpanel-width;
     padding: 30px;

@@ -81,6 +81,7 @@ import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
+import { ToolbarItemInsertSpec } from '@bentley/imodeljs-frontend';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
@@ -89,6 +90,7 @@ import { TranslationOptions } from '@bentley/imodeljs-i18n';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
+import { UiItemNode } from '@bentley/imodeljs-frontend';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -531,7 +533,7 @@ export class ConditionalItemDef extends ItemDefBase {
     // (undocumented)
     items: AnyItemDef[];
     // (undocumented)
-    resolveItems(): void;
+    resolveItems(force?: boolean): void;
     }
 
 // @beta
@@ -1828,7 +1830,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     // @internal (undocumented)
     overflow: boolean;
     // (undocumented)
-    resolveItems(): void;
+    resolveItems(force?: boolean): void;
     // (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
@@ -3421,14 +3423,16 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React_2.Component<ToolbarProps> {
+export class Toolbar extends React_2.Component<ToolbarProps, State> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
+    componentDidUpdate(): void;
+    // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): JSX.Element;
+    render(): JSX.Element | null;
     }
 
 // @beta
@@ -3447,11 +3451,24 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
     items: ItemList;
     orientation: Orientation;
     panelAlignment?: ToolbarPanelAlignment;
+    toolbarId?: string;
 }
 
 // @public
 export class ToolbarWidgetDefBase extends WidgetDef {
     constructor(def: ToolbarWidgetProps);
+    // (undocumented)
+    protected _cachedHorizontalItems?: ItemList;
+    // (undocumented)
+    protected _cachedVerticalItems?: ItemList;
+    // (undocumented)
+    protected createCachedHorizontalItemList(toolbarId: string): void;
+    // (undocumented)
+    protected createCachedVerticalItemList(toolbarId: string): void;
+    protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]): ItemList;
+    // (undocumented)
+    generateMergedItemLists(): void;
+    protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;
     // (undocumented)
     horizontalDirection: Direction;
     // (undocumented)
@@ -3459,15 +3476,17 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalPanelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    renderHorizontalToolbar: (toolbarId: string) => React_2.ReactNode;
+    renderHorizontalToolbar: () => React_2.ReactNode;
     // (undocumented)
-    renderVerticalToolbar: (toolbarId: string) => React_2.ReactNode;
+    renderVerticalToolbar: () => React_2.ReactNode;
     // (undocumented)
     verticalDirection: Direction;
     // (undocumented)
     verticalItems?: ItemList;
     // (undocumented)
     verticalPanelAlignment: ToolbarPanelAlignment;
+    // (undocumented)
+    widgetBaseName: string;
 }
 
 // @public

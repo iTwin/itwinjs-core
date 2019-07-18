@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const path = require("path");
@@ -156,6 +156,8 @@ module.exports = (publicPath) => {
               use: [{
                 loader: require.resolve("svg-sprite-loader"),
                 options: {
+                  // include file hash to ensure uniqueness even if same svg name
+                  symbolId: "[name]-[hash:6]",
                   runtimeCompat: true,
                   spriteFilename: "sprite-[hash:6].svg"
                 },

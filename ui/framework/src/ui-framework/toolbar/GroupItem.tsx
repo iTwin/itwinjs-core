@@ -63,8 +63,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     return this.groupId;
   }
 
-  public resolveItems(): void {
-    if (this._itemList)
+  public resolveItems(force?: boolean): void {
+    if (this._itemList && !force)
       return;
 
     this._itemList = new ItemList();
@@ -93,8 +93,8 @@ export class GroupItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    const key = this.getKey(index);
     this.resolveItems();
+    const key = this.getKey(index);
 
     return (
       <GroupItem

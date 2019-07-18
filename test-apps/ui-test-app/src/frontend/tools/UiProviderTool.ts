@@ -6,8 +6,9 @@
 
 import {
   Tool, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec,
-  ToolbarItemInsertSpec, ToolbarItemType, BadgeType,
+  ToolbarItemInsertSpec, ToolbarItemType, BadgeType, ConditionalDisplayType,
 } from "@bentley/imodeljs-frontend";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 
 /** alpha test code */
 class TestUiProvider implements PluginUiProvider {
@@ -33,7 +34,12 @@ class TestUiProvider implements PluginUiProvider {
         itemType: ToolbarItemType.ActionButton,
         insertBefore: true,
         relativeToolIdPath: "Tool1",
-        itemId: "middle-test- action-tool",
+        itemId: "middle-test-action-tool",
+        condition: {
+          type: ConditionalDisplayType.Visibility,
+          testFunc: (): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE",
+          syncEventIds: [SampleAppUiActionId.setTestProperty],
+        },
         execute: (): void => {
           // tslint:disable-next-line: no-console
           console.log("Got Here!");
@@ -62,7 +68,7 @@ class TestUiProvider implements PluginUiProvider {
         insertBefore: false,
         icon: "icon-developer",
         label: "test group",
-        items: [firstActionSpec],
+        items: [firstActionSpec, nestedActionSpec],
       };
 
       return [firstActionSpec, middleActionSpec, nestedActionSpec, groupSpec];

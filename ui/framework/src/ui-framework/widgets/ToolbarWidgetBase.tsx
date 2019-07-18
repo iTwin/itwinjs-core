@@ -13,8 +13,11 @@ import { ItemList } from "../shared/ItemMap";
 import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { Toolbar } from "../toolbar/Toolbar";
 import { Orientation } from "@bentley/ui-core";
-import { PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, BadgeType } from "@bentley/imodeljs-frontend";
-import { ItemDefBase } from "../shared/ItemDefBase";
+import {
+  PluginUiManager, UiItemNode, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec,
+  ToolbarItemType, BadgeType, ConditionalDisplayType,
+} from "@bentley/imodeljs-frontend";
+import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
 import { AnyItemDef } from "../shared/ItemProps";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { ConditionalItemDef } from "../shared/ConditionalItemDef";
@@ -31,6 +34,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
 
   public horizontalItems?: ItemList;
   public verticalItems?: ItemList;
+  protected _cachedHorizontalItems?: ItemList;
+  protected _cachedVerticalItems?: ItemList;
+  private _toolbarBaseName = "";
 
   constructor(def: ToolbarWidgetProps) {
     super(def);
@@ -45,11 +51,20 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     this.verticalItems = def.verticalItems;
   }
 
+  public set widgetBaseName(baseName: string) {
+    this._toolbarBaseName = baseName;
+  }
+  public get widgetBaseName() {
+    return this._toolbarBaseName;
+  }
+
   private createItemDefFromInsertSpec(spec: ToolbarItemInsertSpec): ItemDefBase | undefined {
+    let itemDef: ItemDefBase | undefined;
+
     // istanbul ignore else
     if (ToolbarItemType.ActionButton === spec.itemType) {
       const actionSpec = spec as ActionItemInsertSpec;
-      return new CommandItemDef({
+      itemDef = new CommandItemDef({
         commandId: actionSpec.itemId,
         iconSpec: actionSpec.icon,
         label: actionSpec.label,
@@ -64,7 +79,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
         if (childItem)
           childItems.push(childItem);
       });
-      return new GroupItemDef({
+      itemDef = new GroupItemDef({
         groupId: groupSpec.itemId,
         iconSpec: groupSpec.icon,
         label: groupSpec.label,
@@ -73,7 +88,25 @@ export class ToolbarWidgetDefBase extends WidgetDef {
       });
     }
 
-    return undefined;
+    // If conditional display options are defined set up item def with necessary stateFunc and stateSyncIds
+    // istanbul ignore else
+    if (itemDef) {
+      // istanbul ignore else
+      if (spec.condition && spec.condition.testFunc && spec.condition.syncEventIds.length > 0) {
+        if (spec.condition.type === ConditionalDisplayType.Visibility) {
+          itemDef.stateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+            return spec.condition!.testFunc() ? { ...state, isVisible: true } : { ...state, isVisible: false };
+          };
+        } else {
+          itemDef.stateFunc = (state: Readonly<BaseItemState>): BaseItemState => {
+            return spec.condition!.testFunc() ? { ...state, isEnabled: true } : { ...state, isEnabled: false };
+          };
+        }
+        itemDef.stateSyncIds = spec.condition.syncEventIds;
+      }
+    }
+
+    return itemDef;
   }
 
   private insertItemDefAtLocation(item: ItemDefBase, itemList: ItemList | ItemDefBase[], relativePath: string[], insertBefore: boolean): void {
@@ -93,10 +126,11 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     });
     if (foundIndex >= 0 && relativePath.length > 1) {
       const parentItem = itemList[foundIndex];
-      if (parentItem instanceof GroupItemDef)
-        return this.insertItemDefAtLocation(item, parentItem.items, relativePath.slice(1), insertBefore);
-      else if (parentItem instanceof ConditionalItemDef)
-        return this.insertItemDefAtLocation(item, parentItem.items, relativePath.slice(1), insertBefore);
+      if ((parentItem instanceof GroupItemDef) || (parentItem instanceof ConditionalItemDef)) {
+        this.insertItemDefAtLocation(item, parentItem.items, relativePath.slice(1), insertBefore);
+        parentItem.resolveItems(true);
+        return;
+      }
     }
 
     if (!insertBefore)
@@ -113,7 +147,6 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return;
   }
 
-  // ?????? TODO - extend AnyItemDef to include ConditionalItemDef (this would break backwards compatibility)
   /** Ensure all containers are duplicated so new items can be inserted while preserving the original Groups */
   private mergeItems(originalItems: AnyItemDef[]): AnyItemDef[] {
     const mergedItemList: AnyItemDef[] = [];
@@ -135,6 +168,7 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     newConditionalItemDef = Object.assign(newConditionalItemDef, originalItem);
     // generate new list of child items
     newConditionalItemDef.items = this.mergeItems(originalItem.items);
+    newConditionalItemDef.resolveItems(true);
     return newConditionalItemDef;
   }
 
@@ -145,12 +179,13 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     newGroupItemDef = Object.assign(newGroupItemDef, originalGroup);
     // generate new list of child items
     newGroupItemDef.items = this.mergeItems(originalGroup.items);
+    newGroupItemDef.resolveItems(true);
     return newGroupItemDef;
   }
 
   /** Create a Merged ItemList leaving the original ItemList untouched. */
   // Istanbul ignore next
-  private createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]) {
+  protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[]) {
     // initially just copy original list and add new items to it.
     const mergedItemList = new ItemList();
     // istanbul ignore else
@@ -176,8 +211,45 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return mergedItemList;
   }
 
+  protected createCachedHorizontalItemList(toolbarId: string): void {
+    const toolbarHierarchy = new UiItemNode();
+    // istanbul ignore else
+    if (this.horizontalItems)
+      this.getItemHierarchy(toolbarHierarchy, this.horizontalItems.items);
+
+    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
+    // istanbul ignore else
+    if (insertSpecs && insertSpecs.length > 0) {
+      this._cachedHorizontalItems = this.createMergedItemList(this.horizontalItems, insertSpecs);
+    }
+  }
+
+  protected createCachedVerticalItemList(toolbarId: string): void {
+    const toolbarHierarchy = new UiItemNode();
+    // istanbul ignore else
+    if (this, this.verticalItems)
+      this.getItemHierarchy(toolbarHierarchy, this.verticalItems.items);
+
+    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
+    // istanbul ignore else
+    if (insertSpecs && insertSpecs.length > 0) {
+      this._cachedVerticalItems = this.createMergedItemList(this.verticalItems, insertSpecs);
+    }
+  }
+
+  public generateMergedItemLists(): void {
+    this._cachedHorizontalItems = undefined;
+    this._cachedVerticalItems = undefined;
+
+    // istanbul ignore else
+    if (PluginUiManager.hasRegisteredProviders) {
+      this.createCachedHorizontalItemList(`${this.widgetBaseName}-horizontal`);
+      this.createCachedVerticalItemList(`${this.widgetBaseName}-vertical`);
+    }
+  }
+
   /** Build item hierarchy that will be passed to Plugins so they can add their UI button into toolboxes supported in ninezone widgets  */
-  private getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void {
+  protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void {
     items.forEach((item: ItemDefBase) => {
       const childNode = new UiItemNode(item.id);
       parentNode.children.push(childNode);
@@ -191,20 +263,12 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     });
   }
 
-  public renderHorizontalToolbar = (toolbarId: string): React.ReactNode | null => {
-    let toolbarItems = this.horizontalItems;
-    const toolbarHierarchy = new UiItemNode();
-    if (this.horizontalItems)
-      this.getItemHierarchy(toolbarHierarchy, this.horizontalItems.items);
-
-    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
-    if (insertSpecs && insertSpecs.length > 0) {
-      toolbarItems = this.createMergedItemList(this.horizontalItems, insertSpecs);
-    }
-
+  public renderHorizontalToolbar = (): React.ReactNode | null => {
+    const toolbarItems = this._cachedHorizontalItems ? this._cachedHorizontalItems : this.horizontalItems;
     if (toolbarItems && toolbarItems.items.length) {
       return (
         <Toolbar
+          toolbarId={`${this.widgetBaseName}-horizontal`}
           orientation={Orientation.Horizontal}
           expandsTo={this.horizontalDirection}
           panelAlignment={this.horizontalPanelAlignment}
@@ -216,20 +280,12 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     return null;
   }
 
-  public renderVerticalToolbar = (toolbarId: string): React.ReactNode | null => {
-    let toolbarItems = this.verticalItems;
-    const toolbarHierarchy = new UiItemNode();
-    if (this.verticalItems)
-      this.getItemHierarchy(toolbarHierarchy, this.verticalItems.items);
-
-    const insertSpecs = PluginUiManager.getToolbarItems(toolbarId, toolbarHierarchy);
-    if (insertSpecs && insertSpecs.length > 0) {
-      toolbarItems = this.createMergedItemList(this.verticalItems, insertSpecs);
-    }
-
+  public renderVerticalToolbar = (): React.ReactNode | null => {
+    const toolbarItems = this._cachedVerticalItems ? this._cachedVerticalItems : this.verticalItems;
     if (toolbarItems && toolbarItems.items.length) {
       return (
         <Toolbar
+          toolbarId={`${this.widgetBaseName}-vertical`}
           orientation={Orientation.Vertical}
           expandsTo={this.verticalDirection}
           panelAlignment={this.verticalPanelAlignment}

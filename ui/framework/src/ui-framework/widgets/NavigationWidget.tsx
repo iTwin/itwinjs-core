@@ -15,7 +15,7 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 import { NavigationAidControl, NavigationAidActivatedEventArgs } from "../navigationaids/NavigationAidControl";
-import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ContentControlActivatedEventArgs } from "../content/ContentControl";
@@ -38,9 +38,13 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Left;
     this.horizontalPanelAlignment = ToolbarPanelAlignment.End;
     this._navigationAidId = (props.navigationAidId !== undefined) ? props.navigationAidId : "";
+
+    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
+    this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
   public get reactElement(): React.ReactNode {
+    // istanbul ignore else
     if (!this._reactElement)
       this._reactElement = <NavigationWidgetWithDef navigationWidgetDef={this} />;
 
@@ -175,12 +179,9 @@ interface Props extends CommonProps {
 /** Navigation Widget React component that's passed a NavigationWidgetDef.
  */
 class NavigationWidgetWithDef extends React.Component<Props> {
+
   constructor(props: Props) {
     super(props);
-  }
-
-  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs): void => {
-    this.setState((_prevState) => ({ toolId: args.toolId }));
   }
 
   private _handleNavigationAidActivatedEvent = (args: NavigationAidActivatedEventArgs): void => {
@@ -190,26 +191,27 @@ class NavigationWidgetWithDef extends React.Component<Props> {
   }
 
   private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
+    // create, merge, and cache ItemList from plugins
+    this.props.navigationWidgetDef.generateMergedItemLists();
+
     // force update when list of registered UiPluginProvides change
     this.forceUpdate();
   }
+
   public componentDidMount() {
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
     PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentWillUnmount() {
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
     PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public render(): React.ReactNode {
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
-    const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : "";
-    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar(`[${activeStageName}]NavigationWidget-horizontal`);
-    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar(`[${activeStageName}]NavigationWidget-vertical`);
+    const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
+    const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
 
     return (
       <NZ_ToolsWidget isNavigation

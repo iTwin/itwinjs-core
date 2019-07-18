@@ -30,8 +30,8 @@ export enum BadgeType {
  * @alpha
  */
 export enum ConditionalDisplayType {
-  visibility = 0,
-  enable = 1,
+  Visibility = 0,
+  EnableState = 1,
 }
 
 /** Interface used to define a UI item whose display may change based on the current state of the application, such as the active view, the select element(s), etc.
@@ -129,8 +129,13 @@ export interface UiProviderRegisteredEventArgs {
 export class PluginUiManager {
   private static _registeredPluginUiProviders: Map<string, PluginUiProvider> = new Map<string, PluginUiProvider>();
 
-  /** Get Tool Activated event. */
+  /** Event raised any time a UiProvider is registered or unregistered. */
   public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiProviderRegisteredEventArgs) => void>();
+
+  /** Return true if there is any registered UiProvider. */
+  public static get hasRegisteredProviders(): boolean {
+    return this._registeredPluginUiProviders.size > 0;
+  }
 
   /**
    * Retrieves a previously loaded PluginUiProvider.

@@ -1577,9 +1577,9 @@ export interface ConditionalDisplaySpecification {
 // @alpha
 export enum ConditionalDisplayType {
     // (undocumented)
-    enable = 1,
+    EnableState = 1,
     // (undocumented)
-    visibility = 0
+    Visibility = 0
 }
 
 // @internal (undocumented)
@@ -4557,6 +4557,7 @@ export class PluginAdmin {
 export class PluginUiManager {
     static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
     static getToolbarItems(toolBarId: string, itemIds: UiItemNode): ToolbarItemInsertSpec[];
+    static readonly hasRegisteredProviders: boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
     static register(uiProvider: PluginUiProvider): void;
     static unregister(uiProviderId: string): void;

@@ -24,8 +24,7 @@
   "iModelJs": {
     "buildModule": {
       "type": "system",
-      "sourceResources": [
-        {
+      "sourceResources": [{
           "source": "./src/**/*.*css",
           "dest": "./lib"
         },

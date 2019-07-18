@@ -257,6 +257,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_appButton": undefined,
       "_handleSyncUiEvent": [Function],
       "_label": "",
+      "_toolbarBaseName": "[Test1]ToolWidget",
       "_tooltip": "",
       "classId": undefined,
       "fillZone": false,
