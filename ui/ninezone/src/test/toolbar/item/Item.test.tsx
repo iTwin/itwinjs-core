@@ -36,9 +36,9 @@ describe("<Item />", () => {
     spy.calledOnce.should.true;
   });
 
-  it("renders with betaBadge correctly", () => {
-    const sut = mount(<Item betaBadge={true} />);
-    const badge = sut.find("div.nz-beta-badge");
+  it("renders with badge correctly", () => {
+    const sut = mount(<Item badge={true} />);
+    const badge = sut.find("div.nz-badge");
     badge.length.should.eq(1);
   });
 

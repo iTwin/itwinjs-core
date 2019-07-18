@@ -79,6 +79,8 @@ import { Status } from '@bentley/ui-ninezone';
 import { Store } from 'redux';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
+import { Tool } from '@bentley/imodeljs-frontend';
+import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
@@ -248,6 +250,8 @@ export class AppNotificationManager extends NotificationManager {
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
+    // @alpha
+    setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showPointerMessage(message: NotifyMessageDetails): void;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
@@ -1610,7 +1614,6 @@ export class FrontstageManager {
     static readonly activeFrontstageId: string;
     static readonly activeModalFrontstage: ModalFrontstageInfo | undefined;
     static readonly activeNestedFrontstage: FrontstageDef | undefined;
-    static readonly activeToolAssistanceNode: React.ReactNode | undefined;
     static readonly activeToolId: string;
     static readonly activeToolInformation: ToolInformation | undefined;
     static readonly activeToolSettingsNode: React.ReactNode | undefined;
@@ -1635,6 +1638,7 @@ export class FrontstageManager {
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
+    static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -1642,6 +1646,7 @@ export class FrontstageManager {
     static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
     static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
     static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
+    static setActiveTool(tool: Tool): void;
     static setActiveToolId(toolId: string): void;
     static setWidgetState(widgetId: string, state: WidgetState): boolean;
     static updateModalFrontstage(): void;
@@ -2312,9 +2317,13 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
+    // @alpha
+    static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
+    // @alpha
+    static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
     }
@@ -3344,6 +3353,37 @@ export interface ToolActivatedEventArgs {
     toolId: string;
 }
 
+// @alpha
+export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> {
+}
+
+// @alpha
+export interface ToolAssistanceChangedEventArgs {
+    // (undocumented)
+    instructions: ToolAssistanceInstructions | undefined;
+}
+
+// @alpha
+export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
+    constructor(p: ToolAssistanceFieldProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    static readonly defaultProps: ToolAssistanceFieldDefaultProps;
+    // @internal (undocumented)
+    render(): React_2.ReactNode;
+    }
+
+// @alpha
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor">;
+
+// @alpha
+export interface ToolAssistanceFieldProps extends StatusFieldProps {
+    includePromptAtCursor: boolean;
+}
+
 // @internal
 export class Toolbar extends React_2.Component<ToolbarProps> {
     constructor(props: ToolbarProps);
@@ -3426,6 +3466,16 @@ export interface ToolButtonProps extends ToolItemProps, CommonProps {
 }
 
 // @public
+export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> {
+}
+
+// @public
+export interface ToolIconChangedEventArgs {
+    // (undocumented)
+    iconSpec: string;
+}
+
+// @public
 export class ToolInformation {
     constructor(toolId: string);
     // (undocumented)
@@ -3493,7 +3543,6 @@ export class ToolUiManager {
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
-    toolAssistanceNode: React_2.ReactNode;
     toolSettingsNode: React_2.ReactNode;
     }
 

@@ -40,7 +40,7 @@ export class CoreTools {
   public static get fitViewCommand() {
     return new ToolItemDef({
       toolId: FitViewTool.toolId,
-      iconSpec: "icon-fit-to-view",
+      iconSpec: FitViewTool.iconSpec,
       label: () => FitViewTool.flyover,
       tooltip: () => FitViewTool.description,
       execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
@@ -50,7 +50,7 @@ export class CoreTools {
   public static get windowAreaCommand() {
     return new ToolItemDef({
       toolId: WindowAreaTool.toolId,
-      iconSpec: "icon-window-area",
+      iconSpec: WindowAreaTool.iconSpec,
       label: () => WindowAreaTool.flyover,
       tooltip: () => WindowAreaTool.description,
       execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
@@ -60,7 +60,7 @@ export class CoreTools {
   public static get zoomViewCommand() {
     return new ToolItemDef({
       toolId: ZoomViewTool.toolId,
-      iconSpec: "icon-zoom",
+      iconSpec: ZoomViewTool.iconSpec,
       label: () => ZoomViewTool.flyover,
       tooltip: () => ZoomViewTool.description,
       execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -70,7 +70,7 @@ export class CoreTools {
   public static get panViewCommand() {
     return new ToolItemDef({
       toolId: PanViewTool.toolId,
-      iconSpec: "icon-hand-2",
+      iconSpec: PanViewTool.iconSpec,
       label: () => PanViewTool.flyover,
       tooltip: () => PanViewTool.description,
       execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -80,7 +80,7 @@ export class CoreTools {
   public static get rotateViewCommand() {
     return new ToolItemDef({
       toolId: RotateViewTool.toolId,
-      iconSpec: "icon-gyroscope",
+      iconSpec: RotateViewTool.iconSpec,
       label: () => RotateViewTool.flyover,
       tooltip: () => RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -90,7 +90,7 @@ export class CoreTools {
   public static get walkViewCommand() {
     return new ToolItemDef({
       toolId: WalkViewTool.toolId,
-      iconSpec: "icon-walk",
+      iconSpec: WalkViewTool.iconSpec,
       label: () => WalkViewTool.flyover,
       tooltip: () => WalkViewTool.description,
       execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -100,7 +100,7 @@ export class CoreTools {
   public static get selectElementCommand() {
     return new ToolItemDef({
       toolId: SelectionTool.toolId,
-      iconSpec: "icon-cursor",
+      iconSpec: SelectionTool.iconSpec,
       label: () => SelectionTool.flyover,
       tooltip: () => SelectionTool.description,
       execute: () => {
@@ -112,7 +112,7 @@ export class CoreTools {
   public static get toggleCameraViewCommand() {
     return new ToolItemDef({
       toolId: ViewToggleCameraTool.toolId,
-      iconSpec: "icon-camera",
+      iconSpec: ViewToggleCameraTool.iconSpec,
       label: () => ViewToggleCameraTool.flyover,
       tooltip: () => ViewToggleCameraTool.description,
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
@@ -122,7 +122,7 @@ export class CoreTools {
   public static get flyViewCommand() {
     return new ToolItemDef({
       toolId: FlyViewTool.toolId,
-      iconSpec: "icon-airplane",
+      iconSpec: FlyViewTool.iconSpec,
       label: () => FlyViewTool.flyover,
       tooltip: () => FlyViewTool.description,
       execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -133,7 +133,7 @@ export class CoreTools {
   public static get sectionByPlaneCommand() {
     return new ToolItemDef({
       toolId: ViewClipByPlaneTool.toolId,
-      iconSpec: "icon-plane",
+      iconSpec: ViewClipByPlaneTool.iconSpec,
       label: () => ViewClipByPlaneTool.flyover,
       tooltip: () => ViewClipByPlaneTool.description,
       execute: () => {

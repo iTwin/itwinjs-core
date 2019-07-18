@@ -343,6 +343,12 @@ internal;TileTreeDiscloser
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin
+alpha;ToolAssistance
+alpha;ToolAssistanceImage
+alpha;ToolAssistanceInstruction
+alpha;ToolAssistanceInstructions
+alpha;ToolAssistanceKeyboardInfo
+alpha;ToolAssistanceSection
 alpha;ToolbarItemInsertSpec 
 alpha;ToolbarItemType
 public;ToolList = ToolType[]

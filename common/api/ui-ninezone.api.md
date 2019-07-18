@@ -446,7 +446,7 @@ export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" 
 
 // @alpha
 export interface GroupToolProps extends CommonProps {
-    betaBadge?: React.ReactNode;
+    badge?: React.ReactNode;
     children?: React.ReactNode;
     icon?: React.ReactNode;
     isActive?: boolean;
@@ -554,7 +554,7 @@ export class Item extends React.PureComponent<ItemProps> {
 
 // @beta
 export interface ItemProps extends CommonProps {
-    betaBadge?: React.ReactNode;
+    badge?: React.ReactNode;
     icon?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
@@ -1463,7 +1463,7 @@ export class TabModeHelpers {
 
 // @alpha
 export interface TabProps extends CommonProps {
-    betaBadge?: React.ReactNode;
+    badge?: React.ReactNode;
     children?: React.ReactNode;
     horizontalAnchor: HorizontalAnchor;
     isCollapsed?: boolean;
@@ -1569,6 +1569,19 @@ export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDial
 export interface ToolAssistanceDialogProps extends CommonProps {
     children?: React.ReactNode;
     title?: string;
+}
+
+// @beta
+export class ToolAssistanceInstruction extends React.PureComponent<ToolAssistanceInstructionProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface ToolAssistanceInstructionProps extends CommonProps {
+    image: React.ReactNode;
+    isNew?: boolean;
+    text: string;
 }
 
 // @beta

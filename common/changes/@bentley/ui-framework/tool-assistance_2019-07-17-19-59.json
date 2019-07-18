@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added ToolAssistance support and Tool.iconSpec",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

@@ -5,7 +5,7 @@
 @import "../../style/index";
 
 @mixin uicore-inputs-checkbox {
-  font-family: "Open Sans", sans-serif;
+  font-family: $uicore-font-family;
   display: table; // this centers the span
   position: relative;
   font-size: $uicore-font-size;

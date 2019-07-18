@@ -2473,6 +2473,8 @@ export class FitViewTool extends ViewTool {
     // (undocumented)
     doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate?: boolean, isolatedOnly?: boolean): Promise<boolean>;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     isolatedOnly: boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
@@ -2525,6 +2527,8 @@ export class Flags {
 // @public
 export class FlyViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
@@ -4109,6 +4113,8 @@ export class NotificationManager {
     outputMessage(_message: NotifyMessageDetails): void;
     outputPrompt(_prompt: string): void;
     outputPromptByKey(key: string): void;
+    // @alpha
+    setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(_details: ActivityMessageDetails): boolean;
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
     // (undocumented)
@@ -4385,6 +4391,8 @@ export class PackedFeatureTable {
 // @public
 export class PanViewTool extends ViewManip {
     constructor(vp: ScreenViewport | undefined, oneShot?: boolean, isDraggingRequired?: boolean);
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
@@ -5245,6 +5253,8 @@ export abstract class RenderTextureDrape implements IDisposable {
 export class RotateViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     static toolId: string;
@@ -5511,6 +5521,8 @@ export class SelectionTool extends PrimitiveTool {
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
     static hidden: boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     protected initSelectTool(): void;
     // (undocumented)
@@ -6995,6 +7007,8 @@ export class Tool {
     readonly flyover: string;
     static readonly flyover: string;
     static hidden: boolean;
+    readonly iconSpec: string;
+    static iconSpec: string;
     static readonly keyin: string;
     readonly keyin: string;
     static namespace: I18NNamespace;
@@ -7133,6 +7147,67 @@ export class ToolAdmin {
     // (undocumented)
     readonly viewTool: ViewTool | undefined;
     }
+
+// @alpha
+export class ToolAssistance {
+    static readonly altKey: string;
+    static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
+    static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
+    static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
+    static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean): ToolAssistanceInstruction;
+    static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
+    static readonly ctrlKey: string;
+    static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static downSymbol: string;
+    static readonly inputsLabel: string;
+    static leftSymbol: string;
+    static rightSymbol: string;
+    static readonly shiftKey: string;
+    static readonly shiftKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static readonly shiftKeyboardInfoNoSymbol: ToolAssistanceKeyboardInfo;
+    static shiftSymbol: string;
+    static readonly shiftSymbolKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static upSymbol: string;
+}
+
+// @alpha
+export enum ToolAssistanceImage {
+    AcceptPoint = 1,
+    CursorClick = 2,
+    Keyboard = 0,
+    LeftClick = 3,
+    LeftClickDrag = 6,
+    MouseWheel = 5,
+    RightClick = 4
+}
+
+// @alpha
+export interface ToolAssistanceInstruction {
+    image: string | ToolAssistanceImage;
+    isNew?: boolean;
+    keyboardInfo?: ToolAssistanceKeyboardInfo;
+    text: string;
+}
+
+// @alpha
+export interface ToolAssistanceInstructions {
+    mainInstruction: ToolAssistanceInstruction;
+    sections?: ToolAssistanceSection[];
+}
+
+// @alpha
+export interface ToolAssistanceKeyboardInfo {
+    bottomKeys?: string[];
+    keys: string[];
+}
+
+// @alpha
+export interface ToolAssistanceSection {
+    instructions: ToolAssistanceInstruction[];
+    label?: string;
+}
 
 // @alpha
 export interface ToolbarItemInsertSpec extends InsertSpec {
@@ -7383,6 +7458,8 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     protected _clearExistingPlanes: boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -8737,6 +8814,8 @@ export enum ViewStatus {
 // @public
 export class ViewToggleCameraTool extends ViewTool {
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onInstall(): boolean;
     // (undocumented)
     onPostInstall(): void;
@@ -8784,6 +8863,8 @@ export class ViewUndoTool extends ViewTool {
 export class WalkViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     static toolId: string;
@@ -8802,6 +8883,8 @@ export class WheelEventProcessor {
 export class WindowAreaTool extends ViewTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -8836,6 +8919,8 @@ export interface ZoomToOptions {
 // @public
 export class ZoomViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)

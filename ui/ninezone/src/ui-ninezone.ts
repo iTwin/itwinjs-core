@@ -32,6 +32,7 @@ export * from "./ui-ninezone/footer/snap-mode/Snap";
 
 export * from "./ui-ninezone/footer/tool-assistance/Dialog";
 export * from "./ui-ninezone/footer/tool-assistance/Indicator";
+export * from "./ui-ninezone/footer/tool-assistance/Instruction";
 export * from "./ui-ninezone/footer/tool-assistance/Item";
 export * from "./ui-ninezone/footer/tool-assistance/Separator";
 

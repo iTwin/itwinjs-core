@@ -13,7 +13,7 @@ import "./Item.scss";
  * @beta
  */
 export interface ToolAssistanceItemProps extends CommonProps {
-  /** Assistance items and separators. I.e. [[ToolAssistanceItem]], [[ToolAssistanceSeparator]] */
+  /** Assistance instructions or components */
   children?: React.ReactNode;
 }
 

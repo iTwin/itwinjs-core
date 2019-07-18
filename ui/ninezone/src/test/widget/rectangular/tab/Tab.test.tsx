@@ -33,14 +33,14 @@ describe("<Tab />", () => {
     />).should.matchSnapshot();
   });
 
-  it("renders with betaBadge correctly", () => {
+  it("renders with badge correctly", () => {
     const sut = mount(<Tab
-      betaBadge={true}
+      badge={true}
       horizontalAnchor={HorizontalAnchor.Left}
       mode={TabMode.Open}
       verticalAnchor={VerticalAnchor.Middle}
     />);
-    const badge = sut.find("div.nz-beta-badge");
+    const badge = sut.find("div.nz-badge");
     badge.length.should.eq(1);
   });
 

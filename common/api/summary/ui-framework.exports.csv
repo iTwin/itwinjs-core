@@ -318,6 +318,11 @@ beta;ThemeManager: any
 internal;TileLoadingIndicator 
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
+alpha;ToolAssistanceChangedEvent 
+alpha;ToolAssistanceChangedEventArgs
+alpha;ToolAssistanceField 
+alpha;ToolAssistanceFieldDefaultProps = Pick
+alpha;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
 internal;ToolbarProps 
@@ -325,6 +330,8 @@ public;ToolbarWidgetDefBase
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
+public;ToolIconChangedEvent 
+public;ToolIconChangedEventArgs
 public;ToolInformation
 public;ToolItemDef 
 public;ToolItemProps 

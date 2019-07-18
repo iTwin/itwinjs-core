@@ -351,7 +351,7 @@ export class WidgetStackTab extends React.Component<WidgetStackTabProps> {
   public render(): React.ReactNode {
     return (
       <Tab
-        betaBadge={this.props.isBetaBadgeVisible ? <BetaBadge /> : undefined}
+        badge={this.props.isBetaBadgeVisible ? <BetaBadge /> : undefined}
         horizontalAnchor={this.props.horizontalAnchor}
         isCollapsed={this.props.isCollapsed}
         isProtruding={this.props.isProtruding}

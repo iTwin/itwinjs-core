@@ -2,7 +2,7 @@
 
 exports[`WidgetStackTab should render with beta badge 1`] = `
 <Tab
-  betaBadge={<BetaBadge />}
+  badge={<BetaBadge />}
   horizontalAnchor={0}
   isCollapsed={false}
   isProtruding={false}

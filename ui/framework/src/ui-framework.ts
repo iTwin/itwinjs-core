@@ -141,6 +141,7 @@ export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SelectionInfo";
 export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/SelectionScope";
+export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
 
 export * from "./ui-framework/theme/ThemeManager";
 

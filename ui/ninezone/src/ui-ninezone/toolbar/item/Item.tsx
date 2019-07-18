@@ -33,8 +33,8 @@ export interface ItemProps extends CommonProps {
   title?: string;
   /** Function called when size is known. */
   onSizeKnown?: (size: Size) => void;
-  /** A Beta badge to draw. */
-  betaBadge?: React.ReactNode;
+  /** A badge to draw. */
+  badge?: React.ReactNode;
 }
 
 class ActualItem extends React.PureComponent<ItemProps> implements ToolbarItem {
@@ -75,9 +75,9 @@ class ActualItem extends React.PureComponent<ItemProps> implements ToolbarItem {
         <div className="nz-icon">
           {this.props.icon}
         </div>
-        {this.props.betaBadge &&
-          <div className="nz-beta-badge">
-            {this.props.betaBadge}
+        {this.props.badge &&
+          <div className="nz-badge">
+            {this.props.badge}
           </div>
         }
         {panel}

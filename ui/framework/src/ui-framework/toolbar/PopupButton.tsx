@@ -144,7 +144,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
           onKeyDown={this._handleKeyDown}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
-          betaBadge={this.props.betaBadge && <BetaBadge />}
+          badge={this.props.betaBadge && <BetaBadge />}
         />
       </ExpandableItem>
     );

@@ -14,6 +14,8 @@ import {
   NotifyMessageDetails,
   ToolTipOptions,
   OutputMessageType,
+  ToolAssistanceInstructions,
+  ToolAssistance,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";
@@ -30,14 +32,20 @@ import { PointerMessage } from "./Pointer";
  */
 export class AppNotificationManager extends NotificationManager {
 
-  /** Output a prompt, given an i18n key. */
+  /** Output a prompt, given an i18n key.
+   */
   public outputPromptByKey(key: string): void {
     this.outputPrompt(UiFramework.i18n.translate(key));
   }
 
-  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
+  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed.
+   */
   public outputPrompt(prompt: string): void {
     MessageManager.outputPrompt(prompt);
+
+    const mainInstruction = ToolAssistance.createInstruction("", prompt);
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    MessageManager.setToolAssistance(instructions);
   }
 
   /** Output a message and/or alert to the user. */
@@ -141,6 +149,15 @@ export class AppNotificationManager extends NotificationManager {
   /** Hide a InputField message. */
   public closeInputFieldMessage(): void {
     MessageManager.hideInputFieldMessage();
+  }
+
+  /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
+   * @param instructions The tool assistance instructions.
+   * @alpha
+   */
+  public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
+    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+    MessageManager.setToolAssistance(instructions);
   }
 
 }

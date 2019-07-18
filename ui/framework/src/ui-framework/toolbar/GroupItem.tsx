@@ -369,7 +369,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
           onKeyDown={this._handleKeyDown}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
-          betaBadge={groupItemDef.betaBadge && <BetaBadge />}
+          badge={groupItemDef.betaBadge && <BetaBadge />}
         />
       </ExpandableItem>
     );
@@ -551,7 +551,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
-                betaBadge={item.betaBadge && <BetaBadge />}
+                badge={item.betaBadge && <BetaBadge />}
               />
             );
           })}

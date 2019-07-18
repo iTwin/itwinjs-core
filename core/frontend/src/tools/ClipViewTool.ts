@@ -377,6 +377,7 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
+  public static iconSpec = "icon-plane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 

@@ -209,6 +209,8 @@ alpha;ToastStyle = Pick
 beta;ToolAssistance 
 beta;ToolAssistanceDialog 
 beta;ToolAssistanceDialogProps 
+beta;ToolAssistanceInstruction 
+beta;ToolAssistanceInstructionProps 
 beta;ToolAssistanceItem 
 beta;ToolAssistanceItemProps 
 beta;ToolAssistanceProps 

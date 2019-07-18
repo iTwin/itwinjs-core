@@ -263,5 +263,11 @@
       "keyin": "Load Plugin",
       "description": "Loads a plugin module"
     }
+  },
+  "toolAssistance": {
+    "altKey": "Alt",
+    "ctrlKey": "Ctrl",
+    "shiftKey": "Shift",
+    "inputs": "Inputs"
   }
 }
