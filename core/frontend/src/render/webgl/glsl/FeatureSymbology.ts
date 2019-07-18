@@ -58,7 +58,7 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "7.0");
 }
 
-const computeLUTFeatureIndex = `floor(TEXTURE(u_vertLUT, g_featureIndexCoords) * 255.0 + 0.5)`;
+const computeLUTFeatureIndex = `vec4(floor(TEXTURE(u_vertLUT, g_featureIndexCoords).xyz * 255.0 + 0.5), 0.0)`;
 const computeInstanceFeatureIndex = `vec4(a_featureId, 0.0)`;
 function computeFeatureIndex(instanced: boolean): string {
   return `g_featureIndex = ` + (instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex) + `;`;

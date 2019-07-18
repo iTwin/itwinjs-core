@@ -490,15 +490,18 @@ export namespace Pixel {
     public readonly featureTable?: PackedFeatureTable;
     /** @internal */
     public readonly iModel?: IModelConnection;
+    /** @internal */
+    public readonly tileId?: string;
 
     /** @internal */
-    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection) {
+    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string) {
       this.feature = feature;
       this.distanceFraction = distanceFraction;
       this.type = type;
       this.planarity = planarity;
       this.featureTable = featureTable;
       this.iModel = iModel;
+      this.tileId = tileId;
     }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
@@ -1025,7 +1028,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
 
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.

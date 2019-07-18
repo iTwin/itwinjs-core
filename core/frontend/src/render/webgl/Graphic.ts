@@ -301,6 +301,7 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
+  public readonly tileId?: string; // Chiefly for debugging.
   private readonly _context: BatchContext = { batchId: 0 };
   private _overrides: FeatureOverrides[] = [];
 
@@ -315,11 +316,12 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
+  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
+    this.tileId = tileId;
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain

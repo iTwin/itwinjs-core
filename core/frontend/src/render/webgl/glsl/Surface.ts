@@ -124,7 +124,7 @@ void readMaterialAtlas() {
 
   float specularExponent = unpackFloat(packedSpecularExponent);
   float packedSpecularRgb = specularRgb.x + specularRgb.y * 256.0 + specularRgb.z * 256.0 * 256.0;
-  float packedWeights = weightsAndFlags.y + weightsAndFlags.z * 256.0 + weightsAndFlags.x * 256.0 * 256.0;
+  float packedWeights = weightsAndFlags.y + weightsAndFlags.z * 256.0 + 1.0 * 256.0 * 256.0; // z = texture weight, always 1 for atlas.
   g_materialParams = vec3(packedSpecularRgb, specularExponent, packedWeights);
 }`;
 const getAtlasMaterialParams = `vec3 getMaterialParams() { return g_materialParams; }`;
