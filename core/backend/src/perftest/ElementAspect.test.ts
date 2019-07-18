@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  IModelDb, IModelHost, OpenParams, ElementAspect, DictionaryModel, SpatialCategory,
-  ConcurrencyControl,
-  IModelJsFs,
+  IModelDb, OpenParams, ElementAspect, DictionaryModel, SpatialCategory,
+  ConcurrencyControl, IModelJsFs,
 } from "../imodeljs-backend";
 import { Config, ImsUserCredentials, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -18,8 +17,7 @@ import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
-  let modelId: Id64String;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
@@ -36,37 +34,38 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
 }
 
 describe("ElementAspectPerfomance", () => {
-  if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-    IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
   const reporter = new Reporter();
   let requestContext: AuthorizedClientRequestContext;
-  let projectId: string;
-  let imodelId: string;
   let imodeldbhub: IModelDb;
+
   before(async () => {
-    const fs1 = require("fs");
-    const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
-    projectId = configData.projectId;
-    imodelId = configData.aspectIModelId;             // change imodel
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    const configData = require(path.join(__dirname, "CSPerfConfig.json"));
+    const projectId = configData.projectId;
+    const imodelId = configData.aspectIModelId;
+
     const myAppConfig = {
       imjs_buddi_resolve_url_using_region: 102,
       imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
     };
     Config.App.merge(myAppConfig);
-    IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
     const userCredentials: ImsUserCredentials = {
       email: Config.App.getString("imjs_test_regular_user_name"),
       password: Config.App.getString("imjs_test_regular_user_password"),
     };
+
     requestContext = await IModelTestUtils.getTestUserRequestContext(userCredentials);
     imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(imodeldbhub);
   });
 
-  after(() => {
+  after(async () => {
     const csvPath = path.join(KnownTestLocations.outputDir, "ElementAspectPerfTests.csv");
     reporter.exportCSV(csvPath);
+
+    await imodeldbhub.close(requestContext);
   });
 
   it("SimpleElement-Insertion-Updation-Deletion-Read", async () => {
@@ -149,6 +148,7 @@ describe("ElementAspectPerfomance", () => {
         element: { id: eleId },
         testUniqueAspectProperty: "UniqueAspectInsertTest1",
       };
+
       imodeldb.elements.insertAspect(aspectProps);
       const endTime1 = new Date().getTime();
       const elapsedTime1 = (endTime1 - startTime1) / 1000.0;

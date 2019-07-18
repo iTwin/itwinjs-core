@@ -9,14 +9,13 @@ import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-
 import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, IModelJsFs, KeepBriefcase, ConcurrencyControl,
-  DictionaryModel, SpatialCategory, BriefcaseManager, Element, IModelHost,
+  DictionaryModel, SpatialCategory, BriefcaseManager, Element,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
-async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
-  reporter = reporter;
+async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
@@ -60,8 +59,7 @@ async function getImodelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
-async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  reporter = reporter;
+async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
   const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
 
@@ -88,8 +86,7 @@ async function pushImodelAfterMetaChanges(requestContext: AuthorizedClientReques
 
 export async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
-  let modelId: Id64String;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -108,8 +105,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   return { modelId, spatialCategoryId };
 }
 
-async function pushImodelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
-  reporter = reporter;
+async function pushIModelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -136,8 +132,7 @@ async function pushImodelAfterDataChanges(requestContext: AuthorizedClientReques
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
-  reporter = reporter;
+async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
@@ -166,12 +161,11 @@ async function pushImodelAfterSchemaChanges(requestContext: AuthorizedClientRequ
 
 const getElementCount = (iModel: IModelDb): number => {
   const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
-  const count = +(rows[0].cnt);
+  const count = + rows[0].cnt;
   return count;
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  reporter = reporter;
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
   assert.exists(imodeldb);
   const startTime = new Date().getTime();
@@ -184,13 +178,12 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
 }
 
 async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
-  reporter = reporter;
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
-  for (const iModelTemp of iModels) {
+  for (const iModelTemp of iModels)
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
-  }
+
   // create new imodel with given name
   const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -215,8 +208,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  let imodelInfo: TestIModelInfo;
-  imodelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, "reverseChangeTest");
+  const imodelInfo: TestIModelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, "reverseChangeTest");
   const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
   const startTime = new Date().getTime();
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
@@ -231,13 +223,12 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
 }
 
 async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
-  reporter = reporter;
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
   const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
-  for (const iModelTemp of iModels) {
+  for (const iModelTemp of iModels)
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
-  }
+
   // create new imodel with given name
   const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
@@ -281,8 +272,6 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
 }
 
 describe("ImodelChangesetPerformance", async () => {
-  if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-    IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
   const reporter = new Reporter();
   let projectId: string;
   let imodelId: string;
@@ -291,8 +280,9 @@ describe("ImodelChangesetPerformance", async () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const fs1 = require("fs");
-    const configData = JSON.parse(fs1.readFileSync("src/perftest/CSPerfConfig.json"));
+    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    const configData = require(path.join(__dirname, "CSPerfConfig.json"));
     projectId = configData.projectId;
     imodelId = configData.imodelId;
     imodelPushId = configData.imodelPushId;
@@ -302,8 +292,6 @@ describe("ImodelChangesetPerformance", async () => {
     };
     Config.App.merge(myAppConfig);
     client = new IModelHubClient();
-    IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
     const userCredentials: ImsUserCredentials = {
       email: Config.App.getString("imjs_test_regular_user_name"),
@@ -318,19 +306,19 @@ describe("ImodelChangesetPerformance", async () => {
   });
 
   it("GetImodel", async () => {
-    await getImodelAfterApplyingCS(requestContext, reporter, projectId, imodelId, client).catch();
+    await getIModelAfterApplyingCS(requestContext, reporter, projectId, imodelId, client).catch();
   });
 
   it("PushMetaChangeToHub", async () => {
-    await pushImodelAfterMetaChanges(requestContext, reporter, projectId, imodelPushId).catch();
+    await pushIModelAfterMetaChanges(requestContext, reporter, projectId, imodelPushId).catch();
   });
 
   it("PushDataChangeToHub", async () => {
-    await pushImodelAfterDataChanges(requestContext, reporter, projectId).catch();
+    await pushIModelAfterDataChanges(requestContext, reporter, projectId).catch();
   });
 
   it("PushSchemaChangeToHub", async () => {
-    await pushImodelAfterSchemaChanges(requestContext, reporter, projectId).catch();
+    await pushIModelAfterSchemaChanges(requestContext, reporter, projectId).catch();
   });
 
   it("ExecuteQuery", async () => {
