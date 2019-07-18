@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "removed flex-grow from dialogs",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Allison.Jenkins@bentley.com"
+}
