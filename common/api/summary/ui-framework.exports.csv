@@ -182,6 +182,7 @@ public;KeyboardShortcutMenuEvent
 public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
 alpha;KeyinBrowser 
+alpha;KeyinBrowserProps 
 public;LabelProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
@@ -235,6 +236,8 @@ public;PointerMessageChangedEvent
 public;PointerMessageChangedEventArgs
 public;PointerMessageProps 
 public;PopupButton 
+public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
+public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
 beta;PresentationSelectionScope
 internal;ProjectInfo

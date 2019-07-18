@@ -12,7 +12,7 @@ import {
   WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool,
   ViewClipDecorationProvider,
 } from "@bentley/imodeljs-frontend";
-import { PopupButton } from "./toolbar/PopupButton";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
 import { CustomItemDef } from "./shared/CustomItemDef";
@@ -30,11 +30,17 @@ export class CoreTools {
     return new CustomItemDef({
       customId: "uif:keyinbrowser",
       reactElement: (
-        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" betaBadge={true} >
-          <KeyinBrowser />
+        <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label" betaBadge={true}>
+          {this._renderKeyInBrowser}
         </PopupButton>
       ),
     });
+  }
+
+  private static _renderKeyInBrowser = ({ closePanel }: PopupButtonChildrenRenderPropArgs) => {
+    return (
+      <KeyinBrowser onExecute={closePanel} />
+    );
   }
 
   public static get fitViewCommand() {

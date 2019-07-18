@@ -6,34 +6,38 @@
 
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import { LabeledSelect, LabeledInput, Button } from "@bentley/ui-core";
+import { LabeledSelect, LabeledInput, Button, CommonProps } from "@bentley/ui-core";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
-import { ToolbarButtonHelper } from "../utils/ToolbarButtonHelper";
 import "./KeyinBrowser.scss";
 
 /**
  * Properties that hold state of key-in browser.
  * @alpha
  */
-interface BrowserState {
+interface KeyinBrowserState {
   keyins: { [key: string]: string };
   currentToolId: string | undefined;
   currentArgs: string;
+}
+
+/** Properties of the [[KeyinBrowser]] component.
+ * @alpha
+ */
+export interface KeyinBrowserProps extends CommonProps {
+  onExecute?: () => void;
 }
 
 /**
  * Component used to allow user to select, provide arguments, and execute a key-in.
  * @alpha
  */
-export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
+export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
   private _toolIdLabel = UiFramework.translate("keyinbrowser.keyin");
   private _argsLabel = UiFramework.translate("keyinbrowser.args");
   private _argsTip = UiFramework.translate("keyinbrowser.argsTip");
   private _executeLabel = UiFramework.translate("keyinbrowser.execute");
-  private _toolLabel = UiFramework.translate("keyinbrowser.label");
   private _toolIdKey = "keyinbrowser:keyin";
-  private _parentDiv: HTMLDivElement | null = null;
 
   /** @internal */
   constructor(props: any) {
@@ -104,12 +108,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
         IModelApp.tools.run(foundTool.toolId, args);
       }
     }
-    if (this._parentDiv) {
-      // This is a hack to toggle the display of the panel
-      const button = ToolbarButtonHelper.getToolbarButtonByTitle(this._toolLabel);
-      if (button)
-        button.click();
-    }
+    this.props.onExecute && this.props.onExecute();
   }
 
   private _onKeyinSelected = (event: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -125,7 +124,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
   /** @internal */
   public render(): React.ReactNode {
     return (
-      <div className="uif-keyinbrowser-div" ref={(element) => { this._parentDiv = element; }}>
+      <div className="uif-keyinbrowser-div">
         <LabeledSelect label={this._toolIdLabel} data-testid="uif-keyin-select" id="uif-keyin-select" value={this.state.currentToolId} onChange={this._onKeyinSelected} options={this.state.keyins} />
         <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs} data-testid="uif-keyin-arguments" id="uif-keyin-arguments" type="text" onChange={this._onArgumentsChange} />
         <Button data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>

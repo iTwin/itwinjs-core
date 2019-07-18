@@ -10,7 +10,7 @@ import {
   ActionItemButton,
   CoreTools,
 } from "../ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+import { Direction, Toolbar, Item } from "@bentley/ui-ninezone";
 
 describe("CoreToolDefinitions", () => {
 
@@ -58,4 +58,10 @@ describe("CoreToolDefinitions", () => {
     ).should.matchSnapshot();
   });
 
+  it("should render KeyInBrowser", () => {
+    const sut = shallow(CoreTools.keyinBrowserButtonItemDef.reactElement as React.ReactElement);
+    const nzItem = sut.find(Item);
+    nzItem.simulate("click"); // opens the panel
+    sut.should.matchSnapshot();
+  });
 });

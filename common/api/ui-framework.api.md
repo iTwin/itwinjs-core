@@ -2160,12 +2160,18 @@ export interface KeyboardShortcutProps extends ItemProps {
 }
 
 // @alpha
-export class KeyinBrowser extends React_2.PureComponent<{}, BrowserState> {
+export class KeyinBrowser extends React_2.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
     // @internal
     constructor(props: any);
     // @internal (undocumented)
     render(): React_2.ReactNode;
     }
+
+// @alpha
+export interface KeyinBrowserProps extends CommonProps {
+    // (undocumented)
+    onExecute?: () => void;
+}
 
 // @public
 export interface LabelProps {
@@ -2644,7 +2650,18 @@ export class PopupButton extends React_2.Component<PopupButtonProps, BaseItemSta
     }
 
 // @public
+export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode;
+
+// @public
+export interface PopupButtonChildrenRenderPropArgs {
+    // (undocumented)
+    closePanel: () => void;
+}
+
+// @public
 export interface PopupButtonProps extends ItemProps, CommonProps {
+    // (undocumented)
+    children?: React_2.ReactNode | PopupButtonChildrenRenderProp;
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
     // (undocumented)

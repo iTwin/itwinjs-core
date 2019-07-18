@@ -285,3 +285,33 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
   }
 />
 `;
+
+exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
+<ExpandableItem
+  betaBadge={true}
+  iconSpec="icon-process"
+  labelKey="UiFramework:keyinbrowser.label"
+  panel={
+    <WithOnOutsideClick
+      className="nz-toolbar-item-expandable-group-panel"
+      onOutsideClick={[Function]}
+    >
+      <KeyinBrowser
+        onExecute={[Function]}
+      />
+    </WithOnOutsideClick>
+  }
+>
+  <Item
+    badge={<BetaBadge />}
+    icon={
+      <Unknown
+        iconSpec="icon-process"
+      />
+    }
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    title="keyinbrowser.label"
+  />
+</ExpandableItem>
+`;

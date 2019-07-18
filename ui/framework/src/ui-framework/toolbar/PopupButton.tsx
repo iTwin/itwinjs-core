@@ -22,13 +22,32 @@ import { BetaBadge } from "../betabadge/BetaBadge";
 // tslint:disable-next-line: variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
 
+/** Arguments of [[PopupButtonChildrenRenderProp]].
+ * @public
+ */
+export interface PopupButtonChildrenRenderPropArgs {
+  closePanel: () => void;
+}
+
+/** Type of [[PopupButtonProps.children]] when used as render prop.
+ * @public
+ */
+export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
+
 /** Properties for the [[PopupButton]] React component
  * @public
  */
 export interface PopupButtonProps extends ItemProps, CommonProps {
+  children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;
   onSizeKnown?: (size: Size) => void;
 }
+
+const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): node is T => {
+  if (typeof node === "function")
+    return true;
+  return false;
+};
 
 /**
  * Used to provide custom popup button in toolbar.
@@ -160,7 +179,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
         className="nz-toolbar-item-expandable-group-panel"
         onOutsideClick={this.minimize}
       >
-        {this.props.children}
+        {isFunction<PopupButtonChildrenRenderProp>(this.props.children) ? this.props.children({
+          closePanel: this.minimize,
+        }) : this.props.children}
       </DivWithOnOutsideClick>
     );
   }
