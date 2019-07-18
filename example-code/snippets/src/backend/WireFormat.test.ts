@@ -90,9 +90,9 @@ describe("Wire Format Snippets", () => {
     // Construct an Arc3d (local coordinates)
     const center = new Point3d(0, 0, 0);
     const radius = 1;
-    const sweep: AngleSweep = AngleSweep.createStartEnd(Angle.createDegrees(90), Angle.createDegrees(180));
-    const arc: Arc3d = Arc3d.createXY(center, radius, sweep);
-    const arcJson: string = JSON.stringify(arc, undefined, 2);
+    const sweep = AngleSweep.createStartEnd(Angle.createDegrees(90), Angle.createDegrees(180));
+    const arc = Arc3d.createXY(center, radius, sweep);
+    const arcJson = JSON.stringify(arc, undefined, 2);
 
     // Construct a LineString3d (local coordinates)
     const points: Point3d[] = [
@@ -100,8 +100,8 @@ describe("Wire Format Snippets", () => {
       new Point3d(1, 2, 0),
       new Point3d(1, 2, 4),
     ];
-    const lineString: LineString3d = LineString3d.createPoints(points);
-    const lineStringJson: string = JSON.stringify(lineString, undefined, 2);
+    const lineString = LineString3d.createPoints(points);
+    const lineStringJson = JSON.stringify(lineString, undefined, 2);
 
     // Construct a GeometryStream containing the Arc3d and LineString3d created above (local coordinates)
     const builder = new GeometryStreamBuilder();
@@ -113,7 +113,7 @@ describe("Wire Format Snippets", () => {
     const origin = new Point3d(100, 100, 0);
     const angles = YawPitchRollAngles.createDegrees(0, 90, 0);
     const placement: Placement3dProps = { origin, angles };
-    const placementJson: string = JSON.stringify(placement, undefined, 2);
+    const placementJson = JSON.stringify(placement, undefined, 2);
 
     // Construct a GeometricElement3d using the GeometryStream and Placement created above
     const elementProps: GeometricElement3dProps = {
@@ -124,7 +124,7 @@ describe("Wire Format Snippets", () => {
       placement,
       geom: builder.geometryStream,
     };
-    const elementPropsJson: string = JSON.stringify(elementProps, undefined, 2);
+    const elementPropsJson = JSON.stringify(elementProps, undefined, 2);
 
     // __PUBLISH_EXTRACT_END__
 

@@ -138,6 +138,7 @@ export class IModelDb extends IModel {
 
   /** Event raised just before an IModelDb is opened.
    * @note This event is *not* raised for snapshot IModelDbs.
+   *
    * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpen]]
@@ -1453,7 +1454,7 @@ export namespace IModelDb {
     }
 
     /** Update some properties of an existing element.
-     * @param el the properties of the element to update.
+     * @param elProps the properties of the element to update.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
