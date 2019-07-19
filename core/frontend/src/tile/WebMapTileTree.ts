@@ -29,7 +29,7 @@ import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
+import { MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { GeoConverter } from "../GeoServices";
 import { BingElevationProvider } from "./BingElevation";
 
@@ -701,6 +701,12 @@ class BingImageryProvider extends ImageryProvider {
     event.stopPropagation();
     const tiles: Tile[] = tileProvider.getTilesForView(viewport);
     const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
+
+    if (0 === matchingAttributions.length) {
+      const toast = new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("iModelJs:BackgroundMap.NoBingDataAttribution"));
+      IModelApp.notifications.outputMessage(toast);
+      return;
+    }
 
     const div = document.createElement("div");
     div.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
