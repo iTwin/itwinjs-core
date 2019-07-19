@@ -299,10 +299,11 @@ export class MarkupApp {
                 "stroke": string;
                 "stroke-opacity": number;
                 "stroke-width": number;
-                "fill-opacity": number;
-                "fill": string;
+                "stroke-dasharray": number;
                 "stroke-linecap": string;
                 "stroke-linejoin": string;
+                "fill": string;
+                "fill-opacity": number;
             };
             arrow: {
                 length: number;

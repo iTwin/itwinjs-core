@@ -20,13 +20,10 @@
             "comment": "Add materialId, subCategory to ExportGraphicsInfo"
           },
           {
-            "comment": "fix crash in getViewThumbnail for odd number of bytes "
+            "comment": "Fix crash in getViewThumbnail for odd number of bytes "
           },
           {
             "comment": "Adding relationship class for GraphicalElement3dRepresentsElement."
-          },
-          {
-            "comment": "fix internal addon API"
           },
           {
             "comment": "Initial implementation of the LinearReferencing typescript domain"
@@ -53,16 +50,13 @@
             "comment": "Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays"
           },
           {
-            "comment": "remove unnecssary logging"
-          },
-          {
-            "comment": "insertElement will never return Id64.invalid, throws error instead"
+            "comment": "Made `insertElement` not return Id64.invalid, throws error instead"
           },
           {
             "comment": "Update to TypeScript 3.5"
           },
           {
-            "comment": "update property referenced in ULAS error message"
+            "comment": "Update property referenced in ULAS error message"
           }
         ]
       }
@@ -90,9 +84,6 @@
           },
           {
             "comment": "Improve reading and binding binary blob using concurrent query manager"
-          },
-          {
-            "comment": "Fixed typo in function name"
           },
           {
             "comment": "Modified ElementAspect Performance tests"
@@ -123,9 +114,6 @@
           },
           {
             "comment": "crash reporting, node-report opt-in"
-          },
-          {
-            "comment": "rush extract-api + rush change"
           },
           {
             "comment": "Throw IModelError if an IModelDb query would return too many rows"
