@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Always report tile upload response on failure",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "steve.wilson@bentley.com"
+}

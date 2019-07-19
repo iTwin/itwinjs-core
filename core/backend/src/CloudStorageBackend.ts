@@ -104,7 +104,7 @@ export class AzureBlobStorage extends CloudStorageService {
 
         this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
           if (error) {
-            reject(error);
+            reject(response);
           }
 
           if (!response.isSuccessful) {
