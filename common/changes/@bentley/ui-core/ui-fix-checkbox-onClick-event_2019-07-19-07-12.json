@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Checkbox: Fix `onClick` event so that it can be used to stop event propagation",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.petraitis@bentley.com"
+}

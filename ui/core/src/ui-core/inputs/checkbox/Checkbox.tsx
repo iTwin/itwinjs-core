@@ -13,7 +13,7 @@ import { CommonProps } from "../../utils/Props";
 /** Properties for [[Checkbox]] React component
  * @public
  */
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick">, CommonProps {
   /** Text that will be shown next to the checkbox. */
   label?: string;
   /** Input status like: "Success", "Warning" or "Error" */
@@ -26,19 +26,26 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
   labelClassName?: string;
   /** Custom CSS Style for the label element */
   labelStyle?: React.CSSProperties;
+  /**
+   * Event called when checkbox is clicked on. This is a good event to
+   * use for preventing the action from bubbling to component's parents.
+   */
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 /** A React component that renders a simple checkbox with label
  * @public
  */
-export class Checkbox extends React.Component<CheckboxProps> {
+export class Checkbox extends React.PureComponent<CheckboxProps> {
+  private _onCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  }
   public render() {
-    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, ...inputProps } = this.props;
-    const checkBoxClass = classnames ("core-checkbox", status, className);
-
+    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, onClick, ...inputProps } = this.props;
+    const checkBoxClass = classnames("core-checkbox", status, className);
     return (
-      <label className={checkBoxClass}>
-        <input type="checkbox" {...inputProps} disabled={inputProps.disabled} className={inputClassName} style={inputStyle}/>
+      <label className={checkBoxClass} onClick={onClick}>
+        <input type="checkbox" {...inputProps} className={inputClassName} style={inputStyle} onClick={this._onCheckboxClick} />
         <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>{this.props.label}</span>
       </label>
     );
