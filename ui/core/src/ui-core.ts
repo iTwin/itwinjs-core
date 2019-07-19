@@ -126,7 +126,6 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
- * For more information, see [learning about ui-core]($docs/learning/core/index.md).
  */
 /**
  * @docs-group-description Base

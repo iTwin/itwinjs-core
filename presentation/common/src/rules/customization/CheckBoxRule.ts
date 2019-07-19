@@ -20,8 +20,8 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 

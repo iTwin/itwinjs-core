@@ -7,7 +7,7 @@ It allows to define these types of groupings:
 - Group by any property of the instance by a common value or a range of values.
 - Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these instances represent the same object for the user.
 
-The rule works in conjunction with other grouping options available in [navigation specifications](..//specifications/AllInstanceNodes.md): `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
+The rule works in conjunction with other grouping options available in [navigation specifications](./AllInstanceNodes.md): `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
 - Base ECClass grouping node (specified by [base class grouping specification](#base-class-grouping))
   - ECClass grouping node (specified by `groupByClass` property)
     - ECProperty grouping node 1 (specified by 1st [property grouping specification](#property-grouping))
@@ -26,7 +26,7 @@ Name | Required? | Type | Default | Meaning
 *Filtering* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](..//ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
 `class` | Yes | `SingleSchemaClassSpecification` | | Specification of ECClass which should be grouped using this rule.
 *Grouping* |
 `groups` | Yes | `GroupingSpecification[]` | | Specifications of grouping which should be applied to matching ECInstances.
@@ -67,7 +67,7 @@ Name | Required? | Type | Default | Meaning
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 `imageId` | No | `string` | `imageId` of the [property group specification](#property-grouping) | ID of an image to use for the grouping node.
-`label` | No | `string` | `"{from value} - {to value}"` | Grouping node label. May be [localized](../../Localization.md).
+`label` | No | `string` | `"{from value} - {to value}"` | Grouping node label. May be [localized](../Localization.md).
 `fromValue` | Yes | `string` | | Value that defines the range start (inclusive)
 `toValue` | Yes | `string` | | Value that defines the range end (inclusive)
 

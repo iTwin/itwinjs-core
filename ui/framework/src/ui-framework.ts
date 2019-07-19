@@ -169,7 +169,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
- * For more information, see [learning about ui-framework]($docs/learning/framework/index.md).
+ * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
  */
 /**
  * @docs-group-description Backstage

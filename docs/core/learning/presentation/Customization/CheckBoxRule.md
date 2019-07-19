@@ -10,7 +10,7 @@ Name | Required? | Type | Default | Meaning
 *Filtering* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](../ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
 *CheckBox Attributes* |
 `propertyName` | No | `string` | `undefined` | Name of boolean type ECProperty which is bound with the check box state. When set, property value gets bound to checkbox state.
 `useInversedPropertyValue` | No | `boolean` | `false` | Should property value be inversed for the check box state. **Note:** Only makes sense when bound to an ECProperty.

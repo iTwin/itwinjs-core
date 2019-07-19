@@ -137,7 +137,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
- * For more information, see [learning about ui-ninezone]($docs/learning/ninezone/index.md).
+ * For more information, see [learning about ui-ninezone]($docs/learning/ui/ninezone/index.md).
  */
 /**
  * @docs-group-description Backstage

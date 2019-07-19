@@ -8,7 +8,7 @@ Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 *Placement attributes* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
-`condition` | No | [ECExpression](../ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
 `stopFurtherProcessing` | No | `boolean` | `false` | Stop processing rules that have lower priority. Used in cases when recursion suppression is needed. **Note:** If this flag is set, `specifications` and `subConditions` are not processed.
 *Branch content attributes* |

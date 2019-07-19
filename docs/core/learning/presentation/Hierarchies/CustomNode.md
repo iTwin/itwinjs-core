@@ -14,7 +14,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 *Ordering* |
 `priority` | No | `number` | `1000` | Changes the order of specifications used to create nodes for specific branch.
 *Misc.* |
-`nestedRules` | No | `ChildNodeRule[]` | `[]` | Specifications of [nested child node rules](../Terminology.md#nested-rules).
+`nestedRules` | No | `ChildNodeRule[]` | `[]` | Specifications of [nested child node rules](./Terminology.md#nested-rules).
 
 ## Example
 

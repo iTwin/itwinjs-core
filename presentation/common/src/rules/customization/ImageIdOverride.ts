@@ -18,14 +18,14 @@ export interface ImageIdOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/p[resentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
    * Defines an image ID that should be used for nodes that meet rule condition. This is
-   * an [ECExpression]($docs/learning/customization/ECExpressions.md), so ID can be
+   * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so ID can be
    * defined/formatted dynamically based on the context - for example ECInstance property value.
    *
    * @minLength 1

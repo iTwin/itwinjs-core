@@ -62,7 +62,7 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/hierarchies/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }

@@ -18,7 +18,7 @@ Name | Required? | Type | Default | Meaning
 *Filtering* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](../../hierarchies/ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`condition` | No | [ECExpression](../hierarchies/ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
 `class` | No | `SingleSchemaClassSpecification` | All classes in current context | Specification of ECClass whose ECInstances should be sorted.
 `isPolymorphic` | No | `boolean` | false | Should `class` defined in this rule be handled polymorphically.
 *Sorting* |
@@ -52,6 +52,6 @@ Name | Required? | Type | Default | Meaning
 *Filtering* |
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](../../hierarchies/ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
+`condition` | No | [ECExpression](../hierarchies/ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
 `class` | No | `SingleSchemaClassSpecification` | All classes in current context | Specification of ECClass whose ECInstances should be sorted.
 `isPolymorphic` | No | `boolean` | false | Should `class` defined in this rule be handled polymorphically.

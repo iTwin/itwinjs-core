@@ -18,13 +18,13 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
-   * Foreground color that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * Foreground color that should be used for node. The value should be an [ECExpression]($docs/learning/presentation/ECExpressions.md)
    * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
@@ -33,7 +33,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   foreColor?: string;
 
   /**
-   * Background color that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * Background color that should be used for node. The value should be an [ECExpression]($docs/learning/presentation/ECExpressions.md)
    * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
@@ -42,7 +42,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   backColor?: string;
 
   /**
-   * Font style that should be used for node. The value should be an [ECExpression]($docs/learning/ECExpressions.md)
+   * Font style that should be used for node. The value should be an [ECExpression]($docs/learning/presentation/ECExpressions.md)
    * whose result would evaluate to one the following values:
    * - `"Bold"`
    * - `"Italic"`
