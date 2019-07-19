@@ -3028,13 +3028,13 @@ export class IdleTool extends InteractiveTool {
 }
 
 // @public
-export function imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined;
+export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined;
 
 // @public
-export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined;
+export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined;
 
 // @public
-export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined;
+export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined;
 
 // @public
 export function imageElementFromImageSource(source: ImageSource): Promise<HTMLImageElement>;

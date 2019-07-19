@@ -154,9 +154,9 @@ beta;IconDefinition
 alpha;IconEditorParams 
 public;IconSprites
 public;IdleTool 
-public;imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined
-public;imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined
-public;imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined
+public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
+public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
+public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise
 internal;class ImageryProvider

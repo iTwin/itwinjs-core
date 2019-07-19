@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
+import { Point2d } from "@bentley/geometry-core";
 import {
   imageBufferToPngDataUrl,
   IModelApp,
@@ -32,13 +33,13 @@ import { selectFileName } from "./FileOpen";
 import { setTitle } from "./Title";
 
 function saveImage(vp: Viewport) {
-  const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
+  const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
   if (undefined === buffer) {
     alert("Failed to read image");
     return;
   }
 
-  const url = imageBufferToPngDataUrl(buffer);
+  const url = imageBufferToPngDataUrl(buffer, false);
   if (undefined === url) {
     alert("Failed to produce PNG");
     return;
