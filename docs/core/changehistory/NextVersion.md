@@ -27,3 +27,7 @@ ignore: true
 * [IModelDb.exportGraphics]($backend) can now optionally return information about linework (or "open") geometry encountered in a GeometryStream.
 
 * An example GLTF 2.0 exporter demonstrating these features is now available under test-apps in the iModel.js monorepo.
+
+## Added a Roadmap
+
+* [High level Roadmap](./Roadmap.md) - We want your feedback, check it out and help us improve it.

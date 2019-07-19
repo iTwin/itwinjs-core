@@ -41,4 +41,4 @@ iModel.js strives to support as many modern browsers as possible, though it requ
 
 ## Mobile Native
 
- - not yet supported
+- not yet supported

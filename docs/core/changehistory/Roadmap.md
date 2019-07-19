@@ -6,51 +6,65 @@ This roadmap provides the *big picture* view of the development path for the iMo
 
 We will use the following themes (that may be adjusted from time-to-time according to your input) to drive the evolution of iModel.js:
 
-- Be the library for Digital Twins, bringing data from iModels and many other sources together seamlessly.
-- Empower Developers to write Digital Twin applications and services from scratch or integrate into existing applications.
-- Developing with iModel.js is enjoyable and productive.
-- Adhere to open source standards and norms where possible
-- Be the best library for visualization of large 3d models.
+- Be *the* open platform for Infrastructure Digital Twins, melding data from iModels, reality models, and many other sources.
+- Focus on support for integrated digital project delivery and immersive digital operations.
+- Prioritize performance, scalability, security and reliability over new features.
+- Make developing with iModel.js enjoyable, productive, predictable, and profitable.
+- Adhere to open source standards and norms wherever possible.
 - Build a welcoming and inclusive ecosystem of innovation and enterprise.
-- Performance, scalability, security and extensibility are more important than new features.
 
-## Priorities for 2019-2020
+## Priorities for 2H2019
 
-### Expand the number of supported platforms (ranked according to development resources)
+### Visualization
+
+- Visualization performance improvements for massive data sets and display modes
+- Improvements and enhancements to visual fidelity and special effects
+- Support for "hyper-modeling" (embedding section drawings and sheets segments in-situ in spatial views)
+- Additional support for large scale scene animations and actors (e.g. schedule simulations, pedestrian simulations, weather animations, disaster simulations, etc.)
+- Additional graphics formats
+
+### Host platform support
+
+- Prioritize browsers with highest JavaScript and WebGL capabilities
+- Improve support for building native (Electron) desktop applications for Windows, macOS, and Linux
+- Initiate support for native iOS applications
 
 >For currently supported platforms see [Supported Platforms](../learning/SupportedPlatforms.md)
 
-- Frontend:
-  1. Web browsers
-  2. Desktop (Electron)
-     - Windows
-     - MacOS
-     - Linux
-  3. Mobile
-     - iOS
-     - Android
+### Plugins
 
-- Backend:
-  1. Linux
-  2. Windows
+- Finalize Plugin infrastructure and logistics
+- Streamline Plugin development and deployment processes
+- Create Plugin examples for broad set of scenarios
 
-### Interface better with External systems
+### User Interface
 
-- Provide a mechanism to expose content from an iModel to 3rd applications and frameworks
-- Improve the ability to write bridges that transform and import data from 3rd party file formats
+- Improve small form factor devices (e.g. phones and tablets)
+- Improve touch input experience
 
-### Improve modeling of data within iModels
+### Backend deployment
+
+- Docker for Linux development and deployment support
+- Deliver deployment examples based on Kubernetes
+
+### Interfaces to external systems
+
+- Enhance mechanisms to connect iModel.js with other non-JavaScript frameworks (e.g. C++, C#, Python, etc.)
+- Create additional examples of interfacing iModel.js with VR/AR platforms (e.g. Unity, Hololens, etc.)
+- Extend techniques to write bridges import data from foreign file formats
+
+### Modeling of data within iModels
 
 - Support transformation and synchronization between iModels
+- Expand support for and provide more examples of Machine Learning with iModels
 - Expand the scope of the delivered BIS schemas
 - Refine BIS documentation with a focus on the information needed by Bridge and Application developers
 - Support the visualization and extension of BIS schemas
 
-### Improve developer experience
+### Developer experience
 
-- Docker for Linux development and deployment support
-- Deliver a server side deployment example based on Kubernetes
-- Add more client side samples and improve clarity of existing examples
-- Incrementally bring all APIs out of @alpha and @beta and into the stable @public API [Release Tag Guidelines](../learning/guidelines/release-tags-guidelines.md)
+- Add more samples and improve clarity of existing examples
+- Create interactive "jsfiddle-like" exploration examples
+- Progress @alpha and @beta APIs towards their stable destinations. See [Release Tag Guidelines](../learning/guidelines/release-tags-guidelines.md)
 
 >**We want your feedback** - What do you want us to work on most?  What are we doing that we could do better?  What should be on this roadmap but is not?  File an issue on [GitHub](https://github.com/imodeljs/imodeljs/issues) and let us know.
