@@ -745,7 +745,8 @@ export class Sample {
   }
   /**
    * Append numPhase teeth.  Each tooth starts with dxLow dwell at initial y, then sloped rise, then dwell at top, then sloped fall
-   * If no points are present, start with 000.  (this happens in pushMove) Otherwise start from final point.
+   * * If no points are present, start with 000.  (this happens in pushMove) Otherwise start from final point.
+   * * return points array reference.
    * @param points point array to receive points
    * @param dxLow starting step along x direction
    * @param riseX width of rising and falling parts
@@ -753,13 +754,14 @@ export class Sample {
    * @param dxHigh width at top
    * @param numPhase number of phases.
    */
-  public static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number) {
+  public static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): Point3d[] {
     for (let i = 0; i < numPhase; i++) {
       this.pushMove(points, dxLow, 0, 0);
       this.pushMove(points, riseX, riseY, 0);
       this.pushMove(points, dxHigh, 0, 0);
       this.pushMove(points, riseX, -riseY, 0);
     }
+    return points;
   }
   /**
    * Create a pair of sawtooth patterns, one (nominally) outbound and up, the other inbound and down.

@@ -98,7 +98,7 @@ export class GraphChecker {
     for (let i = count0; i < data.length; i++)
       data[i].tryTransformInPlace(transform);
   }
-  public static printToConsole = false;
+  public static printToConsole = true;
   public static dumpGraph(graph: HalfEdgeGraph) {
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();

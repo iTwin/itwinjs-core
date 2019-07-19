@@ -41,6 +41,49 @@ export class XYZ implements XYAndZ {
   public static hasZ(arg: any): arg is HasZ { return arg.z !== undefined; }
   /** Type guard for XYAndZ.  */
   public static isXYAndZ(arg: any): arg is XYAndZ { return this.isXAndY(arg) && this.hasZ(arg); }
+  /** Test if arg is any of:
+   * * XAndY
+   * * XYAndZ
+   * * [number,number]
+   * * [number,number,number]
+   */
+  public static isAnyImmediatePointType(arg: any): boolean {
+    return Point3d.isXAndY(arg) || Geometry.isNumberArray(arg, 2);
+  }
+  /** Look for (in order) an x coordinate present as:
+   * * arg.x
+   * * arg[0]
+   */
+  public static accessX(arg: any, defaultValue?: number): number | undefined {
+    if (arg.x !== undefined)
+      return arg.x;
+    if (Array.isArray(arg) && arg.length > 0 && Number.isFinite(arg[0]))
+      return arg[0];
+    return defaultValue;
+  }
+  /** Look for (in order) an x coordinate present as:
+   * * arg.y
+   * * arg[1]
+   */
+  public static accessY(arg: any, defaultValue?: number): number | undefined {
+    if (arg.y !== undefined)
+      return arg.y;
+    if (Array.isArray(arg) && arg.length > 1 && Number.isFinite(arg[1]))
+      return arg[1];
+    return defaultValue;
+  }
+
+  /** Look for (in order) an x coordinate present as:
+   * * arg.z
+   * * arg[2]
+   */
+  public static accessZ(arg: any, defaultValue?: number): number | undefined {
+    if (arg.z !== undefined)
+      return arg.z;
+    if (Array.isArray(arg) && arg.length > 2 && Number.isFinite(arg[2]))
+      return arg[2];
+    return defaultValue;
+  }
   /**
    * Set the x,y,z parts from one of these input types
    *

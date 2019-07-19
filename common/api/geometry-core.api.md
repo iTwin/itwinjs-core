@@ -1550,6 +1550,9 @@ export abstract class GeometryQuery {
 }
 
 // @internal
+export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
+
+// @internal
 export type GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean;
 
 // @public
@@ -1814,6 +1817,7 @@ export class HalfEdgeGraph {
     countMask(mask: HalfEdgeMask): number;
     countNodes(): number;
     countVertexLoops(): number;
+    createEdgeXYAndZ(xyz0: XYAndZ, id0: number, xyz1: XYAndZ, id1: number): HalfEdge;
     createEdgeXYZXYZ(xA?: number, yA?: number, zA?: number, iA?: number, xB?: number, yB?: number, zB?: number, iB?: number): HalfEdge;
     decommission(): void;
     reverseMask(mask: HalfEdgeMask): void;
@@ -1828,12 +1832,14 @@ export enum HalfEdgeMask {
     ALL_MASK = 4294967295,
     BOUNDARY_EDGE = 2,
     EXTERIOR = 1,
+    NULL_FACE = 512,
     NULL_MASK = 0,
-    PRIMARY_EDGE = 512,
-    TRIANGULATED_FACE = 16384,
-    VISITED = 8192,
-    WORK_MASK0 = 64,
-    WORK_MASK1 = 128
+    PRIMARY_EDGE = 4,
+    TRIANGULATED_FACE = 256,
+    VISITED = 16,
+    WORK_MASK0 = 32,
+    WORK_MASK1 = 64,
+    WORK_MASK2 = 128
 }
 
 // @internal
@@ -2284,6 +2290,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     computeUVFromXYZTransform(transform: Transform): void;
     static create(...points: any[]): LineString3d;
+    static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[];
     static createFloat64Array(xyzData: Float64Array): LineString3d;
     static createForStrokes(capacity: number | undefined, options: StrokeOptions | undefined): LineString3d;
     static createIndexedPoints(points: Point3d[], index: number[], addClosure?: boolean): LineString3d;
@@ -2344,7 +2351,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
 
 // @public
-export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[];
+export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
 
 // @public
 export class Loop extends CurveChain {
@@ -3042,10 +3049,12 @@ export class Point3d extends XYZ {
 // @public
 export class Point3dArray {
     static centroid(points: IndexedXYZCollection, result?: Point3d): Point3d;
+    static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): any[];
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];
     static clonePoint3dArray(data: XYAndZ[]): Point3d[];
     static cloneWithMaxEdgeLength(points: Point3d[], maxEdgeLength: number): Point3d[];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
+    static createRange(data: MultiLineStringDataVariant): Range3d;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
     static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number): void;
@@ -3055,6 +3064,8 @@ export class Point3dArray {
     static isCloseToPlane(data: Point3d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[]): Float64Array;
+    static streamXYZ(data: MultiLineStringDataVariant, startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined, pointCallback: (x: number, y: number, z: number) => void, endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined): number;
+    static streamXYZXYZ(data: MultiLineStringDataVariant, startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined, segmentCallback: (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => void, endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined): number;
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
@@ -3477,7 +3488,7 @@ export type Range1dProps = {
 
 // @public
 export class Range2d extends RangeBase implements LowAndHighXY {
-    constructor(lowx?: number, lowy?: number, highx?: number, highy?: number);
+    constructor(lowX?: number, lowY?: number, highX?: number, highY?: number);
     readonly center: Point2d;
     clone(result?: this): this;
     containsPoint(point: XAndY): boolean;
@@ -3539,7 +3550,7 @@ export type Range2dProps = {
 
 // @public
 export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions {
-    constructor(lowx?: number, lowy?: number, lowz?: number, highx?: number, highy?: number, highz?: number);
+    constructor(lowX?: number, lowY?: number, lowZ?: number, highX?: number, highY?: number, highZ?: number);
     readonly center: Point3d;
     clone(result?: this): this;
     containsPoint(point: Point3d): boolean;
@@ -3777,10 +3788,12 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
-    constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
+    static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
+    // @internal
+    static setCheckPointFunction(f?: GraphCheckPointFunction): void;
 }
 
 // @public
@@ -3827,7 +3840,7 @@ export class Sample {
     static readonly angle: Angle[];
     static readonly angleSweep: AngleSweep[];
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
-    static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): void;
+    static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): Point3d[];
     static appendSplits(points: Point3d[], target: Point3d, numSplit: number, includeTarget: boolean): void;
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
     static createAllGeometryQueryTypes(): GeometryQuery[];
@@ -4293,6 +4306,7 @@ export class Triangulator {
     static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, maskForBothSides: HalfEdgeMask, maskForOtherSide: HalfEdgeMask): HalfEdge | undefined;
     static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
     static createTriangulatedGraphFromSingleLoop(data: XAndY[] | GrowableXYZArray): HalfEdgeGraph;
+    static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id?: number): HalfEdge[];
     static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined;
     static flipTriangles(graph: HalfEdgeGraph): void;
     static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
@@ -4633,6 +4647,9 @@ export type XYProps = {
 // @public
 export class XYZ implements XYAndZ {
     protected constructor(x?: number, y?: number, z?: number);
+    static accessX(arg: any, defaultValue?: number): number | undefined;
+    static accessY(arg: any, defaultValue?: number): number | undefined;
+    static accessZ(arg: any, defaultValue?: number): number | undefined;
     addInPlace(other: XYAndZ): void;
     addScaledInPlace(other: XYAndZ, scale: number): void;
     addXYZInPlace(dx?: number, dy?: number, dz?: number): void;
@@ -4650,6 +4667,7 @@ export class XYZ implements XYAndZ {
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     readonly isAlmostZero: boolean;
+    static isAnyImmediatePointType(arg: any): boolean;
     isExactEqual(other: XYAndZ): boolean;
     static isXAndY(arg: any): arg is XAndY;
     static isXYAndZ(arg: any): arg is XYAndZ;

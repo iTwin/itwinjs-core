@@ -11,12 +11,13 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.
  * @public
  */
-export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[];
+export type LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][];
 
 /**
  * type for use as signature for multiple xyz data of multiple linestrings appearing in a parameter list.
@@ -235,15 +236,25 @@ export class Triangulator {
    * * if xy is distinct from the coordinates at both baseNode and its successor, insert xy as a new node within that edge.
    * * also include z coordinate if present.
    */
-  private static interiorEdgeSplit(graph: HalfEdgeGraph, baseNode: HalfEdge | undefined, xy: XAndY): HalfEdge | undefined {
-    const z = (xy as any).hasOwnProperty("z") ? (xy as any).z : 0.0;
+  private static interiorEdgeSplit(graph: HalfEdgeGraph, baseNode: HalfEdge | undefined, xy: XAndY | number[]): HalfEdge | undefined {
+    let x = 0, y = 0, z = 0;
+    if (Array.isArray(xy)) {
+      x = xy[0];
+      y = xy[1];
+      z = xy.length > 2 ? xy[3] : 0.0;
+    } else {
+      const q = xy as any;
+      if (q.hasOwnProperty("x")) x = q.x;
+      if (q.hasOwnProperty("y")) y = q.y;
+      if (q.hasOwnProperty("y")) z = q.z;
+    }
     if (!baseNode)
-      return graph.splitEdge(baseNode, xy.x, xy.y, z);
-    if (Triangulator.equalXAndY(baseNode, xy))
+      return graph.splitEdge(baseNode, x, y, z);
+    if (Triangulator.equalXAndYXY(baseNode, x, y))
       return baseNode;
-    if (Triangulator.equalXAndY(baseNode.faceSuccessor, xy))
+    if (Triangulator.equalXAndYXY(baseNode.faceSuccessor, x, y))
       return baseNode;
-    return graph.splitEdge(baseNode, xy.x, xy.y, z);
+    return graph.splitEdge(baseNode, x, y, z);
   }
   /** Create a loop from coordinates.
    * * Return a pointer to any node on the loop.
@@ -264,6 +275,36 @@ export class Triangulator {
       }
     }
     return baseNode;
+  }
+
+  /** Create chains from coordinates.
+   * * Return array of pointers to base node of the chains.
+   * * no masking or other markup is applied.
+   * @param graph New edges are built in this graph
+   * @param data coordinate data
+   * @param id id to attach to (both side of all) edges
+   */
+  public static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id: number = 0): HalfEdge[] {
+    // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
+    const seeds: HalfEdge[] = [];
+    let baseNode: HalfEdge | undefined;
+    let nodeB: HalfEdge | undefined;
+    let nodeC: HalfEdge | undefined;
+    Point3dArray.streamXYZXYZ(data,
+      (_childData: MultiLineStringDataVariant, _isLeaf: boolean) => { baseNode = undefined, nodeB = undefined; },
+      (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => {
+        nodeC = graph.createEdgeXYZXYZ(x0, y0, z0, id, x1, y1, z1, id);
+        if (baseNode === undefined) {
+          baseNode = nodeC;
+          nodeB = baseNode.faceSuccessor;
+        } else {
+          HalfEdge.pinch(nodeB!, nodeC);
+          nodeB = nodeC.faceSuccessor;
+        }
+      },
+      (_childData: MultiLineStringDataVariant, _isLeaf: boolean) => { if (baseNode !== undefined) seeds.push(baseNode); baseNode = undefined, nodeB = undefined; },
+    );
+    return seeds;
   }
 
   /**
@@ -586,8 +627,8 @@ export class Triangulator {
   }
 
   /** check if two points are equal */
-  private static equalXAndY(p1: XAndY, p2: XAndY) {
-    return Geometry.isSameCoordinate(p1.x, p2.x) && Geometry.isSameCoordinate(p1.y, p2.y);
+  private static equalXAndYXY(p1: XAndY, x: number, y: number) {
+    return Geometry.isSameCoordinate(p1.x, x) && Geometry.isSameCoordinate(p1.y, y);
   }
 
   /** check if a polygon diagonal is locally inside the polygon */

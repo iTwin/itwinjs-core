@@ -101,6 +101,27 @@ describe("FrameBuilder.HelloWorld", () => {
     ck.checkpoint("FrameBuilder");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("TrilinearMap", () => {
+    const ck = new Checker();
+    const range = Range3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 7, 8));
+    const points = range.corners();
+    for (const uvw of [Point3d.create(0.4, 0.2, 0.3), Point3d.create(0, 0, 0)]) {
+      const q0 = range.fractionToPoint(uvw.x, uvw.y, uvw.z);
+      const q1 = Point3dArray.evaluateTrilinearPoint(points, uvw.x, uvw.y, uvw.z);
+      ck.testPoint3d(q0, q1, "Trilinear map versus range fractions");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PointHelperMisc", () => {
+    const ck = new Checker();
+    ck.testTrue(Point2dArray.isAlmostEqual(undefined, undefined));
+    ck.testTrue(Point3dArray.isAlmostEqual(undefined, undefined));
+    ck.testTrue(Vector3dArray.isAlmostEqual(undefined, undefined));
+    const emptyArray = Point3dArray.cloneWithMaxEdgeLength ([], 1);
+    ck.testExactNumber (0, emptyArray.length);
+    expect(ck.getNumErrors()).equals(0);
+  });
 
   it("FrameBuilder.HelloVectors", () => {
     const ck = new Checker();
@@ -897,6 +918,69 @@ describe("PolygonAreas", () => {
     ck.testCoordinate((centroidA as any).a, (centroidC as any).a);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "LShape");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("streamXYZ", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const zz = -14.79;
+    const pointA = [
+      Point3d.create(-0.9351812543901677, -7.103406859177103, zz),
+      Point3d.create(0.8399443606226988, 6.380010831659742, zz),
+      Point3d.create(-12.986794582812577, 8.200335547052022, zz),
+      Point3d.create(-13.582645174519337, 3.6744009645259488, zz),
+      Point3d.create(-3.545902502657718, 2.3530387241332935, zz),
+      Point3d.create(-4.725177525963828, -6.604444384177479, zz),
+      Point3d.create(-0.9351812543901677, -7.103406859177103, zz),
+    ];
+    const pointB = [
+      Point2d.create(-0.9351812543901677, -7.103406859177103),
+      Point2d.create(0.8399443606226988, 6.380010831659742),
+      Point2d.create(-12.986794582812577, 8.200335547052022),
+      Point2d.create(-13.582645174519337, 3.6744009645259488),
+      Point2d.create(-3.545902502657718, 2.3530387241332935),
+      Point2d.create(-4.725177525963828, -6.604444384177479),
+      Point2d.create(-0.9351812543901677, -7.103406859177103),
+    ];
+
+    const pointC = GrowableXYZArray.create(pointA);
+    const rangeC = Point3dArray.createRange(pointC);
+    const rangeA0 = Point3dArray.createRange(pointA);
+
+    ck.testRange3d(rangeA0, rangeC);
+    const rangeA1 = Range3d.createArray(pointA);
+    ck.testRange3d(rangeA0, rangeA1, "range by structured search, array");
+    const pointAB = [pointA, pointB];
+    const rangeAB0 = Point3dArray.createRange(pointAB);
+    const rangeAB1 = rangeA1.clone();
+    const rangeB0 = Point3dArray.createRange(pointB);
+    rangeAB1.extendRange(rangeB0);
+    ck.testRange3d(rangeAB0, rangeAB1, "create range variant");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "streamXYZ");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("cloneVariants", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
+    const pointB = Sample.createRectangle(-2, 4, 5, 2);
+
+    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
+    const dataA = Point3dArray.cloneDeepJSONNumberArrays(pointA);
+    ck.testExactNumber(11, dataA.length);
+    const dataABC = Point3dArray.cloneDeepJSONNumberArrays([pointA, pointB, pointC]);
+    const linestringsABC0 = LineString3d.createArrayOfLineString3d(dataABC);
+
+    const lsA = LineString3d.create(pointA);
+    const lsB = LineString3d.create(pointB);
+    const lsC = LineString3d.create(pointC);
+    if (ck.testExactNumber(3, linestringsABC0.length, "3 linestrings in flattened data")) {
+      ck.testTrue(lsA.isAlmostEqual(linestringsABC0[0]), "pointA");
+      ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
+      ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 

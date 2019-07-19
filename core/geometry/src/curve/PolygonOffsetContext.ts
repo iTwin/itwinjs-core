@@ -5,11 +5,14 @@
 
 /* tslint:disable: no-console */
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
+import { CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { LineSegment3d } from "./LineSegment3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurveCurveApproachType } from "./CurveLocationDetail";
+import { LineString3d } from "./LineString3d";
+import { Path } from "./Path";
+import { Loop } from "./Loop";
 
 /**
  * Classification of contortions at a joint.
@@ -77,32 +80,25 @@ class Joint {
       return this.nextJoint.fraction0;
     return defaultValue;
   }
-  /**
-   * Get the very first or very last point of a curve collection. (Recursive search if needed)
-   * @param collection
-   * @param atEnd
-   */
-  public static getCollectionStartOrEnd(collection: CurveCollection, atEnd: boolean): Point3d | undefined {
-    const children = collection.children;
-    if (children && children.length > 0) {
-      const child = atEnd ? children[children.length - 1] : children[0];
-      if (child instanceof CurvePrimitive)
-        return atEnd ? child.endPoint() : child.startPoint();
-      else if (child instanceof CurveCollection)
-        return this.getCollectionStartOrEnd(child, atEnd);
+
+  private static addStrokes(destination: LineString3d, curve?: CurvePrimitive) {
+    if (curve) {
+      curve.emitStrokes(destination);
     }
-    return undefined;
   }
-  /**
-   *
-   * @param start first Joint of chain
-   * @param destination CurveCollection to receive geometry
-   */
-  public static collectPrimitivesFromChain(start: Joint, destination: CurveCollection, maxTest: number = 100) {
+  private static addPoint(destination: LineString3d, point: Point3d) {
+    if (destination.packedPoints.length > 0) {
+      const pointA = destination.endPoint();
+      if (!pointA.isAlmostEqual(point))
+        destination.packedPoints.push(point);
+    }
+  }
+
+  public static collectStrokesFromChain(start: Joint, destination: LineString3d, maxTest: number = 100) {
     let numOut = -2 * maxTest;    // allow extra things to happen
     Joint.visitJointsOnChain(start, (joint: Joint) => {
-      if (joint.jointCurve)
-        destination.tryAddChild(joint.jointCurve.clone() as CurvePrimitive);
+      this.addStrokes(destination, joint.jointCurve);
+
       if (joint.curve1 && joint.fraction1 !== undefined) {
         const fA = joint.fraction1;
         const fB = joint.nextJointFraction0(1.0);
@@ -113,14 +109,10 @@ class Joint {
           curve1 = joint.curve1.clonePartialCurve(fA, fB);
         if (curve1) {
           if (!joint.jointCurve) {
-            const gapStartPoint = this.getCollectionStartOrEnd(destination, true);
-            const gapEndPoint = curve1.startPoint();
-            if (gapStartPoint && !gapStartPoint.isAlmostEqual(gapEndPoint))
-              destination.tryAddChild(LineSegment3d.create(gapStartPoint, gapEndPoint));
+            this.addPoint(destination, curve1.startPoint());
           }
         }
-
-        destination.tryAddChild(curve1);
+        this.addStrokes(destination, curve1);
       }
       return numOut++ < maxTest;
     }, maxTest);
@@ -310,6 +302,7 @@ export class PolygonWireOffsetContext {
     }
     return undefined;
   }
+
   /**
    * Construct curves that are offset from a polygon.
    * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection with far-away edges.
@@ -332,7 +325,6 @@ export class PolygonWireOffsetContext {
     }
     if (wrap)
       Joint.link(previousJoint, joint0);
-    const result = new BagOfCurves();
     Joint.annotateChain(joint0, numPoints);
     for (let pass = 0; pass++ < 5;) {
       const state = Joint.removeDegeneratePrimitives(joint0, numPoints);
@@ -345,12 +337,18 @@ export class PolygonWireOffsetContext {
         Joint.visitJointsOnChain(joint0, (joint: Joint) => { console.log(prettyPrint(joint.shallowExtract())); return true; });
       }
       */
-
-      // Joint.collectPrimitivesFromChain(joint0, result);
     }
 
-    Joint.collectPrimitivesFromChain(joint0, result, numPoints);
-    return result;
-    // return undefined;
+    // Joint.collectPrimitivesFromChain(joint0, result, numPoints);
+    const chain = LineString3d.create();
+    Joint.collectStrokesFromChain(joint0, chain, numPoints);
+    const n = chain.packedPoints.length;
+    if (n > 1) {
+      if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
+        return Loop.create(chain);
+      else
+        return Path.create(chain);
+    }
+    return undefined;
   }
 }

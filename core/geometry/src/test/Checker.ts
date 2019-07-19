@@ -11,7 +11,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Range2d, Range3d } from "../geometry3d/Range";
+import { Range2d, Range3d, Range1d } from "../geometry3d/Range";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -183,6 +183,12 @@ export class Checker {
     if (dataA.isAlmostEqual(dataB))
       return this.announceOK();
     this.announceError("expect same Range3d", dataA, dataB, params);
+    return false;
+  }
+  public testRange1d(dataA: Range1d, dataB: Range1d, ...params: any[]): boolean {
+    if (dataA.isAlmostEqual(dataB))
+      return this.announceOK();
+    this.announceError("expect same Range1d", dataA, dataB, params);
     return false;
   }
 

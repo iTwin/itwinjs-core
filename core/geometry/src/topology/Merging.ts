@@ -13,6 +13,9 @@ import { Range3d } from "../geometry3d/Range";
 import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Angle } from "../geometry3d/Angle";
+import { Triangulator, MultiLineStringDataVariant } from "./Triangulation";
+import { RegularizationContext } from "./RegularizeFace";
 
 export class GraphSplitData {
   public numUpEdge = 0;
@@ -149,10 +152,12 @@ export class HalfEdgeGraphMerge {
    * * twist all vertices together.
    * * This effectively creates valid face loops for a planar subdivision if there are no edge crossings.
    * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
+   * * Mask.NULL_FACE is cleared throughout and applied within null faces.
    */
   public static clusterAndMergeXYTheta(graph: HalfEdgeGraph) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
+    graph.clearMask(HalfEdgeMask.NULL_FACE);
     const clusters = new ClusterableArray(2, 2, numNodes);  // data order: x,y,theta, nodeIndex.  But theta is not set in first round.
     for (let i = 0; i < numNodes; i++) {
       const nodeA = allNodes[i];
@@ -189,25 +194,60 @@ export class HalfEdgeGraphMerge {
       if (clusterTableIndex !== ClusterableArray.clusterTerminator) {
         const nodeA = allNodes[clusterTableIndex];
         const nodeB = nodeA.faceSuccessor;
-        const theta = Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
-        clusters.setExtraData(clusterTableIndex, 0, theta);
+        let radians = Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, -Math.PI))
+          radians = Math.PI;
+        clusters.setExtraData(clusterTableIndex, 0, radians);
       }
     }
     clusters.sortSubsetsBySingleKey(order, 2);
+    const unmatchedNullFaceNodes: HalfEdge[] = [];
     k0 = 0;
+    let thetaA, thetaB;
     // now pinch each neighboring pair together
     for (let k1 = 0; k1 < numK; k1++) {
       if (order[k1] === ClusterableArray.clusterTerminator) {
         // nodes identified in order[k0]..order[k1] are properly sorted around a vertex.
         if (k1 > k0) {
           const iA = clusters.getExtraData(order[k0], 1);
+          thetaA = clusters.getExtraData(order[k0], 0);
           const nodeA0 = allNodes[iA];
           let nodeA = nodeA0;
           for (let k = k0 + 1; k < k1; k++) {
             const iB = clusters.getExtraData(order[k], 1);
+            thetaB = clusters.getExtraData(order[k], 0);
             const nodeB = allNodes[iB];
-            HalfEdge.pinch(nodeA, nodeB);
-            nodeA = nodeB;
+            if (nodeA.isMaskSet(HalfEdgeMask.NULL_FACE)) {
+              // nope, this edge was flagged and pinched from the other end.
+              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeA === node);
+              if (j >= 0) {
+                unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
+                unmatchedNullFaceNodes.pop();
+              }
+              nodeA = nodeB;
+              thetaA = thetaB;
+            } else if (nodeB.isMaskSet(HalfEdgeMask.NULL_FACE)) {
+              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeA === node);
+              if (j >= 0) {
+                unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
+                unmatchedNullFaceNodes.pop();
+              }
+              // NO leave nodeA and thetaA   ignore nodeB -- later step will get the outside of its banana.
+            } else {
+              HalfEdge.pinch(nodeA, nodeB);
+              if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
+                const nodeA1 = nodeA.faceSuccessor;
+                const nodeB1 = nodeB.edgeMate;
+                // WE TRUST -- nodeA1 and node B1 must have identical xy.
+                // pinch them together and mark the face loop as null ..
+                HalfEdge.pinch(nodeA1, nodeB1);
+                nodeA.setMask(HalfEdgeMask.NULL_FACE);
+                nodeB1.setMask(HalfEdgeMask.NULL_FACE);
+                unmatchedNullFaceNodes.push(nodeB1);
+              }
+              nodeA = nodeB;
+              thetaA = thetaB;
+            }
           }
         }
         k0 = k1 + 1;
@@ -313,6 +353,28 @@ export class HalfEdgeGraphMerge {
     this.splitIntersectingEdges(graph);
     this.clusterAndMergeXYTheta(graph);
 
+    return graph;
+  }
+
+  /**
+   * * Input is random linestrings, not necessarily loops
+   * * Graph gets full splitEdges, regularize, and triangulate.
+   * @returns triangulated graph, or undefined if bad data.
+   */
+  public static formGraphFromChains(chains: MultiLineStringDataVariant, regularize: boolean = true, mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE): HalfEdgeGraph | undefined {
+    if (chains.length < 1)
+      return undefined;
+    const graph = new HalfEdgeGraph();
+    const chainSeeds = Triangulator.directCreateChainsFromCoordinates(graph, chains);
+    for (const seed of chainSeeds)
+      seed.setMaskAroundFace(mask);
+
+    this.splitIntersectingEdges(graph);
+    this.clusterAndMergeXYTheta(graph);
+    if (regularize) {
+      const context = new RegularizationContext(graph);
+      context.regularizeGraph(true, true);
+    }
     return graph;
   }
 

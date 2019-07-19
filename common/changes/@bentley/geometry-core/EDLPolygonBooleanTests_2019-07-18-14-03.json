@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP (1) improve duplicated edge handling in polygon booleans (2) improve variant point array handling",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

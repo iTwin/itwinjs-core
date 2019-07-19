@@ -82,6 +82,7 @@ public;FrameBuilder
 public;Geometry
 public;class GeometryHandler
 public;class GeometryQuery
+internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
 internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
 public;GrowableBlockedArray
 public;GrowableFloat64Array
@@ -105,7 +106,7 @@ public;KnotVector
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
-public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[]
+public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
 public;Loop 
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly

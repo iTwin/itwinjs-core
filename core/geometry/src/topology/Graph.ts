@@ -11,6 +11,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 /** function signature for function of one node with no return type restrictions
  * @internal
  */
@@ -441,6 +442,7 @@ export class HalfEdge {
     if (node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) s += "B";
     if (node.isMaskSet(HalfEdgeMask.PRIMARY_EDGE)) s += "P";
     if (node.isMaskSet(HalfEdgeMask.EXTERIOR)) s += "X";
+    if (node.isMaskSet(HalfEdgeMask.NULL_FACE)) s += "N";
     return s;
   }
   /** Return [x,y] with coordinates of node */
@@ -764,6 +766,18 @@ export class HalfEdgeGraph {
   }
 
   /**
+   * * Create 2 half edges forming 2 vertices, 1 edge, and 1 face
+   * * The two edges are joined as edgeMate pair.
+   * * The two edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
+   * * The two edges are added to the graph's HalfEdge set
+   * @returns Return pointer to the first half edge created.
+   */
+  public createEdgeXYAndZ(xyz0: XYAndZ, id0: number, xyz1: XYAndZ, id1: number): HalfEdge {
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(xyz0.x, xyz0.y, xyz0.z, id0, xyz1.x, xyz1.y, xyz1.z, id1, this.allHalfEdges);
+    return a;
+  }
+
+  /**
    * * Insert a vertex in the edge beginning at base.
    * * this creates two half edges.
    * * The base of the new edge is 'after' the (possibly undefined) start node in its face loop.
@@ -981,24 +995,33 @@ export enum HalfEdgeMask {
   // VSEAM_MASK = 0x00000020,
   // BOUNDARY_VERTEX_MASK = 0x00000040,
   // PRIMARY_VERTEX_MASK = 0x00000080,
-  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
-  WORK_MASK0 = 0x00000040,
-  /** Mask for use by algorithms.  Only use this mask if the graph life cycle is under your control. */
-  WORK_MASK1 = 0x00000080,
   // DIRECTED_EDGE_MASK = 0x00000100,
   /** Mask commonly set (on both sides) of original geometry edges, but NOT indicating that the edge is certainly a boundary between outside and inside.
    * * For instance, if geometry is provided as stray sticks (not loops), it can be marked PRIMARY_EDGE but neither BOUNDARY_EDGE nor EXTERIOR_EDGE
    */
-  PRIMARY_EDGE = 0x00000200,
-  // HULL_MASK = 0x00000400,
-  // SECTION_EDGE_MASK = 0x00000800,
-  // POLAR_LOOP_MASK = 0x00001000,
+  PRIMARY_EDGE = 0x00000004,
+
   /** Mask used for low level searches to identify previously-visited nodes */
-  VISITED = 0x00002000,
+  VISITED = 0x0000010,
+  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
+  WORK_MASK0 = 0x00000020,
+  /** Mask for use by algorithms.  Only use this mask if the graph life cycle is under your control. */
+  WORK_MASK1 = 0x00000040,
+  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
+  WORK_MASK2 = 0x00000080,
+
   /** Mask applied to triangles by earcut triangulator */
-  TRIANGULATED_FACE = 0x00004000,
+  TRIANGULATED_FACE = 0x00000100,
+  /** mask applied in a face with 2 edges. */
+  NULL_FACE = 0x00000200,
+
   /** no mask bits */
   NULL_MASK = 0x00000000,
   /** all mask bits */
   ALL_MASK = 0xFFFFFFFF,
+  // informal convention on preassigned mask bit numbers:
+  // byte0 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE) -- edge properties
+  // byte1 (VISITED, VISIT_A, WORK_MASK0, WORK_MASK1) -- temp masks for algorithms.
+  // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
+
 }
