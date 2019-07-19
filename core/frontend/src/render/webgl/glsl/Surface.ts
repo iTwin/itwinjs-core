@@ -192,6 +192,32 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
 
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
   builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec3, "computeMaterialParams", computeMaterialParams);
+
+  const debugMaterialAtlas = false;
+  if (debugMaterialAtlas) {
+    frag.addUniform("u_debugMaterialAtlas", VariableType.Int, (prog) => {
+      prog.addGraphicUniform("u_debugMaterialAtlas", (uniform, params) => {
+        const info = params.geometry.materialInfo;
+        if (undefined === info)
+          uniform.setUniform1i(-1);
+        else if (info.isAtlas)
+          uniform.setUniform1i(info.numMaterials);
+        else
+          uniform.setUniform1i(0);
+      });
+    });
+
+    const apply = `
+      if (u_debugMaterialAtlas < 0)
+        return vec4(0.0, 0.0, 0.0, 1.0);
+      else if (u_debugMaterialAtlas < 1)
+        return vec4(1.0, 0.0, 0.0, 1.0);
+      else if (u_debugMaterialAtlas < 2)
+        return vec4(0.0, 1.0, 0.0, 1.0);
+      else
+        return vec4(0.0, 0.0, 1.0, 1.0);`;
+    frag.set(FragmentShaderComponent.ApplyDebugColor, apply);
+  }
 }
 
 const computePosition = `

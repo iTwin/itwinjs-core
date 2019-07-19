@@ -667,10 +667,16 @@ export namespace IModelTileIO {
       let material: SurfaceMaterial | undefined;
       const atlas = mesh.vertices.materialAtlas;
       const numColors = mesh.vertices.numColors;
-      if (undefined !== atlas && undefined !== numColors)
-        material = { isAtlas: true, hasTranslucency: JsonUtils.asBool(atlas.hasTranslucency), vertexTableOffset: JsonUtils.asInt(numColors) };
-      else
+      if (undefined !== atlas && undefined !== numColors) {
+        material = {
+          isAtlas: true,
+          hasTranslucency: JsonUtils.asBool(atlas.hasTranslucency),
+          vertexTableOffset: JsonUtils.asInt(numColors),
+          numMaterials: JsonUtils.asInt(atlas.numMaterials),
+        };
+      } else {
         material = createSurfaceMaterial(displayParams.material);
+      }
 
       return {
         type,
