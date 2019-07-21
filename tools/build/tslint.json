@@ -127,7 +127,10 @@
     "prefer-get": true,
     "no-direct-imports": true,
     "import-within-package": true,
-    "require-basic-rpc-values": true
+    "require-basic-rpc-values": true,
+    "deprecation": {
+      "severity": "warning"
+    }
   },
   "rulesDirectory": [
     "./tslint-rules/tslint-consistent-codestyle/rules",

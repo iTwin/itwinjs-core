@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add the deprecation tslint rule as a warning. https://palantir.github.io/tslint/rules/deprecation/",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}
