@@ -24,7 +24,7 @@ export abstract class CloudStorageService {
   public initialize(): void { }
   public terminate(): void { }
   public abstract id: CloudStorageProvider;
-  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
   public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return Promise.resolve(undefined); }
 
@@ -49,13 +49,17 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public readonly id = CloudStorageProvider.Azure;
 
-  public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl {
+  public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl {
     const policy: as.common.SharedAccessPolicy = {
       AccessPolicy: {
         Permissions: as.BlobUtilities.SharedAccessPermissions.READ + as.BlobUtilities.SharedAccessPermissions.LIST,
         Expiry: expiry,
       },
     };
+
+    if (clientIp && clientIp !== "localhost" && clientIp !== "127.0.0.1" && clientIp !== "::1") {
+      policy.AccessPolicy.IPAddressOrRange = clientIp;
+    }
 
     const token = this._service.generateSharedAccessSignature(id.name, "", policy);
 

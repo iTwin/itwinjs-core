@@ -277,7 +277,7 @@ export class AzureBlobStorage extends CloudStorageService {
     // (undocumented)
     readonly id = CloudStorageProvider.Azure;
     // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
@@ -591,7 +591,7 @@ export abstract class CloudStorageService {
         provider: CloudStorageProvider;
     };
     // (undocumented)
-    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     terminate(): void;
     // (undocumented)
@@ -2004,6 +2004,8 @@ export class IModelHost {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
     static readonly platform: typeof IModelJsNative;
+    // @internal
+    static restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
@@ -2037,6 +2039,8 @@ export class IModelHostConfiguration {
     // @internal
     logTileSizeThreshold: number;
     nativePlatform?: any;
+    // @beta
+    restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
     // @internal

@@ -86,6 +86,11 @@ export class IModelHostConfiguration {
    */
   public tileCacheCredentials?: CloudStorageServiceCredentials;
 
+  /** Whether to restrict tile cache URLs by client IP address (if available).
+   * @beta
+   */
+  public restrictTileUrlsByClientIp?: boolean;
+
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
    * @internal
    */
@@ -356,6 +361,11 @@ export class IModelHost {
    * @internal
    */
   public static get usingExternalTileCache(): boolean { return undefined !== IModelHost.configuration && undefined !== IModelHost.configuration.tileCacheCredentials; }
+
+  /** Whether to restrict tile cache URLs by client IP address.
+   * @internal
+   */
+  public static restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;

@@ -2268,6 +2268,8 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     httpVersionMinor: number;
     // (undocumented)
+    ip?: string;
+    // (undocumented)
     method: string;
     // (undocumented)
     path: string;
@@ -4478,6 +4480,8 @@ export interface SerializedRpcOperation {
 export interface SerializedRpcRequest extends SerializedClientRequestContext {
     // (undocumented)
     caching: RpcResponseCacheControl;
+    // (undocumented)
+    ip?: string;
     // (undocumented)
     method: string;
     // (undocumented)
