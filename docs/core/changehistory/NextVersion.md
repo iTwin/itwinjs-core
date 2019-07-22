@@ -43,3 +43,13 @@ Functions for converting the contents of an [ImageBuffer]($frontend) into an `HT
 ## Added a roadmap
 
 [High level Roadmap](./Roadmap.md) - We want your feedback, check it out and help us improve it.
+
+## Geometry
+
+* Various new methods for manipulating polygons and curves
+  * [RegionOps.computeXYAreaMoments]($geometry)
+  * [RegionOps.constructPolygonWireXYOffset]($geometry)
+  * [PolylineOps.compressByChordError]($geometry)
+  * [CurveCurve.intersectionXYZ]($geometry)
+* Correct stroking of [BezierCurve3d]($geometry)
+
