@@ -238,22 +238,30 @@ function almostEqual(testValue: number, ...arrayValues: number[]): boolean {
   return true;
 }
 
+// translation, rotation, scale only defined if different from GLTF default transforms
 class TranslationRotationScale {
   public readonly translation?: number[];
   public readonly rotation?: number[];
   public readonly scale?: number[];
   constructor(xform?: Float64Array) {
     if (xform === undefined) return;
-    const matrix = Matrix3d.createRowValues(xform[0], xform[1], xform[2],
-      xform[4], xform[5], xform[6], xform[8], xform[9], xform[10]);
-    // GLTF is RHS with Y-up, iModel.js is RHS with Z-up
-    if (!almostEqual(0, xform[3], xform[7], xform[11])) this.translation = [xform[3], xform[11], -xform[7]];
-    // Quaternion has fuzz factor scale sometimes - normalize to avoid verifier complaints
-    const quat = matrix.toQuaternion(); quat.normalizeQuaternion();
-    if (!almostEqual(1, quat.w)) this.rotation = [quat.x, quat.z, -quat.y, -quat.w];
-    // Uniform scale guaranteed by exportGraphics
-    const xMag = matrix.columnXMagnitude();
-    if (!almostEqual(1, xMag)) this.scale = [xMag, xMag, xMag];
+    if (!almostEqual(0, xform[3], xform[7], xform[11]))
+      this.translation = [xform[3], xform[11], -xform[7]]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
+
+    // Uniform and positive scale guaranteed by exportGraphics
+    const xColumnMagnitude = Math.hypot(xform[0], xform[4], xform[8]);
+    if (!almostEqual(1, xColumnMagnitude))
+      this.scale = [xColumnMagnitude, xColumnMagnitude, xColumnMagnitude];
+
+    const invScale = 1.0 / xColumnMagnitude;
+    const matrix = Matrix3d.createRowValues(
+      xform[0] * invScale, xform[1] * invScale, xform[2] * invScale,
+      xform[4] * invScale, xform[5] * invScale, xform[6] * invScale,
+      xform[8] * invScale, xform[9] * invScale, xform[10] * invScale);
+    if (!matrix.isIdentity) {
+      const q = matrix.toQuaternion();
+      this.rotation = [q.x, q.z, -q.y, -q.w]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
+    }
   }
 }
 
