@@ -107,18 +107,55 @@ export class AzureBlobStorage extends CloudStorageService {
         await this.ensureContainer(container);
 
         this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
-          if (error) {
-            reject(response);
-          }
+          if (error || !response.isSuccessful) {
+            const reason = {
+              uploadTileFailed: true,
+              requestId: result.requestId,
+              responseStatus: response.statusCode,
+              responseError: undefined as any,
+              responseBody: "",
+            };
 
-          if (!response.isSuccessful) {
-            reject(response);
+            if (response.error) {
+              if (response.error instanceof Error) {
+                reason.responseError = {
+                  name: response.error.name,
+                  message: response.error.message,
+                };
+              } else {
+                reason.responseError = response.error;
+              }
+            }
+
+            if (response.body) {
+              if (Buffer.isBuffer(response.body)) {
+                reason.responseBody = response.body.toString();
+              } else {
+                reason.responseBody = response.body;
+              }
+            }
+
+            reject(reason);
           }
 
           resolve(result.etag);
         });
       } catch (error) {
-        reject(error);
+        const reason = {
+          threwWhileUploadingTile: true,
+          error: undefined as any,
+        };
+
+        if (error instanceof Error) {
+          reason.error = {
+            name: error.name,
+            message: error.message,
+          };
+        } else {
+          reason.error = error;
+        }
+
+        reject(reason);
       }
     });
   }

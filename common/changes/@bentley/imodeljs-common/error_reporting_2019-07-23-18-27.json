@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Log more information during RPC trace/info request logging.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}
