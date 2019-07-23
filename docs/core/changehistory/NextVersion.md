@@ -28,6 +28,8 @@ On systems that support the [required WebGL extension](https://developer.mozilla
 
 * Fixed the behavior of the "Data Attribution" link that, when clicked, displays copyright information for map tiles displayed in the view. Previously it would always open an empty modal dialog. Now, if any copyright information is available, it will be correctly displayed in the dialog; otherwise, a toast message will be displayed indicating the unavailability of attribution.
 
+* Fixed a bug where specular lighting would render incorrectly in a specific case when specular exponent was zero.
+
 ## Option to discard ImageBuffer alpha channel
 
 Functions for converting the contents of an [ImageBuffer]($frontend) into an `HTMLCanvasElement` or PNG image now take an optional argument indicating whether or not the alpha channel should be preserved. [imageBufferToCanvas]($frontend), [imageBufferToPngDataUrl]($frontend), and [imageBufferToBase64EncodedPng]($frontend) all support the new argument.
