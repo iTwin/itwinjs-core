@@ -236,7 +236,7 @@ export class ViewManager {
     this.onViewClose.emit(vp);
 
     // make sure tools don't think the cursor is still in this viewport
-    IModelApp.toolAdmin.onMouseLeave(vp); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.forgetViewport(vp);
 
     vp.setEventController(undefined);
     this._viewports.splice(index, 1);

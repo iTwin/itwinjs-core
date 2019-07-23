@@ -1377,6 +1377,14 @@ export abstract class Viewport implements IDisposable {
     return this._target!;
   }
 
+  /** Returns true if this Viewport's [[dispose]] method has been invoked. It is an error to attempt to interact with a disposed Viewport.
+   * Typically a [[ScreenViewport]] becomes disposed as a result of a call to [[ViewManager.dropViewport]], often indirectly through the unmounting of a nine-zone UI's [[ViewportComponent]] when, e.g., switching front-stages.
+   * @public
+   */
+  public get isDisposed(): boolean {
+    return undefined === this._target;
+  }
+
   /** @internal */
   public readonly sync = new SyncFlags();
 
@@ -2931,7 +2939,12 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
-  public setEventController(controller: EventController | undefined) { if (this._evController) { this._evController.destroy(); } this._evController = controller; }
+  public setEventController(controller: EventController | undefined) {
+    if (this._evController)
+      this._evController.destroy();
+
+    this._evController = controller;
+  }
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * @param pickPoint Point to search about, in world coordinates

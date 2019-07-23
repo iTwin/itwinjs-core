@@ -7077,6 +7077,8 @@ export class ToolAdmin {
     // @internal (undocumented)
     fillEventFromLastDataButton(ev: BeButtonEvent): void;
     protected filterViewport(vp: Viewport): boolean;
+    // @internal
+    forgetViewport(vp: ScreenViewport): void;
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
@@ -7093,7 +7095,7 @@ export class ToolAdmin {
     // @internal (undocumented)
     onInstallTool(tool: InteractiveTool): boolean;
     // @internal (undocumented)
-    onMouseLeave(vp: ScreenViewport): Promise<void>;
+    onMouseLeave(vp: ScreenViewport): void;
     // @internal (undocumented)
     onPostInstallTool(tool: InteractiveTool): void;
     // @internal (undocumented)
@@ -8344,6 +8346,7 @@ export abstract class Viewport implements IDisposable {
     readonly isCameraOn: boolean;
     // @internal (undocumented)
     readonly isContextRotationRequired: boolean;
+    readonly isDisposed: boolean;
     isFadeOutActive: boolean;
     readonly isGridOn: boolean;
     // @internal (undocumented)
