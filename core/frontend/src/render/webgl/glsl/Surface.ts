@@ -97,18 +97,15 @@ const computeMaterialParams = `
 const getUniformMaterialParams = `vec4 getMaterialParams() { return u_materialParams; }`;
 
 // The 8-bit material index is stored with the 24-bit feature index, in the high byte.
-// ###TODO: This executes *before* g_featureIndexCoords is computed.
-// ###TODO: Defer this, don't re-sample feature index if already sampled.
+// ###TODO: Don't re-sample feature index if already sampled.
 const readMaterialAtlas = `
 void readMaterialAtlas() {
   float materialAtlasStart = u_vertParams.z * u_vertParams.w + u_numColors;
-  vec2 tc = g_vertexBaseCoords;
-  tc.x += g_vert_stepX * 2.0;
-  float materialIndex = floor(TEXTURE(u_vertLUT, tc).w * 255.0 + 0.5);
+  float materialIndex = floor(TEXTURE(u_vertLUT, g_featureIndexCoords).w * 255.0 + 0.5);
   materialIndex *= 4.0;
   materialIndex += materialAtlasStart;
 
-  tc = computeLUTCoords(materialIndex, u_vertParams.xy, g_vert_center, 1.0);
+  vec2 tc = computeLUTCoords(materialIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 rgba = TEXTURE(u_vertLUT, tc);
 
   tc = computeLUTCoords(materialIndex + 1.0, u_vertParams.xy, g_vert_center, 1.0);
@@ -175,7 +172,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
     });
 
     vert.addFunction(decodeMaterialColor);
-    vert.addInitializer("decodeMaterialColor(u_materialColor);");
+    vert.set(VertexShaderComponent.ComputeMaterial, "decodeMaterialColor(u_materialColor);");
     vert.addFunction(getUniformMaterialParams);
   } else {
     vert.addUniform("u_numColors", VariableType.Float, (prog) => {
@@ -190,7 +187,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
     vert.addGlobal("g_materialParams", VariableType.Vec4);
     vert.addFunction(unpackFloat);
     vert.addFunction(readMaterialAtlas);
-    vert.addInitializer("readMaterialAtlas();");
+    vert.set(VertexShaderComponent.ComputeMaterial, "readMaterialAtlas();");
     vert.addFunction(getAtlasMaterialParams);
   }
 

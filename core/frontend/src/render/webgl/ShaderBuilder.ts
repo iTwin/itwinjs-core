@@ -575,7 +575,11 @@ export const enum VertexShaderComponent {
   // bool checkForEarlyDiscard(vec4 rawPos)
   CheckForEarlyDiscard,
   // (Optional) Compute feature overrides like visibility, rgb, transparency, line weight.
+  // void computeFeatureOverrides()
   ComputeFeatureOverrides,
+  // (Optional) Compute material parameters.
+  // void computeMaterial()
+  ComputeMaterial,
   // (Optional) Compute the vertex's base color. Requires the program to have a `varying vec4 v_color`.
   // vec4 computeBaseColor()
   ComputeBaseColor,
@@ -669,6 +673,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== computeFeatureOverrides) {
       prelude.addFunction("void computeFeatureOverrides()", computeFeatureOverrides);
       main.addline("  computeFeatureOverrides();");
+    }
+
+    const computeMaterial = this.get(VertexShaderComponent.ComputeMaterial);
+    if (undefined !== computeMaterial) {
+      prelude.addFunction("void computeMaterial()", computeMaterial);
+      main.addline("  computeMaterial();");
     }
 
     const computeBaseColor = this.get(VertexShaderComponent.ComputeBaseColor);
