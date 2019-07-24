@@ -233,7 +233,7 @@ export class DecorateContext extends RenderContext {
       return;
     const zVec = rMatrix.rowZ();
     const eyeDot = eyeDir.dotProduct(zVec);
-    if (Math.abs(eyeDot) < (vp.isCameraOn ? 0.001 : 0.005))
+    if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
       return;
 
     const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
