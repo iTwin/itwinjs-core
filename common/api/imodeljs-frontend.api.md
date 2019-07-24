@@ -1772,16 +1772,7 @@ export class DecorateContext extends RenderContext {
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     decorationDiv: HTMLDivElement;
     // @internal (undocumented)
-    static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport): void;
-    // @internal (undocumented)
-    drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid?: boolean, fixedRepetitions?: Point2d): void;
-    // @internal (undocumented)
-    static getGridDimension(props: {
-        nRepetitions: number;
-        min: number;
-    }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean;
-    // @internal (undocumented)
-    static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[];
+    drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
     readonly screenViewport: ScreenViewport;
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;

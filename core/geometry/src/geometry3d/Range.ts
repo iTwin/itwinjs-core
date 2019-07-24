@@ -347,9 +347,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     const yy = y - origin.y;
     const zz = z - origin.z;
     this.extendXYZ(
-      coffs[0] * xx + coffs[3] * yy + coffs[6] * zz,
-      coffs[1] * xx + coffs[4] * yy + coffs[7] * zz,
-      coffs[2] * xx + coffs[5] * yy + coffs[8] * zz);
+      coffs[0] * xx + coffs[1] * yy + coffs[2] * zz,
+      coffs[3] * xx + coffs[4] * yy + coffs[5] * zz,
+      coffs[6] * xx + coffs[7] * yy + coffs[8] * zz);
     return true;
   }
 
