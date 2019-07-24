@@ -28,6 +28,9 @@ export class ConcurrencyControl {
   constructor(private _iModel: IModelDb) { this._pendingRequest = ConcurrencyControl.createRequest(); }
 
   /** @internal */
+  public getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined { return this._policy; }
+
+  /** @internal */
   public onSaveChanges() {
     if (this.hasPendingRequests)
       throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);

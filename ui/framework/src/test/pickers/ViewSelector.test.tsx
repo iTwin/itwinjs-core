@@ -21,6 +21,10 @@ describe("ViewSelector", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render correctly", () => {
     const wrapper = enzyme.shallow(
       <ViewSelector imodel={imodelMock.object} />,

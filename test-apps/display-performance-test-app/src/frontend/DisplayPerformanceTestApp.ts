@@ -151,12 +151,12 @@ function getRenderOpts(): string {
           }
         });
         break;
-      case "enableOptimizedSurfaceShaders":
-        if (value) optString += "+optSurf";
-        break;
-      case "cullAgainstActiveVolume":
-        if (value) optString += "+cullActVol";
-        break;
+      // case "enableOptimizedSurfaceShaders": // No longer supported
+      //   if (value) optString += "+optSurf";
+      //   break;
+      // case "cullAgainstActiveVolume": // No longer supported
+      //   if (value) optString += "+cullActVol";
+      //   break;
       case "preserveShaderSourceCode":
         if (value) optString += "+shadeSrc";
         break;
@@ -174,9 +174,9 @@ function getTileProps(): string {
   let tilePropsStr = "";
   for (const [key, value] of Object.entries(curTileProps)) {
     switch (key) {
-      case "disableThrottling":
-        if (value) tilePropsStr += "-throt";
-        break;
+      // case "disableThrottling": // No longer supported
+      //   if (value) tilePropsStr += "-throt";
+      //   break;
       case "elideEmptyChildContentRequests":
         if (value) tilePropsStr += "+elide";
         break;
@@ -188,6 +188,9 @@ function getTileProps(): string {
         break;
       case "retryInterval":
         if (value) tilePropsStr += "+retry" + value;
+        break;
+      case "disableMagnification":
+        if (value) tilePropsStr += "-mag";
         break;
       default:
         if (value) tilePropsStr += "+" + key;
@@ -363,7 +366,8 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
       rowData.set(colName, sum / finalFrameTimings.length);
     }
   }
-  rowData.set("Effective FPS", (1000.0 / Number(rowData.get("Total Time"))).toFixed(2));
+  const totalTime: number = Number(rowData.get("Total Time"));
+  rowData.set("Effective FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(2) : "0.00");
   return rowData;
 }
 
@@ -468,7 +472,7 @@ class DefaultConfigs {
       this.numRendersToSkip = 50;
       this.outputName = "performanceResults.csv";
       this.outputPath = "D:\\output\\performanceData\\";
-      this.iModelName = "Wraith.ibim";
+      this.iModelName = "Wraith2.bim";
       this.iModelHubProject = "DisplayPerformanceTest";
       this.viewName = "V0";
       this.testType = "timing";
@@ -504,10 +508,10 @@ class DefaultConfigs {
     if (jsonData.iModelHubProject) this.iModelHubProject = jsonData.iModelHubProject;
     if (jsonData.csvFormat) this.csvFormat = jsonData.csvFormat;
     if (jsonData.filenameOptsToIgnore) this.filenameOptsToIgnore = jsonData.filenameOptsToIgnore;
-    if (jsonData.viewName) {
+    if (jsonData.viewName)
       this.viewName = jsonData.viewName;
-      this.viewStatePropsString = undefined;
-    }
+    if (jsonData.extViewName)
+      this.viewName = jsonData.extViewName;
     if (jsonData.viewString) {
       // If there is a viewString, put its name in the viewName property so that it gets used in the filename, etc.
       this.viewName = jsonData.viewString._name;
@@ -739,7 +743,7 @@ async function signIn(): Promise<boolean> {
   return true;
 }
 
-async function loadIModel(testConfig: DefaultConfigs) {
+async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
   activeViewState = new SimpleViewState();
   activeViewState.viewState;
 
@@ -762,13 +766,12 @@ async function loadIModel(testConfig: DefaultConfigs) {
   if (!openLocalIModel && testConfig.iModelHubProject !== undefined) {
     const signedIn: boolean = await signIn();
     if (!signedIn)
-      return;
+      return false;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    activeViewState.projectConfig!.projectName = testConfig.iModelHubProject;
-    activeViewState.projectConfig!.iModelName = testConfig.iModelName!.replace(".ibim", "").replace(".bim", "");
+    activeViewState.projectConfig = { projectName: testConfig.iModelHubProject, iModelName: testConfig.iModelName!.replace(".ibim", "").replace(".bim", "") } as ConnectProjectConfiguration;
     activeViewState.project = await initializeIModelHub(activeViewState.projectConfig!.projectName);
     activeViewState.iModel = await IModelApi.getIModelByName(requestContext, activeViewState.project!.wsgId, activeViewState.projectConfig!.iModelName);
     if (activeViewState.iModel === undefined)
@@ -777,13 +780,18 @@ async function loadIModel(testConfig: DefaultConfigs) {
   }
 
   // open the specified view
-  if (undefined === testConfig.viewStatePropsString) {
-    await loadView(activeViewState, testConfig.viewName!);
-  } else if (undefined !== testConfig.extViewName) {
-    await loadExternalView(activeViewState, testConfig.extViewName);
-  } else {
+  if (undefined !== testConfig.viewStatePropsString)
     await loadViewString(activeViewState, testConfig.viewStatePropsString, testConfig.selectedElements, testConfig.overrideElements);
-  }
+  else if (undefined !== testConfig.extViewName)
+    await loadExternalView(activeViewState, testConfig.extViewName);
+  else if (undefined !== testConfig.viewName)
+    await loadView(activeViewState, testConfig.viewName);
+  else
+    return false;
+
+  // Make sure the view was set up.  If not (probably because the name wasn't found anywhere) just skip this test.
+  if (undefined === activeViewState.viewState)
+    return false;
 
   // now connect the view to the canvas
   await openView(activeViewState, testConfig.view!);
@@ -829,6 +837,8 @@ async function loadIModel(testConfig: DefaultConfigs) {
     theViewport!.markSelectionSetDirty();
     theViewport!.renderFrame();
   }
+
+  return true;
 }
 
 async function closeIModel(isSnapshot: boolean) {
@@ -988,7 +998,11 @@ async function runTest(testConfig: DefaultConfigs) {
   restartIModelApp(testConfig);
 
   // Open and finish loading model
-  await loadIModel(testConfig);
+  const loaded = await loadIModel(testConfig);
+  if (!loaded) {
+    await closeIModel(testConfig.iModelLocation !== undefined);
+    return; // could not properly open the given model or saved view so skip test
+  }
 
   if (testConfig.testType === "image" || testConfig.testType === "both") {
     updateTestNames(testConfig, undefined, true); // Update the list of image test names
@@ -1149,10 +1163,11 @@ async function main() {
   // Retrieve DefaultConfigs
   const defaultConfigStr = await getDefaultConfigs();
   const jsonData = JSON.parse(defaultConfigStr);
+  const testConfig = new DefaultConfigs(jsonData);
   for (const i in jsonData.testSet) {
     if (i) {
       const modelData = jsonData.testSet[i];
-      await testModel(new DefaultConfigs(jsonData), modelData);
+      await testModel(testConfig, modelData);
     }
   }
 
@@ -1172,8 +1187,8 @@ async function main() {
   if (renderComp.unmaskedVendor) renderData += "Unmasked Vendor: " + renderComp.unmaskedVendor + "\r\n";
   if (renderComp.missingRequiredFeatures) renderData += "Missing Required Features: " + renderComp.missingRequiredFeatures + "\r\n";
   if (renderComp.missingOptionalFeatures) renderData += "Missing Optional Features: " + renderComp.missingOptionalFeatures + "\"\r\n";
-  if (jsonData.csvFormat === undefined) jsonData.csvFormat = "original";
-  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, jsonData.outputPath, jsonData.outputName, jsonData.csvFormat);
+  if (testConfig.csvFormat === undefined) testConfig.csvFormat = "original";
+  await DisplayPerfRpcInterface.getClient().finishCsv(renderData, testConfig.outputPath, testConfig.outputName, testConfig.csvFormat);
 
   DisplayPerfRpcInterface.getClient().finishTest(); // tslint:disable-line:no-floating-promises
   IModelApp.shutdown();

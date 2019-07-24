@@ -70,9 +70,9 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync<Format>("TestFormat");
     assert.isDefined(format);
 
-    const overrideFormat = new OverrideFormat(format!, "NoOverrides");
+    const overrideFormat = new OverrideFormat(format!);
     expect(overrideFormat.parent).eq(format);
-    expect(overrideFormat.name).eq("NoOverrides");
+    expect(overrideFormat.name).eq(format!.fullName);
     expect(overrideFormat.roundFactor).eq(5.0);
     expect(overrideFormat.minWidth).eq(4);
     expect(overrideFormat.showSignOption).eq(ShowSignOption.NoSign);
@@ -96,7 +96,7 @@ describe("OverrideFormat", () => {
     const format = schema.getItemSync<Format>("TestFormat");
     assert.isDefined(format);
 
-    const overrideFormat = new OverrideFormat(format!, "TestFormatPrecisionOverride", FractionalPrecision.Eight);
+    const overrideFormat = new OverrideFormat(format!, FractionalPrecision.Eight);
     expect(overrideFormat.precision).eq(FractionalPrecision.Eight);
     expect(overrideFormat.parent.precision).eq(FractionalPrecision.Two);
   });
@@ -117,7 +117,7 @@ describe("OverrideFormat", () => {
     const unitList = new Array<[Unit | InvertedUnit, string | undefined]>();
     unitList.push([unit!, undefined]);
 
-    const overrideFormat = new OverrideFormat(format!, "TestFormatPrecisionOverride", undefined, unitList);
+    const overrideFormat = new OverrideFormat(format!, undefined, unitList);
     assert.isDefined(overrideFormat.units);
     expect(overrideFormat.units!.length).eq(1);
     expect(overrideFormat.units![0][0]).eq(unit);

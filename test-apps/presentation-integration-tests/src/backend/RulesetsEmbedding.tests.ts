@@ -84,7 +84,7 @@ describe("RulesEmbedding", () => {
 
   it("inserts multiple different rulesets to iModel", async () => {
     // Create another ruleset
-    const otherRuleset = await createRandomRuleset();
+    const otherRuleset = { ...(await createRandomRuleset()), id: `${ruleset.id}_different` };
 
     // Insert a ruleset
     const insertId1 = await embedder.insertRuleset(ruleset);

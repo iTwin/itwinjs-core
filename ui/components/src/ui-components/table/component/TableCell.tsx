@@ -105,10 +105,16 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
   private _isMounted = false;
 
   private getStyle(cellItem: CellItem, isSelected: boolean, height?: number): React.CSSProperties {
+    if (height) {
+      const borderSize = 1;
+      height -= 2 * borderSize;
+    }
+
     return {
       ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
       textAlign: cellItem.alignment,
       height,
+      lineHeight: height + "px", // Centers text vertically
       ...this.props.style,
     };
   }

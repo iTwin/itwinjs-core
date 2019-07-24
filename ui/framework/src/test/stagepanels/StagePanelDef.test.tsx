@@ -12,6 +12,10 @@ describe("StagePanelDef", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Defaults, widgetDefs & widgetCount", () => {
     const panelDef = new StagePanelDef();
     panelDef.addWidgetDef(new WidgetDef({

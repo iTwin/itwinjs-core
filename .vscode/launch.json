@@ -46,13 +46,15 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run Performance test (Offline)",
+      "name": "Run CRUD Performance tests (Offline)",
       "program": "${workspaceFolder}/core/backend/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/core/backend",
       "args": [
         "--testDir=${workspaceFolder}/core/backend/lib/perftest",
         "--debug",
-        "--offline"
+        "--offline",
+        "--grep",
+        "PerformanceElementsTests"
       ],
       "port": 9229,
       "protocol": "inspector",

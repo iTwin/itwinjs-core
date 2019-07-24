@@ -4,46 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as classnames from "classnames";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Checkbox } from "@bentley/ui-core";
 import { CheckListBoxItemProps } from "./CheckListBox";
 import "./CheckListBox.scss";
-
-/**
- * Properties for the [[CheckBox]] component.
- * @internal
- */
-export interface CheckBoxProps extends CommonProps {
-  /** Determine if the item is checked or not */
-  checked?: boolean;
-  /** Determine if the item is disabled or not */
-  disabled?: boolean;
-  /** Function called when item is clicked. */
-  onClick?: () => any;
-}
-
-/**
- * Checkbox item
- * @internal
- */
-export class CheckBox extends React.Component<CheckBoxProps> {
-
-  constructor(props: CheckBoxProps, context?: any) {
-    super(props, context);
-  }
-
-  private _onClick = () => {
-    if (this.props.onClick) {
-      this.props.onClick();
-    }
-  }
-
-  public render() {
-    const checkClassName = classnames("check-box", this.props.checked && "checked");
-    return (
-      <span className={checkClassName} onClick={this._onClick.bind(this)} />
-    );
-  }
-}
 
 /**
  * Properties for the [[CheckListBoxItem]] component.
@@ -74,12 +37,15 @@ export class CheckListBoxItem extends React.Component<CheckListBoxItemProps> {
     }
   }
 
+  private _onCheckBoxChange = (_event: React.ChangeEvent<HTMLInputElement>) => {
+    this._onClick();
+  }
+
   public render() {
     const listClassName = classnames("check-box-item", this.props.checked && "selected", this.props.className);
     return (
       <li className={listClassName} onClick={this._onClick.bind(this)}>
-        <CheckBox checked={this.props.checked} />
-        <span className="label">{this.props.label}</span>
+        <Checkbox className="check-box-item-checkbox" checked={this.props.checked} label={this.props.label} onChange={this._onCheckBoxChange.bind(this)} />
       </li>
     );
   }

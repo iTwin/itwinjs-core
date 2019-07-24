@@ -32,7 +32,7 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Range3d } from "../geometry3d/Range";
 import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../numerics/Newton";
 import { Ray3d } from "../geometry3d/Ray3d";
-
+// cspell:word XYRR
 /**
  * * Private class for refining bezier-bezier intersections.
  * * The inputs are assumed pre-transformed so that the target condition is to match x and y coordinates.
@@ -80,8 +80,9 @@ export class CurveLocationDetailArrayPair {
  * * Handler class for XY intersections.
  * * This is local to the file (not exported)
  * * Instances are initialized and called from CurveCurve.
+ * @internal
  */
-class CurveCurveIntersectXY extends NullGeometryHandler {
+export class CurveCurveIntersectXY extends NullGeometryHandler {
   // private geometryA: GeometryQuery;  // nb never used -- passed through handlers.
   private _extendA: boolean;
   private _geometryB: GeometryQuery;
@@ -247,8 +248,8 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
       }
     }
   }
-  // Caller accesses data from a linesegment and passes to here.
-  // (The linesegment in question might be (a) a full linesegment or (b) a fragment within a linestring.  The fraction and extend parameters
+  // Caller accesses data from a line segment and passes to here.
+  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.  The fraction and extend parameters
   // allow all combinations to be passed in)
   // This method applies transform.
   private dispatchSegmentSegment(
@@ -289,7 +290,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   }
 
   // Caller accesses data from a linestring or segment and passes it here.
-  // (The linesegment in question might be (a) a full linesegment or (b) a fragment within a linestring.  The fraction and extend parameters
+  // (The line segment in question might be (a) a full line segment or (b) a fragment within a linestring.  The fraction and extend parameters
   // allow all combinations to be passed in)
   private dispatchSegmentArc(
     cpA: CurvePrimitive,
@@ -362,7 +363,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
   // Caller accesses data from two arcs.
   // each matrix has [U V C] in (x,y,w) form from projection.
   // invert the projection matrix matrixA.
-  // apply the inverse to matrixB. Then arcb is an ellipse in the circular space of A
+  // apply the inverse to matrixB. Then arc b is an ellipse in the circular space of A
 
   private dispatchArcArcThisOrder(
     cpA: Arc3d,
@@ -456,17 +457,17 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     // matrixA captures the xyw parts (ignoring z)
     // for any point in world space,
     // THIS CODE ONLY WORKS FOR
-    const matrixAinverse = matrixA.inverse();
-    if (matrixAinverse) {
+    const matrixAInverse = matrixA.inverse();
+    if (matrixAInverse) {
       const orderF = cpB.order; // order of the beziers for simple coordinates
       const orderG = 2 * orderF - 1;  // order of the (single) bezier for squared coordinates.
       const coffF = new Float64Array(orderF);
       const univariateBezierG = new UnivariateBezier(orderG);
-      const axx = matrixAinverse.at(0, 0); const axy = matrixAinverse.at(0, 1); const axz = 0.0; const axw = matrixAinverse.at(0, 2);
-      const ayx = matrixAinverse.at(1, 0); const ayy = matrixAinverse.at(1, 1); const ayz = 0.0; const ayw = matrixAinverse.at(1, 2);
-      const awx = matrixAinverse.at(2, 0); const awy = matrixAinverse.at(2, 1); const awz = 0.0; const aww = matrixAinverse.at(2, 2);
+      const axx = matrixAInverse.at(0, 0); const axy = matrixAInverse.at(0, 1); const axz = 0.0; const axw = matrixAInverse.at(0, 2);
+      const ayx = matrixAInverse.at(1, 0); const ayy = matrixAInverse.at(1, 1); const ayz = 0.0; const ayw = matrixAInverse.at(1, 2);
+      const awx = matrixAInverse.at(2, 0); const awy = matrixAInverse.at(2, 1); const awz = 0.0; const aww = matrixAInverse.at(2, 2);
 
-      if (matrixAinverse) {
+      if (matrixAInverse) {
         let bezier: BezierCurve3dH | undefined;
         for (let spanIndex = 0; ; spanIndex++) {
           bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
@@ -891,38 +892,4 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     */
     return undefined;
   }
-
-}
-/**
- * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.
- * @public
- */
-export class CurveCurve {
-  /**
-   * Return xy intersections of 2 curves.
-   * @param geometryA second geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
-   */
-  public static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXY(undefined, geometryA, extendA, geometryB, extendB);
-    geometryA.dispatchToGeometryHandler(handler);
-    return handler.grabResults();
-  }
-
-  /**
-   * Return xy intersections of 2 projected curves
-   * @param geometryA second geometry
-   * @param extendA true to allow geometryA to extend
-   * @param geometryB second geometry
-   * @param extendB true to allow geometryB to extend
-   */
-  public static intersectionProjectedXY(worldToLocal: Matrix4d,
-    geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair {
-    const handler = new CurveCurveIntersectXY(worldToLocal, geometryA, extendA, geometryB, extendB);
-    geometryA.dispatchToGeometryHandler(handler);
-    return handler.grabResults();
-  }
-
 }

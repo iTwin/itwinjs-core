@@ -29,7 +29,7 @@ import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
+import { MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
 import { GeoConverter } from "../GeoServices";
 import { BingElevationProvider } from "./BingElevation";
 
@@ -440,10 +440,9 @@ class WebMapTileLoader extends TileLoader {
   }
 }
 
-/** @internal */
-
-/** @internal */
-// Represents the service that is providing map tiles for Web Mercator models (background maps).
+/** Represents the service that is providing map tiles for Web Mercator models (background maps).
+ * @internal
+ */
 export abstract class ImageryProvider {
   protected _requestContext = new ClientRequestContext("");
 
@@ -453,7 +452,7 @@ export abstract class ImageryProvider {
   public abstract get maximumZoomLevel(): number;
   public abstract constructUrl(row: number, column: number, zoomLevel: number): string;
   public abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
-  public abstract getCopyrightImage(tileProvider: MapTileTreeReference): HTMLImageElement | undefined;
+  public abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
 
   // initialize the subclass of ImageryProvider
   public abstract async initialize(): Promise<void>;
@@ -494,7 +493,7 @@ export abstract class ImageryProvider {
   }
 
   public decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void {
-    const copyrightImage = this.getCopyrightImage(tileProvider);
+    const copyrightImage = this.getCopyrightImage(tileProvider, context.screenViewport);
     if (copyrightImage && 0 !== copyrightImage.naturalWidth && 0 !== copyrightImage.naturalHeight) {
       const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
       const drawDecoration = (ctx: CanvasRenderingContext2D) => {
@@ -610,6 +609,11 @@ function replaceHttpWithHttps(originalUrl: string) {
   return originalUrl.startsWith("http:") ? "https:".concat(originalUrl.slice(5)) : originalUrl;
 }
 
+interface BingCopyrightElements {
+  logoImage?: HTMLImageElement;
+  attribution: HTMLSpanElement;
+}
+
 // Our ImageryProvider for Bing Maps.
 class BingImageryProvider extends ImageryProvider {
   private _urlTemplate?: string;
@@ -621,7 +625,7 @@ class BingImageryProvider extends ImageryProvider {
   private _tileWidth: number;
   private _attributions?: BingAttribution[]; // array of Bing's data providers.
   private _missingTileData?: Uint8Array;
-  private _logoImage?: HTMLImageElement;
+  private readonly _copyrightElementByViewportId = new Map<number, BingCopyrightElements>();
   public readonly mapType: BackgroundMapType;
 
   constructor(mapType: BackgroundMapType) {
@@ -697,29 +701,66 @@ class BingImageryProvider extends ImageryProvider {
     event.stopPropagation();
     const tiles: Tile[] = tileProvider.getTilesForView(viewport);
     const matchingAttributions: BingAttribution[] = this.getMatchingAttributions(tiles);
-    let dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
-    for (const match of matchingAttributions) {
-      dataString = dataString.concat("<li>", match.copyrightMessage, "</li>");
+
+    if (0 === matchingAttributions.length) {
+      const toast = new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.i18n.translate("iModelJs:BackgroundMap.NoBingDataAttribution"));
+      IModelApp.notifications.outputMessage(toast);
+      return;
     }
-    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+
+    const div = document.createElement("div");
+    div.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
+    for (const match of matchingAttributions) {
+      const li = document.createElement("li");
+      li.innerText = match.copyrightMessage;
+      div.appendChild(li);
+    }
+
+    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, div, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
   }
 
-  public getCopyrightImage(_tileProvider: MapTileTreeReference): HTMLImageElement | undefined { return this._logoImage; }
+  public getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined {
+    return this.getCopyrightElements(tileProvider, viewport).logoImage;
+  }
 
-  public getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined {
-    const copyrightElement: HTMLSpanElement = document.createElement("span");
-    copyrightElement.className = "bgmap-copyright";
-    copyrightElement.onclick = this.showAttributions.bind(this, tileProvider, viewport);
+  public getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement {
+    // This used to create a brand-new element every time decorations were created (very frequently) which prevented clicking on it from doing anything
+    // until all the map tiles for the current view frustum had been loaded.
+    // It is unlikely but possible for a given BingImageryProvider to draw (and render HTML decorations) into more than one viewport at a time.
+    // If that were to happen, and we only had a single HTMLSpanElement, then:
+    //  - onclick would always bind to the first Viewport; and
+    //  - we'd get an error adding the same HTMLElement to the DOM more than once
+    // So we cache by viewport ID.
+    return this.getCopyrightElements(tileProvider, viewport).attribution;
+  }
+
+  private getCopyrightElements(tileProvider: MapTileTreeReference, viewport: ScreenViewport): BingCopyrightElements {
+    let elems = this._copyrightElementByViewportId.get(viewport.viewportId);
+    if (undefined !== elems)
+      return elems;
+
+    const attribution: HTMLSpanElement = document.createElement("span");
+    attribution.className = "bgmap-copyright";
+    attribution.onclick = this.showAttributions.bind(this, tileProvider, viewport);
     // stop propagation of all mouse related events so they don't go through to the view.
-    copyrightElement.onmousemove = (event: MouseEvent) => { event.stopPropagation(); };
-    copyrightElement.onmouseenter = (event: MouseEvent) => { event.stopPropagation(); };
-    copyrightElement.onmouseout = (event: MouseEvent) => { event.stopPropagation(); };
-    copyrightElement.onmousedown = (event: MouseEvent) => { event.stopPropagation(); };
-    copyrightElement.onmouseup = (event: MouseEvent) => { event.stopPropagation(); };
-    copyrightElement.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
-    copyrightElement.style.textDecoration = "underline";
-    copyrightElement.style.cursor = "pointer";
-    return copyrightElement;
+    attribution.onmousemove = (event: MouseEvent) => { event.stopPropagation(); };
+    attribution.onmouseenter = (event: MouseEvent) => { event.stopPropagation(); };
+    attribution.onmouseout = (event: MouseEvent) => { event.stopPropagation(); };
+    attribution.onmousedown = (event: MouseEvent) => { event.stopPropagation(); };
+    attribution.onmouseup = (event: MouseEvent) => { event.stopPropagation(); };
+    attribution.innerText = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataClickTarget");
+    attribution.style.textDecoration = "underline";
+    attribution.style.cursor = "pointer";
+
+    let logoImage;
+    if (undefined !== this._logoUrl) {
+      logoImage = new Image();
+      logoImage.src = this._logoUrl;
+    }
+
+    elems = { logoImage, attribution };
+    this._copyrightElementByViewportId.set(viewport.viewportId, elems);
+    return elems;
   }
 
   public matchesMissingTile(tileData: Uint8Array): boolean {
@@ -769,12 +810,6 @@ class BingImageryProvider extends ImageryProvider {
       this._urlSubdomains = thisResourceProps.imageUrlSubdomains;
       // read the list of Bing's data suppliers and the range of data they provide. Used in calculation of copyright message.
       this.readAttributions(thisResourceProps.imageryProviders);
-
-      // read the Bing logo data, used in getCopyrightImage
-      if (undefined !== this._logoUrl && 0 < this._logoUrl.length) {
-        this._logoImage = new Image();
-        this._logoImage.src = this._logoUrl;
-      }
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
@@ -849,7 +884,7 @@ class MapBoxImageryProvider extends ImageryProvider {
     return url;
   }
 
-  public getCopyrightImage(_tileProvider: MapTileTreeReference): HTMLImageElement | undefined { return undefined; }
+  public getCopyrightImage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLImageElement | undefined { return undefined; }
 
   public getCopyrightMessage(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): HTMLElement | undefined {
     const copyrightElement: HTMLSpanElement = document.createElement("span");

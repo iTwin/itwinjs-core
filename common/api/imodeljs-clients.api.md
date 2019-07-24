@@ -1214,9 +1214,17 @@ export abstract class OidcClient extends Client {
 
 // @beta
 export interface OidcFrontendClientConfiguration {
+    // @internal
+    authority?: string;
     clientId: string;
+    // @internal
+    clockSkew?: number;
+    // @internal
+    metadata?: any;
     postSignoutRedirectUri?: string;
     redirectUri: string;
+    // @internal
+    responseType?: string;
     scope: string;
 }
 
@@ -1664,7 +1672,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
     byVersionId(versionId: GuidString): this;
 }
 
-// @alpha
+// @beta
 export type ThumbnailSize = "Small" | "Large";
 
 // @alpha
@@ -1910,7 +1918,6 @@ export class VersionHandler {
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changesetId: string): this;
     byName(name: string): this;
-    // @alpha
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
 

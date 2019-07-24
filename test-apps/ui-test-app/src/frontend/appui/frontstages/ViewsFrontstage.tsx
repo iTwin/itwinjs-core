@@ -47,11 +47,13 @@ import {
   ItemList,
   ToolItemDef,
   ConditionalItemDef,
-  PopupButton,
-  CustomItemDef,
   ContentLayoutManager,
   SavedViewLayout,
   SavedViewLayoutProps,
+  CustomItemDef,
+  CursorInformation,
+  CursorUpdatedEventArgs,
+  CursorPopup,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -83,6 +85,14 @@ import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
+  private _leftPanel = {
+    widgets: [<Widget
+      iconSpec="icon-placeholder"
+      labelKey="SampleApp:widgets.VisibilityTree"
+      control={VisibilityTreeWidgetControl}
+      applicationData={{ iModelConnection: this.iModelConnection }}
+    />],
+  };
 
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
@@ -201,11 +211,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         leftPanel={
           <StagePanel
             size={280}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree"
-                control={VisibilityTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} />,
-            ]}
+            widgets={this._leftPanel.widgets}
           />
         }
       />
@@ -408,16 +414,15 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
         if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+          // Create props for the Layout, ContentGroup and ViewStates
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
             (contentProps: ContentProps) => {
               if (contentProps.applicationData)
                 delete contentProps.applicationData;
             });
-          const serialized = JSON.stringify(savedViewLayoutProps);
-          // tslint:disable-next-line: no-console
-          console.log("SavedViewLayoutProps: ", serialized);
 
-          ViewsFrontstage.savedViewLayoutProps = serialized;
+          // Save the SavedViewLayoutProps
+          ViewsFrontstage.savedViewLayoutProps = JSON.stringify(savedViewLayoutProps);
         }
       },
     });
@@ -451,6 +456,30 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _startCursorPopup() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.startCursorPopup", execute: async () => {
+        const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
+        CursorPopup.open(FrontstageManager.activeToolSettingsNode, CursorInformation.cursorPosition, 20, relativePosition);
+        CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
+      },
+    });
+  }
+
+  private get _endCursorPopup() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
+        CursorPopup.close(false);
+        CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
+      },
+    });
+  }
+
+  private _handleCursorUpdated(args: CursorUpdatedEventArgs) {
+    const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
+    CursorPopup.updatePosition(args.newPt, 20, relativePosition);
+  }
+
   /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
@@ -481,18 +510,18 @@ class FrontstageToolWidget extends React.Component {
     IModelApp.tools.run("Measure.Distance");
   }
 
-  /** Get the CustomItemDef for PopupButton  */
-  private get _popupButtonItemDef() {
-    return new CustomItemDef({
-      reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
-          <div style={{ width: "200px", height: "100px" }}>
-            hello world!
-          </div>
-        </PopupButton>
-      ),
-    });
-  }
+  //  /** Get the CustomItemDef for PopupButton  */
+  //  private get _popupButtonItemDef() {
+  //    return new CustomItemDef({
+  //      reactElement: (
+  //        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
+  //          <div style={{ width: "200px", height: "100px" }}>
+  //            hello world!
+  //          </div>
+  //        </PopupButton>
+  //      ),
+  //    });
+  //  }
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
@@ -503,9 +532,10 @@ class FrontstageToolWidget extends React.Component {
         execute: this.executeMeasureByPoints, stateSyncIds: [SyncUiEventId.ActiveContentChanged], stateFunc: this._measureStateFunc,
         betaBadge: true,
       }),
-      this._popupButtonItemDef,
+      CoreTools.keyinBrowserButtonItemDef,
       AppTools.tool1,
       new ConditionalItemDef({
+        conditionalId: "Conditional-tool-2",
         items: [AppTools.tool2],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._enabledTestStateFunc,
@@ -514,8 +544,10 @@ class FrontstageToolWidget extends React.Component {
       AppTools.toolWithSettings,
       AppTools.toggleHideShowItemsCommand,
       new ConditionalItemDef({
+        conditionalId: "Conditional-formatting",
         items: [
           new GroupItemDef({
+            groupId: "tool-formatting-setting",
             labelKey: "SampleApp:buttons.toolGroup",
             iconSpec: "icon-placeholder",
             items: [AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand, AppTools.toggleLengthFormatCommand, this._clearSelectionItem],
@@ -550,7 +582,11 @@ class FrontstageToolWidget extends React.Component {
       new GroupItemDef({
         labelKey: "SampleApp:buttons.anotherGroup",
         iconSpec: "icon-placeholder",
-        items: [AppTools.tool1, AppTools.tool2, this._groupItemDef, this._saveContentLayout, this._restoreContentLayout],
+        items: [
+          AppTools.tool1, AppTools.tool2, this._groupItemDef,
+          this._saveContentLayout, this._restoreContentLayout,
+          this._startCursorPopup, this._endCursorPopup,
+        ],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
         betaBadge: true,
@@ -602,6 +638,7 @@ class FrontstageNavigationWidget extends React.Component {
   /** Get the CustomItemDef for ViewSelector  */
   private get _viewSelectorItemDef() {
     return new CustomItemDef({
+      customId: "sampleApp:viewSelector",
       reactElement: (
         <ViewSelector
           imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}

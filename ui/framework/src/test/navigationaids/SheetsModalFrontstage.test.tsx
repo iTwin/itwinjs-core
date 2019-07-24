@@ -22,6 +22,7 @@ describe("SheetsModalFrontstage", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   const connection = moq.Mock.ofType<IModelConnection>();

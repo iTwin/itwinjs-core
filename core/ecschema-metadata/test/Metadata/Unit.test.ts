@@ -11,6 +11,7 @@ import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { ECObjectsError } from "../../src/Exception";
 import { SchemaContext } from "../../src/Context";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Unit", () => {
 
@@ -311,6 +312,35 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.Length");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");
       expect(unitSerialization.definition).to.eql("[MILLI]*M");
+    });
+  });
+
+  describe("toXml", () => {
+    const newDom = createEmptyXmlDocument();
+    const schemaJson = createSchemaJson({
+      label: "Millimeter",
+      description: "A unit defining the millimeter metric unit of length",
+      phenomenon: "TestSchema.TestPhenomenon",
+      unitSystem: "TestSchema.TestUnitSystem",
+      definition: "[MILLI]*Units.MM",
+      numerator: 5.1,
+      denominator: 2.4,
+      offset: 4,
+    });
+
+    it("should properly serialize", async () => {
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const unit = await ecschema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const serialized = await unit!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Unit");
+      expect(serialized.getAttribute("typeName")).to.eql("TestUnit");
+      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
+      expect(serialized.getAttribute("unitSystem")).to.eql("TestUnitSystem");
+      expect(serialized.getAttribute("definition")).to.eql("[MILLI]*Units.MM");
+      expect(serialized.getAttribute("numerator")).to.eql("5.1");
+      expect(serialized.getAttribute("denominator")).to.eql("2.4");
+      expect(serialized.getAttribute("offset")).to.eql("4");
     });
   });
 });

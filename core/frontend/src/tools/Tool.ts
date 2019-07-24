@@ -351,6 +351,10 @@ export class Tool {
   public static hidden = false;
   /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
+  /** The icon for the tool. This should be overridden in subclasses to provide a standard tool icon.
+   * The value is the name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
+   */
+  public static iconSpec = "";
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
   public constructor(..._args: any[]) { }
@@ -403,6 +407,9 @@ export class Tool {
 
   /** Get the localized description string from this Tool's class */
   public get description(): string { return (this.constructor as ToolType).description; }
+
+  /** Get the iconSpec from this Tool's class. */
+  public get iconSpec(): string { return (this.constructor as ToolType).iconSpec; }
 
   /**
    * Run this instance of a Tool. Subclasses should override to perform some action.

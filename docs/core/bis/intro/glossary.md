@@ -18,7 +18,7 @@ Key BIS terms used in this documentation are defined on this page.
 | **BisCore** | The base BIS Domain for BIS. All ECClasses in any other Domain must derive (directly or indirectly) from a BisCore class. |
 | **Category** | A property of a GeometricElement that "categorizes" its geometry. Every GeometricElement is assigned to one and only one Category. The visibility (on/off) of a category may be controlled per-view. Categories are similar to *levels* in DGN, *layers* in DWG, and *categories* in RVT. |
 | **Class** | See [ECClass](#ecclass). |
-| **Code** | A synonym for [CodeValue](#code-value-property). See [Codes](./codes.md). |
+| **Code** | A synonym for [CodeValue](#codevalue-property). See [Codes](./codes.md). |
 | **CodeScope Property** | A navigation property of Element that points to an Element that indicates the *scope for uniqueness* for the CodeValue. See [Codes](./codes.md). |
 | **CodeSpec** | A "Code Specification" that specifies how a Code is encoded and decoded. See [Codes](./codes.md). |
 | **CodeSpec Property** | A navigation property of Element that points to a [CodeSpec](#codespec) that specifies how the Code is encoded and decoded. See [Codes](./codes.md). |
@@ -41,7 +41,7 @@ Key BIS terms used in this documentation are defined on this page.
 | **GeometricElement** | A subclass of Element that can include geometry (in its GeometryStream property.) Only GeometricElements are visible in Views. |
 | **GeometricModel** | A subclass of Model that can hold GeometricElements. |
 | **GeometryPart** | A named GeometryStream that can be shared by many GeometricElements. |
-| **GeometryStream** | A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be in different [SubCategories](#sub-category) and may reference GeometryParts. |
+| **GeometryStream** | A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be in different [SubCategories](#subcategory) and may reference GeometryParts. |
 | **Granularity** | The scale or level of detail of Elements in a Model. |
 | **iModel** | A BIS Repository implemented as a distributed database using [SQLite](https://www.sqlite.org) and iModelHub. See [iModels](../../learning/iModels.md) are the most common BIS Repository. Many copies of an iModel may be extant simultaneously, each held in a Briefcase and synchronized via ChangeSets from iModelHub. |
 | **InformationPartitionElement** | An Element in the RepositoryModel that identifies a portion of the BIS Repository that models a Subject from the Partition's Modeling Perspective. A Partition must be the child of a Subject, which can have multiple specialized Partition Elements (e.g. PhysicalPartition, FunctionalPartition) as children. |

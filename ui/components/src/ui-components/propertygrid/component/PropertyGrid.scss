@@ -36,6 +36,7 @@
 
   .components--selected {
     background-color: $buic-row-selection;
+    outline: 1px solid $buic-foreground-primary;
   }
 
   .components--clickable {

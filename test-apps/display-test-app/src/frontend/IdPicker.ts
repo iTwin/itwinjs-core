@@ -5,7 +5,7 @@
 
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Viewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { CheckBox, createCheckBox, createComboBox, ComboBoxEntry } from "@bentley/frontend-devtools";
+import { CheckBox, createCheckBox, createComboBox, createTextBox, ComboBoxEntry } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {
@@ -47,6 +47,19 @@ export abstract class IdPicker extends ToolBarDropDown {
     ];
   }
 
+  private enableById(id: string): void {
+    for (const cb of this._checkboxes) {
+      if (cb.id === id) {
+        if (!cb.checked) {
+          cb.checked = true;
+          this.changeDisplay(id, true);
+        }
+
+        break;
+      }
+    }
+  }
+
   protected abstract async _populate(): Promise<void>;
   public async populate(): Promise<void> {
     this._availableIds.clear();
@@ -70,6 +83,18 @@ export abstract class IdPicker extends ToolBarDropDown {
       value: "",
       entries: this._comboBoxEntries,
     });
+
+    const textbox = createTextBox({
+      label: "Id: ",
+      id: this._elementType + "Enable_byId",
+      parent: this._element,
+      tooltip: "Enter Id of entry to enable",
+      inline: true,
+    }).textbox;
+    textbox.onkeyup = (e) => {
+      if (e.keyCode === 13) // enter key
+        this.enableById(textbox.value);
+    };
 
     this._element.appendChild(document.createElement("hr"));
 

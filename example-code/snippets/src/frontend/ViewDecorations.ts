@@ -2,9 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DecorateContext, GraphicType, HitDetail, IModelConnection, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster } from "@bentley/imodeljs-frontend";
-import { ColorDef, NpcCenter, ColorByName } from "@bentley/imodeljs-common";
-import { Point3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
+import { DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster, BeButtonEvent, BeButton, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { ColorDef, NpcCenter, ColorByName, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+import { Point3d, XYAndZ, XAndY, Point2d, AngleSweep, Arc3d } from "@bentley/geometry-core";
+import { Logger } from "@bentley/bentleyjs-core";
 
 export class ExampleGraphicDecoration {
   // __PUBLISH_EXTRACT_START__ View_Graphic_Decoration
@@ -95,6 +96,11 @@ class IncidentMarker extends Marker {
   private static _imageSize = Point2d.create(40, 40);
   private static _imageOffset = Point2d.create(0, 30);
   private static _amber = new ColorDef(ColorByName.amber);
+  private static _sweep360 = AngleSweep.create360();
+  private _color: ColorDef;
+
+  // uncomment the next line to make the icon only show when the cursor is over an incident marker.
+  // public get wantImage() { return this._isHilited; }
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
   public static makeColor(severity: number): ColorDef {
@@ -102,21 +108,46 @@ class IncidentMarker extends Marker {
       this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
+  public onMouseButton(ev: BeButtonEvent): boolean {
+    if (ev.button === BeButton.Data) {
+      if (ev.isDown) {
+        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
+      }
+    }
+    return true;
+  }
+
   /** Create a new IncidentMarker */
-  constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
+  constructor(location: XYAndZ, public severity: number, public id: number, icon: HTMLImageElement) {
     super(location, IncidentMarker._size);
+    this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
     this.setImage(icon); // save icon
     this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
     this.imageSize = IncidentMarker._imageSize; // 40x40
-    this.labelFont = "italic 14px san-serif"; // use italic so incidents look different than Clusters
     this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
     this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
+
+    // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
+    this.htmlElement = document.createElement("div");
+    this.htmlElement.innerHTML = id.toString(); // just put the id of the incident as text
+  }
+
+  public addMarker(context: DecorateContext) {
+    super.addMarker(context);
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
+    builder.setSymbology(ColorDef.white, this._color, 1);
+    builder.addArc(ellipse, false, false);
+    builder.setBlankingFill(this._color);
+    builder.addArc(ellipse, true, true);
+    context.addDecorationFromBuilder(builder);
   }
 }
 
 /** A Marker used to show a cluster of incidents */
 class IncidentClusterMarker extends Marker {
   private _clusterColor: string;
+  // public get wantImage() { return this._isHilited; }
 
   // draw the cluster as a white circle with an outline color based on what's in the cluster
   public drawFunc(ctx: CanvasRenderingContext2D) {
@@ -172,7 +203,7 @@ class IncidentClusterMarker extends Marker {
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.warningSign);
+    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 
@@ -181,48 +212,88 @@ class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
  * with a random value between 1-30 for "severity", and one of 5 possible icons.
  */
 export class IncidentMarkerDemo {
-  public static warningSign?: HTMLImageElement;
+  private _awaiting = false;
+  private _loading?: Promise<any>;
+  private _images: Array<HTMLImageElement | undefined> = [];
   private _incidents = new IncidentMarkerSet();
-  private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
+  private static _numMarkers = 500;
+  public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public constructor(iModel: IModelConnection) {
-    const markerIcons = [
-      imageElementFromUrl("Hazard_biological.svg"),
-      imageElementFromUrl("Hazard_electric.svg"),
-      imageElementFromUrl("Hazard_flammable.svg"),
-      imageElementFromUrl("Hazard_toxic.svg"),
-      imageElementFromUrl("Hazard_tripping.svg"),
+  public get warningSign() { return this._images[0]; }
+
+  // Load one image, logging if there was an error
+  private async loadOne(src: string) {
+    try {
+      return await imageElementFromUrl(src); // note: "return await" is necessary inside try/catch
+    } catch (err) {
+      const msg = "Could not load image " + src;
+      Logger.logError("IncidentDemo", msg);
+      console.log(msg); // tslint:disable-line: no-console
+    }
+    return undefined;
+  }
+
+  // load all images. After they're loaded, make the incident markers
+  private async loadAll(extents: AxisAlignedBox3d) {
+    const loads = [
+      this.loadOne("Warning_sign.svg"), // must be first, see "get warningSign()" above
+      this.loadOne("Hazard_biological.svg"),
+      this.loadOne("Hazard_electric.svg"),
+      this.loadOne("Hazard_flammable.svg"),
+      this.loadOne("Hazard_toxic.svg"),
+      this.loadOne("Hazard_tripping.svg"),
     ];
+    await (this._loading = Promise.all(loads)); // this is a member so we can tell if we're still loading
+    for (const img of loads)
+      this._images.push(await img);
 
-    if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
-
-    const extents = iModel!.projectExtents;
+    const len = this._images.length;
     const pos = new Point3d();
-    for (let i = 0; i < 500; ++i) {
+    for (let i = 0; i < IncidentMarkerDemo._numMarkers; ++i) {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
       pos.y = extents.low.y + (Math.random() * extents.yLength());
       pos.z = extents.low.z + (Math.random() * extents.zLength());
-      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, markerIcons[i % markerIcons.length]));
+      const img = this._images[(i % len) + 1];
+      if (undefined !== img)
+        this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, img));
     }
+    this._loading = undefined;
+  }
+
+  public constructor(extents: AxisAlignedBox3d) {
+    this.loadAll(extents); // tslint:disable-line: no-floating-promises
   }
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
-    if (context.viewport.view.isSpatialView())
+    if (!context.viewport.view.isSpatialView())
+      return;
+
+    if (undefined === this._loading) {
       this._incidents.addDecoration(context);
+      return;
+    }
+
+    // if we're still loading, just mark this viewport as needing decorations when all loads are complete
+    if (!this._awaiting) {
+      this._awaiting = true;
+      this._loading.then(() => {
+        context.viewport.invalidateDecorations();
+        this._awaiting = false;
+      }).catch(() => undefined);
+    }
   }
 
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
-  public static toggle(iModel: IModelConnection) {
-    if (undefined === IncidentMarkerDemo._decorator) {
-      // start the demo by creating the demo object and adding it as a ViewManager decorator.
-      IncidentMarkerDemo._decorator = new IncidentMarkerDemo(iModel);
-      IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
+  public static toggle(extents: AxisAlignedBox3d) {
+    if (undefined === IncidentMarkerDemo.decorator) {
+      // start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator.
+      IncidentMarkerDemo.decorator = new IncidentMarkerDemo(extents);
+      IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
     } else {
       // stop the demo
-      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo._decorator);
-      IncidentMarkerDemo._decorator = undefined;
+      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
+      IncidentMarkerDemo.decorator = undefined;
     }
   }
 }

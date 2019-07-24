@@ -33,6 +33,10 @@ describe("DrawingNavigationAid", () => {
       ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   let extents = Vector3d.create(400, 400);
   let origin = Point3d.createZero();
   let rotation = Matrix3d.createIdentity();

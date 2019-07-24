@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
-import { Geometry } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
@@ -67,15 +66,6 @@ export class Loop extends CurveChain {
   /** invoke `processor.announceLoop(this, indexInParent)` */
   public announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent: number = -1): void {
     return processor.announceLoop(this, indexInParent);
-  }
-  /** Return the curve primitive identified by `index`, with cyclic indexing. */
-  public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
-    const n = this.children.length;
-    if (n >= 1) {
-      index = Geometry.modulo(index, this.children.length);
-      return this.children[index];
-    }
-    return undefined;
   }
   /** Create a new `Loop` with no children */
   public cloneEmptyPeer(): Loop { return new Loop(); }

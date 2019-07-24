@@ -6,7 +6,7 @@ To log a message, call [Logger.logError]($bentleyjs-core), [Logger.logWarning]($
 
 [BentleyError]($bentleyjs-core) is integrated with logging.
 
-Logging messages will be tagged with an [ActivityId](#ActivityId) to help you correlate frontend requests with backend operations.
+Logging messages will be tagged with an [ActivityId](#activityid-and-clientrequestcontext) to help you correlate frontend requests with backend operations.
 
 ## LogLevels
 Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to the specified message. LogLevel is like a property of a logging message. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.

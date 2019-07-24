@@ -30,6 +30,7 @@ const testFormatSchema = {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
   name: "Formats",
   version: "1.0.0",
+  alias: "f",
   items: {
     Length: {
       schemaItemType: "Phenomenon",

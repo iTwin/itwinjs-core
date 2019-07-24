@@ -18,12 +18,12 @@ $bottom-position: 4px;
   color: $buic-foreground-body;
   font-size: 14px;
 
-  >.header {
+  > .header {
     display: flex;
     align-items: center;
     position: relative;
 
-    >.play-button {
+    > .play-button {
       width: 26px;
       height: 26px;
       background: inherit;
@@ -31,7 +31,7 @@ $bottom-position: 4px;
       font-size: 20px;
     }
 
-    >.shadow-settings-button {
+    > .shadow-settings-button {
       display: flex;
       align-items: center;
       color: $buic-foreground-body;
@@ -52,7 +52,7 @@ $bottom-position: 4px;
       }
     }
 
-    >.current-date {
+    > .current-date {
       margin-left: 20px;
       margin-right: 4px;
       background: inherit;
@@ -68,18 +68,18 @@ $bottom-position: 4px;
         margin: 0 6px;
       }
 
-      >.icon-calendar {
+      > .icon-calendar {
         margin-left: 6px;
       }
     }
 
-    >.speed-container {
+    > .speed-container {
       display: flex;
       align-items: center;
       margin-left: auto;
       cursor: pointer;
 
-      >.speed {
+      > .speed {
         margin-left: 12px;
         width: 0;
         opacity: 0;
@@ -88,7 +88,7 @@ $bottom-position: 4px;
       }
     }
 
-    >.expanded-icon {
+    > .expanded-icon {
       margin-left: 12px;
       margin-right: 5px;
       font-size: 12px;
@@ -100,7 +100,7 @@ $bottom-position: 4px;
       }
     }
 
-    >.loop-playback {
+    > .loop-playback {
       color: $buic-foreground-primary;
       font-size: 16px;
       cursor: pointer;
@@ -110,7 +110,7 @@ $bottom-position: 4px;
       }
     }
 
-    >.no-loop-playback {
+    > .no-loop-playback {
       font-size: 16px;
       color: $buic-foreground-muted;
       cursor: pointer;
@@ -297,7 +297,7 @@ $bottom-position: 4px;
   }
 }
 
-.solar-timeline-wrapper>.header>.speed-container:hover>.speed {
+.solar-timeline-wrapper> .header> .speed-container:hover> .speed {
   opacity: 1;
   width: 80px;
 }
@@ -306,7 +306,7 @@ $bottom-position: 4px;
   transform: rotate(180deg);
 }
 
-.solar-timeline-wrapper.expanded>.header>.current-date {
+.solar-timeline-wrapper.expanded> .header> .current-date {
   margin-left: 70px;
 }
 

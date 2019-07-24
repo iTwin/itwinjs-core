@@ -9,7 +9,7 @@ import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SpatialModelState } from "./ModelState";
 import { TileTree } from "./tile/TileTree";
-import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
+import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils } from "./tile/RealityModelTileTree";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
 import { SpatialClassifiers } from "./SpatialClassification";
 
@@ -29,7 +29,7 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
  * @internal
  */
 export class ContextRealityModelState {
-  public readonly treeRef: TileTree.Reference;
+  private readonly _treeRef: RealityModelTileTree.Reference;
   public readonly name: string;
   public readonly url: string;
   public readonly description: string;
@@ -41,13 +41,16 @@ export class ContextRealityModelState {
     this.description = undefined !== props.description ? props.description : "";
     this.iModel = iModel;
 
-    this.treeRef = createRealityTileTreeReference({
+    this._treeRef = createRealityTileTreeReference({
       iModel,
       url: props.tilesetUrl,
       name: props.name,
       classifiers: new SpatialClassifiers(props),
     });
   }
+
+  public get treeRef(): TileTree.Reference { return this._treeRef; }
+  public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
 
   public toJSON(): ContextRealityModelProps {
     return {

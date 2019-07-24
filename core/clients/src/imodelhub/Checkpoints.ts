@@ -14,6 +14,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectFileAccessKey, Query } from "./Query";
 import { InitializationState } from "./iModels";
+import { URL } from "url";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -145,6 +146,19 @@ export class CheckpointHandler {
     return checkpoints;
   }
 
+  /**
+   * Make url safe for logging by removing sensitive information
+   * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
+   */
+  private static getSafeUrlForLogging(url: string): string {
+    const safeToLogDownloadUrl: URL = new URL(url);
+    if (safeToLogDownloadUrl.search.length > 0)
+      safeToLogDownloadUrl.search = "...";
+    if (safeToLogDownloadUrl.hash.length > 0)
+      safeToLogDownloadUrl.hash = "...";
+    return safeToLogDownloadUrl.toString();
+  }
+
   /** Download the specified checkpoint file. This only downloads the file and does not update the [[Checkpoint]] id. Use [IModelDb.open]($backend) instead if you want to get a usable checkpoint file.
    * This method does not work on the browser. Directory containing the Checkpoint file is created if it does not exist. If there is an error during download, any partially downloaded file is deleted from disk.
    * @param requestContext The client request context
@@ -170,7 +184,10 @@ export class CheckpointHandler {
     if (!checkpoint.downloadUrl)
       return Promise.reject(IModelHubClientError.missingDownloadUrl("checkpoint"));
 
-    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpoint, path }));
+    const checkpointForLog: Checkpoint = new Checkpoint();
+    Object.assign(checkpointForLog, checkpoint);
+    checkpointForLog.downloadUrl = CheckpointHandler.getSafeUrlForLogging(checkpointForLog.downloadUrl!);
+    const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path }));
     await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback);
     requestContext.enter();
     perfLogger.dispose();

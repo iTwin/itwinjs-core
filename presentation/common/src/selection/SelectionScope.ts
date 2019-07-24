@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 /**
- * Data structure that describes a [selection scope]($docs/learning/unified-selection/Terminology#selection-scope)
+ * Data structure that describes a [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope)
  *
  * @public
  */

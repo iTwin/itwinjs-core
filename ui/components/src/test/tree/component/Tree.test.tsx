@@ -114,13 +114,13 @@ describe("Tree", () => {
     });
   });
 
-  describe("selection", () => {
+  const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
+    return renderedTree.getAllByTestId(TreeTest.TestId.Node as any)
+      .filter((node) => node.classList.contains("is-selected"))
+      .map((node) => Object.assign(node, { label: getNodeLabel(node) }));
+  };
 
-    const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
-      return renderedTree.getAllByTestId(TreeTest.TestId.Node as any)
-        .filter((node) => node.classList.contains("is-selected"))
-        .map((node) => Object.assign(node, { label: getNodeLabel(node) }));
-    };
+  describe("selection", () => {
 
     let defaultSelectionProps: TreeProps;
     const nodesSelectedCallbackMock = moq.Mock.ofType<NodesSelectedCallback>();
@@ -137,6 +137,16 @@ describe("Tree", () => {
         onNodesDeselected: nodesDeselectedCallbackMock.object,
         selectionMode: SelectionMode.SingleAllowDeselect,
       };
+    });
+
+    it("marks selected node wrappers", async () => {
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectedNodes={["0"]} />), renderSpy, 2);
+      const selectedNodes = getSelectedNodes();
+      expect(selectedNodes.length).to.eq(1);
+
+      const selectedNode = selectedNodes[0];
+      expect(getNodeLabel(selectedNode)).to.eq("0");
+      expect(selectedNode.parentElement!.classList.contains("is-selected")).to.be.true;
     });
 
     describe("with Single selection mode", () => {
@@ -985,35 +995,82 @@ describe("Tree", () => {
       expect(checkboxClickSpy.secondCall).to.be.calledWith(sinon.match([sinon.match({ node: { id: "1" }, newState: CheckBoxState.On })]));
     });
 
-    it("checks and unchecks multiple loaded nodes", async () => {
+    describe("bulk checkbox actions", () => {
       const dataProvider = new TestTreeDataProvider([{ id: "0" }, { id: "1" }, { id: "2" }, { id: "3" }]);
       const checkboxInfo = () => ({ isVisible: true, state: CheckBoxState.Off });
-      const props = {
-        ...defaultCheckboxTestsProps,
-        pageSize: 4,
-        selectionMode: SelectionMode.Extended,
-        dataProvider,
-        checkboxInfo,
-      };
-      await waitForUpdate(() => renderedTree = render(<Tree {...props} />), renderSpy, 2);
-      await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
-      await waitForUpdate(() => fireEvent.click(getNode("2").contentArea, { shiftKey: true }), renderSpy);
+      let defaultBulkCheckboxActionsProps: TreeProps;
 
-      fireEvent.click(getNode("1").checkbox!);
-      expect(checkboxClickSpy.firstCall).to.have.been.calledWithExactly(
-        sinon.match([
+      beforeEach(() => {
+        defaultBulkCheckboxActionsProps = {
+          ...defaultCheckboxTestsProps,
+          pageSize: 4,
+          selectionMode: SelectionMode.Extended,
+          dataProvider,
+          checkboxInfo,
+        };
+      });
+
+      it("checks and unchecks multiple selected loaded nodes by default", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultBulkCheckboxActionsProps} />), renderSpy, 2);
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(getNode("2").contentArea, { shiftKey: true }), renderSpy);
+
+        fireEvent.click(getNode("1").checkbox!);
+        expect(checkboxClickSpy.firstCall).to.have.been.calledWithExactly(
+          sinon.match([
+            sinon.match({ node: { id: "1" }, newState: CheckBoxState.On }),
+            sinon.match({ node: { id: "2" }, newState: CheckBoxState.On }),
+          ]));
+
+        fireEvent.click(getNode("2").checkbox!);
+        expect(checkboxClickSpy.secondCall).to.have.been.calledWithExactly(
+          sinon.match([
+            sinon.match({ node: { id: "1" }, newState: CheckBoxState.Off }),
+            sinon.match({ node: { id: "2" }, newState: CheckBoxState.Off }),
+          ]));
+
+        expect(checkboxClickSpy).to.have.been.calledTwice;
+      });
+
+      it("checks only one node when multiple nodes are selected and bulk checkbox actions are disabled", async () => {
+        const props = {
+          ...defaultBulkCheckboxActionsProps,
+          bulkCheckboxActionsDisabled: true,
+        };
+        await waitForUpdate(() => renderedTree = render(<Tree {...props} />), renderSpy, 2);
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(getNode("2").contentArea, { shiftKey: true }), renderSpy);
+
+        fireEvent.click(getNode("1").checkbox!);
+        expect(checkboxClickSpy).to.have.been.calledOnceWithExactly(
+          sinon.match([sinon.match({ node: { id: "1" }, newState: CheckBoxState.On })]),
+        );
+      });
+
+      it("disables bulk checkbox actions when re-rendered with `bulkCheckboxActionsDisabled` set to `true`", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultBulkCheckboxActionsProps} />), renderSpy, 2);
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(getNode("2").contentArea, { shiftKey: true }), renderSpy);
+
+        fireEvent.click(getNode("1").checkbox!);
+        expect(checkboxClickSpy).to.have.been.calledOnceWithExactly(sinon.match([
           sinon.match({ node: { id: "1" }, newState: CheckBoxState.On }),
           sinon.match({ node: { id: "2" }, newState: CheckBoxState.On }),
         ]));
+        checkboxClickSpy.resetHistory();
 
-      fireEvent.click(getNode("2").checkbox!);
-      expect(checkboxClickSpy.secondCall).to.have.been.calledWithExactly(
-        sinon.match([
-          sinon.match({ node: { id: "1" }, newState: CheckBoxState.Off }),
-          sinon.match({ node: { id: "2" }, newState: CheckBoxState.Off }),
-        ]));
+        const props = {
+          ...defaultBulkCheckboxActionsProps,
+          bulkCheckboxActionsDisabled: true,
+        };
+        await waitForUpdate(() => renderedTree.rerender(<Tree {...props} />), renderSpy, 0);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["1", "2"]);
 
-      expect(checkboxClickSpy).to.have.been.calledTwice;
+        fireEvent.click(getNode("1").checkbox!);
+        expect(checkboxClickSpy).to.have.been.calledOnceWithExactly(
+          sinon.match([sinon.match({ node: { id: "1" }, newState: CheckBoxState.Off })]),
+        );
+      });
     });
 
     it("checking child node doesn't affect the parent", async () => {
@@ -1360,7 +1417,7 @@ describe("Tree", () => {
       expect(() => renderedTree.getByTestId("custom-checkbox")).to.not.throw;
     });
 
-    it("renders placeholder when node has no payload", async () => {
+    it.skip("renders placeholder when node has no payload", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
         getNodes: async (_parent, page: PageOptions) => {
@@ -1453,7 +1510,7 @@ describe("Tree", () => {
       expect(nodes[1].style.height).is.not.null;
       expect(nodes[1].innerHTML.includes("with-description")).is.not.null;
 
-      expect(+nodes[0].style.height!.replace("px", "")).to.equal(24);
+      expect(+nodes[0].style.height!.replace("px", "")).to.equal(25);
       expect(+nodes[1].style.height!.replace("px", "")).to.equal(44);
     });
   });
@@ -1777,12 +1834,6 @@ describe("Tree", () => {
   });
 
   describe("cell editing", () => {
-
-    const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
-      return renderedTree.getAllByTestId(TreeTest.TestId.Node as any)
-        .filter((node) => node.classList.contains("is-selected"))
-        .map((node) => Object.assign(node, { label: within(node).getByTestId(TreeTest.TestId.NodeContents).innerHTML }));
-    };
 
     let defaultSelectionProps: TreeProps;
     const onCellEditingSpy = sinon.spy();

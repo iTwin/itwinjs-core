@@ -1,0 +1,120 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$image-size: 20px;
+$image-size-wide: 28px;
+$key-size: 20px;
+$key-size-small: 12px;
+$key-size-medium: 18px;
+$key-size-large: 36px;
+
+.uifw-statusFields-toolassistance {
+  $font-size-medium: 12px;
+  $font-size-small: $font-size-medium;
+
+  overflow: hidden;
+
+  &.nz-footer-mode {
+    width: 20em;
+  }
+
+  &:not(.nz-footer-mode) {
+    width: 5em;
+  }
+
+  @media only screen and (max-width: 768px) {
+    font-size: $font-size-medium;
+
+    &.nz-footer-mode {
+      width: 12em;
+    }
+  }
+
+  @media only screen and (max-width: 600px) {
+    font-size: $font-size-small;
+
+    &.nz-footer-mode {
+      width: 10em;
+    }
+  }
+
+  .nz-indicator {
+    display: flex;
+    flex: auto;
+
+    .nz-icons :nth-child(1) {
+      padding-right: 4px;
+    }
+  }
+}
+
+.uifw-toolassistance-key {
+  color: $buic-text-color;
+  background-color: $buic-background-1;
+	border: 1px solid $buic-text-color-disabled;
+  box-shadow: 0 1px 1px $buic-background-5, 0 1px 0 0 rgba(255, 255, 255, .25) inset;
+  box-sizing: border-box;
+
+	border-radius: 3px;
+  display: inline-block;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1;
+  width: $key-size;
+  height: $key-size;
+	white-space: nowrap;
+  cursor: default;
+  text-transform: uppercase;
+
+  &.uifw-toolassistance-key-small {
+    font-size: 8px;
+    width: $key-size-small;
+    height: $key-size-small;
+  }
+
+  &.uifw-toolassistance-key-medium {
+    font-size: 11px;
+    width: $key-size-medium;
+    height: $key-size-medium;
+  }
+
+  &.uifw-toolassistance-key-large {
+    font-size: 10.5px;
+    width: $key-size-large;
+    text-transform: none;
+  }
+}
+
+.uifw-toolassistance-key-group {
+  display: inline-block;
+  text-align: center;
+  line-height: 0.714em;
+
+  .row1 {
+    margin-left: 0;
+    margin-bottom: 0;
+  }
+
+  .row2 {
+    margin-top: 0;
+  }
+}
+
+.uifw-toolassistance-svg {
+  width: $image-size;
+  height: $image-size;
+}
+
+.uifw-toolassistance-svg-wide {
+  width: $image-size-wide;
+  height: $image-size;
+}
+
+.nz-footer-toolAssistance-instruction-image {
+  i {
+    font-size: 18px;
+  }
+}

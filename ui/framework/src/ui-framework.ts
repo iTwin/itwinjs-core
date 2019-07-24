@@ -50,6 +50,8 @@ export * from "./ui-framework/dialog/ModelessDialog";
 export * from "./ui-framework/dialog/ModelessDialogManager";
 export * from "./ui-framework/dialog/StandardMessageBox";
 
+export * from "./ui-framework/keyinbrowser/KeyinBrowser";
+
 export * from "./ui-framework/dragdrop/DragDropLayerManager";
 export * from "./ui-framework/dragdrop/ZoneTargets";
 
@@ -102,6 +104,7 @@ export * from "./ui-framework/tileloading/TileLoadingIndicator";
 export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
+export * from "./ui-framework/stagepanels/FrameworkStagePanel";
 export * from "./ui-framework/stagepanels/StagePanel";
 export * from "./ui-framework/stagepanels/StagePanelDef";
 
@@ -110,6 +113,9 @@ export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";
 export * from "./ui-framework/toolbar/ToolButton";
+
+export * from "./ui-framework/cursor/CursorInformation";
+export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
@@ -136,6 +142,7 @@ export * from "./ui-framework/statusfields/PromptField";
 export * from "./ui-framework/statusfields/SelectionInfo";
 export * from "./ui-framework/statusfields/StatusFieldProps";
 export * from "./ui-framework/statusfields/SelectionScope";
+export * from "./ui-framework/statusfields/toolassistance/ToolAssistanceField";
 
 export * from "./ui-framework/theme/ThemeManager";
 
@@ -143,6 +150,7 @@ export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
+export * from "./ui-framework/utils/ToolbarButtonHelper";
 
 export * from "./ui-framework/syncui/SyncUiEventDispatcher";
 export * from "./ui-framework/syncui/BooleanListener";
@@ -161,7 +169,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
- * For more information, see [learning about ui-framework]($docs/learning/framework/index.md).
+ * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
  */
 /**
  * @docs-group-description Backstage
@@ -174,6 +182,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description ContentView
  * Classes for working with a Content View, Group, Layout or Control
+ */
+/**
+ * @docs-group-description Cursor
+ * Cursor related information, components and events
  */
 /**
  * @docs-group-description Dialog

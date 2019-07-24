@@ -42,6 +42,10 @@ describe("SyncUiEventDispatcher", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   beforeEach(() => {
     SyncUiEventDispatcher.setTimeoutPeriod(2);
   });
@@ -319,6 +323,7 @@ describe("SyncUiEventDispatcher", () => {
 
     after(() => {
       MockRender.App.shutdown();
+      TestUtils.terminateUiFramework();
     });
 
     it("handles onSelectedViewportChanged", () => {

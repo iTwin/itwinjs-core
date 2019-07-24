@@ -22,7 +22,7 @@ There are three interactive Tool classifications, each of which is implemented b
 * [PrimitiveTool]($frontend) is used for graphical interactions with an iModel.
   * When invoked, they become the active tool, reacting to user input such as data points, mouse movements, touch, keystrokes, and resets.
   * Primitive tools are the most common type of tool implemented by iModel.js applications. Refer [here](./PrimitiveTools) for guidelines on writing Primitive tools.
-  * The frontend package includes a [Select Tool](#select-tool) to fill the role of a *default* Primitive tool.
+  * The frontend package includes a [Select Tool](#selection-tool) to fill the role of a *default* Primitive tool.
 
 iModel.js provides some specializations of [InteractiveTool]($frontend) to make it easier to implement certain types of interactions, ex. creating new elements vs. modifying existing elements.
 
@@ -41,7 +41,7 @@ Routing of the interpreted, high-level events is as follows:
 
 As mentioned above a View tool or Input Collector can temporarily interrupt a Primitive tool. The ToolAdmin handles that sequence transparently such that the Primitive tool does not have to be aware of the interruption.
 
-A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#select-tool) as the *default* Primitive tool. When a default tool is provided, it becomes the active tool when the iModel.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [Idle Tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
+A Primitive tool ends when another Primitive tool is run. The ToolAdmin establishes [Select Tool](#selection-tool) as the *default* Primitive tool. When a default tool is provided, it becomes the active tool when the iModel.js application starts or a Primitive tool wishes to exit. Having a default tool is optional, an application can instead choose to have the [Idle Tool](#idle-tool) handle input that would normally only be directed to the active tool, like data points and resets.
 
 ## Idle Tool
 

@@ -4,14 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { createStore, combineReducers, Store } from "redux";
+import { createStore, Store } from "redux";
 import { Provider } from "react-redux";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
 
-import { IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem, IModelAppOptions } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
+  IModelAppOptions,
+} from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -20,7 +23,7 @@ import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -32,6 +35,7 @@ import { Tool2 } from "./tools/Tool2";
 import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { UiProviderTool } from "./tools/UiProviderTool";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -151,10 +155,10 @@ export class SampleAppIModelApp {
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
-    this.rootReducer = combineReducers<RootState>({
+    this.rootReducer = combineReducers({
       sampleAppState: SampleAppReducer,
       frameworkState: FrameworkReducer,
-    } as any);
+    });
 
     // create the Redux Store.
     this.store = createStore(this.rootReducer,
@@ -214,6 +218,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AppSelectTool.register();
     AnalysisAnimationTool.register(this.sampleAppNamespace);
+    UiProviderTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
@@ -457,6 +462,8 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
+  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
+  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

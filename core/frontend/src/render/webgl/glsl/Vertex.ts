@@ -180,9 +180,6 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 export function addPosition(vert: VertexShaderBuilder, fromLUT: boolean) {
   vert.addFunction(unquantizePosition);
 
-  vert.addAttribute("a_pos", VariableType.Vec3, (prog) => {
-    prog.addAttribute("a_pos", (attr, params) => { params.geometry.bindVertexArray(attr); });
-  });
   vert.addUniform("u_qScale", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qScale", (uniform, params) => {
       uniform.setUniform3fv(params.geometry.qScale);

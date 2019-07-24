@@ -13,6 +13,7 @@ import { UnitProps } from "./../Deserialization/JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
@@ -56,6 +57,30 @@ export class Unit extends SchemaItem {
     if (undefined !== this.offset)
       schemaJson.offset = this.offset;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    const phenomenon = await this.phenomenon;
+    if (undefined !== phenomenon) {
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
+      itemElement.setAttribute("phenomenon", phenomenonName);
+    }
+
+    const unitSystem = await this.unitSystem;
+    if (undefined !== unitSystem) {
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
+      itemElement.setAttribute("unitSystem", unitSystemName);
+    }
+
+    itemElement.setAttribute("definition", this.definition);
+    itemElement.setAttribute("numerator", this.numerator.toString());
+    itemElement.setAttribute("denominator", this.denominator.toString());
+    itemElement.setAttribute("offset", this.offset.toString());
+
+    return itemElement;
   }
 
   public deserializeSync(unitProps: UnitProps) {

@@ -8,16 +8,17 @@
 .nz-footer-toolAssistance-indicator {
   $triangle-width: 5px;
   $padding: 2px;
+  $top-bottom-padding: 1px;
 
   > .nz-indicator {
-    height: 30px;
-    border: 2px solid $buic-foreground-body;
+    height: 32px;
+    border: 1px solid $buic-foreground-muted;
     min-width: 20px;
     position: relative;
     padding: {
-      top: $padding;
+      top: $top-bottom-padding;
       right: $padding * 2 + $triangle-width;
-      bottom: $padding;
+      bottom: $top-bottom-padding;
       left: $padding;
     };
     box-sizing: border-box;
@@ -34,8 +35,9 @@
     }
 
     > .nz-content {
-      margin-left: 10px;
+      margin-left: 8px;
       font-size: $text-font-size;
+      line-height: 1;
     }
 
     > .nz-triangle {

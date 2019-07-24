@@ -22,6 +22,10 @@ describe("ThemeManager", () => {
     wrapper.unmount();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should change the theme", () => {
     const wrapper = mount(<Provider store={TestUtils.store}><ThemeManager><div>Hello World!</div></ThemeManager></Provider>);
 

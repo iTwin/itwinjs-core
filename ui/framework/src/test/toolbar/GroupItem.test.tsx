@@ -50,6 +50,10 @@ describe("GroupItem", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("<GroupButton />", () => {
 
     it("should render", () => {

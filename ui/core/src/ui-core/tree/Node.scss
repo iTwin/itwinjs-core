@@ -19,7 +19,7 @@ $node-font-size: $uicore-font-size;
   white-space: nowrap;
   text-overflow: ellipsis;
   cursor: default;
-  min-height: 24px;
+  padding: 1px 1px 0px 1px;
 
   > .contents {
     display: flex;
@@ -65,15 +65,12 @@ $node-font-size: $uicore-font-size;
   }
 
   &:not(.is-hover-disabled) {
-    &:not(.is-selected) {
-      &:hover{
-        background: $buic-row-hover;
-      }
+    &:hover{
+      background: $buic-row-hover;
     }
   }
 
   &.is-selected {
     background: $buic-row-selection;
-    outline: none;
   }
 }

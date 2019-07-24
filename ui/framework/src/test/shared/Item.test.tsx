@@ -18,6 +18,10 @@ describe("Item", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("CommandItemDef with no commandId should get generated id", () => {
     const commandItem = new CommandItemDef({
       iconSpec: "icon-placeholder",

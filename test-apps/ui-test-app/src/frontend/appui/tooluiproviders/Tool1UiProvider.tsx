@@ -8,14 +8,12 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { HSVColor, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { ColorSwatch, HueSlider, AlphaSlider, SaturationPicker, ColorPickerButton, WeightPickerButton } from "@bentley/ui-components";
-import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 
 class Tool1UiProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     this.toolSettingsNode = <Tool1Settings />;
-    this.toolAssistanceNode = <Tool1Assistance />;
   }
 
   public execute(): void {
@@ -182,31 +180,5 @@ class Tool1Settings extends React.Component<{}, State> {
     <td> <div style={vertDivStyle}><AlphaSlider alpha={this.state.alpha} onAlphaChange={this._handleAlphaChange} isHorizontal={false} /></div> </td>
     <td> <div style={vertDivStyle}><HueSlider hsv={this.state.hsv} onHueChange={this._handleHueChange} isHorizontal={false} /></div> </td>
 */
-class Tool1Assistance extends React.Component {
-  public render(): React.ReactNode {
-    return (
-      <>
-        <ToolAssistanceItem>
-          <i className="icon icon-cursor" />
-          Identify piece to trim
-        </ToolAssistanceItem>
-        <ToolAssistanceSeparator>Inputs</ToolAssistanceSeparator>
-        <ToolAssistanceItem>
-          <i className="icon icon-cursor-click" />
-          Clink on element
-        </ToolAssistanceItem>
-        <ToolAssistanceItem>
-          <i className="icon  icon-check-out" />
-          Drag across elements
-        </ToolAssistanceItem>
-        <ToolAssistanceSeparator />
-        <ToolAssistanceItem>
-          <input type="checkbox" />
-          Show prompt @ cursor
-        </ToolAssistanceItem>
-      </>
-    );
-  }
-}
 
 ConfigurableUiManager.registerControl("Tool1", Tool1UiProvider);

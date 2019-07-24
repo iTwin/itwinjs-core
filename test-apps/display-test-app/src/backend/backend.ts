@@ -37,7 +37,7 @@ function setupStandaloneConfiguration() {
       configuration.signInForStandalone = true;
 
     configuration.disableInstancing = undefined !== process.env.SVT_DISABLE_INSTANCING;
-    configuration.useProjectExtents = undefined !== process.env.SVT_USE_PROJECT_EXTENTS;
+    configuration.disableMagnification = undefined !== process.env.SVT_DISABLE_MAGNIFICATION;
     const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
     if (undefined !== treeExpiration)
       try {
@@ -48,11 +48,7 @@ function setupStandaloneConfiguration() {
 
     configuration.displaySolarShadows = true;
 
-    configuration.disableActiveVolumeCulling = undefined !== process.env.SVT_DISABLE_ACTIVE_VOLUME_CULLING;
     configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
-
-    if (undefined !== process.env.SVT_OPTIMIZED_SURFACE_SHADERS)
-      configuration.enableOptimizedSurfaceShaders = true;
 
     const extensions = process.env.SVT_DISABLED_EXTENSIONS;
     if (undefined !== extensions)

@@ -24,6 +24,10 @@ describe("ActionItemButton", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   beforeEach(async () => {
     testCommand =
       new CommandItemDef({
@@ -160,7 +164,7 @@ it("should render with betaBadge", () => {
     });
 
   const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
-  const badge = wrapper.find("div.nz-beta-badge");
+  const badge = wrapper.find("div.nz-badge");
   badge.length.should.eq(1);
   wrapper.unmount();
 });

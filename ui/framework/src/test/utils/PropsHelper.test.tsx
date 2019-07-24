@@ -11,6 +11,10 @@ describe("PropsHelper", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Shallow Equals", () => {
     const obj1 = { firstName: "John", lastName: "Doe", address: "101 Main Street", zip: 10101 };
     const obj2 = { firstName: "John", lastName: "Doe", address: "101 Main Street", zip: 10101 };

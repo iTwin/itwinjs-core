@@ -31,11 +31,21 @@ exports.builder = (yargs) =>
         type: "boolean",
         describe: "Use auto locate imodel.js config folder."
       }
+    })
+    .options({
+      "sourceMap": {
+        type: "boolean",
+        describe: "Create sourcemaps for each bundle."
+      }
     });
 
 exports.handler = async (argv) => {
   if (argv.useConfigLoader) {
     process.env.IMODELJS_USE_CONFIG_LOADER = "yes";
+  }
+
+  if (!argv.sourceMap) {
+    process.env.DISABLE_SOURCE_MAPS = true;
   }
 
   // Do this as the first thing so that any code reading it knows the right env.

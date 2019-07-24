@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Range3d, Range1d } from "./Range";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
@@ -19,9 +19,9 @@ import { Point2d } from "./Point2dVector2d";
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public
  */
-export class GrowableXYZArray extends IndexedXYZCollection {
+export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /**
-   * array of packed xyzxyzxyz components
+   * array of packed xyz xyz xyz components
    */
   private _data: Float64Array;
   /**
@@ -663,7 +663,9 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
-  /** Return the distance between two points in the array. */
+  /** Return the distance between two points in the array.
+   * @deprecated -- use distanceIndexIndex
+   */
   public distance(i: number, j: number): number | undefined {
     if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
       const i0 = 3 * i;
@@ -687,6 +689,43 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return undefined;
   }
 
+  /**
+   * Return distance squared between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   *
+   */
+  public distanceSquaredIndexIndex(i: number, j: number): number | undefined {
+    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+      const i0 = 3 * i;
+      const j0 = 3 * j;
+      return Geometry.hypotenuseSquaredXYZ(
+        this._data[j0] - this._data[i0],
+        this._data[j0 + 1] - this._data[i0 + 1],
+        this._data[j0 + 2] - this._data[i0 + 2]);
+    }
+    return undefined;
+  }
+  /**
+   * Return distance between indicated points.
+   * * Concrete classes may be able to implement this without creating a temporary.
+   * @param index0 first point index
+   * @param index1 second point index
+   * @param defaultDistanceSquared distance squared to return if either point index is invalid.
+   */
+  public distanceIndexIndex(i: number, j: number): number | undefined {
+    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
+      const i0 = 3 * i;
+      const j0 = 3 * j;
+      return Geometry.hypotenuseXYZ(
+        this._data[j0] - this._data[i0],
+        this._data[j0 + 1] - this._data[i0 + 1],
+        this._data[j0 + 2] - this._data[i0 + 2]);
+    }
+    return undefined;
+  }
   /** Return the distance between points in distinct arrays. */
   public static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined {
 

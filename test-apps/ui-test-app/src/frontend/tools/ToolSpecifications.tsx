@@ -37,7 +37,7 @@ export class AppTools {
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
-      iconSpec: "icon-placeholder",
+      iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
       tooltip: () => Tool1.description,
       execute: () => {
@@ -49,7 +49,7 @@ export class AppTools {
   public static get tool2() {
     return new ToolItemDef({
       toolId: Tool2.toolId,
-      iconSpec: "icon-placeholder",
+      iconSpec: Tool2.iconSpec,
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
       execute: () => { IModelApp.tools.run(Tool2.toolId); },

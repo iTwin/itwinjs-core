@@ -35,6 +35,41 @@ import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
 export class Frontstage1 extends FrontstageProvider {
+  private _topMostPanel = {
+    widgets: [
+      <Widget element={<h2>TopMost panel</h2>} />,
+    ],
+  };
+
+  private _topPanel = {
+    widgets: [
+      <Widget element={<h2>Top panel</h2>} />,
+    ],
+  };
+
+  private _leftPanel = {
+    allowedZones: [9, 4, 7],
+  };
+
+  private _rightPanel = {
+    allowedZones: [9],
+    widgets: [
+      <Widget element={<h2>Right panel</h2>} />,
+    ],
+  };
+
+  private _bottomPanel = {
+    widgets: [
+      <Widget element={<h2>Bottom panel</h2>} />,
+    ],
+  };
+
+  private _bottomMostPanel = {
+    allowedZones: [9, 4],
+    widgets: [
+      <Widget element={<h2>BottomMost panel</h2>} />,
+    ],
+  };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
@@ -109,47 +144,37 @@ export class Frontstage1 extends FrontstageProvider {
 
         topMostPanel={
           <StagePanel
-            widgets={[
-              <Widget element={<h2>TopMost panel</h2>} />,
-            ]}
+            widgets={this._topMostPanel.widgets}
           />
         }
         topPanel={
           <StagePanel
             resizable={false}
-            widgets={[
-              <Widget element={<h2>Top panel</h2>} />,
-            ]}
+            widgets={this._topPanel.widgets}
           />
         }
         leftPanel={
           <StagePanel
-            allowedZones={[9, 4, 7]}
+            allowedZones={this._leftPanel.allowedZones}
           />
         }
         rightPanel={
           <StagePanel
-            allowedZones={[9]}
+            allowedZones={this._rightPanel.allowedZones}
             resizable={false}
-            widgets={[
-              <Widget element={<h2>Right panel</h2>} />,
-            ]}
+            widgets={this._rightPanel.widgets}
           />
         }
         bottomPanel={
           <StagePanel
-            widgets={[
-              <Widget element={<h2>Bottom panel</h2>} />,
-            ]}
+            widgets={this._bottomPanel.widgets}
           />
         }
         bottomMostPanel={
           <StagePanel
-            allowedZones={[9, 4]}
+            allowedZones={this._bottomMostPanel.allowedZones}
             size={100}
-            widgets={[
-              <Widget element={<h2>BottomMost panel</h2>} />,
-            ]}
+            widgets={this._bottomMostPanel.widgets}
           />
         }
       />

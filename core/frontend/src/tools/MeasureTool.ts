@@ -12,12 +12,14 @@ import { Marker } from "../Marker";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, ColorDef, MassPropertiesRequestProps, MassPropertiesOperation, BentleyStatus, MassPropertiesResponseProps } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
-import { BeButtonEvent, EventHandled } from "./Tool";
+import { BeButtonEvent, EventHandled, CoordSource } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { AccuDrawHintBuilder } from "../AccuDraw";
+import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
+import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 
 /** @alpha */
 class MeasureLabel implements CanvasDecoration {
@@ -97,6 +99,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected _snapGeomId?: string;
 
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
+  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean { return super.isValidLocation(ev, isButtonEvent) || CoordSource.ElemSnap === ev.coordsFrom; }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
@@ -510,6 +513,7 @@ export class MeasureLocationTool extends PrimitiveTool {
   protected readonly _acceptedLocations: MeasureMarker[] = [];
 
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
+  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean { return super.isValidLocation(ev, isButtonEvent) || CoordSource.ElemSnap === ev.coordsFrom; }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
@@ -601,6 +605,330 @@ export class MeasureLocationTool extends PrimitiveTool {
 
   public onRestartTool(): void {
     const tool = new MeasureLocationTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** @alpha */
+export abstract class MeasureElementTool extends PrimitiveTool {
+  protected readonly _checkedIds = new Map<Id64String, MassPropertiesResponseProps>();
+  protected readonly _acceptedIds: Id64Array = [];
+  protected readonly _acceptedMeasurements: MeasureMarker[] = [];
+  protected _totalValue: number = 0.0;
+  protected _totalMarker?: MeasureLabel;
+  protected _useSelection: boolean = false;
+
+  protected abstract getOperation(): MassPropertiesOperation;
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onCleanup(): void { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+
+  public onUnsuspend(): void { this.showPrompt(); }
+  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey(this._useSelection ? "CoreTools:tools.ElementSet.Prompts.AcceptSelection" : "CoreTools:tools.ElementSet.Prompts.IdentifyElement"); }
+
+  protected setupAndPromptForNextAction(): void {
+    this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
+    if (!this._useSelection)
+      IModelApp.accuSnap.enableLocate(true);
+    this.showPrompt();
+  }
+
+  public decorate(context: DecorateContext): void { if (!context.viewport.view.isSpatialView()) return; this._acceptedMeasurements.forEach((marker) => marker.addDecoration(context)); if (undefined !== this._totalMarker) this._totalMarker.addDecoration(context); }
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  protected reportMeasurements(): void {
+    if (undefined === this._totalMarker)
+      return;
+    let label;
+    switch (this.getOperation()) {
+      case MassPropertiesOperation.AccumulateLengths:
+        label = "%{CoreTools:tools.Measure.Labels.Length}: ";
+        break;
+      case MassPropertiesOperation.AccumulateAreas:
+        label = "%{CoreTools:tools.Measure.Labels.Area}: ";
+        break;
+      case MassPropertiesOperation.AccumulateVolumes:
+        label = "%{CoreTools:tools.Measure.Labels.Volume}: ";
+        break;
+      default:
+        return;
+    }
+    const briefMsg = IModelApp.i18n.translateKeys(label) + this._totalMarker.label;
+    const msgDetail = new NotifyMessageDetails(OutputMessagePriority.Info, briefMsg, undefined, OutputMessageType.InputField);
+    IModelApp.notifications.outputMessage(msgDetail);
+  }
+
+  protected async getMarkerToolTip(responseProps: MassPropertiesResponseProps): Promise<HTMLElement> {
+    const toolTip = document.createElement("div");
+    let toolTipHtml = "";
+
+    switch (this.getOperation()) {
+      case MassPropertiesOperation.AccumulateLengths: {
+        const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+        if (undefined !== distanceFormatterSpec) {
+          const formattedLength = IModelApp.quantityFormatter.formatQuantity(responseProps.length ? responseProps.length : 0, distanceFormatterSpec);
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Length}:</b> ") + formattedLength + "<br>";
+        }
+        break;
+      }
+      case MassPropertiesOperation.AccumulateAreas: {
+        const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
+        if (undefined !== areaFormatterSpec) {
+          const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area ? responseProps.area : 0, areaFormatterSpec);
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Area}:</b> ") + formattedArea + "<br>";
+        }
+        if (responseProps.perimeter) {
+          const perimeterFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+          if (undefined !== perimeterFormatterSpec) {
+            const formattedPerimeter = IModelApp.quantityFormatter.formatQuantity(responseProps.perimeter, perimeterFormatterSpec);
+            toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Perimeter}:</b> ") + formattedPerimeter + "<br>";
+          }
+        }
+        break;
+      }
+      case MassPropertiesOperation.AccumulateVolumes: {
+        const volumeFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Volume);
+        if (undefined !== volumeFormatterSpec) {
+          const formattedVolume = IModelApp.quantityFormatter.formatQuantity(responseProps.volume ? responseProps.volume : 0, volumeFormatterSpec);
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Volume}:</b> ") + formattedVolume + "<br>";
+        }
+        if (responseProps.area) {
+          const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
+          if (undefined !== areaFormatterSpec) {
+            const formattedArea = IModelApp.quantityFormatter.formatQuantity(responseProps.area, areaFormatterSpec);
+            toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Area}:</b> ") + formattedArea + "<br>";
+          }
+        }
+        break;
+      }
+    }
+
+    if (responseProps.centroid) {
+      const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
+      if (undefined !== coordFormatterSpec) {
+        let pointAdjusted = Point3d.fromJSON(responseProps.centroid);
+        if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+          const globalOrigin = this.iModel.globalOrigin;
+          pointAdjusted = pointAdjusted.minus(globalOrigin);
+        }
+        const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
+        const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
+        const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
+        if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
+          toolTipHtml += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Centroid}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+      }
+    }
+
+    toolTip.innerHTML = toolTipHtml;
+    return toolTip;
+  }
+
+  private getResultValue(operation: MassPropertiesOperation, result: MassPropertiesResponseProps): number {
+    switch (operation) {
+      case MassPropertiesOperation.AccumulateLengths:
+        return (result.length ? result.length : 0.0);
+      case MassPropertiesOperation.AccumulateAreas:
+        return (result.area ? result.area : 0.0);
+      case MassPropertiesOperation.AccumulateVolumes:
+        return (result.volume ? result.volume : 0.0);
+    }
+  }
+
+  protected async updateTotals(selectionSetResult?: MassPropertiesResponseProps): Promise<void> {
+    this._totalValue = 0.0;
+    this._totalMarker = undefined;
+
+    let labelPt;
+    const operation = this.getOperation();
+    if (undefined !== selectionSetResult) {
+      labelPt = Point3d.fromJSON(selectionSetResult.centroid);
+      this._totalValue += this.getResultValue(operation, selectionSetResult);
+    } else if (0 !== this._acceptedIds.length) {
+      for (const id of this._acceptedIds) {
+        const result = this._checkedIds.get(id);
+        if (undefined === result)
+          continue;
+        labelPt = Point3d.fromJSON(result.centroid);
+        this._totalValue += this.getResultValue(operation, result);
+      }
+    }
+    if (0.0 === this._totalValue || undefined === labelPt)
+      return;
+
+    switch (operation) {
+      case MassPropertiesOperation.AccumulateLengths:
+        const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+        if (undefined === distanceFormatterSpec)
+          return;
+        const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalValue, distanceFormatterSpec);
+        this._totalMarker = new MeasureLabel(labelPt, formattedTotalDistance);
+        break;
+      case MassPropertiesOperation.AccumulateAreas:
+        const areaFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Area);
+        if (undefined === areaFormatterSpec)
+          return;
+        const formattedTotalArea = IModelApp.quantityFormatter.formatQuantity(this._totalValue, areaFormatterSpec);
+        this._totalMarker = new MeasureLabel(labelPt, formattedTotalArea);
+        break;
+      case MassPropertiesOperation.AccumulateVolumes:
+        const volumeFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Volume);
+        if (undefined === volumeFormatterSpec)
+          return;
+        const formattedTotalVolume = IModelApp.quantityFormatter.formatQuantity(this._totalValue, volumeFormatterSpec);
+        this._totalMarker = new MeasureLabel(labelPt, formattedTotalVolume);
+        break;
+    }
+
+    this.reportMeasurements();
+  }
+
+  public async doMeasureSelectedElements(viewport: Viewport): Promise<void> {
+    const candidates: Id64Array = [];
+    viewport.iModel.selectionSet.elements.forEach((val) => { if (!Id64.isInvalid(val) && !Id64.isTransient(val)) candidates.push(val); });
+    if (0 === candidates.length)
+      return;
+
+    const requestProps: MassPropertiesRequestProps = {
+      operation: this.getOperation(),
+      candidates,
+    };
+    const result = await this.iModel.getMassProperties(requestProps);
+    if (BentleyStatus.SUCCESS !== result.status)
+      return;
+
+    const toolTip = await this.getMarkerToolTip(result);
+    const point = Point3d.fromJSON(result.centroid);
+    const marker = new MeasureMarker((this._acceptedMeasurements.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
+
+    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
+    marker.onMouseButton = noOpButtonFunc;
+
+    this._acceptedMeasurements.push(marker);
+    await this.updateTotals(result);
+    this.setupAndPromptForNextAction();
+
+    if (undefined !== viewport)
+      viewport.invalidateDecorations();
+  }
+
+  public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
+    if (!hit.isElementHit)
+      return LocateFilterStatus.Reject;
+
+    let result = this._checkedIds.get(hit.sourceId);
+    if (undefined === result) {
+      const requestProps: MassPropertiesRequestProps = {
+        operation: this.getOperation(),
+        candidates: [hit.sourceId],
+      };
+      result = await this.iModel.getMassProperties(requestProps);
+      this._checkedIds.set(hit.sourceId, result);
+    }
+
+    return (BentleyStatus.SUCCESS === result.status ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
+  }
+
+  public onReinitialize(): void {
+    if (this._useSelection) {
+      this.exitTool();
+      return;
+    }
+    this.onRestartTool();
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (this._useSelection) {
+      if (0 === this._acceptedMeasurements.length && undefined !== ev.viewport) {
+        await this.doMeasureSelectedElements(ev.viewport);
+        return EventHandled.Yes;
+      }
+      this.onReinitialize();
+      return EventHandled.Yes;
+    }
+
+    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    if (undefined === hit || !hit.isElementHit)
+      return EventHandled.No;
+
+    const result = this._checkedIds.get(hit.sourceId);
+    if (undefined === result)
+      return EventHandled.No;
+    if (-1 !== this._acceptedIds.indexOf(hit.sourceId))
+      return EventHandled.Yes; // Already accepted, not rejected in filterHit to avoid showing "not" cursor...
+
+    const toolTip = await this.getMarkerToolTip(result);
+    const point = result.centroid ? Point3d.fromJSON(result.centroid) : ev.point.clone();
+    const marker = new MeasureMarker((this._acceptedMeasurements.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
+
+    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
+    marker.onMouseButton = noOpButtonFunc;
+
+    this._acceptedMeasurements.push(marker);
+    this._acceptedIds.push(hit.sourceId);
+    this.iModel.hilited.setHilite(hit.sourceId, true);
+
+    await this.updateTotals();
+    this.setupAndPromptForNextAction();
+
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+    return EventHandled.No;
+  }
+
+  public async onUndoPreviousStep(): Promise<boolean> {
+    if (0 === this._acceptedMeasurements.length)
+      return false;
+
+    this._acceptedMeasurements.pop();
+    if (0 === this._acceptedMeasurements.length) {
+      this.onReinitialize();
+    } else {
+      if (0 !== this._acceptedIds.length) { this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false); this._acceptedIds.pop(); }
+      await this.updateTotals();
+      this.setupAndPromptForNextAction();
+    }
+    return true;
+  }
+}
+
+/** @alpha */
+export class MeasureLengthTool extends MeasureElementTool {
+  public static toolId = "Measure.Length";
+  protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateLengths; }
+
+  public onRestartTool(): void {
+    const tool = new MeasureLengthTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** @alpha */
+export class MeasureAreaTool extends MeasureElementTool {
+  public static toolId = "Measure.Area";
+  protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateAreas; }
+
+  public onRestartTool(): void {
+    const tool = new MeasureAreaTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** @alpha */
+export class MeasureVolumeTool extends MeasureElementTool {
+  public static toolId = "Measure.Volume";
+  protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateVolumes; }
+
+  public onRestartTool(): void {
+    const tool = new MeasureVolumeTool();
     if (!tool.run())
       this.exitTool();
   }

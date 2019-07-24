@@ -3,13 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaMatchType } from "./../ECObjects";
-import { SchemaContext } from "./../Context";
-import { Schema } from "./../Metadata/Schema";
-import { SchemaKey } from "./../SchemaKey";
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
+
+import { SchemaContext } from "../Context";
+import { SchemaMatchType } from "../ECObjects";
+import { Schema } from "../Metadata/Schema";
+import { SchemaKey } from "../SchemaKey";
 
 // Temporary work around - need to add format method to string here for now....
 declare global {
@@ -93,12 +94,20 @@ export abstract class SchemaFileLocater {
     });
   }
 
+  public readUtf8FileToStringSync(filePath: string): string | undefined {
+    return fs.readFileSync(filePath, "utf-8");
+  }
+
   public async fileExists(filePath: string): Promise<boolean | undefined> {
     return new Promise<boolean | undefined>((resolve) => {
       fs.exists(filePath, (data) => {
         resolve(data);
       });
     });
+  }
+
+  public fileExistsSync(filePath: string): boolean | undefined {
+    return fs.existsSync(filePath);
   }
 
   /**

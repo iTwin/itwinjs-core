@@ -8,7 +8,7 @@ import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
 import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
 import { EntityClass } from "./Metadata/EntityClass";
-import { Enumeration } from "./Metadata/Enumeration";
+import { Enumeration, AnyEnumerator } from "./Metadata/Enumeration";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { Mixin } from "./Metadata/Mixin";
@@ -23,6 +23,7 @@ import { Format } from "./Metadata/Format";
 import { SchemaKey, SchemaItemKey } from "./SchemaKey";
 import { AnyProperty } from "./Metadata/Property";
 import { CustomAttributeContainerProps, CustomAttribute } from "./Metadata/CustomAttribute";
+import { OverrideFormat } from "./Metadata/OverrideFormat";
 
 /** @beta */
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema> & Promise<Schema>;
@@ -67,4 +68,4 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 /** @beta */
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
 /** @beta */
-export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute;
+export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;

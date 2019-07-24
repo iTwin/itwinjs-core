@@ -17,7 +17,7 @@ export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass 
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
 
 // @beta (undocumented)
-export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute;
+export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
 
 // @beta (undocumented)
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
@@ -49,20 +49,69 @@ export abstract class ArrayProperty extends Property {
     protected _minOccurs: number;
 }
 
+// @alpha
+export class BaseClassDelta extends SchemaItemChange {
+    readonly defaultChangeType: ChangeType;
+    toString(): string;
+}
+
 // @beta
 export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDiagnostic<TYPE, ARGS> {
-    constructor(ecDefinition: TYPE, messageArgs: ARGS);
+    constructor(ecDefinition: TYPE, messageArgs?: ARGS);
     abstract readonly category: DiagnosticCategory;
     abstract readonly code: string;
     abstract readonly diagnosticType: DiagnosticType;
     ecDefinition: TYPE;
-    messageArgs: ARGS;
+    messageArgs?: ARGS;
     abstract readonly messageText: string;
     abstract readonly schema: Schema;
 }
 
 // @beta (undocumented)
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
+
+// @alpha
+export abstract class BaseSchemaChange implements ISchemaChange {
+    constructor(diagnostic: AnyDiagnostic);
+    changeType: ChangeType;
+    abstract readonly defaultChangeType: ChangeType;
+    readonly diagnostic: AnyDiagnostic;
+    protected getNameFromArgument(index: number, itemType: typeof SchemaItem | typeof OverrideFormat | typeof Schema, allowUndefined?: boolean, fullName?: boolean): string;
+    protected getStringFromArgument(index: number): string;
+    protected getValueFromArgument(index: number): any;
+    abstract readonly topLevelSchemaItem: SchemaItem | Schema;
+    abstract toString(): string;
+}
+
+// @alpha
+export abstract class BaseSchemaChanges implements ISchemaChanges {
+    constructor(schema: Schema, anyECTypeName: string);
+    abstract addChange(change: ISchemaChange): void;
+    protected addChangeToMap<V extends ISchemaChanges>(changes: Map<string, V>, changesType: SchemaChangesConstructor, change: ISchemaChange, changeKey: string): void;
+    readonly ecTypeName: string;
+    protected isCAContainerChangeForThis(diagnostic: AnyDiagnostic, ecTypeName: string | undefined): boolean;
+    protected isPropertyValueChangeForThis(diagnostic: AnyDiagnostic, ecTypeName: string): boolean;
+    readonly propertyValueChanges: PropertyValueChange[];
+    readonly schema: Schema;
+    }
+
+// @alpha
+export enum ChangeType {
+    // (undocumented)
+    Delta = 0,
+    // (undocumented)
+    Missing = 1
+}
+
+// @alpha
+export class ClassChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    readonly baseClassDelta: BaseClassDelta | undefined;
+    readonly entityMixinChanges: Map<string, EntityMixinChanges>;
+    readonly propertyChanges: Map<string, PropertyChanges>;
+    readonly sourceConstraintChanges: Map<string, RelationshipConstraintChanges>;
+    readonly targetConstraintChanges: Map<string, RelationshipConstraintChanges>;
+    }
 
 // @beta
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
@@ -102,6 +151,8 @@ export class Constant extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta
@@ -116,7 +167,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyClass;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
     diagnosticType: DiagnosticType;
 };
@@ -130,20 +181,20 @@ export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: CustomAttributeContainerProps;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
 };
 
 // @beta
 export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, messageText: string, category?: DiagnosticCategory): {
-    new (property: AnyProperty, messageArgs: ARGS): {
+    new (property: AnyProperty, messageArgs?: ARGS | undefined): {
         readonly code: string;
         readonly category: DiagnosticCategory;
         readonly messageText: string;
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: AnyProperty;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
 };
 
@@ -156,7 +207,7 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: RelationshipConstraint;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
 };
 
@@ -169,7 +220,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: Schema;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
     diagnosticType: DiagnosticType;
 };
@@ -183,7 +234,7 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
         readonly schema: Schema;
         readonly diagnosticType: DiagnosticType;
         ecDefinition: ITEM;
-        messageArgs: ARGS;
+        messageArgs?: ARGS | undefined;
     };
     diagnosticType: DiagnosticType;
 };
@@ -205,7 +256,23 @@ export class CustomAttributeClass extends ECClass {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export class CustomAttributeContainerChange extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class CustomAttributeContainerChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly customAttributeChanges: CustomAttributeContainerChange[];
+    }
 
 // @beta
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
@@ -344,7 +411,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs: [string, string];
+            messageArgs?: [string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -356,7 +423,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs: [string, string, string];
+            messageArgs?: [string, string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -368,7 +435,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
-            messageArgs: [string, string];
+            messageArgs?: [string, string] | undefined;
         };
     };
     EnumerationTypeUnsupported: {
@@ -379,7 +446,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: Enumeration;
-            messageArgs: [string];
+            messageArgs?: [string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -391,41 +458,41 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: EntityClass;
-            messageArgs: [string, string, string];
+            messageArgs?: [string, string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     IncompatibleValueTypePropertyOverride: {
-        new (property: AnyProperty, messageArgs: [string, string, string, string, string]): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs: [string, string, string, string, string];
+            messageArgs?: [string, string, string, string, string] | undefined;
         };
     };
     IncompatibleTypePropertyOverride: {
-        new (property: AnyProperty, messageArgs: [string, string, string, string, string]): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string] | undefined): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs: [string, string, string, string, string];
+            messageArgs?: [string, string, string, string, string] | undefined;
         };
     };
     IncompatibleUnitPropertyOverride: {
-        new (property: AnyProperty, messageArgs: [string, string, string, string, string, string, string]): {
+        new (property: AnyProperty, messageArgs?: [string, string, string, string, string, string, string] | undefined): {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyProperty;
-            messageArgs: [string, string, string, string, string, string, string];
+            messageArgs?: [string, string, string, string, string, string, string] | undefined;
         };
     };
     AbstractConstraintMustNarrowBaseConstraints: {
@@ -436,7 +503,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs: [string, string, string, string];
+            messageArgs?: [string, string, string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -448,7 +515,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs: [string, string, string, string];
+            messageArgs?: [string, string, string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -460,7 +527,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipClass;
-            messageArgs: [string, string, string, string];
+            messageArgs?: [string, string, string, string] | undefined;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
@@ -472,7 +539,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs: [string, string];
+            messageArgs?: [string, string] | undefined;
         };
     };
     AbstractConstraintMustExistWithMultipleConstraints: {
@@ -483,7 +550,7 @@ export const Diagnostics: {
             readonly schema: import("../ecschema-metadata").Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: RelationshipConstraint;
-            messageArgs: [string, string];
+            messageArgs?: [string, string] | undefined;
         };
     };
 };
@@ -584,6 +651,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean>;
     traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean;
 }
@@ -650,6 +719,8 @@ export enum ECObjectsStatus {
     InvalidPrimitiveType = 35064,
     // (undocumented)
     InvalidRelationshipEnd = 35068,
+    // (undocumented)
+    InvalidSchemaComparisonArgument = 35077,
     // (undocumented)
     InvalidSchemaItemType = 35065,
     // (undocumented)
@@ -758,7 +829,23 @@ export class EntityClass extends ECClass {
     readonly schemaItemType: SchemaItemType.EntityClass;
     // (undocumented)
     toJson(standalone: boolean, includeSchemaVersion: boolean): any | void;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export class EntityMixinChange extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class EntityMixinChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly entityMixinChange: EntityMixinChange[];
+    }
 
 // @beta
 export class Enumeration extends SchemaItem {
@@ -773,9 +860,9 @@ export class Enumeration extends SchemaItem {
     readonly enumerators: Enumerator<string | number>[];
     // (undocumented)
     protected _enumerators: AnyEnumerator[];
-    getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
     getEnumerator(value: number): Enumerator<number> | undefined;
+    getEnumerator(value: string): Enumerator<string> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     readonly isInt: boolean;
@@ -791,6 +878,8 @@ export class Enumeration extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     readonly type: PrimitiveType.Integer | PrimitiveType.String | undefined;
     // (undocumented)
@@ -801,6 +890,12 @@ export class Enumeration extends SchemaItem {
 export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
 }
+
+// @alpha
+export class EnumerationChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    readonly enumeratorChanges: Map<string, EnumeratorChanges>;
+    }
 
 // @beta (undocumented)
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
@@ -815,6 +910,8 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     protected _enumeration?: LazyLoadedEnumeration;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta (undocumented)
@@ -827,6 +924,29 @@ export interface Enumerator<T> {
     readonly name: string;
     // (undocumented)
     readonly value: T;
+}
+
+// @alpha
+export class EnumeratorChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly enumeratorDeltas: EnumeratorDelta[];
+    readonly enumeratorMissing: EnumeratorMissing | undefined;
+    }
+
+// @alpha
+export class EnumeratorDelta extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class EnumeratorMissing extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
 }
 
 // @alpha
@@ -904,6 +1024,8 @@ export class Format extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     readonly type: FormatType;
     // (undocumented)
@@ -918,6 +1040,12 @@ export class Format extends SchemaItem {
     protected _uomSeparator: string;
 }
 
+// @alpha
+export class FormatChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    readonly formatUnitChanges: Map<string, FormatUnitChanges>;
+    }
+
 // @beta
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
     constructor(suppressions?: Map<string, string[]>, i18n?: I18N);
@@ -927,7 +1055,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
 
-// @internal
+// @internal (undocumented)
 export const formatStringRgx: RegExp;
 
 // @beta
@@ -972,6 +1100,21 @@ export enum FormatType {
 // @internal
 export function formatTypeToString(type: FormatType): string;
 
+// @alpha
+export class FormatUnitChange extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class FormatUnitChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly formatUnitChanges: FormatUnitChange[];
+    readonly unitLabelOverrideDeltas: UnitLabelOverrideDelta[];
+    }
+
 // @beta
 export enum FractionalPrecision {
     // (undocumented)
@@ -994,13 +1137,19 @@ export enum FractionalPrecision {
     TwoHundredFiftySix = 256
 }
 
+// @internal
+export function generateFormatString(format: Format | OverrideFormat): string;
+
+// @internal
+export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
+
 // @beta
 export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
     category: DiagnosticCategory;
     code: string;
     diagnosticType: DiagnosticType;
     ecDefinition: TYPE;
-    messageArgs: ARGS;
+    messageArgs?: ARGS;
     messageText: string;
     schema: Schema;
 }
@@ -1029,6 +1178,8 @@ export class InvertedUnit extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     readonly unitSystem: LazyLoadedUnitSystem | undefined;
     // (undocumented)
@@ -1062,6 +1213,72 @@ export interface IRuleSet {
     structClassRules?: Array<IRule<StructClass>>;
     unitRules?: Array<IRule<Unit>>;
     unitSystemRules?: Array<IRule<UnitSystem>>;
+}
+
+// @alpha
+export interface ISchemaChange {
+    changeType: ChangeType;
+    diagnostic: AnyDiagnostic;
+    topLevelSchemaItem: SchemaItem | Schema;
+    toString(): string;
+}
+
+// @alpha
+export interface ISchemaChanges {
+    // (undocumented)
+    addChange(change: ISchemaChange): void;
+    // (undocumented)
+    ecTypeName: string;
+    // (undocumented)
+    schema: Schema;
+}
+
+// @alpha
+export interface ISchemaComparer {
+    // (undocumented)
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+    // (undocumented)
+    compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+    // (undocumented)
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
+    // (undocumented)
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
+    // (undocumented)
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
+    // (undocumented)
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
+    // (undocumented)
+    compareFormats(formatA: Format, formatB: Format | undefined): void;
+    // (undocumented)
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
+    // (undocumented)
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
+    // (undocumented)
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
+    // (undocumented)
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
+    // (undocumented)
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
+    // (undocumented)
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
+    // (undocumented)
+    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
+    // (undocumented)
+    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
+    // (undocumented)
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
+    // (undocumented)
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareSchemas(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareUnits(unitA: Unit, unitB: Unit | undefined): void;
+}
+
+// @alpha
+export interface ISchemaCompareReporter {
+    // (undocumented)
+    report(schemaChanges: ISchemaChanges): void;
 }
 
 // @beta (undocumented)
@@ -1153,7 +1370,15 @@ export class KindOfQuantity extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export class KindOfQuantityChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    readonly presentationUnitChanges: Map<string, PresentationUnitChanges>;
+    }
 
 // @beta (undocumented)
 export type LazyLoadedConstant = LazyLoadedSchemaItem<Constant>;
@@ -1238,6 +1463,8 @@ export class Mixin extends ECClass {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta (undocumented)
@@ -1255,6 +1482,8 @@ export class NavigationProperty extends Property {
     protected _relationshipClass: LazyLoadedRelationshipClass;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta (undocumented)
@@ -1271,7 +1500,8 @@ export interface NoDelayedPromiseMethods {
 
 // @beta
 export class OverrideFormat {
-    constructor(parent: Format, name: string, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
+    constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
+    static createOverrideFormatFullName(parent: Format, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string;
     // (undocumented)
     readonly decimalSeparator: string;
     // (undocumented)
@@ -1369,7 +1599,23 @@ export class Phenomenon extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export class PresentationUnitChange extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class PresentationUnitChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly presentationUnitChange: PresentationUnitChange[];
+    }
 
 // @beta (undocumented)
 export class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
@@ -1405,6 +1651,8 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     protected _minValue?: number;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta (undocumented)
@@ -1418,6 +1666,8 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     readonly primitiveType: PrimitiveType;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta
@@ -1507,9 +1757,13 @@ export abstract class Property implements CustomAttributeContainerProps {
     readonly priority: number;
     // (undocumented)
     protected _priority?: number;
+    // (undocumented)
+    readonly propertyType: PropertyType;
     readonly schema: Schema;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     protected _type: PropertyType;
 }
@@ -1531,13 +1785,29 @@ export class PropertyCategory extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export class PropertyChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly customAttributeChanges: Map<string, CustomAttributeContainerChanges>;
+    readonly propertyMissing: PropertyMissing | undefined;
+    }
 
 // @beta
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
-    constructor(property: AnyProperty, messageArgs: ARGS);
+    constructor(property: AnyProperty, messageArgs?: ARGS);
     readonly diagnosticType: DiagnosticType;
     readonly schema: Schema;
+}
+
+// @alpha
+export class PropertyMissing extends BaseSchemaChange {
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
 }
 
 // @beta (undocumented)
@@ -1621,6 +1891,13 @@ export namespace PropertyTypeUtils {
     export function isStruct(t: PropertyType): boolean;
 }
 
+// @alpha
+export class PropertyValueChange extends BaseSchemaChange {
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
+}
+
 // @beta
 export class RelationshipClass extends ECClass {
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
@@ -1656,6 +1933,8 @@ export class RelationshipClass extends ECClass {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta
@@ -1707,6 +1986,22 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     toJson(): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
+}
+
+// @alpha
+export class RelationshipConstraintChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    readonly constraintClassChanges: RelationshipConstraintClassChange[];
+    readonly customAttributeChanges: Map<string, CustomAttributeContainerChanges>;
+    }
+
+// @alpha
+export class RelationshipConstraintClassChange extends BaseSchemaChange {
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
 }
 
 // @beta
@@ -1837,6 +2132,8 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     getReference<T extends Schema>(refSchemaName: string): Promise<T | undefined>;
     // (undocumented)
+    getReferenceNameByAlias(alias: string): string | undefined;
+    // (undocumented)
     getReferenceSync<T extends Schema>(refSchemaName: string): T | undefined;
     getSchemaItemKey(fullName: string): SchemaItemKey;
     // (undocumented)
@@ -1862,6 +2159,7 @@ export class Schema implements CustomAttributeContainerProps {
     toJson(): {
         [value: string]: any;
     };
+    toXml(schemaXml: Document): Promise<Document>;
     // (undocumented)
     readonly writeVersion: number;
 }
@@ -1876,6 +2174,420 @@ export class SchemaCache implements ISchemaLocater {
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    }
+
+// @alpha
+export class SchemaChanges extends BaseSchemaChanges {
+    constructor(schema: Schema);
+    addChange(change: ISchemaChange): void;
+    addDiagnostic(diagnostic: AnyDiagnostic): void;
+    readonly allDiagnostics: AnyDiagnostic[];
+    readonly classChanges: Map<string, ClassChanges>;
+    readonly customAttributeChanges: Map<string, CustomAttributeContainerChanges>;
+    readonly enumerationChanges: Map<string, EnumerationChanges>;
+    readonly formatChanges: Map<string, FormatChanges>;
+    readonly kindOfQuantityChanges: Map<string, KindOfQuantityChanges>;
+    readonly schemaItemChanges: Map<string, SchemaItemChanges>;
+    readonly schemaReferenceChanges: SchemaReferenceChange[];
+    }
+
+// @beta
+export const SchemaCompareCodes: {
+    SchemaDelta: string;
+    SchemaReferenceMissing: string;
+    SchemaItemDelta: string;
+    SchemaItemMissing: string;
+    ClassDelta: string;
+    BaseClassDelta: string;
+    PropertyDelta: string;
+    PropertyMissing: string;
+    EntityMixinMissing: string;
+    MixinDelta: string;
+    RelationshipDelta: string;
+    RelationshipConstraintDelta: string;
+    RelationshipConstraintClassMissing: string;
+    CustomAttributeClassDelta: string;
+    CustomAttributeInstanceClassMissing: string;
+    EnumerationDelta: string;
+    EnumeratorMissing: string;
+    EnumeratorDelta: string;
+    KoqDelta: string;
+    PresentationUnitMissing: string;
+    PropertyCategoryDelta: string;
+    FormatDelta: string;
+    FormatUnitMissing: string;
+    UnitLabelOverrideDelta: string;
+    UnitDelta: string;
+    InvertedUnitDelta: string;
+    PhenomenonDelta: string;
+    ConstantDelta: string;
+};
+
+// @beta
+export const SchemaCompareDiagnostics: {
+    SchemaDelta: {
+        new (schema: Schema, messageArgs: [string, any, any]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    SchemaReferenceMissing: {
+        new (schema: Schema, messageArgs: [Schema]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Schema;
+            messageArgs?: [Schema] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    SchemaItemDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: SchemaItem;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    SchemaItemMissing: {
+        new (ecDefinition: SchemaItem, messageArgs: []): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: SchemaItem;
+            messageArgs?: [] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    ClassDelta: {
+        new (ecClass: AnyClass, messageArgs: [string, any, any]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyClass;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    BaseClassDelta: {
+        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: AnyClass;
+            messageArgs?: [EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("../ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    PropertyDelta: {
+        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [string, any, any] | undefined): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: import("../ecschema-metadata").AnyProperty;
+            messageArgs?: [string, any, any] | undefined;
+        };
+    };
+    PropertyMissing: {
+        new (property: import("../ecschema-metadata").AnyProperty, messageArgs?: [] | undefined): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: import("../ecschema-metadata").AnyProperty;
+            messageArgs?: [] | undefined;
+        };
+    };
+    EntityMixinMissing: {
+        new (ecDefinition: SchemaItem, messageArgs: [Mixin]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: EntityClass;
+            messageArgs?: [Mixin] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    MixinDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Mixin;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    RelationshipDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: RelationshipClass;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    RelationshipConstraintDelta: {
+        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [string, any, any]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
+            messageArgs?: [string, any, any] | undefined;
+        };
+    };
+    RelationshipConstraintClassMissing: {
+        new (constraint: import("../Metadata/RelationshipClass").RelationshipConstraint, messageArgs: [AnyClass]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
+            messageArgs?: [AnyClass] | undefined;
+        };
+    };
+    CustomAttributeClassDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: CustomAttributeClass;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    CustomAttributeInstanceClassMissing: {
+        new (container: import("../Metadata/CustomAttribute").CustomAttributeContainerProps, messageArgs: [CustomAttribute]): {
+            readonly code: string;
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: import("../Metadata/CustomAttribute").CustomAttributeContainerProps;
+            messageArgs?: [CustomAttribute] | undefined;
+        };
+    };
+    EnumerationDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Enumeration;
+            messageArgs?: [string, string, string] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    EnumeratorMissing: {
+        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Enumeration;
+            messageArgs?: [import("../Metadata/Enumeration").Enumerator<string | number>] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    EnumeratorDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Enumeration;
+            messageArgs?: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    KoqDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: KindOfQuantity;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    PresentationUnitMissing: {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: KindOfQuantity;
+            messageArgs?: [Format | OverrideFormat] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    PropertyCategoryDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: PropertyCategory;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    FormatDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Format;
+            messageArgs?: [string, any, any] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    FormatUnitMissing: {
+        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Format;
+            messageArgs?: [Unit | InvertedUnit] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    UnitLabelOverrideDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Format;
+            messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    UnitDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Format;
+            messageArgs?: [string, string, string] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    InvertedUnitDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: InvertedUnit;
+            messageArgs?: [string, string, string] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    PhenomenonDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: InvertedUnit;
+            messageArgs?: [string, string, string] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+    ConstantDelta: {
+        new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
+            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly category: import("./Diagnostic").DiagnosticCategory;
+            readonly messageText: string;
+            readonly schema: Schema;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            ecDefinition: Constant;
+            messageArgs?: [string, string, string] | undefined;
+        };
+        diagnosticType: import("./Diagnostic").DiagnosticType;
+    };
+};
+
+// @alpha
+export enum SchemaCompareDirection {
+    // (undocumented)
+    Backward = 1,
+    // (undocumented)
+    Forward = 0
+}
+
+// @alpha
+export class SchemaComparer {
+    constructor(...reporters: ISchemaCompareReporter[]);
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void>;
+    compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void>;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void>;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void>;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void>;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void>;
+    compareFormats(formatA: Format, formatB: Format | undefined): Promise<void>;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void>;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void>;
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void>;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void>;
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): Promise<void>;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void>;
+    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void>;
+    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
     }
 
 // @beta
@@ -1913,6 +2625,8 @@ export abstract class SchemaFileLocater {
     compareSchemaKeyByVersion(lhs: FileSchemaKey, rhs: FileSchemaKey): number;
     // (undocumented)
     fileExists(filePath: string): Promise<boolean | undefined>;
+    // (undocumented)
+    fileExistsSync(filePath: string): boolean | undefined;
     protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
     // (undocumented)
     abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
@@ -1920,6 +2634,8 @@ export abstract class SchemaFileLocater {
     protected abstract getSchemaKey(data: string): SchemaKey;
     // (undocumented)
     readUtf8FileToString(filePath: string): Promise<string | undefined>;
+    // (undocumented)
+    readUtf8FileToStringSync(filePath: string): string | undefined;
     // (undocumented)
     searchPaths: string[];
 }
@@ -1962,7 +2678,26 @@ export abstract class SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
+
+// @alpha
+export abstract class SchemaItemChange extends BaseSchemaChange {
+    // (undocumented)
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+}
+
+// @alpha
+export class SchemaItemChanges extends BaseSchemaChanges {
+    constructor(schema: Schema, schemaItemName: string, schemaItemType: SchemaItemType);
+    addChange(change: ISchemaChange): void;
+    readonly customAttributeChanges: Map<string, CustomAttributeContainerChanges>;
+    // (undocumented)
+    protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined;
+    readonly schemaItemMissing: SchemaItemMissing | undefined;
+    readonly schemaItemType: SchemaItemType;
+    }
 
 // @beta
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
@@ -1976,11 +2711,10 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
 // @beta
 export class SchemaItemKey {
     constructor(name: string, schema: SchemaKey);
-    // (undocumented)
     readonly fullName: string;
     matches(rhs: SchemaItemKey): boolean;
     // (undocumented)
-    matchesFullName(rhs: string): boolean;
+    matchesFullName(name: string): boolean;
     // (undocumented)
     readonly name: string;
     // (undocumented)
@@ -1989,6 +2723,12 @@ export class SchemaItemKey {
     protected _schemaKey: SchemaKey;
     // (undocumented)
     readonly schemaName: string;
+}
+
+// @alpha
+export class SchemaItemMissing extends SchemaItemChange {
+    readonly defaultChangeType: ChangeType;
+    toString(): string;
 }
 
 // @beta (undocumented)
@@ -2025,6 +2765,9 @@ export enum SchemaItemType {
 
 // @beta
 export function schemaItemTypeToString(value: SchemaItemType): string;
+
+// @internal (undocumented)
+export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
 // @alpha
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
@@ -2084,6 +2827,13 @@ export class SchemaPartVisitorDelegate {
     visitSchemaPart(schemaPart: AnyECType): Promise<void>;
     visitSchemaPartSync(schemaPart: AnyECType): void;
     visitSchemaSync(schema: Schema, fullSchema?: boolean): void;
+}
+
+// @alpha
+export class SchemaReferenceChange extends BaseSchemaChange {
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
 }
 
 // @beta
@@ -2164,13 +2914,9 @@ export class SchemaWalker {
 
 // @internal
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
-    addSchemaReferences(schema: Schema, context?: SchemaContext): Promise<void>;
-    addSchemaReferencesSync(schema: Schema, context?: SchemaContext): void;
     getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
     getSchemaKey(data: string): SchemaKey;
-    getSchemaReferenceKeys(schemaKey: FileSchemaKey): SchemaKey[];
     getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined;
-    loadSchema<T extends Schema>(schemaPath: string, context: SchemaContext): Promise<T | undefined>;
 }
 
 // @beta
@@ -2248,6 +2994,8 @@ export class StructProperty extends Property {
     protected _structClass: StructClass;
     // (undocumented)
     toJson(): any;
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
 }
 
 // @beta
@@ -2291,10 +3039,20 @@ export class Unit extends SchemaItem {
     toJson(standalone: boolean, includeSchemaVersion: boolean): {
         [value: string]: any;
     };
+    // @internal (undocumented)
+    toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
     readonly unitSystem: LazyLoadedUnitSystem | undefined;
     // (undocumented)
     protected _unitSystem?: LazyLoadedUnitSystem;
+}
+
+// @alpha
+export class UnitLabelOverrideDelta extends BaseSchemaChange {
+    readonly changeKey: string;
+    readonly defaultChangeType: ChangeType;
+    readonly topLevelSchemaItem: Schema | SchemaItem;
+    toString(): string;
 }
 
 // @beta (undocumented)

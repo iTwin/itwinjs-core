@@ -41,7 +41,7 @@
 }
 
 /* Green (primary) */
-.core-toggle-primary>.core-toggle-input:checked~.core-toggle-label {
+.core-toggle-primary> .core-toggle-input:checked~.core-toggle-label {
   background: $uicore-green;
 }
 

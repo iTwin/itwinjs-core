@@ -74,6 +74,11 @@ describe("ConfigurableUiManager", () => {
     }
   }
 
+  it("getConstructorClassId should return undefined before registration", () => {
+    const classId = ConfigurableUiManager.getConstructorClassId(TestWidget);
+    expect(classId).to.be.undefined;
+  });
+
   it("registerControl & createConfigurable using same classId", () => {
     ConfigurableUiManager.registerControl("TestWidget", TestWidget);
     expect(ConfigurableUiManager.createControl("TestWidget", "1")).to.not.be.undefined;

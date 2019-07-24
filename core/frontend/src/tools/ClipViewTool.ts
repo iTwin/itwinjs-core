@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d } from "@bentley/geometry-core";
+import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { BeButtonEvent, EventHandled, CoordinateLockOverrides } from "./Tool";
@@ -377,6 +377,7 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
+  public static iconSpec = "icon-plane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
@@ -1003,6 +1004,7 @@ export class ViewClipControlArrow {
   public fill?: ColorDef;
   public outline?: ColorDef;
   public name?: string;
+  public floatingOrigin?: Point3d;
 
   public constructor(origin: Point3d, direction: Vector3d, sizeInches: number, fill?: ColorDef, outline?: ColorDef, name?: string) {
     this.origin = origin;
@@ -1064,11 +1066,20 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
   private getClipData(): boolean {
     this._clip = this._clipShape = this._clipShapeExtents = this._clipPlanes = this._clipPlanesLoops = this._clipPlanesLoopsNoncontributing = undefined;
-    const clip = this._clipView.view.getViewClip();
+    let clip = this._clipView.view.getViewClip();
     if (undefined === clip)
       return false;
-    const clipShape = ViewClipTool.isSingleClipShape(clip);
+    let clipShape = ViewClipTool.isSingleClipShape(clip);
     if (undefined !== clipShape) {
+      if (clipShape.polygon.length > 5) {
+        const compressed = PolylineOps.compressByChordError(clipShape.polygon, 1.0e-5);
+        if (compressed.length < clipShape.polygon.length) {
+          clip = clip.clone();
+          clipShape = ViewClipTool.isSingleClipShape(clip)!;
+          clipShape.setPolygon(compressed);
+          this._clipView.view.setViewClip(clip);
+        }
+      }
       this._clipShapeExtents = ViewClipTool.getClipShapeExtents(clipShape, this._clipView.computeViewRange());
       this._clipShape = clipShape;
     } else {
@@ -1441,6 +1452,28 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       const sizeInches = this._controls[iFace].sizeInches;
       if (0.0 === sizeInches)
         continue;
+
+      // For single plane clip, choose location for handle that's visible in the current view...
+      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops) {
+        if (!EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].origin, vp, 0.05)) {
+          const work = new GrowableXYZArray();
+          const finalPoints = new GrowableXYZArray();
+          const lineString = ((this._clipPlanesLoops[0] as Loop).getChild(0) as LineString3d).points;
+          const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
+          convexSet.polygonClip(lineString, finalPoints, work);
+          if (finalPoints.length > 0) {
+            const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
+            if (undefined !== loopArea) {
+              if (undefined === this._controls[iFace].floatingOrigin)
+                this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
+              this._controls[iFace].origin.setFrom(loopArea.origin);
+            }
+          }
+        } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {
+          this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin!);
+          this._controls[iFace].floatingOrigin = undefined;
+        }
+      }
 
       const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[iFace].origin, this._controls[iFace].direction, undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined);
       const transform = EditManipulator.HandleUtils.getArrowTransform(vp, anchorRay.origin, anchorRay.direction, sizeInches);

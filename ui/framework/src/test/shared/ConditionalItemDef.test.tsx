@@ -45,6 +45,10 @@ describe("ConditionalItemDef", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("ConditionalItemDef with no commandId should get generated id", () => {
     const item = new ConditionalItemDef({
       items: [tool1, tool2],

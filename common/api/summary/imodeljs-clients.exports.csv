@@ -155,7 +155,7 @@ beta;StringIdQuery
 alpha;class Thumbnail 
 alpha;ThumbnailHandler
 alpha;ThumbnailQuery 
-alpha;ThumbnailSize = "Small" | "Large"
+beta;ThumbnailSize = "Small" | "Large"
 alpha;TipThumbnail
 beta;class Token
 internal;UlasClient 

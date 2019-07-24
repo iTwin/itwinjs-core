@@ -19,13 +19,16 @@ interface NodeEventManagerCallbacks {
 /** @internal */
 export class NodeEventManager {
   private _loadingOrchestrator: NodeLoadingOrchestrator;
+  private _bulkCheckboxActionsEnabled: boolean;
   private _callbacks: NodeEventManagerCallbacks;
 
   constructor(
     loadingOrchestrator: NodeLoadingOrchestrator,
+    bulkCheckboxActionsEnabled: boolean,
     callbacks: NodeEventManagerCallbacks,
   ) {
     this._loadingOrchestrator = loadingOrchestrator;
+    this._bulkCheckboxActionsEnabled = bulkCheckboxActionsEnabled;
     this._callbacks = callbacks;
   }
 
@@ -86,7 +89,7 @@ export class NodeEventManager {
   }
 
   public setCheckboxState(node: BeInspireTreeNode<TreeNodeItem>, state: CheckBoxState) {
-    if (!node.selected()) {
+    if (!node.selected() || !this._bulkCheckboxActionsEnabled) {
       this._callbacks.onCheckboxStateChanged([{ node, newState: state }]);
       return;
     }

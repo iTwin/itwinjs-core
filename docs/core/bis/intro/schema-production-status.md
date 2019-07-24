@@ -45,6 +45,7 @@ To determine whether a schema with a `ProductionStatus` other than `Production` 
 | `Deprecated` | (this value should not be used for iModels) |
 
 The iModel's `ProductionStatus` setting is stored in the be_prop table as follows:
+
 | Column | Value |
 |--------|-------|
 | NameSpace |  "dgn_Db" |
@@ -68,6 +69,7 @@ The attempted loading of a schema that is not compatible will result in a schema
 ### Changing of iModel `ProductionStatus`
 
 An iModel's `ProductionStatus` can conceptually be "downgraded" as follows:
+
 | iModel `ProductionStatus` | Compatible Downgraded `ProductionStatus` |
 |-------------------------|----------------------------------------|
 | `Production` | `FieldTesting`, `NotForProduction` |
@@ -77,6 +79,7 @@ An iModel's `ProductionStatus` can conceptually be "downgraded" as follows:
 In the future, the ability for a user to downgrade the `ProductionStatus` of an iModel will be provided.
 
 An iModel's `ProductionStatus` can conceptually be upgraded as follows:
+
 | Upgraded iModel `ProductionStatus` | Condition |
 |------------------------------------|-----------|
 | `Production` | No schemas of `ProductionStatus` `FieldTesting` or `NotForProduction` |

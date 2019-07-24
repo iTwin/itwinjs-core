@@ -662,13 +662,22 @@ describe("BsplineCurve", () => {
 
       for (const x1 of [30, 50, 80, 95]) {
         let y0Out = 0.0;
+        const shift = 10.0;
         for (const y2 of [10, 40, 80]) {
-          const poles = [[0, 0, 0], [x1, 0, 0], [x2, y2, 0]];
+          //          const poles = [[0, 0, 0], [x1, 0, 0], [x2, y2, 0]];
+          const poles = [Point3d.create(0, 0, 0), Point3d.create(x1, 0, 0), Point3d.create(x2, y2, 0)];
           const bcurve = BSplineCurve3d.createUniformKnots(GrowableXYZArray.create(poles), 3)!;
+          const bezier = BezierCurve3d.create(poles)!;
           const strokes = LineString3d.create();
+          const bezierStrokes = LineString3d.create();
           bcurve.emitStrokes(strokes, options);
+          bezier.emitStrokes(bezierStrokes, options);
           GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, x0Out, y0Out, 0);
           GeometryCoreTestIO.captureGeometry(allGeometry, strokes, x0Out, y0Out, 0);
+
+          GeometryCoreTestIO.captureGeometry(allGeometry, bezier, x0Out, y0Out + shift, 0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bezierStrokes, x0Out, y0Out + shift, 0);
+          ck.testExactNumber(strokes.numPoints (), bezierStrokes.numPoints (), "bezier stroke counts the same for isolated and bspline");
           y0Out += 100;
         }
         x0Out += 100;

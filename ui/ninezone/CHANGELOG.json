@@ -2,6 +2,33 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/ui-ninezone_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move zonesBounds from manager to props."
+          },
+          {
+            "comment": "Update horizontal toolbar styles"
+          },
+          {
+            "comment": "Update <img> height/width for toolbar items so svg icons would display."
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "Demo changes."
+          },
+          {
+            "comment": "Refactor and test ZonesManager."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@bentley/ui-ninezone_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",

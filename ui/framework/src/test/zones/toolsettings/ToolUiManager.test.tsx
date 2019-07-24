@@ -53,6 +53,10 @@ describe("ToolUiManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("check initial values", () => {
     expect(ToolUiManager.useDefaultToolSettingsProvider).to.be.false;
     expect(ToolUiManager.toolSettingsProperties).to.be.empty;

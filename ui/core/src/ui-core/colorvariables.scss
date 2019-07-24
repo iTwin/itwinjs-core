@@ -17,6 +17,18 @@
 
   --buic-foreground-mediumgray:   rgb(155, 165, 174);
 
+  --buic-background-1:            rgb(var(--buic-background-1-rgb));
+  --buic-background-2:            rgb(var(--buic-background-2-rgb));
+  --buic-background-3:            rgb(var(--buic-background-3-rgb));
+  --buic-background-4:            rgb(var(--buic-background-4-rgb));
+  --buic-background-5:            rgb(var(--buic-background-5-rgb));
+
+  --buic-foreground-body:         rgba(var(--buic-foreground-body-rgb), 0.85);
+  --buic-foreground-body-reverse: rgba(var(--buic-foreground-body-reverse-rgb), 0.85);
+  --buic-foreground-muted:        rgba(var(--buic-foreground-body-rgb), 0.55);
+  --buic-foreground-disabled:     rgba(var(--buic-foreground-body-rgb), 0.44);
+  --buic-foreground-activehover:  rgba(var(--buic-foreground-body-rgb), 1.00);
+
   /** background.5 */
   --buic-background-titlebar:                 var(--buic-background-5);
   --buic-background-dialog-stroke:            var(--buic-background-5);

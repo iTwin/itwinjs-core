@@ -103,10 +103,11 @@ export class MarkupApp {
         "stroke": "red",
         "stroke-opacity": 0.8,
         "stroke-width": 3,
-        "fill-opacity": 0.2,
-        "fill": "blue",
+        "stroke-dasharray": 0,
         "stroke-linecap": "round",
         "stroke-linejoin": "round",
+        "fill": "blue",
+        "fill-opacity": 0.2,
       },
       arrow: {
         length: 7,

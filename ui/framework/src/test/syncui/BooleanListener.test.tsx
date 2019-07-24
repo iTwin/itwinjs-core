@@ -18,6 +18,10 @@ describe("BooleanSyncUiListener", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("BooleanSyncUiListener should mount - visible children", () => {
     const helloWorld = "Hello World!";
     const goodBye = "Goodbye!";

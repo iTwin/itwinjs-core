@@ -25,9 +25,9 @@ export class OverrideFormat {
    */
   public readonly name: string;
 
-  constructor(parent: Format, name: string, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>) {
+  constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>) {
     this.parent = parent;
-    this.name = name;
+    this.name = OverrideFormat.createOverrideFormatFullName(parent, unitAndLabels);
     this._precision = precision;
     this._units = unitAndLabels;
   }
@@ -54,5 +54,21 @@ export class OverrideFormat {
 
   public hasFormatTrait(formatTrait: FormatTraits) {
     return (this.parent.formatTraits & formatTrait) === formatTrait;
+  }
+
+  /**
+   * Creates a valid OverrideFormat fullName from the parent Format and overridden units.
+   * @param parent The parent Format.
+   * @param unitAndLabels The overridden unit and labels collection.
+   */
+  public static createOverrideFormatFullName(parent: Format, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string {
+    let fullName = parent.fullName;
+    if (!unitAndLabels)
+      return fullName;
+
+    for (const [unit] of unitAndLabels) {
+      fullName += `[${unit.fullName}]`;
+    }
+    return fullName;
   }
 }

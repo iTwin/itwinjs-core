@@ -14,6 +14,10 @@ describe("CustomItemDef", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("CustomItemDef with no commandId should get generated id", () => {
     const item = new CustomItemDef({
       reactElement: <div>Hello!</div>,

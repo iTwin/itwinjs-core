@@ -12,6 +12,8 @@ import { ViewRect, Viewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ToolTipOptions } from "./NotificationManager";
+import { Logger } from "@bentley/bentleyjs-core";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** The types that may be used for Markers
  * @public
@@ -47,7 +49,7 @@ export class Marker implements CanvasDecoration {
   /** The size of this Marker, in pixels. */
   public size: Point2d;
   /** The current position for the marker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
-  public position: Point3d;
+  public position = new Point3d();
   /** The current rectangle for the marker, in view coordinates (pixels). This value will be updated by calls to [[setPosition]]. */
   public readonly rect = new ViewRect();
   /** An image to draw for this Marker. If undefined, no image is shown. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage.  */
@@ -68,10 +70,19 @@ export class Marker implements CanvasDecoration {
   public labelBaseline?: MarkerTextBaseline;
   /** The font for [[label]]. See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/font. */
   public labelFont?: string;
-  /** The title string to show in the ToolTip when the pointer is over this Marker. See [[NotificationManager.openToolTip]] */
+  /** The title string, or HTMLElement, to show (only) in the ToolTip when the pointer is over this Marker. See [[NotificationManager.openToolTip]] */
   public title?: HTMLElement | string;
   /** The ToolTipOptions to use for [[title]]. */
   public tooltipOptions?: ToolTipOptions;
+
+  /** An Optional (unique) HTMLElement to display with this Marker. Generally, HTMLElements are more expensive than
+   * images and labels, since they are added/removed from the DOM every frame. But, some types of markers are more convenient to construct
+   * as HTMLElements, and if there aren't too many of them performance is fine.
+   * @note HTMLElements may only appear in the DOM one time. Therefore, they *may not be shared* by more than one Marker.
+   * You must ensure that each marker has its own HTMLElement. For this reason, you should probably only use HTMLElements in Markers if
+   * each one is meant to be unique. For shared content, use images.
+   */
+  public htmlElement?: HTMLElement;
 
   /** Return true to display [[image]], if present. */
   public get wantImage() { return true; }
@@ -113,7 +124,6 @@ export class Marker implements CanvasDecoration {
   constructor(worldLocation: XYAndZ, size: XAndY) {
     this.worldLocation = Point3d.createFrom(worldLocation);
     this.size = Point2d.createFrom(size);
-    this.position = new Point3d();
   }
 
   /** Make a new Marker at the same position and size as this Marker.
@@ -177,9 +187,16 @@ export class Marker implements CanvasDecoration {
    * when the Promise resolves.
    */
   public setImage(image: MarkerImage | Promise<MarkerImage>) {
-    if (image instanceof Promise)
-      image.then((resolvedImage) => this.image = resolvedImage); // tslint:disable-line:no-floating-promises
-    else
+    if (image instanceof Promise) {
+      image.then((resolvedImage) =>
+        this.image = resolvedImage,
+      ).catch((err: Event) => {
+        const target = err.target as any;
+        const msg = "Could not load image " + (target && target.src ? target.src : "unknown");
+        Logger.logError(FrontendLoggerCategory.Package + ".markers", msg);
+        console.log(msg); // tslint:disable-line: no-console
+      });
+    } else
       this.image = image;
   }
 
@@ -220,8 +237,28 @@ export class Marker implements CanvasDecoration {
     return true;
   }
 
-  /** Add this Marker to the supplied Decorate context. */
-  public addMarker(context: DecorateContext) { context.addCanvasDecoration(this); }
+  /** Position the HTMLElement for this Marker relative to the Marker's position in the view.
+   * The default implementation centers the HTMLElement (using its boundingClientRect) on the Marker.
+   * Override this method to provide an alternative positioning approach.
+   */
+  protected positionHtml() {
+    const html = this.htmlElement!;
+    const style = html.style;
+    style.position = "absolute";
+    const size = html.getBoundingClientRect(); // Note: only call this *after* setting position = absolute
+    const markerPos = this.position;
+    style.left = markerPos.x - (size.width / 2) + "px";
+    style.top = markerPos.y - (size.height / 2) + "px";
+  }
+
+  /** Add this Marker to the supplied DecorateContext. */
+  public addMarker(context: DecorateContext) {
+    context.addCanvasDecoration(this);
+    if (undefined !== this.htmlElement) {
+      context.addHtmlDecoration(this.htmlElement);    // if this Marker has an HTMLElement, add it to the DOM
+      this.positionHtml(); // and position it relative to the Marker location
+    }
+  }
 
   /** Set the position and ddd this Marker to the supplied DecorateContext, if it's visible.
    * This method should be called from your implementation of [[Decorator.decorate]]. It will set this Marker's position based the

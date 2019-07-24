@@ -32,7 +32,7 @@ This example shows how to find all elements with ranges that (may) overlap the r
 
 Often, a spatial query will combine a test on the spatial index with additional filtering criteria in the WHERE clause. As noted in the [SQLite docs](https://sqlite.org/rtree.html), "An R*Tree index does not normally provide the exact answer but merely reduces the set of potential answers from millions to dozens." The additional filtering criteria are used to refine the answer after the spatial filter has narrowed the possibilities. For example, to select only elements in the specified range that are also in a specified Category:
 
-````sql
+```sql
 SELECT rt.ECInstanceId FROM BisCore.SpatialIndex rt, BisCore.SpatialElement el WHERE (rt.ECInstanceId MATCH iModel_spatial_overlap_aabb(:bbox)) AND (el.ECInstanceId=rt.ECInstanceId) AND (el.Category = :categoryId)
 ```
 

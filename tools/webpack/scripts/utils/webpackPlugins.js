@@ -5,7 +5,6 @@
 const chalk = require("chalk");
 const path = require("path");
 const fs = require("fs-extra");
-const glob = require("glob");
 const paths = require("../../config/paths");
 
 class BanImportsPlugin {
@@ -57,109 +56,132 @@ function findPackageJson(pkgName, parentPath) {
   }
 }
 
-function copyPackage(pkgName, parentPath) {
+async function copyPackage(pkgName, parentPath) {
   const packageJsonPath = findPackageJson(pkgName, parentPath);
   if (!packageJsonPath)
     return;
 
   if (!parentPath || !packageJsonPath.startsWith(parentPath)) {
     // console.log(chalk.gray(`Copying ${path.dirname(packageJsonPath)} to lib/node_modules`));
-    fs.copySync(path.dirname(packageJsonPath), path.resolve(paths.appLib, "node_modules", pkgName), { dereference: true });
+    await fs.copy(path.dirname(packageJsonPath), path.resolve(paths.appLib, "node_modules", pkgName), { dereference: true });
   }
   return packageJsonPath;
 }
 
-class CopyNativeAddonsPlugin {
-  constructor(options) { }
+
+class AbstractAsyncStartupPlugin {
+  constructor(name) {
+    this._name = name;
+  }
 
   apply(compiler) {
-    compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
-      const appPackageJson = require(paths.appPackageJson);
-      // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
-      // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
-      const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
-      let packagesToCopy = [];
-
-      // Copy any modules excluded from the bundle via the "externals" webpack config option
-      const externals = compiler.options.externals;
-      if (typeof (externals) === "object") {
-        if (Array.isArray(externals))
-          packagesToCopy = externals.filter((ext) => typeof (ext) === "string");
-        else
-          packagesToCopy = Object.keys(externals);
-      }
-
-      const copiedPackages = new Set();
-      for (const pkg of packagesToCopy) {
-        const pkgName = pathToPackageName(pkg);
-        if (copiedPackages.has(pkgName) || !appDependencies.has(pkgName))
-          continue;
-
-        const packageJsonPath = copyPackage(pkgName);
-        if (!packageJsonPath)
-          continue;
-
-        copiedPackages.add(pkgName);
-
-        const packageJson = require(packageJsonPath);
-        if (!packageJson.dependencies && !packageJson.optionalDependencies)
-          continue;
-
-        const dependencies = [...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.optionalDependencies || {})];
-        for (const dep of dependencies) {
-          if (!copiedPackages.has(dep)) {
-            copyPackage(dep, path.dirname(packageJsonPath));
-            copiedPackages.add(dep);
-          }
-        }
-      }
+    compiler.hooks.environment.tap(this._name, () => {
+      this.promise = this.runAsync(compiler)
+    });
+    compiler.hooks.afterEmit.tapPromise(this._name, async () => {
+      await this.promise;
     });
   }
 }
 
-function isDirectory(directoryName) {
-  return (fs.statSync(path.resolve(this.bentleyDir, directoryName)).isDirectory());
+class CopyNativeAddonsPlugin extends AbstractAsyncStartupPlugin {
+  constructor(options) {
+    super("CopyNativeAddonsPlugin");
+  }
+
+  async runAsync(compiler) {
+    const appPackageJson = require(paths.appPackageJson);
+    // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
+    // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
+    const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
+    let packagesToCopy = [];
+
+    // Copy any modules excluded from the bundle via the "externals" webpack config option
+    const externals = compiler.options.externals;
+    if (typeof (externals) === "object") {
+      if (Array.isArray(externals))
+        packagesToCopy = externals.filter((ext) => typeof (ext) === "string");
+      else
+        packagesToCopy = Object.keys(externals);
+    }
+
+    const copiedPackages = new Set();
+    for (const pkg of packagesToCopy) {
+      const pkgName = pathToPackageName(pkg);
+      if (copiedPackages.has(pkgName) || !appDependencies.has(pkgName))
+        continue;
+
+      const packageJsonPath = await copyPackage(pkgName);
+      if (!packageJsonPath)
+        continue;
+
+      copiedPackages.add(pkgName);
+
+      const packageJson = require(packageJsonPath);
+      if (!packageJson.dependencies && !packageJson.optionalDependencies)
+        continue;
+
+      const dependencies = [...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.optionalDependencies || {})];
+      for (const dep of dependencies) {
+        if (!copiedPackages.has(dep)) {
+          await copyPackage(dep, path.dirname(packageJsonPath));
+          copiedPackages.add(dep);
+        }
+      }
+    }
+  }
 }
-function tryCopyDirectoryContents(source, target) {
-  if (!fs.existsSync(source))
+
+async function isDirectory(directoryName) {
+  return (await fs.stat(directoryName)).isDirectory();
+}
+
+async function tryCopyDirectoryContents(source, target) {
+  if (!(await fs.exists(source)))
     return;
+
   const copyOptions = { dereference: true, preserveTimestamps: true, overwrite: false, errorOnExist: false };
   try {
-    if (fs.statSync(source).isDirectory() && fs.existsSync(target) && fs.statSync(target).isDirectory()) {
-      fs.readdirSync(source).forEach((name) => {
-        tryCopyDirectoryContents(path.join(source, name), path.join(target, name));
-      });
+    if (await isDirectory(source) && await fs.exists(target) && await isDirectory(target)) {
+      for (const name of await fs.readdir(source)) {
+        await tryCopyDirectoryContents(path.join(source, name), path.join(target, name));
+      }
     }
     else {
-      fs.copySync(source, target, copyOptions);
+      await fs.copy(source, target, copyOptions);
     }
   } catch (err) {
     console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
   }
 }
-class CopyBentleyStaticResourcesPlugin {
-  constructor(directoryNames) { this.directoryNames = directoryNames; }
-  apply(compiler) {
-    compiler.hooks.environment.tap("CopyBentleyStaticResourcesPlugin", () => {
-      const bentleyDir = paths.appBentleyNodeModules;
-      const subDirectoryNames = fs.readdirSync(bentleyDir).filter(isDirectory, { bentleyDir: paths.appBentleyNodeModules });
-      for (const thisSubDir of subDirectoryNames) {
-        const fullDirName = path.resolve(bentleyDir, thisSubDir);
-        for (const staticAssetsDirectoryName of this.directoryNames) {
-          tryCopyDirectoryContents(
-            path.join(fullDirName, "lib", staticAssetsDirectoryName),
-            path.join(paths.appLib, staticAssetsDirectoryName)
-          );
-        }
+class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin {
+  constructor(directoryNames) {
+    super("CopyBentleyStaticResourcesPlugin");
+    this.directoryNames = directoryNames;
+  }
+  async runAsync(compiler) {
+    const bentleyDir = paths.appBentleyNodeModules;
+    const subDirectoryNames = await fs.readdir(bentleyDir);
+    for (const thisSubDir of subDirectoryNames) {
+      if (!(await isDirectory(path.resolve(paths.appBentleyNodeModules, thisSubDir))))
+        continue;
+
+      const fullDirName = path.resolve(bentleyDir, thisSubDir);
+      for (const staticAssetsDirectoryName of this.directoryNames) {
+        await tryCopyDirectoryContents(
+          path.join(fullDirName, "lib", staticAssetsDirectoryName),
+          path.join(paths.appLib, staticAssetsDirectoryName)
+        );
       }
-    });
+    }
   }
 }
-class CopyAppAssetsPlugin {
-  apply(compiler) {
-    compiler.hooks.environment.tap("CopyAppAssetsPlugin", () => {
-      tryCopyDirectoryContents(paths.appAssets, path.resolve(paths.appLib, "assets"));
-    });
+class CopyAppAssetsPlugin extends AbstractAsyncStartupPlugin {
+  constructor(options) {
+    super("CopyAppAssetsPlugin");
+  }
+  async runAsync(compiler) {
+    await tryCopyDirectoryContents(paths.appAssets, path.resolve(paths.appLib, "assets"));
   }
 }
 
@@ -173,92 +195,6 @@ class BanBackendImportsPlugin extends BanImportsPlugin {
   constructor() {
     super("FRONTEND", "BACKEND", paths.appSrcBackend, /imodeljs-backend/);
   }
-}
-
-// Extend LicenseWebpackPlugin to add better error formatting and some custom handling for @bentley packages.
-const LicenseWebpackPlugin = require("license-webpack-plugin").LicenseWebpackPlugin;
-class PrettyLicenseWebpackPlugin extends LicenseWebpackPlugin {
-  constructor(options) {
-    options.suppressErrors = true;
-    super(options);
-  }
-
-  apply(compiler) {
-    super.apply(compiler);
-
-    compiler.hooks.afterEmit.tap("PrettyLicenseWebpackPlugin", (compilation) => {
-      const missingNotices = [];
-      const otherWarnings = [];
-      for (const e of this.errors) {
-        e.message = e.message.replace("license-webpack-plugin: ", "");
-        let groups = e.message.match(/^Could not find a license file for (.*?)(, defaulting to license name found in package.json: (.*))?$/);
-        if (groups) {
-          if (groups[1].startsWith("@bentley"))
-            continue;
-
-          let formatted = "   " + chalk.bold.magenta(groups[1]);
-          if (groups[3]) {
-            formatted += chalk.gray(` (should have a notice for `) + chalk.bold(chalk.gray(groups[3])) + chalk.gray(` license according to its package.json)`);
-          } else {
-            formatted += chalk.gray(` (no license is specified in its package.json)`);
-          }
-
-          missingNotices.push(formatted)
-        } else if (groups = e.message.match(/^Package (.*?) contains an unacceptable license: (.*?)$/)) {
-          let formatted = chalk.yellow("Package ");
-          formatted += chalk.bold.magenta(groups[1]);
-          formatted += chalk.yellow(" contains an unacceptable license: ");
-          formatted += chalk.bold.magenta(groups[2]);
-          otherWarnings.push(formatted);
-        } else if (groups = e.message.match(/^Package (.*?) contains multiple licenses, defaulting to first one: (.*?). Use the licenseTypeOverrides option to specify a specific license for this module.$/)) {
-          let formatted = chalk.yellow("Package ");
-          formatted += chalk.bold.magenta(groups[1]);
-          formatted += chalk.yellow(" contains multiple licenses, defaulting to first one: ");
-          formatted += chalk.bold.magenta(groups[2]);
-          formatted += chalk.gray("\n   You can use set the buildConfig.licenseTypeOverrides option in your package.json to specify a specific license for this package.")
-          formatted += chalk.gray("\n   This licenseTypeOverrides option should be an object whose keys are package names and values are license types.")
-          otherWarnings.push(formatted);
-        } else {
-          otherWarnings.push(e.message);
-        }
-      }
-
-      if (otherWarnings.length > 0) {
-        for (const w of otherWarnings) {
-          console.log(`${chalk.bold.yellow("LICENSE WARNING:")} ${chalk.yellow(w)}`);
-        }
-      }
-      if (missingNotices.length > 0) {
-        console.log(`${chalk.bold.yellow("LICENSE WARNING:")} ${chalk.yellow("License notices for the following packages could not be found:")}`);
-        missingNotices.sort().forEach((e) => console.log(e));
-        console.log(chalk.yellow("Don't worry, these license warnings will not be treated as errors in CI builds (yet)."));
-        console.log(chalk.yellow("We're still looking for a good way to pull and manage these notices."));
-      }
-    });
-  }
-}
-
-// By default, LicenseWebpackPlugin does not even attempt to find LICENSE files for packages with package.json license undefined.
-// This monkey patch should make sure that we're looking for notices for ALL dependencies, not just those with known licenses.
-const LicenseExtractor = require("license-webpack-plugin/dist/LicenseExtractor").LicenseExtractor;
-const baseGetLicenseText = LicenseExtractor.prototype.getLicenseText;
-LicenseExtractor.prototype.getLicenseText = function (packageJson, licenseName, modulePrefix) {
-  if (licenseName === LicenseExtractor.UNKNOWN_LICENSE) {
-    const licenseFilename = this.getLicenseFilename(packageJson, licenseName, modulePrefix);
-    if (!licenseFilename) {
-      this.errors.push(
-        new Error(`license-webpack-plugin: Could not find a license file for ${packageJson.name}`)
-      );
-      return '';
-    }
-
-    return fs
-      .readFileSync(licenseFilename, 'utf8')
-      .trim()
-      .replace(/\r\n/g, '\n');
-  }
-
-  return baseGetLicenseText.call(this, packageJson, licenseName, modulePrefix);
 }
 
 class WatchBackendPlugin {
@@ -289,6 +225,5 @@ module.exports = {
   CopyNativeAddonsPlugin,
   CopyAppAssetsPlugin,
   CopyBentleyStaticResourcesPlugin,
-  PrettyLicenseWebpackPlugin,
   WatchBackendPlugin
 };

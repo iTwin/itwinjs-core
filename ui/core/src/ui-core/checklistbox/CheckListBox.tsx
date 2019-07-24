@@ -28,26 +28,13 @@ export interface CheckListBoxItemProps extends CommonProps {
  * @beta
  */
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
-
-  constructor(props: CheckListBoxItemProps) {
-    super(props);
-  }
-
-  private _onClick = () => {
-    // istanbul ignore else
-    if (this.props.onClick) {
-      this.props.onClick();
-    }
-  }
-
   public render() {
     const className = classnames("core-chk-listboxitem-checkbox", this.props.className);
-
     return (
       <li>
         <Checkbox checked={this.props.checked} disabled={this.props.disabled}
           inputClassName={className} style={this.props.style}
-          label={this.props.label} onClick={this._onClick} />
+          label={this.props.label} onClick={this.props.onClick} />
       </li>
     );
   }

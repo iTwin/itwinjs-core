@@ -146,7 +146,7 @@ export abstract class DrawCommand {
   public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
   public get isInstanced(): boolean { return undefined !== this.primitive ? this.primitive.isInstanced : false; }
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
-  public getTechniqueId(target: Target): TechniqueId { return undefined !== this.primitive ? this.primitive.getTechniqueId(target) : TechniqueId.Invalid; }
+  public get techniqueId(): TechniqueId { return undefined !== this.primitive ? this.primitive.techniqueId : TechniqueId.Invalid; }
   public getOmitStatus(_target: Target) { return OmitStatus.Neutral; }
 
   public isPushCommand(branch?: Branch) {
@@ -220,7 +220,7 @@ class PrimitiveCommand extends DrawCommand {
   public get primitive(): Primitive { return this._primitive; }
 
   public execute(exec: ShaderProgramExecutor): void {
-    if (!System.instance.options.cullAgainstActiveVolume || !exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
+    if (!exec.target.isGeometryOutsideActiveVolume(this._primitive.cachedGeometry))
       this._primitive.draw(exec);
   }
 }

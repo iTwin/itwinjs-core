@@ -50,7 +50,7 @@ export function prettyPrint(jsonObject: object): string {
           charCounter++;
           if (original[i] === ",") {
             // Hit end of number
-            if (charCounter >= 80) {
+            if (charCounter >= 120) {
               charCounter = 0;
               if (justEnteredArray) {
                 justEnteredArray = false;

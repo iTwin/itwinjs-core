@@ -200,7 +200,7 @@ export namespace IModelTile {
     const admin = IModelApp.tileAdmin;
     const version = admin.getMaximumMajorTileFormatVersion();
     if (version >= 4) {
-      const useProjectExtents = admin.useProjectExtents || BatchType.VolumeClassifier === treeId.type;
+      const useProjectExtents = BatchType.VolumeClassifier === treeId.type; // NB: Legacy flag.
       const flags = useProjectExtents ? "_1-" : "_0-";
       idStr = version.toString() + flags;
     }

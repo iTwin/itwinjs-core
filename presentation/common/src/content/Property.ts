@@ -38,8 +38,8 @@ export interface Property {
   /** ECProperty information */
   property: PropertyInfo;
   /**
-   * Relationship path from [Primary instance]($docs/learning/content/Terminology#primary-instance) to
-   * this property. This array is not empty only for [Related properties]($docs/learning/content/Terminology#related-properties).
+   * Relationship path from [Primary instance]($docs/learning/presentation/Content/Terminology#primary-instance) to
+   * this property. This array is not empty only for [Related properties]($docs/learning/presentation/Content/Terminology#related-properties).
    */
   relatedClassPath: RelationshipPath;
 }

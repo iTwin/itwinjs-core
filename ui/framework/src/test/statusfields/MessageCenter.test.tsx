@@ -56,6 +56,10 @@ describe("MessageCenter", () => {
     widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("Message Center should support all message types", () => {
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);

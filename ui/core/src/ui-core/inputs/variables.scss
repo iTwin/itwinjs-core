@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 @import "../style/index";
 
-$uicore-inputs-height:                 38px;
-$uicore-inputs-height-large:           48px;
+$uicore-inputs-height: 30px;
+$uicore-inputs-height-large: 48px;
+$uicore-line-height: $uicore-baseline * 1.6;
 
-$uicore-inputs-padding:                ( $uicore-inputs-height - $uicore-line-height ) / 2;
-$uicore-inputs-padding-large:          ( $uicore-inputs-height-large - $uicore-line-height ) / 2;
-$uicore-inputs-padding-bordered:       $uicore-inputs-padding - 1px;
+
+$uicore-inputs-padding: ($uicore-inputs-height - $uicore-line-height) / 2;
+$uicore-inputs-padding-large: ($uicore-inputs-height-large - $uicore-line-height) / 2;
+$uicore-inputs-padding-bordered: $uicore-inputs-padding - 1px;
 $uicore-inputs-padding-bordered-large: $uicore-inputs-padding-large - 1px;
 
-$uicore-inputs-margin:                 ( $uicore-line-height * 2 - $uicore-inputs-height ) / 2;
-$uicore-inputs-margin-large:           ( $uicore-line-height * 3 - $uicore-inputs-height-large ) / 2;
+$uicore-inputs-margin: ($uicore-line-height * 2 - $uicore-inputs-height) / 2;
+$uicore-inputs-margin-large: ($uicore-line-height * 3 - $uicore-inputs-height-large) / 2;
 
-$uicore-inputs-border-color:           $buic-inputs-border;
+$uicore-inputs-border-color: $buic-inputs-border;

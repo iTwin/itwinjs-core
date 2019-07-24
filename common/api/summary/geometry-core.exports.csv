@@ -14,6 +14,7 @@ public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePr
 public;AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection
 public;AnyRegion = Loop | ParityRegion | UnionRegion
 public;Arc3d 
+public;ArcVectors
 public;AuxChannel
 public;AuxChannelData
 public;AuxChannelDataType
@@ -68,7 +69,6 @@ public;CurveExtendMode
 public;CurveExtendOptions
 public;CurveIntervalRole
 public;CurveLocationDetail
-public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
@@ -82,6 +82,7 @@ public;FrameBuilder
 public;Geometry
 public;class GeometryHandler
 public;class GeometryQuery
+internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
 internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
 public;GrowableBlockedArray
 public;GrowableFloat64Array
@@ -96,6 +97,7 @@ public;HasZ = Readonly
 public;IModelJson
 public;IndexedPolyface 
 public;IndexedPolyfaceVisitor 
+public;class IndexedReadWriteXYZCollection 
 public;class IndexedXYCollection
 public;class IndexedXYZCollection
 public;InverseMatrixState
@@ -104,7 +106,7 @@ public;KnotVector
 public;LinearSweep 
 public;LineSegment3d 
 public;LineString3d 
-public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[]
+public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
 public;Loop 
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
@@ -158,6 +160,7 @@ public;PolyfaceData
 public;PolyfaceQuery
 public;PolyfaceVisitor 
 public;PolygonOps
+public;PolylineOps
 internal;PowerPolynomial
 internal;Quadrature
 public;Range1d 

@@ -83,15 +83,11 @@ rush install -c
   * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.
 * SVT_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
-* SVT_OPTIMIZED_SURFACE_SHADERS
-  * TEMPORARY: If defined, use optimized surface shaders when edge display is not needed.
 * SVT_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles.
-* SVT_DISABLE_ACTIVE_VOLUME_CULLING
-  * If defined, geometry will not be culled against the active volume before drawing. Useful only for testing the feature gate and the performance differences.
+* SVT_DISABLE_MAGNIFICATION
+  * If defined, tiles will always be subdivided (size multipliers will never be applied).
 * SVT_PRESERVE_SHADER_SOURCE_CODE
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
-* SVT_USE_PROJECT_EXTENTS
-  * If defined, the range of a spatial tile tree will be based on the project extents rather than upon the model's range.
 * SVT_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.

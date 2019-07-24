@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "./../Metadata/Schema";
+import { Schema } from "../Metadata/Schema";
 
 /**
  * Utility class for working with Schema graphs.

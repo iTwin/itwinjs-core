@@ -1,15 +1,27 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 /** @module Picker */
 
 import * as _ from "lodash";
-import { TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
+import {
+  TreeNodeItem,
+  PageOptions,
+  DelayLoadedTreeNodeItem,
+  TreeDataChangesListener,
+} from "@bentley/ui-components";
 import { ListItem } from "../ListPicker";
-import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
+import {
+  RegisteredRuleset,
+  NodeKey,
+  NodePathElement,
+} from "@bentley/presentation-common";
 import { Viewport, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import {
+  PresentationTreeDataProvider,
+  IPresentationTreeDataProvider,
+} from "@bentley/presentation-components";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxInfo } from "@bentley/ui-core";
 
@@ -103,7 +115,6 @@ export interface CategoryModelTreeState {
   isOptionsOpened: boolean;
   filterInfo?: FilterInfo;
   showSearchBox: boolean;
-  selectedNodes: string[];
 }
 
 /**
@@ -111,7 +122,8 @@ export interface CategoryModelTreeState {
  * data in [[CategoryModelTree]]
  * @alpha
  */
-export class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
+export class ModelSelectorDataProvider
+  implements IPresentationTreeDataProvider {
   private _baseProvider: PresentationTreeDataProvider;
 
   /** @internal */
@@ -121,10 +133,14 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
   }
 
   /** Id of the ruleset used by this data provider */
-  public get rulesetId(): string { return this._baseProvider.rulesetId; }
+  public get rulesetId(): string {
+    return this._baseProvider.rulesetId;
+  }
 
   /** [[IModelConnection]] used by this data provider */
-  public get imodel(): IModelConnection { return this._baseProvider.imodel; }
+  public get imodel(): IModelConnection {
+    return this._baseProvider.imodel;
+  }
 
   /** Listener for tree node changes */
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
@@ -142,7 +158,9 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
    * @param filter Filter.
    * @returns Filtered NodePaths
    */
-  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
+  public getFilteredNodePaths = async (
+    filter: string,
+  ): Promise<NodePathElement[]> => {
     return this._baseProvider.getFilteredNodePaths(filter);
   }
 
@@ -150,9 +168,11 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
    * Provides count for number of nodes under parent node
    * @param parentNode Node to count children for
    */
-  public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
-    return this._baseProvider.getNodesCount(parentNode);
-  });
+  public getNodesCount = _.memoize(
+    async (parentNode?: TreeNodeItem): Promise<number> => {
+      return this._baseProvider.getNodesCount(parentNode);
+    },
+  );
 
   /**
    * Modifies and returns nodes to be displayed.
@@ -160,7 +180,10 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
    * @param pageOptions Paging options
    * @returns TreeNodeItems to be displayed
    */
-  public getNodes = async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): TreeNodeArrayPromise => {
+  public getNodes = async (
+    parentNode?: TreeNodeItem,
+    pageOptions?: PageOptions,
+  ): TreeNodeArrayPromise => {
     return this._baseProvider.getNodes(parentNode, pageOptions);
   }
 }

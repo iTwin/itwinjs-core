@@ -13,9 +13,10 @@ import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { EntityClass } from "../../src/Metadata/EntityClass";
 import { Mixin } from "../../src/Metadata/Mixin";
-import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../src/Metadata/RelationshipClass";
-import { Schema } from "../../src/Metadata/Schema";
+import { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, MutableRelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { Schema, MutableSchema } from "../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {
@@ -327,6 +328,7 @@ describe("RelationshipClass", () => {
       // TODO: Implement test...
     });
   });
+
   describe("toJson", () => {
 
     function createSchemaJson(relClassJson: any): any {
@@ -385,7 +387,7 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
       const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         name: "TestRelationship",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
@@ -507,6 +509,404 @@ describe("RelationshipClass", () => {
       assert.strictEqual(relClassJson.target.roleLabel, "Target RoleLabel");
       assert.strictEqual(relClassJson.target.abstractConstraint, "TestSchema.TargetBaseEntity");
       assert.strictEqual(relClassJson.target.constraintClasses[0], "TestSchema.TestTargetEntity");
+    });
+  });
+
+  describe("toXml", () => {
+    function getCustomAttribute(containerElement: Element, name: string): Element {
+      const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
+      expect(caElements.length).to.equal(1, "Expected 1 ECCustomAttributes Element");
+      const caElement = containerElement.getElementsByTagName(name);
+      expect(caElement.length).to.equal(1, `Expected one CustomAttribute Element with the name '${name}`);
+      return caElement[0];
+    }
+
+    function getCAPropertyValueElement(schema: Element, caName: string, propertyName: string): Element {
+      const attribute = getCustomAttribute(schema, caName);
+      const propArray = attribute.getElementsByTagName(propertyName);
+      expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
+      return propArray[0];
+    }
+
+    function getSchemaJson(customAttributeJson?: any) {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          ...customAttributeJson,
+          TestRelationship: {
+            schemaItemType: "RelationshipClass",
+            strength: "Embedding",
+            strengthDirection: "Backward",
+            modifier: "Sealed",
+            source: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Source RoleLabel",
+              abstractConstraint: "TestSchema.SourceBaseEntity",
+              constraintClasses: [
+                "TestSchema.TestSourceEntity",
+              ],
+            },
+            target: {
+              polymorphic: true,
+              multiplicity: "(0..*)",
+              roleLabel: "Target RoleLabel",
+              abstractConstraint: "TestSchema.TargetBaseEntity",
+              constraintClasses: [
+                "TestSchema.TestTargetEntity",
+              ],
+            },
+          },
+          SourceBaseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TargetBaseEntity: {
+            schemaItemType: "EntityClass",
+          },
+          TestSourceEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.SourceBaseEntity",
+          },
+          TestTargetEntity: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TargetBaseEntity",
+          },
+        },
+      };
+    }
+
+    const newDom = createEmptyXmlDocument();
+
+    it("should properly serialize", async () => {
+      const schema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
+      const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+      expect(relClass).to.exist;
+      const serialized = await relClass!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECRelationshipClass");
+      expect(serialized.getAttribute("strength")).to.eql("Embedding");
+      expect(serialized.getAttribute("strengthDirection")).to.eql("Backward");
+
+      const sourceResult = getElementChildrenByTagName(serialized, "Source");
+      assert.strictEqual(sourceResult.length, 1);
+      const targetResult = getElementChildrenByTagName(serialized, "Target");
+      assert.strictEqual(targetResult.length, 1);
+
+      const source = sourceResult[0];
+      expect(source.getAttribute("polymorphic")).to.eql("true");
+      expect(source.getAttribute("multiplicity")).to.eql("(0..*)");
+      expect(source.getAttribute("roleLabel")).to.eql("Source RoleLabel");
+      expect(source.getAttribute("abstractConstraint")).to.eql("SourceBaseEntity");
+      const sourceConstraintClasses = getElementChildrenByTagName(source, "Class");
+      assert.strictEqual(sourceConstraintClasses.length, 1);
+      expect(sourceConstraintClasses[0].getAttribute("class")).to.eql("TestSourceEntity");
+
+      const target = targetResult[0];
+      expect(target.getAttribute("polymorphic")).to.eql("true");
+      expect(target.getAttribute("multiplicity")).to.eql("(0..*)");
+      expect(target.getAttribute("roleLabel")).to.eql("Target RoleLabel");
+      expect(target.getAttribute("abstractConstraint")).to.eql("TargetBaseEntity");
+      const targetConstraintClasses = getElementChildrenByTagName(target, "Class");
+      assert.strictEqual(targetConstraintClasses.length, 1);
+      expect(targetConstraintClasses[0].getAttribute("class")).to.eql("TestTargetEntity");
+    });
+
+    it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
+      const context = new SchemaContext();
+      const refSchema = new Schema(context, "RefSchema", 1, 0, 5);
+      const refCAClass = await (refSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      assert.isDefined(refCAClass);
+      await context.addSchema(refSchema);
+      const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
+      (testSchema as MutableSchema).addReference(refSchema);
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+      constraint.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
+      const serialized = await constraint.toXml(newDom);
+
+      const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
+      expect(attributeElement.getAttribute("xmlns")).to.equal("RefSchema.01.00.05");
+    });
+
+    it("Serialization with one custom attribute defined in same schema, only class name", async () => {
+      const attributeJson = {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+        },
+      };
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+      constraint.addCustomAttribute({ className: "TestCustomAttribute" });
+      const serialized = await constraint.toXml(newDom);
+
+      const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
+      expect(attributeElement.getAttribute("xmlns")).to.be.empty;
+    });
+
+    it("Serialization with one custom attribute, with Primitive property values", async () => {
+      const attributeJson = {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "boolean",
+              name: "TrueBoolean",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "boolean",
+              name: "FalseBoolean",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "Integer",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "long",
+              name: "Long",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "double",
+              name: "Double",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "dateTime",
+              name: "DateTime",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "point2d",
+              name: "Point2D",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "point3d",
+              name: "Point3D",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "Bentley.Geometry.Common.IGeometry",
+              name: "IGeometry",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "binary",
+              name: "Binary",
+            },
+          ],
+        },
+      };
+
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+
+      const nowTicks = Date.now();
+      const ca = {
+        className: "TestCustomAttribute",
+        TrueBoolean: true,
+        FalseBoolean: false,
+        Integer: 1,
+        Long: 100,
+        Double: 200,
+        DateTime: new Date(nowTicks),
+        Point2D: { x: 100, y: 200 },
+        Point3D: { x: 100, y: 200, z: 300 },
+        IGeometry: "geometry",
+        Binary: "binary",
+      };
+
+      constraint.addCustomAttribute(ca);
+      const serialized = await constraint.toXml(newDom);
+
+      let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
+      expect(element.textContent).to.equal("True");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "FalseBoolean");
+      expect(element.textContent).to.equal("False");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Integer");
+      expect(element.textContent).to.equal("1");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Long");
+      expect(element.textContent).to.equal("100");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Double");
+      expect(element.textContent).to.equal("200");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
+      expect(element.textContent).to.equal(nowTicks.toString());
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
+      expect(element.textContent).to.equal("100,200");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
+      expect(element.textContent).to.equal("100,200,300");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "IGeometry");
+      expect(element.textContent).to.equal("geometry");
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Binary");
+      expect(element.textContent).to.equal("binary");
+    });
+
+    it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
+      const attributeJson = {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+          properties: [
+            {
+              type: "PrimitiveArrayProperty",
+              typeName: "boolean",
+              name: "BooleanArray",
+            },
+          ],
+        },
+      };
+
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+
+      const ca = {
+        className: "TestCustomAttribute",
+        BooleanArray: [true, false, true],
+      };
+
+      constraint.addCustomAttribute(ca);
+      const serialized = await constraint.toXml(newDom);
+
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "BooleanArray");
+      const children = element.childNodes;
+      expect(children.length).to.equal(3);
+      expect(children[0].textContent).to.equal("True");
+      expect(children[1].textContent).to.equal("False");
+      expect(children[2].textContent).to.equal("True");
+    });
+
+    it("Serialization with one custom attribute, with Struct property value", async () => {
+      const attributeJson = {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+          properties: [
+            {
+              type: "StructProperty",
+              typeName: "TestSchema.TestStruct",
+              name: "Struct",
+            },
+          ],
+        },
+        TestStruct: {
+          schemaItemType: "StructClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "Integer",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "string",
+              name: "String",
+            },
+          ],
+        },
+      };
+
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+
+      const ca = {
+        className: "TestCustomAttribute",
+        Struct: {
+          Integer: 1,
+          String: "test",
+        },
+      };
+
+      constraint.addCustomAttribute(ca);
+      const serialized = await constraint.toXml(newDom);
+
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Struct");
+      const children = element.childNodes;
+      expect(children.length).to.equal(2);
+      expect(children[0].textContent).to.equal("1");
+      expect(children[1].textContent).to.equal("test");
+    });
+
+    it("Serialization with one custom attribute, with StructArray property value", async () => {
+      const attributeJson = {
+        TestCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          appliesTo: "Schema",
+          properties: [
+            {
+              type: "StructArrayProperty",
+              typeName: "TestSchema.TestStruct",
+              name: "StructArray",
+            },
+          ],
+        },
+        TestStruct: {
+          schemaItemType: "StructClass",
+          properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "Integer",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "string",
+              name: "String",
+            },
+          ],
+        },
+      };
+
+      const testSchema = await Schema.fromJson(getSchemaJson(attributeJson), new SchemaContext());
+      const relClass = await testSchema.getItem<RelationshipClass>("TestRelationship") as RelationshipClass;
+      const constraint = relClass.source as MutableRelationshipConstraint;
+
+      const ca = {
+        className: "TestCustomAttribute",
+        StructArray: [
+          {
+            Integer: 1,
+            String: "test1",
+          },
+          {
+            Integer: 2,
+            String: "test2",
+          },
+        ],
+      };
+
+      constraint.addCustomAttribute(ca);
+      const serialized = await constraint.toXml(newDom);
+
+      const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "StructArray");
+      const structs = element.getElementsByTagName("TestStruct");
+      expect(structs.length).to.equal(2);
+
+      let prop1 = (structs[0] as Element).getElementsByTagName("Integer");
+      expect(prop1.length).to.equal(1);
+      expect(prop1[0].textContent).to.equal("1");
+
+      let prop2 = (structs[0] as Element).getElementsByTagName("String");
+      expect(prop2.length).to.equal(1);
+      expect(prop2[0].textContent).to.equal("test1");
+
+      prop1 = (structs[1] as Element).getElementsByTagName("Integer");
+      expect(prop1.length).to.equal(1);
+      expect(prop1[0].textContent).to.equal("2");
+
+      prop2 = (structs[1] as Element).getElementsByTagName("String");
+      expect(prop2.length).to.equal(1);
+      expect(prop2[0].textContent).to.equal("test2");
     });
   });
 

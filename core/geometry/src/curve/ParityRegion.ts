@@ -68,8 +68,8 @@ export class ParityRegion extends CurveCollection {
   /** Add `child` to this parity region.
    * * any child type other than `Loop` is ignored.
    */
-  public tryAddChild(child: AnyCurve): boolean {
-    if (child instanceof Loop) {
+  public tryAddChild(child: AnyCurve | undefined): boolean {
+    if (child && child instanceof Loop) {
       this._children.push(child);
       return true;
     }

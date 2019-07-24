@@ -8,7 +8,7 @@ Some appearance entries override the default SubCategoryAppearance, while others
 
   * [GeometryAppearanceProps]($common)
     * The presence of a GeometryAppearanceProps entry in the GeometryStreamProps array always signifies clearing all SubCategoryAppearance overrides, even when all values are undefined.
-    * Defined values, with the exception of [GeometryAppearanceProps.geometryClass]($common), override a corresponding SubCategoryAppearance value.
+    * Defined values, with the exception of GeometryAppearanceProps.geometryClass, override a corresponding SubCategoryAppearance value.
     * The SubCategoryAppearance used for geometry entries that follow in the GeometryStreamProps array is determined by [GeometryAppearanceProps.subCategory]($common). Default SubCategory for GeometricElement's Category is used when undefined.
 
   * [LineStyle.ModifierProps]($common)

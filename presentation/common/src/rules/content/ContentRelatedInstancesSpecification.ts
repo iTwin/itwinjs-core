@@ -58,7 +58,7 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
   /**
    * Condition for filtering instances of defined related classes.
    *
-   * **See:** [ECExpressions available in instance filter]($docs/learning/content/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions available in instance filter]($docs/learning/presentation/Content/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }

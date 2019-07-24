@@ -85,6 +85,10 @@ describe("ToolSettingsZone", () => {
     ConfigurableUiManager.registerControl(testToolId, Tool1UiProvider);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("close button closes it & tab opens it", () => {
     // ToolSetting should open by default if a ToolUiProvider is specified for tool.
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises

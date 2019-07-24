@@ -2,6 +2,27 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/ui-components_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Tree: Add `bulkCheckboxActionsDisabled` prop."
+          },
+          {
+            "comment": "Tree: Update visual styles."
+          },
+          {
+            "comment": "Table: Update visual styles."
+          },
+          {
+            "comment": "PropertyView: Update visual styles."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@bentley/ui-components_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",

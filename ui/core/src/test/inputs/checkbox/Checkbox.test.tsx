@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { render } from "@testing-library/react";
+import * as sinon from "sinon";
+import { render, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import { Checkbox } from "../../../ui-core/inputs/checkbox/Checkbox";
 import { InputStatus } from "../../../ui-core/inputs/InputStatus";
@@ -36,7 +37,23 @@ describe("Checkbox", () => {
   it("renders properly as disabled", () => {
     const checkbox = render(<Checkbox label="Test checkbox" disabled={true} />);
 
-    expect(checkbox.container.querySelector(".disabled"), "Checkbox class did not get set to 'disabled'").to.not.be.null;
-    expect(checkbox.container.querySelector("[disabled]"), "Checkbox tag did not get set as disabled").to.not.be.null;
+    expect((checkbox.container.childNodes[0] as HTMLElement).querySelector("[disabled]"), "Checkbox tag did not get set to 'disabled'").to.not.be.null;
   });
+
+  it("allows stopping click propagation", () => {
+    const outsideClickSpy = sinon.spy();
+    const checkboxClickSpy = sinon.fake((e: React.MouseEvent) => e.stopPropagation());
+    const changeSpy = sinon.spy();
+    const result = render(
+      <div onClick={outsideClickSpy}>
+        <Checkbox label="Test checkbox" onClick={checkboxClickSpy} onChange={changeSpy} />
+      </div>,
+    );
+    const divElement = result.container.childNodes[0] as HTMLDivElement;
+    fireEvent.click(divElement.childNodes[0] as HTMLElement);
+    expect(checkboxClickSpy).to.be.calledOnce;
+    expect(changeSpy).to.be.calledOnce;
+    expect(outsideClickSpy).to.not.be.called;
+  });
+
 });

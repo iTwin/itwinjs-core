@@ -5,6 +5,7 @@
 /** @module Item */
 
 import * as React from "react";
+import { SvgSprite } from "@bentley/ui-core";
 
 /** Prototype for an IconSpec which can be a string or a ReactNode.
  * @public
@@ -26,6 +27,14 @@ export const Icon: React.FunctionComponent<IconProps> = (props) => {  // tslint:
   if (!props.iconSpec) return null;
 
   if (typeof props.iconSpec === "string") {
+    // if string begins with "svg:" then we assume it was imported (into plugin source file) using webpack loader svg-sprite-loader
+    if (props.iconSpec.startsWith("svg:") && props.iconSpec.length > 4)
+      return (
+        <i className="icon uifw-item-svg-icon">
+          <SvgSprite src={props.iconSpec.slice(4)} />
+        </i>
+      );
+
     const className = "icon " + props.iconSpec;
     return (<i className={className} />);
   }
