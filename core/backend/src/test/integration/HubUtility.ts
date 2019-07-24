@@ -10,6 +10,7 @@ import {
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb, BackendRequestContext } from "../../imodeljs-backend";
 import * as path from "path";
+import * as os from "os";
 
 /** Utility to work with the iModel Hub */
 export class HubUtility {
@@ -431,6 +432,32 @@ export class HubUtility {
     changeSets.forEach((changeSet) => {
       BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSet);
     });
+  }
+
+  /** Generate a name (for an iModel) that's unique for the user + host */
+  public static generateUniqueName(baseName: string) {
+    let username = "";
+    let hostname = "";
+    try {
+      hostname = os.hostname();
+      username = os.userInfo().username;
+    } catch (err) {
+    }
+    return `${baseName}_${username}_${hostname}`;
+  }
+
+  /** Create  */
+  public static async recreateIModel(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
+    // Delete any existing iModel
+    try {
+      const deleteIModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, deleteIModelId);
+    } catch (err) {
+    }
+
+    // Create a new iModel
+    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, undefined, `Description for ${iModelName}`, undefined, 2 * 60 * 1000);
+    return iModel.wsgId;
   }
 }
 

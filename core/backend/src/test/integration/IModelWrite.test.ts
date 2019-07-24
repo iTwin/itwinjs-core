@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import * as os from "os";
 import { Id64String, DbOpcode, DbResult, Id64 } from "@bentley/bentleyjs-core";
 import { IModelVersion, SubCategoryAppearance, IModel, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -65,13 +64,7 @@ describe("IModelWriteTest (#integration)", () => {
     superRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, "ReadOnlyTest");
-
-    let username = "";
-    try {
-      username = os.userInfo().username;
-    } catch (err) {
-    }
-    readWriteTestIModelName = "ReadWriteTest".concat("_", username, "_", os.hostname() || "");
+    readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
 
     try {
       await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
