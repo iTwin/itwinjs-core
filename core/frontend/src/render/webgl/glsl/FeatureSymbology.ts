@@ -17,7 +17,7 @@ import {
 import { Hilite, ColorDef } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
 import { FeatureMode, IsEdgeTestNeeded, IsClassified } from "../TechniqueFlags";
-import { addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
+import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
 import { GLSLDecode } from "./Decode";
@@ -58,7 +58,7 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "7.0");
 }
 
-const computeLUTFeatureIndex = `vec4(floor(TEXTURE(u_vertLUT, g_featureIndexCoords).xyz * 255.0 + 0.5), 0.0)`;
+const computeLUTFeatureIndex = `vec4(g_featureAndMaterialIndex.xyz, 0.0)`;
 const computeInstanceFeatureIndex = `vec4(a_featureId, 0.0)`;
 function computeFeatureIndex(instanced: boolean): string {
   return `g_featureIndex = ` + (instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex) + `;`;
@@ -112,7 +112,10 @@ float computeLineCode() {
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec4);
   vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
-  if (vert.usesInstancedGeometry) {
+
+  if (!vert.usesInstancedGeometry) {
+    addFeatureAndMaterialLookup(vert);
+  } else {
     vert.addAttribute("a_featureId", VariableType.Vec3, (prog) => {
       prog.addAttribute("a_featureId", (attr, params) => {
         const geom = params.geometry.asInstanced!;

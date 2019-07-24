@@ -450,7 +450,10 @@ export class ShaderBuilder extends ShaderVariables {
   public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
   public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
 
-  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
+  public addInitializer(initializer: string): void {
+    if (-1 === this._initializers.indexOf(initializer))
+      this._initializers.push(initializer);
+  }
 
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
     super();

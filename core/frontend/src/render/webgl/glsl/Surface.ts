@@ -15,7 +15,7 @@ import {
 } from "../ShaderBuilder";
 import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
 import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
-import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
+import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
@@ -97,13 +97,10 @@ const computeMaterialParams = `
 const getUniformMaterialParams = `vec4 getMaterialParams() { return u_materialParams; }`;
 
 // The 8-bit material index is stored with the 24-bit feature index, in the high byte.
-// ###TODO: Don't re-sample feature index if already sampled.
 const readMaterialAtlas = `
 void readMaterialAtlas() {
   float materialAtlasStart = u_vertParams.z * u_vertParams.w + u_numColors;
-  float materialIndex = floor(TEXTURE(u_vertLUT, g_featureIndexCoords).w * 255.0 + 0.5);
-  materialIndex *= 4.0;
-  materialIndex += materialAtlasStart;
+  float materialIndex = g_featureAndMaterialIndex.w * 4.0 + materialAtlasStart;
 
   vec2 tc = computeLUTCoords(materialIndex, u_vertParams.xy, g_vert_center, 1.0);
   vec4 rgba = TEXTURE(u_vertLUT, tc);
@@ -149,9 +146,11 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
 
-  if (builder.vert.usesInstancedGeometry) {
+  if (vert.usesInstancedGeometry) {
     // ###TODO: Remove combination of technique flags - instances never use material atlases.
     hasMaterialAtlas = HasMaterialAtlas.No;
+  } else {
+    addFeatureAndMaterialLookup(vert);
   }
 
   if (!hasMaterialAtlas) {

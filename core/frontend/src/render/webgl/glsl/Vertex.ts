@@ -26,18 +26,12 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 `;
 
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
-const unquantizeVertexPositionFromLUTPrelude = `
+const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   vec2 tc = g_vertexBaseCoords;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-`;
-const computeFeatureIndexCoords = `
-  tc.x += g_vert_stepX;
-  g_featureIndexCoords = tc;
-`;
-const unquantizeVertexPositionFromLUTPostlude = `
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
   g_vertexData2 = enc2.zw;
   return unquantizePosition(qpos, origin, scale);
@@ -146,12 +140,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addFunction(GLSLDecode.uint24);
   vert.addFunction(GLSLDecode.uint16);
-  if (vert.usesInstancedGeometry) {
-    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + unquantizeVertexPositionFromLUTPostlude);
-  } else {
-    vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
-    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + computeFeatureIndexCoords + unquantizeVertexPositionFromLUTPostlude);
-  }
+  vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
@@ -256,6 +245,21 @@ export function addLineCode(vert: VertexShaderBuilder): void {
 /** @internal */
 export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
   vert.replaceFunction(computeLineCode, func);
+}
+
+/** @internal */
+export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
+  assert(!vert.usesInstancedGeometry);
+  if (undefined !== vert.find("g_featureAndMaterialIndex"))
+    return;
+
+  const computeFeatureAndMaterialIndex = `
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += g_vert_stepX * 2.0;
+  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
+
+  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
+  vert.addInitializer(computeFeatureAndMaterialIndex);
 }
 
 /** @internal */
