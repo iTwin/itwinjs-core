@@ -589,6 +589,7 @@ const computeFeatureOverrides = `
                                   value.b * 256.0);
 
   feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
+  use_material = !feature_ignore_material;
   v_feature_emphasis = extractNthFeatureBit(flags, kOvrBit_Flashed);
   v_feature_emphasis += 2.0 * extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
@@ -653,6 +654,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   builder.addVarying("v_feature_emphasis", VariableType.Float);
 
   const vert = builder.vert;
+  vert.addGlobal("use_material", VariableType.Boolean, "true");
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
   vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
 

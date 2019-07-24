@@ -41,7 +41,7 @@ const sampleSurfaceTexture = `
 `;
 
 const applyMaterialColor = `
-  float useMatColor = 1.0 - extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
+  float useMatColor = float(use_material);
   vec3 rgb = mix(baseColor.rgb, mat_rgb.rgb, useMatColor * mat_rgb.a);
   float a = mix(baseColor.a, mat_alpha.x, useMatColor * mat_alpha.y);
   return vec4(rgb, a);
@@ -89,10 +89,7 @@ void decodeMaterialColor(vec4 rgba) {
 // defaults: (0x6699, 0xffff, 0xffff, 13.5)
 const computeMaterialParams = `
   const vec4 defaults = vec4(26265.0, 65535.0, 65535.0, 13.5);
-  if (isSurfaceBitSet(kSurfaceBit_IgnoreMaterial))
-    return defaults;
-  else
-    return getMaterialParams();
+  return use_material ? getMaterialParams() : defaults;
 `;
 const getUniformMaterialParams = `vec4 getMaterialParams() { return u_materialParams; }`;
 
@@ -145,6 +142,8 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   const vert = builder.vert;
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
+  vert.addGlobal("use_material", VariableType.Boolean);
+  vert.addInitializer("use_material = 0.0 == extractNthBit(floor(u_surfaceFlags + 0.5), kSurfaceBit_IgnoreMaterial);");
 
   if (vert.usesInstancedGeometry) {
     // ###TODO: Remove combination of technique flags - instances never use material atlases.
