@@ -9,12 +9,12 @@ import { OverrideFormat } from "./OverrideFormat";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "./../Interfaces";
-import { formatStringRgx, generateFormatString } from "./../utils/FormatEnums";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { KindOfQuantityProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { formatStringRgx, generateFormatString } from "../utils/FormatEnums";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
@@ -23,27 +23,23 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
  */
 export class KindOfQuantity extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
-  protected _relativeError: number;
-  protected _presentationUnits: Array<Format | OverrideFormat>;
+  protected _relativeError: number = 1.0;
+  protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
-  get relativeError() { return this._relativeError; }
+  /** The first presentation format in the list of Formats. */
+  public get defaultPresentationFormat(): Format | OverrideFormat | undefined { return this.presentationFormats[0]; }
 
-  get presentationUnits(): Array<Format | OverrideFormat> | undefined { return this._presentationUnits; }
+  /** A list of presentation formats. */
+  public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
-  get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
+  public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
 
-  set persistenceUnit(persistenceUnit: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = persistenceUnit; }
+  public get relativeError() { return this._relativeError; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.KindOfQuantity;
-    this._presentationUnits = [];
-    this._relativeError = 1.0;
-  }
-
-  public get defaultPresentationFormat(): undefined | Format | OverrideFormat {
-    return this.presentationUnits![0];
+    this.schemaItemType = SchemaItemType.KindOfQuantity; // Needed to allow both run-time and compile-time check.
   }
 
   /**
@@ -53,11 +49,11 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean = false) {
     // TODO: Add some sort of validation?
-    (isDefault) ? this._presentationUnits.splice(0, 0, format) : this._presentationUnits.push(format);
+    (isDefault) ? this._presentationFormats.splice(0, 0, format) : this._presentationFormats.push(format);
   }
 
   /**
-   * Parses
+   * Parses the format string into a valid OverrideFormat
    * @param formatString
    */
   private parseFormatString(formatString: string): OverrideFormat {
@@ -232,8 +228,8 @@ export class KindOfQuantity extends SchemaItem {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.relativeError = this.relativeError;
     schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
-    if (this.presentationUnits !== undefined && this.presentationUnits.length > 0)
-      schemaJson.presentationUnits = this.presentationUnits.map((unit) => unit.fullName);
+    if (undefined !== this.presentationFormats && 0 < this.presentationFormats.length)
+      schemaJson.presentationUnits = this.presentationFormats.map((unit) => unit.fullName);
     return schemaJson;
   }
 
@@ -247,8 +243,8 @@ export class KindOfQuantity extends SchemaItem {
       itemElement.setAttribute("persistenceUnit", unitName);
     }
 
-    if (undefined !== this.presentationUnits) {
-      const presUnitStrings = this.presentationUnits.map(generateFormatString);
+    if (undefined !== this.presentationFormats) {
+      const presUnitStrings = this.presentationFormats.map(generateFormatString);
       itemElement.setAttribute("presentationUnits", presUnitStrings.join(";"));
     }
     itemElement.setAttribute("relativeError", this.relativeError.toString());

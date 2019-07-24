@@ -6,7 +6,7 @@
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Unit } from "./Unit";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./../utils/FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "../utils/FormatEnums";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -27,7 +27,7 @@ export class OverrideFormat {
 
   constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>) {
     this.parent = parent;
-    this.name = OverrideFormat.createOverrideFormatFullName(parent, unitAndLabels);
+    this.name = OverrideFormat.createOverrideFormatFullName(parent, precision, unitAndLabels);
     this._precision = precision;
     this._units = unitAndLabels;
   }
@@ -61,14 +61,16 @@ export class OverrideFormat {
    * @param parent The parent Format.
    * @param unitAndLabels The overridden unit and labels collection.
    */
-  public static createOverrideFormatFullName(parent: Format, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string {
+  public static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string {
     let fullName = parent.fullName;
-    if (!unitAndLabels)
-      return fullName;
 
-    for (const [unit] of unitAndLabels) {
-      fullName += `[${unit.fullName}]`;
-    }
+    if (precision)
+      fullName += `(${precision.toString()})`;
+
+    if (undefined === unitAndLabels)
+      return fullName;
+    for (const [unit, unitLabel] of unitAndLabels)
+      fullName += `[${unit.fullName}|${unitLabel}]`;
     return fullName;
   }
 }

@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+
 import { ECObjectsError } from "../../src/Exception";
 import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
@@ -11,9 +15,6 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Format } from "../../src/Metadata/Format";
 import { SchemaContext } from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 function createSchemaJson(koq: any) {
   return createSchemaJsonWithItems({
@@ -47,53 +48,57 @@ describe("KindOfQuantity", () => {
       schema = new Schema(new SchemaContext(), "TestSchema", 1, 2, 3);
       context.addLocater(new TestSchemaLocater());
     });
-    it("should successfully deserialize valid JSON", async () => {
-      const koqProps = {
-        ...baseJson,
-        relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
-        presentationUnits: [
-          "Formats.IN",
-          "Formats.DefaultReal",
-        ],
-      };
-      schema = await Schema.fromJson(createSchemaJson(koqProps), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqProps.name);
 
-      expect(testKoq!).to.exist;
-      expect(testKoq!.name).to.eql("TestKindOfQuantity");
-      expect(testKoq!.label).to.eql("SomeDisplayLabel");
-      expect(testKoq!.description).to.eql("A really long description...");
-      expect(testKoq!.relativeError).to.eql(1.234);
-      expect(testKoq!.presentationUnits).to.exist;
-      expect(testKoq!.presentationUnits!.length).to.eql(2);
+    const validFullKOQProps = {
+      ...baseJson,
+      relativeError: 1.234,
+      persistenceUnit: "Formats.DefaultReal",
+      presentationUnits: [
+        "Formats.IN",
+        "Formats.DefaultReal",
+      ],
+    };
+    it("async - should successfully deserialize", async () => {
+      schema = await Schema.fromJson(createSchemaJson(validFullKOQProps), context);
+      const testKoq = await schema.getItem<KindOfQuantity>(validFullKOQProps.name);
+      assert.isDefined(testKoq);
+      expect(testKoq!.name).eq("TestKindOfQuantity");
+      expect(testKoq!.fullName).eq("TestSchema.TestKindOfQuantity");
+      expect(testKoq!.label).eq("SomeDisplayLabel");
+      expect(testKoq!.description).eq("A really long description...");
+      expect(testKoq!.relativeError).eq(1.234);
+      expect(testKoq!.persistenceUnit!.name).eq("DefaultReal");
 
-      expect(testKoq!.defaultPresentationFormat!.name).to.equal("IN");
-      expect(testKoq!.presentationUnits![0].name).to.equal("IN");
-      expect(testKoq!.presentationUnits![1].name).to.equal("DefaultReal");
-      expect(testKoq!.persistenceUnit!.name).to.equal("DefaultReal");
+      expect(testKoq!.presentationFormats).exist;
+      expect(testKoq!.presentationFormats!.length).eq(2);
+
+      expect(testKoq!.defaultPresentationFormat!.name).eq("IN");
+      expect(testKoq!.presentationFormats![0].name).eq("IN");
+      expect(testKoq!.presentationFormats![1].name).eq("DefaultReal");
     });
 
-    it("should successfully deserialize valid JSON (without presentationUnits)", async () => {
-      const koqJson = {
-        ...baseJson,
-        persistenceUnit: "Formats.IN",
-        relativeError: 1.234,
-      };
-      schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
+    const koqNoPresUnits = {
+      ...baseJson,
+      persistenceUnit: "Formats.IN",
+      relativeError: 1.234,
+    };
+    it("async - should successfully deserialize without presentationUnits", async () => {
+      schema = await Schema.fromJson(createSchemaJson(koqNoPresUnits), context);
+      const testKoq = await schema.getItem<KindOfQuantity>(koqNoPresUnits.name);
+      assert.isDefined(testKoq);
 
-      expect(testKoq!.name).to.eql("TestKindOfQuantity");
-      expect(testKoq!.label).to.eql("SomeDisplayLabel");
-      expect(testKoq!.description).to.eql("A really long description...");
-      expect(testKoq!.relativeError).to.eql(1.234);
-      expect(testKoq!.presentationUnits).to.exist;
-      expect(testKoq!.presentationUnits!.length).to.eql(0);
-      expect(testKoq!.defaultPresentationFormat).to.not.exist;
+      expect(testKoq!.relativeError).eq(1.234);
+      expect(testKoq!.presentationFormats).exist;
+      expect(testKoq!.presentationFormats!.length).eq(0);
+      expect(testKoq!.defaultPresentationFormat).to.be.undefined;
 
-      const testUnit = await schema.lookupItem(koqJson.persistenceUnit);
-      expect(testUnit).to.exist;
-      expect(testKoq!.persistenceUnit!.fullName).to.eql(testUnit!.key.fullName); // Formats.IN === Formats.IN
+      const testUnit = await schema.lookupItem(koqNoPresUnits.persistenceUnit);
+      expect(testUnit).exist;
+      assert.isDefined(testKoq!.persistenceUnit);
+      expect(testKoq!.persistenceUnit!.fullName).eq(testUnit!.key.fullName); // Formats.IN === Formats.IN
+    });
+    it("sync - should successfully deserialize without presentationUnits", () => {
+
     });
 
     // should throw for presentationUnit with non-existent format
@@ -138,8 +143,8 @@ describe("KindOfQuantity", () => {
       context.addLocater(new TestSchemaLocater());
     });
 
-    // relativeError override
-    const relativeErrorOverride = {
+    // precision override
+    const precisionOverride = {
       ...baseJson,
       relativeError: 4,
       persistenceUnit: "Formats.IN",
@@ -149,38 +154,54 @@ describe("KindOfQuantity", () => {
         "Formats.DefaultReal(4,,)",
       ],
     };
-    it("async - relativeError override", async () => {
-      schema = await Schema.fromJson(createSchemaJson(relativeErrorOverride), context);
+    it("async - precision override", async () => {
+      schema = await Schema.fromJson(createSchemaJson(precisionOverride), context);
       const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
-
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(3);
+
+      expect(testKoq!.presentationFormats!.length).eq(3);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
       assert.isTrue(defaultFormat instanceof OverrideFormat);
 
       assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
-      expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
+      expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
+      expect(testKoq!.presentationFormats![0].precision).eq(DecimalPrecision.Two);
+      expect(testKoq!.presentationFormats![1].precision).eq(DecimalPrecision.Three);
+      expect(testKoq!.presentationFormats![2].precision).eq(DecimalPrecision.Four);
 
-      expect(testKoq!.presentationUnits![1].precision).eql(3);
-      expect(testKoq!.presentationUnits![2].precision).eql(4);
+      expect(testKoq!.presentationFormats![0].name).eq("Formats.DefaultReal(2)");
+      expect(testKoq!.presentationFormats![0].fullName).eq("Formats.DefaultReal(2)");
+      expect(testKoq!.presentationFormats![1].name).eq("Formats.DefaultReal(3)");
+      expect(testKoq!.presentationFormats![1].fullName).eq("Formats.DefaultReal(3)");
+      expect(testKoq!.presentationFormats![2].name).eq("Formats.DefaultReal(4)");
+      expect(testKoq!.presentationFormats![2].fullName).eq("Formats.DefaultReal(4)");
     });
-    it("sync - relativeError override", () => {
-      schema = Schema.fromJsonSync(createSchemaJson(relativeErrorOverride), context);
+    it("sync - precision override", () => {
+      schema = Schema.fromJsonSync(createSchemaJson(precisionOverride), context);
       const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
-
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(3);
+
+      expect(testKoq!.presentationFormats!.length).to.eq(3);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
+      assert.isTrue(defaultFormat instanceof OverrideFormat);
 
-      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.fullName), "The format in the KOQ should be different than the one in the schema");
 
-      expect(defaultFormat!.precision).eql(DecimalPrecision.Two);
+      expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
-      expect(testKoq!.presentationUnits![1].precision).eql(3);
-      expect(testKoq!.presentationUnits![2].precision).eql(4);
+      expect(testKoq!.presentationFormats![0].precision).eq(DecimalPrecision.Two);
+      expect(testKoq!.presentationFormats![1].precision).eq(DecimalPrecision.Three);
+      expect(testKoq!.presentationFormats![2].precision).eq(DecimalPrecision.Four);
+
+      expect(testKoq!.presentationFormats![0].name).eq("Formats.DefaultReal(2)");
+      expect(testKoq!.presentationFormats![0].fullName).eq("Formats.DefaultReal(2)");
+      expect(testKoq!.presentationFormats![1].name).eq("Formats.DefaultReal(3)");
+      expect(testKoq!.presentationFormats![1].fullName).eq("Formats.DefaultReal(3)");
+      expect(testKoq!.presentationFormats![2].name).eq("Formats.DefaultReal(4)");
+      expect(testKoq!.presentationFormats![2].fullName).eq("Formats.DefaultReal(4)");
     });
 
     // single unit override
@@ -195,41 +216,38 @@ describe("KindOfQuantity", () => {
     it("async - single unit override", async () => {
       schema = await Schema.fromJson(createSchemaJson(singleUnitOverride), context);
       const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
-
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(1);
-      const defaultFormat = await testKoq!.defaultPresentationFormat;
+
+      expect(testKoq!.presentationFormats!.length).to.eq(1);
+      const defaultFormat = testKoq!.defaultPresentationFormat;
       const defaultOverrideFormat: OverrideFormat = defaultFormat as OverrideFormat;
       assert.isDefined(defaultFormat);
 
-      const testFormat = await schema.lookupItem<Format>(defaultOverrideFormat.parent.key.fullName);
+      const testFormat = await schema.lookupItem<Format>(defaultOverrideFormat.parent.fullName);
       assert.notEqual(defaultFormat, testFormat, "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
-      expect(defaultFormat!.units!.length).to.eql(1);
+      expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
-      const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
-      assert.strictEqual(await unitOverride[0], unitFromSchema);
-      assert.isUndefined(unitOverride[1]);
+      const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName);
+      assert.strictEqual(unitOverride[0], unitFromSchema);
     });
-
     it("sync - single unit override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
       const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
-
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(1);
+
+      expect(testKoq!.presentationFormats!.length).to.eq(1);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
       assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
 
       assert.isDefined(defaultFormat!.units);
-      expect(defaultFormat!.units!.length).to.eql(1);
+      expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
-      const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+      const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName);
       assert.strictEqual(unitOverride[0], unitFromSchema);
-      assert.isUndefined(unitOverride[1]);
     });
 
     // single unit label override
@@ -246,35 +264,33 @@ describe("KindOfQuantity", () => {
       const testKoq = await schema.getItem<KindOfQuantity>("TestKindOfQuantity");
 
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(1);
+      expect(testKoq!.presentationFormats!.length).to.eq(1);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
       assert.isDefined(defaultFormat!.units);
-      expect(defaultFormat!.units!.length).to.eql(1);
+      expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
-      const unitFromSchema = await schema.lookupItem(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
-      assert.strictEqual(await unitOverride[0], unitFromSchema);
-      expect(unitOverride[1]).to.be.eql(" in");
+      const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName);
+      assert.strictEqual(unitOverride[0], unitFromSchema);
+      expect(unitOverride[1]).to.be.eq(" in");
     });
     it("sync - single unit label override", () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
       const testKoq = schema.getItemSync<KindOfQuantity>("TestKindOfQuantity");
 
       assert.isDefined(testKoq);
-      expect(testKoq!.presentationUnits!.length).to.eql(1);
+      expect(testKoq!.presentationFormats!.length).to.eq(1);
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
       assert.isDefined(defaultFormat!.units);
-      expect(defaultFormat!.units!.length).to.eql(1);
+      expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
-      const unitFromSchema = schema.lookupItemSync(unitOverride[0].key.schemaName + "." + unitOverride[0].name);
+      const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName);
       assert.strictEqual(unitOverride[0], unitFromSchema);
-      expect(unitOverride[1]).to.be.eql(" in");
+      expect(unitOverride[1]).to.be.eq(" in");
     });
-
-    // TODO add tests for all # of overrides
 
     // failure cases
     function testInvalidFormatStrings(testName: string, formatString: string, expectedErrorMessage: string) {
@@ -377,11 +393,11 @@ describe("KindOfQuantity", () => {
       const testKoq = await schema.getItem<KindOfQuantity>(schemaJson.name);
 
       const serialized = await testKoq!.toXml(newDom);
-      expect(serialized.nodeName).to.eql("KindOfQuantity");
-      expect(serialized.getAttribute("typeName")).to.eql("TestKindOfQuantity");
-      expect(serialized.getAttribute("relativeError")).to.eql("1.234");
-      expect(serialized.getAttribute("persistenceUnit")).to.eql("Formats:DefaultReal");
-      expect(serialized.getAttribute("presentationUnits")).to.eql(
+      expect(serialized.nodeName).to.eq("KindOfQuantity");
+      expect(serialized.getAttribute("typeName")).to.eq("TestKindOfQuantity");
+      expect(serialized.getAttribute("relativeError")).to.eq("1.234");
+      expect(serialized.getAttribute("persistenceUnit")).to.eq("Formats:DefaultReal");
+      expect(serialized.getAttribute("presentationUnits")).to.eq(
         "f:DoubleUnitFormat(6)[f:YRD|yard(s)][f:FT|feet];f:QuadUnitFormat(6)[f:MILE|mile(s)][f:YRD|yard(s)][f:FT|feet][f:IN|inch(es)]");
     });
   });

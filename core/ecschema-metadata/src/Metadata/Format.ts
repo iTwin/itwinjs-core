@@ -7,14 +7,14 @@ import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { FormatProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { FormatProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString,
   FractionalPrecision, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
   parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "./../utils/FormatEnums";
+} from "../utils/FormatEnums";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**

@@ -59,7 +59,7 @@ The Source and Target of a relationship define the endpoint classes and their co
 
 - This is the label for the role of the ECClass at this end of the relationship, e.g. in a DocumentCreatedByUser relationship, with Document as a source and User as the target, the source’s roleLabel is the role of the source class (Document) from the Document’s perspective: “created by User”. The roleLabel for the target end is the relationship from the User perspective “created Document”. These should include a mention of the ECClass on the other end, to make it possible to internationalize these (the word order may need to change).
 
-**multiplicity** multiplicity at this end of the relationship. It is specified using the UML format (x..y) where x >= 0 and (y >= 1 or y == “\*”) and x <= y. It is typically set to (1..1) or (0..\*) if there is no limit.
+**multiplicity** multiplicity at this end of the relationship. It is specified using the UML format (x..y) where x >= 0 and (y >= 1 or y == "\*") and x <= y. It is typically set to (1..1) or (0..\*) if there is no limit.
 
 **abstractConstraint** an ECClass which all the constraint classes at this end of the relationship must be or derive from. Required in base relationship classes if there is more than one constraint class in this end of the relationship, otherwise is optional.
 
