@@ -1,8 +1,8 @@
-﻿# The iModel.js Library
+﻿# iModel.js
 
 Copyright © Bentley Systems, Incorporated. All rights reserved.
 
-The [iModel.js](http://imodeljs.org) library is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+[iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 
 If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
 
