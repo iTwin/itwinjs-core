@@ -21,19 +21,19 @@ import { FloatRgb } from "./FloatRGBA";
  *
  * The rgb and alpha are applied in the vertex shader. Either can be negative, indicating the material does not override it.
  *
- * The rest are passed as a varying vec3 or uniform vec3 to be applied in the fragment shader.
- * All but the specular exponent are compressed such that floats in [0..1] become integers in [0..255] and concatenated bitwise into 24-bit integer values.
+ * The rest are passed as a varying vec4 to be applied in the fragment shader.
+ * All but the specular exponent are compressed such that floats in [0..1] become integers in [0..255] and concatenated bitwise in pairs into 16-bit integer values.
  *
  * The result is:
- *  x: specular rgb
- *  y: specular exponent
- *  z: weights
- *    0: diffuse
- *    1: specular
- *    2: texture
+ *  x: diffuse and specular weights
+ *  y: texture weight and specular red
+ *  z: specular green and blue
+ *  z: specular exponent
  *
- * This format is primarily used to mirror that used by material atlases (textures which contain multiple materials) as those are more heavily constrained by limits
- * on number of varying vectors - but it also reduces the number of uniforms required for singular materials.
+ * This packing is motivated by the limited max number of varying vectors guaranteed by WebGL.
+ * A varying is used because:
+ *  1. Material atlases require looking up the material associated with a particular vertex;
+ *  2. The vertex material may be replaced with a default material based on other criteria such as view flags and feature symbology overrides.
  * @internal
  */
 export class Material extends RenderMaterial {
@@ -41,7 +41,7 @@ export class Material extends RenderMaterial {
 
   // Used for type-switching vs MaterialAtlas
   public readonly isAtlas: false = false;
-  public readonly fragUniforms = new Float32Array(3);
+  public readonly fragUniforms = new Float32Array(4);
   public readonly rgba = new Float32Array(4);
 
   public get overridesRgb() { return this.rgba[0] >= 0; }
@@ -60,34 +60,29 @@ export class Material extends RenderMaterial {
     }
 
     // params.transparency of 0.0 indicates alpha no overridden. Indicated to shader as -1.
+    // ###TODO This is not true - material can override element transparency to be opaque.
     const alpha = 0.0 !== params.transparency ? 1.0 - params.transparency : -1;
     this.rgba[3] = alpha;
 
-    if (undefined !== params.specularColor)
-      this.setRgb(params.specularColor, 0);
-    else
-      this.setInteger(255, 255, 255, 0);
-
-    this.fragUniforms[1] = params.specularExponent;
-
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
+    this.setInteger(scale(params.diffuse), scale(params.specular), 0);
+
     const textureWeight = undefined !== this.textureMapping ? this.textureMapping.params.weight : 1.0;
-    this.setInteger(scale(params.diffuse), scale(params.specular), scale(textureWeight), 2);
+    const specularRgb = undefined !== params.specularColor ? params.specularColor : ColorDef.white;
+    const specularColors = specularRgb.colors;
+    this.setInteger(scale(textureWeight), specularColors.r, 1);
+    this.setInteger(specularColors.g, specularColors.b, 2);
+
+    this.fragUniforms[3] = params.specularExponent;
   }
 
-  private setInteger(loByte: number, midByte: number, hiByte: number, index: number): void {
+  private setInteger(loByte: number, hiByte: number, index: number): void {
     const clamp = (x: number) => Math.floor(Math.min(255, (Math.max(x, 0))));
 
     loByte = clamp(loByte);
-    midByte = clamp(midByte);
     hiByte = clamp(hiByte);
 
-    this.fragUniforms[index] = loByte + midByte * 256 + hiByte * 256 * 256;
-  }
-
-  private setRgb(rgb: ColorDef, index: number): void {
-    const colors = rgb.colors;
-    this.setInteger(colors.r, colors.g, colors.b, index);
+    this.fragUniforms[index] = loByte + hiByte * 256;
   }
 }
 

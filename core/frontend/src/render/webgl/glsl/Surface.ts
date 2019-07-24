@@ -57,26 +57,27 @@ const applyTextureWeight = `
 `;
 
 const unpackMaterialParam = `
-vec3 unpackMaterialParam(float f) {
-  vec3 v;
-  v.z = floor(f / 256.0 / 256.0);
-  v.y = floor((f - v.z * 256.0 * 256.0) / 256.0);
-  v.x = floor(f - v.z * 256.0 * 256.0 - v.y * 256.0);
+vec2 unpackMaterialParam(float f) {
+  vec2 v;
+  v.y = floor(f / 256.0);
+  v.x = floor(f - v.y * 256.0);
   return v;
 }`;
 
 const unpackAndNormalizeMaterialParam = `
-vec3 unpackAndNormalizeMaterialParam(float f) {
+vec2 unpackAndNormalizeMaterialParam(float f) {
   return unpackMaterialParam(f) / 255.0;
 }`;
 
 const decodeFragMaterialParams = `
-void decodeMaterialParams(vec3 params) {
-  mat_specular = vec4(unpackAndNormalizeMaterialParam(params.x), params.y);
+void decodeMaterialParams(vec4 params) {
+  mat_weights = unpackAndNormalizeMaterialParam(params.x);
 
-  vec3 weights = unpackAndNormalizeMaterialParam(params.z);
-  mat_weights = weights.xy;
-  mat_texture_weight = weights.z;
+  vec2 texAndSpecR = unpackAndNormalizeMaterialParam(params.y);
+  mat_texture_weight = texAndSpecR.x;
+
+  vec2 specGB = unpackAndNormalizeMaterialParam(params.z);
+  mat_specular = vec4(texAndSpecR.y, specGB, params.w);
 }`;
 
 const decodeMaterialColor = `
@@ -85,14 +86,15 @@ void decodeMaterialColor(vec4 rgba) {
   mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
 }`;
 
+// defaults: (0x6699, 0xffff, 0xffff, 13.5)
 const computeMaterialParams = `
-  const vec3 defaults = vec3(16777215.0, 13.5, 16737945.0);
+  const vec4 defaults = vec4(26265.0, 65535.0, 65535.0, 13.5);
   if (isSurfaceBitSet(kSurfaceBit_IgnoreMaterial))
     return defaults;
   else
     return getMaterialParams();
 `;
-const getUniformMaterialParams = `vec3 getMaterialParams() { return u_materialParams; }`;
+const getUniformMaterialParams = `vec4 getMaterialParams() { return u_materialParams; }`;
 
 // The 8-bit material index is stored with the 24-bit feature index, in the high byte.
 // ###TODO: This executes *before* g_featureIndexCoords is computed.
@@ -123,11 +125,12 @@ void readMaterialAtlas() {
   mat_alpha = vec2(rgba.a, float(flags == 2.0 || flags == 3.0));
 
   float specularExponent = unpackFloat(packedSpecularExponent);
-  float packedSpecularRgb = specularRgb.x + specularRgb.y * 256.0 + specularRgb.z * 256.0 * 256.0;
-  float packedWeights = weightsAndFlags.y + weightsAndFlags.z * 256.0 + 1.0 * 256.0 * 256.0; // z = texture weight, always 1 for atlas.
-  g_materialParams = vec3(packedSpecularRgb, specularExponent, packedWeights);
+  g_materialParams.x = weightsAndFlags.y + weightsAndFlags.z * 256.0;
+  g_materialParams.y = 255.0 + specularRgb.r * 256.0;
+  g_materialParams.z = specularRgb.g + specularRgb.b * 256.0;
+  g_materialParams.w = specularExponent;
 }`;
-const getAtlasMaterialParams = `vec3 getMaterialParams() { return g_materialParams; }`;
+const getAtlasMaterialParams = `vec4 getMaterialParams() { return g_materialParams; }`;
 
 /** @internal */
 export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
@@ -149,9 +152,10 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
 
-  // ###TODO: Material atlas and instanced geometry.
-  if (builder.vert.usesInstancedGeometry)
+  if (builder.vert.usesInstancedGeometry) {
+    // ###TODO: Remove combination of technique flags - instances never use material atlases.
     hasMaterialAtlas = HasMaterialAtlas.No;
+  }
 
   if (!hasMaterialAtlas) {
     vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
@@ -162,11 +166,11 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
       });
     });
 
-    vert.addUniform("u_materialParams", VariableType.Vec3, (prog) => {
+    vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_materialParams", (uniform, params) => {
         const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
         const mat = undefined !== info && !info.isAtlas ? info : Material.default;
-        uniform.setUniform3fv(mat.fragUniforms);
+        uniform.setUniform4fv(mat.fragUniforms);
       });
     });
 
@@ -183,7 +187,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
     });
 
     // ###TODO: Should not re-sample featureIndex+materialIndex if already sampled the other
-    vert.addGlobal("g_materialParams", VariableType.Vec3);
+    vert.addGlobal("g_materialParams", VariableType.Vec4);
     vert.addFunction(unpackFloat);
     vert.addFunction(readMaterialAtlas);
     vert.addInitializer("readMaterialAtlas();");
@@ -191,33 +195,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   }
 
   vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
-  builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec3, "computeMaterialParams", computeMaterialParams);
-
-  const debugMaterialAtlas = false;
-  if (debugMaterialAtlas) {
-    frag.addUniform("u_debugMaterialAtlas", VariableType.Int, (prog) => {
-      prog.addGraphicUniform("u_debugMaterialAtlas", (uniform, params) => {
-        const info = params.geometry.materialInfo;
-        if (undefined === info)
-          uniform.setUniform1i(-1);
-        else if (info.isAtlas)
-          uniform.setUniform1i(info.numMaterials);
-        else
-          uniform.setUniform1i(0);
-      });
-    });
-
-    const apply = `
-      if (u_debugMaterialAtlas < 0)
-        return vec4(0.0, 0.0, 0.0, 1.0);
-      else if (u_debugMaterialAtlas < 1)
-        return vec4(1.0, 0.0, 0.0, 1.0);
-      else if (u_debugMaterialAtlas < 2)
-        return vec4(0.0, 1.0, 0.0, 1.0);
-      else
-        return vec4(0.0, 0.0, 1.0, 1.0);`;
-    frag.set(FragmentShaderComponent.ApplyDebugColor, apply);
-  }
+  builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec4, "computeMaterialParams", computeMaterialParams);
 }
 
 const computePosition = `
