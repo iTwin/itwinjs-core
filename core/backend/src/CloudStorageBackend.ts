@@ -75,13 +75,37 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public async ensureContainer(name: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._service.createContainerIfNotExists(name, (error, _result, response) => {
-        if (error) {
-          reject(error);
-        }
+      this._service.createContainerIfNotExists(name, (error, result, response) => {
+        if (error || !response.isSuccessful) {
+          const reason = {
+            createContainerFailed: true,
+            containerName: name,
+            requestId: result.requestId,
+            responseStatus: response.statusCode,
+            responseError: undefined as any,
+            responseBody: "",
+          };
 
-        if (!response.isSuccessful) {
-          reject(response.error);
+          if (response.error) {
+            if (response.error instanceof Error) {
+              reason.responseError = {
+                name: response.error.name,
+                message: response.error.message,
+              };
+            } else {
+              reason.responseError = response.error;
+            }
+          }
+
+          if (response.body) {
+            if (Buffer.isBuffer(response.body)) {
+              reason.responseBody = response.body.toString();
+            } else {
+              reason.responseBody = response.body;
+            }
+          }
+
+          reject(reason);
         }
 
         // _result indicates whether container already existed...irrelevant to semantics of our API
@@ -110,6 +134,9 @@ export class AzureBlobStorage extends CloudStorageService {
           if (error || !response.isSuccessful) {
             const reason = {
               uploadTileFailed: true,
+              containerName: container,
+              tileId: name,
+              tileSize: data.byteLength,
               requestId: result.requestId,
               responseStatus: response.statusCode,
               responseError: undefined as any,
@@ -143,6 +170,9 @@ export class AzureBlobStorage extends CloudStorageService {
       } catch (error) {
         const reason = {
           threwWhileUploadingTile: true,
+          containerName: container,
+          tileId: name,
+          tileSize: data.byteLength,
           error: undefined as any,
         };
 
