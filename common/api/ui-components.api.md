@@ -2074,6 +2074,7 @@ export class SelectionHandler<Item> {
 export enum SelectionMode {
     Extended = 12,
     Multiple = 6,
+    None = 16,
     Single = 1,
     SingleAllowDeselect = 5
 }
@@ -2084,6 +2085,8 @@ export enum SelectionModeFlags {
     DragEnabled = 2,
     // (undocumented)
     KeysEnabled = 8,
+    // (undocumented)
+    None = 16,
     // (undocumented)
     SelectionLimitOne = 1,
     // (undocumented)
