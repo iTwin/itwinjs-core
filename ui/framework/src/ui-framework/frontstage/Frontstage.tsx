@@ -453,8 +453,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        {this.doContentLayoutRender()}
-
         <NZ_Zones style={zonesStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
@@ -474,6 +472,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
                   position: "relative",
                 }}
               >
+                {this.doContentLayoutRender()}
                 {this.cloneZoneElements(Frontstage._zoneIds, runtimeProps)}
               </div>
             </StagePanels>
