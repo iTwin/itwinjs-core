@@ -407,7 +407,12 @@ export class SurfaceGeometry extends MeshGeometry {
         return opaquePass;
     }
 
-    const hasAlpha = (undefined !== mat && wantMaterials(vf) && mat.hasTranslucency) || this.getColor(target).hasTranslucency;
+    let hasAlpha;
+    if (undefined !== mat && wantMaterials(vf)) // ###TODO && mat.overridesAlpha())
+      hasAlpha = mat.hasTranslucency ? RenderPass.Translucent : opaquePass;
+    else
+      hasAlpha = this.getColor(target).hasTranslucency;
+
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
 

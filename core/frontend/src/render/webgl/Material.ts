@@ -32,7 +32,7 @@ import { FloatRgb } from "./FloatRGBA";
  *
  * This packing is motivated by the limited max number of varying vectors guaranteed by WebGL.
  * A varying is used because:
- *  1. Material atlases require looking up the material associated with a particular vertex;
+ *  1. Material atlases require looking up the material associated with a particular vertex; and
  *  2. The vertex material may be replaced with a default material based on other criteria such as view flags and feature symbology overrides.
  * @internal
  */
@@ -45,7 +45,8 @@ export class Material extends RenderMaterial {
   public readonly rgba = new Float32Array(4);
 
   public get overridesRgb() { return this.rgba[0] >= 0; }
-  public get hasTranslucency() { return this.rgba[3] >= 0 && this.rgba[3] < 1; }
+  public get overridesAlpha() { return this.rgba[3] >= 0; }
+  public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
   public constructor(params: RenderMaterial.Params) {
     super(params);
@@ -59,9 +60,7 @@ export class Material extends RenderMaterial {
       this.rgba[0] = this.rgba[1] = this.rgba[2] = -1;
     }
 
-    // params.transparency of 0.0 indicates alpha no overridden. Indicated to shader as -1.
-    // ###TODO This is not true - material can override element transparency to be opaque.
-    const alpha = 0.0 !== params.transparency ? 1.0 - params.transparency : -1;
+    const alpha = undefined !== params.alpha ? params.alpha : -1;
     this.rgba[3] = alpha;
 
     const scale = (value: number) => Math.floor(value * 255 + 0.5);
