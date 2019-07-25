@@ -2,18 +2,17 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
-import { Id64String, DbOpcode, DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { IModelVersion, SubCategoryAppearance, IModel, CodeSpec, CodeScopeSpec } from "@bentley/imodeljs-common";
-import { IModelJsFs } from "../../IModelJsFs";
-import {
-  KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager,
-  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, BriefcaseEntry,
-  AuthorizedBackendRequestContext,
-} from "../../imodeljs-backend";
+import { DbOpcode, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode } from "@bentley/imodeljs-clients";
+import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { CodeState, HubIModel, HubCode, IModelQuery, MultiCode, Lock, LockType, LockLevel } from "@bentley/imodeljs-clients";
-import { IModelTestUtils, Timer, TestIModelInfo } from "../IModelTestUtils";
+import {
+  AuthorizedBackendRequestContext, BriefcaseEntry, BriefcaseManager, DictionaryModel, Element, IModelDb, KeepBriefcase,
+  OpenParams, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+} from "../../imodeljs-backend";
+import { IModelJsFs } from "../../IModelJsFs";
+import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
@@ -92,17 +91,17 @@ describe("IModelWriteTest (#integration)", () => {
 
   it("acquire codespec lock", async () => {
     const iModel: IModelDb = await IModelDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
-    const code1 = new CodeSpec(iModel, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+    const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const locks = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
     assert.equal(locks.length, 1);
-    iModel.insertCodeSpec(code1);
+    iModel.insertCodeSpec(codeSpec1);
     await iModel.close(superRequestContext, KeepBriefcase.No);
   });
 
   it("acquire codespec lock - example", async () => {
     const model: IModelDb = await IModelDb.open(superRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
-    const code1 = new CodeSpec(model, Id64.invalid, "MyCode", CodeScopeSpec.Type.Model);
+    const codeSpec1 = CodeSpec.create(model, "MyCodeSpec", CodeScopeSpec.Type.Model);
 
     model.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());  // needed for writing to iModels
 
@@ -115,7 +114,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     const locks = await BriefcaseManager.imodelClient.locks.update(superRequestContext, model.briefcase.iModelId, [codeSpecsLock]);
     assert.equal(locks.length, 1);
-    model.insertCodeSpec(code1);
+    model.insertCodeSpec(codeSpec1);
     await model.close(superRequestContext, KeepBriefcase.No);
   });
 

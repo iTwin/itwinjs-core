@@ -1154,42 +1154,48 @@ describe("iModel", () => {
 
   });
 
+  it("validate BisCodeSpecs", async () => {
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).scopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
+  });
+
   it("should create and insert CodeSpecs", () => {
     const testImodel = imodel2;
-
-    const codeSpec: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
-    assert.equal(codeSpec.specScopeType, CodeScopeSpec.Type.Model);
+    assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
-    try {
-      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
-      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
-      assert.fail();
-    } catch (err) {
-      // We expect this to fail.
-    }
+    const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), IModelError);
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
-
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
     // make sure CodeScopeSpec.Type.Repository works
-    const codeSpec3: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec3: CodeSpec = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
     const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
+    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
-    assert.equal(codeSpec4.specScopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const copyOfCodeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec4Id);
+    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
+    assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec2"));

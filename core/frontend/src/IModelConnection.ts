@@ -713,7 +713,7 @@ export namespace IModelConnection {
       this._loaded = [];
       const codeSpecArray: any[] = await IModelReadRpcInterface.getClient().getAllCodeSpecs(this._iModel.iModelToken.toJSON());
       for (const codeSpec of codeSpecArray) {
-        this._loaded.push(new CodeSpec(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
+        this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
       }
     }
 

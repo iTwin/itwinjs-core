@@ -988,7 +988,7 @@ export class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.scopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }

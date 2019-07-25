@@ -722,18 +722,22 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    // @internal @deprecated
+    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
+    // @internal
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // (undocumented)
+    // @beta
+    isManagedWithIModel: boolean;
     readonly isValid: boolean;
-    // (undocumented)
     name: string;
-    // (undocumented)
+    // @internal
     properties: any;
-    // (undocumented)
     scopeReq: CodeScopeSpec.ScopeRequirement;
-    // (undocumented)
+    scopeType: CodeScopeSpec.Type;
+    // @deprecated
     specScopeType: CodeScopeSpec.Type;
 }
 
