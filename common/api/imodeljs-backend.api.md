@@ -2005,7 +2005,7 @@ export class IModelHost {
     // @internal (undocumented)
     static readonly platform: typeof IModelJsNative;
     // @internal
-    static restrictTileUrlsByClientIp(): boolean;
+    static readonly restrictTileUrlsByClientIp: boolean;
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;

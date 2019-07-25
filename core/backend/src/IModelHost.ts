@@ -365,7 +365,7 @@ export class IModelHost {
   /** Whether to restrict tile cache URLs by client IP address.
    * @internal
    */
-  public static restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
+  public static get restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
