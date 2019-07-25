@@ -23,15 +23,27 @@ function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockGetBriefcaseWithDownloadUrl(imodelId: GuidString, briefcase: Briefcase) {
+function mockGetBriefcaseRequest(imodelId: GuidString, briefcase: Briefcase, selectDownloadUrl: boolean, selectApplicationData: boolean) {
   if (!TestConfig.enableMocks)
     return;
 
-  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase",
-    `${briefcase.briefcaseId!}?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`);
-  briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
-  briefcase.fileName = "TestModel.bim";
-  briefcase.fileSize = utils.getMockFileSize();
+  let getRequestUrl: string = `${briefcase.briefcaseId!}?$select=*`;
+  if (selectDownloadUrl)
+    getRequestUrl += `,FileAccessKey-forward-AccessKey.DownloadURL`;
+  if (selectApplicationData)
+    getRequestUrl += `,CreatedByApplication-forward-Application.*`;
+
+  const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase", getRequestUrl);
+  if (selectDownloadUrl) {
+    briefcase.downloadUrl = "https://imodelhubqasa01.blob.core.windows.net/imodelhubfile";
+    briefcase.fileName = "TestModel.bim";
+    briefcase.fileSize = utils.getMockFileSize();
+  }
+  if (selectApplicationData) {
+    briefcase.applicationId = `testApplicationId`;
+    briefcase.applicationName = `testApplicationName`;
+  }
+
   const requestResponse = ResponseBuilder.generateGetResponse<Briefcase>(briefcase);
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
@@ -156,7 +168,7 @@ describe("iModelHub BriefcaseHandler", () => {
   });
 
   it("should get the download URL for a Briefcase", async () => {
-    mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
     chai.assert(briefcase.fileName);
@@ -165,8 +177,40 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl!.startsWith("https://"));
   });
 
+  it("should get the application data for a Briefcase", async function (this: Mocha.ITestCallbackContext) {
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), false, true);
+    const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectApplicationData()))[0];
+    chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
+
+    if (TestConfig.enableMocks) {
+      chai.assert(briefcase.applicationId);
+      chai.expect(briefcase.applicationId).equals("testApplicationId");
+      chai.assert(briefcase.applicationName);
+      chai.expect(briefcase.applicationName).equals("testApplicationName");
+    }
+  });
+
+  it("should get the application data and download URL for a Briefcase", async function (this: Mocha.ITestCallbackContext) {
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, true);
+    const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId,
+      new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl().selectApplicationData()))[0];
+    chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
+
+    chai.assert(briefcase.fileName);
+    chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
+    chai.assert(briefcase.downloadUrl);
+    chai.assert(briefcase.downloadUrl!.startsWith("https://"));
+
+    if (TestConfig.enableMocks) {
+      chai.assert(briefcase.applicationId);
+      chai.expect(briefcase.applicationId).equals("testApplicationId");
+      chai.assert(briefcase.applicationName);
+      chai.expect(briefcase.applicationName).equals("testApplicationName");
+    }
+  });
+
   it("should download a Briefcase", async () => {
-    mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
 
@@ -183,7 +227,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   it("should download a Briefcase with Bufferring", async () => {
     iModelClient.setFileHandler(new AzureFileHandler(true));
-    mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
+    mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, false);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
     chai.assert(briefcase.downloadUrl);
 

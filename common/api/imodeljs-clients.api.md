@@ -43,6 +43,9 @@ export class AccessToken extends Token {
 }
 
 // @internal
+export function addSelectApplicationData(query: RequestQueryOptions): void;
+
+// @internal
 export function addSelectFileAccessKey(query: RequestQueryOptions): void;
 
 // @internal
@@ -112,6 +115,8 @@ export class Briefcase extends WsgInstance {
     // (undocumented)
     accessMode?: BriefcaseAccessMode;
     acquiredDate?: string;
+    applicationId?: string;
+    applicationName?: string;
     briefcaseId?: number;
     downloadUrl?: string;
     fileDescription?: string;
@@ -162,11 +167,14 @@ export class BriefcaseQuery extends Query {
     byId(id: number): this;
     getId(): number | undefined;
     ownedByMe(): this;
+    selectApplicationData(): this;
     selectDownloadUrl(): this;
 }
 
 // @beta
 export class ChangeSet extends WsgInstance {
+    applicationId?: string;
+    applicationName?: string;
     briefcaseId?: number;
     changesType?: ChangesType;
     description?: string;
@@ -232,6 +240,7 @@ export class ChangeSetQuery extends StringIdQuery {
     fromId(id: string): this;
     getVersionChangeSets(versionId: GuidString): this;
     latest(): this;
+    selectApplicationData(): this;
     selectDownloadUrl(): this;
 }
 

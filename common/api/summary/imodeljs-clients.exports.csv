@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken 
+internal;addSelectApplicationData(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 

@@ -559,4 +559,25 @@ describe("iModelHub ChangeSetHandler", () => {
       chai.expect(cs.seedFileId!.toString()).to.be.equal(changeSets[0].seedFileId!.toString());
     });
   });
+
+  it("should query changesets application data", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks) {
+      const mockedChangeSet = utils.getMockChangeSets(briefcase)[0];
+      mockedChangeSet.applicationId = "testApplicationId";
+      mockedChangeSet.applicationName = "testApplicationName";
+      const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId.toString(), "ChangeSet",
+        `?$select=*,CreatedByApplication-forward-Application.*&$top=1000`);
+      const requestResponse = ResponseBuilder.generateGetArrayResponse<ChangeSet>([mockedChangeSet]);
+      ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
+    }
+    const changeSets: ChangeSet[] = await iModelClient.changeSets.get(requestContext, imodelId, new ChangeSetQuery().selectApplicationData());
+    chai.expect(changeSets.length).to.be.greaterThan(0);
+
+    if (TestConfig.enableMocks) {
+      chai.assert(changeSets[0].applicationId);
+      chai.expect(changeSets[0].applicationId).equals("testApplicationId");
+      chai.assert(changeSets[0].applicationName);
+      chai.expect(changeSets[0].applicationName).equals("testApplicationName");
+    }
+  });
 });
