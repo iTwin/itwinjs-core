@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Added option to restrict tile cache URLs by client IP address.
+- Apply change sets at the backend in a non-blocking worker thread. 
+- Add ElementAspect handler methods
+- When deleting a parent element, make sure there are onDelete/onDeleted callbacks for child elements
+- Add support for linework to IModelDb.exportGraphics
+- The className parameter to IModelDb.Element.getAspects is now optional to allow all aspects to be returned
+- Deprecate IModelDb.importSchema in favor of IModelDb.importSchemas
+- Added method to get element mass properties.
+- Add exportPartGraphics and accompanying interfaces
+- Capture tile upload errors using JSON.stringify.
+- Fallback to toString for Error derivative errors in tile upload
+- Always report tile upload response on failure
+- Discover properties of azure 'error' object
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT
@@ -11,9 +30,8 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Catch tile upload errors.
 - Setting up briefcase is always from an older checkpoint. 
 - Add materialId, subCategory to ExportGraphicsInfo
-- fix crash in getViewThumbnail for odd number of bytes 
+- Fix crash in getViewThumbnail for odd number of bytes 
 - Adding relationship class for GraphicalElement3dRepresentsElement.
-- fix internal addon API
 - Initial implementation of the LinearReferencing typescript domain
 - Adding domain classes for all relatinships in the LinearReferencing schema.
 - Exporting relationships module.
@@ -22,10 +40,9 @@ Mon, 01 Jul 2019 19:04:29 GMT
 - Add a new method `forceLoadSchemas` to `IModelJsNative.ECPresentationManager`.
 - Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
 - Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays
-- remove unnecssary logging
-- insertElement will never return Id64.invalid, throws error instead
+- Made `insertElement` not return Id64.invalid, throws error instead
 - Update to TypeScript 3.5
-- update property referenced in ULAS error message
+- Update property referenced in ULAS error message
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT
@@ -38,7 +55,6 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Fix bug in IModelDb.createSnapshotFromSeed
 - Add BriefcaseId.Snapshot
 - Improve reading and binding binary blob using concurrent query manager
-- Fixed typo in function name
 - Modified ElementAspect Performance tests
 - Add options to IModelHost for logging large tile sizes and long tile load times.
 - Add TypeScript wrapper for BisCore:ExternalSourceAspect
@@ -49,7 +65,6 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - IModelDb.openSnapshot cannot open a briefcase copy of an iModel managed by iModelHub
 - The IModelDb.createSnapshot instance method replaces the IModelDb.createSnapshotFromSeed static method
 - crash reporting, node-report opt-in
-- rush extract-api + rush change
 - Throw IModelError if an IModelDb query would return too many rows
 - Retire some tile-related feature gates.
 - Introduced tile format v4.0

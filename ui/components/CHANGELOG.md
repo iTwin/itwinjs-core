@@ -1,6 +1,16 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Tree: Add `bulkCheckboxActionsDisabled` prop.
+- Tree: Update visual styles.
+- Table: Update visual styles.
+- PropertyView: Update visual styles.
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT
