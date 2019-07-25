@@ -251,7 +251,16 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Toast)),
+    });
+  }
+
+  public static get noIconMessageCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      iconSpec: "icon-status-success-hollow",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.None, "This message has no icon", this._detailedMessage)),
     });
   }
 

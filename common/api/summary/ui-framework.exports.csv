@@ -20,8 +20,6 @@ beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProp
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
-alpha;BackstageCloseEvent 
-alpha;BackstageCloseEventArgs
 public;BackstageEvent 
 public;BackstageEventArgs
 public;BackstageItemProps 
@@ -90,7 +88,17 @@ alpha;CursorDirection
 alpha;CursorDirectionParts
 alpha;CursorInformation
 alpha;CursorPopup 
+internal;CursorPopupCloseEvent 
+internal;CursorPopupCloseEventArgs
+alpha;CursorPopupContent: React_2.FunctionComponent
+alpha;CursorPopupManager
+internal;CursorPopupOpenEvent 
+internal;CursorPopupOpenEventArgs
 alpha;CursorPopupProps
+internal;CursorPopupShow
+internal;CursorPopupUpdatePositionEvent 
+internal;CursorPopupUpdatePositionEventArgs
+alpha;CursorPrompt
 alpha;CursorUpdatedEvent 
 alpha;CursorUpdatedEventArgs
 beta;CustomItemDef 

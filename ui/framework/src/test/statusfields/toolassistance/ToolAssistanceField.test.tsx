@@ -9,8 +9,10 @@ import * as sinon from "sinon";
 
 import { MockRender, ToolAssistance, ToolAssistanceImage } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
+import { FooterPopup } from "@bentley/ui-ninezone";
+import { Checkbox, LocalUiSettings } from "@bentley/ui-core";
 
-import TestUtils from "../../TestUtils";
+import TestUtils, { storageMock } from "../../TestUtils";
 import {
   StatusBar,
   ToolAssistanceField,
@@ -21,8 +23,9 @@ import {
   WidgetDef,
   StatusBarWidgetControlArgs,
   AppNotificationManager,
+  CursorPopupManager,
+  FrontstageManager,
 } from "../../../ui-framework";
-import { FooterPopup } from "@bentley/ui-ninezone";
 
 describe("ToolAssistanceField", () => {
 
@@ -32,10 +35,14 @@ describe("ToolAssistanceField", () => {
     }
 
     public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
-      if (openWidget) { }
+      const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
+      uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
+
       return (
         <>
-          <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} includePromptAtCursor={true} />
+          <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget}
+            includePromptAtCursor={true}
+            uiSettings={uiSettings} />
         </>
       );
     }
@@ -261,6 +268,22 @@ describe("ToolAssistanceField", () => {
     (Logger.logError as any).restore();
   });
 
+  it("ToolAssistanceImage.Keyboard with invalid keyboardInfo should log error", () => {
+    const spyMethod = sinon.spy(Logger, "logError");
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([]), "Press key");
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+
+    notifications.setToolAssistance(instructions);
+
+    spyMethod.called.should.true;
+
+    wrapper.unmount();
+    (Logger.logError as any).restore();
+  });
+
   it("should close on outside click", () => {
     const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
     const footerPopup = wrapper.find(FooterPopup);
@@ -273,6 +296,86 @@ describe("ToolAssistanceField", () => {
     footerPopup.prop("onOutsideClick")!(outsideClick);
 
     expect(statusBarInstance.state.openWidget).null;
+  });
+
+  it("should set showPromptAtCursor on checkbox click", async () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    expect(toolAssistanceField.state("showPromptAtCursor")).to.be.true;
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    notifications.setToolAssistance(instructions);
+    wrapper.update();
+
+    const indicator = wrapper.find("div.nz-indicator");
+    expect(indicator.length).to.eq(1);
+    indicator.simulate("click");
+    wrapper.update();
+
+    const checkBox = wrapper.find(Checkbox);
+    expect(checkBox.length).to.eq(1);
+    checkBox.find("input").simulate("change", { target: { checked: false } });
+
+    expect(toolAssistanceField.state("showPromptAtCursor")).to.be.false;
+
+    wrapper.unmount();
+  });
+
+  it("cursorPrompt should open when tool assistance set", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    toolAssistanceField.setState({ showPromptAtCursor: true });
+
+    const spyMethod = sinon.spy();
+    CursorPopupManager.onCursorPopupOpenEvent.addListener(spyMethod);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    notifications.setToolAssistance(instructions);
+    wrapper.update();
+
+    spyMethod.called.should.true;
+
+    CursorPopupManager.onCursorPopupOpenEvent.removeListener(spyMethod);
+    wrapper.unmount();
+  });
+
+  it("cursorPrompt should open when tool icon changes", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={false} />);
+
+    FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+
+    const toolAssistanceField = wrapper.find(ToolAssistanceField);
+    expect(toolAssistanceField.length).to.eq(1);
+    toolAssistanceField.setState({ showPromptAtCursor: true });
+
+    // emit before instructions set
+    FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+
+    const spyMethod = sinon.spy();
+    CursorPopupManager.onCursorPopupOpenEvent.addListener(spyMethod);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    notifications.setToolAssistance(instructions);
+
+    // emit after instructions set
+    FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
+
+    wrapper.update();
+
+    spyMethod.called.should.true;
+
+    CursorPopupManager.onCursorPopupOpenEvent.removeListener(spyMethod);
+    wrapper.unmount();
   });
 
 });

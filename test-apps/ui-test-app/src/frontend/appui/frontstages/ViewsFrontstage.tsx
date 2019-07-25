@@ -53,7 +53,9 @@ import {
   CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
-  CursorPopup,
+  PopupButton,
+  CursorPopupManager,
+  CursorPopupContent,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -73,14 +75,14 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-import { ViewportWidgetControl } from "../widgets/ViewportWidget";
+import { ViewportWidgetControl, ViewportWidget } from "../widgets/ViewportWidget";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
 
-import { SvgSprite } from "@bentley/ui-core";
+import { SvgSprite, ScrollView } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
@@ -290,45 +292,58 @@ class FrontstageToolWidget extends React.Component {
 
   /** Tool that will display a pointer message on keyboard presses.
    */
+  private _tool4Priority = OutputMessagePriority.Info;
+  private _tool4Message = "Move the mouse or press an arrow key.";
+  private _tool4Detailed = "Press an arrow key to change position or Escape to dismiss.";
+  private _toolRelativePosition = RelativePosition.BottomRight;
+
   private _tool4 = () => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Error, "Press an arrow", "Press an arrow and move mouse to dismiss", OutputMessageType.Pointer);
-    details.setPointerTypeDetails(IModelApp.viewManager.selectedView!.parentDiv,
-      {
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-      });
+    const details = new NotifyMessageDetails(this._tool4Priority, this._tool4Message, this._tool4Detailed, OutputMessageType.Pointer);
+    const wrapper = document.getElementById("uifw-configurableui-wrapper");
+    details.setPointerTypeDetails(wrapper!, { x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
     IModelApp.notifications.outputMessage(details);
     document.addEventListener("keyup", this._handleTool4Keypress);
-    document.addEventListener("mousemove", this._handleTool4Dismiss);
+    document.addEventListener("mousemove", this._handleTool4MouseMove);
   }
 
   private _handleTool4Keypress = (event: any) => {
-    const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "", "", OutputMessageType.Pointer);
-    const viewport = IModelApp.viewManager.selectedView!.parentDiv;
-    const midX = window.innerWidth / 2;
-    const midY = window.innerHeight / 2;
+    const details = new NotifyMessageDetails(OutputMessagePriority.Info, "", this._tool4Detailed);
+    let changed = false;
+
     switch (event.keyCode) {
       case 37:
         details.briefMessage = "Left pressed";
-        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Left);
-        IModelApp.notifications.outputMessage(details);
+        this._toolRelativePosition = RelativePosition.Left;
+        changed = true;
         break;
       case 38:
         details.briefMessage = "Up pressed";
-        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Top);
-        IModelApp.notifications.outputMessage(details);
+        this._toolRelativePosition = RelativePosition.Top;
+        changed = true;
         break;
       case 39:
         details.briefMessage = "Right pressed";
-        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Right);
-        IModelApp.notifications.outputMessage(details);
+        this._toolRelativePosition = RelativePosition.Right;
+        changed = true;
         break;
       case 40:
         details.briefMessage = "Down pressed";
-        details.setPointerTypeDetails(viewport, { x: midX, y: midY }, RelativePosition.Bottom);
-        IModelApp.notifications.outputMessage(details);
+        this._toolRelativePosition = RelativePosition.Bottom;
+        changed = true;
+        break;
+      case 27:  // Escape
+        this._handleTool4Dismiss();
         break;
     }
+
+    if (changed) {
+      IModelApp.notifications.outputMessage(details);
+      IModelApp.notifications.updatePointerMessage({ x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
+    }
+  }
+
+  private _handleTool4MouseMove = () => {
+    IModelApp.notifications.updatePointerMessage({ x: CursorInformation.cursorX, y: CursorInformation.cursorY }, this._toolRelativePosition);
   }
 
   private _handleTool4Dismiss = () => {
@@ -459,9 +474,15 @@ class FrontstageToolWidget extends React.Component {
   private get _startCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.startCursorPopup", execute: async () => {
-        const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
-        CursorPopup.open(FrontstageManager.activeToolSettingsNode, CursorInformation.cursorPosition, 20, relativePosition);
+        // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(CursorInformation.cursorDirection);
+        const content = (
+          <CursorPopupContent>
+            {FrontstageManager.activeToolSettingsNode}
+          </CursorPopupContent>
+        );
+        CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, 20, RelativePosition.TopRight);
         CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
+        document.addEventListener("keyup", this._handleCursorPopupKeypress);
       },
     });
   }
@@ -469,15 +490,28 @@ class FrontstageToolWidget extends React.Component {
   private get _endCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.stopCursorPopup", execute: async () => {
-        CursorPopup.close(false);
-        CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
+        this._closeCursorPopup();
       },
     });
   }
 
   private _handleCursorUpdated(args: CursorUpdatedEventArgs) {
-    const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
-    CursorPopup.updatePosition(args.newPt, 20, relativePosition);
+    // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
+    CursorPopupManager.updatePosition(args.newPt, 20, RelativePosition.TopRight);
+  }
+
+  private _handleCursorPopupKeypress = (event: any) => {
+    switch (event.keyCode) {
+      case 27:  // Escape
+        this._closeCursorPopup();
+        break;
+    }
+  }
+
+  private _closeCursorPopup() {
+    CursorPopupManager.close("test1", false);
+    CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
+    document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
 
   /** example that hides the button if active content is not a 3d View */
@@ -523,6 +557,37 @@ class FrontstageToolWidget extends React.Component {
   //    });
   //  }
 
+  // cSpell:disable
+
+  /** Get the CustomItemDef for PopupButton  */
+  private get _viewportPopupButtonItemDef() {
+    return new CustomItemDef({
+      reactElement: (
+        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" betaBadge={true}>
+          <div style={{ width: "400px", height: "300px" }}>
+            <ScrollView>
+              <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </div>
+              <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
+              <div>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+              </div>
+            </ScrollView>
+          </div>
+        </PopupButton>
+      ),
+    });
+  }
+
+  // cSpell:enable
+
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
       AppTools.appSelectElementCommand,
@@ -536,7 +601,7 @@ class FrontstageToolWidget extends React.Component {
       AppTools.tool1,
       new ConditionalItemDef({
         conditionalId: "Conditional-tool-2",
-        items: [AppTools.tool2],
+        items: [AppTools.tool2, this._viewportPopupButtonItemDef],
         stateSyncIds: [SampleAppUiActionId.setTestProperty],
         stateFunc: this._enabledTestStateFunc,
         betaBadge: true,

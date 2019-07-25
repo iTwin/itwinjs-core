@@ -52,4 +52,12 @@
       background-color: $buic-accessory-alert;
     }
   }
+
+  &.nz-status-warning {
+    border-color: $buic-accessory-warning;
+
+    > .nz-icon {
+      background-color: $buic-accessory-warning;
+    }
+  }
 }

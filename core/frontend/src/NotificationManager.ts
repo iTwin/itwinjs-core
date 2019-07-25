@@ -252,6 +252,12 @@ export class NotificationManager {
   /** Clear the tooltip if it is currently open. */
   public clearToolTip(): void { }
 
+  /** Update message position created with [[OutputMessageType.Pointer]].
+   * @param displayPoint        Point at which to display the Pointer type message.
+   * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
+   */
+  public updatePointerMessage(_displayPoint: XAndY, _relativePosition = RelativePosition.TopRight): void { }
+
   /** Close message created with [[OutputMessageType.Pointer]]. */
   public closePointerMessage(): void { }
 

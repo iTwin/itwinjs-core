@@ -50,6 +50,9 @@ export class Annulus {
 }
 
 // @public
+export const BlockText: React.FunctionComponent<TextProps>;
+
+// @public
 export const BodyText: React.FunctionComponent<TextProps>;
 
 // @alpha (undocumented)
@@ -152,7 +155,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 // @beta
-export const CheckListBoxSeparator: React.StatelessComponent;
+export const CheckListBoxSeparator: React.FunctionComponent;
 
 // @internal
 export class Circle {

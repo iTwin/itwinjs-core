@@ -103,6 +103,7 @@ export * from "./ui-core/inputs/Textarea";
 export * from "./ui-core/tabs/HorizontalTabs";
 
 export * from "./ui-core/text/BodyText";
+export * from "./ui-core/text/BlockText";
 export * from "./ui-core/text/Headline";
 export * from "./ui-core/text/LeadingText";
 export * from "./ui-core/text/LeadingText2";

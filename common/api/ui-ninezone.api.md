@@ -1398,7 +1398,9 @@ export enum Status {
     // (undocumented)
     Information = 0,
     // (undocumented)
-    Success = 1
+    Success = 1,
+    // (undocumented)
+    Warning = 3
 }
 
 // @internal
@@ -1408,6 +1410,7 @@ export class StatusHelpers {
     static getCssClassName(status: Status): string;
     static readonly INFORMATION_CLASS_NAME = "nz-status-information";
     static readonly SUCCESS_CLASS_NAME = "nz-status-success";
+    static readonly WARNING_CLASS_NAME = "nz-status-warning";
 }
 
 // @beta

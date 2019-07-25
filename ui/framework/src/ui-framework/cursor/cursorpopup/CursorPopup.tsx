@@ -6,122 +6,49 @@
 
 import * as React from "react";
 
-import { CommonProps, UiEvent } from "@bentley/ui-core";
+import { CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
 import { RelativePosition } from "@bentley/imodeljs-frontend";
 import { Size, Point, Rectangle, TitleBar } from "@bentley/ui-ninezone";
 
 import "./CursorPopup.scss";
+import { CursorPopupManager, CursorPopupProps, CursorPopupOpenEventArgs, CursorPopupUpdatePositionEventArgs, CursorPopupCloseEventArgs } from "./CursorPopupManager";
+import classnames = require("classnames");
 
-/** Properties for the [[CursorPopup]] open method
- * @alpha
+/** Enum for showing CursorPopup
+ * @internal - unit testing
  */
-export interface CursorPopupProps {
-  title?: string;
-
-  // called on popup close
-  onClose?: () => void;
-
-  // callback to apply changes
-  onApply?: () => void;
+export enum CursorPopupShow {
+  Close,
+  Open,
+  FadeOut,
 }
 
 /** State for the [[CursorPopup]] React component
  * @internal
  */
 interface CursorPopupState extends CursorPopupProps {
-  showPopup: boolean;
+  showPopup: CursorPopupShow;
   content: React.ReactNode;
   pt: Point;
   offset: number;
   relativePosition: RelativePosition;
 }
-
-/** CursorPopup Open Event Args interface.
- * @internal
- */
-interface CursorPopupOpenEventArgs {
-  content: React.ReactNode;
-  pt: Point;
-  offset: number;
-  relativePosition: RelativePosition;
-  props?: CursorPopupProps;
-}
-
-/** CursorPopup Open Event class.
- * @internal
- */
-class CursorPopupOpenEvent extends UiEvent<CursorPopupOpenEventArgs> { }
-
-/** CursorPopup Update Position Event Args interface.
- * @internal
- */
-interface CursorPopupUpdatePositionEventArgs {
-  pt: Point;
-  offset: number;
-  relativePosition: RelativePosition;
-}
-
-/** CursorPopup Update Position Event class.
- * @internal
- */
-class CursorPopupUpdatePositionEvent extends UiEvent<CursorPopupUpdatePositionEventArgs> { }
-
-/** CursorPopup Close Event Args interface.
- * @internal
- */
-interface CursorPopupCloseEventArgs {
-  apply: boolean;
-}
-
-/** CursorPopup Close Event class.
- * @internal
- */
-class CursorPopupCloseEvent extends UiEvent<CursorPopupCloseEventArgs> { }
 
 /** CursorPopup component
  * @alpha
  */
 export class CursorPopup extends React.Component<CommonProps, CursorPopupState> {
 
-  private static readonly _onCursorPopupOpenEvent = new CursorPopupOpenEvent();
-  private static readonly _onCursorPopupUpdatePositionEvent = new CursorPopupUpdatePositionEvent();
-  private static readonly _onCursorPopupCloseEvent = new CursorPopupCloseEvent();
-
-  /** Called to open popup with a new set of properties
-   */
-  public static open(content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition, props?: CursorPopupProps) {
-    CursorPopup._onCursorPopupOpenEvent.emit({ content, pt, offset, relativePosition, props });
-  }
-
-  /** Called to update popup with a new set of properties
-   */
-  public static update(content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition) {
-    CursorPopup._onCursorPopupOpenEvent.emit({ content, pt, offset, relativePosition });
-  }
-
-  /** Called to move the open popup to new location
-   */
-  public static updatePosition(pt: Point, offset: number, relativePosition: RelativePosition) {
-    CursorPopup._onCursorPopupUpdatePositionEvent.emit({ pt, offset, relativePosition });
-  }
-
-  /** Called when tool wants to close the popup
-   */
-  public static close(apply: boolean) {
-    CursorPopup._onCursorPopupCloseEvent.emit({ apply });
-  }
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
   private _isMounted: boolean = false;
   private _popupRef = React.createRef<HTMLDivElement>();
+  private _fadeOutTime = 500;
 
   /** @internal */
   constructor(props: CommonProps) {
     super(props);
 
     this.state = {
-      showPopup: false,
+      showPopup: CursorPopupShow.Close,
       content: undefined,
       pt: new Point(),
       offset: 0,
@@ -132,17 +59,17 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
   /** @internal */
   public componentDidMount() {
     this._isMounted = true;
-    CursorPopup._onCursorPopupOpenEvent.addListener(this._handleCursorPopupOpenEvent);
-    CursorPopup._onCursorPopupUpdatePositionEvent.addListener(this._handleCursorPopupUpdatePositionEvent);
-    CursorPopup._onCursorPopupCloseEvent.addListener(this._handleCursorPopupCloseEvent);
+    CursorPopupManager.onCursorPopupOpenEvent.addListener(this._handleCursorPopupOpenEvent);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.addListener(this._handleCursorPopupUpdatePositionEvent);
+    CursorPopupManager.onCursorPopupCloseEvent.addListener(this._handleCursorPopupCloseEvent);
   }
 
   /** @internal */
   public componentWillUnmount() {
     this._isMounted = false;
-    CursorPopup._onCursorPopupOpenEvent.removeListener(this._handleCursorPopupOpenEvent);
-    CursorPopup._onCursorPopupUpdatePositionEvent.removeListener(this._handleCursorPopupUpdatePositionEvent);
-    CursorPopup._onCursorPopupCloseEvent.removeListener(this._handleCursorPopupCloseEvent);
+    CursorPopupManager.onCursorPopupOpenEvent.removeListener(this._handleCursorPopupOpenEvent);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.removeListener(this._handleCursorPopupUpdatePositionEvent);
+    CursorPopupManager.onCursorPopupCloseEvent.removeListener(this._handleCursorPopupCloseEvent);
   }
 
   private _handleCursorPopupOpenEvent = (args: CursorPopupOpenEventArgs) => {
@@ -153,9 +80,10 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
     const title = args.props ? args.props.title : "";
     const onClose = args.props ? args.props.onClose : undefined;
     const onApply = args.props ? args.props.onApply : undefined;
+    const shadow = args.props ? args.props.shadow : false;
 
     this.setState({
-      showPopup: true,
+      showPopup: CursorPopupShow.Open,
       content: args.content,
       pt: args.pt,
       offset: args.offset,
@@ -163,6 +91,7 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
       title,
       onClose,
       onApply,
+      shadow,
     });
   }
 
@@ -179,7 +108,7 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
   }
 
   private _handleCursorPopupCloseEvent = (args: CursorPopupCloseEventArgs) => {
-    this._closeDialog(args.apply);
+    this._closePopup(args.apply, args.fadeOut);
   }
 
   private _getPopupDimensions(): Size {
@@ -328,25 +257,32 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
     return Rectangle.create(popupRect);
   }
 
-  private _closeDialog = (apply: boolean) => {
+  private _closePopup = (apply: boolean, fadeOut?: boolean) => {
     // istanbul ignore next
     if (!this._isMounted)
       return;
 
     this.setState({
-      showPopup: false,
+      showPopup: fadeOut ? CursorPopupShow.FadeOut : CursorPopupShow.Close,
     }, () => {
       if (apply && this.state.onApply)
         this.state.onApply();
 
       if (this.state.onClose)
         this.state.onClose();
+
+      if (fadeOut) {
+        setTimeout(() => {
+          if (this._isMounted)
+            this.setState({ showPopup: CursorPopupShow.Close });
+        }, this._fadeOutTime);
+      }
     });
   }
 
   /** @internal */
   public render() {
-    if (!this.state.showPopup)
+    if (this.state.showPopup === CursorPopupShow.Close)
       return null;
 
     const popupSize = this._getPopupDimensions();
@@ -361,19 +297,29 @@ export class CursorPopup extends React.Component<CommonProps, CursorPopupState> 
       top: popupRect.top,
     };
 
+    const classNames = classnames(
+      "uifw-cursorpopup",
+      this.state.shadow && "core-popup-shadow",
+      this.state.showPopup === CursorPopupShow.FadeOut && "uifw-cursorpopup-fadeOut",
+    );
+
     return (
-      <div className="uifw-cursorpopup" ref={this._popupRef} style={positioningStyle}>
+      <div className={classNames} ref={this._popupRef} style={positioningStyle}>
         {this.state.title &&
           <TitleBar
             title={this.state.title}
             className="uifw-cursorpopup-title" />
         }
-
-        <div className="uifw-cursorpopup-content">
-          {this.state.content}
-        </div>
+        {this.state.content}
       </div>
     );
   }
-
 }
+
+/** CursorPrompt content with padding
+ * @alpha
+ */
+// tslint:disable-next-line:variable-name
+export const CursorPopupContent: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+  return <Div {...props} mainClassName="uifw-cursorpopup-content" />;
+};

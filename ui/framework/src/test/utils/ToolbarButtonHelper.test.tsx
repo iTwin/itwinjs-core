@@ -100,5 +100,8 @@ describe("Locate Toolbar items", () => {
 
     const foundVerticalToolbarItem = ToolbarButtonHelper.getToolbarButtonByTitle("SampleApp:buttons.tool2");
     expect(foundVerticalToolbarItem).not.to.be.null;
+
+    const foundAppButton = ToolbarButtonHelper.getAppButton();
+    expect(foundAppButton).not.to.be.null;
   });
 });

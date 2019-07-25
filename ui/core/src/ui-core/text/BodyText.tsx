@@ -12,5 +12,5 @@ import { StyledText } from "./StyledText";
  * @public
  */
 export const BodyText: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
-  return <StyledText {...props} mainClassName="uicore-text-block" />;
+  return <StyledText {...props} mainClassName="uicore-text-body" />;
 };

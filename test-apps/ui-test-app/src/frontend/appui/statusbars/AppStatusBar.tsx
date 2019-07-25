@@ -26,6 +26,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
       <div className="statusbar-space-between">
         <div className="statusbar-left">
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          {isInFooterMode && <FooterSeparator />}
         </div>
         <div className="statusbar-center">
           <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
@@ -40,6 +41,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           </BooleanSyncUiListener>
         </div>
         <div className="statusbar-right">
+          {isInFooterMode && <FooterSeparator />}
           <BooleanSyncUiListener defaultValue={false} eventIds={[SyncUiEventId.ActiveContentChanged]} boolFunc={(): boolean => ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl())}>
             {(isVisible: boolean) => isVisible && <>
               <ShadowField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />

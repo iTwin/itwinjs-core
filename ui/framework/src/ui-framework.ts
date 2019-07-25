@@ -115,7 +115,9 @@ export * from "./ui-framework/toolbar/Toolbar";
 export * from "./ui-framework/toolbar/ToolButton";
 
 export * from "./ui-framework/cursor/CursorInformation";
+export * from "./ui-framework/cursor/cursorprompt/CursorPrompt";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
+export * from "./ui-framework/cursor/cursorpopup/CursorPopupManager";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
@@ -263,8 +265,4 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Zone
  * Classes for working with a Zone
- */
-/**
- * @docs-group-description Item
- * Classes for working with an Item
  */

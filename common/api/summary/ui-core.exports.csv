@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+public;BlockText: React.FunctionComponent
 public;BodyText: React.FunctionComponent
 alpha;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
@@ -16,7 +17,7 @@ public;CheckBoxState
 beta;CheckListBox 
 beta;CheckListBoxItem 
 beta;CheckListBoxItemProps 
-beta;CheckListBoxSeparator: React.StatelessComponent
+beta;CheckListBoxSeparator: React.FunctionComponent
 internal;Circle
 public;ClassNameProps
 public;CommonDivProps 

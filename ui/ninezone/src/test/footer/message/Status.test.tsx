@@ -10,13 +10,18 @@ describe("<StatusHelpers />", () => {
     sut.should.eq("nz-status-information");
   });
 
-  it("should return information class name", () => {
+  it("should return success class name", () => {
     const sut = StatusHelpers.getCssClassName(Status.Success);
     sut.should.eq("nz-status-success");
   });
 
-  it("should return information class name", () => {
+  it("should return error class name", () => {
     const sut = StatusHelpers.getCssClassName(Status.Error);
     sut.should.eq("nz-status-error");
+  });
+
+  it("should return warning class name", () => {
+    const sut = StatusHelpers.getCssClassName(Status.Warning);
+    sut.should.eq("nz-status-warning");
   });
 });

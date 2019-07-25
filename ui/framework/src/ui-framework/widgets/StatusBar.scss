@@ -7,3 +7,12 @@
 .uifw-statusbar-message-label {
   color: $buic-text-color;
 }
+
+.uifw-statusbar-message-brief {
+  @include uicore-text(body);
+}
+
+.uifw-statusbar-message-detailed {
+  @include uicore-text(small);
+}
+

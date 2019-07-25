@@ -114,6 +114,7 @@
     "warningMessageBox": "Warning",
     "errorMessageBox": "Error",
     "alertMessageBox": "Alert",
+    "noIconMessageBox": "No Icon Message",
     "openMessageBox": "Open Message Box",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",

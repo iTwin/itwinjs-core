@@ -5,8 +5,9 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import classnames from "classnames";
 
+import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bentley/ui-core";
 import {
   Footer,
   Toast as ToastMessage,
@@ -16,8 +17,7 @@ import {
 } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
-import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bentley/ui-core";
-
+import { StatusBarFieldId, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { MessageManager, MessageAddedEventArgs, ActivityMessageEventArgs } from "../messages/MessageManager";
 import { UiFramework } from "../UiFramework";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
@@ -26,8 +26,9 @@ import { MessageDiv } from "../messages/MessageSpan";
 import "./StatusBar.scss";
 
 // tslint:disable-next-line: variable-name
-const MessageLabel = (props: { message: HTMLElement | string }): JSX.Element => {
-  return <MessageDiv className="uifw-statusbar-message-label" message={props.message} />;
+const MessageLabel = (props: { message: HTMLElement | string, className: string }): JSX.Element => {
+  const classNames = classnames("uifw-statusbar-message-label", props.className);
+  return <MessageDiv className={classNames} message={props.message} />;
 };
 
 /** Enum for StatusBar Message Type
@@ -69,14 +70,27 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
   constructor(props: StatusBarProps) {
     super(props);
   }
+
   public static severityToStatus(severity: MessageSeverity): Status {
+    let status = Status.Information;
+
     switch (severity) {
+      case MessageSeverity.None:
+        status = Status.Success;
+        break;
+      case MessageSeverity.Information:
+        status = Status.Information;
+        break;
+      case MessageSeverity.Warning:
+        status = Status.Warning;
+        break;
       case MessageSeverity.Error:
       case MessageSeverity.Fatal:
-      case MessageSeverity.Warning:
-        return Status.Error;
+        status = Status.Error;
+        break;
     }
-    return Status.Information;
+
+    return status;
   }
 
   /** @internal */
@@ -176,6 +190,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       return;
 
     const severity = MessageManager.getSeverity(this.state.messageDetails);
+
     switch (this.state.visibleMessage) {
       case (StatusBarMessageType.Toast): {
         return (
@@ -191,12 +206,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                 }
               >
                 <MessageLayout>
-                  <MessageLabel message={this.state.messageDetails.briefMessage} />
+                  <MessageLabel message={this.state.messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
                   {this.state.messageDetails.detailedMessage &&
-                    <>
-                      <br />
-                      <MessageLabel message={this.state.messageDetails.detailedMessage} />
-                    </>
+                    <MessageLabel message={this.state.messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
                   }
                 </MessageLayout>
               </Message>
@@ -219,12 +231,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
                 </MessageButton>
               }
             >
-              <MessageLabel message={this.state.messageDetails.briefMessage} />
+              <MessageLabel message={this.state.messageDetails.briefMessage} className="uifw-statusbar-message-brief" />
               {this.state.messageDetails.detailedMessage &&
-                <>
-                  <br />
-                  <MessageLabel message={this.state.messageDetails.detailedMessage} />
-                </>
+                <MessageLabel message={this.state.messageDetails.detailedMessage} className="uifw-statusbar-message-detailed" />
               }
             </MessageLayout>
           </Message>
@@ -276,7 +285,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
           }
         >
           <div>
-            {<MessageLabel message={this.state.activityMessageInfo.message} />}
+            {<MessageLabel message={this.state.activityMessageInfo.message} className="uifw-statusbar-message-brief" />}
             {
               (messageDetails && messageDetails.showPercentInMessage) &&
               <SmallText>{this.state.activityMessageInfo.percentage + percentComplete}</SmallText>

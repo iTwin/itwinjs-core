@@ -5,6 +5,7 @@
 /** @module Item */
 
 import * as React from "react";
+import classnames from "classnames";
 
 import { ExpandableItem, Item, Size } from "@bentley/ui-ninezone";
 import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
@@ -17,7 +18,10 @@ import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
+import "./PopupButton.scss";
 import { BetaBadge } from "../betabadge/BetaBadge";
+
+// cSpell:ignore popupbutton
 
 // tslint:disable-next-line: variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
@@ -41,6 +45,7 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;
   onSizeKnown?: (size: Size) => void;
+  noPadding?: boolean;
 }
 
 const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): node is T => {
@@ -174,9 +179,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     if (!this.state.isPressed)
       return undefined;
 
+    const classNames = classnames(
+      "nz-toolbar-item-expandable-group-panel",
+      this.props.noPadding && "uifw-popupbutton-noPadding",
+    );
+
     return (
       <DivWithOnOutsideClick
-        className="nz-toolbar-item-expandable-group-panel"
+        className={classNames}
         onOutsideClick={this.minimize}
       >
         {isFunction<PopupButtonChildrenRenderProp>(this.props.children) ? this.props.children({

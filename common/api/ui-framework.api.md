@@ -14,6 +14,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
+import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
@@ -80,6 +81,7 @@ import { Store } from 'redux';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { Tool } from '@bentley/imodeljs-frontend';
+import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarItemInsertSpec } from '@bentley/imodeljs-frontend';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
@@ -91,6 +93,7 @@ import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { UiEvent } from '@bentley/ui-core';
 import { UiItemNode } from '@bentley/imodeljs-frontend';
+import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
@@ -244,7 +247,6 @@ export class AppNotificationManager extends NotificationManager {
     closeInputFieldMessage(): void;
     closePointerMessage(): void;
     endActivityMessage(reason: ActivityMessageEndReason): boolean;
-    protected _hidePointerMessage(): void;
     readonly isToolTipOpen: boolean;
     readonly isToolTipSupported: boolean;
     openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
@@ -255,8 +257,8 @@ export class AppNotificationManager extends NotificationManager {
     // @alpha
     setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(details: ActivityMessageDetails): boolean;
-    protected _showPointerMessage(message: NotifyMessageDetails): void;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
+    updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
 }
 
 // @public
@@ -272,8 +274,6 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
-    // @alpha @deprecated (undocumented)
-    static readonly onBackstageCloseEvent: BackstageCloseEvent;
     // (undocumented)
     static readonly onBackstageEvent: BackstageEvent;
     // (undocumented)
@@ -281,16 +281,6 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     static show(): void;
     // @internal (undocumented)
     readonly state: BackstageState;
-}
-
-// @alpha @deprecated
-export class BackstageCloseEvent extends UiEvent<BackstageCloseEventArgs> {
-}
-
-// @alpha @deprecated
-export interface BackstageCloseEventArgs {
-    // (undocumented)
-    isVisible: boolean;
 }
 
 // @public
@@ -951,19 +941,12 @@ export enum CursorDirectionParts {
 export class CursorInformation {
     // @internal
     static clearCursorDirections(): void;
-    // (undocumented)
     static readonly cursorDirection: CursorDirection;
-    // (undocumented)
     static cursorPosition: Point;
-    // (undocumented)
     static readonly cursorX: number;
-    // (undocumented)
     static readonly cursorY: number;
-    // (undocumented)
     static getRelativePositionFromCursorDirection(cursorDirection: CursorDirection): RelativePosition;
-    // (undocumented)
     static handleMouseMove(point: Point): void;
-    // (undocumented)
     static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
 }
 
@@ -971,27 +954,105 @@ export class CursorInformation {
 export class CursorPopup extends React_2.Component<CommonProps, CursorPopupState> {
     // @internal
     constructor(props: CommonProps);
-    static close(apply: boolean): void;
     // @internal (undocumented)
     componentDidMount(): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
-    static open(content: React_2.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition, props?: CursorPopupProps): void;
     // @internal (undocumented)
     render(): JSX.Element | null;
-    static update(content: React_2.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition): void;
+}
+
+// @internal
+export class CursorPopupCloseEvent extends UiEvent<CursorPopupCloseEventArgs> {
+}
+
+// @internal
+export interface CursorPopupCloseEventArgs {
+    // (undocumented)
+    apply: boolean;
+    // (undocumented)
+    fadeOut?: boolean;
+    // (undocumented)
+    id: string;
+}
+
+// @alpha
+export const CursorPopupContent: React_2.FunctionComponent<CommonDivProps>;
+
+// @alpha
+export class CursorPopupManager {
+    static close(id: string, apply: boolean, fadeOut?: boolean): void;
+    // @internal (undocumented)
+    static readonly onCursorPopupCloseEvent: CursorPopupCloseEvent;
+    // @internal (undocumented)
+    static readonly onCursorPopupOpenEvent: CursorPopupOpenEvent;
+    // @internal (undocumented)
+    static readonly onCursorPopupUpdatePositionEvent: CursorPopupUpdatePositionEvent;
+    static open(id: string, content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition, props?: CursorPopupProps): void;
+    static update(id: string, content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition): void;
     static updatePosition(pt: Point, offset: number, relativePosition: RelativePosition): void;
+}
+
+// @internal
+export class CursorPopupOpenEvent extends UiEvent<CursorPopupOpenEventArgs> {
+}
+
+// @internal
+export interface CursorPopupOpenEventArgs {
+    // (undocumented)
+    content: React.ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    offset: number;
+    // (undocumented)
+    props?: CursorPopupProps;
+    // (undocumented)
+    pt: Point;
+    // (undocumented)
+    relativePosition: RelativePosition;
 }
 
 // @alpha
 export interface CursorPopupProps {
-    // (undocumented)
     onApply?: () => void;
-    // (undocumented)
     onClose?: () => void;
-    // (undocumented)
+    shadow?: boolean;
     title?: string;
 }
+
+// @internal
+export enum CursorPopupShow {
+    // (undocumented)
+    Close = 0,
+    // (undocumented)
+    FadeOut = 2,
+    // (undocumented)
+    Open = 1
+}
+
+// @internal
+export class CursorPopupUpdatePositionEvent extends UiEvent<CursorPopupUpdatePositionEventArgs> {
+}
+
+// @internal
+export interface CursorPopupUpdatePositionEventArgs {
+    // (undocumented)
+    offset: number;
+    // (undocumented)
+    pt: Point;
+    // (undocumented)
+    relativePosition: RelativePosition;
+}
+
+// @alpha (undocumented)
+export class CursorPrompt {
+    constructor(timeOut: number);
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: number, relativePosition?: RelativePosition): void;
+    }
 
 // @alpha
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> {
@@ -2369,6 +2430,8 @@ export class MessageManager {
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
+    // @internal (undocumented)
+    static showAlertMessageBox(messageDetails: NotifyMessageDetails): void;
     }
 
 // @public
@@ -2607,6 +2670,8 @@ export class PointerMessage extends React_2.Component<PointerMessageProps, Point
     static showMessage(message: NotifyMessageDetails): void;
     // (undocumented)
     readonly state: Readonly<PointerMessageState>;
+    // (undocumented)
+    static updateMessage(displayPoint: XAndY, relativePosition: RelativePosition): void;
     }
 
 // @public
@@ -2621,6 +2686,8 @@ export interface PointerMessageChangedEventArgs {
     isVisible: boolean;
     // (undocumented)
     message: HTMLElement | string;
+    // (undocumented)
+    messageDetails?: NotifyMessageDetails;
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
@@ -2662,6 +2729,8 @@ export interface PopupButtonChildrenRenderPropArgs {
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     children?: React_2.ReactNode | PopupButtonChildrenRenderProp;
+    // (undocumented)
+    noPadding?: boolean;
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
     // (undocumented)
@@ -3272,7 +3341,9 @@ export class SyncUiEventDispatcher {
 export enum SyncUiEventId {
     ActiveContentChanged = "activecontentchanged",
     ActiveViewportChanged = "activeviewportchanged",
+    // @deprecated
     BackstageCloseEvent = "backstagecloseevent",
+    BackstageEvent = "backstageevent",
     ContentControlActivated = "contentcontrolactivated",
     ContentLayoutActivated = "contentlayoutactivated",
     FrontstageActivating = "frontstageactivating",
@@ -3428,15 +3499,19 @@ export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldPr
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
+    static getInstructionImage(instruction: ToolAssistanceInstruction): React_2.ReactNode;
+    // @internal (undocumented)
     render(): React_2.ReactNode;
     }
 
 // @alpha
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor">;
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout">;
 
 // @alpha
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
+    cursorPromptTimeout: number;
     includePromptAtCursor: boolean;
+    uiSettings: UiSettings;
 }
 
 // @internal

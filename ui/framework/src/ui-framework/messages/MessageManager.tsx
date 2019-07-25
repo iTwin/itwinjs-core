@@ -294,6 +294,9 @@ export class MessageManager {
     let severity = MessageSeverity.None;
 
     switch (details.priority) {
+      case OutputMessagePriority.None:
+        severity = MessageSeverity.None;
+        break;
       case OutputMessagePriority.Info:
         severity = MessageSeverity.Information;
         break;
@@ -316,6 +319,9 @@ export class MessageManager {
     let iconType = MessageBoxIconType.NoSymbol;
 
     switch (details.priority) {
+      case OutputMessagePriority.None:
+        iconType = MessageBoxIconType.NoSymbol;
+        break;
       case OutputMessagePriority.Info:
         iconType = MessageBoxIconType.Information;
         break;
@@ -349,7 +355,8 @@ export class MessageManager {
     });
   }
 
-  private static showAlertMessageBox(messageDetails: NotifyMessageDetails): void {
+  /** @internal */
+  public static showAlertMessageBox(messageDetails: NotifyMessageDetails): void {
     const title = UiFramework.translate("general.alert");
     const iconType = this.getIconType(messageDetails);
     const content = (

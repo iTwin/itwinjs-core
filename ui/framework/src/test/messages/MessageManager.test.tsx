@@ -6,6 +6,7 @@ import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { MessageManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { MessageSeverity } from "@bentley/ui-core";
 
 describe("MessageManager", () => {
 
@@ -44,6 +45,26 @@ describe("MessageManager", () => {
 
     details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.");
     expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.Critical);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.");
+    expect(MessageManager.getIconType(details)).to.eq(MessageBoxIconType.NoSymbol);
+  });
+
+  it("getSeverity should return proper severity", () => {
+    let details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Information);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Warning);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Error);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.Fatal);
+
+    details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.");
+    expect(MessageManager.getSeverity(details)).to.eq(MessageSeverity.None);
   });
 
   it("non-duplicate message should be added to Message Center", () => {

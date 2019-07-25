@@ -43,7 +43,7 @@ export interface CursorUpdatedEventArgs {
  */
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> { }
 
-/** Cursor CursorInformation
+/** Cursor Information class
  * @alpha
  */
 export class CursorInformation {
@@ -52,15 +52,22 @@ export class CursorInformation {
 
   private static _cursorDirections = new Array<CursorDirection>();
 
+  /** Sets the cursor position. */
   public static set cursorPosition(pt: Point) { this._cursorPosition = pt; }
+  /** Gets the cursor position. */
   public static get cursorPosition(): Point { return this._cursorPosition; }
+  /** Gets the cursor X position. */
   public static get cursorX(): number { return this._cursorPosition.x; }
+  /** Gets the cursor Y position. */
   public static get cursorY(): number { return this._cursorPosition.y; }
 
+  /** Gets the general cursor movement direction. */
   public static get cursorDirection(): CursorDirection { return this._cursorDirection; }
 
+  /** Gets the [[CursorUpdatedEvent]]. */
   public static readonly onCursorUpdatedEvent = new CursorUpdatedEvent();
 
+  /** Handles the mouse movement.  Sets the cursor position and direction and emits onCursorUpdatedEvent. */
   public static handleMouseMove(point: Point): void {
     const oldPt = CursorInformation.cursorPosition;
     const direction = this._determineMostFrequentDirection(this._cursorDirections, this.cursorPosition, point);
@@ -121,6 +128,7 @@ export class CursorInformation {
     return direction;
   }
 
+  /** Gets the relative position based on the cursor direction. */
   public static getRelativePositionFromCursorDirection(cursorDirection: CursorDirection): RelativePosition {
     let relativePosition: RelativePosition = RelativePosition.BottomRight;
 
