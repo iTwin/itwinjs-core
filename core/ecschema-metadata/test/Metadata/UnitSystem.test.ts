@@ -29,7 +29,7 @@ describe("UnitSystem tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         schemaItemType: "UnitSystem",
         name: "IMPERIAL",
         label: "Imperial",
@@ -46,7 +46,7 @@ describe("UnitSystem tests", () => {
       });
       it("Basic test", () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
           schemaItemType: "UnitSystem",
           name: "IMPERIAL",
           label: "Imperial",

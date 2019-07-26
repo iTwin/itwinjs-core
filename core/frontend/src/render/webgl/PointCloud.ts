@@ -6,31 +6,44 @@
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { CachedGeometry } from "./CachedGeometry";
-import { AttributeHandle, QBufferHandle3d, BufferHandle } from "./Handle";
+import { QBufferHandle3d, BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
 import { TechniqueId } from "./TechniqueId";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { GL } from "./GL";
 import { System } from "./System";
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../System";
+import { AttributeMap } from "./AttributeMap";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry {
+  public readonly buffers: BuffersContainer;
   private _vertices: QBufferHandle3d;
   private _vertexCount: number;
   private _colorHandle: BufferHandle | undefined = undefined;
   public features: FeaturesInfo | undefined;
 
-  public dispose() { dispose(this._vertices); }
+  public dispose() {
+    dispose(this.buffers);
+    dispose(this._vertices);
+  }
 
   constructor(pointCloud: PointCloudArgs) {
     super();
+    this.buffers = BuffersContainer.create();
     this._vertices = QBufferHandle3d.create(pointCloud.pointParams, pointCloud.points) as QBufferHandle3d;
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
+    assert(undefined !== attrPos);
+    this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this._vertexCount = pointCloud.points.length / 3;
     this.features = FeaturesInfo.create(pointCloud.features);
-    if (undefined !== pointCloud.colors)
+    if (undefined !== pointCloud.colors) {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);
+      const attrColor = AttributeMap.findAttribute("a_color", TechniqueId.PointCloud, false);
+      assert(undefined !== attrColor);
+      this.buffers.addBuffer(this._colorHandle!, [BufferParameters.create(attrColor!.location, 3, GL.DataType.UnsignedByte, true, 0, 0, false)]);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -40,7 +53,7 @@ export class PointCloudGeometry extends CachedGeometry {
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointCloud; }
+  public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueGeneral; }
   public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
   public get qOrigin(): Float32Array { return this._vertices.origin; }
@@ -49,9 +62,9 @@ export class PointCloudGeometry extends CachedGeometry {
   public get featuresInfo(): FeaturesInfo | undefined { return this.features; }
   public get hasBakedLighting() { return true; }
 
-  public bindVertexArray(attr: AttributeHandle): void { attr.enableArray(this._vertices, 3, GL.DataType.UnsignedShort, false, 0, 0); }
   public draw(): void {
-    const gl = System.instance.context;
-    gl.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
+    this.buffers.bind();
+    System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
+    this.buffers.unbind();
   }
 }

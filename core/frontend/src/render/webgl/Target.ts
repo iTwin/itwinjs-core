@@ -251,14 +251,13 @@ class EmptyHiliteSet {
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
-  private _batchState = new BatchState();
+  private _batchState = new BatchState(this._stack);
   private _scene: GraphicList = [];
   private _backgroundMap: GraphicList = [];
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
-  private _overridesUpdateTime = BeTimePoint.now();
   private _hilites: Hilites = new EmptyHiliteSet();
   private _hiliteUpdateTime = BeTimePoint.now();
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
@@ -342,8 +341,6 @@ export abstract class Target extends RenderTarget {
   public get flashedId(): Id64String { return this._flashedId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
-
-  public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
 
   public get fStop(): number { return this._fStop; }
   public get ambientLight(): Float32Array { return this._ambientLight; }
@@ -583,7 +580,6 @@ export abstract class Target extends RenderTarget {
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this._stack.setSymbologyOverrides(ovr);
-    this._overridesUpdateTime = BeTimePoint.now();
   }
   public setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
@@ -1192,7 +1188,7 @@ export abstract class Target extends RenderTarget {
       if (isEmptyImage)
         return undefined;
     } else {
-      const canvas = imageBufferToCanvas(image); // retrieve a canvas of the image we read
+      const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
 

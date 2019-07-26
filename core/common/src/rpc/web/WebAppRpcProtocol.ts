@@ -34,6 +34,7 @@ export interface HttpServerRequest extends Readable {
   body: string | Buffer;
   path: string;
   method: string;
+  ip?: string;
   header: (field: string) => string | undefined;
 }
 

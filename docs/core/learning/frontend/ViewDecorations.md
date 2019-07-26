@@ -1,6 +1,6 @@
 # View Decorations
 
-A View Decoration shows application-generated graphics in a [ScreenViewport]($frontend) *in addition to* the persistent (i.e. *scene*) geometry displayed by the Viewport itself. In contrast to the graphics from the persistent geometry (e.g. the Model), View Decorations must be re-evaluated *every time* a frame is rendered. In this sense, they *decorate* the frame with graphics that are only valid for a single frame.
+A View Decoration shows application-generated graphics in a [ScreenViewport]($frontend) *in addition to* the persistent (i.e. *scene*) geometry displayed by the Viewport itself. In contrast to the graphics from the persistent geometry (e.g. the Models), View Decorations must be re-evaluated *every time* a frame is rendered. In this sense, they *decorate* the frame with graphics that are only valid for a single frame.
 
 ## View Decorators
 

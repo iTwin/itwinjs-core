@@ -2,20 +2,25 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
+import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
 import { ElementAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, KnownLocations } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
-import { ElementRefersToElements, RelationshipProps } from "./Relationship";
+import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 
-/** @alpha */
+/** Base class used to transform a source iModel into a different target iModel.
+ * @alpha
+ */
 export class IModelTransformer {
   /** The read-only source iModel. */
   protected _sourceDb: IModelDb;
@@ -33,6 +38,8 @@ export class IModelTransformer {
   protected _excludedElementClasses = new Set<typeof Element>();
   /** The set of Elements that were skipped during a prior transformation pass. */
   protected _skippedElementIds = new Set<Id64String>();
+  /** The set of classes of Relationships that will be excluded (polymorphically) from transformation to the target iModel. */
+  protected _excludedRelationshipClasses = new Set<typeof Relationship>();
 
   /** Construct a new IModelImporter
    * @param sourceDb The source IModelDb
@@ -113,6 +120,11 @@ export class IModelTransformer {
     this._excludedElementClasses.add(this._sourceDb.getJsClass<typeof Element>(sourceClassFullName));
   }
 
+  /** Add a rule to exclude all Relationships of a specified class. */
+  public excludeRelationshipClass(sourceClassFullName: string): void {
+    this._excludedRelationshipClasses.add(this._sourceDb.getJsClass<typeof Relationship>(sourceClassFullName));
+  }
+
   /** Resolve the Subject's ElementId from the specified subjectPath. */
   public static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined {
     let subjectId: Id64String | undefined = IModel.rootSubjectId;
@@ -152,6 +164,19 @@ export class IModelTransformer {
    * @note A subclass can override this method to be notified after a CodeSpec has been excluded.
    */
   protected onCodeSpecExcluded(_codeSpecName: string): void { }
+
+  /** Called after processing a source Relationship when that processing caused a new Relationship to be inserted in the target iModel.
+   * @param _sourceRelationship The sourceRelationship that was processed
+   * @param _targetRelInstanceId The instance Id of the Relationship that was inserted into the target iModel.
+   * @note A subclass can override this method to be notified after Relationships have been inserted.
+   */
+  protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void { }
+
+  /** Called after a source Relationship was purposely excluded from the target iModel.
+   * @param _sourceRelationship The source Relationship that was excluded from transformation.
+   * @note A subclass can override this method to be notified after a Relationship has been excluded.
+   */
+  protected onRelationshipExcluded(_sourceRelationship: Relationship): void { }
 
   /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel.
    * @param _sourceElement The sourceElement that was processed
@@ -448,33 +473,115 @@ export class IModelTransformer {
     }
   }
 
-  /** Imports all relationships that subclass from BisCore:ElementRefersToElements */
-  public importRelationships(sourceRelClassFullName: string): void {
-    Logger.logTrace(loggerCategory, `--> importRelationships(${sourceRelClassFullName})`);
-    const sql = `SELECT ECInstanceId AS id FROM ${sourceRelClassFullName}`;
+  /** Imports all relationships that subclass from the specified base class.
+   * @param baseRelClassFullName The specified base relationship class.
+   */
+  public importRelationships(baseRelClassFullName: string): void {
+    Logger.logTrace(loggerCategory, `--> importRelationships(${baseRelClassFullName})`);
+    const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceRelInstanceId: Id64String = statement.getValue(0).getId();
-        this.importRelationship(sourceRelClassFullName, sourceRelInstanceId);
+        const sourceRelProps: RelationshipProps = this._sourceDb.relationships.getInstanceProps(baseRelClassFullName, sourceRelInstanceId);
+        this.importRelationship(sourceRelProps.classFullName, sourceRelInstanceId);
       }
     });
   }
 
   /** Import a relationship from the source iModel into the target iModel. */
   public importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void {
-    const relationshipProps = this._sourceDb.relationships.getInstanceProps<RelationshipProps>(sourceRelClassFullName, sourceRelInstanceId);
-    Logger.logTrace(loggerCategory, `--> importRelationship(${relationshipProps.classFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
-    relationshipProps.sourceId = this.findTargetElementId(relationshipProps.sourceId);
-    relationshipProps.targetId = this.findTargetElementId(relationshipProps.targetId);
-    if (Id64.isValidId64(relationshipProps.sourceId) && Id64.isValidId64(relationshipProps.targetId)) {
+    Logger.logTrace(loggerCategory, `--> importRelationship(${sourceRelClassFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
+    const sourceRelationship: Relationship = this._sourceDb.relationships.getInstance(sourceRelClassFullName, sourceRelInstanceId);
+    if (this.shouldExcludeRelationship(sourceRelationship)) {
+      this.onRelationshipExcluded(sourceRelationship);
+      return;
+    }
+    const targetRelationshipProps: RelationshipProps = this.transformRelationship(sourceRelationship);
+    if (Id64.isValidId64(targetRelationshipProps.sourceId) && Id64.isValidId64(targetRelationshipProps.targetId)) {
       try {
         // check for an existing relationship
-        this._targetDb.relationships.getInstanceProps<RelationshipProps>(relationshipProps.classFullName, { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId });
+        const relSourceAndTarget = { sourceId: targetRelationshipProps.sourceId, targetId: targetRelationshipProps.targetId };
+        const relProps = this._targetDb.relationships.getInstanceProps<RelationshipProps>(targetRelationshipProps.classFullName, relSourceAndTarget);
+        // if relationship found, update it
+        targetRelationshipProps.id = relProps.id;
+        this.updateRelationship(targetRelationshipProps);
+        // WIP: need to determine if there is actually anything to update before an onUpdated callback makes sense
       } catch (error) {
         // catch NotFound error and insert relationship
-        this._targetDb.relationships.insertInstance(relationshipProps);
-        Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(relationshipProps)}`);
+        if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
+          const targetRelInstanceId: Id64String = this.insertRelationship(targetRelationshipProps);
+          this.onRelationshipInserted(sourceRelationship, targetRelInstanceId);
+        } else {
+          throw error;
+        }
       }
+    }
+  }
+
+  /** Returns true if the specified sourceRelationship should be excluded from the target iModel.
+   * @param sourceRelationship The Relationship from the source iModel to consider
+   * @returns `true` if sourceRelationship should be excluded from the target iModel or `false` if sourceRelationship should be transformed into the target iModel.
+   * @note A subclass can override this method to provide custom Relationship exclusion behavior.
+   */
+  protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean {
+    for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
+      if (sourceRelationship instanceof excludedRelationshipClass) {
+        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatRelationshipForLogger(sourceRelationship)} by class`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Transform the specified sourceRelationship into RelationshipProps for the target iModel.
+   * @param sourceRelationship The Relationship from the source iModel to be transformed.
+   * @returns RelationshipProps for the target iModel.
+   * @note A subclass can override this method to provide custom transform behavior.
+   */
+  protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
+    const targetRelationshipProps: RelationshipProps = sourceRelationship.toJSON();
+    targetRelationshipProps.sourceId = this.findTargetElementId(sourceRelationship.sourceId);
+    targetRelationshipProps.targetId = this.findTargetElementId(sourceRelationship.targetId);
+    sourceRelationship.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
+      if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
+        targetRelationshipProps[propertyName] = this.findTargetElementId(sourceRelationship[propertyName]);
+      }
+    }, true);
+    return targetRelationshipProps;
+  }
+
+  /** Insert the transformed Relationship into the target iModel.
+   * @param targetRelationshipProps The RelationshipProps to be inserted into the target iModel.
+   * @returns The instance Id of the newly inserted relationship.
+   * @note A subclass can override this method to provide custom insert behavior.
+   */
+  protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String {
+    const targetRelInstanceId: Id64String = this._targetDb.relationships.insertInstance(targetRelationshipProps);
+    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
+    return targetRelInstanceId;
+  }
+
+  /** Update the specified relationship in the target iModel.
+   * @note A subclass can override this method to provide custom update behavior.
+   */
+  protected updateRelationship(targetRelationshipProps: RelationshipProps): void {
+    if (!targetRelationshipProps.id) {
+      throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
+    }
+    this._targetDb.relationships.updateInstance(targetRelationshipProps);
+    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
+  }
+
+  /** Import all schemas from the source iModel into the target iModel. */
+  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
+    IModelJsFs.mkdirSync(schemasDir);
+    try {
+      this._sourceDb.nativeDb.exportSchemas(schemasDir);
+      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
+      await this._targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+    } finally {
+      IModelJsFs.removeSync(schemasDir);
     }
   }
 

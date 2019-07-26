@@ -13,6 +13,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { PackedFeatureTable, Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
+import { IModelConnection } from "../../IModelConnection";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
@@ -202,6 +203,11 @@ class Geometry implements IDisposable {
   }
 }
 
+interface FeatureTableAndIModel {
+  featureTable: PackedFeatureTable;
+  iModel?: IModelConnection;
+}
+
 // Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
@@ -239,12 +245,12 @@ class PixelBuffer implements Pixel.Buffer {
     return undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
   }
 
-  private getFeatureTable(pixelIndex: number): PackedFeatureTable | undefined {
+  private getFeatureTableAndIModel(pixelIndex: number): FeatureTableAndIModel | undefined {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
       if (undefined !== batch)
-        return batch.featureTable;
+        return { featureTable: batch.featureTable, iModel: batch.batchIModel };
     }
 
     return undefined;
@@ -291,7 +297,7 @@ class PixelBuffer implements Pixel.Buffer {
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
     const feature = haveFeatureIds ? this.getFeature(index) : undefined;
-    const featureTable = haveFeatureIds ? this.getFeatureTable(index) : undefined;
+    const featureTableAndIModel = haveFeatureIds ? this.getFeatureTableAndIModel(index) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
@@ -328,7 +334,13 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable);
+    let featureTable, iModel;
+    if (undefined !== featureTableAndIModel) {
+      featureTable = featureTableAndIModel.featureTable;
+      iModel = featureTableAndIModel.iModel;
+    }
+
+    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable, iModel);
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {

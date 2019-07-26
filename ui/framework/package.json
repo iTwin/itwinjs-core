@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-framework",
-  "version": "1.2.0-dev.4",
+  "version": "1.3.0-dev.7",
   "description": "UI framework",
   "license": "MIT",
   "repository": {
@@ -60,38 +60,38 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.2.0-dev.4",
-    "@bentley/geometry-core": "^1.2.0-dev.4",
-    "@bentley/imodeljs-i18n": "^1.2.0-dev.4",
-    "@bentley/imodeljs-frontend": "^1.2.0-dev.4",
-    "@bentley/imodeljs-common": "^1.2.0-dev.4",
-    "@bentley/imodeljs-clients": "^1.2.0-dev.4",
-    "@bentley/presentation-common": "^1.2.0-dev.4",
-    "@bentley/presentation-frontend": "^1.2.0-dev.4",
-    "@bentley/ui-core": "^1.2.0-dev.4",
-    "@bentley/ui-components": "^1.2.0-dev.4",
-    "@bentley/ui-ninezone": "^1.2.0-dev.4"
+    "@bentley/bentleyjs-core": "^1.3.0-dev.7",
+    "@bentley/geometry-core": "^1.3.0-dev.7",
+    "@bentley/imodeljs-i18n": "^1.3.0-dev.7",
+    "@bentley/imodeljs-frontend": "^1.3.0-dev.7",
+    "@bentley/imodeljs-common": "^1.3.0-dev.7",
+    "@bentley/imodeljs-clients": "^1.3.0-dev.7",
+    "@bentley/presentation-common": "^1.3.0-dev.7",
+    "@bentley/presentation-frontend": "^1.3.0-dev.7",
+    "@bentley/ui-core": "^1.3.0-dev.7",
+    "@bentley/ui-components": "^1.3.0-dev.7",
+    "@bentley/ui-ninezone": "^1.3.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "1.2.0-dev.4",
-    "@bentley/build-tools": "1.2.0-dev.4",
-    "@bentley/bentleyjs-core": "1.2.0-dev.4",
-    "@bentley/geometry-core": "1.2.0-dev.4",
-    "@bentley/imodeljs-i18n": "1.2.0-dev.4",
-    "@bentley/imodeljs-frontend": "1.2.0-dev.4",
-    "@bentley/imodeljs-common": "1.2.0-dev.4",
-    "@bentley/imodeljs-clients": "1.2.0-dev.4",
-    "@bentley/presentation-common": "1.2.0-dev.4",
-    "@bentley/presentation-frontend": "1.2.0-dev.4",
-    "@bentley/presentation-testing": "1.2.0-dev.4",
-    "@bentley/ui-core": "1.2.0-dev.4",
-    "@bentley/ui-components": "1.2.0-dev.4",
-    "@bentley/ui-ninezone": "1.2.0-dev.4",
-    "@bentley/webpack-tools": "1.2.0-dev.4",
+    "@bentley/config-loader": "1.3.0-dev.7",
+    "@bentley/build-tools": "1.3.0-dev.7",
+    "@bentley/bentleyjs-core": "1.3.0-dev.7",
+    "@bentley/geometry-core": "1.3.0-dev.7",
+    "@bentley/imodeljs-i18n": "1.3.0-dev.7",
+    "@bentley/imodeljs-frontend": "1.3.0-dev.7",
+    "@bentley/imodeljs-common": "1.3.0-dev.7",
+    "@bentley/imodeljs-clients": "1.3.0-dev.7",
+    "@bentley/presentation-common": "1.3.0-dev.7",
+    "@bentley/presentation-frontend": "1.3.0-dev.7",
+    "@bentley/presentation-testing": "1.3.0-dev.7",
+    "@bentley/ui-core": "1.3.0-dev.7",
+    "@bentley/ui-components": "1.3.0-dev.7",
+    "@bentley/ui-ninezone": "1.3.0-dev.7",
+    "@bentley/webpack-tools": "1.3.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -144,7 +144,7 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^0.0.22",
-    "@bentley/presentation-components": "1.2.0-dev.4",
+    "@bentley/presentation-components": "1.3.0-dev.7",
     "classnames": "^2.2.5",
     "immutable": "^3.8.2",
     "lodash": "^4.17.10",
@@ -156,7 +156,7 @@
     "react-redux": "^5.0.7",
     "react-resize-detector": "^3.2.0",
     "react-split-pane": "0.1.77",
-    "redux": "^4.0.0",
+    "redux": "^4.0.3",
     "svg-sprite-loader": "^3.8.0"
   },
   "nyc": {
@@ -168,9 +168,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 88,
-    "branches": 82,
-    "functions": 89,
-    "lines": 89
+    "statements": 90,
+    "branches": 84,
+    "functions": 90,
+    "lines": 90
   }
 }

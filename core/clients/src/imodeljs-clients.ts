@@ -87,7 +87,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description iModels
- * Classes for abstracting access to [iModelHub]($docs/learning/iModelHub/index.md). See [iModelBank]($docs/reference/imodeljs-clients/imodelbank).
+ * Classes for abstracting access to [iModelHub]($docs/learning/iModelHub/index.md).
  */
 /**
  * @docs-group-description Utils

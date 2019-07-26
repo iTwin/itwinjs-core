@@ -8,19 +8,18 @@
 
 .nz-toolbar-item-item {
   border-width: 0;
-  background: $buic-background-control;
   background-origin: border-box;
   border-color: $buic-background-toolbutton-stroke;
   border-style: solid;
   cursor: pointer;
   transition: all 500ms ease;
   position: relative;
-  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: $buic-background-window linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
 
   height: $nz-desktop-item-height;
   width: $nz-desktop-item-width;
 
-  >.nz-icon {
+  > .nz-icon {
     font-size: $icon-size;
     width: 100%;
     height: 100%;
@@ -36,20 +35,20 @@
     }
 
     img {
-      width: 100%;
-      height: 100%;
+      width: $icon-size;
+      height: $icon-size;
     }
   }
 
   &:hover {
-    >.nz-icon {
+    > .nz-icon {
       color: $hovered-icon-color;
       transition-duration: 150ms;
     }
   }
 
   &:active {
-    >.nz-icon {
+    > .nz-icon {
       color: $pressed-icon-color;
       filter: $no-shadow;
 
@@ -72,7 +71,7 @@
     &:not(:active):not(.nz-disabled) {
       transition-duration: 0s;
 
-      >.nz-icon {
+      > .nz-icon {
         color: $buic-foreground-primary;
         filter: $no-shadow;
         transition-duration: 150ms;
@@ -98,7 +97,7 @@
   }
 
   &.nz-disabled {
-    >.nz-icon {
+    > .nz-icon {
       color: $disabled-icon-color;
     }
 
@@ -111,7 +110,7 @@
     }
   }
 
-  >.nz-beta-badge {
+  > .nz-badge {
     position: absolute;
     top: 0;
     left: 0;

@@ -6,19 +6,36 @@
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
+  ToolAssistance, ToolAssistanceImage,
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
 
 export class Tool2 extends PrimitiveTool {
   public static toolId = "Tool2";
+  public static iconSpec = "icon-placeholder";
   public readonly points: Point3d[] = [];
 
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
-    IModelApp.notifications.outputPromptByKey("SampleApp:tools.Tool2.Prompts.GetPoint");
+    // IModelApp.notifications.outputPromptByKey("SampleApp:tools.Tool2.Prompts.GetPoint");
+
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.Tool2.Prompts.GetPoint"));
+
+    const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Click on something", true);
+    const instruction2 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Click then drag", true);
+    const instruction3 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["B"]), "Press a key");
+    const instruction4 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo(["C", "D"]), "Press one of two keys", true);
+    const instruction5 = ToolAssistance.createKeyboardInstruction(ToolAssistance.arrowKeyboardInfo, "Press one of four keys");
+    const instruction6 = ToolAssistance.createKeyboardInstruction(ToolAssistance.shiftSymbolKeyboardInfo, "Press the Shift key");
+
+    const section1 = ToolAssistance.createSection([instruction1, instruction2, instruction3, instruction4, instruction5, instruction6], ToolAssistance.inputsLabel);
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
+
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {

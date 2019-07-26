@@ -14,6 +14,7 @@ import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirect
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedMixin } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Typescript class representation of an ECEntityClass.
@@ -166,6 +167,19 @@ export class EntityClass extends ECClass {
     if (this.mixins.length > 0)
       schemaJson.mixins = this.mixins.map((mixin) => mixin.fullName);
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    for (const mixin of this.getMixinsSync()) {
+      const mixinElement = schemaXml.createElement("BaseClass");
+      const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
+      mixinElement.textContent = mixinName;
+      itemElement.appendChild(mixinElement);
+    }
+    return itemElement;
   }
 
   public async deserialize(entityClassProps: EntityClassProps) {

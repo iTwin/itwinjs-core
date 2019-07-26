@@ -20,6 +20,7 @@ import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPr
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "./../PropertyTypes";
 import { ECName, SchemaItemKey } from "./../SchemaKey";
 import { Schema } from "./Schema";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A common abstract class for all ECProperty types.
@@ -66,10 +67,12 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
 
+  get propertyType() { return this._type; }
+
   get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   /** Returns the name in the format 'ClassName.PropertyName'. */
-  get fullName(): string { return this._class.name + "." + name; }
+  get fullName(): string { return this._class.name + "." + this.name; }
 
   /** Returns the schema of the class holding the property. */
   get schema(): Schema { return this._class.schema; }
@@ -108,6 +111,45 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const propType = `EC${propertyTypeToString(this._type)}`.replace("Primitive", "");
+    const itemElement = schemaXml.createElement(propType);
+    itemElement.setAttribute("propertyName", this.name);
+    if (undefined !== this.description)
+      itemElement.setAttribute("description", this.description);
+    if (undefined !== this.label)
+      itemElement.setAttribute("displayLabel", this.label);
+    if (undefined !== this.isReadOnly)
+      itemElement.setAttribute("readOnly", String(this.isReadOnly));
+
+    if (undefined !== this.category) {
+      const category = await this.category;
+      const categoryName = XmlSerializationUtils.createXmlTypedName(this.schema, category.schema, category.name);
+      itemElement.setAttribute("category", categoryName);
+    }
+
+    if (undefined !== this.priority)
+      itemElement.setAttribute("priority", this.priority.toString());
+
+    if (undefined !== this.kindOfQuantity) {
+      const kindOfQuantity = await this.kindOfQuantity;
+      const kindOfQuantityName = XmlSerializationUtils.createXmlTypedName(this.schema, kindOfQuantity.schema, kindOfQuantity.name);
+      itemElement.setAttribute("kindOfQuantity", kindOfQuantityName);
+    }
+
+    if (this._customAttributes) {
+      const caContainerElement = schemaXml.createElement("ECCustomAttributes");
+      for (const [name, attribute] of this._customAttributes) {
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        caContainerElement.appendChild(caElement);
+      }
+      itemElement.appendChild(caContainerElement);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(propertyProps: PropertyProps) {
@@ -199,6 +241,23 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    if (undefined !== this.extendedTypeName)
+      itemElement.setAttribute("extendedTypeName", this.extendedTypeName);
+    if (undefined !== this.minValue)
+      itemElement.setAttribute("minimumValue", this.minValue.toString());
+    if (undefined !== this.maxValue)
+      itemElement.setAttribute("maximumValue", this.maxValue.toString());
+    if (undefined !== this.minLength)
+      itemElement.setAttribute("minimumLength", this.minLength.toString());
+    if (undefined !== this.maxLength)
+      itemElement.setAttribute("maximumLength", this.maxLength.toString());
+
+    return itemElement;
+  }
+
   public deserializeSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
     super.deserializeSync(propertyBaseProps);
 
@@ -252,6 +311,13 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     schemaJson.typeName = primitiveTypeToString(this.primitiveType);
     return schemaJson;
   }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("typeName", primitiveTypeToString(this.primitiveType));
+    return itemElement;
+  }
 }
 
 /** @beta */
@@ -290,6 +356,13 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     }
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("typeName", this.enumeration!.fullName);
+    return itemElement;
+  }
+
   public async deserialize(enumerationPropertyProps: EnumerationPropertyProps) {
     this.deserializeSync(enumerationPropertyProps);
   }
@@ -310,6 +383,14 @@ export class StructProperty extends Property {
     const schemaJson = super.toJson();
     schemaJson.typeName = this.structClass.fullName;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    const structClassName = XmlSerializationUtils.createXmlTypedName(this.schema, this.structClass.schema, this.structClass.name);
+    itemElement.setAttribute("typeName", structClassName);
+    return itemElement;
   }
 
   public deserializeSync(structPropertyProps: StructPropertyProps) {
@@ -347,6 +428,17 @@ export class NavigationProperty extends Property {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    const relationshipClass = await this.relationshipClass;
+    const relationshipClassName = XmlSerializationUtils.createXmlTypedName(this.schema, relationshipClass.schema, relationshipClass.name);
+    itemElement.setAttribute("relationshipName", relationshipClassName);
+    itemElement.setAttribute("direction", strengthDirectionToString(this.direction));
+
+    return itemElement;
+  }
+
   constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection) {
     super(ecClass, name, PropertyType.Navigation);
     this._relationshipClass = relationship;
@@ -357,10 +449,13 @@ export class NavigationProperty extends Property {
 
 type Constructor<T> = new (...args: any[]) => T;
 
+// TODO: Consolidate all of the INT32_MAX variables.
+const INT32_MAX = 2147483647;
+
 /** @beta */
 export abstract class ArrayProperty extends Property {
   protected _minOccurs: number = 0;
-  protected _maxOccurs?: number;
+  protected _maxOccurs?: number = INT32_MAX;
 
   get minOccurs() { return this._minOccurs; }
   get maxOccurs() { return this._maxOccurs; }
@@ -370,7 +465,7 @@ export abstract class ArrayProperty extends Property {
 const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
     protected _minOccurs: number = 0;
-    protected _maxOccurs?: number;
+    protected _maxOccurs: number = INT32_MAX;
 
     get minOccurs() { return this._minOccurs; }
     get maxOccurs() { return this._maxOccurs; }
@@ -401,6 +496,16 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       if (this.maxOccurs !== undefined)
         schemaJson.maxOccurs = this.maxOccurs;
       return schemaJson;
+    }
+
+    /** @internal */
+    public async toXml(schemaXml: Document): Promise<Element> {
+      const itemElement = await super.toXml(schemaXml);
+      itemElement.setAttribute("minOccurs", this.minOccurs.toString());
+      if (this.maxOccurs)
+        itemElement.setAttribute("maxOccurs", this.maxOccurs.toString());
+
+      return itemElement;
     }
 
   } as Constructor<Property> as typeof Base & Constructor<ArrayProperty>;

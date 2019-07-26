@@ -21,7 +21,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, SpatialModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -800,8 +800,8 @@ export abstract class ViewState extends ElementState {
   public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
   public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
   public getGridSpacing(): XAndY {
-    const x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
-    return { x, y: JsonUtils.asInt(this.getDetail("gridSpaceY"), x) };
+    const x = JsonUtils.asDouble(this.getDetail("gridSpaceX"), 1.0);
+    return { x, y: JsonUtils.asDouble(this.getDetail("gridSpaceY"), x) };
   }
 
   /** Change the volume that this view displays, keeping its current rotation.
@@ -1460,10 +1460,10 @@ export abstract class ViewState3d extends ViewState {
 /** Maps each model in a [[SpatialViewState]]'s [[ModelSelectorState]] to a [[TileTree.Reference]].
  * @internal
  */
-class SpatialModelTileTrees {
-  private _allLoaded = false;
-  private readonly _view: SpatialViewState;
-  private _treeRefs = new Map<Id64String, TileTree.Reference>();
+export class SpatialModelTileTrees {
+  protected _allLoaded = false;
+  protected readonly _view: SpatialViewState;
+  protected _treeRefs = new Map<Id64String, TileTree.Reference>();
   private _swapTreeRefs = new Map<Id64String, TileTree.Reference>();
 
   public constructor(view: SpatialViewState) {
@@ -1493,10 +1493,13 @@ class SpatialModelTileTrees {
         continue;
       }
 
-      const model = this._view.iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
-      if (undefined !== model3d)
-        cur.set(modelId, model3d.createTileTreeReference(this._view));
+      const model = this._iModel.models.getLoaded(modelId);
+      const model3d = undefined !== model ? model.asSpatialModel : undefined;
+      if (undefined !== model3d) {
+        const ref = this.createTileTreeReference(model3d);
+        if (undefined !== ref)
+          cur.set(modelId, ref);
+      }
     }
   }
 
@@ -1505,6 +1508,12 @@ class SpatialModelTileTrees {
     for (const value of this._treeRefs.values())
       func(value);
   }
+
+  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+    return model.createTileTreeReference(this._view);
+  }
+
+  protected get _iModel(): IModelConnection { return this._view.iModel; }
 }
 
 /** Defines a view of one or more SpatialModels.

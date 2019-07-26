@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "1.2.0-dev.4",
+  "version": "1.3.0-dev.7",
   "description": "iModel.js Nine-zone React UI components",
   "license": "MIT",
   "repository": {
@@ -55,17 +55,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^1.2.0-dev.4"
+    "@bentley/ui-core": "^1.3.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "1.2.0-dev.4",
+    "@bentley/build-tools": "1.3.0-dev.7",
     "@bentley/icons-generic-webfont": "^0.0.22",
-    "@bentley/ui-core": "1.2.0-dev.4",
-    "@bentley/webpack-tools": "1.2.0-dev.4",
+    "@bentley/ui-core": "1.3.0-dev.7",
+    "@bentley/webpack-tools": "1.3.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -107,7 +107,7 @@
     "source-map-loader": "^0.2.3",
     "style-loader": "^0.21.0",
     "svg-react-loader": "^0.4.5",
-    "ts-loader": "^4.4.1",
+    "ts-loader": "^6.0.4",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "tslint": "^5.11.0",
@@ -139,9 +139,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 90.08,
-    "branches": 84.72,
-    "functions": 86.45,
-    "lines": 89.96
+    "statements": 100,
+    "branches": 100,
+    "functions": 100,
+    "lines": 100
   }
 }

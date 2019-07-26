@@ -14,30 +14,60 @@ import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import { Orientation } from "@bentley/ui-core";
 
-describe("<Toolbar />", async () => {
+describe("<Toolbar  />", async () => {
 
   const tool1 = new CommandItemDef({
-    commandId: "tool1",
-    label: "Tool 1",
+    commandId: "test.tool1",
+    label: "Tool_1",
     iconSpec: "icon-placeholder",
     isEnabled: false,
   });
 
   const tool2 = new CommandItemDef({
-    commandId: "tool2",
-    label: "Tool 2",
+    commandId: "test.tool2",
+    label: "Tool_2",
+    iconSpec: "icon-placeholder",
+    isEnabled: true,
+  });
+
+  const tool1a = new CommandItemDef({
+    commandId: "test.tool1_a",
+    label: "Tool_1",
+    iconSpec: "icon-placeholder",
+    isEnabled: false,
+  });
+
+  const tool2a = new CommandItemDef({
+    commandId: "test.tool2_a",
+    label: "Tool_2",
+    iconSpec: "icon-placeholder",
+    isEnabled: true,
+  });
+
+  const tool1b = new CommandItemDef({
+    commandId: "test.tool1_b",
+    label: "Tool_1",
+    iconSpec: "icon-placeholder",
+    isEnabled: false,
+  });
+
+  const tool2b = new CommandItemDef({
+    commandId: "test.tool2_b",
+    label: "Tool_2",
     iconSpec: "icon-placeholder",
     isEnabled: true,
   });
 
   const group1 = new GroupItemDef({
-    label: "Tool Group",
+    groupId: "test.group",
+    label: "Tool_Group",
     iconSpec: "icon-placeholder",
-    items: [tool1, tool2],
+    items: [tool1a, tool2a],
     itemsInColumn: 4,
   });
 
   const custom1 = new CustomItemDef({
+    customId: "test.custom",
     reactElement: (
       <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
         <div style={{ width: "200px", height: "100px" }}>
@@ -55,7 +85,7 @@ describe("<Toolbar />", async () => {
   };
 
   const conditional1 = new ConditionalItemDef({
-    items: [tool1, tool2],
+    items: [tool1b, tool2b],
     isEnabled: false,
     stateSyncIds: [testItemEventId],
     stateFunc: testItemStateFunc,
@@ -72,10 +102,12 @@ describe("<Toolbar />", async () => {
   afterEach(cleanup);
 
   it("should render", async () => {
-    const renderedComponent = render(<Toolbar orientation={Orientation.Horizontal} items={new ItemList([
-      tool1,
-      tool2,
-    ])} />);
+    const renderedComponent = render(
+      <Toolbar orientation={Orientation.Horizontal}
+        items={new ItemList([
+          tool1,
+          tool2,
+        ])} />);
     expect(renderedComponent).not.to.be.undefined;
   });
 
@@ -143,13 +175,13 @@ describe("<Toolbar />", async () => {
       />);
     expect(renderedComponent).not.to.be.undefined;
 
-    expect(tool1.isEnabled).to.be.false;
-    expect(tool2.isEnabled).to.be.true;
+    expect(tool1b.isEnabled).to.be.false;
+    expect(tool2b.isEnabled).to.be.true;
 
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testItemEventId);
 
-    expect(tool1.isEnabled).to.be.true;
-    expect(tool2.isEnabled).to.be.true;
+    expect(tool1b.isEnabled).to.be.true;
+    expect(tool2b.isEnabled).to.be.true;
   });
 
 });

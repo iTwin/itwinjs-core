@@ -12,6 +12,7 @@ export enum SelectionModeFlags {
   DragEnabled = 1 << 1,
   ToggleEnabled = 1 << 2,
   KeysEnabled = 1 << 3,
+  None = 1 << 4,
 }
 
 /** Selection modes for Table and Tree row selection
@@ -26,6 +27,8 @@ export enum SelectionMode {
   Extended = SelectionModeFlags.KeysEnabled | SelectionModeFlags.ToggleEnabled,
   /** Only one item selected at a time; also allows deselecting. */
   SingleAllowDeselect = SelectionModeFlags.SelectionLimitOne | SelectionModeFlags.ToggleEnabled,
+  /** Do not allow (disable) selection */
+  None = SelectionModeFlags.None,
 }
 
 /** Determines if a SelectionMode is active

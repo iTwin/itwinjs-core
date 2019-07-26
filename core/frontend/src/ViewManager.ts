@@ -12,7 +12,7 @@ import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
-import { TileTreeSet } from "./tile/TileTree";
+import { TileTree, TileTreeSet } from "./tile/TileTree";
 
 /** Interface for drawing "decorations" into, or on top of, the active [[Viewport]]s.
  * Decorators generate [[Decorations]].
@@ -236,7 +236,7 @@ export class ViewManager {
     this.onViewClose.emit(vp);
 
     // make sure tools don't think the cursor is still in this viewport
-    IModelApp.toolAdmin.onMouseLeave(vp); // tslint:disable-line:no-floating-promises
+    IModelApp.toolAdmin.forgetViewport(vp);
 
     vp.setEventController(undefined);
     this._viewports.splice(index, 1);
@@ -297,25 +297,30 @@ export class ViewManager {
    * @internal
    */
   public purgeTileTrees(olderThan: BeTimePoint): void {
-    const viewportsByIModel = new Map<IModelConnection, ScreenViewport[]>();
+    // A single viewport can display tiles from more than one IModelConnection.
+    // NOTE: A viewport may be displaying no trees - but we need to record its IModel so we can purge those which are NOT being displayed
+    //  NOTE: That won't catch external tile trees previously used by that viewport.
+    const trees = new TileTreeSet();
+    const treesByIModel = new Map<IModelConnection, Set<TileTree>>();
     for (const vp of this._viewports) {
-      let viewports = viewportsByIModel.get(vp.iModel);
-      if (undefined === viewports) {
-        viewports = [];
-        viewportsByIModel.set(vp.iModel, viewports);
-      }
-
-      viewports.push(vp);
+      vp.discloseTileTrees(trees);
+      if (undefined === treesByIModel.get(vp.iModel))
+        treesByIModel.set(vp.iModel, new Set<TileTree>());
     }
 
-    for (const entry of viewportsByIModel) {
-      const iModel = entry[0];
-      const viewports = entry[1];
-      const trees = new TileTreeSet();
-      for (const viewport of viewports)
-        viewport.discloseTileTrees(trees);
+    for (const tree of trees.trees) {
+      let set = treesByIModel.get(tree.iModel);
+      if (undefined === set) {
+        set = new Set<TileTree>();
+        treesByIModel.set(tree.iModel, set);
+      }
 
-      iModel.tiles.purge(olderThan, trees.trees);
+      set.add(tree);
+    }
+
+    for (const entry of treesByIModel) {
+      const iModel = entry[0];
+      iModel.tiles.purge(olderThan, entry[1]);
     }
   }
 

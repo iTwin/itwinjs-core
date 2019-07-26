@@ -2,6 +2,54 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { OverrideFormat } from "../Metadata/OverrideFormat";
+import { Format } from "../Metadata/Format";
+
+/** @internal */
+export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
+
+/** @internal Needs to be moved to quantity */
+export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
+  const match = formatString.split(formatStringRgx);
+  yield match[1]; // the Format Name
+  let index = 4;
+  while (index < match.length - 1) { // index 0 and 21 are empty strings
+    if (match[index] !== undefined)
+      yield match[index + 1]; // Unit Name
+    else
+      break;
+    index += 4;
+  }
+}
+
+/** @internal Needs to be moved to quantity */
+export function generateFormatString(format: Format | OverrideFormat): string {
+  let formatString = format.name;
+  if ("parent" in format) {
+    if (undefined !== format.parent.schema.alias)
+      formatString = `${format.parent.schema.alias}:${format.name}`;
+  } else {
+    if (undefined !== format.schema.alias)
+      formatString = `${format.schema.alias}:${format.name}`;
+  }
+
+  if (undefined !== format.precision)
+    formatString += `(${format.precision.toString()})`;
+
+  if (undefined !== format.units) {
+    format.units.forEach(([unit, label]) => {
+      let unitName = unit.name;
+      if (undefined !== unit.schema.alias)
+        unitName = `${unit.schema.alias}:${unit.name}`;
+      formatString += `[${unitName}`;
+      if (undefined !== label)
+        formatString += `|${label}`;
+      formatString += "]";
+    });
+  }
+
+  return formatString;
+}
 
 /** @beta Needs to be moved to quantity  */
 export enum FormatTraits {

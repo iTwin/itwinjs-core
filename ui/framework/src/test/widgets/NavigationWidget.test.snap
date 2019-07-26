@@ -27,6 +27,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "_handleSyncUiEvent": [Function],
       "_label": "",
       "_navigationAidId": "",
+      "_toolbarBaseName": "[TestFrontstage]NavigationWidget",
       "_tooltip": "",
       "classId": undefined,
       "fillZone": false,

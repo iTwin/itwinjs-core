@@ -29,7 +29,6 @@
     "test:ecschema-metadata": "cd core/ecschema-metadata && npm test -s",
     "test:example-code-snippets": "cd example-code/snippets && npm test -s",
     "test:example-code-app": "cd example-code/app && npm test -s",
-    "test:perf": "cd core/backend && npm run perftest",
     "test:presentation": "npm run test:presentation-common && npm run test:presentation-backend && npm run test:presentation-frontend && npm run test:presentation-components && npm run test:presentation-integration",
     "test:presentation-common": "cd presentation/common && npm test -s",
     "test:presentation-backend": "cd presentation/backend && npm test -s",

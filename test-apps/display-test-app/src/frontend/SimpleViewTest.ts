@@ -32,6 +32,7 @@ import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
 import { Viewer } from "./Viewer";
 import SVTRpcInterface from "../common/SVTRpcInterface";
+import { setTitle } from "./Title";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
@@ -122,17 +123,14 @@ async function main() {
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
-    cullAgainstActiveVolume: !configuration.disableActiveVolumeCulling,
     preserveShaderSourceCode: configuration.preserveShaderSourceCode,
     displaySolarShadows: configuration.displaySolarShadows,
-    enableOptimizedSurfaceShaders: configuration.enableOptimizedSurfaceShaders,
   };
 
   if (configuration.disableInstancing)
     DisplayTestApp.tileAdminProps.enableInstancing = false;
-
-  if (configuration.useProjectExtents)
-    DisplayTestApp.tileAdminProps.useProjectExtents = true;
+  if (configuration.disableMagnification)
+    DisplayTestApp.tileAdminProps.disableMagnification = true;
 
   DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 
@@ -169,11 +167,11 @@ async function main() {
       if (!signedIn)
         return;
     }
-
-    await openSnapshotIModel(activeViewState, configuration.iModelName!);
+    const iModelName = configuration.iModelName!;
+    await openSnapshotIModel(activeViewState, iModelName);
+    setTitle(iModelName);
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView();
-
   } catch (reason) {
     alert(reason);
     return;

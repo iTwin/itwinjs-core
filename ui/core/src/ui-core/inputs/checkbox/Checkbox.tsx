@@ -13,7 +13,7 @@ import { CommonProps } from "../../utils/Props";
 /** Properties for [[Checkbox]] React component
  * @public
  */
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick">, CommonProps {
   /** Text that will be shown next to the checkbox. */
   label?: string;
   /** Input status like: "Success", "Warning" or "Error" */
@@ -26,38 +26,28 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
   labelClassName?: string;
   /** Custom CSS Style for the label element */
   labelStyle?: React.CSSProperties;
+  /**
+   * Event called when checkbox is clicked on. This is a good event to
+   * use for preventing the action from bubbling to component's parents.
+   */
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 /** A React component that renders a simple checkbox with label
  * @public
  */
-export class Checkbox extends React.Component<CheckboxProps> {
-  private _id: string = "";
-
-  constructor(props: CheckboxProps) {
-    super(props);
-
-    if (props.id)
-      this._id = props.id;
-    else
-      this._id = `core-checkbox-${Math.random().toString().replace(/0\./, "")}`;
+export class Checkbox extends React.PureComponent<CheckboxProps> {
+  private _onCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
   }
-
-  /** @internal */
   public render() {
-    const { label, status, className, style, inputClassName, inputStyle, labelClassName, labelStyle, id, ...inputProps } = this.props;
-    const classNames = classnames(
-      "core-checkbox",
-      inputProps.disabled && "disabled",
-      status,
-      className,
-    );
-
+    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, onClick, ...inputProps } = this.props;
+    const checkBoxClass = classnames("core-checkbox", status, className);
     return (
-      <span className={classNames} style={style} >
-        <input id={this._id} className={inputClassName} style={inputStyle} {...inputProps} type="checkbox" />
-        {label && <label htmlFor={this._id} className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}> {label} </label>}
-      </span>
+      <label className={checkBoxClass} onClick={onClick}>
+        <input type="checkbox" {...inputProps} className={inputClassName} style={inputStyle} onClick={this._onCheckboxClick} />
+        <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>{this.props.label}</span>
+      </label>
     );
   }
 }

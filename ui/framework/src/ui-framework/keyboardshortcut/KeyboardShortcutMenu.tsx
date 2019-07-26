@@ -61,7 +61,7 @@ export class KeyboardShortcutMenu extends React.PureComponent<CommonProps, Keybo
         <GlobalContextMenu
           className={this.props.className}
           style={this.props.style}
-          identifier="keyboard-shortcut-menu"
+          identifier="keyboard-shortcuts"
           x={menuX}
           y={menuY}
           opened={menuVisible}

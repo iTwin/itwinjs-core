@@ -35,9 +35,13 @@ import { Point4d } from "../geometry4d/Point4d";
  * @public
  */
 export interface ArcVectors {
+  /** center point of arc. */
   center: Point3d;
+  /** vector to point at angle 0 in parameter space */
   vector0: Vector3d;
+  /** vector to point at angle 90 degrees in parameter space */
   vector90: Vector3d;
+  /** angle swept by the subset of the complete arc. */
   sweep: AngleSweep;
 }
 /**

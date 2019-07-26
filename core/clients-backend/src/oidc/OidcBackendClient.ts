@@ -29,7 +29,6 @@ export abstract class OidcBackendClient extends OidcClient {
 
   /**
    * Creates an instance of OidcBackendClient.
-   * @param deploymentEnv Deployment environment.
    */
   public constructor(configuration: OidcBackendClientConfiguration) {
     super();

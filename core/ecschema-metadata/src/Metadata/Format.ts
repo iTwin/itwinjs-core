@@ -7,14 +7,15 @@ import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
-import { FormatProps } from "./../Deserialization/JsonProps";
-import { SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { FormatProps } from "../Deserialization/JsonProps";
+import { SchemaItemType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString,
   FractionalPrecision, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType,
   parseShowSignOption, ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "./../utils/FormatEnums";
+} from "../utils/FormatEnums";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * @beta
@@ -270,5 +271,50 @@ export class Format extends SchemaItem {
     }
 
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("type", formatTypeToString(this.type).toLowerCase());
+    itemElement.setAttribute("precision", this.precision.toString());
+    itemElement.setAttribute("roundFactor", this.roundFactor.toString());
+    itemElement.setAttribute("showSignOption", showSignOptionToString(this.showSignOption));
+    itemElement.setAttribute("decimalSeparator", this.decimalSeparator);
+    itemElement.setAttribute("thousandSeparator", this.thousandSeparator);
+    itemElement.setAttribute("uomSeparator", this.uomSeparator);
+    itemElement.setAttribute("stationSeparator", this.stationSeparator);
+
+    if (undefined !== this.minWidth)
+      itemElement.setAttribute("minWidth", this.minWidth.toString());
+    if (undefined !== this.scientificType)
+      itemElement.setAttribute("scientificType", scientificTypeToString(this.scientificType));
+    if (undefined !== this.stationOffsetSize)
+      itemElement.setAttribute("stationOffsetSize", this.stationOffsetSize.toString());
+
+    const formatTraits = formatTraitsToArray(this.formatTraits);
+    if (formatTraits.length > 0)
+      itemElement.setAttribute("formatTraits", formatTraits.join("|"));
+
+    if (undefined !== this.units) {
+      const compositeElement = schemaXml.createElement("Composite");
+      if (undefined !== this.spacer)
+        compositeElement.setAttribute("spacer", this.spacer);
+      if (undefined !== this.includeZero)
+        compositeElement.setAttribute("includeZero", this.includeZero.toString());
+
+      this.units.forEach(([unit, label]) => {
+        const unitElement = schemaXml.createElement("Unit");
+        if (undefined !== label)
+          unitElement.setAttribute("label", label);
+        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, unit.schema, unit.name);
+        unitElement.textContent = unitName;
+        compositeElement.appendChild(unitElement);
+      });
+
+      itemElement.appendChild(compositeElement);
+    }
+
+    return itemElement;
   }
 }

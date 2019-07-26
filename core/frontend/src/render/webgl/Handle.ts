@@ -14,17 +14,241 @@ import { Point3d } from "@bentley/geometry-core";
 /** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
 
+/** Describes a connection between a BufferHandle and an arbitrary number of attributes associated with that BufferHandle. */
+interface BufferHandleLinkage {
+  buffer: BufferHandle;
+  params: BufferParameters[]; // If empty, means no vertex attrib details are necessary (index buffer probably)
+}
+
+/** Provides convenience methods for creating a BufferHandleLinkage interface. */
+class BufferHandleLinkage {
+  private constructor() { }
+  public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
+    return { buffer, params };
+  }
+  public static clone(linkage: BufferHandleLinkage): BufferHandleLinkage {
+    const clonedParams: BufferParameters[] = [];
+    for (const param of linkage.params) {
+      clonedParams.push(BufferParameters.clone(param));
+    }
+    return BufferHandleLinkage.create(linkage.buffer, clonedParams);
+  }
+}
+
+/**
+ * Describes the binding state of a BufferHandle when added to a BuffersContainer.  See the WebGL function 'vertexAttribPointer'.
+ * @internal
+ */
+export interface BufferParameters {
+  /** Index used for binding attribute location for the associated BufferHandle. */
+  glAttribLoc: number;
+  /** Number of components for the attribute (1, 2, 3, or 4). */
+  glSize: number;
+  /** Data type of each component. */
+  glType: number;
+  /** If true, WebGL will normalize integer data values into a certain range (see WebGL specs for details). */
+  glNormalized: boolean;
+  /** Offset in bytes between the beginning of consecutive vertex attributes. */
+  glStride: number;
+  /** Offset in bytes of the first component in the vertex attribute array. */
+  glOffset: number;
+  /** Specifies whether the attribute is instanced.  If so, the WebGL instancing extension function 'vertexAttribDivisor' will be called. */
+  glInstanced: boolean;
+}
+
+/**
+ * Provides convenience methods for creating a BuffersParameter interface.
+ * @internal
+ */
+export class BufferParameters {
+  private constructor() { }
+  public static create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean): BufferParameters {
+    return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced };
+  }
+  public static clone(params: BufferParameters): BufferParameters {
+    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced);
+  }
+}
+
+/**
+ * An abstract class which specifies an interface for binding and unbinding vertex buffers and their associated state.
+ * @internal
+ */
+export abstract class BuffersContainer implements IDisposable {
+  protected _linkages: BufferHandleLinkage[] = [];
+
+  protected constructor() { }
+
+  public get linkages(): BufferHandleLinkage[] { return this._linkages; }
+
+  public abstract bind(): void;
+  public abstract unbind(): void;
+  public abstract addBuffer(buffer: BufferHandle, params: BufferParameters[]): void;
+  public abstract appendLinkages(linkages: BufferHandleLinkage[]): void;
+
+  public dispose() { } // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
+
+  public static create(): BuffersContainer {
+    const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
+    if (undefined !== vaoExt) {
+      return new VAOContainer(vaoExt);
+    } else {
+      return new VBOContainer();
+    }
+  }
+}
+
+/**
+ * A BuffersContainer implementation which uses VAOs for binding and unbinding buffer state.
+ * @internal
+ */
+export class VAOContainer extends BuffersContainer {
+  private _vaoExt: OES_vertex_array_object;
+  private _vao: VertexArrayObjectHandle;
+
+  public constructor(vaoExt: OES_vertex_array_object) {
+    super();
+    this._vaoExt = vaoExt;
+    this._vao = new VertexArrayObjectHandle(this._vaoExt);
+  }
+
+  public bind(): void {
+    this._vao.bind();
+  }
+
+  public unbind(): void {
+    VertexArrayObjectHandle.unbind(this._vaoExt);
+  }
+
+  public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
+    const linkage = BufferHandleLinkage.create(buffer, params);
+    this._linkages.push(linkage);
+    this._bindLinkage(linkage);
+  }
+
+  public appendLinkages(linkages: BufferHandleLinkage[]): void {
+    for (const linkage of linkages) {
+      this._linkages.push(BufferHandleLinkage.clone(linkage));
+      this._bindLinkage(linkage);
+    }
+  }
+
+  private _bindLinkage(linkage: BufferHandleLinkage) {
+    this.bind();
+    linkage.buffer.bind();
+    for (const p of linkage.params) {
+      System.instance.context.enableVertexAttribArray(p.glAttribLoc);
+      if (p.glInstanced) {
+        System.instance.vertexAttribDivisor(p.glAttribLoc, 1);
+      }
+      System.instance.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
+    }
+    this.unbind();
+  }
+
+  public dispose(): void {
+    super.dispose();
+    this._vao.dispose();
+  }
+}
+
+/**
+ * A BuffersContainer implementation which uses only VBOs (no VAOs) for binding and unbinding buffer state.
+ * @internal
+ */
+export class VBOContainer extends BuffersContainer {
+  public bind(): void {
+    const system = System.instance;
+    for (const linkage of this._linkages) {
+      const buffer = linkage.buffer;
+      const params = linkage.params;
+      buffer.bind();
+      for (const p of params) {
+        system.enableVertexAttribArray(p.glAttribLoc, p.glInstanced);
+        system.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
+      }
+    }
+
+    system.updateVertexAttribArrays();
+  }
+
+  public unbind(): void {
+    for (const linkage of this._linkages) {
+      linkage.buffer.unbind();
+    }
+  }
+
+  public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
+    this._linkages.push(BufferHandleLinkage.create(buffer, params));
+  }
+
+  public appendLinkages(linkages: BufferHandleLinkage[]): void {
+    for (const linkage of linkages) {
+      this._linkages.push(BufferHandleLinkage.clone(linkage));
+    }
+  }
+}
+
+/**
+ * A handle to a WebGLVertexArrayObjectOES.
+ * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
+ * @internal
+ */
+export class VertexArrayObjectHandle implements IDisposable {
+  private _vaoExt: OES_vertex_array_object;
+  private _arrayObject?: WebGLVertexArrayObjectOES;
+
+  /** Allocates the WebGLVertexArrayObjectOES using the supplied context. Free the WebGLVertexArrayObjectOES using dispose() */
+  public constructor(vaoExt: OES_vertex_array_object) {
+    this._vaoExt = vaoExt;
+    const arrayObject = this._vaoExt.createVertexArrayOES();
+
+    // vaoExt.createVertexArrayOES() returns WebGLVertexArrayObjectOES | null...
+    if (null !== arrayObject) {
+      this._arrayObject = arrayObject;
+    } else {
+      this._arrayObject = undefined;
+    }
+
+    assert(!this.isDisposed);
+  }
+
+  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+
+  /** Frees the WebGL vertex array object */
+  public dispose(): void {
+    if (!this.isDisposed) {
+      this._vaoExt.deleteVertexArrayOES(this._arrayObject!);
+      this._arrayObject = undefined;
+    }
+  }
+
+  /** Binds this vertex array object */
+  public bind(): void {
+    if (undefined !== this._arrayObject) {
+      this._vaoExt.bindVertexArrayOES(this._arrayObject);
+    }
+  }
+
+  /** Ensures no vertex array object is bound */
+  public static unbind(vaoExt: OES_vertex_array_object): void {
+    vaoExt.bindVertexArrayOES(null);
+  }
+}
+
 /**
  * A handle to a WebGLBuffer, such as a vertex or index buffer.
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
 export class BufferHandle implements IDisposable {
+  private _target: GL.Buffer.Target;
   private _glBuffer?: WebGLBuffer;
   private _bytesUsed = 0;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
-  public constructor() {
+  public constructor(target: GL.Buffer.Target) {
+    this._target = target;
     const glBuffer = System.instance.context.createBuffer();
 
     // gl.createBuffer() returns WebGLBuffer | null...
@@ -48,32 +272,32 @@ export class BufferHandle implements IDisposable {
     }
   }
 
-  /** Binds this buffer to the specified target */
-  public bind(target: GL.Buffer.Target): void {
+  /** Binds this buffer to the target specified during construction */
+  public bind(): void {
     if (undefined !== this._glBuffer) {
-      System.instance.context.bindBuffer(target, this._glBuffer);
+      System.instance.context.bindBuffer(this._target, this._glBuffer);
     }
   }
 
   /** Sets the specified target to be bound to no buffer */
-  public static unbind(target: GL.Buffer.Target): void { System.instance.context.bindBuffer(target, null); }
+  public unbind(): void { System.instance.context.bindBuffer(this._target, null); }
 
-  /** Binds this buffer to the specified target and sets the buffer's data store. */
-  public bindData(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
-    this.bind(target);
-    System.instance.context.bufferData(target, data, usage);
-    BufferHandle.unbind(target);
+  /** Binds this buffer to the target specified at construction and sets the buffer's data store. */
+  public bindData(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
+    this.bind();
+    System.instance.context.bufferData(this._target, data, usage);
+    this.unbind();
     this._bytesUsed = data.byteLength;
   }
 
   /** Creates a BufferHandle and binds its data */
   public static createBuffer(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
-    const handle = new BufferHandle();
+    const handle = new BufferHandle(target);
     if (handle.isDisposed) {
       return undefined;
     }
 
-    handle!.bindData(target, data, usage);
+    handle!.bindData(data, usage);
     return handle;
   }
   /** Creates a BufferHandle and binds its data */
@@ -140,18 +364,18 @@ export function qparams3dToArray(params: QParams3d): { origin: Float32Array, sca
 export class QBufferHandle2d extends BufferHandle {
   public readonly params: Float32Array;
 
-  public constructor(params: QParams2d) {
-    super();
-    this.params = qparams2dToArray(params);
+  public constructor(qParams: QParams2d) {
+    super(GL.Buffer.Target.ArrayBuffer);
+    this.params = qparams2dToArray(qParams);
   }
 
-  public static create(params: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
-    const handle = new QBufferHandle2d(params);
+  public static create(qParams: QParams2d, data: Uint16Array): QBufferHandle2d | undefined {
+    const handle = new QBufferHandle2d(qParams);
     if (handle.isDisposed) {
       return undefined;
     }
 
-    handle.bindData(GL.Buffer.Target.ArrayBuffer, data);
+    handle.bindData(data);
     return handle;
   }
 }
@@ -165,52 +389,20 @@ export class QBufferHandle3d extends BufferHandle {
   /** The quantization scale in x, y, and z */
   public readonly scale: Float32Array;
 
-  public constructor(params: QParams3d) {
-    super();
-    this.origin = qorigin3dToArray(params.origin);
-    this.scale = qscale3dToArray(params.scale);
+  public constructor(qParams: QParams3d) {
+    super(GL.Buffer.Target.ArrayBuffer);
+    this.origin = qorigin3dToArray(qParams.origin);
+    this.scale = qscale3dToArray(qParams.scale);
   }
 
-  public static create(params: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
-    const handle = new QBufferHandle3d(params);
+  public static create(qParams: QParams3d, data: Uint16Array): QBufferHandle3d | undefined {
+    const handle = new QBufferHandle3d(qParams);
     if (handle.isDisposed) {
       return undefined;
     }
 
-    handle.bindData(GL.Buffer.Target.ArrayBuffer, data);
+    handle.bindData(data);
     return handle;
-  }
-}
-
-/** A handle to the location of an attribute within a shader program
- * @internal
- */
-export class AttributeHandle {
-  private readonly _glId: number;
-
-  private constructor(glId: number) { this._glId = glId; }
-
-  public static create(program: WebGLProgram, name: string, required: boolean = false): AttributeHandle | undefined {
-    const glId = System.instance.context.getAttribLocation(program, name);
-    if (-1 === glId) {
-      assert(!required, "getAttribLocation failed for " + name);
-      return undefined;
-    }
-
-    return new AttributeHandle(glId);
-  }
-
-  public setVertexAttribPointer(size: number, type: number, normalized: boolean, stride: number, offset: number) {
-    System.instance.context.vertexAttribPointer(this._glId, size, type, normalized, stride, offset);
-  }
-
-  public enableVertexAttribArray(instanced = false): void { System.instance.enableVertexAttribArray(this._glId, instanced); }
-
-  public enableArray(buffer: BufferHandle, size: number, type: GL.DataType, normalized: boolean, stride: number, offset: number, instanced = false): void {
-    buffer.bind(GL.Buffer.Target.ArrayBuffer);
-    this.setVertexAttribPointer(size, type, normalized, stride, offset);
-    this.enableVertexAttribArray(instanced);
-    BufferHandle.unbind(GL.Buffer.Target.ArrayBuffer);
   }
 }
 

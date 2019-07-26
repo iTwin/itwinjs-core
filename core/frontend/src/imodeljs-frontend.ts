@@ -15,6 +15,7 @@ export * from "./tools/ViewTool";
 export * from "./tools/ClipViewTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/IdleTool";
+export * from "./tools/ToolAssistance";
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";

@@ -19,6 +19,7 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
 import { SchemaItem } from "./SchemaItem";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
@@ -72,6 +73,16 @@ export class RelationshipClass extends ECClass {
     schemaJson.source = this.source.toJson();
     schemaJson.target = this.target.toJson();
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("strength", strengthToString(this.strength));
+    itemElement.setAttribute("strengthDirection", strengthDirectionToString(this.strengthDirection));
+    itemElement.appendChild(await this.source.toXml(schemaXml));
+    itemElement.appendChild(await this.target.toXml(schemaXml));
+    return itemElement;
   }
 
   public deserializeSync(relationshipClassProps: RelationshipClassProps) {
@@ -182,6 +193,45 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const elementName = this.isSource ? "Source" : "Target";
+    const itemElement = schemaXml.createElement(elementName);
+    if (undefined !== this.polymorphic)
+      itemElement.setAttribute("polymorphic", this.polymorphic.toString());
+    if (undefined !== this.roleLabel)
+      itemElement.setAttribute("roleLabel", this.roleLabel);
+    if (undefined !== this.multiplicity)
+      itemElement.setAttribute("multiplicity", this.multiplicity.toString());
+
+    const abstractConstraint = await this.abstractConstraint;
+    if (undefined !== abstractConstraint) {
+      const abstractConstraintName = XmlSerializationUtils.createXmlTypedName(this.schema, abstractConstraint.schema, abstractConstraint.name);
+      itemElement.setAttribute("abstractConstraint", abstractConstraintName);
+    }
+
+    if (undefined !== this.constraintClasses) {
+      for (const item of this.constraintClasses) {
+        const constraintClass = await item;
+        const classElement = schemaXml.createElement("Class");
+        const constraintClassName = XmlSerializationUtils.createXmlTypedName(this.schema, constraintClass.schema, constraintClass.name);
+        classElement.setAttribute("class", constraintClassName);
+        itemElement.appendChild(classElement);
+      }
+    }
+
+    if (this._customAttributes) {
+      const caContainerElement = schemaXml.createElement("ECCustomAttributes");
+      for (const [name, attribute] of this._customAttributes) {
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        caContainerElement.appendChild(caElement);
+      }
+      itemElement.appendChild(caContainerElement);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(relationshipConstraintProps: RelationshipConstraintProps) {

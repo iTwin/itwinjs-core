@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix bug with OverrideFormat names.  Remove the setter from KindOfQuantity for persistence format as that shouldn't be set by the public API.",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Caleb.Shafer@bentley.com"
+}

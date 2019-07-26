@@ -5,6 +5,7 @@
 /** @module WebGL */
 
 import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { AttributeMap, AttributeDetails } from "../AttributeMap";
 
 // Positions are in NDC [-1..1]. Compute UV params in [0..1]
 const computeTexCoord = "v_texCoord = (rawPosition.xy + 1.0) * 0.5;";
@@ -15,8 +16,9 @@ function addTexture(prog: ProgramBuilder) {
 }
 
 /** @internal */
-export function createViewportQuadBuilder(textured: boolean): ProgramBuilder {
-  const prog = new ProgramBuilder();
+export function createViewportQuadBuilder(textured: boolean, attrMapOverride?: Map<string, AttributeDetails>): ProgramBuilder {
+  const attrMap = undefined !== attrMapOverride ? attrMapOverride : AttributeMap.findAttributeMap(undefined, false);
+  const prog = new ProgramBuilder(attrMap);
   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
   if (textured) {
     addTexture(prog);

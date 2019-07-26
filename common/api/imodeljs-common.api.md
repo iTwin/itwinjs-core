@@ -722,18 +722,22 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    // @internal @deprecated
+    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
+    // @internal
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // (undocumented)
+    // @beta
+    isManagedWithIModel: boolean;
     readonly isValid: boolean;
-    // (undocumented)
     name: string;
-    // (undocumented)
+    // @internal
     properties: any;
-    // (undocumented)
     scopeReq: CodeScopeSpec.ScopeRequirement;
-    // (undocumented)
+    scopeType: CodeScopeSpec.Type;
+    // @deprecated
     specScopeType: CodeScopeSpec.Type;
 }
 
@@ -2268,6 +2272,8 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     httpVersionMinor: number;
     // (undocumented)
+    ip?: string;
+    // (undocumented)
     method: string;
     // (undocumented)
     path: string;
@@ -2452,6 +2458,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps>;
+    // @beta (undocumented)
+    getMassProperties(_iModelToken: IModelTokenProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelTokenProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
@@ -2802,6 +2810,45 @@ export interface MarshalingBinaryMarker {
 export namespace MarshalingBinaryMarker {
     // (undocumented)
     export function createDefault(): MarshalingBinaryMarker;
+}
+
+// @beta
+export enum MassPropertiesOperation {
+    AccumulateAreas = 1,
+    AccumulateLengths = 0,
+    AccumulateVolumes = 2
+}
+
+// @beta
+export interface MassPropertiesRequestProps {
+    // (undocumented)
+    candidates?: Id64Array;
+    // (undocumented)
+    operation: MassPropertiesOperation;
+}
+
+// @beta
+export interface MassPropertiesResponseProps {
+    // (undocumented)
+    area?: number;
+    // (undocumented)
+    centroid?: XYZProps;
+    // (undocumented)
+    ixy?: number;
+    // (undocumented)
+    ixz?: number;
+    // (undocumented)
+    iyz?: number;
+    // (undocumented)
+    length?: number;
+    // (undocumented)
+    moments?: XYZProps;
+    // (undocumented)
+    perimeter?: number;
+    // (undocumented)
+    status: BentleyStatus;
+    // (undocumented)
+    volume?: number;
 }
 
 // @public
@@ -4438,6 +4485,8 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
     // (undocumented)
     caching: RpcResponseCacheControl;
     // (undocumented)
+    ip?: string;
+    // (undocumented)
     method: string;
     // (undocumented)
     operation: SerializedRpcOperation;
@@ -4644,6 +4693,9 @@ export namespace SpatialClassificationProps {
         Off = 0,
         On = 1
     }
+    export function equalClassifiers(lhs: Classifier, rhs: Classifier): boolean;
+    export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
+    export function equalProperties(lhs: Properties, rhs: Properties): boolean;
     export class Flags implements FlagsProps {
         constructor(inside?: Display, outside?: Display);
         // (undocumented)

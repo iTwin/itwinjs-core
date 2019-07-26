@@ -97,8 +97,6 @@ export class UiFramework {
 
     if (oidcConfig) {
       UiFramework._oidcClient = new OidcBrowserClient(oidcConfig);
-      await UiFramework._oidcClient.initialize(new ClientRequestContext());
-
       const initOidcPromise = UiFramework._oidcClient.initialize(new ClientRequestContext())
         .then(() => IModelApp.authorizationClient = UiFramework._oidcClient);
       return Promise.all([readFinishedPromise, initOidcPromise]);

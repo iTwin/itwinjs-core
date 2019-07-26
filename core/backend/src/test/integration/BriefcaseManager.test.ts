@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel } from "@bentley/imodeljs-clients";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import {
@@ -14,6 +14,14 @@ import {
   IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory,
 } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
+
+async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
+  let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+  if (!iModel)
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, undefined, `Description for iModel`, undefined, 2 * 60 * 1000);
+  assert.isDefined(iModel.wsgId);
+  return iModel.wsgId;
+}
 
 describe("BriefcaseManager (#integration)", () => {
   let testProjectId: string;
@@ -358,6 +366,33 @@ describe("BriefcaseManager (#integration)", () => {
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId3);
     assert.isFalse(exists);
+  });
+
+  it("Open iModel-s with various names causing potential issues on Windows/Unix", async () => {
+    const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
+
+    let iModelName = "iModel Name With Spaces";
+    let iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
+    assert.isDefined(iModelId);
+    let iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.isDefined(iModel);
+
+    iModelName = "iModel Name With :\/<>?* Characters";
+    iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
+    assert.isDefined(iModelId);
+    iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.isDefined(iModel);
+
+    iModelName = "iModel Name Thats Excessively Long " +
+      "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+      "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" +
+      "01234567890123456789"; // 35 + 2*100 + 20 = 255
+    // Note: iModelHub does not accept a name that's longer than 255 characters.
+    assert.equal(255, iModelName.length);
+    iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
+    assert.isDefined(iModelId);
+    iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    assert.isDefined(iModel);
   });
 
 });

@@ -131,6 +131,7 @@ export * from "./geometry3d/Point2dArrayCarrier";
 export * from "./geometry3d/Point2dVector2d";
 export * from "./geometry3d/Point3dVector3d";
 export * from "./geometry3d/PointHelpers";
+export * from "./geometry3d/Point3dArrayCarrier";
 export * from "./geometry3d/PolygonOps";
 export * from "./geometry3d/Range";
 export * from "./geometry3d/Ray3d";
@@ -139,6 +140,7 @@ export * from "./geometry3d/Transform";
 export * from "./geometry3d/XYZProps";
 export * from "./geometry3d/YawPitchRollAngles";
 export * from "./geometry3d/FrustumAnimation";
+export * from "./geometry3d/PolylineOps";
 
 export * from "./Geometry";
 export * from "./Constant";

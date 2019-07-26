@@ -4,9 +4,7 @@ This section starts by describing the common parts of the 5 property types in EC
 
 Each property type models a different type of named value contained within an object.
 
-ECProperty models properties with a limited set of primitive value types. ECStructProperty models complex properties whose format is defined by an ECStructClass definition. ECArrayProperty models an array of primitive values. ECStructArrayProperty models an array of struct values. ECNavigationProperty is only allowed in an ECEntityClass, which models a reference to an instance of another ECEntityClass.
-
-All property types may have a single base property determined using the base class traversal algorithm described. A derived property or property override may not change the property type, persistence unit (via KindOfQuantity).  A derived property inherits custom attributes from its base property, a custom attribute applied to the derived property overrides an inherited one of the same class.
+All property types may have a single base property determined using the base class traversal algorithm described. A derived property or property override may not change the property type or persistence unit (via KindOfQuantity).  A derived property inherits custom attributes from its base property, a custom attribute applied to the derived property overrides an inherited one of the same class.
 
 ### Common Attributes
 
@@ -22,9 +20,9 @@ All property types may have a single base property determined using the base cla
 
 **priority** a number value that specifies the importance of this property in relation to other properties defined within the class.
 
-**kindOfQuantity** the name of the [KindOfQuantity](./kindofquantity.md) to associate with this property.
+**kindOfQuantity** the name of the [Kind Of Quantity](./kindofquantity.md) to associate with this property.
 
-**category** the name of the [PropertyCategory](./property-category.md) to that classify this property.
+**category** the name of the [Property Category](./property-category.md) to that classify this property.
 
 ### Common Sub-Elements
 
@@ -48,7 +46,7 @@ An ECPrimitiveProperty models a property, with a limited set of [primitive value
 
 ## ECPrimitiveArrayProperty
 
-Represents an array of primitive values of the same type indexed by a 64 bit unsigned integer. The array may have a minimum and maximum number of entries specified and supports sparse indexes. Array properties may have any type that is valid for a primitive property.
+A Primitive Array Property (`ECArrayProperty`) models an array of primitive values of the same type indexed by a 64 bit unsigned integer. The array may have a minimum and maximum number of entries specified and supports sparse indexes. Array properties may have any type that is valid for a primitive property.
 
 ### Additional Optional Attributes
 
@@ -60,11 +58,11 @@ Represents an array of primitive values of the same type indexed by a 64 bit uns
 
 ## ECStructProperty
 
-Represents a property whose value is an embedded instance of an ECStructClass, polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
+A Struct Property (`ECStructProperty`) models a complex property whose value is an embedded instance of an [ECStructClass](./ec-struct-class), polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
 
 ## ECStructArrayProperty
 
-Represents an array of values of embedded instances of an ECStructClass, polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
+A Struct Array Property (`ECStructArrayProperty`) models an array of values of embedded instances of an ECStructClass, polymorphism is not supported. The typeName of the property has to be set to an [ECStructClass](./ec-struct-class.md).
 
 ### Additional Optional Attributes
 
@@ -74,11 +72,12 @@ Represents an array of values of embedded instances of an ECStructClass, polymor
 
 ## ECNavigationProperty
 
-Represents a property whose value is a reference to an instance related to the current instance. Only valid on classes which can be relationship endpoints: ECEntityClass, ECMixinClass and ECRelationshipClass.
+A Navigation Property models a reference to another instance, i.e. a related instance.  This reference may be as simple as the Id of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
 
-This reference may be as simple as the Id of the related instance, it may actually point to an in memory copy of the instance, a URL to load the related instance, or a query to select the related instance.
+> Navigation Properties are only valid on classes which can be relationship endpoints: ECEntityClass, ECMixinClass and ECRelationshipClass.
 
-Rules for using navigation properties:
+Addition rules apply to navigation properties:
+
 - May only point to a singular endpoint. That is, it must point to an endpoint whose multiplicity has a max limit of 1.
 - Must be added to the most base ECEntityClass supported by the referenced relationship.
 - Must reference the root relationship in a hierarchy.
@@ -86,6 +85,6 @@ Rules for using navigation properties:
 
 ### Additional Optional Attributes
 
-**relationshipName** The relationship this navigation property traverses
+**relationshipName** The relationship this navigation property traverses to the get the related instance.
 
 **direction** The direction to traverse the referenced relationship

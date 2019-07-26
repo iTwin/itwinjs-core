@@ -23,9 +23,9 @@ import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
-import { ElementAspect } from "./ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
-import { ExportGraphicsProps } from "./ExportGraphics";
+import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "./IModelJsNative";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -138,6 +138,7 @@ export class IModelDb extends IModel {
 
   /** Event raised just before an IModelDb is opened.
    * @note This event is *not* raised for snapshot IModelDbs.
+   *
    * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpen]]
@@ -662,7 +663,7 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @deprecated use withPreparedStatement or query or queryPage instead
+   * @deprecated use [IModelDb.withPreparedStatement]($backend) or [IModelDb.query]($backend) instead.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -904,6 +905,14 @@ export class IModelDb extends IModel {
     }
   }
 
+  /** Import a single ECSchema.
+   * @see importSchemas
+   * @deprecated It is better to import a collection of schemas together rather than individually.
+   */
+  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
+    return this.importSchemas(requestContext, [schemaFileName]);
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelId is a briefcase,
    * this method must first obtain the schema lock from the IModel server.
@@ -913,12 +922,12 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
+  public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
     if (this.isStandalone) {
-      const status = this.briefcase.nativeDb.importSchema(schemaFileName);
+      const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status)
-        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
+        throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
       return;
     }
 
@@ -927,9 +936,9 @@ export class IModelDb extends IModel {
     await this.concurrencyControl.lockSchema(requestContext);
     requestContext.enter();
 
-    const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
+    const stat = this.briefcase.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileName }));
+      throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
 
     try {
@@ -979,7 +988,7 @@ export class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.scopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
@@ -1146,7 +1155,9 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Get the mass properties for the supplied elements */
+  /** Get the mass properties for the supplied elements
+   * @beta
+   */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
     const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
@@ -1173,7 +1184,7 @@ export class IModelDb extends IModel {
    *  * The results of changing [ExportGraphicsProps]($imodeljs-backend) during the [ExportGraphicsProps.onGraphics]($imodeljs-backend) callback are not defined.
    *
    * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
-   * ```
+   * ```ts
    * const onGraphics: ExportGraphicsFunction = (info: ExportGraphicsInfo) => {
    *   const mesh: ExportGraphicsMesh = info.mesh;
    *   for (let i = 0; i < mesh.points.length; i += 3) {
@@ -1200,6 +1211,22 @@ export class IModelDb extends IModel {
    */
   public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
     return this.nativeDb.exportGraphics(exportProps);
+  }
+
+  /**
+   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($imodeljs-backend)
+   * in this IModelDb.
+   * The expected use case is to call [IModelDb.exportGraphics]($imodeljs-backend) and supply the
+   * optional partInstanceArray argument, then call this function for each unique GeometryPart from
+   * that list.
+   *  * The results of changing [ExportPartGraphicsProps]($imodeljs-backend) during the
+   *    [ExportPartGraphicsProps.onPartGraphics]($imodeljs-backend) callback are not defined.
+   *  * See export-gltf under test-apps in the iModel.js monorepo for a working reference.
+   * @returns 0 is successful, status otherwise
+   * @beta Waiting for feedback from community before finalizing.
+   */
+  public exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult {
+    return this.nativeDb.exportPartGraphics(exportProps);
   }
 }
 
@@ -1419,7 +1446,7 @@ export namespace IModelDb {
 
       const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (val.error)
-        throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggerCategory);
+        throw new IModelError(val.error.status, "Error inserting element", Logger.logWarning, loggerCategory, () => ({ classFullName: elProps.classFullName }));
 
       elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
       jsClass.onInserted(elProps, iModel);
@@ -1427,7 +1454,7 @@ export namespace IModelDb {
     }
 
     /** Update some properties of an existing element.
-     * @param el the properties of the element to update.
+     * @param elProps the properties of the element to update.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
@@ -1437,7 +1464,7 @@ export namespace IModelDb {
 
       const stat = iModel.nativeDb.updateElement(JSON.stringify(elProps));
       if (stat !== IModelStatus.Success)
-        throw new IModelError(stat, "error updating element id " + elProps.id, Logger.logWarning, loggerCategory);
+        throw new IModelError(stat, "Error updating element", Logger.logWarning, loggerCategory, () => ({ elementId: elProps.id }));
 
       jsClass.onUpdated(elProps, iModel);
     }
@@ -1449,13 +1476,17 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
+        const childIds: Id64String[] = this.queryChildren(id);
+        if (childIds.length > 0)
+          this.deleteElement(childIds);
+
         const props = this.getElementProps(id);
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
-          throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+          throw new IModelError(error, "Error deleting element", Logger.logWarning, loggerCategory, () => ({ elementId: props.id }));
 
         jsClass.onDeleted(props, iModel);
       });
@@ -1505,11 +1536,18 @@ export namespace IModelDb {
       return this._iModel.constructEntity<ElementAspect>(aspectProps);
     }
 
-    /** Get the ElementAspect instances (by class name) that are related to the specified element.
+    /** Get the ElementAspect instances that are owned by the specified element.
+     * @param elementId Get ElementAspects associated with this Element
+     * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
+    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
+      if (undefined === aspectClassFullName) {
+        const uniqueAspects: ElementAspect[] = this._queryAspects(elementId, ElementUniqueAspect.classFullName);
+        const multiAspects: ElementAspect[] = this._queryAspects(elementId, ElementMultiAspect.classFullName);
+        return uniqueAspects.concat(multiAspects);
+      }
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassFullName);
       return aspects;
     }
 
@@ -1518,9 +1556,15 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
     public insertAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onInsert(aspectProps, iModel);
+
+      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory);
+        throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
+
+      jsClass.onInserted(aspectProps, iModel);
     }
 
     /** Update an exist ElementAspect within the iModel.
@@ -1528,20 +1572,33 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the ElementAspect.
      */
     public updateAspect(aspectProps: ElementAspectProps): void {
-      const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+      jsClass.onUpdate(aspectProps, iModel);
+
+      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
-        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory);
+        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
+
+      jsClass.onUpdated(aspectProps, iModel);
     }
 
     /** Delete one or more ElementAspects from this iModel.
-     * @param ids The set of Ids of the element(s) to be deleted
-     * @throws [[IModelError]]
+     * @param aspectInstanceIds The set of instance Ids of the ElementAspect(s) to be deleted
+     * @throws [[IModelError]] if unable to delete the ElementAspect.
      */
-    public deleteAspect(ids: Id64Arg): void {
-      Id64.toIdSet(ids).forEach((id) => {
-        const status = this._iModel.nativeDb.deleteElementAspect(id);
+    public deleteAspect(aspectInstanceIds: Id64Arg): void {
+      const iModel = this._iModel;
+      Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
+        const aspectProps = this._queryAspect(aspectInstanceId, ElementAspect.classFullName);
+        const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
+        jsClass.onDelete(aspectProps, iModel);
+
+        const status = iModel.nativeDb.deleteElementAspect(aspectInstanceId);
         if (status !== IModelStatus.Success)
-          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory);
+          throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId }));
+
+        jsClass.onDeleted(aspectProps, iModel);
       });
     }
   }

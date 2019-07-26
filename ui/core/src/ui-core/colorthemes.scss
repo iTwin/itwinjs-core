@@ -10,21 +10,18 @@
 
 html,
 html[data-theme="light"] {
-  --buic-background-1:            rgb(255, 255, 255);
-  --buic-background-2:            rgb(248, 249, 251);
-  --buic-background-3:            rgb(238, 240, 243);
-  --buic-background-4:            rgb(220, 224, 227);
-  --buic-background-5:            rgb(199, 204, 209);
+  --buic-background-1-rgb:        255, 255, 255;
+  --buic-background-2-rgb:        248, 249, 251;
+  --buic-background-3-rgb:        238, 240, 243;
+  --buic-background-4-rgb:        220, 224, 227;
+  --buic-background-5-rgb:        199, 204, 209;
 
   --buic-background-tooltip:      rgba(199, 204, 209, 0.90);
   --buic-background-scrollbar:    rgb(155, 165, 174);
   --buic-background-toolbutton-stroke:  rgb(155, 165, 174);
 
-  --buic-foreground-body:         rgba(000, 000, 000, 0.85);
-  --buic-foreground-body-reverse: rgba(255, 255, 255, 0.85);
-  --buic-foreground-muted:        rgba(000, 000, 000, 0.55);
-  --buic-foreground-disabled:     rgba(000, 000, 000, 0.44);
-  --buic-foreground-activehover:  rgba(000, 000, 000, 1.00);
+  --buic-foreground-body-rgb:         000, 000, 000;
+  --buic-foreground-body-reverse-rgb: 255, 255, 255;
 
   --buic-foreground-accessory:    rgb(255, 255, 255);
   --buic-foreground-primary:      rgb(000, 139, 225);
@@ -37,34 +34,31 @@ html[data-theme="light"] {
   --buic-foreground-warning-tint: rgb(249, 215, 171);
   --buic-foreground-primary-tone: rgb(000, 128, 206);
 
-  --buic-row-selection:           rgba(000, 139, 225, 0.2); // --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:               rgba(000, 139, 225, 0.1); // --buic-foreground-primary, 0.1 opacity
+  --buic-row-selection:           rgb(204, 232, 249); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:               rgb(229, 243, 252); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity
 
   --buic-inputs-border:           rgb(199, 204, 209);
   --buic-inputs-focus-boxshadow-gradient1:  rgba(000, 000, 000, 0);
   --buic-inputs-focus-boxshadow-gradient2:  rgba(000, 139, 225, 0.1);
   --buic-inputs-boxshadow:        rgba(000, 000, 000, 0.075 );
 
-  --buic-button-gradient1:        rgba(000, 000, 000, 0);
-  --buic-button-gradient2:        rgba(000, 000, 000, 0.22);
+  --buic-button-gradient1:        rgba(255, 255, 255, 0.65);
+  --buic-button-gradient2:        rgba(255, 255, 255, 0.00);
 }
 
 html[data-theme="dark"] {
-  --buic-background-1:            rgb(090, 105, 115);
-  --buic-background-2:            rgb(079, 093, 101);
-  --buic-background-3:            rgb(068, 080, 088);
-  --buic-background-4:            rgb(056, 068, 074);
-  --buic-background-5:            rgb(045, 055, 060);
+  --buic-background-1-rgb:            090, 105, 115;
+  --buic-background-2-rgb:            079, 093, 101;
+  --buic-background-3-rgb:            068, 080, 088;
+  --buic-background-4-rgb:            056, 068, 074;
+  --buic-background-5-rgb:            045, 055, 060;
 
   --buic-background-tooltip:      rgb(045, 055, 060, 0.90);
   --buic-background-scrollbar:    rgb(155, 165, 174);
   --buic-background-toolbutton-stroke:  rgb(045, 055, 060);
 
-  --buic-foreground-body:         rgba(255, 255, 255, 0.85);
-  --buic-foreground-body-reverse: rgba(000, 000, 000, 0.85);
-  --buic-foreground-muted:        rgba(255, 255, 255, 0.66);
-  --buic-foreground-disabled:     rgba(255, 255, 255, 0.44);
-  --buic-foreground-activehover:  rgba(255, 255, 255, 1.00);
+  --buic-foreground-body-rgb:         255, 255, 255;
+  --buic-foreground-body-reverse-rgb: 000, 000, 000;
 
   --buic-foreground-accessory:    rgba(255, 255, 255, 0.85);
   --buic-foreground-primary:      rgb(165, 215, 245);
@@ -77,18 +71,17 @@ html[data-theme="dark"] {
   --buic-foreground-warning-tint: rgb(249, 215, 171);
   --buic-foreground-primary-tone: rgb(69, 165, 224);
 
-  --buic-row-selection:           rgba(165, 215, 245, 0.2); // --buic-foreground-primary, 0.2 opacity
-  --buic-row-hover:               rgba(165, 215, 245, 0.1); // --buic-foreground-primary, 0.1 opacity
+  --buic-row-selection:           rgb(105, 127, 141); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.2 opacity
+  --buic-row-hover:               rgb(098, 116, 128); // mix --buic-background-1-rgb, --buic-foreground-primary, 0.1 opacity
 
   --buic-inputs-border:           rgb(199, 204, 209);
   --buic-inputs-focus-boxshadow-gradient1:  rgba(199, 204, 209, 0);
   --buic-inputs-focus-boxshadow-gradient2:  rgba(000, 139, 225, 0.1);
   --buic-inputs-boxshadow:        rgba(199, 204, 209, 0.075 );
 
-  --buic-button-gradient1:        rgba(000, 000, 000, 0);
-  --buic-button-gradient2:        rgba(000, 000, 000, 0.22);
+  --buic-button-gradient1:        rgba(0, 0, 0, 0.00);
+  --buic-button-gradient2:        rgba(0, 0, 0, 0.25);
 }
-
 
 html.theme-transition,
 html.theme-transition *,

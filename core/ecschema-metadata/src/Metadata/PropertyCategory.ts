@@ -29,6 +29,13 @@ export class PropertyCategory extends SchemaItem {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("priority", this.priority.toString());
+    return itemElement;
+  }
+
   public deserializeSync(propertyCategoryProps: PropertyCategoryProps) {
     super.deserializeSync(propertyCategoryProps);
     this._priority = propertyCategoryProps.priority;

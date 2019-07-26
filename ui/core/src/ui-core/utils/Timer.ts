@@ -31,12 +31,12 @@ export class Timer {
     return this._isRunning;
   }
 
-  /** Time interval in milliseconds after which handler will be notified */
+  /** Time interval in milliseconds after which handler will be notified. */
   public set delay(ms: number) {
     this._delay = ms;
   }
 
-  /** Time interval in milliseconds after which handler will be notified */
+  /** Time interval in milliseconds after which handler will be notified. */
   public get delay() {
     return this._delay;
   }

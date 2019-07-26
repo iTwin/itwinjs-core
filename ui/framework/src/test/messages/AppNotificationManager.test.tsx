@@ -46,11 +46,26 @@ describe("AppNotificationManager", () => {
     expect(spyMethod.calledOnce).to.be.true;
   });
 
+  it("outputMessage with Alert", () => {
+    const spyMethod = sinon.spy(MessageManager, "addMessage");
+    const alertBoxMethod = sinon.spy(MessageManager, "showAlertMessageBox");
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.Alert);
+    notifications.outputMessage(details);
+    expect(spyMethod.calledOnce).to.be.true;
+    expect(alertBoxMethod.calledOnce).to.be.true;
+
+    ModalDialogManager.closeDialog();
+  });
+
   it("outputMessage with Alert & Balloon", () => {
     const spyMethod = sinon.spy(MessageManager, "addMessage");
+    const alertBoxMethod = sinon.spy(MessageManager, "showAlertMessageBox");
+
     const details = new NotifyMessageDetails(OutputMessagePriority.Debug, "A brief message.", "A detailed message.", OutputMessageType.Alert, OutputMessageAlert.Balloon);
     notifications.outputMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
+    expect(alertBoxMethod.calledOnce).to.be.false;
   });
 
   it("outputMessage with InputField", () => {

@@ -593,15 +593,9 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
 
   public render(): React.ReactNode {
     if (this.state.contentContainer) {
-      const className = classnames(
-        (this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? "uifw-contentlayout-footer-mode" : "uifw-contentlayout-open-mode",
-        this.props.className,
-      );
-
       return (
-        <div id="uifw-contentlayout-div" className={className} style={this.props.style} key={this.state.contentLayoutDef.id}
-          onMouseDown={this._onMouseDown}
-          onMouseUp={this._onMouseUp}
+        <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}
+          onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp}
         >
           {this.state.contentContainer}
         </div>

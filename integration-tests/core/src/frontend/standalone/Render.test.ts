@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import { testViewports, comparePixelData, Color } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
-import { RenderMemory, Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderMemory, Pixel, RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   IModelApp,
   IModelConnection,
@@ -19,6 +19,75 @@ import {
   ViewRect,
 } from "@bentley/imodeljs-frontend";
 import { Point2d } from "@bentley/geometry-core";
+
+describe("Render mirukuru with VAOs disabled", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
+
+    IModelApp.startup({ renderSys: renderSysOpts });
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    IModelApp.shutdown();
+  });
+
+  it("should properly render the model (smooth shaded with visible edges)", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = true;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      // White rectangle is centered in view with black background surrounding. Lighting is on so rectangle will not be pure white.
+      const colors = vp.readUniqueColors();
+      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+      expect(colors.length).least(2);
+      expect(colors.contains(bgColor)).to.be.true; // black background
+
+      const expectWhitish = (c: Color) => {
+        expect(c.r).least(0x7f);
+        expect(c.g).least(0x7f);
+        expect(c.b).least(0x7f);
+        expect(c.a).to.equal(0xff);
+      };
+
+      for (const c of colors.array) {
+        if (0 !== c.compare(bgColor))
+          expectWhitish(c);
+      }
+
+      let color = vp.readColor(rect.left, rect.top);
+      expect(color.compare(bgColor)).to.equal(0);
+      color = vp.readColor(rect.right - 1, rect.top);
+      expect(color.compare(bgColor)).to.equal(0);
+      color = vp.readColor(rect.right - 1, rect.bottom - 1);
+      expect(color.compare(bgColor)).to.equal(0);
+      color = vp.readColor(rect.left, rect.bottom - 1);
+      expect(color.compare(bgColor)).to.equal(0);
+
+      color = vp.readColor(rect.width / 2, rect.height / 2);
+      expectWhitish(color);
+
+      // Confirm we drew the rectangular element as a planar surface and its edges.
+      const elemId = "0x29";
+      const subcatId = "0x18";
+      const pixels = vp.readUniquePixelData();
+      expect(pixels.length).to.equal(3);
+      expect(pixels.containsFeature(elemId, subcatId));
+      expect(pixels.containsGeometry(Pixel.GeometryType.Surface, Pixel.Planarity.Planar));
+      expect(pixels.containsGeometry(Pixel.GeometryType.Edge, Pixel.Planarity.Planar));
+    });
+  });
+});
 
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).

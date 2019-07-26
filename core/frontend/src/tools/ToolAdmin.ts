@@ -487,7 +487,7 @@ export class ToolAdmin {
   public get cursorView(): ScreenViewport | undefined { return this.currentInputState.viewport; }
 
   /** A first-in-first-out queue of ToolEvents. */
-  private readonly _toolEvents: ToolEvent[] = [];
+  private _toolEvents: ToolEvent[] = [];
   private tryReplace(event: ToolEvent): boolean {
     if (this._toolEvents.length < 1)
       return false;
@@ -506,6 +506,17 @@ export class ToolAdmin {
     const event = { ev, vp };
     if (!this.tryReplace(event)) // see if this event replaces the last event in the queue
       this._toolEvents.push(event); // otherwise put it at the end of the queue.
+  }
+
+  /** Called from ViewManager.dropViewport to prevent tools from continuing to operate on the dropped viewport.
+   * @internal
+   */
+  public forgetViewport(vp: ScreenViewport): void {
+    // make sure tools don't think the cursor is still in this viewport.
+    this.onMouseLeave(vp);
+
+    // Remove any events associated with this viewport.
+    this._toolEvents = this._toolEvents.filter((ev) => ev.vp !== vp);
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
@@ -776,8 +787,9 @@ export class ToolAdmin {
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: Viewport) {
-    if (undefined === vp)
+    if (undefined === vp || vp.isDisposed)
       return true;
+
     const tool = this.activeTool;
     return (undefined !== tool ? !tool.isCompatibleViewport(vp, false) : false);
   }
@@ -817,7 +829,7 @@ export class ToolAdmin {
   private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.currentInputState.viewport = vp; }
 
   /** @internal */
-  public async onMouseLeave(vp: ScreenViewport): Promise<void> {
+  public onMouseLeave(vp: ScreenViewport): void {
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
     this.setCanvasDecoration(vp);

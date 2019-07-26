@@ -34,6 +34,13 @@ export class CustomAttributeClass extends ECClass {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("appliesTo", containerTypeToString(this.containerType));
+    return itemElement;
+  }
+
   public deserializeSync(customAttributeProps: CustomAttributeClassProps) {
     super.deserializeSync(customAttributeProps);
     const containerType = parseCustomAttributeContainerType(customAttributeProps.appliesTo);

@@ -75,6 +75,8 @@ export class WebAppRpcRequest extends RpcRequest {
       caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
 
+    request.ip = req.ip;
+
     if (!request.id) {
       throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
     }

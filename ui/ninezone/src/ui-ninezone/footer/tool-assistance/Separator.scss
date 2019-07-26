@@ -5,10 +5,11 @@
 @import "@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .nz-footer-toolAssistance-separator {
-  margin-bottom: 10px;
+  margin-top: 18px;
+  margin-bottom: 8px;
 
   > .nz-separator {
-    height: 2px;
+    height: 1px;
     width: 100%;
     background-color: $buic-background-divider;
   }

@@ -7,8 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { createRect } from "../Utils";
 
-import { Stacked, HorizontalAnchor, Edge } from "../../ui-ninezone";
-import { VerticalAnchorHelpers, VerticalAnchor } from "../../ui-ninezone/widget/Stacked";
+import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
+import { VerticalAnchorHelpers, VerticalAnchor, ResizeHandle } from "../../ui-ninezone/widget/Stacked";
 import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
 import { Point } from "../../ui-ninezone/utilities/Point";
 import { Rectangle } from "../../ui-ninezone/utilities/Rectangle";
@@ -45,256 +45,347 @@ describe("<Stacked />", () => {
   it("renders dragged correctly", () => {
     shallow(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
       isDragged
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 
   it("renders floating correctly", () => {
     shallow(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
       isFloating
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 
   it("renders correctly to fill zone", () => {
-    shallow(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
+    shallow(<Stacked
       fillZone
+      horizontalAnchor={HorizontalAnchor.Right}
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 
   it("renders collapsed correctly", () => {
     shallow(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
       isCollapsed
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 
   it("renders with tab bar correctly", () => {
     shallow(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
       isTabBarVisible
+      verticalAnchor={VerticalAnchor.Middle}
     />).should.matchSnapshot();
   });
 
-  it("should resize bottom edge", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(0);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Bottom, 0).should.true;
-  });
+  describe("onResize", () => {
+    describe("tabs grip", () => {
+      it("should resize top", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Left}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.BottomPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(2);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Top, 0).should.true;
+      });
 
-  it("should resize bottom edge when widget vertical anchor is bottom panel", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.BottomPanel}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(1);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Bottom, 0).should.true;
-  });
+      it("should resize bottom", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Left}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.TopPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(2);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Bottom, 0).should.true;
+      });
 
-  it("should resize top edge", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(3);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Top, 0).should.true;
-  });
+      it("should resize right", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Left}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(2);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Right, 0).should.true;
+      });
 
-  it("should resize top edge when widget vertical anchored is top panel", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.TopPanel}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(1);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Top, 0).should.true;
-  });
+      it("should resize left", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(2);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(-10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(-10, ResizeHandle.Left, 0).should.true;
+      });
 
-  it("should resize right edge with content grip", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(1);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
+      it("should not resize if resize is not started", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(2);
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.notCalled.should.true;
+      });
     });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(10, 0, Edge.Right, 0).should.true;
-  });
 
-  it("should resize right edge when widget is horizontal", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.TopPanel}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(0);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(10, 0, Edge.Right, 0).should.true;
-  });
+    describe("content grip", () => {
+      it("should resize bottom", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.BottomPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(1);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Bottom, 0).should.true;
+      });
 
-  it("should resize left edge with content grip", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Left}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy}
-    />);
-    const grip = sut.find(ResizeGrip).at(1);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(10, 0, Edge.Left, 0).should.true;
-  });
+      it("should resize top", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.TopPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(1);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Top, 0).should.true;
+      });
 
-  it("should resize left edge when widget is horizontal", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.TopPanel}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(3);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(10, 0, Edge.Left, 0).should.true;
-  });
+      it("should resize left", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Left}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(1);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(-10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(-10, ResizeHandle.Left, 0).should.true;
+      });
 
-  it("should resize right edge with tabs grip", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Left}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy}
-    />);
-    const grip = sut.find(ResizeGrip).at(2);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(10, 0, Edge.Right, 0).should.true;
-  });
+      it("should resize right", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(1);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Right, 0).should.true;
+      });
 
-  it("should resize top edge when widget vertical anchor is bottom panel", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Left}
-      verticalAnchor={VerticalAnchor.BottomPanel}
-      onResize={spy}
-    />);
-    const grip = sut.find(ResizeGrip).at(2);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
+      it("should not resize if resize is not started", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(1);
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.notCalled.should.true;
+      });
     });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Top, 0).should.true;
-  });
 
-  it("should resize top edge when widget vertical anchored is top panel", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Left}
-      verticalAnchor={VerticalAnchor.TopPanel}
-      onResize={spy}
-    />);
-    const grip = sut.find(ResizeGrip).at(2);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
-    });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
-    });
-    spy.calledWithExactly(0, 10, Edge.Bottom, 0).should.true;
-  });
+    describe("primary grip", () => {
+      it("should resize left", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.TopPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(3);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Left, 0).should.true;
+      });
 
-  it("should resize left edge with tabs grip", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy}
-    />);
-    const grip = sut.find(ResizeGrip).at(2);
-    grip.prop("onResizeStart")!({
-      position: new Point(),
-      bounds: new Rectangle(),
+      it("should resize top", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(3);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Top, 0).should.true;
+      });
+
+      it("should not resize if resize is not started", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(3);
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.notCalled.should.true;
+      });
     });
-    grip.prop("onResize")!({
-      position: new Point(10, 10),
-      bounds: new Rectangle(),
+
+    describe("secondary grip", () => {
+      it("should resize bottom", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(0);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Bottom, 0).should.true;
+      });
+
+      it("should resize right", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.TopPanel}
+        />);
+        const grip = sut.find(ResizeGrip).at(0);
+        grip.prop("onResizeStart")!({
+          position: new Point(),
+          bounds: new Rectangle(),
+        });
+        grip.prop("onResize")!({
+          position: new Point(10, 0),
+          bounds: new Rectangle(),
+        });
+        spy.calledWithExactly(10, ResizeHandle.Right, 0).should.true;
+      });
+
+      it("should not resize if resize is not started", () => {
+        const spy = sinon.spy();
+        const sut = mount(<Stacked
+          horizontalAnchor={HorizontalAnchor.Right}
+          onResize={spy}
+          verticalAnchor={VerticalAnchor.Middle}
+        />);
+        const grip = sut.find(ResizeGrip).at(0);
+        grip.prop("onResize")!({
+          position: new Point(0, 10),
+          bounds: new Rectangle(),
+        });
+        spy.notCalled.should.true;
+      });
     });
-    spy.calledWithExactly(10, 0, Edge.Left, 0).should.true;
   });
 
   it("should provide filled height difference", () => {
     const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
+    const sut = mount(<Stacked
+      horizontalAnchor={HorizontalAnchor.Right}
       onResize={spy}
+      verticalAnchor={VerticalAnchor.Middle}
     />);
 
     const widget = sut.find("div").first().getDOMNode() as HTMLDivElement;
@@ -310,10 +401,10 @@ describe("<Stacked />", () => {
       bounds: new Rectangle(),
     });
     grip.prop("onResize")!({
-      position: new Point(10, 10),
+      position: new Point(0, 10),
       bounds: new Rectangle(),
     });
-    spy.calledWithExactly(0, 10, Edge.Bottom, 87).should.true;
+    spy.calledWithExactly(10, ResizeHandle.Bottom, 87).should.true;
   });
 
   it("should return 0 as filled height difference if widget ref is not set", () => {
@@ -325,9 +416,10 @@ describe("<Stacked />", () => {
     createRefStub.returns(ref);
 
     const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
+    const sut = mount(<Stacked
+      horizontalAnchor={HorizontalAnchor.Right}
       onResize={spy}
+      verticalAnchor={VerticalAnchor.Middle}
     />);
 
     const widget = sut.find("div").first().getDOMNode() as HTMLDivElement;
@@ -343,12 +435,13 @@ describe("<Stacked />", () => {
       bounds: new Rectangle(),
     });
 
-    spy.calledWithExactly(0, 10, Edge.Bottom, 0).should.true;
+    spy.calledWithExactly(10, ResizeHandle.Bottom, 0).should.true;
     clientHeightStub.notCalled.should.true;
   });
 
   it("should get bounds", () => {
-    const sut = mount<Stacked>(<Stacked horizontalAnchor={HorizontalAnchor.Right}
+    const sut = mount<Stacked>(<Stacked
+      horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
@@ -368,7 +461,8 @@ describe("<Stacked />", () => {
     sinon.stub(ref, "current").set(() => { });
     createRefStub = sinon.stub(React, "createRef");
     createRefStub.returns(ref);
-    const sut = mount<Stacked>(<Stacked horizontalAnchor={HorizontalAnchor.Right}
+    const sut = mount<Stacked>(<Stacked
+      horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
@@ -381,63 +475,13 @@ describe("<Stacked />", () => {
     result.bottom.should.eq(0);
   });
 
-  it("should not resize bottom grip if resize is not started", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(0);
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.notCalled.should.true;
-  });
-
-  it("should not resize content grip if resize is not started", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(1);
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.notCalled.should.true;
-  });
-
-  it("should not resize tabs grip if resize is not started", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(2);
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.notCalled.should.true;
-  });
-
-  it("should not resize top grip if resize is not started", () => {
-    const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
-      verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
-    const grip = sut.find(ResizeGrip).at(3);
-    grip.prop("onResize")!({
-      position: new Point(0, 10),
-      bounds: new Rectangle(),
-    });
-    spy.notCalled.should.true;
-  });
-
   it("should not resize if resize ends", () => {
     const spy = sinon.spy();
-    const sut = mount(<Stacked horizontalAnchor={HorizontalAnchor.Right}
+    const sut = mount(<Stacked
+      horizontalAnchor={HorizontalAnchor.Right}
+      onResize={spy}
       verticalAnchor={VerticalAnchor.Middle}
-      onResize={spy} />);
+    />);
     const grip = sut.find(ResizeGrip).at(0);
     grip.prop("onResizeStart")!({
       position: new Point(),

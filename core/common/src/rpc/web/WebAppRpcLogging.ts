@@ -136,7 +136,7 @@ export class WebAppRpcLogging {
       method: invocation.request.method,
       path: invocation.request.path,
       status: invocation.status,
-      error: invocation.result,
+      errorMessage: invocation.result.toString(),
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: invocation.request.id,
       MachineName: getHostname(),

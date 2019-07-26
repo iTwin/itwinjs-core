@@ -1,7 +1,17 @@
 ## Change History
 ---
 
+### Roadmap
+
+- [Big Picture](./Roadmap.md)
+
+---
+
 ### Versions
+- [1.2.0](./1.2.0.md)
+
+- [1.1.0](./1.1.0.md)
+
 - [1.0.0](./1.0.0.md)
 
 - [0.191.0](./0.191.0.md)

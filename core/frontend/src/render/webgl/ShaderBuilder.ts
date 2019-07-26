@@ -12,6 +12,7 @@ import { ClipDef } from "./TechniqueFlags";
 import { GLSLVertex, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
+import { AttributeDetails } from "./AttributeMap";
 
 // tslint:disable:no-const-enum
 
@@ -40,7 +41,6 @@ export const enum VariableScope {
   Global, // no qualifier
   Varying, // varying
   Uniform, // uniform
-  Attribute, // attribute
 
   COUNT,
 }
@@ -80,7 +80,6 @@ namespace Convert {
       case VariableScope.Global: return "";
       case VariableScope.Varying: return "varying";
       case VariableScope.Uniform: return "uniform";
-      case VariableScope.Attribute: return "attribute";
       default: assert(false); return "undefined";
     }
   }
@@ -196,10 +195,6 @@ export class ShaderVariables {
 
   public addUniform(name: string, type: VariableType, binding: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding, precision));
-  }
-
-  public addAttribute(name: string, type: VariableType, binding: AddVariableBinding) {
-    this.addVariable(ShaderVariable.create(name, type, VariableScope.Attribute, binding));
   }
 
   public addVarying(name: string, type: VariableType): boolean {
@@ -503,7 +498,7 @@ export class ShaderBuilder extends ShaderVariables {
     }
   }
 
-  protected buildPreludeCommon(isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
+  protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined, isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
     const src = new SourceBuilder();
 
     src.addline("#version 100");
@@ -538,6 +533,13 @@ export class ShaderBuilder extends ShaderVariables {
 
     // Variable declarations
     src.add(this.buildDeclarations());
+
+    // Attribute declarations
+    if (attrMap !== undefined) {
+      attrMap.forEach((attr: AttributeDetails, key: string) => {
+        src.addline("attribute " + Convert.typeToString(attr.type) + " " + key + ";");
+      });
+    }
 
     if (!isFrag) {
       src.addline("#define MAT_NORM g_nmx");
@@ -612,7 +614,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
   public get computedVarying(): string[] { return this._computedVarying; }
   public get initializers(): string[] { return this._initializers; }
 
-  private buildPrelude(): SourceBuilder { return this.buildPreludeCommon(); }
+  private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap); }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(VertexShaderComponent.COUNT, flags);
@@ -632,8 +634,8 @@ export class VertexShaderBuilder extends ShaderBuilder {
     this._computedVarying.push(computation);
   }
 
-  public buildSource(): string {
-    const prelude = this.buildPrelude();
+  public buildSource(attrMap?: Map<string, AttributeDetails>): string {
+    const prelude = this.buildPrelude(attrMap);
     const main = new SourceBuilder();
     main.newline();
 
@@ -770,7 +772,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
-    const prelude = this.buildPrelude(undefined !== applyLighting);
+    const prelude = this.buildPrelude(undefined, undefined !== applyLighting);
 
     const computeBaseColor = this.get(FragmentShaderComponent.ComputeBaseColor);
     assert(undefined !== computeBaseColor);
@@ -874,9 +876,9 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     return prelude.source;
   }
 
-  private buildPrelude(isLit: boolean): SourceBuilder {
+  private buildPrelude(attrMap: Map<string, AttributeDetails> | undefined, isLit: boolean): SourceBuilder {
     assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
-    return this.buildPreludeCommon(true, isLit, this.maxClippingPlanes);
+    return this.buildPreludeCommon(attrMap, true, isLit, this.maxClippingPlanes);
   }
 }
 
@@ -958,8 +960,10 @@ export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
   private readonly _flags: ShaderBuilderFlags;
+  private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(flags = ShaderBuilderFlags.None) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags = ShaderBuilderFlags.None) {
+    this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);
     this._flags = flags; // only needed for clone - though could loook up from vert or frag shader.
@@ -977,9 +981,6 @@ export class ProgramBuilder {
 
   public addUniform(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding), which);
-  }
-  public addAttribute(name: string, type: VariableType, binding: AddVariableBinding, which: ShaderType = ShaderType.Both) {
-    this.addVariable(ShaderVariable.create(name, type, VariableScope.Attribute, binding), which);
   }
   public addVarying(name: string, type: VariableType) {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying), ShaderType.Both);
@@ -1007,8 +1008,8 @@ export class ProgramBuilder {
 
   /** Assembles the vertex and fragment shader code and returns a ready-to-compile shader program */
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
-    const vertSource = this.vert.buildSource();
-    const fragSource = this.frag.buildSource();
+    const vertSource = this.vert.buildSource(this._attrMap);
+    const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
     if (this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
@@ -1035,7 +1036,7 @@ export class ProgramBuilder {
     }
     */
 
-    const prog = new ShaderProgram(gl, vertSource, fragSource, this.vert.headerComment, this.frag.maxClippingPlanes);
+    const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
     this.frag.addBindings(prog, this.vert);
     return prog;
@@ -1048,7 +1049,7 @@ export class ProgramBuilder {
 
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
-    const clone = new ProgramBuilder(this._flags);
+    const clone = new ProgramBuilder(this._attrMap, this._flags);
 
     // Copy from vertex builder
     clone.vert.headerComment = this.vert.headerComment;

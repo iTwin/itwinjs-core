@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint.
+- Fix broken links in docs
+- Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522.
+- SAS token leaked in log
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Removed missing group descriptions
+- Added feature tracking info to userInfo obtained by OidcBrowserClient. 
+- Update to TypeScript 3.5
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

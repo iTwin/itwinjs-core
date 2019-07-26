@@ -3,46 +3,36 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaMatchType } from "./../ECObjects";
-import { SchemaContext } from "./../Context";
-import { Schema } from "./../Metadata/Schema";
-import { SchemaKey } from "./../SchemaKey";
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
 
-// Temporary work around - need to add format method to string here for now....
-declare global {
-  interface String {
-    format(...params: string[]): string;
-    padStartEx(targetLength: number, padString: string): string;
-  }
-}
-String.prototype.format = function () {
-  const args = arguments;
-  return this.replace(/{(\d+)}/g, (match, theNumber) => {
+import { SchemaContext } from "../Context";
+import { SchemaMatchType } from "../ECObjects";
+import { Schema } from "../Metadata/Schema";
+import { SchemaKey } from "../SchemaKey";
+
+const formatString = (format: string, ...args: string[]) => {
+  return format.replace(/{(\d+)}/g, (match, theNumber) => {
     return typeof args[theNumber] !== "undefined"
       ? args[theNumber]
       : match;
   });
 };
 
-// Temporary work around - need to add padStart method to string here for now...
-if (!String.prototype.padStartEx) {
-  String.prototype.padStartEx = function padStartEx(targetLength: number, padString: string) {
-    targetLength = targetLength >> 0; // truncate if number or convert non-number to 0;
-    padString = String((typeof padString !== "undefined" ? padString : " "));
-    if (this.length > targetLength) {
-      return String(this);
-    } else {
-      targetLength = targetLength - this.length;
-      if (targetLength > padString.length) {
-        padString += padString.repeat(targetLength / padString.length); // append to original to ensure we are longer than needed
-      }
-      return padString.slice(0, targetLength) + String(this);
+const padStartEx = (str: string, targetLength: number, padString: string) => {
+  targetLength = targetLength >> 0; // truncate if number or convert non-number to 0;
+  padString = String((typeof padString !== "undefined" ? padString : " "));
+  if (str.length > targetLength) {
+    return String(str);
+  } else {
+    targetLength = targetLength - str.length;
+    if (targetLength > padString.length) {
+      padString += padString.repeat(targetLength / padString.length); // append to original to ensure we are longer than needed
     }
-  };
-}
+    return padString.slice(0, targetLength) + str;
+  }
+};
 
 /**
  * A SchemaKey implementation that aids in identifying Schema files via the
@@ -93,12 +83,20 @@ export abstract class SchemaFileLocater {
     });
   }
 
+  public readUtf8FileToStringSync(filePath: string): string | undefined {
+    return fs.readFileSync(filePath, "utf-8");
+  }
+
   public async fileExists(filePath: string): Promise<boolean | undefined> {
     return new Promise<boolean | undefined>((resolve) => {
       fs.exists(filePath, (data) => {
         resolve(data);
       });
     });
+  }
+
+  public fileExistsSync(filePath: string): boolean | undefined {
+    return fs.existsSync(filePath);
   }
 
   /**
@@ -108,9 +106,8 @@ export abstract class SchemaFileLocater {
    */
   public addSchemaSearchPaths(schemaPaths: string[]) {
     // If the path is not in the schemaPaths array, add it
-    for (const schemaPath of schemaPaths) {
+    for (const schemaPath of schemaPaths)
       this.addSchemaSearchPath(schemaPath);
-    }
   }
 
   /**
@@ -146,10 +143,8 @@ export abstract class SchemaFileLocater {
     const file = fs.readFileSync(fullPath);
     if (!file) return;
 
-    let key: any;
-
     // Get the schema key
-    key = this.getSchemaKey(file.toString());
+    const key = this.getSchemaKey(file.toString());
 
     // If the key matches, put it in foundFiles
     if (key.matches(desiredKey, matchType))
@@ -179,15 +174,13 @@ export abstract class SchemaFileLocater {
         fileName = parts.join(".");
       }
 
-      const schemaKey = SchemaKey.parseString(fileName);
-
       const file = fs.readFileSync(match);
       if (!file)
         continue;
 
-      if (schemaKey.matches(desiredKey, matchType)) {
+      const schemaKey = SchemaKey.parseString(fileName);
+      if (schemaKey.matches(desiredKey, matchType))
         foundFiles.push(new FileSchemaKey(schemaKey, match, file.toString()));
-      }
     }
   }
 
@@ -199,7 +192,6 @@ export abstract class SchemaFileLocater {
    * @param format The type of file that the schema key refers to. json or xml
    */
   protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
-
     const foundFiles = new Array<FileSchemaKey>();
 
     let twoVersionSuffix: string;
@@ -212,14 +204,14 @@ export abstract class SchemaFileLocater {
       twoVersionSuffix = (".*.*.ecschema." + format);
       threeVersionSuffix = (".*.*.*.ecschema." + format);
     } else if (matchType === SchemaMatchType.LatestWriteCompatible) {
-      twoVersionSuffix = (".{0}.*.ecschema." + format).format(readVersion.padStartEx(2, "0"));
-      threeVersionSuffix = (".{0}.{1}.*.ecschema." + format).format(readVersion.padStartEx(2, "0"), writeVersion.padStartEx(2, "0"));
+      twoVersionSuffix = formatString(".{0}.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
+      threeVersionSuffix = formatString(".{0}.{1}.*.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
     } else if (matchType === SchemaMatchType.LatestReadCompatible) {
-      twoVersionSuffix = (".{0}.*.ecschema." + format).format(readVersion.padStartEx(2, "0"));
-      threeVersionSuffix = (".{0}.*.*.ecschema." + format).format(readVersion.padStartEx(2, "0"));
+      twoVersionSuffix = formatString(".{0}.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
+      threeVersionSuffix = formatString(".{0}.*.*.ecschema." + format, padStartEx(readVersion, 2, "0"));
     } else {
-      twoVersionSuffix = (".{0}.{1}.ecschema." + format).format(readVersion.padStartEx(2, "0"), writeVersion.padStartEx(2, "0"));
-      threeVersionSuffix = (".{0}.{1}.{2}.ecschema." + format).format(readVersion.padStartEx(2, "0"), writeVersion.padStartEx(2, "0"), minorVersion.padStartEx(2, "0"));
+      twoVersionSuffix = formatString(".{0}.{1}.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"));
+      threeVersionSuffix = formatString(".{0}.{1}.{2}.ecschema." + format, padStartEx(readVersion, 2, "0"), padStartEx(writeVersion, 2, "0"), padStartEx(minorVersion, 2, "0"));
     }
 
     const twoVersionExpression = desiredKey.name + twoVersionSuffix;

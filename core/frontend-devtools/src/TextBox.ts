@@ -20,11 +20,14 @@ export interface TextBoxProps {
   parent?: HTMLElement;
   handler?: TextBoxHandler;
   tooltip?: string;
+  inline?: boolean;
 }
 
 /** @alpha */
 export function createTextBox(props: TextBoxProps): TextBox {
   const div = document.createElement("div");
+  if (true === props.inline)
+    div.style.display = "inline";
 
   let label;
   if (undefined !== props.label) {

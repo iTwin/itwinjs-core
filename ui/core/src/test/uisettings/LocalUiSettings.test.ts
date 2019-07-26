@@ -28,7 +28,7 @@ const storageMock = () => {
   };
 };
 describe("LocalUiSettings", () => {
-  it("default constructor executes sucessfully", () => {
+  it("default constructor executes successfully", () => {
     const initialLocalUiSettings = new LocalUiSettings();
     expect(initialLocalUiSettings).to.not.be.undefined;
   });

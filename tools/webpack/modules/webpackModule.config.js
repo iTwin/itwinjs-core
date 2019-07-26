@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 
 // This script sets module.export to the proper value for webpacking one of our packages as a Universal Module Definition library.
 // Some of the package's open source dependencies are set to external.
@@ -25,7 +25,9 @@ const autoprefixer = require("autoprefixer");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 // NOTE: This was set up to return an array of configs, one for target: "web" and one for target: "node", but the node target didn't work, so I dropped it.
-module.exports = (env) => { return getConfig(env); };
+module.exports = (env) => {
+  return getConfig(env);
+};
 
 function getExternalModuleVersionsFromPackage(externalModuleVersions, packageContents, sourceDir, nestedDir, externalList, plugin, depth) {
   // we need the dependents and peer dependents. We care only about those in externalList.
@@ -140,7 +142,7 @@ function getConfig(env) {
 
   // build the object for the webpack configuration
   const webpackLib = {
-    bail: true,                    // don't continue on error.
+    bail: true, // don't continue on error.
     context: contextDirectory,
     output: {
       path: bundleDirectory,
@@ -148,8 +150,8 @@ function getConfig(env) {
       library: dropDashes(bundleName),
       libraryTarget: 'umd',
       umdNamedDefine: true,
-      jsonpFunction: 'webpackJsonp',  // used only for web target
-      globalObject: 'this',           // used only for web target.
+      jsonpFunction: 'webpackJsonp', // used only for web target
+      globalObject: 'this', // used only for web target.
       devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
     },
     target: env.webworker ? 'webworker' : 'web',
@@ -169,14 +171,54 @@ function getConfig(env) {
       '@bentley/presentation-common': 'presentation_common',
       '@bentley/presentation-components': 'presentation_components',
       '@bentley/presentation-frontend': 'presentation_frontend',
-      'react': { root: 'React', commonjs2: 'react', commonjs: 'react', amd: 'react' },
-      'react-dnd': { root: 'ReactDnD', commonjs2: 'react-dnd', commonjs: 'react-dnd', amd: 'react-dnd' },
-      'react-dnd-html5-backend': { root: 'ReactDnDHTML5Backend', commonjs2: 'react-dnd5-html-backend', commonjs: 'react-dnd5-html-backend', amd: 'react-dnd5-html-backend' },
-      'react-dom': { root: 'ReactDOM', commonjs2: 'react-dom', commonjs: 'react-dom', amd: 'react-dom' },
-      'react-redux': { root: 'ReactRedux', commonjs2: 'react-redux', commonjs: 'react-redux', amd: 'react-redux' },
-      'redux': { root: 'Redux', commonjs2: 'redux', commonjs: 'redux', amd: 'redux' },
-      'inspire-tree': { root: 'InspireTree', commonjs2: 'inspire-tree', commonjs: 'inspire-tree', amd: 'inspire-tree' },
-      'lodash': { root: '_', commonjs2: 'lodash', commonjs: 'lodash', amd: 'lodash' },
+      'react': {
+        root: 'React',
+        commonjs2: 'react',
+        commonjs: 'react',
+        amd: 'react'
+      },
+      'react-dnd': {
+        root: 'ReactDnD',
+        commonjs2: 'react-dnd',
+        commonjs: 'react-dnd',
+        amd: 'react-dnd'
+      },
+      'react-dnd-html5-backend': {
+        root: 'ReactDnDHTML5Backend',
+        commonjs2: 'react-dnd5-html-backend',
+        commonjs: 'react-dnd5-html-backend',
+        amd: 'react-dnd5-html-backend'
+      },
+      'react-dom': {
+        root: 'ReactDOM',
+        commonjs2: 'react-dom',
+        commonjs: 'react-dom',
+        amd: 'react-dom'
+      },
+      'react-redux': {
+        root: 'ReactRedux',
+        commonjs2: 'react-redux',
+        commonjs: 'react-redux',
+        amd: 'react-redux'
+      },
+      'redux': {
+        root: 'Redux',
+        commonjs2: 'redux',
+        commonjs: 'redux',
+        amd: 'redux'
+      },
+      'inspire-tree': {
+        root: 'InspireTree',
+        commonjs2: 'inspire-tree',
+        commonjs: 'inspire-tree',
+        amd: 'inspire-tree'
+      },
+      'lodash': {
+        root: '_',
+        commonjs2: 'lodash',
+        commonjs: 'lodash',
+        amd: 'lodash'
+      },
       'electron': 'commonjs electron',
     },
     optimization: {
@@ -197,7 +239,9 @@ function getConfig(env) {
   }
 
   // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
-  definePluginDefinitions = { "BUILD_SEMVER": JSON.stringify(packageContents.version) };
+  definePluginDefinitions = {
+    "BUILD_SEMVER": JSON.stringify(packageContents.version)
+  };
 
   webpackLib.entry = {}
   webpackLib.entry[bundleName] = bundleEntry;
@@ -278,7 +322,7 @@ function getConfig(env) {
         template: env.htmltemplate,
         filename: "./index.html",
         minify: "false",
-        chunks: [],     // we don't want it to add any .js to the template, those are already in there.
+        chunks: [], // we don't want it to add any .js to the template, those are already in there.
       }));
     }
 
@@ -331,99 +375,103 @@ function getConfig(env) {
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
     cssRules = [{
-      test: /\.scss$/,
-      use: {
-        loader: require.resolve("fast-sass-loader"),
-        options: {
-          includePaths: [path.resolve(contextDirectory, "node_modules")],
-          outputStyle: "compressed",
+        test: /\.scss$/,
+        use: {
+          loader: require.resolve("fast-sass-loader"),
+          options: {
+            includePaths: [path.resolve(contextDirectory, "node_modules")],
+            outputStyle: "compressed",
+          },
         },
+        enforce: "pre",
       },
-      enforce: "pre",
-    },
-    {
-      // "oneOf" will traverse all following loaders until one will
-      // match the requirements. When no loader matches it will fall
-      // back to the "file" loader at the end of the loader list.
-      oneOf: [
-        // "url" loader works just like "file" loader but it also embeds
-        // assets smaller than specified size as data URLs to avoid requests.
-        // "style" loader turns CSS into JS modules that inject <style> tags.
-        // In development "style" loader enables hot editing of CSS.
-        {
-          test: /\.s?css$/,
-          use: [
-            finalCssLoader,
-            {
-              loader: require.resolve("css-loader"),
-              options: {
-                importLoaders: 1,
+      {
+        // "oneOf" will traverse all following loaders until one will
+        // match the requirements. When no loader matches it will fall
+        // back to the "file" loader at the end of the loader list.
+        oneOf: [
+          // "url" loader works just like "file" loader but it also embeds
+          // assets smaller than specified size as data URLs to avoid requests.
+          // "style" loader turns CSS into JS modules that inject <style> tags.
+          // In development "style" loader enables hot editing of CSS.
+          {
+            test: /\.s?css$/,
+            use: [
+              finalCssLoader,
+              {
+                loader: require.resolve("css-loader"),
+                options: {
+                  importLoaders: 1,
+                },
               },
-            },
-            {
-              loader: require.resolve("postcss-loader"),
-              options: {
-                // Necessary for external CSS imports to work
-                // https://github.com/facebook/create-react-app/issues/2677
-                ident: "postcss",
-                plugins: () => [
-                  require("postcss-flexbugs-fixes"),
-                  autoprefixer({
-                    browsers: [
-                      ">1%",
-                      "last 4 versions",
-                      "Firefox ESR",
-                      "not ie < 9", // React doesn't support IE8 anyway
-                    ],
-                    flexbox: "no-2009",
-                  }),
-                ],
+              {
+                loader: require.resolve("postcss-loader"),
+                options: {
+                  // Necessary for external CSS imports to work
+                  // https://github.com/facebook/create-react-app/issues/2677
+                  ident: "postcss",
+                  plugins: () => [
+                    require("postcss-flexbugs-fixes"),
+                    autoprefixer({
+                      browsers: [
+                        ">1%",
+                        "last 4 versions",
+                        "Firefox ESR",
+                        "not ie < 9", // React doesn't support IE8 anyway
+                      ],
+                      flexbox: "no-2009",
+                    }),
+                  ],
+                },
               },
+            ]
+          },
+          {
+            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+            use: {
+              loader: require.resolve("url-loader"),
+              options: {
+                limit: 10000,
+                name: "static/media/[name].[hash:8].[ext]",
+              },
+            }
+          },
+          {
+            test: /\.svg$/,
+            issuer: {
+              exclude: /\.css$/
             },
-          ]
-        },
-        {
-          test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-          use: {
-            loader: require.resolve("url-loader"),
-            options: {
-              limit: 10000,
-              name: "static/media/[name].[hash:8].[ext]",
-            },
-          }
-        },
-        {
-          test: /\.svg$/,
-          issuer: { exclude: /\.css$/ },
-          use: {
-            loader: require.resolve("svg-sprite-loader"),
-            options: {
-              runtimeCompat: true,
-              spriteFilename: "sprite-[hash:6].svg"
-            },
-          }
-        },
-        // "file" loader makes sure assets end up in the `lib` folder.
-        // When you `import` an asset, you get its filename.
-        // This loader doesn't use a "test" so it will catch all modules
-        // that fall through the other loaders.
-        {
-          // Exclude `js` files to keep "css" loader working as it injects
-          // its runtime that would otherwise be processed through "file" loader.
-          // Also exclude `html` and `json` extensions so they get processed
-          // by webpacks internal loaders.
-          exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
-          use: {
-            loader: require.resolve("file-loader"),
-            options: {
-              name: "static/media/[name].[hash:8].[ext]",
-            },
-          }
-        },
-        // ** STOP ** Are you adding a new loader?
-        // Make sure to add the new loader(s) before the "file" loader.
-      ],
-    },
+            use: {
+              loader: require.resolve("svg-sprite-loader"),
+              options: {
+                // include file hash to ensure uniqueness even if same svg name
+                symbolId: "[name]-[hash:6]",
+                runtimeCompat: true,
+                spriteFilename: "sprite-[hash:6].svg"
+              },
+            }
+          },
+          // "file" loader makes sure assets end up in the `lib` folder.
+          // When you `import` an asset, you get its filename.
+          // This loader doesn't use a "test" so it will catch all modules
+          // that fall through the other loaders.
+          {
+            // Exclude `js` files to keep "css" loader working as it injects
+            // its runtime that would otherwise be processed through "file" loader.
+            // Also exclude `html` and `json` extensions so they get processed
+            // by webpacks internal loaders.
+            exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
+            use: {
+              loader: require.resolve("file-loader"),
+              options: {
+                name: "static/media/[name].[hash:8].[ext]",
+              },
+            }
+          },
+          // ** STOP ** Are you adding a new loader?
+          // Make sure to add the new loader(s) before the "file" loader.
+        ],
+      },
     ];
 
     webpackLib.module.rules = webpackLib.module.rules.concat(cssRules);

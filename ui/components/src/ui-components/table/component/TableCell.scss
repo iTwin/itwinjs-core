@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   color: $buic-foreground-body;
-  padding: 1px 1px 0px 1px;
+  padding: 1px;
   box-sizing: border-box;
 
   @mixin define-border($edge) {

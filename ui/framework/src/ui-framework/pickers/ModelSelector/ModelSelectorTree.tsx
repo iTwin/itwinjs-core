@@ -1,29 +1,51 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 /** @module Picker */
 
 import * as React from "react";
 import classnames from "classnames";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
-import { SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
+import {
+  SpatialViewState,
+  SpatialModelState,
+} from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { treeWithFilteringSupport } from "@bentley/presentation-components";
-import { Tree, TreeNodeItem, FilteringInput, SelectionMode } from "@bentley/ui-components";
 import {
-  CheckBoxInfo, CheckBoxState, isPromiseLike, NodeCheckboxRenderProps, ImageCheckBox,
-  LoadingSpinner, SpinnerSize, GlobalContextMenu, ContextMenuItem,
+  Tree,
+  TreeNodeItem,
+  FilteringInput,
+  SelectionMode,
+} from "@bentley/ui-components";
+import {
+  CheckBoxInfo,
+  CheckBoxState,
+  isPromiseLike,
+  NodeCheckboxRenderProps,
+  ImageCheckBox,
+  LoadingSpinner,
+  SpinnerSize,
+  GlobalContextMenu,
+  ContextMenuItem,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
-import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelSelectorDefinitions";
+import {
+  CategoryModelTreeProps,
+  CategoryModelTreeState,
+  Groups,
+} from "./ModelSelectorDefinitions";
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
  * @alpha
  */
-export class CategoryModelTree extends React.Component<CategoryModelTreeProps, CategoryModelTreeState> {
+export class CategoryModelTree extends React.Component<
+  CategoryModelTreeProps,
+  CategoryModelTreeState
+> {
   private _optionsElement: HTMLElement | null = null;
   private _allNodeIds: string[] = [];
   private _isMounted = false;
@@ -31,10 +53,9 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   constructor(props: CategoryModelTreeProps) {
     super(props);
     this._initState();
-    this._initSelectedNodes();
   }
 
-  private _initState = () => {
+  private _initState() {
     this.state = {
       activeGroup: this.props.activeGroup,
       checkboxInfo: this.createCheckBoxInfoCallback(),
@@ -42,7 +63,6 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
       isOptionsOpened: false,
       filterInfo: {},
       showSearchBox: false,
-      selectedNodes: [],
     };
   }
 
@@ -50,20 +70,35 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   public componentDidMount() {
     this._isMounted = true;
     if (this.props.activeView) {
-      this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
-      this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+      this.props.activeView.onViewedModelsChanged.addListener(
+        this._onViewedModelsChanged,
+      );
+      this.props.activeView.onViewedCategoriesChanged.addListener(
+        this._onViewedCategoriesChanged,
+      );
     }
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: CategoryModelTreeProps, _prevState: CategoryModelTreeState) {
+  public componentDidUpdate(
+    prevProps: CategoryModelTreeProps,
+    _prevState: CategoryModelTreeState,
+  ) {
     if (prevProps.activeView) {
-      prevProps.activeView.onViewedModelsChanged.removeListener(this._onViewedModelsChanged);
-      prevProps.activeView.onViewedCategoriesChanged.removeListener(this._onViewedCategoriesChanged);
+      prevProps.activeView.onViewedModelsChanged.removeListener(
+        this._onViewedModelsChanged,
+      );
+      prevProps.activeView.onViewedCategoriesChanged.removeListener(
+        this._onViewedCategoriesChanged,
+      );
     }
     if (this.props.activeView) {
-      this.props.activeView.onViewedModelsChanged.addListener(this._onViewedModelsChanged);
-      this.props.activeView.onViewedCategoriesChanged.addListener(this._onViewedCategoriesChanged);
+      this.props.activeView.onViewedModelsChanged.addListener(
+        this._onViewedModelsChanged,
+      );
+      this.props.activeView.onViewedCategoriesChanged.addListener(
+        this._onViewedCategoriesChanged,
+      );
     }
   }
 
@@ -72,67 +107,12 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     this._isMounted = false;
   }
 
-  private _initSelectedNodes = () => {
-    const group = this.state.activeGroup.id;
-    if (group === Groups.Models)
-      this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
-    else if (group === Groups.Categories)
-      this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
-
-  }
-
   private _onViewedModelsChanged = () => {
-    this._setModelsFromViewState(); // tslint:disable-line:no-floating-promises
+    this._resetCheckBoxState();
   }
+
   private _onViewedCategoriesChanged = () => {
-    this._setCategoriesFromViewState(); // tslint:disable-line:no-floating-promises
-  }
-
-  /** Set model selection state based on ViewState */
-  private _setModelsFromViewState = async () => {
-    if (!this.props.activeView)
-      return;
-    const view = this.props.activeView.view as SpatialViewState;
-    const nodes = await this.state.activeGroup.dataProvider.getNodes();
-    const selectedNodes: string[] = [];
-    this.state.activeGroup.items.forEach((item: ListItem) => {
-      if (view.modelSelector.models.has(item.key)) {
-        const node = this._getNodeFromItem(item, nodes);
-        selectedNodes.push(node.id);
-      }
-    });
-    if (this._isMounted) this.setState({ selectedNodes });
-  }
-
-  /** Set category selection state based on ViewState */
-  private _setCategoriesFromViewState = async () => {
-    if (!this.props.activeView)
-      return;
-    const view = this.props.activeView.view as SpatialViewState;
-    const nodes = await this.state.activeGroup.dataProvider.getNodes();
-    const selectedNodes: string[] = [];
-    this.state.activeGroup.items.forEach((item: ListItem) => {
-      if (view.categorySelector.categories.has(item.key)) {
-        const node = this._getNodeFromItem(item, nodes);
-        selectedNodes.push(node.id);
-      }
-    });
-    if (this._isMounted) this.setState({ selectedNodes });
-  }
-
-  /**
-   * Find a node specified by an item
-   * @param item Item to find node with
-   * @returns Matching node.
-   */
-  private _getNodeFromItem = (item: ListItem, nodes: TreeNodeItem[]) => {
-    for (const node of nodes) {
-      const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-      if (NodeKey.isInstanceNodeKey(key) && key.instanceKey.id === item.key) {
-        return node;
-      }
-    }
-    return nodes[0];
+    this._resetCheckBoxState();
   }
 
   private createCheckBoxInfoCallback() {
@@ -142,13 +122,14 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
     return (node: TreeNodeItem): CheckBoxInfo | Promise<CheckBoxInfo> => {
       const status = this.getNodeCheckBoxInfo(node);
-      if (isPromiseLike(status))
-        return status.then(combine);
+      if (isPromiseLike(status)) return status.then(combine);
       return combine(status);
     };
   }
 
-  private getNodeCheckBoxInfo(node: TreeNodeItem): CheckBoxInfo | Promise<CheckBoxInfo> {
+  private getNodeCheckBoxInfo(
+    node: TreeNodeItem,
+  ): CheckBoxInfo | Promise<CheckBoxInfo> {
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
     const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
     const item = this._getItem(nodeId);
@@ -156,37 +137,44 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
       const view = this.props.activeView.view as SpatialViewState;
       let state = CheckBoxState.Off;
       const group = this.state.activeGroup.id;
-      if (group === Groups.Models && view.modelSelector.models.has(item.key) ||
-        group === Groups.Categories && view.categorySelector.categories.has(item.key))
+      if (
+        (group === Groups.Models && view.modelSelector.models.has(item.key)) ||
+        (group === Groups.Categories &&
+          view.categorySelector.categories.has(item.key))
+      )
         state = CheckBoxState.On;
       return { isDisabled: false, isVisible: true, state };
     }
     return {};
   }
 
-  // tslint:disable-next-line: naming-convention
-  private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
-    const selectedNodes: TreeNodeItem[] = [];
-    const deselectedNodes: TreeNodeItem[] = [];
+  private async onCheckboxStateChange(
+    stateChanges: Array<{
+      node: TreeNodeItem;
+      newState: CheckBoxState;
+    }>,
+  ) {
+    const nodesToEnable: TreeNodeItem[] = [];
+    const nodesToDisable: TreeNodeItem[] = [];
     for (const { node, newState } of stateChanges) {
       if (newState === CheckBoxState.On) {
-        selectedNodes.push(node);
+        nodesToEnable.push(node);
       } else {
-        deselectedNodes.push(node);
+        nodesToDisable.push(node);
       }
     }
 
-    if (selectedNodes.length > 0) {
-      this._onNodesSelected(selectedNodes);
+    if (nodesToEnable.length > 0) {
+      this._manageNodesState(nodesToEnable, true); // tslint:disable-line:no-floating-promises
     }
 
-    if (deselectedNodes.length > 0) {
-      this._onNodesDeselected(deselectedNodes);
+    if (nodesToDisable.length > 0) {
+      this._manageNodesState(nodesToDisable, false); // tslint:disable-line:no-floating-promises
     }
   }
 
   // tslint:disable-next-line: naming-convention
-  private renderNodeCheckbox = (props: NodeCheckboxRenderProps): React.ReactNode => {
+  private renderNodeCheckbox(props: NodeCheckboxRenderProps): React.ReactNode {
     return (
       <ImageCheckBox
         checked={props.checked}
@@ -202,7 +190,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
    * Enable or disable all items and nodes
    * @param enable Specifies if items and nodes should be enabled or disabled
    */
-  private _onSetEnableAll = async (enable: boolean) => {
+  private async _onSetEnableAll(enable: boolean) {
     this.setState({ isLoading: true });
     this._onCloseContextMenu();
     if (this._allNodeIds.length === 0)
@@ -210,10 +198,13 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     this._setItemStates(this._allNodeIds, enable); // tslint:disable-line:no-floating-promises
 
     if (this._isMounted)
-      this.setState({ isLoading: false, checkboxInfo: this.createCheckBoxInfoCallback() });
+      this.setState({
+        isLoading: false,
+        checkboxInfo: this.createCheckBoxInfoCallback(),
+      });
   }
 
-  private _fetchAllNodeIds = async (): Promise<string[]> => {
+  private async _fetchAllNodeIds(): Promise<string[]> {
     if (this.state.activeGroup.id === Groups.Models) {
       const nodeIds = await this._fetchAllModelNodeIds();
       return nodeIds;
@@ -225,12 +216,17 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     return [];
   }
 
-  private _fetchAllModelNodeIds = async (): Promise<string[]> => {
-    const modelQueryParams: ModelQueryParams = { from: SpatialModelState.classFullName, wantPrivate: false };
+  private async _fetchAllModelNodeIds(): Promise<string[]> {
+    const modelQueryParams: ModelQueryParams = {
+      from: SpatialModelState.classFullName,
+      wantPrivate: false,
+    };
     let curModelProps: ModelProps[] = new Array<ModelProps>();
 
     if (this.props.iModelConnection)
-      curModelProps = await this.props.iModelConnection.models.queryProps(modelQueryParams);
+      curModelProps = await this.props.iModelConnection.models.queryProps(
+        modelQueryParams,
+      );
 
     const ids: string[] = [];
     for (const modelProps of curModelProps) {
@@ -240,13 +236,22 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     return ids;
   }
 
-  private _fetchAllCategoryNodeIds = async (): Promise<string[]> => {
+  private async _fetchAllCategoryNodeIds(): Promise<string[]> {
     if (!this.props.activeView) return [];
     const view = this.props.activeView.view as SpatialViewState;
-    const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
-    const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
-    const ecsql = view.is3d() ? selectUsedSpatialCategoryIds : selectUsedDrawingCategoryIds;
-    const ecsql2 = "SELECT ECInstanceId as id, UserLabel as label, CodeValue as code FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory") + " WHERE ECInstanceId IN (" + ecsql + ")";
+    const selectUsedSpatialCategoryIds =
+      "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
+    const selectUsedDrawingCategoryIds =
+      "SELECT DISTINCT Category.Id as id from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
+    const ecsql = view.is3d()
+      ? selectUsedSpatialCategoryIds
+      : selectUsedDrawingCategoryIds;
+    const ecsql2 =
+      "SELECT ECInstanceId as id, UserLabel as label, CodeValue as code FROM " +
+      (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory") +
+      " WHERE ECInstanceId IN (" +
+      ecsql +
+      ")";
     const ids = [];
 
     if (this.props.iModelConnection) {
@@ -260,15 +265,19 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   /** Invert display on all items and state of all nodes */
-  private _onInvertAll = async () => {
+  private async _onInvertAll() {
     this.setState({ isLoading: true });
     this._onCloseContextMenu();
     this._invertEnableOnAllItems();
-    if (this._isMounted) this.setState({ isLoading: false, checkboxInfo: this.createCheckBoxInfoCallback() });
+    if (this._isMounted)
+      this.setState({
+        isLoading: false,
+        checkboxInfo: this.createCheckBoxInfoCallback(),
+      });
   }
 
   /** Invert display on all items */
-  private _invertEnableOnAllItems = () => {
+  private _invertEnableOnAllItems() {
     const enabledItems = [];
     const disabledItems = [];
     for (const item of this.state.activeGroup.items) {
@@ -286,65 +295,95 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
       <div className={listClassName}>
         {this._getToolbar()}
         <div className="modelselector-content">
-          {this.state.isLoading ?
-            this._getSpinner() :
-            this._getTree()
-          }
+          {this.state.isLoading ? this._getSpinner() : this._getTree()}
         </div>
       </div>
     );
   }
 
-  private _getToolbar = () => {
+  private _getToolbar() {
     return (
       <div className="modelselector-toolbar">
-        {this.state.showSearchBox &&
+        {this.state.showSearchBox && (
           <FilteringInput
-            filteringInProgress={this.state.filterInfo && this.state.filterInfo.filtering || false}
+            filteringInProgress={
+              (this.state.filterInfo && this.state.filterInfo.filtering) ||
+              false
+            }
             onFilterCancel={this._onFilterCancel}
             onFilterClear={this._onFilterClear}
             onFilterStart={this._onFilterStart}
             resultSelectorProps={{
               onSelectedChanged: this._onSelectedMatchChanged,
-              resultCount: this.state.filterInfo && this.state.filterInfo.matchesCount || 0,
+              resultCount:
+                (this.state.filterInfo && this.state.filterInfo.matchesCount) ||
+                0,
             }}
           />
-        }
+        )}
         <div className="option-group">
-          <span className="icon icon-search" onClick={this._onToggleSearchBox} />
-          <span className="options icon icon-more-2" title={UiFramework.translate("categoriesModels.options")}
-            onClick={this._onShowOptions.bind(this)} ref={(element) => { this._optionsElement = element; }}></span>
-          <GlobalContextMenu opened={this.state.isOptionsOpened} x={this._getOptionsX()} y={this._getOptionsY()}>
-            <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll.bind(this, true)}>{UiFramework.translate("pickerButtons.showAll")}</ContextMenuItem>
-            <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onSetEnableAll.bind(this, false)}>{UiFramework.translate("pickerButtons.hideAll")}</ContextMenuItem>
-            <ContextMenuItem key={2} icon="icon-visibility-invert" onClick={this._onInvertAll.bind(this)} >{UiFramework.translate("pickerButtons.invert")}</ContextMenuItem>
+          <span
+            className="icon icon-search"
+            onClick={this._onToggleSearchBox}
+          />
+          <span
+            className="options icon icon-more-2"
+            title={UiFramework.translate("categoriesModels.options")}
+            onClick={this._onShowOptions.bind(this)}
+            ref={(element) => {
+              this._optionsElement = element;
+            }}
+          />
+          <GlobalContextMenu
+            opened={this.state.isOptionsOpened}
+            x={this._getOptionsX()}
+            y={this._getOptionsY()}
+          >
+            <ContextMenuItem
+              key={0}
+              icon="icon-visibility"
+              onClick={this._onSetEnableAll.bind(this, true)}
+            >
+              {UiFramework.translate("pickerButtons.showAll")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              key={1}
+              icon="icon-visibility-hide-2"
+              onClick={this._onSetEnableAll.bind(this, false)}
+            >
+              {UiFramework.translate("pickerButtons.hideAll")}
+            </ContextMenuItem>
+            <ContextMenuItem
+              key={2}
+              icon="icon-visibility-invert"
+              onClick={this._onInvertAll.bind(this)}
+            >
+              {UiFramework.translate("pickerButtons.invert")}
+            </ContextMenuItem>
           </GlobalContextMenu>
         </div>
       </div>
     );
   }
 
-  private _getOptionsX = () => {
-    if (!this._optionsElement)
-      return 0;
+  private _getOptionsX() {
+    if (!this._optionsElement) return 0;
     const rect = this._optionsElement.getBoundingClientRect();
     return rect.right;
   }
 
-  private _getOptionsY = () => {
-    if (!this._optionsElement)
-      return 0;
+  private _getOptionsY() {
+    if (!this._optionsElement) return 0;
     const rect = this._optionsElement.getBoundingClientRect();
     return rect.bottom;
   }
 
-  private _onToggleSearchBox = () => {
+  private _onToggleSearchBox() {
     this.setState({ showSearchBox: !this.state.showSearchBox });
   }
 
-  private _onFilterCancel = () => {
-    if (!this.state.filterInfo)
-      return;
+  private _onFilterCancel() {
+    if (!this.state.filterInfo) return;
 
     this.setState({
       filterInfo: {
@@ -355,9 +394,8 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
   }
 
-  private _onFilterClear = () => {
-    if (!this.state.filterInfo)
-      return;
+  private _onFilterClear() {
+    if (!this.state.filterInfo) return;
 
     this.setState({
       filterInfo: {
@@ -368,9 +406,8 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
   }
 
-  private _onFilterStart = (filter: string) => {
-    if (!this.state.filterInfo)
-      return;
+  private _onFilterStart(filter: string) {
+    if (!this.state.filterInfo) return;
 
     this.setState({
       filterInfo: {
@@ -381,117 +418,89 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
   }
 
-  private _onSelectedMatchChanged = (index: number) => {
-    if (this.state.filterInfo && index !== this.state.filterInfo.matchesCount)
+  private _onSelectedMatchChanged(index: number) {
+    if (this.state.filterInfo && index !== this.state.filterInfo.matchesCount) {
       this.setState({
         filterInfo: {
           ...this.state.filterInfo,
           activeMatchIndex: index,
         },
       });
+    }
   }
 
   // tslint:disable-next-line:naming-convention
-  private onFilterApplied = (_filter?: string): void => {
-    if (this.state.filterInfo && this.state.filterInfo.filtering)
+  private onFilterApplied(_filter?: string): void {
+    if (this.state.filterInfo && this.state.filterInfo.filtering) {
       this.setState({
         filterInfo: {
           ...this.state.filterInfo,
           filtering: false,
         },
       });
+    }
   }
 
-  private _onMatchesCounted = (count: number) => {
-    if (this.state.filterInfo && count !== this.state.filterInfo.matchesCount)
+  private _onMatchesCounted(count: number) {
+    if (this.state.filterInfo && count !== this.state.filterInfo.matchesCount) {
       this.setState({
         filterInfo: {
           ...this.state.filterInfo,
           matchesCount: count,
         },
       });
+    }
   }
 
   private _onShowOptions(event: any) {
     event.stopPropagation();
-    this.setState({ isOptionsOpened: !this.state.isOptionsOpened });
+    this.setState({
+      isOptionsOpened: !this.state.isOptionsOpened,
+    });
   }
 
   private _onCloseContextMenu() {
     this.setState({ isOptionsOpened: false });
   }
 
-  private _getSpinner = () => {
-    return (
-      <LoadingSpinner size={SpinnerSize.Large} />
-    );
+  private _getSpinner() {
+    return <LoadingSpinner size={SpinnerSize.Large} />;
   }
 
-  private _getTree = () => {
+  private _getTree() {
     return (
       <CategoryModelFilterTree
         dataProvider={this.state.activeGroup.dataProvider}
         filter={this.state.filterInfo ? this.state.filterInfo!.filter : ""}
-        onFilterApplied={this.onFilterApplied}
-        onMatchesCounted={this._onMatchesCounted}
-        activeMatchIndex={this.state.filterInfo ? this.state.filterInfo.activeMatchIndex : 0}
-        selectedNodes={this._getSelectedNodes}
-        selectionMode={SelectionMode.Multiple}
-        onNodesSelected={this._onNodesSelected}
-        onNodesDeselected={this._onNodesDeselected}
-        onNodeExpanded={this._onNodeExpanded}
+        onFilterApplied={(filter) => this.onFilterApplied(filter)}
+        onMatchesCounted={(count) => this._onMatchesCounted(count)}
+        activeMatchIndex={
+          this.state.filterInfo ? this.state.filterInfo.activeMatchIndex : 0
+        }
+        selectionMode={SelectionMode.SingleAllowDeselect}
+        onNodeExpanded={(node) => this._onNodeExpanded(node)}
         showDescriptions={true}
         checkboxInfo={this.state.checkboxInfo}
-        onCheckboxClick={this.onCheckboxStateChange}
+        onCheckboxClick={(stateChange) =>
+          this.onCheckboxStateChange(stateChange)
+        }
         showIcons={true}
-        renderOverrides={{ renderCheckbox: this.renderNodeCheckbox }}
+        renderOverrides={{
+          renderCheckbox: this.renderNodeCheckbox,
+        }}
         pageSize={5}
       />
     );
   }
 
-  private _getSelectedNodes = (node: TreeNodeItem): boolean => {
-    const key = this.state.activeGroup.dataProvider.getNodeKey(node);
-    const id = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
-    if (this.state.activeGroup.id === Groups.Models) {
-      return this._isModelDisplayed(id);
-    }
-    if (this.state.activeGroup.id === Groups.Categories) {
-      return this._isCategoryDisplayed(id);
-    }
-    return false;
-  }
-
-  private _isModelDisplayed = (id: string): boolean => {
-    if (!this.props.activeView) return false;
-    const view = this.props.activeView.view as SpatialViewState;
-    if (view.modelSelector.models.has(id))
-      return true;
-    return false;
-  }
-
-  private _isCategoryDisplayed = (id: string): boolean => {
-    if (!this.props.activeView) return false;
-    const view = this.props.activeView.view as SpatialViewState;
-    if (view.categorySelector.categories.has(id))
-      return true;
-    return false;
-  }
-
-  private _onNodesSelected = (items: TreeNodeItem[]) => {
-    this._manageSelection(items, true); // tslint:disable-line:no-floating-promises
-  }
-
-  private _onNodesDeselected = (items: TreeNodeItem[]) => {
-    this._manageSelection(items, false); // tslint:disable-line:no-floating-promises
-  }
-
   // Nodes only expand if active group is "Categories"
-  private _onNodeExpanded = async (node: TreeNodeItem) => {
+  private async _onNodeExpanded(node: TreeNodeItem) {
     const categories: ListItem[] = this.state.activeGroup.items;
     const key = this.state.activeGroup.dataProvider.getNodeKey(node);
     const nodeId = NodeKey.isInstanceNodeKey(key) ? key.instanceKey.id : "";
-    const ecsql = "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" + nodeId;
+    const ecsql =
+      "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" +
+      nodeId;
     const rows = [];
 
     if (this.props.iModelConnection) {
@@ -509,7 +518,9 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
       if (!existingItem) {
         const category: ListItem = {
           key: row.id as string,
-          enabled: this.props.activeView ? this.props.activeView.view.categorySelector.has(row.id as string) : false,
+          enabled: this.props.activeView
+            ? this.props.activeView.view.categorySelector.has(row.id as string)
+            : false,
           type: ListItemType.Item,
         };
         categories.push(category);
@@ -525,14 +536,17 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
   }
 
-  private _manageSelection = async (nodes: TreeNodeItem[], enable: boolean) => {
+  private async _manageNodesState(nodes: TreeNodeItem[], enable: boolean) {
     const nodeIds = this._getNodeIds(nodes);
     await this._setItemStates(nodeIds, enable);
 
-    if (this._isMounted) this.setState({ checkboxInfo: this.createCheckBoxInfoCallback() });
+    if (this._isMounted)
+      this.setState({
+        checkboxInfo: this.createCheckBoxInfoCallback(),
+      });
   }
 
-  private _getNodeIds = (nodes: TreeNodeItem[]) => {
+  private _getNodeIds(nodes: TreeNodeItem[]) {
     const nodeIds: string[] = [];
     nodes.forEach((node) => {
       const key = this.state.activeGroup.dataProvider.getNodeKey(node);
@@ -541,13 +555,12 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     });
     return nodeIds;
   }
-
   /**
    * Set item and node state after input change
    * @param treeItem Item to set state on
    * @param enable Flag to enable or disable item, determined by checkBoxState if not specified
    */
-  private _setItemStates = async (treeItemIds: string[], enable: boolean) => {
+  private async _setItemStates(treeItemIds: string[], enable: boolean) {
     this._setEnableItems(treeItemIds, enable);
 
     if (this.state.activeGroup.id === Groups.Categories)
@@ -560,13 +573,16 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
    * Set display flag on an item based on toggled node.
    * @param treeItem  Node related to toggled display item.
    */
-  private _setEnableItems = (treeNodeIds: string[], enable: boolean) => {
+  private _setEnableItems(treeNodeIds: string[], enable: boolean) {
     treeNodeIds.forEach((treeNodeId: string) => {
       const item = this._getItem(treeNodeId);
       item.enabled = enable;
       this.state.activeGroup.setEnabled([item], enable);
     });
-    if (this._isMounted) this.setState({ checkboxInfo: this.createCheckBoxInfoCallback() });
+    if (this._isMounted)
+      this.setState({
+        checkboxInfo: this.createCheckBoxInfoCallback(),
+      });
   }
 
   /**
@@ -574,7 +590,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
    * @param treeNodeId Tree node ID to match.
    * @returns Specified item from list. Defaults to first item if none found.
    */
-  private _getItem = (treeNodeId: string): ListItem => {
+  private _getItem(treeNodeId: string): ListItem {
     const items = this.state.activeGroup.items;
     for (const item of items) {
       if (treeNodeId === item.key) {
@@ -584,13 +600,15 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     return items[0];
   }
 
-  private _setEnableChildren = async (nodeId: string, enable: boolean) => {
+  private async _setEnableChildren(nodeId: string, enable: boolean) {
     const childNodeIds = await this._fetchChildNodes(nodeId);
     this._setEnableItems(childNodeIds, enable);
   }
 
-  private _fetchChildNodes = async (nodeId: string): Promise<string[]> => {
-    const ecsql = "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" + nodeId;
+  private async _fetchChildNodes(nodeId: string): Promise<string[]> {
+    const ecsql =
+      "SELECT ECInstanceId as id FROM BisCore.SubCategory WHERE Parent.Id=" +
+      nodeId;
     const childIds = [];
 
     if (this.props.iModelConnection) {
@@ -601,6 +619,13 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
     }
 
     return childIds;
+  }
+
+  private _resetCheckBoxState() {
+    if (this._isMounted)
+      this.setState({
+        checkboxInfo: this.createCheckBoxInfoCallback(),
+      });
   }
 }
 

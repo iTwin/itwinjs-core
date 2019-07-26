@@ -1,6 +1,39 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Checkbox: added theming
+- Remove flex-grow from dialog containers - not supported by Firefox
+- removed flex-grow from dialogs
+- Add missing space in scss files.
+- Update styles on Select and Input components.
+- Added CursorInformation and CursorPopup
+- Added ToolAssistance support and Tool.iconSpec
+- Fixed Toolbar resizing, ContextMenu className and $buic-row-hover & $buic-row-selection
+- Checkbox: Fix `onClick` event so that it can be used to stop event propagation
+- Remove excessive z-index CSS rule.
+- Update light and dark theme colors.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- #137898 - It is not possible to turn on/off checkbox by clicking on label
+- Added prefixes to Dialog & ContextMenu to CSS classes for positioning
+- Copied source from react-numeric-input and converted to TypeScript for internal control
+- Modified regex for NumericInput
+- Allow CSS selector string to specify item in FocusTrap to receive focus.
+- Reverted ContextMenuDirection and DialogAlignment breaking changes
+- Update to TypeScript 3.5
+- ui-core unit tests
+- ui-core unit tests
+- ui-component unit tests. NumericInput strict=true default.
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

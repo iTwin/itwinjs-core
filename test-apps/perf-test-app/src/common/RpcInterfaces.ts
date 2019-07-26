@@ -3,8 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelTokenProps,
-  IModelWriteRpcInterface, RpcInterface, RpcManager, WipRpcInterface,
+  IModelReadRpcInterface, RpcInterface, RpcManager,
 } from "@bentley/imodeljs-common";
 
 export abstract class TestRpcInterface extends RpcInterface {
@@ -13,22 +12,6 @@ export abstract class TestRpcInterface extends RpcInterface {
 
   public static getClient(): TestRpcInterface {
     return RpcManager.getClientForInterface(TestRpcInterface);
-  }
-
-  public async restartIModelHost(): Promise<void> {
-    return this.forward(arguments);
-  }
-
-  public async extractChangeSummaries(_iModelToken: IModelTokenProps, _options: any): Promise<void> {
-    return this.forward(arguments);
-  }
-
-  public async deleteChangeCache(_iModelToken: IModelTokenProps): Promise<void> {
-    return this.forward(arguments);
-  }
-
-  public async executeTest(_iModelToken: IModelTokenProps, _testName: string, _params: any): Promise<any> {
-    return this.forward(arguments);
   }
 
   public async addNewEntry(_testSuit: string, _testName: string, _valueDescription: string, _value: number, _info: string): Promise<any> {
@@ -46,8 +29,5 @@ export abstract class TestRpcInterface extends RpcInterface {
 
 export const rpcInterfaces = [
   IModelReadRpcInterface,
-  IModelTileRpcInterface,
-  IModelWriteRpcInterface,
   TestRpcInterface,
-  WipRpcInterface,
 ];

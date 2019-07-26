@@ -40,21 +40,16 @@ export class SchemaWalker {
     await this._visitorHelper.visitSchema(schema);
     await this._visitorHelper.visitSchemaPart(schema);
 
-    const schemaItems = this._schema.getItems();
-
-    for (const item of schemaItems) {
+    for (const item of this._schema.getItems())
       await this.traverseSchemaItem(item);
-    }
-
     return schema;
   }
 
   private async traverseSchemaItem(schemaItem: SchemaItem): Promise<void> {
     await this._visitorHelper.visitSchemaPart(schemaItem);
 
-    if (schemaItem instanceof ECClass) {
+    if (schemaItem instanceof ECClass)
       await this.traverseClass(schemaItem as ECClass);
-    }
   }
 
   private async traverseClass(ecClass: ECClass): Promise<void> {

@@ -90,7 +90,7 @@ describe("PushRetry", () => {
             let rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
             assert.equal(rows.length, 1);
             instanceChange.before = rows[0];
-            rows = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
+            rows = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterUpdate));
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
             break;

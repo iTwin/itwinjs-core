@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** @module CartesianGeometry */
+// cspell:word JSONXY
+// cspell:word CWXY
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Angle } from "./Angle";
@@ -47,7 +49,6 @@ export class XY implements XAndY {
   public toJSON(): XYProps { return [this.x, this.y]; }
   /** return a json object `{x: 1, y:2}`  */
   public toJSONXY(): XYProps { return { x: this.x, y: this.y }; }
-
   /** Set x and y from a JSON source such as `[1,2]` or `{x:1, y:2}` */
   public setFromJSON(json?: XYProps): void {
     if (Array.isArray(json)) {
@@ -149,7 +150,7 @@ export class Point2d extends XY implements BeJSONFunctions {
   /** Starting at this point, move along vector by tangentFraction of the vector length, and to the left by leftFraction of
    * the perpendicular vector length.
    * @param tangentFraction distance to move along the vector, as a fraction of vector
-   * @param leftfraction distance to move perpendicular to the vector, as a fraction of the rotated vector
+   * @param leftFraction distance to move perpendicular to the vector, as a fraction of the rotated vector
    */
   public addForwardLeft(tangentFraction: number, leftFraction: number, vector: Vector2d): Point2d {
     const dx = vector.x;

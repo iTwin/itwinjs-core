@@ -16,7 +16,6 @@ export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
  */
 export class OidcDelegationClient extends OidcBackendClient {
   /** Creates an instance of OidcBackendClient.
-   * @param deploymentEnv Deployment environment.
    */
   public constructor(configuration: OidcDelegationClientConfiguration) {
     super(configuration);
