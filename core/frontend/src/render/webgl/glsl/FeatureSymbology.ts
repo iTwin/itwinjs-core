@@ -112,8 +112,9 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec4);
   vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
 
-  if (!vert.usesInstancedGeometry) {
+  if (!vert.usesInstancedGeometry)
     addFeatureAndMaterialLookup(vert);
+}
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa
 // (The latter occurs when some translucent feature is overridden to be opaque, or vice-versa)
