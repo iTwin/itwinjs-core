@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix specular lighting in specific case when specular exponent is zero.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Mark.Schlosser@bentley.com"
+}

@@ -28,8 +28,8 @@ export interface GroupToolProps extends CommonProps {
   label?: string;
   /** Function called when the item is clicked. */
   onClick?: () => void;
-  /** A Beta badge to draw. */
-  betaBadge?: React.ReactNode;
+  /** A badge to draw. */
+  badge?: React.ReactNode;
 }
 
 /** Tool entry of tool group panel. Used in [[GroupColumn]].
@@ -52,9 +52,9 @@ export class GroupTool extends React.PureComponent<GroupToolProps> {
       >
         <div className="nz-icon">
           {this.props.icon}
-          {this.props.betaBadge &&
-            <div className="nz-beta-badge">
-              {this.props.betaBadge}
+          {this.props.badge &&
+            <div className="nz-badge">
+              {this.props.badge}
             </div>
           }
         </div>

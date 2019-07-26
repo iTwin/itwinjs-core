@@ -5,7 +5,7 @@
 /** @module RpcInterface */
 
 import { assert, BeDuration, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, IModelToken, RpcInterface, RpcManager, RpcPendingResponse, TileTreeProps, CloudStorageContainerDescriptor, CloudStorageContainerUrl, TileContentIdentifier, CloudStorageTileCache, IModelTokenProps, RpcInvocation } from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -165,12 +165,15 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   } // tslint:disable-line:no-floating-promises
 
   public async getTileCacheContainerUrl(_tokenProps: IModelTokenProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
+    const invocation = RpcInvocation.current(this);
+
     if (!IModelHost.usingExternalTileCache) {
       return CloudStorageContainerUrl.empty();
     }
 
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
-    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry);
+    const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
+    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
   private async cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Promise<Uint8Array>) {
@@ -186,7 +189,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
         const cache = CloudStorageTileCache.getCache();
         await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content);
       } catch (err) {
-        Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, err.toString());
+        Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, JSON.stringify(err));
       }
     });
   }

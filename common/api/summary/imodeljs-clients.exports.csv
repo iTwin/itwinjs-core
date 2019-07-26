@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AccessToken 
+internal;addSelectApplicationData(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
 internal;AggregateResponseError 
 alpha;AllCodesDeletedEvent 
@@ -155,7 +156,7 @@ beta;StringIdQuery
 alpha;class Thumbnail 
 alpha;ThumbnailHandler
 alpha;ThumbnailQuery 
-alpha;ThumbnailSize = "Small" | "Large"
+beta;ThumbnailSize = "Small" | "Large"
 alpha;TipThumbnail
 beta;class Token
 internal;UlasClient 

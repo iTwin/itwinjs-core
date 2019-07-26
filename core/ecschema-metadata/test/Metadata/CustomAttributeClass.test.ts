@@ -11,6 +11,7 @@ import { CustomAttributeContainerType, ECClassModifier } from "../../src/ECObjec
 import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { Schema } from "../../src/Metadata/Schema";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("CustomAttributeClass", () => {
   describe("deserialization", () => {
@@ -68,7 +69,7 @@ describe("CustomAttributeClass", () => {
 
     it("async - should succeed with fully defined standalone", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -79,7 +80,7 @@ describe("CustomAttributeClass", () => {
 
       await testClass.deserialize(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");
@@ -89,7 +90,7 @@ describe("CustomAttributeClass", () => {
     });
     it("sync - should succeed with fully defined standalone", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -100,7 +101,7 @@ describe("CustomAttributeClass", () => {
 
       testClass.deserializeSync(schemaJson);
       const caJson = testClass!.toJson(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");
@@ -163,6 +164,66 @@ describe("CustomAttributeClass", () => {
       assert.isDefined(caSerialization);
       expect(caSerialization.appliesTo).eql("Schema, AnyProperty");
       expect(caSerialization.modifier).eql("Sealed");
+    });
+  });
+
+  describe("toXml", () => {
+    function createCustomAttributeJson(propertyJson: any) {
+      return createSchemaJsonWithItems({
+        testCustomAttribute: {
+          schemaItemType: "CustomAttributeClass",
+          modifier: "sealed",
+          appliesTo: "Schema, AnyProperty",
+          ...propertyJson,
+        },
+        TestEnumeration: {
+          schemaItemType: "Enumeration",
+          type: "int",
+          enumerators: [
+            {
+              name: "FirstValue",
+              value: 1,
+            },
+          ],
+        },
+      });
+    }
+
+    const newDom = createEmptyXmlDocument();
+
+    it("should properly serialize", async () => {
+      const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
+      assert.isDefined(ecschema);
+
+      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      assert.isDefined(testCustomAttribute);
+      const serialized = await testCustomAttribute!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
+      expect(serialized.getAttribute("appliesTo")).to.eql("Schema, AnyProperty");
+    });
+
+    it("with property, should properly serialize", async () => {
+      const propertyJson = {
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            typeName: "boolean",
+            name: "TestProperty",
+          },
+        ],
+      };
+      const ecschema = Schema.fromJsonSync(createCustomAttributeJson(propertyJson), new SchemaContext());
+      assert.isDefined(ecschema);
+
+      const testCustomAttribute = ecschema.getItemSync<CustomAttributeClass>("testCustomAttribute");
+      assert.isDefined(testCustomAttribute);
+      const serialized = await testCustomAttribute!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECCustomAttributeClass");
+      expect(serialized.getAttribute("appliesTo")).to.eql("Schema, AnyProperty");
+      const properties = getElementChildrenByTagName(serialized, "ECProperty");
+      assert.strictEqual(properties.length, 1);
+      expect(properties[0].getAttribute("propertyName")).to.eql("TestProperty");
+      expect(properties[0].getAttribute("typeName")).to.eql("boolean");
     });
   });
 });

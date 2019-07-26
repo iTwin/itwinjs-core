@@ -10,7 +10,10 @@ import { InstancedGraphicParams, RenderMemory } from "../System";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
-import { AttributeHandle, BufferHandle } from "./Handle";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
+import { GL } from "./GL";
+import { AttributeMap } from "./AttributeMap";
+import { TechniqueId } from "./TechniqueId";
 
 /** @internal */
 export class InstanceBuffers implements IDisposable {
@@ -41,6 +44,34 @@ export class InstanceBuffers implements IDisposable {
     this._rtcCenter = rtcCenter;
     this._rtcTransform = Transform.createTranslation(this._rtcCenter);
     this._transforms = transformsData;
+  }
+
+  public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
+    const params: BufferParameters[] = [];
+    const numRows = 3;
+    let row = 0;
+    while (row < numRows) {
+      // 3 rows per instance; 4 floats per row; 4 bytes per float.
+      const floatsPerRow = 4;
+      const bytesPerVertex = floatsPerRow * 4;
+      const offset = row * bytesPerVertex;
+      const stride = 3 * bytesPerVertex;
+      const name = "a_instanceMatrixRow" + row;
+      const details = AttributeMap.findAttribute(name, techniqueId, true);
+      assert(details !== undefined);
+      const bParams: BufferParameters = {
+        glAttribLoc: details!.location,
+        glSize: floatsPerRow,
+        glType: GL.DataType.Float,
+        glNormalized: false,
+        glStride: stride,
+        glOffset: offset,
+        glInstanced: true,
+      };
+      params.push(bParams);
+      row++;
+    }
+    return params;
   }
 
   public static create(params: InstancedGraphicParams, shared: boolean): InstanceBuffers | undefined {
@@ -109,11 +140,11 @@ export class InstanceBuffers implements IDisposable {
     const r = new Range3d();
     for (let i = 0; i < tfs.length; i += numFloatsPerTransform) {
       tf.setFromJSON({
-        origin: [ tfs[i + 3], tfs[i + 7], tfs[i + 11] ],
+        origin: [tfs[i + 3], tfs[i + 7], tfs[i + 11]],
         matrix: [
-          [ tfs[i + 0], tfs[i + 1], tfs[i + 2] ],
-          [ tfs[i + 4], tfs[i + 5], tfs[i + 6] ],
-          [ tfs[i + 8], tfs[i + 9], tfs[i + 10] ],
+          [tfs[i + 0], tfs[i + 1], tfs[i + 2]],
+          [tfs[i + 4], tfs[i + 5], tfs[i + 6]],
+          [tfs[i + 8], tfs[i + 9], tfs[i + 10]],
         ],
       });
 
@@ -131,6 +162,7 @@ export class InstanceBuffers implements IDisposable {
 
 /** @internal */
 export class InstancedGeometry extends CachedGeometry {
+  private readonly _buffersContainer: BuffersContainer;
   private readonly _buffers: InstanceBuffers;
   private readonly _repr: LUTGeometry;
   private readonly _ownsRepr: boolean;
@@ -158,8 +190,8 @@ export class InstancedGeometry extends CachedGeometry {
   public get polylineBuffers() { return this._repr.polylineBuffers; }
   public get isEdge() { return this._repr.isEdge; }
   public get hasFeatures() { return this._buffers.hasFeatures; }
+  public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
 
-  public getTechniqueId(target: Target) { return this._repr.getTechniqueId(target); }
   public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
   public wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
@@ -172,6 +204,25 @@ export class InstancedGeometry extends CachedGeometry {
     this._repr = repr;
     this._ownsRepr = ownsRepr;
     this._buffers = buffers;
+    this._buffersContainer = BuffersContainer.create();
+    this._buffersContainer.appendLinkages(repr.lutBuffers.linkages);
+
+    this._buffersContainer.addBuffer(this._buffers.transforms, InstanceBuffers.createTransformBufferParameters(this.techniqueId));
+    if (this._buffers.symbology !== undefined) {
+      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", this.techniqueId, true);
+      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", this.techniqueId, true);
+      assert(attrInstanceOverrides !== undefined);
+      assert(attrInstanceRgba !== undefined);
+      this._buffersContainer.addBuffer(this._buffers.symbology, [
+        BufferParameters.create(attrInstanceOverrides!.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
+        BufferParameters.create(attrInstanceRgba!.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
+      ]);
+    }
+    if (this._buffers.featureIds !== undefined) {
+      const attrFeatureId = AttributeMap.findAttribute("a_featureId", this.techniqueId, true);
+      assert(attrFeatureId !== undefined);
+      this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
+    }
   }
 
   public dispose() {
@@ -180,17 +231,13 @@ export class InstancedGeometry extends CachedGeometry {
       this._repr.dispose();
   }
 
-  public bindVertexArray(handle: AttributeHandle) {
-    this._repr.bindVertexArray(handle);
-  }
-
   protected _wantWoWReversal(_target: Target) {
     assert(false, "Should never be called");
     return false;
   }
 
   public draw() {
-    this._repr.drawInstanced(this.numInstances);
+    this._repr.drawInstanced(this.numInstances, this._buffersContainer);
   }
 
   public computeRange(output?: Range3d): Range3d {

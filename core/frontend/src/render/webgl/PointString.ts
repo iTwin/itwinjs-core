@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose, assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
 import { Target } from "./Target";
 import { LUTGeometry } from "./CachedGeometry";
@@ -12,14 +12,16 @@ import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 import { PointStringParams } from "../primitives/VertexTable";
 import { VertexLUT } from "./VertexLUT";
-import { AttributeHandle, BufferHandle } from "./Handle";
+import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { RenderMemory } from "../System";
+import { AttributeMap } from "./AttributeMap";
 
 /** @internal */
 export class PointStringGeometry extends LUTGeometry {
+  public readonly buffers: BuffersContainer;
   public readonly vertexParams: QParams3d;
   private readonly _hasFeatures: boolean;
   public readonly weight: number;
@@ -27,8 +29,14 @@ export class PointStringGeometry extends LUTGeometry {
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
+  public get lutBuffers() { return this.buffers; }
+
   private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean) {
     super();
+    this.buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
+    assert(undefined !== attrPos);
+    this.buffers.addBuffer(indices, [BufferParameters.create(attrPos!.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
     this.numIndices = numIndices;
     this.indices = indices;
     this.lut = lut;
@@ -39,20 +47,19 @@ export class PointStringGeometry extends LUTGeometry {
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
 
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.PointString; }
+  public get techniqueId(): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
   public get hasFeatures() { return this._hasFeatures; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
-  }
-
   protected _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
 
-  protected _draw(numInstances: number): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
-    this.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this.buffers;
+
+    bufs.bind();
     gl.drawArrays(GL.PrimitiveType.Points, 0, this.numIndices, numInstances);
+    bufs.unbind();
   }
 
   public static create(params: PointStringParams): PointStringGeometry | undefined {
@@ -69,6 +76,7 @@ export class PointStringGeometry extends LUTGeometry {
   }
 
   public dispose() {
+    dispose(this.buffers);
     dispose(this.lut);
     dispose(this.indices);
   }

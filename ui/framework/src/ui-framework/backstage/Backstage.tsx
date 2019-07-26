@@ -25,18 +25,6 @@ export interface BackstageEventArgs {
  */
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { }
 
-/** [[BackstageCloseEvent]] arguments.
- * @alpha @deprecated BackstageEventArgs should be used instead.
- */
-export interface BackstageCloseEventArgs {
-  isVisible: boolean;
-}
-
-/** Backstage Close Event class.
- * @alpha @deprecated BackstageEvent should be used instead.
- */
-export class BackstageCloseEvent extends UiEvent<BackstageCloseEventArgs> { }
-
 /** Properties for the [[Backstage]] React component.
  * @public
  */
@@ -62,9 +50,6 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   public static readonly onBackstageEvent = new BackstageEvent();
   public static isBackstageVisible: boolean;
-
-  /** @alpha @deprecated */
-  public static readonly onBackstageCloseEvent = new BackstageCloseEvent();
 
   /** Shows the Backstage */
   public static show(): void {
@@ -111,9 +96,6 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   private _handleBackstageEvent = (args: BackstageEventArgs) => {
     this.setState({ isVisible: args.isVisible });
-
-    /** @deprecated */
-    Backstage.onBackstageCloseEvent.emit({ isVisible: args.isVisible });
   }
 
   public componentDidUpdate(prevProps: BackstageProps) {

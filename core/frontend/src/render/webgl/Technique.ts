@@ -455,7 +455,6 @@ class PointStringTechnique extends VariedTechnique {
 }
 
 class PointCloudTechnique extends VariedTechnique {
-
   private static readonly _kHilite = 4;
 
   public constructor(gl: WebGLRenderingContext) {
@@ -533,7 +532,7 @@ export class Techniques implements IDisposable {
           continue;
 
         command.preExecute(executor);
-        const techniqueId = command.getTechniqueId(target);
+        const techniqueId = command.techniqueId;
         if (TechniqueId.Invalid !== techniqueId) {
           // A primitive command.
           assert(command.isPrimitiveCommand, "expected primitive command");
@@ -580,7 +579,7 @@ export class Techniques implements IDisposable {
 
       // First execute the push.
       pushCmd.preExecute(executor);
-      let techniqueId = pushCmd.getTechniqueId(target);
+      let techniqueId = pushCmd.techniqueId;
       assert(TechniqueId.Invalid === techniqueId);
       assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
       pushCmd.execute(executor);
@@ -588,7 +587,7 @@ export class Techniques implements IDisposable {
 
       // Execute the command for the given classification primitive.
       primCmd.preExecute(executor);
-      techniqueId = primCmd.getTechniqueId(target);
+      techniqueId = primCmd.techniqueId;
       assert(TechniqueId.Invalid !== techniqueId);
       // A primitive command.
       assert(primCmd.isPrimitiveCommand, "expected primitive command");
@@ -603,7 +602,7 @@ export class Techniques implements IDisposable {
 
       // Execute the batch pop.
       popCmd.preExecute(executor);
-      techniqueId = popCmd.getTechniqueId(target);
+      techniqueId = popCmd.techniqueId;
       assert(TechniqueId.Invalid === techniqueId);
       assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
       popCmd.execute(executor);
@@ -613,7 +612,7 @@ export class Techniques implements IDisposable {
 
   /** Draw a single primitive. Usually used for special-purpose rendering techniques. */
   public draw(params: DrawParams): void {
-    const tech = this.getTechnique(params.geometry.getTechniqueId(params.target));
+    const tech = this.getTechnique(params.geometry.techniqueId);
     const program = tech.getShader(TechniqueFlags.defaults);
     using(new ShaderProgramExecutor(params.target, params.renderPass, program), (executor: ShaderProgramExecutor) => {
       assert(executor.isValid);

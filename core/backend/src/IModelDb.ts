@@ -23,7 +23,7 @@ import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
-import { ElementAspect } from "./ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
@@ -138,6 +138,7 @@ export class IModelDb extends IModel {
 
   /** Event raised just before an IModelDb is opened.
    * @note This event is *not* raised for snapshot IModelDbs.
+   *
    * **Example:**
    * ``` ts
    * [[include:IModelDb.onOpen]]
@@ -662,7 +663,7 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @deprecated use withPreparedStatement or query or queryPage instead
+   * @deprecated use [IModelDb.withPreparedStatement]($backend) or [IModelDb.query]($backend) instead.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -987,7 +988,7 @@ export class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
+    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.scopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
@@ -1154,7 +1155,9 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Get the mass properties for the supplied elements */
+  /** Get the mass properties for the supplied elements
+   * @beta
+   */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
     const resultString: string = this.nativeDb.getMassProperties(JSON.stringify(props));
@@ -1451,7 +1454,7 @@ export namespace IModelDb {
     }
 
     /** Update some properties of an existing element.
-     * @param el the properties of the element to update.
+     * @param elProps the properties of the element to update.
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
@@ -1473,6 +1476,10 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
+        const childIds: Id64String[] = this.queryChildren(id);
+        if (childIds.length > 0)
+          this.deleteElement(childIds);
+
         const props = this.getElementProps(id);
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
@@ -1529,11 +1536,18 @@ export namespace IModelDb {
       return this._iModel.constructEntity<ElementAspect>(aspectProps);
     }
 
-    /** Get the ElementAspect instances (by class name) that are related to the specified element.
+    /** Get the ElementAspect instances that are owned by the specified element.
+     * @param elementId Get ElementAspects associated with this Element
+     * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
+    public getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[] {
+      if (undefined === aspectClassFullName) {
+        const uniqueAspects: ElementAspect[] = this._queryAspects(elementId, ElementUniqueAspect.classFullName);
+        const multiAspects: ElementAspect[] = this._queryAspects(elementId, ElementMultiAspect.classFullName);
+        return uniqueAspects.concat(multiAspects);
+      }
+      const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassFullName);
       return aspects;
     }
 

@@ -10,7 +10,6 @@ import { Target } from "./Target";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
-import { AttributeHandle } from "./Handle";
 import { LineCode } from "./EdgeOverrides";
 import { VertexLUT } from "./VertexLUT";
 import { ColorInfo } from "./ColorInfo";
@@ -19,6 +18,7 @@ import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
 import { RenderMemory } from "../System";
+import { BuffersContainer } from "./Handle";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry {
@@ -31,6 +31,8 @@ export class PolylineGeometry extends LUTGeometry {
   public lut: VertexLUT;
   public numIndices: number;
   private _buffers: PolylineBuffers;
+
+  public get lutBuffers() { return this._buffers.buffers; }
 
   private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams) {
     super();
@@ -93,7 +95,7 @@ export class PolylineGeometry extends LUTGeometry {
     return isTranslucent ? RenderPass.Translucent : RenderPass.OpaqueLinear;
   }
 
-  public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.Polyline; }
+  public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public get isPlanar(): boolean { return this._isPlanar; }
   public get isEdge(): boolean { return this.isAnyEdge; }
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
@@ -109,14 +111,13 @@ export class PolylineGeometry extends LUTGeometry {
   }
   public getColor(target: Target): ColorInfo { return this.isEdge && target.isEdgeColorOverridden ? target.edgeColor : this.lut.colorInfo; }
 
-  public bindVertexArray(attr: AttributeHandle): void {
-    attr.enableArray(this._buffers!.indices, 3, GL.DataType.UnsignedByte, false, 0, 0);
-  }
-
-  protected _draw(numInstances: number): void {
+  protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
-    this._buffers!.indices.bind(GL.Buffer.Target.ArrayBuffer);
+    const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers.buffers;
+
+    bufs.bind();
     gl.drawArrays(GL.PrimitiveType.Triangles, 0, this.numIndices, numInstances);
+    bufs.unbind();
   }
 
   public static create(params: PolylineParams): PolylineGeometry | undefined {

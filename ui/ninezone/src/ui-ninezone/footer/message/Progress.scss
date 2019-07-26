@@ -64,4 +64,14 @@
       }
     }
   }
+
+  &.nz-status-warning {
+    > .nz-progress {
+      background-color: $buic-accessory-warning-tint;
+
+      > .nz-progress-bar {
+        background-color: $buic-accessory-warning;
+      }
+    }
+  }
 }

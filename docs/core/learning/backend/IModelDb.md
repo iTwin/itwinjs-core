@@ -8,7 +8,7 @@ An IModelDb is used by a service or by the backend of an iModel.js app.
 
 Use [IModelDb.open]($backend) to obtain and open an IModelDb from iModelHub.
 
-> When acquiring a briefcase this way ([SyncMode.PullAndPush]($backend) and [AccessMode.Exclusive]($backend)), [ExclusiveAccessOption.TryReuseOpenBriefcase]($backend) should be specified when possible. See [briefcase id](../imodelhub/briefcases.md#briefcase-id).
+> When acquiring a briefcase this way ([SyncMode.PullAndPush]($backend) should be specified when possible. See [briefcase id](../imodelhub/briefcases.md#briefcase-id).
 
 Use [IModelDb.close]($backend) to close the local briefcase.
 

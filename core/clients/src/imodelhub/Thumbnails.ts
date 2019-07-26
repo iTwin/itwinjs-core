@@ -16,7 +16,7 @@ import { InstanceIdQuery } from "./Query";
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
 /** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image.
- * @alpha
+ * @beta
  */
 export type ThumbnailSize = "Small" | "Large";
 

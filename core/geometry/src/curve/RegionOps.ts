@@ -17,6 +17,17 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { PolygonWireOffsetContext } from "./PolygonOffsetContext";
+import { CurveCollection } from "./CurveCollection";
+/**
+ * * `properties` is a string with special characters indicating
+ *   * "U" -- contains unmerged stick data
+ *   * "M" -- merged
+ *   * "R" -- regularized
+ *   * "X" -- has exterior markup
+ * @internal
+ */
+export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 
 /**
  * base class for callbacks during region sweeps.
@@ -100,11 +111,17 @@ class RegionOpsBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCallbacks 
 /**
  * run a DFS with face-to-face step announcements.
  * * false return from any function terminates search immediately.
+ * * all reachable nodes assumed to have both visit masks clear.
  * @param graph containing graph.
+ * @param seed first node to visit.
+ * @param faceHasBeenVisited mask marking faces that have been seen.
+ * @param nodeHasBeenVisited mask marking node-to-node step around face.
+ *
  */
 function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
   seed: HalfEdge,
   faceHasBeenVisited: HalfEdgeMask,
+  nodeHasBeenVisited: HalfEdgeMask,
   callbacks: RegionOpsFaceToFaceSearchCallbacks) {
   if (seed.isMaskSet(faceHasBeenVisited))
     return;
@@ -115,7 +132,7 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
   seed.setMaskAroundFace(faceHasBeenVisited);
   let faceWalker = seed;
   do {
-    let entryNode = seed;
+    let entryNode = faceWalker;
     let mate = faceWalker.edgeMate;
     if (!mate.isMaskSet(faceHasBeenVisited)) {
 
@@ -140,6 +157,7 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
             faceNode = mate;
             entryNode = mate;
           }
+          faceNode.setMask(nodeHasBeenVisited);
           faceNode = faceNode.faceSuccessor;
           if (faceNode === entryNode) {
             callbacks.leaveFace(facePathStack, faceNode);
@@ -150,6 +168,10 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
             faceNode = facePathStack[facePathStack.length - 1];
             facePathStack.pop();
             entryNode = facePathStack[facePathStack.length - 1];
+          }
+          if (faceNode.isMaskSet(nodeHasBeenVisited)) {
+            // this is disaster !!!
+            return;
           }
         }
       }
@@ -172,29 +194,42 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
  *   * sort edges around vertices
  *   * add regularization edges so holes are connected to their parent.
  */
-function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean): Polyface | undefined {
+function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): Polyface | undefined {
   const graph = new HalfEdgeGraph();
   const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
   const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
   const seedB = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsB, baseMask, 2);
+  if (graphCheckPoint)
+    graphCheckPoint("unmerged loops", graph, "U");
   if (seedA && seedB) {
     // split edges where they cross . . .
     HalfEdgeGraphMerge.splitIntersectingEdges(graph);
+    if (graphCheckPoint)
+      graphCheckPoint("After splitIntersectingEdges", graph, "U");
     // sort radially around vertices.
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
+    if (graphCheckPoint)
+      graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
     // add edges to connect various components  (e.g. holes!!!)
     const context = new RegularizationContext(graph);
     context.regularizeGraph(true, true);
+    if (graphCheckPoint)
+      graphCheckPoint("After regularize", graph, "MR");
     const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(graph);
     const exteriorMask = HalfEdgeMask.EXTERIOR;
-    const visitMask = HalfEdgeMask.VISITED;
-    const exteriorVisitMask = exteriorMask | visitMask;
-    graph.clearMask(exteriorVisitMask);
+    const faceVisitedMask = HalfEdgeMask.VISITED;
+    const nodeVisitedMask = HalfEdgeMask.WORK_MASK0;
+    const allMasksToClear = exteriorMask | faceVisitedMask | nodeVisitedMask;
+    graph.clearMask(allMasksToClear);
     const callbacks = new RegionOpsBooleanSweepCallbacks(faceSelectFunction, exteriorMask);
     faceToFaceSearchFromOuterLoop(graph,
       exteriorHalfEdge,
-      visitMask,
+      faceVisitedMask,
+      nodeVisitedMask,
       callbacks);
+    if (graphCheckPoint)
+      graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
+
     return PolyfaceBuilder.graphToPolyface(graph);
   }
   return undefined;
@@ -277,7 +312,8 @@ export class RegionOps {
    */
   public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
     return doPolygonBoolean(loopsA, loopsB,
-      (inA: boolean, inB: boolean) => (inA && inB));
+      (inA: boolean, inB: boolean) => (inA && inB),
+      this._graphCheckPointFunction);
   }
 
   /**
@@ -290,7 +326,8 @@ export class RegionOps {
    */
   public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
     return doPolygonBoolean(loopsA, loopsB,
-      (inA: boolean, inB: boolean) => (inA || inB));
+      (inA: boolean, inB: boolean) => (inA || inB),
+      this._graphCheckPointFunction);
   }
   /**
    * return a polyface containing the area difference of two XY regions.
@@ -302,7 +339,28 @@ export class RegionOps {
    */
   public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
     return doPolygonBoolean(loopsA, loopsB,
-      (inA: boolean, inB: boolean) => (inA && !inB));
+      (inA: boolean, inB: boolean) => (inA && !inB),
+      this._graphCheckPointFunction);
   }
 
+  /** Construct a wire (not area!!) that is offset from given polyline or polygon.
+   * * This is a simple wire offset, not an area.
+   * * The construction algorithm attempts to eliminate some self-intersections within the offsets, but does not guarantee a simple area offset.
+   * * The construction algorithm is subject to being changed, resulting in different (hopefully better) self-intersection behavior on the future.
+   * @param points a single loop or path
+   * @param wrap true to include wraparound
+   * @param offsetDistance distance of offset from wire.  Positive is left.
+   * @alpha
+   */
+  public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
+    const context = new PolygonWireOffsetContext();
+    return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
+
+  }
+  private static _graphCheckPointFunction?: GraphCheckPointFunction;
+  /**
+   * Announce Checkpoint function for use during booleans
+   * @internal
+   */
+  public static setCheckPointFunction(f?: GraphCheckPointFunction) { this._graphCheckPointFunction = f; }
 }

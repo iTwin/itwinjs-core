@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { assert, IDisposable } from "@bentley/bentleyjs-core";
-import { UniformHandle, AttributeHandle } from "./Handle";
+import { UniformHandle } from "./Handle";
 import { ShaderProgramParams, DrawParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { Target } from "./Target";
@@ -13,6 +13,7 @@ import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
 import { Branch, Batch } from "./Graphic";
+import { AttributeDetails } from "./AttributeMap";
 
 // tslint:disable:no-const-enum
 
@@ -104,41 +105,6 @@ export class GraphicUniform extends Uniform {
   }
 }
 
-/** A function associated with an Attribute which is invoked to bind the attribute data.
- * @internal
- */
-export type BindAttribute = (attr: AttributeHandle, params: DrawParams) => void;
-
-/** Describes the location of an attribute within a shader program along with a function for binding the attribute's data
- * @internal
- */
-export class Attribute {
-  private readonly _name: string;
-  private readonly _bind: BindAttribute;
-  private _handle?: AttributeHandle;
-
-  public constructor(name: string, bind: BindAttribute) {
-    this._name = name;
-    this._bind = bind;
-  }
-
-  public compile(prog: ShaderProgram): boolean {
-    assert(!this.isValid);
-    if (undefined !== prog.glProgram) {
-      this._handle = AttributeHandle.create(prog.glProgram, this._name, true);
-    }
-
-    return this.isValid;
-  }
-
-  public get isValid(): boolean { return undefined !== this._handle; }
-  public bind(params: DrawParams): void {
-    if (undefined !== this._handle) {
-      this._bind(this._handle, params);
-    }
-  }
-}
-
 /** Describes the compilation status of a shader program. Programs may be compiled during idle time, or upon first use.
  * @internal
  */
@@ -159,12 +125,13 @@ export class ShaderProgram implements IDisposable {
   private _status: CompileStatus = CompileStatus.Uncompiled;
   private readonly _programUniforms = new Array<ProgramUniform>();
   private readonly _graphicUniforms = new Array<GraphicUniform>();
-  private readonly _attributes = new Array<Attribute>();
+  private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, description: string, maxClippingPlanes: number) {
+  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
+    this._attrMap = attrMap;
     this.maxClippingPlanes = maxClippingPlanes;
 
     const glProgram = gl.createProgram();
@@ -214,6 +181,14 @@ export class ShaderProgram implements IDisposable {
     const gl: WebGLRenderingContext = System.instance.context;
     gl.attachShader(this._glProgram, vert);
     gl.attachShader(this._glProgram, frag);
+
+    // bind attribute locations before final linking
+    if (this._attrMap !== undefined) {
+      this._attrMap.forEach((attr: AttributeDetails, key: string) => {
+        gl.bindAttribLocation(this._glProgram!, attr.location, key);
+      });
+    }
+
     gl.linkProgram(this._glProgram);
 
     const linkLog = gl.getProgramInfoLog(this._glProgram);
@@ -244,7 +219,7 @@ export class ShaderProgram implements IDisposable {
     const vert = this.compileShader(GL.ShaderType.Vertex);
     const frag = this.compileShader(GL.ShaderType.Fragment);
     if (undefined !== vert && undefined !== frag) {
-      if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms) && this.compileAttributes()) {
+      if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms)) {
         this._status = CompileStatus.Success;
       }
     }
@@ -287,11 +262,6 @@ export class ShaderProgram implements IDisposable {
       uniform.bind(params);
     }
 
-    for (const attribute of this._attributes)
-      attribute.bind(params);
-
-    System.instance.updateVertexAttribArrays();
-
     params.geometry.draw();
   }
 
@@ -303,23 +273,10 @@ export class ShaderProgram implements IDisposable {
     assert(this.isUncompiled);
     this._graphicUniforms.push(new GraphicUniform(name, binding));
   }
-  public addAttribute(name: string, binding: BindAttribute) {
-    assert(this.isUncompiled);
-    this._attributes.push(new Attribute(name, binding));
-  }
 
   private compileUniforms<T extends Uniform>(uniforms: T[]): boolean {
     for (const uniform of uniforms) {
       if (!uniform.compile(this))
-        return false;
-    }
-
-    return true;
-  }
-
-  private compileAttributes(): boolean {
-    for (const attribute of this._attributes) {
-      if (!attribute.compile(this))
         return false;
     }
 
@@ -364,7 +321,7 @@ export class ShaderProgramExecutor {
   public drawInterrupt(params: DrawParams) {
     assert(params.target === this.params.target);
 
-    const tech = params.target.techniques.getTechnique(params.geometry.getTechniqueId(params.target));
+    const tech = params.target.techniques.getTechnique(params.geometry.techniqueId);
     const program = tech.getShader(TechniqueFlags.defaults);
     if (this.setProgram(program)) {
       this.draw(params);

@@ -189,6 +189,21 @@
           "EnterPoint": "Enter point to show location."
         }
       },
+      "Length": {
+        "keyin": "Measure Length",
+        "description": "Measure length of elements",
+        "flyover": "Measure Length"
+      },
+      "Area": {
+        "keyin": "Measure Area",
+        "description": "Measure area of elements",
+        "flyover": "Measure Area"
+      },
+      "Volume": {
+        "keyin": "Measure Volume",
+        "description": "Measure volume of elements",
+        "flyover": "Measure Volume"
+      },
       "Labels": {
         "CumulativeDistance": "Cumulative Distance",
         "Distance": "Distance",
@@ -202,7 +217,12 @@
         "N": "N",
         "S": "S",
         "E": "E",
-        "W": "W"
+        "W": "W",
+        "Length": "Length",
+        "Perimeter": "Perimeter",
+        "Area": "Area",
+        "Volume": "Volume",
+        "Centroid": "Centroid"
       }
     },
     "ElementSet": {
@@ -243,5 +263,11 @@
       "keyin": "Load Plugin",
       "description": "Loads a plugin module"
     }
+  },
+  "toolAssistance": {
+    "altKey": "Alt",
+    "ctrlKey": "Ctrl",
+    "shiftKey": "Shift",
+    "inputs": "Inputs"
   }
 }

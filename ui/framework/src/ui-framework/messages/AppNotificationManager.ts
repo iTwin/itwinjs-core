@@ -14,6 +14,9 @@ import {
   NotifyMessageDetails,
   ToolTipOptions,
   OutputMessageType,
+  ToolAssistanceInstructions,
+  ToolAssistance,
+  RelativePosition,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";
@@ -30,20 +33,26 @@ import { PointerMessage } from "./Pointer";
  */
 export class AppNotificationManager extends NotificationManager {
 
-  /** Output a prompt, given an i18n key. */
+  /** Output a prompt, given an i18n key.
+   */
   public outputPromptByKey(key: string): void {
     this.outputPrompt(UiFramework.i18n.translate(key));
   }
 
-  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
+  /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed.
+   */
   public outputPrompt(prompt: string): void {
     MessageManager.outputPrompt(prompt);
+
+    const mainInstruction = ToolAssistance.createInstruction("", prompt);
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+    MessageManager.setToolAssistance(instructions);
   }
 
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
     if (message.msgType === OutputMessageType.Pointer) {
-      this._showPointerMessage(message);
+      PointerMessage.showMessage(message);
     } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
       MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
     }
@@ -98,9 +107,18 @@ export class AppNotificationManager extends NotificationManager {
 
     return result;
   }
+  /** Update message position created with [[OutputMessageType.Pointer]].
+   * @param displayPoint        Point at which to display the Pointer type message.
+   * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
+   */
+  public updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void {
+    PointerMessage.updateMessage(displayPoint, relativePosition);
+  }
 
   /** Hides the Pointer message. */
-  public closePointerMessage(): void { this._hidePointerMessage(); }
+  public closePointerMessage(): void {
+    PointerMessage.hideMessage();
+  }
 
   /** Return true if _showTooltip has an implementation and will display a tooltip. */
   public get isToolTipSupported(): boolean { return true; }
@@ -116,7 +134,7 @@ export class AppNotificationManager extends NotificationManager {
   }
 
   /** Show a ToolTip window.
-   * @param el       The HTMLElement that that anchors the toolTip.
+   * @param el       The HTMLElement that anchors the toolTip.
    * @param message  The message to display inside the ToolTip
    * @param pt       An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
    * @param options  Options that supply additional information about how the ToolTip should function.
@@ -125,22 +143,18 @@ export class AppNotificationManager extends NotificationManager {
     ElementTooltip.showTooltip(el, message, pt, options);
   }
 
-  /**
-   * Show a Pointer message.
-   * @param message  Text to display in message.
-   */
-  protected _showPointerMessage(message: NotifyMessageDetails): void {
-    PointerMessage.showMessage(message);
-  }
-
-  /** Hide a Pointer message. */
-  protected _hidePointerMessage(): void {
-    PointerMessage.hideMessage();
-  }
-
   /** Hide a InputField message. */
   public closeInputFieldMessage(): void {
     MessageManager.hideInputFieldMessage();
+  }
+
+  /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
+   * @param instructions The tool assistance instructions.
+   * @alpha
+   */
+  public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
+    MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+    MessageManager.setToolAssistance(instructions);
   }
 
 }

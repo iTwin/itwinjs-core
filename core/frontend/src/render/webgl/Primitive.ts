@@ -6,7 +6,7 @@
 
 import { Target, PrimitiveVisibility } from "./Target";
 import { Graphic, Batch } from "./Graphic";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
+import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { DrawParams, RenderCommands, DrawCommand } from "./DrawCommand";
@@ -106,7 +106,7 @@ export class Primitive extends Graphic {
     shader.draw(drawParams);
   }
 
-  public getTechniqueId(target: Target): TechniqueId { return this.cachedGeometry.getTechniqueId(target); }
+  public get techniqueId(): TechniqueId { return this.cachedGeometry.techniqueId; }
 }
 
 /** @internal */
@@ -130,9 +130,13 @@ export class SkyCubePrimitive extends Primitive {
 
 /** @internal */
 export class SkySpherePrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public constructor(cachedGeom: CachedGeometry) {
+    super(cachedGeom);
+    assert(cachedGeom instanceof SkySphereViewportQuadGeometry);
+  }
 
   public draw(shader: ShaderProgramExecutor): void {
+    (this.cachedGeometry as SkySphereViewportQuadGeometry).initWorldPos(shader.target);
     super.draw(shader); // Draw the skybox sphere
   }
 }

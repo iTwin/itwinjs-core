@@ -74,7 +74,7 @@ export interface ChildNodeSpecificationBase {
   /** Specifications of related instances that can be used in content creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rule]($docs/learning/hierarchies/Terminology.md#nested-rules) specifications. */
+  /** [Nested rule]($docs/learning/presentation/Hierarchies/Terminology.md#nested-rules) specifications. */
   nestedRules?: ChildNodeRule[];
 }
 

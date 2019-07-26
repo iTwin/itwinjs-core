@@ -800,8 +800,8 @@ export abstract class ViewState extends ElementState {
   public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
   public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
   public getGridSpacing(): XAndY {
-    const x = JsonUtils.asInt(this.getDetail("gridSpaceX"), 1.0);
-    return { x, y: JsonUtils.asInt(this.getDetail("gridSpaceY"), x) };
+    const x = JsonUtils.asDouble(this.getDetail("gridSpaceX"), 1.0);
+    return { x, y: JsonUtils.asDouble(this.getDetail("gridSpaceY"), x) };
   }
 
   /** Change the volume that this view displays, keeping its current rotation.

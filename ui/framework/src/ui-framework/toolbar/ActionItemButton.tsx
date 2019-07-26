@@ -134,7 +134,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         onKeyDown={this._handleKeyDown}
         icon={icon}
         onSizeKnown={this.props.onSizeKnown}
-        betaBadge={actionItem.betaBadge && <BetaBadge />}
+        badge={actionItem.betaBadge && <BetaBadge />}
       />
     );
   }

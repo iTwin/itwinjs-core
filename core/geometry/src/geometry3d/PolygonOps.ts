@@ -11,7 +11,8 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Ray3d } from "./Ray3d";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Point3dArrayCarrier, Point3dArray } from "./PointHelpers";
+import { Point3dArray } from "./PointHelpers";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 /** Static class for operations that treat an array of points as a polygon (with area!) */

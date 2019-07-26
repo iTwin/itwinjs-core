@@ -52,9 +52,18 @@
 
   @include uicore-z-index(tooltip);
 
-  > .uifw-element-tooltip {
+  >.uifw-element-tooltip {
     width: max-content;
     font-size: $uicore-font-size;
+  }
+
+  >.nz-popup-tooltip {
+    border: {
+      color: $buic-foreground-disabled;
+      radius: 3px;
+      style: solid;
+      width: 1px;
+    }
   }
 }
 

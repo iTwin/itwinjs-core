@@ -128,7 +128,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
         onClick={this._execute}
         onKeyDown={this._handleKeyDown}
         icon={icon}
-        betaBadge={this.props.betaBadge && <BetaBadge />}
+        badge={this.props.betaBadge && <BetaBadge />}
       />
     );
   }

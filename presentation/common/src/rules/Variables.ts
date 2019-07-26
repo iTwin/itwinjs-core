@@ -8,7 +8,7 @@
  * Presentation rules support variables that allow having additional customization of the hierarchy
  * and content based on variables whose values can change during application session.
  *
- * There are [special ECExpression symbols]($docs/learning/ECExpressions.md#ruleset-variables-user-settings)
+ * There are [special ECExpression symbols]($docs/learning/presentation/ECExpressions.md#ruleset-variables-user-settings)
  * that can be used to access variables by their ID, so rule conditions can check for a value and change
  * the behavior. It allows showing / hiding some nodes in the hierarchy, change the grouping, etc.
  *
@@ -17,7 +17,7 @@
 export interface VariablesGroup {
   /**
    * Group label to display in the UI.
-   * May be [localized]($docs/learning/Localization.md).
+   * May be [localized]($docs/learning/presentation/Localization.md).
    */
   label: string;
 
@@ -56,7 +56,7 @@ export interface Variable {
 
   /**
    * Label of the variable that is shown in the UI.
-   * May be [localized]($docs/learning/Localization.md).
+   * May be [localized]($docs/learning/presentation/Localization.md).
    */
   label: string;
 

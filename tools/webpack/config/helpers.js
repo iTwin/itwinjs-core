@@ -25,6 +25,9 @@ const knownSourceMapPaths = [paths.appSrc];
 
 /** Creates a list of include paths for app source and all its @bentley dependencies */
 const createBentleySourceMapsIncludePaths = (resource) => {
+  if (process.env.DISABLE_SOURCE_MAPS)
+    return false;
+
   for (const knownDir of knownSourceMapPaths) {
     if (resource.startsWith(knownDir))
       return true;

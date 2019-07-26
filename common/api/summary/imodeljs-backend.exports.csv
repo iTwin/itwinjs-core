@@ -99,13 +99,18 @@ public;Entity
 beta;ExportGraphics
 beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 beta;ExportGraphicsInfo
+beta;ExportGraphicsLines
 beta;ExportGraphicsMesh
 beta;ExportGraphicsProps
+beta;ExportLinesFunction = (info: ExportLinesInfo) => void
+beta;ExportLinesInfo
 beta;ExportPartDisplayProps
 beta;ExportPartFunction = (info: ExportPartInfo) => void
 beta;ExportPartGraphicsProps
 beta;ExportPartInfo
 beta;ExportPartInstanceProps
+beta;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
+beta;ExportPartLinesInfo
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
 public;class FunctionalBreakdownElement 

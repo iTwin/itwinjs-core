@@ -1188,7 +1188,7 @@ export abstract class Target extends RenderTarget {
       if (isEmptyImage)
         return undefined;
     } else {
-      const canvas = imageBufferToCanvas(image); // retrieve a canvas of the image we read
+      const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
 

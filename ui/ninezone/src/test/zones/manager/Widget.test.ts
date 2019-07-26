@@ -2,19 +2,36 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import TestProps from "./TestProps";
-import { NineZone } from "../../../ui-ninezone";
+import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
+import { PointProps } from "../../../ui-ninezone/utilities/Point";
 
-describe("Widget", () => {
-  describe("equals", () => {
-    it("should return true for same widgets", () => {
-      const nineZone = new NineZone(TestProps.defaultProps);
-      nineZone.getWidget(1).equals(nineZone.getWidget(1)).should.true;
+const props: DraggedWidgetManagerProps = {
+  id: 6,
+  isUnmerge: true,
+  lastPosition: {
+    x: 10,
+    y: 20,
+  },
+  tabIndex: 5,
+};
+
+describe("DraggedWidgetManager", () => {
+  describe("setLastPosition", () => {
+    it("should update last position", () => {
+      const sut = new DraggedWidgetManager();
+      const lastPosition: PointProps = { x: 40, y: 140 };
+      const newProps = sut.setLastPosition(lastPosition, props);
+
+      newProps.should.not.eq(props);
+      newProps.lastPosition.should.eq(lastPosition);
     });
 
-    it("should return false for different widgets", () => {
-      const nineZone = new NineZone(TestProps.defaultProps);
-      nineZone.getWidget(1).equals(nineZone.getWidget(2)).should.false;
+    it("should not modify props", () => {
+      const sut = new DraggedWidgetManager();
+      const lastPosition: PointProps = { x: 10, y: 20 };
+      const newProps = sut.setLastPosition(lastPosition, props);
+
+      newProps.should.eq(props);
     });
   });
 });

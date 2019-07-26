@@ -13,14 +13,14 @@ import {
 import { addModelViewMatrix, addProjectionMatrix, addLineWeight, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
-import { GL } from "../GL";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
-import { assert } from "@bentley/bentleyjs-core";
 import { IsInstanced, IsAnimated } from "../TechniqueFlags";
+import { AttributeMap } from "../AttributeMap";
+import { TechniqueId } from "../TechniqueId";
 
 const decodeEndPointAndQuadIndices = `
   g_otherIndex = decodeUInt24(a_endPointAndQuadIndices.xyz);
@@ -99,7 +99,10 @@ const computePosition = `
 const lineCodeArgs = "g_windowDir, g_windowPos, 0.0";
 
 function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const isInstanced = IsInstanced.Yes === instanced;
+  const attrMap = AttributeMap.findAttributeMap(isSilhouette ? TechniqueId.SilhouetteEdge : TechniqueId.Edge, isInstanced);
+
+  const builder = new ProgramBuilder(attrMap, isInstanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   vert.addGlobal("g_otherPos", VariableType.Vec4);
@@ -127,29 +130,12 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   addViewport(vert);
   addModelViewMatrix(vert);
 
-  vert.addAttribute("a_endPointAndQuadIndices", VariableType.Vec4, (shaderProg) => {
-    shaderProg.addAttribute("a_endPointAndQuadIndices", (attr, params) => {
-      const geom = params.geometry;
-      assert(undefined !== geom.asEdge);
-      const edgeGeom = geom.asEdge!;
-      attr.enableArray(edgeGeom.endPointAndQuadIndices, 4, GL.DataType.UnsignedByte, false, 0, 0);
-    });
-  });
-
   addLineWeight(vert);
 
   if (isSilhouette) {
     addNormalMatrix(vert);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
-    vert.addAttribute("a_normals", VariableType.Vec4, (shaderProg) => {
-      shaderProg.addAttribute("a_normals", (attr, params) => {
-        const geom = params.geometry;
-        assert(undefined !== geom.asSilhouette);
-        const silhouetteGeom = geom.asSilhouette!;
-        attr.enableArray(silhouetteGeom.normalPairs, 4, GL.DataType.UnsignedByte, false, 0, 0);
-      });
-    });
   }
 
   return builder;

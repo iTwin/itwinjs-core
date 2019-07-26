@@ -14,7 +14,8 @@ const computeSimpleLighting = `
 void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal, vec3 toEye, vec3 lightDir, float lightIntensity, float specularExponent) {
   diffuse += lightIntensity * max(dot(normal, lightDir), 0.0);
   vec3 toReflectedLight = normalize(reflect(lightDir, normal));
-  float specularDot = max(dot(toReflectedLight, toEye), 0.0);
+  float specularDot = max(dot(toReflectedLight, toEye), 0.0001);
+  // NB: If specularDot and specularExponent are both zero, 0^0 done below can return NaN.  Must make sure specularDot is larger than zero (hence 0.0001 or greater, as ensured above).
   specular += lightIntensity * pow(specularDot, specularExponent);
 }
 `;

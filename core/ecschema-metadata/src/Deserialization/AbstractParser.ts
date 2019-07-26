@@ -4,14 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps,
   RelationshipClassProps, SchemaProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
-} from "./../Deserialization/JsonProps";
+} from "../Deserialization/JsonProps";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 
 type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
 type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;
+
+/** @internal */
+export type CustomAttributeProvider = (caClass: CustomAttributeClass) => CustomAttribute;
+
+/** @internal */
+export type CAProviderTuple = Readonly<[string /** Full Name */, CustomAttributeProvider]>;
 
 /** @internal */
 export abstract class AbstractParser<TItem = any, TProperty = TItem> {
@@ -39,15 +46,14 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract getProperties(data: Readonly<TItem>): Iterable<PropertyTuple<TProperty>>;
   public abstract parsePrimitiveProperty(data: Readonly<TProperty>): PrimitivePropertyProps;
   public abstract parseStructProperty(data: Readonly<TProperty>): StructPropertyProps;
-  public abstract parseEnumerationProperty(data: Readonly<TProperty>): EnumerationPropertyProps;
   public abstract parsePrimitiveArrayProperty(data: Readonly<TProperty>): PrimitiveArrayPropertyProps;
   public abstract parseStructArrayProperty(data: Readonly<TProperty>): StructArrayPropertyProps;
   public abstract parseNavigationProperty(data: Readonly<TProperty>): NavigationPropertyProps;
 
-  public abstract getSchemaCustomAttributes(): Iterable<CustomAttribute>;
-  public abstract getClassCustomAttributes(data: Readonly<TItem>): Iterable<CustomAttribute>;
-  public abstract getPropertyCustomAttributes(data: Readonly<TProperty>): Iterable<CustomAttribute>;
-  public abstract getRelationshipConstraintCustomAttributes(data: Readonly<TItem>): [Iterable<CustomAttribute> /* source */, Iterable<CustomAttribute> /* target */];
+  public abstract getSchemaCustomAttributeProviders(): Iterable<CAProviderTuple>;
+  public abstract getClassCustomAttributeProviders(data: Readonly<TItem>): Iterable<CAProviderTuple>;
+  public abstract getPropertyCustomAttributeProviders(data: Readonly<TProperty>): Iterable<CAProviderTuple>;
+  public abstract getRelationshipConstraintCustomAttributeProviders(data: Readonly<TItem>): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */];
 }
 
 /** @internal */

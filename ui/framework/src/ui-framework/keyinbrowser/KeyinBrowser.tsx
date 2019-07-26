@@ -2,11 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Common */
+/** @module Item */
 
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import { LabeledSelect, LabeledInput, Button } from "@bentley/ui-core";
+import { LabeledSelect, LabeledInput, Button, CommonProps } from "@bentley/ui-core";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import "./KeyinBrowser.scss";
@@ -15,17 +15,24 @@ import "./KeyinBrowser.scss";
  * Properties that hold state of key-in browser.
  * @alpha
  */
-interface BrowserState {
+interface KeyinBrowserState {
   keyins: { [key: string]: string };
   currentToolId: string | undefined;
   currentArgs: string;
+}
+
+/** Properties of the [[KeyinBrowser]] component.
+ * @alpha
+ */
+export interface KeyinBrowserProps extends CommonProps {
+  onExecute?: () => void;
 }
 
 /**
  * Component used to allow user to select, provide arguments, and execute a key-in.
  * @alpha
  */
-export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
+export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBrowserState> {
   private _toolIdLabel = UiFramework.translate("keyinbrowser.keyin");
   private _argsLabel = UiFramework.translate("keyinbrowser.args");
   private _argsTip = UiFramework.translate("keyinbrowser.argsTip");
@@ -69,7 +76,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
 
   private getToolKeyinMap(): { [key: string]: string } {
     const keyins: { [key: string]: string } = {};
-    IModelApp.tools.getToolList().forEach((tool: typeof Tool) => keyins[tool.toolId] = tool.keyin);
+    IModelApp.tools.getToolList().sort((a: typeof Tool, b: typeof Tool) => a.keyin.localeCompare(b.keyin)).forEach((tool: typeof Tool) => keyins[tool.toolId] = tool.keyin);
     return keyins;
   }
 
@@ -101,6 +108,7 @@ export class KeyinBrowser extends React.PureComponent<{}, BrowserState> {
         IModelApp.tools.run(foundTool.toolId, args);
       }
     }
+    this.props.onExecute && this.props.onExecute();
   }
 
   private _onKeyinSelected = (event: React.ChangeEvent<HTMLSelectElement>): void => {

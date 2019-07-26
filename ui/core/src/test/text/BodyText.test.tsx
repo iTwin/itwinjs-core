@@ -20,12 +20,12 @@ describe("<BodyText />", () => {
 
   it("has correct className", () => {
     const wrapper = shallow(<BodyText />);
-    wrapper.find(".uicore-text-block").should.exist;
+    wrapper.find(".uicore-text-body").should.exist;
   });
 
   it("has correct text", () => {
     const wrapper = mount(<BodyText>Test Content</BodyText>);
-    wrapper.find(".uicore-text-block").text().should.equal("Test Content");
+    wrapper.find(".uicore-text-body").text().should.equal("Test Content");
     wrapper.unmount();
   });
 });

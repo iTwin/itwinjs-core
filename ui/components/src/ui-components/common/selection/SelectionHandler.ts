@@ -227,6 +227,10 @@ export class SelectionHandler<Item> {
   /** Creates a function that should be called when selection changes. */
   public createSelectionFunction(componentHandler: MultiSelectionHandler<Item>, itemHandler: SingleSelectionHandler<Item>): OnSelectionChanged {
     const onSelectionChange: OnSelectionChanged = (shiftDown, ctrlDown) => {
+      if (this.selectionMode === SelectionMode.None) {
+        return;
+      }
+
       let operationCreated = false;
       let shiftSelected = false;
       if (!this._currentOperation) {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Skip failing test until UI team can investigate",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Matt.Gooding@bentley.com"
+}

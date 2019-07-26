@@ -92,8 +92,8 @@ describe("Frontstage", () => {
     const restoreTransientStateSpy = sinon.spy(widget!.widgetControl!, "restoreTransientState");
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(4, 0, zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(7, -1, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -125,8 +125,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(1);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(4, 0, zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(7, -1, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -159,8 +159,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(1);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(4, 0, zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(7, -1, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,
@@ -193,8 +193,8 @@ describe("Frontstage", () => {
     expect(contentRenderer.state().widgetKey).eq(1);
 
     let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(4, 0, zones);
-    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabId(7, -1, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
     wrapper.setState({
       nineZone: {
         ...wrapper.state().nineZone,

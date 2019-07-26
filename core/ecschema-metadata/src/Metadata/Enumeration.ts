@@ -6,7 +6,7 @@
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
-import { PrimitiveType, SchemaItemType } from "./../ECObjects";
+import { PrimitiveType, SchemaItemType, primitiveTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { ECName } from "./../SchemaKey";
 
@@ -119,6 +119,28 @@ export class Enumeration extends SchemaItem {
       return enumJson;
     });
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    if (undefined !== this.type)
+      itemElement.setAttribute("backingTypeName", primitiveTypeToString(this.type));
+    itemElement.setAttribute("isStrict", String(this.isStrict));
+
+    for (const enumerator of this.enumerators) {
+      const enumElement = schemaXml.createElement("ECEnumerator");
+      enumElement.setAttribute("name", enumerator.name);
+      const enumValue = typeof enumerator.value === "string" ? enumerator.value : enumerator.value.toString();
+      enumElement.setAttribute("value", enumValue);
+      if (undefined !== enumerator.label)
+        enumElement.setAttribute("displayLabel", enumerator.label);
+      if (undefined !== enumerator.description)
+        enumElement.setAttribute("description", enumerator.description);
+      itemElement.appendChild(enumElement);
+    }
+
+    return itemElement;
   }
 
   public deserializeSync(enumerationProps: EnumerationProps) {

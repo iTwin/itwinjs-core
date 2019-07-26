@@ -7,14 +7,13 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { Edge, RectangleProps, Rectangle } from "../utilities/Rectangle";
+import { RectangleProps, Rectangle } from "../utilities/Rectangle";
 import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
-import { ResizeHandle } from "./rectangular/ResizeHandle";
 import { PointProps, Point } from "../utilities/Point";
 import "./Stacked.scss";
 
 /** Available [[Stacked]] widget horizontal anchors.
- * @alpha
+ * @beta
  */
 export enum HorizontalAnchor {
   Left,
@@ -22,7 +21,7 @@ export enum HorizontalAnchor {
 }
 
 /** Available [[Stacked]] widget vertical anchors.
- * @alpha
+ * @beta
  */
 export enum VerticalAnchor {
   Bottom,
@@ -31,8 +30,18 @@ export enum VerticalAnchor {
   TopPanel,
 }
 
+/** Available resize handles of rectangular widget.
+ * @beta
+ */
+export enum ResizeHandle {
+  Left,
+  Top,
+  Right,
+  Bottom,
+}
+
 /** Helpers for [[HorizontalAnchor]].
- * @alpha
+ * @internal
  */
 export class HorizontalAnchorHelpers {
   /** Class name of [[HorizontalAnchor.Left]] */
@@ -52,7 +61,7 @@ export class HorizontalAnchorHelpers {
 }
 
 /** Helpers for [[VerticalAnchor]].
- * @alpha
+ * @internal
  */
 export class VerticalAnchorHelpers {
   /** Class name of [[VerticalAnchor.Bottom]] */
@@ -113,7 +122,7 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
   /** Describes if the tab bar is visible. */
   isTabBarVisible?: boolean;
   /** Function called when resize action is performed. */
-  onResize?: (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+  onResize?: (resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void;
   /** Widget tabs. See: [[Tab]], [[TabSeparator]], [[Group]] */
   tabs?: React.ReactNode;
   /** Describes to which side the widget is vertically anchored. */
@@ -248,15 +257,22 @@ export class Stacked extends React.PureComponent<StackedProps> {
     if (!difference)
       return;
     const filledHeightDiff = this.getFilledHeightDiff();
-    let handle = this.props.horizontalAnchor === HorizontalAnchor.Left ? Edge.Right : Edge.Left;
-    let x = difference.x;
-    let y = 0;
-    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
-      handle = this.props.verticalAnchor === VerticalAnchor.BottomPanel ? Edge.Top : Edge.Bottom;
-      x = 0;
-      y = difference.y;
+    let handle;
+    let growBy;
+    if (this.props.verticalAnchor === VerticalAnchor.BottomPanel) {
+      handle = ResizeHandle.Top;
+      growBy = difference.y;
+    } else if (this.props.verticalAnchor === VerticalAnchor.TopPanel) {
+      handle = ResizeHandle.Bottom;
+      growBy = difference.y;
+    } else if (this.props.horizontalAnchor === HorizontalAnchor.Left) {
+      handle = ResizeHandle.Right;
+      growBy = difference.x;
+    } else {
+      handle = ResizeHandle.Left;
+      growBy = difference.x;
     }
-    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
+    this.props.onResize && this.props.onResize(growBy, handle, filledHeightDiff);
   }
 
   private _handleContentGripResize = (args: ResizeGripResizeArgs) => {
@@ -264,15 +280,23 @@ export class Stacked extends React.PureComponent<StackedProps> {
     if (!difference)
       return;
     const filledHeightDiff = this.getFilledHeightDiff();
-    let handle = this.props.horizontalAnchor === HorizontalAnchor.Left ? Edge.Left : Edge.Right;
-    let x = difference.x;
-    let y = 0;
-    if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
-      handle = this.props.verticalAnchor === VerticalAnchor.BottomPanel ? Edge.Bottom : Edge.Top;
-      x = 0;
-      y = difference.y;
+    let handle;
+    let growBy;
+    if (this.props.verticalAnchor === VerticalAnchor.BottomPanel) {
+      handle = ResizeHandle.Bottom;
+      growBy = difference.y;
+    } else if (this.props.verticalAnchor === VerticalAnchor.TopPanel) {
+      handle = ResizeHandle.Top;
+      growBy = difference.y;
+    } else if (this.props.horizontalAnchor === HorizontalAnchor.Left) {
+      handle = ResizeHandle.Left;
+      growBy = difference.x;
+    } else {
+      handle = ResizeHandle.Right;
+      growBy = difference.x;
     }
-    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
+
+    this.props.onResize && this.props.onResize(growBy, handle, filledHeightDiff);
   }
 
   private _handlePrimaryGripResize = (args: ResizeGripResizeArgs) => {
@@ -280,30 +304,32 @@ export class Stacked extends React.PureComponent<StackedProps> {
     if (!difference)
       return;
     const filledHeightDiff = this.getFilledHeightDiff();
-    let handle = Edge.Top;
-    let x = 0;
-    let y = difference.y;
+    let handle;
+    let resizeBy;
     if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
-      handle = Edge.Left;
-      x = difference.x;
-      y = 0;
+      handle = ResizeHandle.Left;
+      resizeBy = difference.x;
+    } else {
+      handle = ResizeHandle.Top;
+      resizeBy = difference.y;
     }
-    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
+    this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
   }
 
   private _handleSecondaryGripResize = (args: ResizeGripResizeArgs) => {
     const difference = this.getResizeDifference(args);
     if (!difference)
       return;
-    let handle = Edge.Bottom;
-    let x = 0;
-    let y = difference.y;
+    let handle;
+    let resizeBy;
     if (VerticalAnchorHelpers.isHorizontal(this.props.verticalAnchor)) {
-      handle = Edge.Right;
-      x = difference.x;
-      y = 0;
+      handle = ResizeHandle.Right;
+      resizeBy = difference.x;
+    } else {
+      handle = ResizeHandle.Bottom;
+      resizeBy = difference.y;
     }
     const filledHeightDiff = this.getFilledHeightDiff();
-    this.props.onResize && this.props.onResize(x, y, handle, filledHeightDiff);
+    this.props.onResize && this.props.onResize(resizeBy, handle, filledHeightDiff);
   }
 }

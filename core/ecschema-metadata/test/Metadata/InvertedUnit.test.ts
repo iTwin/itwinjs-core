@@ -11,6 +11,7 @@ import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { Unit } from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
@@ -378,6 +379,50 @@ describe("Inverted Unit tests", () => {
       const invertedUnitSerialization = testInvertedUnit!.toJson(true, true);
       expect(invertedUnitSerialization.unitSystem).to.eql("INTERNATIONAL");
       expect(invertedUnitSerialization.invertsUnit).to.eql("VERTICAL_PER_HORIZONTAL");
+    });
+  });
+
+  describe("toXml", () => {
+    const newDom = createEmptyXmlDocument();
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      version: "1.0.0",
+      name: "TestSchema",
+      items: {
+        HORIZONTAL_PER_VERTICAL: {
+          schemaItemType: "InvertedUnit",
+          unitSystem: "TestSchema.INTERNATIONAL",
+          invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
+        },
+        INTERNATIONAL: {
+          schemaItemType: "UnitSystem",
+          label: "Imperial",
+          description: "Units of measure from the british imperial empire",
+        },
+        VERTICAL_PER_HORIZONTAL: {
+          schemaItemType: "Unit",
+          phenomenon: "TestSchema.Length",
+          unitSystem: "TestSchema.INTERNATIONAL",
+          definition: "Vert/Horizontal",
+        },
+        Length: {
+          schemaItemType: "Phenomenon",
+          definition: "TestSchema.Length",
+        },
+      },
+    };
+
+    it("should properly serialize", async () => {
+      const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(ecschema);
+      const testInvUnit = await ecschema.getItem<InvertedUnit>("HORIZONTAL_PER_VERTICAL");
+      assert.isDefined(testInvUnit);
+
+      const serialized = await testInvUnit!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("InvertedUnit");
+      expect(serialized.getAttribute("typeName")).to.eql("HORIZONTAL_PER_VERTICAL");
+      expect(serialized.getAttribute("unitSystem")).to.eql("INTERNATIONAL");
+      expect(serialized.getAttribute("invertsUnit")).to.eql("VERTICAL_PER_HORIZONTAL");
     });
   });
 });

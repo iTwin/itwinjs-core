@@ -159,7 +159,9 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   public render(): JSX.Element {
-    const { opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, selectedIndex, floating, parentMenu, parentSubmenu, children, ...props } = this.props;
+    const {
+      opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect,
+      selectedIndex, floating, parentMenu, parentSubmenu, children, className, ...props } = this.props;
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
     // check if menu should flip
     if (autoflip && parentMenu === undefined) {
@@ -175,9 +177,12 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this._lastDirection = renderDirection;
       this._lastSelectedIndex = this.state.selectedIndex;
     }
+
+    const classNames = classnames("core-context-menu", className);
+
     return (
       <div
-        className={classnames("core-context-menu", this.props.className)}
+        className={classNames}
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
         data-testid="core-context-menu-root"

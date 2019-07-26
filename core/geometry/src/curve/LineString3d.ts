@@ -24,6 +24,8 @@ import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /* tslint:disable:variable-name no-empty*/
 
@@ -1222,6 +1224,29 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       }
     }
     return destLinestring.numPoints() - numPoint0;
+  }
+  /** convert variant point data to a single level array of linestrings.
+   * * The result is always an array.
+   *   * Single linestring is NOT bubbled out as a special case.
+   *   * data with no point is an empty array.
+   *   * "deep" data is flattened to a single array of linestrings, losing structure.
+   */
+  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
+    let currentLineString: LineString3d | undefined;
+    const result: LineString3d[] = [];
+    Point3dArray.streamXYZ(data,
+      (_data: MultiLineStringDataVariant, _isLeaf: boolean) => { currentLineString = undefined; },
+      (x: number, y: number, z: number) => {
+        if (currentLineString === undefined)
+          currentLineString = LineString3d.create();
+        currentLineString.packedPoints.pushXYZ(x, y, z);
+      },
+      (_data: MultiLineStringDataVariant, _isLeaf: boolean) => {
+        if (currentLineString)
+          result.push(currentLineString);
+        currentLineString = undefined;
+      });
+    return result;
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

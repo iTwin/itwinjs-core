@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   IModelHost, IModelDb, ECSqlStatement, ExportGraphicsInfo, ExportGraphicsMesh, ExportPartInstanceProps,
-  ExportPartInfo, ExportGraphics,
+  ExportPartInfo, ExportGraphics, ExportLinesInfo, ExportGraphicsLines, ExportPartLinesInfo,
 } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Logger, LogLevel, Id64String } from "@bentley/bentleyjs-core";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -151,16 +151,73 @@ function addMesh(mesh: ExportGraphicsMesh, color: number) {
   addMeshPointsAndNormals(mesh.points, mesh.normals);
 }
 
+function addMeshNode(name: string) {
+  GltfGlobals.gltf.scenes[0].nodes.push(GltfGlobals.gltf.nodes.length);
+  GltfGlobals.gltf.nodes.push({ name, mesh: GltfGlobals.gltf.meshes.length });
+}
+
+function addLines(lines: ExportGraphicsLines, color: number) {
+  const primitive: GltfMeshPrimitive = {
+    mode: MeshPrimitiveMode.GlLines,
+    material: findOrAddMaterialIndex(color),
+    indices: GltfGlobals.gltf.accessors.length,
+    attributes: {
+      POSITION: GltfGlobals.gltf.accessors.length + 1,
+    },
+  };
+  GltfGlobals.gltf.meshes.push({ primitives: [primitive] });
+  addMeshIndices(lines.indices);
+
+  // GLTF is RHS with Y-up, iModel.js is RHS with Z-up
+  const convertPoint = (outArray: Float32Array, outIndex: number, x: number, y: number, z: number) => {
+    outArray[outIndex] = x;
+    outArray[outIndex + 1] = z;
+    outArray[outIndex + 2] = -y;
+  };
+  const outPoints = new Float32Array(lines.points.length);
+  for (let i = 0; i < outPoints.length; i += 3)
+    convertPoint(outPoints, i, lines.points[i], lines.points[i + 1], lines.points[i + 2]);
+
+  GltfGlobals.gltf.bufferViews.push({
+    buffer: 0,
+    target: BufferViewTarget.ArrayBuffer,
+    byteOffset: GltfGlobals.binBytesWritten,
+    byteLength: outPoints.byteLength,
+    byteStride: 12,
+  });
+  fs.writeSync(GltfGlobals.binFile, outPoints);
+  GltfGlobals.binBytesWritten += outPoints.byteLength;
+
+  const minPos = [outPoints[0], outPoints[1], outPoints[2]];
+  const maxPos = Array.from(minPos);
+  for (let i = 0; i < outPoints.length; i += 3) {
+    for (let j = 0; j < 3; ++j) {
+      minPos[j] = Math.min(minPos[j], outPoints[i + j]);
+      maxPos[j] = Math.max(maxPos[j], outPoints[i + j]);
+    }
+  }
+  GltfGlobals.gltf.accessors.push({
+    bufferView: GltfGlobals.gltf.bufferViews.length - 1,
+    byteOffset: 0,
+    componentType: AccessorComponentType.Float,
+    count: outPoints.length / 3,
+    type: "VEC3",
+    max: maxPos,
+    min: minPos,
+  });
+}
+
 function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPartInstanceProps[]) {
   const onGraphics = (info: ExportGraphicsInfo) => {
-    const nodeIndex = GltfGlobals.gltf.nodes.length;
-    const meshIndex = GltfGlobals.gltf.meshes.length;
-    GltfGlobals.gltf.scenes[0].nodes.push(nodeIndex);
-    GltfGlobals.gltf.nodes.push({ mesh: meshIndex, name: info.elementId });
+    addMeshNode(info.elementId);
     addMesh(info.mesh, info.color);
   };
+  const onLineGraphics = (info: ExportLinesInfo) => {
+    addMeshNode(info.elementId);
+    addLines(info.lines, info.color);
+  };
   GltfGlobals.iModel.exportGraphics({
-    chordTol: CHORD_TOL, angleTol: ANGLE_TOL, onGraphics, elementIdArray, partInstanceArray,
+    chordTol: CHORD_TOL, angleTol: ANGLE_TOL, onGraphics, onLineGraphics, elementIdArray, partInstanceArray,
   });
 }
 
@@ -181,22 +238,30 @@ function almostEqual(testValue: number, ...arrayValues: number[]): boolean {
   return true;
 }
 
+// translation, rotation, scale only defined if different from GLTF default transforms
 class TranslationRotationScale {
   public readonly translation?: number[];
   public readonly rotation?: number[];
   public readonly scale?: number[];
   constructor(xform?: Float64Array) {
     if (xform === undefined) return;
-    const matrix = Matrix3d.createRowValues(xform[0], xform[1], xform[2],
-      xform[4], xform[5], xform[6], xform[8], xform[9], xform[10]);
-    // GLTF is RHS with Y-up, iModel.js is RHS with Z-up
-    if (!almostEqual(0, xform[3], xform[7], xform[11])) this.translation = [xform[3], xform[11], -xform[7]];
-    // Quaternion has fuzz factor scale sometimes - normalize to avoid verifier complaints
-    const quat = matrix.toQuaternion(); quat.normalizeQuaternion();
-    if (!almostEqual(1, quat.w)) this.rotation = [quat.x, quat.z, -quat.y, -quat.w];
-    // Uniform scale guaranteed by exportGraphics
-    const xMag = matrix.columnXMagnitude();
-    if (!almostEqual(1, xMag)) this.scale = [xMag, xMag, xMag];
+    if (!almostEqual(0, xform[3], xform[7], xform[11]))
+      this.translation = [xform[3], xform[11], -xform[7]]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
+
+    // Uniform and positive scale guaranteed by exportGraphics
+    const xColumnMagnitude = Math.hypot(xform[0], xform[4], xform[8]);
+    if (!almostEqual(1, xColumnMagnitude))
+      this.scale = [xColumnMagnitude, xColumnMagnitude, xColumnMagnitude];
+
+    const invScale = 1.0 / xColumnMagnitude;
+    const matrix = Matrix3d.createRowValues(
+      xform[0] * invScale, xform[1] * invScale, xform[2] * invScale,
+      xform[4] * invScale, xform[5] * invScale, xform[6] * invScale,
+      xform[8] * invScale, xform[9] * invScale, xform[10] * invScale);
+    if (!matrix.isIdentity) {
+      const q = matrix.toQuaternion();
+      this.rotation = [q.x, q.z, -q.y, -q.w]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
+    }
   }
 }
 
@@ -204,6 +269,10 @@ function exportInstances(partInstanceArray: ExportPartInstanceProps[]) {
   const partMap: Map<Id64String, ExportPartInstanceProps[]> = getInstancesByPart(partInstanceArray);
   process.stdout.write(`Found ${partInstanceArray.length} instances for ${partMap.size} parts...\n`);
 
+  const onPartLineGraphics = (meshIndices: number[]) => (info: ExportPartLinesInfo) => {
+    meshIndices.push(GltfGlobals.gltf.meshes.length);
+    addLines(info.lines, info.color);
+  };
   const onPartGraphics = (meshIndices: number[]) => (info: ExportPartInfo) => {
     meshIndices.push(GltfGlobals.gltf.meshes.length);
     addMesh(info.mesh, info.color);
@@ -218,6 +287,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceProps[]) {
       elementId: instanceList[0].partId,
       displayProps: instanceList[0].displayProps,
       onPartGraphics: onPartGraphics(meshIndices),
+      onPartLineGraphics: onPartLineGraphics(meshIndices),
       chordTol: CHORD_TOL,
       angleTol: ANGLE_TOL,
     });

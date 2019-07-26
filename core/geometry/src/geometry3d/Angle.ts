@@ -16,7 +16,7 @@ export class Angle implements BeJSONFunctions {
     public static readonly piOver2Radians = 1.57079632679489660000e+000;
     /** maximal accuracy value of pi ( 180 degrees), in radians */
     public static readonly piRadians = 3.14159265358979310000e+000;
-    /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
+    /** maximal accuracy value of 2*pi (360 degrees), in radians */
     public static readonly pi2Radians = 6.28318530717958620000e+000;
     /** scale factor for converting degrees to radians */
     public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
@@ -324,11 +324,11 @@ export class Angle implements BeJSONFunctions {
      * @param dotUV dot product of vectorU with vectorV
      */
     public static dotProductsToHalfAngleTrigValues(dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true): TrigValues {
-        const rcos = dotUU - dotVV;
-        const rsin = 2.0 * dotUV;
-        if (favorZero && Math.abs(rsin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
+        const rCos = dotUU - dotVV;
+        const rSin = 2.0 * dotUV;
+        if (favorZero && Math.abs(rSin) < Geometry.smallAngleRadians * (Math.abs(dotUU) + Math.abs(dotVV)))
             return { c: 1.0, s: 0.0, radians: 0.0 };
-        return Angle.trigValuesToHalfAngleTrigValues(rcos, rsin);
+        return Angle.trigValuesToHalfAngleTrigValues(rCos, rSin);
     }
     /**
      * * Returns the angle between two vectors, with the vectors given as xyz components

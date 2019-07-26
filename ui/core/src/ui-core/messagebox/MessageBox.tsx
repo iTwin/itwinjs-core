@@ -107,6 +107,9 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
     let iconClassName = "";
 
     switch (severity) {
+      case MessageSeverity.None:
+        iconClassName = hollow ? "icon-status-success-hollow" : "icon-status-success" + " core-message-box-success";
+        break;
       case MessageSeverity.Information:
         iconClassName = hollow ? "icon-info-hollow" : "icon-info" + " core-message-box-information";
         break;

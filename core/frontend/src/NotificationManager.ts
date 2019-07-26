@@ -6,6 +6,7 @@
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
  * @public
@@ -182,7 +183,9 @@ export class ActivityMessageDetails {
 export class NotificationManager {
   public readonly toolTipLocation = new Point2d();
 
-  /** Output a prompt, given an i18n key. */
+  /** Output a prompt, given an i18n key.
+   * @param key The key of the localized string with the prompt message.
+   */
   public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
 
   /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
@@ -249,10 +252,24 @@ export class NotificationManager {
   /** Clear the tooltip if it is currently open. */
   public clearToolTip(): void { }
 
+  /** Update message position created with [[OutputMessageType.Pointer]].
+   * @param displayPoint        Point at which to display the Pointer type message.
+   * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
+   */
+  public updatePointerMessage(_displayPoint: XAndY, _relativePosition = RelativePosition.TopRight): void { }
+
   /** Close message created with [[OutputMessageType.Pointer]]. */
   public closePointerMessage(): void { }
 
   /** Close message created with [[OutputMessageType.InputField]]. */
   public closeInputFieldMessage(): void { }
+
+  /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
+   * @param instructions The tool assistance instructions.
+   * @alpha
+   */
+  public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
+    this.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+  }
 
 }

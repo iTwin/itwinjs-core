@@ -91,12 +91,12 @@ describe("JsonParser", () => {
     it.skip("should throw for invalid schemaVersion", () => testInvalidAttribute("schemaVersion", "string", 0));
 
     it("should throw for invalid modifier", async () => {
-      let json: any = { ...baseJson, modifier: 0 };
+      const json: any = { ...baseJson, modifier: 0 };
       assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECClass TestSchema.TestEntity has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid baseClass", async () => {
-      let json: any = { ...baseJson, baseClass: 0 };
+      const json: any = { ...baseJson, baseClass: 0 };
       assert.throws(() => parser.parseEntityClass(json), ECObjectsError, `The ECClass TestSchema.TestEntity has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     });
 
@@ -246,7 +246,7 @@ describe("JsonParser", () => {
 
     it("should throw for missing type", () => {
       const json = {
-        ...baseJson
+        ...baseJson,
       };
       delete json.type;
       assert.throws(() => parser.parseFormat(json), ECObjectsError, `The Format TestSchema.AmerMYFI4 does not have the required 'type' attribute.`);
@@ -470,7 +470,7 @@ describe("JsonParser", () => {
         inherited: false,
         customAttributes: [],
         [attributeName]: value, // overwrites previously defined objects
-      }
+      };
       let err = (typeof (json.name) !== "string") ? `An ECProperty in TestSchema.TestClass ` : `The ECProperty TestSchema.TestClass.TestProp `;
       err += `has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`;
       assert.throws(() => parser.parsePrimitiveProperty(json), ECObjectsError, err);
@@ -490,24 +490,6 @@ describe("JsonParser", () => {
     it("should throw for invalid minValue", () => { testInvalidAttribute("minValue", "number", "0"); });
     it("should throw for invalid maxValue", () => { testInvalidAttribute("maxValue", "number", "0"); });
     it("should throw for invalid extendedTypeName", () => { testInvalidAttribute("extendedTypeName", "string", 0); });
-  });
-
-  describe("parseEnumerationProperty", () => {
-    const baseJson = { schemaItemType: "EntityClass" };
-
-    beforeEach(() => {
-      parser = new JsonParser(createSchemaJsonWithItems({ TestClass: baseJson }));
-      parser.findItem("TestClass");
-    });
-
-    it("should throw for invalid typeName", () => {
-      const json: any = {
-        name: 0,
-        type: "PrimitiveProperty",
-        typeName: 0,
-      };
-      assert.throws(() => parser.parseEnumerationProperty(json), ECObjectsError);
-    });
   });
 
   describe("parsePrimitiveArrayProperty", () => {
@@ -704,11 +686,11 @@ describe("JsonParser", () => {
 
       json.customAttributes = "CoreCustomAttributes.HiddenSchema";
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
 
       json.customAttributes = ["CoreCustomAttributes.HiddenSchema"];
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
     });
 
     it("should throw for customAttribute with missing className", () => {
@@ -718,7 +700,7 @@ describe("JsonParser", () => {
       ];
 
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes is missing the required 'className' attribute.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes is missing the required 'className' attribute.");
     });
 
     it("should throw for customAttribute with invalid className", () => {
@@ -728,7 +710,7 @@ describe("JsonParser", () => {
       ];
 
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes has an invalid 'className' attribute. It should be of type 'string'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributeProviders()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes has an invalid 'className' attribute. It should be of type 'string'.");
     });
   });
 });

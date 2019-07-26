@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { mount, shallow } from "enzyme";
 import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -125,4 +125,31 @@ describe("<PopupButton />", async () => {
     expect(stateFunctionCalled).to.eq(true);
   });
 
+  it("should invoke children as render prop", () => {
+    const sut = shallow<PopupButton>(<PopupButton>
+      {() => <div />}
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    sut.should.matchSnapshot();
+  });
+
+  it("should close panel with render prop arg", () => {
+    const sut = mount<PopupButton>(<PopupButton>
+      {({ closePanel }) => <button onClick={closePanel} id="btn" />}
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+
+    const btn = sut.find("#btn");
+    btn.simulate("click");
+
+    (sut.state().isPressed === false).should.true;
+  });
+
+  it("should render with no padding", () => {
+    const sut = shallow<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    sut.should.matchSnapshot();
+  });
 });

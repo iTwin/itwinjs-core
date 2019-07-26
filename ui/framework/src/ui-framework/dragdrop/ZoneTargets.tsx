@@ -8,15 +8,15 @@ import * as React from "react";
 
 import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 
-import { MergeTarget, BackTarget, WidgetZoneIndex, DropTarget, TargetType } from "@bentley/ui-ninezone";
+import { MergeTarget, BackTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[ZoneTargets]] component.
  * @internal
  */
 export interface ZoneTargetsProps extends CommonProps {
-  zoneId: WidgetZoneIndex;
-  dropTarget: DropTarget;
+  zoneId: WidgetZoneId;
+  dropTarget: ZoneTargetType | undefined;
   targetChangeHandler: TargetChangeHandler;
 }
 
@@ -26,24 +26,23 @@ export interface ZoneTargetsProps extends CommonProps {
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public render(): React.ReactNode {
     switch (this.props.dropTarget) {
-      case DropTarget.Merge:
+      case ZoneTargetType.Merge:
         return (
           <MergeTarget
             className={this.props.className}
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Merge, isTargeted)}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, ZoneTargetType.Merge, isTargeted)}
             style={this.props.style}
           />
         );
-      case DropTarget.Back:
+      case ZoneTargetType.Back:
         return (
           <BackTarget
             className={this.props.className}
-            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, TargetType.Back, isTargeted)}
+            onTargetChanged={(isTargeted) => this.props.targetChangeHandler.handleTargetChanged(this.props.zoneId, ZoneTargetType.Back, isTargeted)}
             style={this.props.style}
             zoneIndex={this.props.zoneId}
           />
         );
-      case DropTarget.None:
       default:
         return null;
     }

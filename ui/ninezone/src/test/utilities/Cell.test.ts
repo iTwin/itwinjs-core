@@ -42,6 +42,11 @@ describe("Cell", () => {
     sut.isHorizontallyBetween({ row: 5, col: 2 }, { row: 5, col: 10 }).should.true;
   });
 
+  it("should return false when cell is not row aligned", () => {
+    const sut = new Cell(5, 4);
+    sut.isHorizontallyBetween({ row: 4, col: 2 }, { row: 5, col: 10 }).should.false;
+  });
+
   it("should return true when cell is between other cells vertically", () => {
     const sut = new Cell(5, 4);
     sut.isVerticallyBetween({ row: 4, col: 4 }, { row: 6, col: 4 }).should.true;

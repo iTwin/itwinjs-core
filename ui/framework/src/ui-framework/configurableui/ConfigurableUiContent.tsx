@@ -8,6 +8,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 
 import { CommonProps } from "@bentley/ui-core";
+import { Point } from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
@@ -19,6 +20,8 @@ import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
+import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
+import { CursorInformation } from "../cursor/CursorInformation";
 
 import "./configurableui.scss";
 
@@ -72,6 +75,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <PointerMessage />
         <KeyboardShortcutMenu />
         <InputFieldMessage />
+        <CursorPopup />
       </div>
     );
   }
@@ -90,9 +94,10 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
   // }
 
   private _handleMouseMove(e: React.MouseEvent): void {
-    KeyboardShortcutManager.cursorX = e.clientX;
-    KeyboardShortcutManager.cursorY = e.clientY;
+    const point = new Point(e.pageX, e.pageY);
+    CursorInformation.handleMouseMove(point);
   }
+
 }
 
 /** The ConfigurableUiContent component is the high order component the pages specified using ConfigurableUi

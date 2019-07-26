@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Move zonesBounds from manager to props.
+- Update horizontal toolbar styles
+- Update <img> height/width for toolbar items so svg icons would display.
+- Added ToolAssistance support and Tool.iconSpec
+- Demo changes.
+- Refactor and test ZonesManager.
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT

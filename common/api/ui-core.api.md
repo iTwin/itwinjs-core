@@ -50,6 +50,9 @@ export class Annulus {
 }
 
 // @public
+export const BlockText: React.FunctionComponent<TextProps>;
+
+// @public
 export const BodyText: React.FunctionComponent<TextProps>;
 
 // @alpha (undocumented)
@@ -93,9 +96,8 @@ export enum ButtonType {
 export const Centered: React.FunctionComponent<CommonDivProps>;
 
 // @public
-export class Checkbox extends React.Component<CheckboxProps> {
-    constructor(props: CheckboxProps);
-    // @internal (undocumented)
+export class Checkbox extends React.PureComponent<CheckboxProps> {
+    // (undocumented)
     render(): JSX.Element;
 }
 
@@ -112,12 +114,13 @@ export interface CheckBoxInfo {
 }
 
 // @public
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">, CommonProps {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick">, CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
+    onClick?: (e: React.MouseEvent) => void;
     status?: InputStatus;
 }
 
@@ -139,7 +142,6 @@ export class CheckListBox extends React.PureComponent<CommonProps> {
 
 // @beta
 export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
-    constructor(props: CheckListBoxItemProps);
     // (undocumented)
     render(): JSX.Element;
 }
@@ -153,7 +155,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 // @beta
-export const CheckListBoxSeparator: React.StatelessComponent;
+export const CheckListBoxSeparator: React.FunctionComponent;
 
 // @internal
 export class Circle {
@@ -908,8 +910,9 @@ export interface NodeCheckboxProps {
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
 // @beta
-export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange"> & {
+export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"> & {
     onChange: (checked: boolean) => void;
+    onClick: (e: React.MouseEvent) => void;
 };
 
 // @alpha (undocumented)

@@ -7,12 +7,11 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
 
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, StatusBarWidgetControl, ActivityCenterField,
-  MessageCenterField, SnapModeField, PromptField, BooleanSyncUiListener, SelectionInfoField,
-  StatusBarWidgetControlArgs, SelectionScopeField, SyncUiEventId, ContentViewManager,
+  MessageCenterField, SnapModeField, BooleanSyncUiListener, SelectionInfoField,
+  StatusBarWidgetControlArgs, SelectionScopeField, SyncUiEventId, ContentViewManager, ToolAssistanceField,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
-import { ToolAssistanceField } from "../statusfields/ToolAssistance";
 import { ShadowField } from "../statusfields/ShadowField";
 
 import "./AppStatusBar.scss";
@@ -26,20 +25,10 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     return (
       <div className="statusbar-space-between">
         <div className="statusbar-left">
-          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-            {(isVisible: boolean) => isVisible && <>
-              <PromptField isInFooterMode={isInFooterMode} />
-              {isInFooterMode && <FooterSeparator />}
-            </>}
-          </BooleanSyncUiListener>
+          <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          {isInFooterMode && <FooterSeparator />}
         </div>
         <div className="statusbar-center">
-          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-            {(isVisible: boolean) => isVisible && <>
-              <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
-              {isInFooterMode && <FooterSeparator />}
-            </>}
-          </BooleanSyncUiListener>
           <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           {isInFooterMode && <FooterSeparator />}
           <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} targetRef={toastTargetRef} />
@@ -52,6 +41,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           </BooleanSyncUiListener>
         </div>
         <div className="statusbar-right">
+          {isInFooterMode && <FooterSeparator />}
           <BooleanSyncUiListener defaultValue={false} eventIds={[SyncUiEventId.ActiveContentChanged]} boolFunc={(): boolean => ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl())}>
             {(isVisible: boolean) => isVisible && <>
               <ShadowField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
