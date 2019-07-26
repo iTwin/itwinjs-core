@@ -181,7 +181,6 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
       });
     });
 
-    // ###TODO: Should not re-sample featureIndex+materialIndex if already sampled the other
     vert.addGlobal("g_materialParams", VariableType.Vec4);
     vert.addFunction(unpackFloat);
     vert.addFunction(readMaterialAtlas);

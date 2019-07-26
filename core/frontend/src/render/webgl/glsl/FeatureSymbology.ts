@@ -346,7 +346,6 @@ vec2 readDepthAndOrder(vec2 tc) {
 }
 `;
 
-// ####TODO vertex shader already tests transparency threshold...native renderer tests here as well?
 const checkForEarlySurfaceDiscard = `
   float factor = float(u_renderPass <= kRenderPass_Translucent); // never discard during specific passes
   float term = 0.0;
@@ -358,7 +357,6 @@ const checkForEarlySurfaceDiscard = `
   return factor * term > 0.0;
 `;
 
-// ####TODO vertex shader already tests transparency threshold...native renderer tests here as well?
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
   bool neverDiscard = u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals);
