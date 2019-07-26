@@ -301,10 +301,8 @@ export namespace IModelTileIO {
         if (materialJson.specularExponent !== undefined)
           materialParams.specularExponent = materialJson.specularExponent;
 
-        if (undefined !== materialJson.alpha)
-          materialParams.alpha = materialJson.alpha;
-        else if (materialJson.transparency !== undefined) // deprecated - treats '0.0' as 'does not override alpha' instead of as 'overrides to be opaque'.
-          materialParams.transparency = materialJson.transparency;
+        if (undefined !== materialJson.transparency)
+          materialParams.alpha = 1.0 - materialJson.transparency;
 
         materialParams.refract = JsonUtils.asDouble(materialJson.refract);
         materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
@@ -675,6 +673,7 @@ export namespace IModelTileIO {
         material = {
           isAtlas: true,
           hasTranslucency: JsonUtils.asBool(atlas.hasTranslucency),
+          overridesAlpha: JsonUtils.asBool(atlas.overridesAlpha, false),
           vertexTableOffset: JsonUtils.asInt(numColors),
           numMaterials: JsonUtils.asInt(atlas.numMaterials),
         };

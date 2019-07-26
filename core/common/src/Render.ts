@@ -349,20 +349,6 @@ export namespace RenderMaterial {
     /** Obtain an immutable instance of a RenderMaterial with all default properties. */
     public static readonly defaults = new Params();
 
-    /** Previously, transparency in [0, 1] with 1 indicating fully-transparent and 0 indicating the material does not override surface transparency.
-     * Use [[alpha]] instead, which allows an opaque material to be correctly applied to transparent surfaces.
-     * @deprecated
-     */
-    public get transparency(): number {
-      if (undefined === this.alpha || this.alpha >= 1.0)
-        return 0.0;
-      else
-        return 1.0 - this.alpha;
-    }
-    public set transparency(transparency: number) {
-      this.alpha = 0.0 !== transparency ? 1.0 - transparency : undefined;
-    }
-
     /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
      * or undefined if this material does not override surface transparency.
      */

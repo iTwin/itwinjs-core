@@ -475,8 +475,12 @@ export interface SurfaceRenderMaterial {
 /** @internal */
 export interface SurfaceMaterialAtlas {
   readonly isAtlas: true;
+  // Overrides surface alpha to be translucent. Implies `overridesAlpha`.
   readonly hasTranslucency: boolean;
-  readonly vertexTableOffset: number; // offset past the END of the vertex data; equivalently, number of 32-bit colors in color table preceding material atlas.
+  // Overrides surface alpha to be opaque or translucent.
+  readonly overridesAlpha: boolean;
+  // offset past the END of the vertex data; equivalently, number of 32-bit colors in color table preceding material atlas.
+  readonly vertexTableOffset: number;
   readonly numMaterials: number;
 }
 

@@ -408,8 +408,8 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     let hasAlpha;
-    if (undefined !== mat && wantMaterials(vf)) // ###TODO && mat.overridesAlpha())
-      hasAlpha = mat.hasTranslucency ? RenderPass.Translucent : opaquePass;
+    if (undefined !== mat && wantMaterials(vf) && mat.overridesAlpha)
+      hasAlpha = mat.hasTranslucency;
     else
       hasAlpha = this.getColor(target).hasTranslucency;
 

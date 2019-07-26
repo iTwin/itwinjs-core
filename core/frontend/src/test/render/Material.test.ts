@@ -107,17 +107,17 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
 
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
-  expect(actual.alphaOverridden).to.equal(0.0 !== expected.transparency);
+  expect(actual.alphaOverridden).to.equal(1.0 !== expected.alpha);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
-  expectEqualFloats(expected.transparency, actual.transparency);
+  expectEqualFloats(1.0 - expected.alpha!, actual.transparency);
 }
 
 function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
   const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
   params.diffuse = input.diffuse;
-  params.transparency = input.transparency;
+  params.alpha = 1.0 - input.transparency;
   params.specular = input.specular;
   params.specularExponent = input.specularExponent;
   return params;
