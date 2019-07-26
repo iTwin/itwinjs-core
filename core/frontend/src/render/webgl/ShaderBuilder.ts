@@ -514,7 +514,7 @@ export class ShaderBuilder extends ShaderVariables {
     const macro = "#define " + name + " " + value;
     this.addMacro(macro);
   }
-  
+
   protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined): SourceBuilder {
     const src = new SourceBuilder();
 
