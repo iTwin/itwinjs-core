@@ -84,13 +84,13 @@
 
     margin: auto;
     width: 60%;
+    max-height: 75%;
     height: fit-content;
     display: flex;
     flex-direction: column;
 
     .core-dialog-area {
       display: flex;
-      flex-grow: 1;
       flex-direction: column;
       border: 1px solid $buic-background-dialog-stroke;
       border-radius: $uicore-border-radius;

@@ -10,26 +10,20 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { Schema } from "./../Metadata/Schema";
 import { SchemaKey, ECVersion } from "./../SchemaKey";
 import * as path from "path";
+// TODO: This will not currently work runtime...
+import { DOMParser } from "xmldom";
+import { SchemaReadHelper } from "./Helper";
+import { XmlParser } from "./XmlParser";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files
- * from the file system using configurable search paths. Returns only
- * Schemas from XML files with their keys populated.
+ * from the file system using configurable search paths.
  * @internal This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
-   * Gets an array of SchemaKeys of the Schemas referenced by the given Schema.
-   * @param xmlSchemaKey The SchemaKey of the parent Schema containing the references.
-   */
-  public getSchemaReferenceKeys(schemaKey: FileSchemaKey): SchemaKey[] {
-    return this._getSchemaReferenceKeys(schemaKey);
-  }
-
-  /**
    * Attempts to retrieve a Schema with the given SchemaKey by using the configured search paths
-   * to locate the XML Schema file from the file system. Returns only Schemas from XML files with
-   * their keys populated.
+   * to locate the XML Schema file from the file system.
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
@@ -37,31 +31,34 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
   public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
-    if (!candidates || candidates.length === 0)
+    if (0 === candidates.length)
       return undefined;
 
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const schemaPath = maxCandidate.fileName;
 
-    // TODO: Re-implement once references collection is a Promise[].
-    /*
-    const promise = new Promise<T>(async () => {
-      const schema = new Schema(maxCandidate) as T;
-      await this.addSchemaReferences(schema);
-      this._knownSchemas.addSchema(schema);
-      return schema;
-    });
-    */
+    // Load the file
+    if (undefined === await this.fileExists(schemaPath))
+      return undefined;
 
-    const schema = new Schema(context, maxCandidate) as T;
-    await context.addSchema(schema);
-    await this.addSchemaReferences(schema, context);
-    return schema;
+    const schemaText = await this.readUtf8FileToString(schemaPath);
+    if (undefined === schemaText)
+      return schemaText;
+
+    const parser = new DOMParser();
+    const document = parser.parseFromString(schemaText);
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
+    const reader = new SchemaReadHelper(XmlParser, context);
+    let schema: Schema = new Schema(context);
+    schema = await reader.readSchema(schema, document);
+
+    return schema as T;
   }
 
   /**
    * Attempts to retrieve a Schema with the given SchemaKey by using the configured search paths
-   * to locate the XML Schema file from the file system. Returns only Schemas from XML files with
-   * their keys populated.
+   * to locate the XML Schema file from the file system.
    * @param key The SchemaKey of the Schema to retrieve.
    * @param matchType The SchemaMatchType.
    * @param context The SchemaContext that will control the lifetime of the schema.
@@ -73,86 +70,24 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
       return undefined;
 
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
-    const schema = new Schema(context, maxCandidate) as T;
-    context.addSchemaSync(schema);
+    const schemaPath = maxCandidate.fileName;
 
-    this.addSchemaReferencesSync(schema, context);
-    return schema;
-  }
-
-  /**
-   * Adds schemas to the references collection for the given Schema by locating
-   * the referenced schemas.
-   * @param schema The schema for which to add the references.
-   */
-  public async addSchemaReferences(schema: Schema, context?: SchemaContext): Promise<void> {
-    const refKeys = this.getSchemaReferenceKeys(schema.schemaKey as FileSchemaKey);
-
-    for (const key of refKeys) {
-      /* TODO: Re-implement once references collection is an array of Promises.
-      const promise = new Promise<Schema>(async () => {
-        return await this.getSchema(key, SchemaMatchType.LatestReadCompatible);
-      });
-      const refSchema = await promise;
-      if (refSchema)
-        schema.references.push(refSchema);
-        */
-
-      const refSchema = context ? await context.getSchema(key, SchemaMatchType.LatestReadCompatible) : undefined;
-      if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
-
-      schema.references.push(refSchema);
-    }
-  }
-
-  /**
-   * Adds schemas to the references collection for the given Schema by locating
-   * the referenced schemas.
-   * @param schema The schema for which to add the references.
-   */
-  public addSchemaReferencesSync(schema: Schema, context?: SchemaContext): void {
-    const refKeys = this.getSchemaReferenceKeys(schema.schemaKey as FileSchemaKey);
-
-    for (const key of refKeys) {
-      /* TODO: Re-implement once references collection is an array of Promises.
-      const promise = new Promise<Schema>(async () => {
-        return await this.getSchema(key, SchemaMatchType.LatestReadCompatible);
-      });
-      const refSchema = await promise;
-      if (refSchema)
-        schema.references.push(refSchema);
-        */
-
-      const refSchema = context ? context.getSchemaSync(key, SchemaMatchType.LatestReadCompatible) : undefined;
-      if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate referenced schema: ${key.name}.${key.readVersion}.${key.writeVersion}.${key.minorVersion}`);
-
-      schema.references.push(refSchema);
-    }
-  }
-
-  /**
-   * Loads a Schema from disk as a Promise.
-   * @param schemaPath The path to the Schema file.
-   * @param context The SchemaContext that will control the lifetime of the schema.
-   */
-  public async loadSchema<T extends Schema>(schemaPath: string, context: SchemaContext): Promise<T | undefined> {
     // Load the file
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    if (!this.fileExistsSync(schemaPath))
+      return undefined;
 
-    // If the file wasn't found, throw an error
-    if (!schemaText) throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${schemaPath}`);
+    const schemaText = this.readUtf8FileToStringSync(schemaPath);
+    if (!schemaText)
+      return undefined;
+
+    const parser = new DOMParser();
+    const document = parser.parseFromString(schemaText);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
+    const reader = new SchemaReadHelper(XmlParser, context);
+    let schema: Schema = new Schema(context);
+    schema = reader.readSchemaSync(schema, document);
 
-    // Grab the key and see if the schema is already loaded
-    const key = this.getSchemaKey(schemaText);
-
-    // TODO - bad path
-    // Load the schema and return it
-    const schema = new Schema(context, new FileSchemaKey(key, schemaPath, schemaText));
-    await this.addSchemaReferences(schema);
     return schema as T;
   }
 
@@ -172,43 +107,5 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 
     const key = new SchemaKey(name[1], ECVersion.fromString(version[1]));
     return key;
-  }
-
-  /**
-   * Gets an array of SchemaKeys of the Schemas referenced by the given Schema.
-   * @param data The Schema XML string.
-   */
-  private _getSchemaReferenceKeys(xmlSchemaKey: FileSchemaKey): SchemaKey[] {
-    const file = xmlSchemaKey.schemaText;
-
-    if (!file)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the schema file, ${xmlSchemaKey.fileName}, for the schema ${xmlSchemaKey.name}`);
-
-    const data = file.toString().replace(/(\s*)<!--.*?-->/g, ""); // ignore any comments in the XML file when getting the array of SchemaKeys
-
-    const keys: SchemaKey[] = [];
-    const matches = data.match(/<ECSchemaReference ([^]+?)\/>/g);
-    if (!matches)
-      return keys;
-
-    for (const match of matches) {
-      const name = match.match(/name="(.+?)"/);
-      const versionMatch = match.match(/version="(.+?)"/);
-      if (!name || name.length !== 2 || !versionMatch || versionMatch.length !== 2)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Invalid ECSchemaReference xml encountered in the schema file`);
-
-      // write version maybe missing, so insert "0"
-      let versionString = versionMatch[1];
-      const versionParts = versionString.split(".");
-      if (versionParts.length === 2)
-        versionParts.splice(1, 0, "0");
-
-      versionString = versionParts.join(".");
-
-      const key = new SchemaKey(name[1], ECVersion.fromString(versionString));
-      keys.push(key);
-    }
-
-    return keys;
   }
 }

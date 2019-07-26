@@ -343,6 +343,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "filenamify",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },

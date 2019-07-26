@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added SelectionMode.None to the default SelectionHandler.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "joe.zbuchalski@bentley.com"
+}

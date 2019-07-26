@@ -69,6 +69,7 @@ interface GltfMesh {
 }
 
 const enum MeshPrimitiveMode {
+  GlLines = 1,
   GlTriangles = 4,
 }
 

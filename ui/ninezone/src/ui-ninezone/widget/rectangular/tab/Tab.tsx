@@ -51,8 +51,8 @@ export class TabModeHelpers {
  * @alpha
  */
 export interface TabProps extends CommonProps {
-  /** A Beta badge to draw. */
-  betaBadge?: React.ReactNode;
+  /** A badge to draw. */
+  badge?: React.ReactNode;
   /** Tab icon. */
   children?: React.ReactNode;
   /** Describes to which side the widget of this tab is anchored. */
@@ -121,9 +121,9 @@ export class Tab extends React.PureComponent<TabProps> {
         title={this.props.title}
       >
         {this.props.children}
-        {this.props.betaBadge &&
-          <div className="nz-beta-badge">
-            {this.props.betaBadge}
+        {this.props.badge &&
+          <div className="nz-badge">
+            {this.props.badge}
           </div>
         }
         <PointerCaptor

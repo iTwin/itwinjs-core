@@ -28,11 +28,11 @@
     list-style: none;
     margin: 0.5rem 0;
 
-    >.components-weightpicker-swatch:hover {
+    > .components-weightpicker-swatch:hover {
       background: $buic-row-hover;
     }
 
-    >.components-weightpicker-swatch.active {
+    > .components-weightpicker-swatch.active {
       background: $buic-row-selection;
     }
   }

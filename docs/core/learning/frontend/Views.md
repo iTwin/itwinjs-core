@@ -109,7 +109,7 @@ After the viewport is added to the [ViewManager]($frontend), all HTML events for
 
 ### The "Selected" View
 
-It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iModel.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked.  [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend).
+It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iModel.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked. [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend:Tools).
 
 > Note: If there is only one Viewport visible, that Viewport will always be the [ViewManager.selectedView]($frontend). If there are no Viewports visible, [ViewManager.selectedView]($frontend) can be undefined.
 

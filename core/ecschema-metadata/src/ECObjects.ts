@@ -199,6 +199,27 @@ export function schemaItemTypeToString(value: SchemaItemType): string {
   }
 }
 
+/** @internal */
+export function schemaItemTypeToXmlString(value: SchemaItemType): string {
+  switch (value) {
+    case SchemaItemType.EntityClass: return "ECEntityClass";
+    case SchemaItemType.Mixin: return "ECEntityClass";
+    case SchemaItemType.StructClass: return "ECStructClass";
+    case SchemaItemType.CustomAttributeClass: return "ECCustomAttributeClass";
+    case SchemaItemType.RelationshipClass: return "ECRelationshipClass";
+    case SchemaItemType.Enumeration: return "ECEnumeration";
+    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
+    case SchemaItemType.PropertyCategory: return "PropertyCategory";
+    case SchemaItemType.Unit: return "Unit";
+    case SchemaItemType.InvertedUnit: return "InvertedUnit";
+    case SchemaItemType.Constant: return "Constant";
+    case SchemaItemType.Phenomenon: return "Phenomenon";
+    case SchemaItemType.UnitSystem: return "UnitSystem";
+    case SchemaItemType.Format: return "Format";
+    default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
+  }
+}
+
 /**
  * Tries to parse the given string as one of the 10 primitive types.
  * @param type The primitive type string to parse.

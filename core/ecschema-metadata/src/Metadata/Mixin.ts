@@ -14,6 +14,7 @@ import { MixinProps } from "./../Deserialization/JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedEntityClass } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * A Typescript class representation of a Mixin.
@@ -52,6 +53,38 @@ export class Mixin extends ECClass {
       schemaJson.appliesTo = this.appliesTo.fullName;
     }
     return schemaJson;
+  }
+
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+
+    // Modifier is always "Abstract" so no need to show it
+    if (itemElement.hasAttribute("modifier"))
+      itemElement.removeAttribute("modifier");
+
+    // When CustomAttributes are added, there must be a check to see if the ECCustomAttributes
+    // already exist for this item before creating a new one to apply IsMixin
+    const customAttributes = schemaXml.createElement("ECCustomAttributes");
+    const isMixinElement = schemaXml.createElement("IsMixin");
+    const coreCustomSchema = this.schema.getReferenceSync("CoreCustomAttributes");
+    if (undefined !== coreCustomSchema) {
+      const xmlns = `CoreCustomAttributes.${coreCustomSchema.schemaKey.version.toString()}`;
+      isMixinElement.setAttribute("xmlns", xmlns);
+    }
+
+    const appliesToElement = schemaXml.createElement("AppliesToEntityClass");
+    const appliesTo = await this.appliesTo;
+    if (undefined !== appliesTo) {
+      const appliesToName = XmlSerializationUtils.createXmlTypedName(this.schema, appliesTo.schema, appliesTo.name);
+      appliesToElement.textContent = appliesToName;
+      isMixinElement.appendChild(appliesToElement);
+    }
+
+    customAttributes.appendChild(isMixinElement);
+    itemElement.appendChild(customAttributes);
+
+    return itemElement;
   }
 
   public deserializeSync(mixinProps: MixinProps) {

@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-common_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added option to restrict tile cache URLs by client IP address."
+          },
+          {
+            "comment": "Added method to get element mass properties."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@bentley/imodeljs-common_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",

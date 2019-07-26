@@ -2,6 +2,78 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-frontend_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added optional HTMLElement member to Marker"
+          },
+          {
+            "comment": "Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint."
+          },
+          {
+            "comment": "catch load errors for Sprites"
+          },
+          {
+            "comment": "Remove colinear clip shape points. Grid spacing is a double."
+          },
+          {
+            "comment": "Added tests for Spatial Classifications"
+          },
+          {
+            "comment": "Added TileAdmin option to disable \"magnification\" tile refinement strategy, which can prevent production of extraordinarily large tiles in some cases."
+          },
+          {
+            "comment": "ViewManager.dropViewport clears tool events associated with the dropped viewport, preventing errors in async event processing code. Added Viewport.isDisposed property."
+          },
+          {
+            "comment": "Added limited opt-in support for drawing tiles from secondary IModelConnections and locating elements within them. Users must implement tools that can properly handle results like a HitDetail pointing to a different IModelConnection than the one associated with the viewport."
+          },
+          {
+            "comment": "Fix Viewport.addViewedModels() failing to update view if some models needed to be loaded asynchronously."
+          },
+          {
+            "comment": "Fix empty message body when display Bing map attribution info."
+          },
+          {
+            "comment": "Update beta PluginUiProvider interfaces."
+          },
+          {
+            "comment": "Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs"
+          },
+          {
+            "comment": "Added method to get element mass properties."
+          },
+          {
+            "comment": "Added option to discard alpha channel when converting ImageBuffer to HTMLCanvasElement."
+          },
+          {
+            "comment": "Measure distance, allow snap outside project extents for version compare. Added measure length, area, and volume tools."
+          },
+          {
+            "comment": "Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522."
+          },
+          {
+            "comment": "Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application."
+          },
+          {
+            "comment": "Choose handle location for for section plane that is visible in the view."
+          },
+          {
+            "comment": "Temporarily undid change to save tokens in local storage. "
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@bentley/imodeljs-frontend_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",

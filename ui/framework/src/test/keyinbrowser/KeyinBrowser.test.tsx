@@ -3,9 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { mount } from "enzyme";
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { render, cleanup, fireEvent } from "@testing-library/react";
-
+import { Button } from "@bentley/ui-core";
 import {
   KeyinBrowser,
 } from "../../ui-framework";
@@ -116,6 +118,14 @@ describe("<KeyinBrowser>", () => {
     expect(selectInput.value).to.be.eq("Select");
     argInput = newlyRenderedComponent.getByTestId("uif-keyin-arguments") as HTMLInputElement;
     expect(argInput.value).to.be.eq("marker.js|blue");
+  });
+
+  it("should invoke onExecute handler when execute button is clicked", async () => {
+    const spy = sinon.spy();
+    const sut = mount(<KeyinBrowser onExecute={spy} />);
+    const btn = sut.find(Button);
+    btn.simulate("click");
+    spy.calledOnceWithExactly().should.true;
   });
 
 });

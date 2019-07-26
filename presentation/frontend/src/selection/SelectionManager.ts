@@ -17,7 +17,7 @@ import { HiliteSetProvider, HiliteSet } from "./HiliteSetProvider";
  * @public
  */
 export interface SelectionManagerProps {
-  /** A manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
+  /** A manager for [selection scopes]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) */
   scopes: SelectionScopesManager;
 }
 
@@ -33,7 +33,7 @@ export class SelectionManager implements ISelectionProvider {
   /** An event which gets broadcasted on selection changes */
   public readonly selectionChange: SelectionChangeEvent;
 
-  /** Manager for [selection scopes]($docs/learning/unified-selection/Terminology#selection-scope) */
+  /** Manager for [selection scopes]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) */
   public readonly scopes: SelectionScopesManager;
 
   /**
@@ -145,7 +145,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to add
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public addToSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -166,7 +166,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to remove
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -187,7 +187,7 @@ export class SelectionManager implements ISelectionProvider {
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param keys Keys to add
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level: number = 0, rulesetId?: string): void {
@@ -207,7 +207,7 @@ export class SelectionManager implements ISelectionProvider {
    * Clear current selection
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public clearSelection(source: string, imodel: IModelConnection, level: number = 0, rulesetId?: string): void {
@@ -224,12 +224,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Add keys to selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * Add keys to selection after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to add
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
@@ -238,12 +238,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Remove keys from current selection after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * Remove keys from current selection after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to remove
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {
@@ -252,12 +252,12 @@ export class SelectionManager implements ISelectionProvider {
   }
 
   /**
-   * Replace current selection with keys after applying [selection scope]($docs/learning/unified-selection/Terminology#selection-scope) on them.
+   * Replace current selection with keys after applying [selection scope]($docs/learning/presentation/Unified-Selection/Terminology#selection-scope) on them.
    * @param source Name of the selection source
    * @param imodel iModel associated with the selection
    * @param ids Element IDs to replace with
    * @param scope Selection scope to apply
-   * @param level Selection level (see [Selection levels]($docs/learning/unified-selection/Terminology#selection-level))
+   * @param level Selection level (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
    * @param rulesetId ID of the ruleset in case the selection was changed from a rules-driven control
    */
   public async replaceSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level: number = 0, rulesetId?: string): Promise<void> {

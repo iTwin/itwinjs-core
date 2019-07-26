@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module StagePanels */
 
-import { WidgetZoneIndex } from "../zones/manager/Zones";
+import { WidgetZoneId } from "../zones/manager/Zones";
 
 /** Properties used by [[NineZoneStagePanelPaneManager]].
  * @alpha
  */
 export interface NineZoneStagePanelPaneManagerProps {
-  readonly widgets: ReadonlyArray<WidgetZoneIndex>;
+  readonly widgets: ReadonlyArray<WidgetZoneId>;
 }
 
 /** Returns default [[NineZoneStagePanelPaneManagerProps]] object.
@@ -24,7 +24,7 @@ export const getDefaultNineZoneStagePanelPaneManagerProps = (): NineZoneStagePan
  * @alpha
  */
 export class NineZoneStagePanelPaneManager {
-  public addWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneIndex, props: TProps): TProps {
+  public addWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps {
     if (props.widgets.indexOf(widgetId) >= 0)
       return props;
     return {
@@ -36,7 +36,7 @@ export class NineZoneStagePanelPaneManager {
     };
   }
 
-  public removeWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneIndex, props: TProps): TProps {
+  public removeWidget<TProps extends NineZoneStagePanelPaneManagerProps>(widgetId: WidgetZoneId, props: TProps): TProps {
     const id = props.widgets.indexOf(widgetId);
     if (id < 0)
       return props;

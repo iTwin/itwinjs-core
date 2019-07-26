@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-markup",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-markup_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add stroke-dasharray to draw lines with dashes in markup"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@bentley/imodeljs-markup_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",

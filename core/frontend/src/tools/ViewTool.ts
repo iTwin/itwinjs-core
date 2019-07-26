@@ -521,7 +521,7 @@ export abstract class ViewManip extends ViewTool {
     if (!vp)
       return false;
     const testPtView = vp.worldToView(testPt);
-    const frustum = vp.getFrustum(CoordSystem.View, false);
+    const frustum = vp.getFrustum(CoordSystem.View);
 
     const screenRange = Point3d.create(
       frustum.points[Npc._000].distance(frustum.points[Npc._100]),
@@ -1650,6 +1650,7 @@ class ViewFly extends ViewNavigate {
  */
 export class PanViewTool extends ViewManip {
   public static toolId = "View.Pan";
+  public static iconSpec = "icon-hand-2";
   constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
@@ -1661,6 +1662,7 @@ export class PanViewTool extends ViewManip {
  */
 export class RotateViewTool extends ViewManip {
   public static toolId = "View.Rotate";
+  public static iconSpec = "icon-gyroscope";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
@@ -1694,6 +1696,7 @@ export class ScrollViewTool extends ViewManip {
  */
 export class ZoomViewTool extends ViewManip {
   public static toolId = "View.Zoom";
+  public static iconSpec = "icon-zoom";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
@@ -1705,6 +1708,7 @@ export class ZoomViewTool extends ViewManip {
  */
 export class WalkViewTool extends ViewManip {
   public static toolId = "View.Walk";
+  public static iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
@@ -1716,6 +1720,7 @@ export class WalkViewTool extends ViewManip {
  */
 export class FlyViewTool extends ViewManip {
   public static toolId = "View.Fly";
+  public static iconSpec = "icon-airplane";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
@@ -1727,6 +1732,7 @@ export class FlyViewTool extends ViewManip {
  */
 export class FitViewTool extends ViewTool {
   public static toolId = "View.Fit";
+  public static iconSpec = "icon-fit-to-view";
   public oneShot: boolean;
   public doAnimate: boolean;
   public isolatedOnly: boolean;
@@ -1797,6 +1803,7 @@ export class StandardViewTool extends ViewTool {
  */
 export class WindowAreaTool extends ViewTool {
   public static toolId = "View.WindowArea";
+  public static iconSpec = "icon-window-area";
   private _haveFirstPoint: boolean = false;
   private _firstPtWorld: Point3d = Point3d.create();
   private _secondPtWorld: Point3d = Point3d.create();
@@ -2247,6 +2254,7 @@ export class ViewRedoTool extends ViewTool {
  */
 export class ViewToggleCameraTool extends ViewTool {
   public static toolId = "View.ToggleCamera";
+  public static iconSpec = "icon-camera";
 
   public onInstall(): boolean { return (undefined !== this.viewport && this.viewport.view.allow3dManipulations()); }
 

@@ -1,102 +1,59 @@
-# 1.1.0 Change Notes
+# 1.2.0 Change Notes
 
-## Update to TypeScript 3.5
+## Markers may now have HTML decorations
 
-For the 1.0 release, iModel.js was using TypeScript 3.2. In order to take advantage of recent improvements, iModel.js has moved up to TypeScript 3.5. One of the main features of interest was the incremental build support. TypeScript 3.5 also includes some enhanced error checking over what was available in 3.2. This makes it easier to identify potential problems, but also may mean that source code that successfully compiled using 3.2 may require minor adjustments to compile using 3.5.
+Markers are used to position decorations in a view that follow a position in world coordinates. Previously they could display World Decorations and Canvas Decorations. They may now also include an optional HTML Decoration by assigning the "htmlElement" member. See [Marker]($frontend) documentation for details.
 
-Please see the [TypeScript Roadmap](https://github.com/Microsoft/TypeScript/wiki/Roadmap) for more details.
+## Updates to authorization
 
-## New frontend-devtools package
+* [OidcBrowserClient]($frontend) now uses local storage instead of session storage to store access tokens. The state of the authorization would therefore now be preserved if the browser was closed and reopened.
+**Note**: The browser setting to clear local storage on exit must not be enabled.
 
-The new `frontend-devtools` package contains a collection of simple UI widgets providing diagnostics and customization related to the display system. These include:
+* [OidcBrowserClient]($frontend) can now be used in authorization code workflows. A new responseType parameter can be set to "code" to support these workflows. This also requires a new client to be registered.
 
-  * `MemoryTracker` - reports on total GPU memory usage, breaking it down by different types of objects like textures and buffers. Memory can be reported for all tile trees in the system or only those currently displayed in the viewport.
-  * `FpsTracker` - reports average frames-per-second. Note: this forces the scene to be redrawn every frame, which may impact battery life on laptops and mobile devices.
-  * `TileStatisticsTracker` - reports exhaustive tile request statistics, including the current numbers of active and pending requests, the total number of completed, dispatched, failed, and timed-out requests, and more.
-  * `ToolSettingsTracker` - allows settings affecting the operation of viewing tools to be customized.
+* [OidcAgentClient]($clients-backend) is now available as beta (it was marked internal earlier). Using the client requires an Agent registration and potential changes to the Connect Project settings - see more documentation in [OidcAgentClient]($clients-backend).
 
-These widgets may be used in any combination. Alternatively, `DiagnosticsPanel` bundles them all together as a set of expandable panels along with a handful of other features like freezing the current scene, controlling display of tile bounding boxes, and hiding particular types of geometry.
+## Support for vertex array objects
 
-![Diagnostics Panel](./assets/diagnostics_panel.png)
+On systems that support the [required WebGL extension](https://developer.mozilla.org/en-US/docs/Web/API/OES_vertex_array_object), vertex array objects are used to improve display performance.
 
-## Display system optimizations
+## Display system bug fixes
 
-Many incremental enhancements contributed to improved performance and quality of the rendering system and decreased memory usage, including:
+* Fixed two bugs in which [Viewport.changeCategoryDisplay]($frontend) and [Viewport.addViewedModels]($frontend) would sometimes fail to immediately update the contents of the viewport.
 
-  * Reducing the number of tiles requested and expediently cancelling requests for tiles which are no longer needed.
-  * Improving culling logic - this particularly improves performance when a clip volume is applied to the view.
-  * Reclaiming memory from not-recently-drawn tiles.
-  * Decompressing texture images in the background using web workers.
-  * Eliminating distortion of text, and of the skybox in orthographic views.
-  * Enabling tiles to be downloaded without edge data, and optimizing shaders to more efficiently render tiles without edges.
+* Fixed a regression that prevented the tiles comprising the background map from being reprojected using the the geocoordinate system defined in the iModel, causing the map graphics to be incorrectly aligned with the model geometry.
 
+* Fixed the behavior of the "Data Attribution" link that, when clicked, displays copyright information for map tiles displayed in the view. Previously it would always open an empty modal dialog. Now, if any copyright information is available, it will be correctly displayed in the dialog; otherwise, a toast message will be displayed indicating the unavailability of attribution.
 
+## Option to discard ImageBuffer alpha channel
 
-## Changes to handling of GUID ECProperties
+Functions for converting the contents of an [ImageBuffer]($frontend) into an `HTMLCanvasElement` or PNG image now take an optional argument indicating whether or not the alpha channel should be preserved. [imageBufferToCanvas]($frontend), [imageBufferToPngDataUrl]($frontend), and [imageBufferToBase64EncodedPng]($frontend) all support the new argument.
 
-A [Guid]($bentleyjs-core) is stored inside an [IModelDb]($backend) as an ECProperty of `binary` type (a "blob" of bytes) with `extendedTypeName="BeGuid"`, but represented in Typescript as a `string`. ECSql queries must translate between these two representations. Previously, querying such a property would return a 16-byte `Uint8Array`; in iModel.js 1.1 it instead returns a `string`.
+## Enhancements to IModelDb.exportGraphics
 
-The example below selects a Guid property:
-```ts
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid IS NOT NULL")) {
-    // Expect row.federationGuid to be a string of the format "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-  }
-```
+* [IModelDb.exportGraphics]($backend) can now optionally return information about [GeometryPart]($backend) instances encountered in a [GeometryStream]($common). [IModelDb.exportPartGraphics]($backend) can then be used to handle this information in a more efficient manner.
 
-When a Guid is bound to an ECSql parameter, either the `Uint8Array` **or** the `string` representation can be supplied. In the example below, the `string` representation is supplied:
-```ts
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = ?", ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"])) {
-    // ...
-  }
-```
+* [IModelDb.exportGraphics]($backend) can now optionally return information about linework (or "open") geometry encountered in a GeometryStream.
 
-Currently, the `string` representation **cannot** be used directly inside an ECSql statement. This will be fixed in a future version. For now, use the helper functions `GuidToStr` and `StrToGuid` to explicitly convert between binary and string:
-```ts
-  // WARNING: The following will not work because no implicit conversion between BINARY and STRING is performed.
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) { /* */ }
+* An example GLTF 2.0 exporter demonstrating these features is now available under test-apps in the iModel.js monorepo.
 
-  // This query is logically equivalent to the above, and will work as expected because the string is explicitly converted to a blob.
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE FederationGuid = StrToGuid('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')")) { /* */ }
+## Added a roadmap
 
-  // The inverse conversion can also be useful.
-  for await (const row of conn.query("SELECT FederationGuid FROM bis.Element WHERE GuidToStr(FederationGuid) = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'")) { /* */ }
-```
+[High level Roadmap](./Roadmap.md) - We want your feedback, check it out and help us improve it.
 
-## ECSQL support for correlated subqueries
+## Geometry
 
-ECSql now supports the following syntax for correlated subqueries
-```
-  [NOT] EXISTS (<subquery>)
-```
-### Example
-```sql
-SELECT ECInstanceId FROM bis.Element E
-  WHERE EXISTS (
-      SELECT 1 FROM meta.ECClassDef C WHERE C.ECInstanceId = E.ECClassId AND C.Name='Pump')
+* Various new methods for manipulating polygons and curves
+  * [RegionOps.computeXYAreaMoments]($geometry)
+  * [RegionOps.constructPolygonWireXYOffset]($geometry)
+  * [PolylineOps.compressByChordError]($geometry)
+  * [CurveCurve.intersectionXYZ]($geometry)
+* Correct stroking of [BezierCurve3d]($geometry)
 
-SELECT ECInstanceId FROM bis.Element E
-  WHERE NOT EXISTS (
-      SELECT 1 FROM meta.ECClassDef C WHERE C.ECInstanceId = E.ECClassId AND C.Name='Pump')
+## iModel UI Enhancements
 
-```
+* UI Items now support badging with BetaBadge. Applications can now specify an image to overlay on an item to highlight it. For example, early release tools can be marked with a badge to indicate their beta state.
 
-## ECSQL support for bitwise operators
+* The 9-zone UI now supports an external set of Stage Panels. These panels can be used to move high-density widgets out of the area shared by the graphical viewport for ease of use. The Stage Panels feature is part of the ui-ninezone package and is in preview.
 
-ECSql now supports the following bitwise operators. The operand is treated as a signed 64-bit integer.
-
-  * `~` not
-  * `|` or
-  * `&` and
-  * `<<` left-shift
-  * `>>` right-shift
-
-### Example
-```sql
-SELECT 2 & prop FROM test.Foo WHERE prop & 2 = 2
-
-SELECT 2 | prop FROM test.Foo WHERE prop | 2 = 2
-
-SELECT *  FROM test.Foo WHERE (1 << 2) & prop
-
-SELECT * FROM test.Foo WHERE ~prop & 2;
-```
+* Applications can now serialize and deserialize the layout and content of the ContentView using the SaveViewLayout class. The SavedView and SavedViewLayout classes are in preview.

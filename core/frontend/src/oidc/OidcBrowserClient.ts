@@ -6,7 +6,7 @@
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo } from "@bentley/imodeljs-clients";
-import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger, WebStorageStateStore } from "oidc-client";
+import { User, UserManager, UserManagerSettings, Log as OidcClientLog, Logger as IOidcClientLogger } from "oidc-client";
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
@@ -310,7 +310,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       query_status_response_type: this._configuration.responseType || "id_token token",
       scope: this._configuration.scope,
       loadUserInfo: true,
-      userStore: new WebStorageStateStore({ store: window.localStorage }),
+      // userStore: new WebStorageStateStore({ store: window.localStorage }),
       clockSkew: this._configuration.clockSkew,
       metadata: this._configuration.metadata,
     };

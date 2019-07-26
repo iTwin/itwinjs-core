@@ -177,6 +177,14 @@ export interface TreeProps extends CommonProps {
    */
   checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
 
+  /**
+   * Set to `true` to remove the ability to control multiple checkboxes using a single click.
+   *
+   * By default, this is set to `false` and checking a selected node's checkbox results in all selected nodes'
+   * checkboxes being checked.
+   */
+  bulkCheckboxActionsDisabled?: boolean;
+
   /** Called when nodes change their checkbox state. */
   onCheckboxClick?: (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => void;
 
@@ -205,6 +213,7 @@ interface TreeState {
     modelReady: boolean;
     selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
     checkboxInfo?: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    bulkCheckboxActionsDisabled?: boolean;
     nodeHighlightingProps?: HighlightableTreeProps;
     cellEditing?: EditableTreeProps;
   };
@@ -264,6 +273,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         dataProvider: props.dataProvider,
         selectedNodes: props.selectedNodes,
         checkboxInfo: props.checkboxInfo,
+        bulkCheckboxActionsDisabled: props.bulkCheckboxActionsDisabled,
         modelReady: false,
       },
       model,
@@ -320,6 +330,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     return new NodeEventManager(
       nodeManager,
+      !props.bulkCheckboxActionsDisabled,
       {
         onSelectionModified: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>, deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
           selectNodes(selectedNodes);
@@ -345,6 +356,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
             }
           }
 
+          // istanbul ignore else
           if (props.onCheckboxClick) {
             props.onCheckboxClick(stateChanges.map(({ node, newState }) => ({ node: node.payload!, newState })));
           }
@@ -368,6 +380,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         modelReady: state.modelReady,
         selectedNodes: props.selectedNodes,
         checkboxInfo: props.checkboxInfo,
+        bulkCheckboxActionsDisabled: props.bulkCheckboxActionsDisabled,
         nodeHighlightingProps: props.nodeHighlightingProps,
         cellEditing: props.cellEditing,
       },
@@ -403,6 +416,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
           // note: calling this may mutate `model` in state
           state.model.updateTreeSelection(props.selectedNodes);
         });
+      }
+
+      if (props.bulkCheckboxActionsDisabled !== state.prev.bulkCheckboxActionsDisabled) {
+        derivedState.nodeEventManager = Tree.createNodeEventManager(derivedState.nodeLoadingOrchestrator, derivedState.model, props);
       }
     }
 

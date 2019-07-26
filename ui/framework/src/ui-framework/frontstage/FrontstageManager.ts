@@ -86,6 +86,18 @@ export interface ToolActivatedEventArgs {
  */
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> { }
 
+/** Tool Icon Changed Event Args interface.
+ * @public
+ */
+export interface ToolIconChangedEventArgs {
+  iconSpec: string;
+}
+
+/** Tool Icon Changed Event class.
+ * @public
+ */
+export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> { }
+
 /** Modal Frontstage information interface.
  * @public
  */
@@ -114,7 +126,7 @@ export class FrontstageManager {
   private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
 
-  /** This should only be caused within FrontstageManager and its tests.
+  /** This should only be called within FrontstageManager and its tests.
    *  @internal
    */
   public static ensureToolInformationIsSet(toolId: string): void {
@@ -136,7 +148,7 @@ export class FrontstageManager {
 
         // if the tool data is not already cached then see if there is data to cache
         FrontstageManager.ensureToolInformationIsSet(tool.toolId);
-        FrontstageManager.setActiveToolId(tool.toolId);
+        FrontstageManager.setActiveTool(tool);
       });
     }
   }
@@ -158,6 +170,9 @@ export class FrontstageManager {
 
   /** Get Tool Activated event. */
   public static readonly onToolActivatedEvent = new ToolActivatedEvent();
+
+  /** Get Tool Icon Changed event. */
+  public static readonly onToolIconChangedEvent = new ToolIconChangedEvent();
 
   /** Get Content Layout Activated event. */
   public static readonly onContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
@@ -282,6 +297,12 @@ export class FrontstageManager {
     FrontstageManager.onToolActivatedEvent.emit({ toolId });
   }
 
+  /** Sets the active tool */
+  public static setActiveTool(tool: Tool): void {
+    FrontstageManager.setActiveToolId(tool.toolId);
+    FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: tool.iconSpec });
+  }
+
   /** Gets the active tool's [[ToolInformation]] */
   public static get activeToolInformation(): ToolInformation | undefined {
     return FrontstageManager._toolInformationMap.get(FrontstageManager.activeToolId);
@@ -296,19 +317,6 @@ export class FrontstageManager {
 
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
       return toolUiProvider.toolSettingsNode;
-
-    return undefined;
-  }
-
-  /** Gets the Tool Assistance React node of the active tool.
-   * @return  Tool Assistance React node of the active tool, or undefined if there is no active tool or Tool Assistance for the active tool.
-   */
-  public static get activeToolAssistanceNode(): React.ReactNode | undefined {
-    const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
-
-    if (toolUiProvider && toolUiProvider.toolAssistanceNode)
-      return toolUiProvider.toolAssistanceNode;
 
     return undefined;
   }

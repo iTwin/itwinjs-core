@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<PopupButton /> should invoke children as render prop 1`] = `
+<ExpandableItem
+  panel={
+    <WithOnOutsideClick
+      className="nz-toolbar-item-expandable-group-panel"
+      onOutsideClick={[Function]}
+    >
+      <div />
+    </WithOnOutsideClick>
+  }
+>
+  <Item
+    icon={
+      <Unknown
+        iconSpec={undefined}
+      />
+    }
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    title=""
+  />
+</ExpandableItem>
+`;
+
+exports[`<PopupButton /> should render with no padding 1`] = `
+<ExpandableItem
+  noPadding={true}
+  panel={
+    <WithOnOutsideClick
+      className="nz-toolbar-item-expandable-group-panel uifw-popupbutton-noPadding"
+      onOutsideClick={[Function]}
+    >
+      <div />
+    </WithOnOutsideClick>
+  }
+>
+  <Item
+    icon={
+      <Unknown
+        iconSpec={undefined}
+      />
+    }
+    onClick={[Function]}
+    onKeyDown={[Function]}
+    title=""
+  />
+</ExpandableItem>
+`;

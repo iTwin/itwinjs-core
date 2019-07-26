@@ -38,8 +38,8 @@ export class ConditionalItemDef extends ItemDefBase {
     return this.conditionalId;
   }
 
-  public resolveItems(): void {
-    if (this._itemList)
+  public resolveItems(force?: boolean): void {
+    if (this._itemList && !force)
       return;
 
     this._itemList = new ItemList();

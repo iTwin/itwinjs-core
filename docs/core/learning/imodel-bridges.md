@@ -7,17 +7,17 @@ iModel Bridges need to carefully transform the source data to BIS-based data in 
 
 Examples of iModel Bridges include:
 
-- AECOSim Building Designer
-- DGN
-- DWG
-- RVT
-- ISM
+- MicroStation (.dgn)
+- AutoCAD (.dwg)
+- Revit (.rvt)
+- OpenBuilding Designer
 - OpenPlant
 - OpenRail Designer
 - OpenRoads Designer
 - ProStructures
 - SmartPlant
 - Substation
+- ISM
 - etc.
 
 ## Bridge execution

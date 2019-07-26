@@ -12,6 +12,7 @@ import { Constant } from "../../src/Metadata/Constant";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { Schema } from "../../src/Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Constant", () => {
 
@@ -191,7 +192,7 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJson(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
       expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
@@ -216,7 +217,7 @@ describe("Constant", () => {
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJson(true, true);
 
-      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem");
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
       expect(constantSerialization.name).eql("TestConstant");
       expect(constantSerialization.schemaVersion).eql("01.02.03");
       expect(constantSerialization.schema).eql("TestSchema");
@@ -268,6 +269,31 @@ describe("Constant", () => {
 
       assert.strictEqual(constantSerialization.definition, "PI");
       assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+  });
+
+  describe("toXml", () => {
+    const fullyDefinedConstant = createSchemaJson({
+      label: "Test Constant",
+      description: "testing a constant",
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "PI",
+      numerator: 5.5,
+      denominator: 5.1,
+    });
+    const newDom = createEmptyXmlDocument();
+
+    it("should properly serialize", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testConstant = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testConstant);
+      const serialized = await testConstant!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("Constant");
+      expect(serialized.getAttribute("definition")).to.eql("PI");
+      expect(serialized.getAttribute("denominator")).to.eql("5.1");
+      expect(serialized.getAttribute("numerator")).to.eql("5.5");
+      expect(serialized.getAttribute("phenomenon")).to.eql("TestPhenomenon");
     });
   });
 });

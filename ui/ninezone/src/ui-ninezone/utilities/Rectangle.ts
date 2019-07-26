@@ -27,16 +27,6 @@ export enum Corner {
   BottomLeft,
 }
 
-/** Available edges of [[Rectangle]].
- * @alpha
- */
-export enum Edge {
-  Left,
-  Top,
-  Right,
-  Bottom,
-}
-
 /** Describes and provides methods to work with 2d bounds.
  * @alpha
  */

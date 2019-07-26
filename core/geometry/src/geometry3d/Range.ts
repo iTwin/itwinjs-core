@@ -99,7 +99,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public toFloat64Array(): Float64Array { return Range3d.toFloat64Array(this); }
   /**
    * Construct a Range3d from an array of double-precision values
-   * @param f64 the array, which should contain exactly 6 values in this order: lowx, lowy, lowz, highx, highy, highz
+   * @param f64 the array, which should contain exactly 6 values in this order: lowX, lowY, lowZ, highX, highY, highZ
    * @return a new Range3d object
    */
   public static fromFloat64Array<T extends Range3d>(f64: Float64Array): T {
@@ -115,11 +115,11 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public static fromArrayBuffer<T extends Range3d>(buffer: ArrayBuffer): T { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
-  public constructor(lowx: number = RangeBase._EXTREME_POSITIVE, lowy: number = RangeBase._EXTREME_POSITIVE, lowz: number = RangeBase._EXTREME_POSITIVE,
-    highx: number = RangeBase._EXTREME_NEGATIVE, highy: number = RangeBase._EXTREME_NEGATIVE, highz: number = RangeBase._EXTREME_NEGATIVE) {
+  public constructor(lowX: number = RangeBase._EXTREME_POSITIVE, lowY: number = RangeBase._EXTREME_POSITIVE, lowZ: number = RangeBase._EXTREME_POSITIVE,
+    highX: number = RangeBase._EXTREME_NEGATIVE, highY: number = RangeBase._EXTREME_NEGATIVE, highZ: number = RangeBase._EXTREME_NEGATIVE) {
     super();
-    this.low = Point3d.create(lowx, lowy, lowz);
-    this.high = Point3d.create(highx, highy, highz);
+    this.low = Point3d.create(lowX, lowY, lowZ);
+    this.high = Point3d.create(highX, highY, highZ);
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
@@ -347,9 +347,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     const yy = y - origin.y;
     const zz = z - origin.z;
     this.extendXYZ(
-      coffs[0] * xx + coffs[3] * yy + coffs[6] * zz,
-      coffs[1] * xx + coffs[4] * yy + coffs[7] * zz,
-      coffs[2] * xx + coffs[5] * yy + coffs[8] * zz);
+      coffs[0] * xx + coffs[1] * yy + coffs[2] * zz,
+      coffs[3] * xx + coffs[4] * yy + coffs[5] * zz,
+      coffs[6] * xx + coffs[7] * yy + coffs[8] * zz);
     return true;
   }
 
@@ -782,8 +782,7 @@ export class Range1d extends RangeBase {
         if (Number.isFinite(value))
           this.extendX(value);
       }
-    } else if (json.low && json.low && json.high && json.high) {
-      this.setNull();
+    } else if (json.low !== undefined && Number.isFinite(json.low) && json.high !== undefined && Number.isFinite(json.high)) {
       this.extendX(json.low);
       this.extendX(json.high);
     }
@@ -1044,7 +1043,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public toFloat64Array(): Float64Array { return Range2d.toFloat64Array(this); }
   /**
    * Construct a Range2d from an array of double-precision values
-   * @param f64 the array, which should contain exactly 4 values in this order: lowx, lowy, highx, highy
+   * @param f64 the array, which should contain exactly 4 values in this order: lowX, lowY, highX, highY
    * @return a new Range2d object
    */
   public static fromFloat64Array<T extends Range2d>(f64: Float64Array): T {
@@ -1060,10 +1059,10 @@ export class Range2d extends RangeBase implements LowAndHighXY {
   public static fromArrayBuffer<T extends Range2d>(buffer: ArrayBuffer): T { return this.fromFloat64Array(new Float64Array(buffer)); }
 
   // explicit ctor - no enforcement of value relationships
-  public constructor(lowx = Range2d._EXTREME_POSITIVE, lowy = Range2d._EXTREME_POSITIVE, highx = Range2d._EXTREME_NEGATIVE, highy = Range2d._EXTREME_NEGATIVE) {
+  public constructor(lowX = Range2d._EXTREME_POSITIVE, lowY = Range2d._EXTREME_POSITIVE, highX = Range2d._EXTREME_NEGATIVE, highY = Range2d._EXTREME_NEGATIVE) {
     super();
-    this.low = Point2d.create(lowx, lowy);
-    this.high = Point2d.create(highx, highy);
+    this.low = Point2d.create(lowX, lowY);
+    this.high = Point2d.create(highX, highY);
   }
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
   public isAlmostEqual(other: Range2d): boolean {

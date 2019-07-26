@@ -28,6 +28,13 @@ export class Phenomenon extends SchemaItem {
     return schemaJson;
   }
 
+  /** @internal */
+  public async toXml(schemaXml: Document): Promise<Element> {
+    const itemElement = await super.toXml(schemaXml);
+    itemElement.setAttribute("definition", this.definition);
+    return itemElement;
+  }
+
   public deserializeSync(phenomenonProps: PhenomenonProps) {
     super.deserializeSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())

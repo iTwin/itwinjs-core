@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+
+.nz-footer-toolAssistance-newDot {
+  height: 5px;
+  width: 5px;
+  background-color: $buic-foreground-success;
+  border-radius: 50%;
+  display: inline-block;
+}

@@ -20,8 +20,6 @@ beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProp
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
-alpha;BackstageCloseEvent 
-alpha;BackstageCloseEventArgs
 public;BackstageEvent 
 public;BackstageEventArgs
 public;BackstageItemProps 
@@ -86,6 +84,23 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
+alpha;CursorDirection
+alpha;CursorDirectionParts
+alpha;CursorInformation
+alpha;CursorPopup 
+internal;CursorPopupCloseEvent 
+internal;CursorPopupCloseEventArgs
+alpha;CursorPopupContent: React_2.FunctionComponent
+alpha;CursorPopupManager
+internal;CursorPopupOpenEvent 
+internal;CursorPopupOpenEventArgs
+alpha;CursorPopupProps
+internal;CursorPopupShow
+internal;CursorPopupUpdatePositionEvent 
+internal;CursorPopupUpdatePositionEventArgs
+alpha;CursorPrompt
+alpha;CursorUpdatedEvent 
+alpha;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
 public;DeepReadonly
@@ -110,7 +125,6 @@ alpha;DrawingNavigationAidControl
 alpha;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
 internal;DrawingNavigationCanvasProps
-internal;EachWidgetProps
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
@@ -118,6 +132,8 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;FaceCell 
 internal;FaceCellProps 
+internal;FrameworkStagePanel 
+internal;FrameworkStagePanelProps
 beta;FrameworkState
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
@@ -174,6 +190,7 @@ public;KeyboardShortcutMenuEvent
 public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
 alpha;KeyinBrowser 
+alpha;KeyinBrowserProps 
 public;LabelProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
@@ -227,6 +244,8 @@ public;PointerMessageChangedEvent
 public;PointerMessageChangedEventArgs
 public;PointerMessageProps 
 public;PopupButton 
+public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
+public;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
 beta;PresentationSelectionScope
 internal;ProjectInfo
@@ -311,12 +330,20 @@ beta;ThemeManager: any
 internal;TileLoadingIndicator 
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
+alpha;ToolAssistanceChangedEvent 
+alpha;ToolAssistanceChangedEventArgs
+alpha;ToolAssistanceField 
+alpha;ToolAssistanceFieldDefaultProps = Pick
+alpha;ToolAssistanceFieldProps 
 internal;Toolbar 
+beta;ToolbarButtonHelper
 internal;ToolbarProps 
 public;ToolbarWidgetDefBase 
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
+public;ToolIconChangedEvent 
+public;ToolIconChangedEventArgs
 public;ToolInformation
 public;ToolItemDef 
 public;ToolItemProps 
@@ -370,7 +397,8 @@ internal;WidgetStackTabsProps
 public;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
-internal;WidgetTabProps
+internal;WidgetTab
+internal;WidgetTabs =
 public;WidgetType
 public;Workflow 
 public;WorkflowActivatedEvent 

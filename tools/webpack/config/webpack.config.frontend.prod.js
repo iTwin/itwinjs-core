@@ -30,7 +30,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
   bail: true,
   // We generate sourcemaps in production. This is slow but gives good results.
   // You can exclude the *.map files from the build during deployment.
-  devtool: "source-map",
+  devtool: (process.env.DISABLE_SOURCE_MAPS) ? false : "source-map",
   // In production, we only want to load the polyfills and the app code.
   entry: [require.resolve("./polyfills"), paths.appIndexJs],
   output: {
@@ -130,15 +130,6 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
       // both options are optional
       filename: 'static/css/[name].[chunkhash:8].css',
       chunkFilename: 'static/css/[name].[chunkhash:8].chunk.css',
-    }),
-    // Find and bundle all license notices from package dependencies
-    new plugins.PrettyLicenseWebpackPlugin({
-      pattern: /.*/,
-      includeUndefined: true,
-      includePackagesWithoutLicense: true,
-      unacceptablePattern: /^L?GPL/i,
-      licenseFileOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseFileOverrides,
-      licenseTypeOverrides: (require(paths.appPackageJson).buildConfig || {}).licenseTypeOverrides,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without

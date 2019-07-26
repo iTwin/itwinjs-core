@@ -13,12 +13,14 @@ import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Relativ
 describe("PointerMessage", () => {
   let showMessage: sinon.SinonSpy;
   let hideMessage: sinon.SinonSpy;
+  let updateMessage: sinon.SinonSpy;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
     showMessage = sinon.spy(PointerMessage, "showMessage");
     hideMessage = sinon.spy(PointerMessage, "hideMessage");
+    updateMessage = sinon.spy(PointerMessage, "updateMessage");
   });
 
   let notifications: AppNotificationManager;
@@ -86,6 +88,11 @@ describe("PointerMessage", () => {
 
     details.setPointerTypeDetails(viewport, point, RelativePosition.TopLeft);
     notifications.outputMessage(details);
+  });
+
+  it("should update the message", () => {
+    notifications.updatePointerMessage({ x: 1, y: 1 }, RelativePosition.BottomRight);
+    expect(updateMessage.called).to.be.true;
   });
 
   it("should unmount correctly", () => {

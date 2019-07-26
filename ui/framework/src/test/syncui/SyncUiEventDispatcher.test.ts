@@ -12,7 +12,7 @@ import {
   ModalFrontstageChangedEventArgs,
   ToolActivatedEventArgs,
 } from "../../ui-framework/frontstage/FrontstageManager";
-import { Backstage, BackstageCloseEventArgs } from "../../ui-framework/backstage/Backstage";
+import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
 import { WorkflowManager, TaskActivatedEventArgs, WorkflowActivatedEventArgs } from "../../ui-framework/workflow/Workflow";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "../../ui-framework/content/ContentViewManager";
 import {
@@ -211,7 +211,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageCloseEvent.emit({} as BackstageCloseEventArgs);
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs);
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

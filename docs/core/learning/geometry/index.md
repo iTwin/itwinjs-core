@@ -1,6 +1,7 @@
 # The Geometry Library
 
 Topics:
+
 * [Point Vector methods](./PointVector.md)
 * [Curve Primitives](./CurvePrimitive.md)
 * [Curve Collections](./CurveCollection.md)
@@ -11,6 +12,7 @@ Topics:
 * [StrokeOptions](./StrokeOptions.md)
 
 Web Links
+
 * Points and Vectors
   * [Cross Product of Vectors](https://en.wikipedia.org/wiki/Cross_product)
   * [Dot Product of Vectors](https://en.wikipedia.org/wiki/Dot_product)

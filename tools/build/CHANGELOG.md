@@ -1,6 +1,14 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Add the deprecation tslint rule as a warning. https://palantir.github.io/tslint/rules/deprecation/
+- Closing STDIN no longer kills child processes created using simpleSpawn
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT

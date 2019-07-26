@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Checkbox: added theming
+- Remove flex-grow from dialog containers - not supported by Firefox
+- removed flex-grow from dialogs
+- Add missing space in scss files.
+- Update styles on Select and Input components.
+- Added CursorInformation and CursorPopup
+- Added ToolAssistance support and Tool.iconSpec
+- Fixed Toolbar resizing, ContextMenu className and $buic-row-hover & $buic-row-selection
+- Checkbox: Fix `onClick` event so that it can be used to stop event propagation
+- Remove excessive z-index CSS rule.
+- Update light and dark theme colors.
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT

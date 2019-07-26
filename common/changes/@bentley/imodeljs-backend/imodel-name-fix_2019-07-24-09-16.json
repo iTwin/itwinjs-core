@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Bug 148574: Fixed issue with opening iModels with names that are invalid on Unix or Windows. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

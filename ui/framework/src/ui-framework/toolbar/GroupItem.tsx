@@ -63,8 +63,8 @@ export class GroupItemDef extends ActionButtonItemDef {
     return this.groupId;
   }
 
-  public resolveItems(): void {
-    if (this._itemList)
+  public resolveItems(force?: boolean): void {
+    if (this._itemList && !force)
       return;
 
     this._itemList = new ItemList();
@@ -93,8 +93,8 @@ export class GroupItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    const key = this.getKey(index);
     this.resolveItems();
+    const key = this.getKey(index);
 
     return (
       <GroupItem
@@ -369,7 +369,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
           onKeyDown={this._handleKeyDown}
           icon={icon}
           onSizeKnown={this.props.onSizeKnown}
-          betaBadge={groupItemDef.betaBadge && <BetaBadge />}
+          badge={groupItemDef.betaBadge && <BetaBadge />}
         />
       </ExpandableItem>
     );
@@ -551,7 +551,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
                 label={item.label}
                 onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
                 icon={icon}
-                betaBadge={item.betaBadge && <BetaBadge />}
+                badge={item.betaBadge && <BetaBadge />}
               />
             );
           })}

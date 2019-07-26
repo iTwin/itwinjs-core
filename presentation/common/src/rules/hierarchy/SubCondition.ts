@@ -16,8 +16,8 @@ import { ConditionContainer } from "../Rule";
 export interface SubCondition extends ConditionContainer {
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/hierarchies/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/presentation/Hierarchies/ECExpressions.md#rule-condition).
    */
   condition?: string;
 

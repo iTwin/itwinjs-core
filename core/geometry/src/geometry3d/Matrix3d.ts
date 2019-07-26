@@ -1302,17 +1302,17 @@ export class Matrix3d implements BeJSONFunctions {
       result);
   }
 
-    /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
-    public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
-      const x = vector.x;
-      const y = vector.y;
-      const z = vector.z;
-      return Point3d.create(
-        origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
-        origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
-        origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
-        result);
-    }
+  /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
+  public static xyzPlusMatrixTimesXYZ(origin: XYZ, matrix: Matrix3d, vector: XYAndZ, result?: Point3d): Point3d {
+    const x = vector.x;
+    const y = vector.y;
+    const z = vector.z;
+    return Point3d.create(
+      origin.x + matrix.coffs[0] * x + matrix.coffs[1] * y + matrix.coffs[2] * z,
+      origin.y + matrix.coffs[3] * x + matrix.coffs[4] * y + matrix.coffs[5] * z,
+      origin.z + matrix.coffs[6] * x + matrix.coffs[7] * y + matrix.coffs[8] * z,
+      result);
+  }
   /** compute  `origin + matrix * vector`  using all xyz parts of the inputs. */
   public static xyzPlusMatrixTimesXYZInPlace(origin: XYZ, matrix: Matrix3d, vector: WritableXYAndZ) {
     const x = vector.x;
@@ -2143,6 +2143,7 @@ export class Matrix3d implements BeJSONFunctions {
     }
   }
   /** convert the matrix to a quaternion.
+   * @note This calculation requires the matrix to have unit length rows and columns.
    * WARNING: There is frequent confusion over whether a "from quaternion" matrix is organized by rows and columns.
    * WARNING: If you find that the matrix seems to rotate by the opposite angle expect it, transpose it.
    */

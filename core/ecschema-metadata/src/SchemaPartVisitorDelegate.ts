@@ -365,9 +365,8 @@ export class SchemaPartVisitorDelegate {
       this._visitor.visitRelationshipConstraintSync(schemaPart);
     }
 
-    if (isCustomAttributeContainer(schemaPart) && this._visitor.visitCustomAttributeContainerSync) {
+    if (isCustomAttributeContainer(schemaPart) && this._visitor.visitCustomAttributeContainerSync)
       this._visitor.visitCustomAttributeContainerSync(schemaPart);
-    }
   }
 
   private async visitSchemaItem(schemaItem: SchemaItem) {

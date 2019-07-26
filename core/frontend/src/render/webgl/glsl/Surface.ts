@@ -31,6 +31,8 @@ import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarCl
 import { addSolarShadowMap } from "./SolarShadowMapping";
 import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { AttributeMap } from "../AttributeMap";
+import { TechniqueId } from "../TechniqueId";
 
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
@@ -85,7 +87,8 @@ const computePosition = `
 `;
 
 function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: IsClassified, shadowable: IsShadowable): ProgramBuilder {
-  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, IsInstanced.Yes === instanced);
+  const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
 
   if (animated)

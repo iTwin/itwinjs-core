@@ -36,17 +36,4 @@ These packages provide the following functions that a frontend requires:
 
 ## Web browser compatibility
 
-> Note: The quality of the web browser's WebGL implementation has a big impact on display performance.
-
-### Supported
-
-* Chrome (recommended for development)
-* Firefox
-* Safari
-* "New" (Chromium-based) Edge
-* Opera
-
-### Not supported
-
-* Internet Explorer
-* "Old" (Chakra-based) Edge
+See [Supported Platforms Page](../SupportedPlatforms.md#Supported-Browsers)

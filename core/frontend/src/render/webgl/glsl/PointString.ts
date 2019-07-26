@@ -11,6 +11,8 @@ import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { ShaderBuilderFlags, ProgramBuilder, VertexShaderComponent, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { IsInstanced } from "../TechniqueFlags";
+import { AttributeMap } from "../AttributeMap";
+import { TechniqueId } from "../TechniqueId";
 
 const computePosition = `
   float lineWeight = computeLineWeight();
@@ -32,7 +34,9 @@ const roundCorners = `
 const computeRoundCorners = "  v_roundCorners = gl_PointSize > 4.0 ? 1.0 : 0.0;";
 
 function createBase(instanced: IsInstanced): ProgramBuilder {
-  const builder = new ProgramBuilder(instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
+  const attrMap = AttributeMap.findAttributeMap(TechniqueId.PointString, IsInstanced.Yes === instanced);
+
+  const builder = new ProgramBuilder(attrMap, instanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);

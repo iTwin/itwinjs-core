@@ -1,6 +1,33 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 01 Jul 2019 19:04:29 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- added optional HTMLElement member to Marker
+- Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint.
+- catch load errors for Sprites
+- Remove colinear clip shape points. Grid spacing is a double.
+- Added tests for Spatial Classifications
+- Added TileAdmin option to disable "magnification" tile refinement strategy, which can prevent production of extraordinarily large tiles in some cases.
+- ViewManager.dropViewport clears tool events associated with the dropped viewport, preventing errors in async event processing code. Added Viewport.isDisposed property.
+- Added limited opt-in support for drawing tiles from secondary IModelConnections and locating elements within them. Users must implement tools that can properly handle results like a HitDetail pointing to a different IModelConnection than the one associated with the viewport.
+- Fix Viewport.addViewedModels() failing to update view if some models needed to be loaded asynchronously.
+- Fix empty message body when display Bing map attribution info.
+- Update beta PluginUiProvider interfaces.
+- Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs
+- Added method to get element mass properties.
+- Added option to discard alpha channel when converting ImageBuffer to HTMLCanvasElement.
+- Measure distance, allow snap outside project extents for version compare. Added measure length, area, and volume tools.
+- Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522.
+- Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application.
+- Choose handle location for for section plane that is visible in the view.
+- Temporarily undid change to save tokens in local storage. 
+- Added ToolAssistance support and Tool.iconSpec
+- The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets.
 
 ## 1.1.0
 Mon, 01 Jul 2019 19:04:29 GMT

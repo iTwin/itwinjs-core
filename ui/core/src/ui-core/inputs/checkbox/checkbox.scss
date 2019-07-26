@@ -5,62 +5,88 @@
 @import "../../style/index";
 
 @mixin uicore-inputs-checkbox {
-  display: block;
+  font-family: $uicore-font-family;
+  display: table; // this centers the span
   position: relative;
-  padding: 0 0 0 $uicore-line-height;
-  margin: $uicore-unbordered-padding 0;
-  background-color: $buic-background-control;
-  cursor: pointer;
+  font-size: $uicore-font-size;
+  height: 1em;
+  color: $buic-text-color;
+  -webkit-user-select: none;
+  user-select: none;
 
-  > input {
-    position: absolute;
-    left: 4px;
-    top: 0;
-    height: $uicore-line-height;
+  input[type="checkbox"] {
+    // display: none;
+    opacity: 0;
+    padding: 0;
     margin: 0;
+    width: 1em;
+    font-size: 1em;
+  }
 
-    font-size: $uicore-font-size;
-    line-height: $uicore-line-height;
-    text-align: left;
-
+  &:hover input[type="checkbox"]:not([disabled]) + .core-checkbox-label {
+    color: $buic-foreground-activehover;
     cursor: pointer;
   }
 
-  > .core-checkbox-label {
-    display: inline;
-    position: relative;
-    left: 0;
-
-    padding: 0;
-    margin: 0;
-    border: 0 none transparent;
-    font-size: $uicore-font-size;
-    font-style: normal;
-    font-weight: $uicore-font-weight-normal;
-    line-height: $uicore-line-height;
-    text-align: left;
-    vertical-align: initial;
-    white-space: normal;
-    color: $buic-text-color;
+  &:hover input[type="checkbox"]:not([disabled]) + .core-checkbox-label::before {
+    border-color: $buic-foreground-activehover;
   }
 
-  &.disabled {
-    cursor: not-allowed;
+  input[type="checkbox"] + .core-checkbox-label {
+    padding-left: .5em;
+    transition: color .1s ease;
   }
 
-  &.success > .core-checkbox-label {
+  &.success > input[type="checkbox"] + .core-checkbox-label {
     color: $buic-foreground-success; /*$uicore-green;*/
   }
 
-  &.warning > .core-checkbox-label {
+  &.warning > input[type="checkbox"] + .core-checkbox-label {
     color: $buic-foreground-warning; /*$uicore-orange;*/
   }
 
-  &.error > .core-checkbox-label {
+  &.error > input[type="checkbox"] + .core-checkbox-label {
     color: $buic-foreground-alert; /*$uicore-red;*/
   }
 
-  &.disabled > .core-checkbox-label {
-    color: $buic-foreground-disabled; /*$uicore-gray-9;*/
+  input[type="checkbox"] + .core-checkbox-label:before,
+  input[type="checkbox"] + .core-checkbox-label:after {
+    left: 0;
+    top: 50%;
+    position: absolute;
+    box-sizing: border-box;
+    height: 1em;
+    width: 1em;
+    text-align: center;
+    transform: translateY(-50%);
+  }
+
+  input[type="checkbox"] + .core-checkbox-label:before {
+    content: '';
+    background: $buic-background-control;
+    border: 1px solid $buic-foreground-body;
+    border-radius: 3px;
+    transition: border-color .1s ease;
+  }
+
+  input[type="checkbox"]:checked + .core-checkbox-label:after {
+    content: '\2713\0020';
+    padding: 1px;
+    line-height: 1;
+    font-weight: 600;
+    color: $buic-foreground-primary;
+    animation: core-checkbox-tick .1s ease-in;
+    animation-fill-mode: forwards;
+  }
+
+  input[type="checkbox"]:disabled + .core-checkbox-label,
+  input[type="checkbox"]:disabled + .core-checkbox-label:before,
+  input[type="checkbox"]:disabled + .core-checkbox-label:after {
+    opacity: .4;
+  }
+
+  @keyframes core-checkbox-tick {
+    0%   { transform: translateY(-50%) scale(0); }
+    100% { transform: translateY(-50%) scale(.85); }
   }
 }

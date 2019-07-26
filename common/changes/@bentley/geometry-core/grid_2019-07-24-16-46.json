@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#151464 Improved grid display performance.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Brien.Bastings@bentley.com"
+}

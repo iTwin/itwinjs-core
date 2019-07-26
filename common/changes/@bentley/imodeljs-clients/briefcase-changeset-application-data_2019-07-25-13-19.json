@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added application data querying for iModelHub Briefcases and ChangeSets",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Algirdas.Mikoliunas@bentley.com"
+}

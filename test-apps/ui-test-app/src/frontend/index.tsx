@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { createStore, combineReducers, Store } from "redux";
+import { createStore, Store } from "redux";
 import { Provider } from "react-redux";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, PluginUiProvider, PluginUiManager, UiItemNode, ActionItemInsertSpec, ToolbarItemInsertSpec,
+  IModelAppOptions,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
@@ -23,7 +23,7 @@ import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -35,6 +35,7 @@ import { Tool2 } from "./tools/Tool2";
 import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
+import { UiProviderTool } from "./tools/UiProviderTool";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -42,105 +43,6 @@ import { configure as mobxConfigure } from "mobx";
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
-
-const testPluginUiProvider = false;
-if (testPluginUiProvider) {
-/** alpha test code */
-class TestUiProvider implements PluginUiProvider {
-  public readonly id = "TestUiProvider";
-  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
-    // tslint:disable-next-line: no-console
-    // console.log(`Requesting tools for toolbar ${toolBarId}`);
-
-    if ("[ViewsFrontstage]ToolWidget-horizontal" === toolBarId) {
-      const firstActionSpec: ActionItemInsertSpec = {
-        insertBefore: true,
-        isActionItem: true,
-        itemId: "first-test-action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (first)",
-      };
-
-      const middleActionSpec: ActionItemInsertSpec = {
-        insertBefore: true,
-        relativeToolIdPath: "Tool1",
-        isActionItem: true,
-        itemId: "middle-test- action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (middle)",
-      };
-
-      const lastActionSpec: ActionItemInsertSpec = {
-        insertBefore: false,
-        isActionItem: true,
-        itemId: "last-test-action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (last)",
-      };
-
-      const nestedActionSpec: ActionItemInsertSpec = {
-        insertBefore: false,
-        relativeToolIdPath: "Conditional-formatting\\tool-formatting-setting\\toggleLengthFormat",
-        isActionItem: true,
-        itemId: "nested-test-action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (nested)",
-      };
-      return [firstActionSpec, middleActionSpec, lastActionSpec, nestedActionSpec];
-
-    } else if ("[ViewsFrontstage]NavigationWidget-horizontal" === toolBarId) {
-      const navHorizontalSpec: ActionItemInsertSpec = {
-        insertBefore: true,
-        relativeToolIdPath: "View.Pan",
-        isActionItem: true,
-        itemId: "nav1-test-action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (navH)",
-      };
-      return [navHorizontalSpec];
-
-    } else if ("[ViewsFrontstage]NavigationWidget-vertical" === toolBarId) {
-      const navVerticalSpec: ActionItemInsertSpec = {
-        insertBefore: false,
-        relativeToolIdPath: "View.Fly",
-        isActionItem: true,
-        itemId: "nav2-test-action-tool",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "test action tool (navV)",
-      };
-      return [navVerticalSpec];
-    }
-
-    return [];
-  }
-}
-
-PluginUiManager.register(new TestUiProvider());
-}
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -253,10 +155,10 @@ export class SampleAppIModelApp {
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
     // this is the rootReducer for the sample application.
-    this.rootReducer = combineReducers<RootState>({
+    this.rootReducer = combineReducers({
       sampleAppState: SampleAppReducer,
       frameworkState: FrameworkReducer,
-    } as any);
+    });
 
     // create the Redux Store.
     this.store = createStore(this.rootReducer,
@@ -316,6 +218,7 @@ export class SampleAppIModelApp {
     ToolWithSettings.register(this.sampleAppNamespace);
     AppSelectTool.register();
     AnalysisAnimationTool.register(this.sampleAppNamespace);
+    UiProviderTool.register(this.sampleAppNamespace);
 
     IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
   }
@@ -559,6 +462,8 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
+  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
+  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
 
   // Set up render option to displaySolarShadows.
   const renderSystemOptions: RenderSystem.Options = {

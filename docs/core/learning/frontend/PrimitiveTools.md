@@ -131,7 +131,3 @@ Example from a simple sketching tool that uses AccuDrawHintBuilder to facilitate
 ```ts
 [[include:PrimitiveTool_PointsTool]]
 ```
-
-
-
-

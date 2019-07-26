@@ -67,10 +67,11 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
 
 /** Create a canvas element with the same dimensions and contents as an image buffer.
  * @param buffer the source [[ImageBuffer]] object from which the [[HTMLCanvasElement]] object will be constructed.
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
  * @returns an [[HTMLCanvasElement]] object containing the contents of the source image buffer, or undefined if the conversion fails.
  * @public
  */
-export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | undefined {
+export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
   if (null === canvas)
     return undefined;
@@ -94,7 +95,7 @@ export function imageBufferToCanvas(buffer: ImageBuffer): HTMLCanvasElement | un
     imageData.data[j + 0] = rgba.r;
     imageData.data[j + 1] = rgba.g;
     imageData.data[j + 2] = rgba.b;
-    imageData.data[j + 3] = rgba.a;
+    imageData.data[j + 3] = preserveAlpha ? rgba.a : 0xff;
     j += 4;
   }
 
@@ -217,24 +218,26 @@ export async function extractImageSourceDimensions(source: ImageSource): Promise
 /**
  * Produces a data url in "image/png" format from the contents of an ImageBuffer.
  * @param buffer The ImageBuffer, of any format.
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
  * @returns a data url as a string suitable for setting as the `src` property of an HTMLImageElement, or undefined if the url could not be created.
  * @public
  */
-export function imageBufferToPngDataUrl(buffer: ImageBuffer): string | undefined {
+export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   // The default format (and the only format required to be supported) for toDataUrl() is "image/png".
-  const canvas = imageBufferToCanvas(buffer);
+  const canvas = imageBufferToCanvas(buffer, preserveAlpha);
   return undefined !== canvas ? canvas.toDataURL() : undefined;
 }
 
 /**
  * Converts the contents of an ImageBuffer to PNG format.
  * @param buffer The ImageBuffer, of any format.
+ * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
  * @returns a base64-encoded string representing the image as a PNG, or undefined if the conversion failed.
  * @public
  */
-export function imageBufferToBase64EncodedPng(buffer: ImageBuffer): string | undefined {
+export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   const urlPrefix = "data:image/png;base64,";
-  const url = imageBufferToPngDataUrl(buffer);
+  const url = imageBufferToPngDataUrl(buffer, preserveAlpha);
   if (undefined === url || !url.startsWith(urlPrefix))
     return undefined;
 

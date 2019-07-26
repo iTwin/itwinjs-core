@@ -114,6 +114,7 @@
     "warningMessageBox": "Warning",
     "errorMessageBox": "Error",
     "alertMessageBox": "Alert",
+    "noIconMessageBox": "No Icon Message",
     "openMessageBox": "Open Message Box",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
@@ -140,6 +141,8 @@
     "clearSelection": "Clear Selection",
     "saveContentLayout": "Save Content Layout",
     "restoreContentLayout": "Restore Content Layout",
+    "startCursorPopup": "Start Cursor Popup",
+    "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog"
   },
@@ -198,6 +201,11 @@
       "keyin": "App Select Element",
       "description": "Element Selection",
       "flyover": "Select"
+    },
+    "TestUiProvider": {
+      "keyin": "TestUiProvider Toggle",
+      "description": "Toggle test UiProvider",
+      "flyover": "Toggle test UiProvider"
     },
     "select": "Select",
     "fitView": "Fit View",

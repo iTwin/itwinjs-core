@@ -67,6 +67,7 @@ export enum SelectionProcessing {
 export class SelectionTool extends PrimitiveTool {
   public static hidden = false;
   public static toolId = "Select";
+  public static iconSpec = "icon-cursor";
   protected _isSelectByPoints = false;
   protected _isSuspended = false;
   protected readonly _points: Point3d[] = [];

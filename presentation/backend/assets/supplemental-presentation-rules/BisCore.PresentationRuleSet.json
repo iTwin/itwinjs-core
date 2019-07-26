@@ -1,0 +1,405 @@
+{
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "BisCore",
+  "supplementationInfo": {
+    "supplementationPurpose": "BisCore specific customization rules"
+  },
+  "supportedSchemas": {
+    "schemaNames": [
+      "BisCore"
+    ]
+  },
+  "rules": [
+    {
+      "ruleType": "InstanceLabelOverride",
+      "onlyIfNotHandled": true,
+      "class": {
+        "schemaName": "BisCore",
+        "className": "GeometricElement"
+      },
+      "values": [
+        {
+          "specType": "Property",
+          "propertyName": "CodeValue"
+        },
+        {
+          "specType": "Composite",
+          "separator": " ",
+          "parts": [
+            {
+              "spec": {
+                "specType": "Property",
+                "propertyName": "UserLabel"
+              },
+              "isRequired": true
+            },
+            {
+              "spec": {
+                "specType": "Composite",
+                "separator": "",
+                "parts": [
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "["
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "BriefcaseId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "-"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "LocalId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "specType": "Composite",
+          "separator": " ",
+          "parts": [
+            {
+              "spec": {
+                "specType": "ClassLabel"
+              },
+              "isRequired": true
+            },
+            {
+              "spec": {
+                "specType": "Composite",
+                "separator": "",
+                "parts": [
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "["
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "BriefcaseId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "-"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "LocalId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "InstanceLabelOverride",
+      "onlyIfNotHandled": true,
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "values": [
+        {
+          "specType": "Property",
+          "propertyName": "UserLabel"
+        },
+        {
+          "specType": "Property",
+          "propertyName": "CodeValue"
+        },
+        {
+          "specType": "Composite",
+          "separator": " ",
+          "parts": [
+            {
+              "spec": {
+                "specType": "ClassLabel"
+              },
+              "isRequired": true
+            },
+            {
+              "spec": {
+                "specType": "Composite",
+                "separator": "",
+                "parts": [
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "["
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "BriefcaseId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "-"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "LocalId"
+                    }
+                  },
+                  {
+                    "spec": {
+                      "specType": "String",
+                      "value": "]"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "LabelOverride",
+      "onlyIfNotHandled": true,
+      "condition": "ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\"Model\", \"BisCore\")",
+      "label": "this.GetRelatedDisplayLabel(\"BisCore:ModelModelsElement\", \"Forward\", \"BisCore:Element\")"
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "relatedProperties": [
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsUniqueAspect"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementUniqueAspect"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        },
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsMultiAspects"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementMultiAspect"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        },
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementGroupsMembers"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GroupInformationElement"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "isPolymorphic": true,
+          "nestedRelatedProperties": [
+            {
+              "relationships": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "ElementHasLinks"
+                ]
+              },
+              "relatedClasses": {
+                "schemaName": "BisCore",
+                "classNames": [
+                  "UrlLink"
+                ]
+              },
+              "requiredDirection": "Forward",
+              "isPolymorphic": true,
+              "propertyNames": [
+                "Url"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "PhysicalElement"
+      },
+      "relatedProperties": [
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "PhysicalElementIsOfType"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "PhysicalType"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "SpatialLocationElement"
+      },
+      "relatedProperties": [
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SpatialLocationIsOfType"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SpatialLocationType"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "DrawingGraphic"
+      },
+      "relatedProperties": [
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "DrawingGraphicRepresentsElement"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Element"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "GraphicalElement3d"
+      },
+      "relatedProperties": [
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GraphicalElement3dRepresentsElement"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Element"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "PhysicalType"
+      },
+      "propertiesDisplay": [
+        {
+          "propertyNames": [
+            "*"
+          ],
+          "isDisplayed": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "SpatialLocationType"
+      },
+      "propertiesDisplay": [
+        {
+          "propertyNames": [
+            "*"
+          ],
+          "isDisplayed": false
+        }
+      ]
+    }
+  ]
+}

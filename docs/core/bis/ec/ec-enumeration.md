@@ -22,7 +22,7 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 ## Sub-Elements
 
-[ECEnumerator](#ecenumerators) _(0..*)_
+[ECEnumerator](#ecenumerator) _(0..*)_
 
 ### ECEnumerator
 

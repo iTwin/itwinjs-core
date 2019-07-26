@@ -34,12 +34,12 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           <ToolButton
             iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
-            toolId="tool1"
+            toolId="tool1a"
           />
           <ToolButton
             iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
-            toolId="tool2"
+            toolId="tool2a"
           />
           <Unknown
             direction={3}
@@ -50,7 +50,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "_label": "",
                   "_tooltip": "",
                   "betaBadge": false,
-                  "commandId": "tool1",
+                  "commandId": "cmd:tool1",
                   "execute": [Function],
                   "getKey": [Function],
                   "handleSizeKnown": [Function],
@@ -68,7 +68,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                     "key": "value",
                   },
                   "betaBadge": false,
-                  "commandId": "tool2",
+                  "commandId": "cmd:tool2",
                   "execute": [Function],
                   "getKey": [Function],
                   "handleSizeKnown": [Function],
@@ -112,6 +112,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       },
       "_handleSyncUiEvent": [Function],
       "_label": "",
+      "_toolbarBaseName": "[TestFrontstage]ToolWidget",
       "_tooltip": "",
       "classId": undefined,
       "fillZone": false,
@@ -145,24 +146,24 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           <ToolButton
             iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
-            toolId="tool1"
+            toolId="tool1b"
           />
           <ToolButton
             iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
-            toolId="tool2"
+            toolId="tool2b"
           />
           <ToolButton
             iconSpec="icon-placeholder"
             isEnabled={false}
             labelKey="SampleApp:buttons.tool1"
-            toolId="tool1"
+            toolId="tool1c"
           />
           <ToolButton
             iconSpec="icon-placeholder"
             isVisible={false}
             labelKey="SampleApp:buttons.tool2"
-            toolId="tool2"
+            toolId="tool2c"
           />
           <Unknown
             iconSpec="icon-placeholder"
@@ -172,7 +173,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "_label": "",
                   "_tooltip": "",
                   "betaBadge": false,
-                  "commandId": "tool1",
+                  "commandId": "cmd:tool1",
                   "execute": [Function],
                   "getKey": [Function],
                   "handleSizeKnown": [Function],
@@ -190,7 +191,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                     "key": "value",
                   },
                   "betaBadge": false,
-                  "commandId": "tool2",
+                  "commandId": "cmd:tool2",
                   "execute": [Function],
                   "getKey": [Function],
                   "handleSizeKnown": [Function],

@@ -9,6 +9,7 @@ import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeratio
 import { ECObjectsError } from "./../../src/Exception";
 import { PrimitiveType } from "./../../src/ECObjects";
 import { SchemaContext } from "../../src/Context";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Enumeration", () => {
   describe("addEnumerator tests", () => {
@@ -325,7 +326,7 @@ describe("Enumeration", () => {
   describe("toJson", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",
@@ -426,6 +427,89 @@ describe("Enumeration", () => {
         expect(serialization.enumerators[0].value).eql(2);
         expect(serialization.enumerators[1].value).eql(4);
       });
+    });
+  });
+
+  describe("toXml", () => {
+    const newDom = createEmptyXmlDocument();
+    let testEnumeration: Enumeration;
+    const baseJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      schemaItemType: "Enumeration",
+      name: "TestEnumeration",
+      schema: "TestSchema",
+      schemaVersion: "1.0.0",
+    };
+
+    beforeEach(() => {
+      const schema = new Schema(new SchemaContext(), "TestSchema", 1, 0, 0);
+      testEnumeration = new Enumeration(schema, "TestEnumeration");
+    });
+
+    it("should serialize properly for 'int' type", async () => {
+      const schemaJson = {
+        ...baseJson,
+        type: "int",
+        isStrict: false,
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        enumerators: [
+          { name: "SixValue", value: 6, description: "An enumerator description" },
+          { name: "EightValue", value: 8, label: "An enumerator label" },
+        ],
+      };
+
+      await testEnumeration.deserialize(schemaJson);
+      const serialized = await testEnumeration.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECEnumeration");
+      expect(serialized.getAttribute("backingTypeName")).to.eql("int");
+      expect(serialized.getAttribute("isStrict")).to.eql("false");
+
+      const enumerators = getElementChildrenByTagName(serialized, "ECEnumerator");
+      assert.strictEqual(enumerators.length, 2);
+
+      const sixValue = enumerators[0];
+      expect(sixValue.getAttribute("name")).to.eql("SixValue");
+      expect(sixValue.getAttribute("value")).to.eql("6");
+      expect(sixValue.getAttribute("description")).to.eql("An enumerator description");
+
+      const eightValue = enumerators[1];
+      expect(eightValue.getAttribute("name")).to.eql("EightValue");
+      expect(eightValue.getAttribute("value")).to.eql("8");
+      expect(eightValue.getAttribute("displayLabel")).to.eql("An enumerator label");
+    });
+
+    it("should serialize properly for 'string type", async () => {
+      const schemaJson = {
+        ...baseJson,
+        type: "string",
+        isStrict: true,
+        enumerators: [
+          { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description" },
+          { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
+        ],
+      };
+
+      await testEnumeration.deserialize(schemaJson);
+      const serialized = await testEnumeration.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECEnumeration");
+      expect(serialized.getAttribute("backingTypeName")).to.eql("string");
+      expect(serialized.getAttribute("isStrict")).to.eql("true");
+
+      const enumerators = getElementChildrenByTagName(serialized, "ECEnumerator");
+      assert.strictEqual(enumerators.length, 2);
+
+      const sixValue = enumerators[0];
+      expect(sixValue.getAttribute("name")).to.eql("SixValue");
+      expect(sixValue.getAttribute("value")).to.eql("six");
+      expect(sixValue.getAttribute("description")).to.eql("SixValue enumerator description");
+      expect(sixValue.getAttribute("displayLabel")).to.eql("Six label");
+
+      const eightValue = enumerators[1];
+      expect(eightValue.getAttribute("name")).to.eql("EightValue");
+      expect(eightValue.getAttribute("value")).to.eql("eight");
+      expect(eightValue.getAttribute("description")).to.eql("EightValue enumerator description");
+      expect(eightValue.getAttribute("displayLabel")).to.eql("Eight label");
     });
   });
 });

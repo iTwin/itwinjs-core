@@ -14,7 +14,8 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray, Point3dArrayCarrier } from "../../geometry3d/PointHelpers";
+import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } from "../../geometry3d/PointHelpers";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { MatrixTests } from "./Point3dVector3d.test";
@@ -98,6 +99,27 @@ describe("FrameBuilder.HelloWorld", () => {
       }
     }
     ck.checkpoint("FrameBuilder");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("TrilinearMap", () => {
+    const ck = new Checker();
+    const range = Range3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 7, 8));
+    const points = range.corners();
+    for (const uvw of [Point3d.create(0.4, 0.2, 0.3), Point3d.create(0, 0, 0)]) {
+      const q0 = range.fractionToPoint(uvw.x, uvw.y, uvw.z);
+      const q1 = Point3dArray.evaluateTrilinearPoint(points, uvw.x, uvw.y, uvw.z);
+      ck.testPoint3d(q0, q1, "Trilinear map versus range fractions");
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("PointHelperMisc", () => {
+    const ck = new Checker();
+    ck.testTrue(Point2dArray.isAlmostEqual(undefined, undefined));
+    ck.testTrue(Point3dArray.isAlmostEqual(undefined, undefined));
+    ck.testTrue(Vector3dArray.isAlmostEqual(undefined, undefined));
+    const emptyArray = Point3dArray.cloneWithMaxEdgeLength ([], 1);
+    ck.testExactNumber (0, emptyArray.length);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -643,7 +665,10 @@ describe("Point3dArray", () => {
 
   it("Point3dArrayCarrierBadIndex", () => {
     const ck = new Checker();
-    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3), Point3d.create(6, 2, 9), Point3d.create(6, 2, 0), Point3d.create(-4, 2, 8)]);
+    const carrier = new Point3dArrayCarrier([Point3d.create(1, 2, 3),
+    Point3d.create(6, 2, 9),
+    Point3d.create(6, 2, 0),
+    Point3d.create(-4, 2, 8)]);
     const a = carrier.length;
     // These methods should return undefined if any index is bad.
     // (we know the index tests happen in a single validation function -- "some" calls need to test both extremes of out-of-bounds, but any particular arg only has to be tested in one direction)
@@ -670,6 +695,47 @@ describe("Point3dArray", () => {
     ck.testUndefined(carrier.vectorIndexIndex(1, 30));
     ck.testUndefined(carrier.vectorXYAndZIndex(origin, -1));
     ck.testPointer(carrier.vectorXYAndZIndex(origin, 1));
+
+    const xyz1 = carrier.getPoint3dAtCheckedPointIndex(1)!;
+    const xyz3 = carrier.getPoint3dAtCheckedPointIndex(3)!;
+    const dA = carrier.distanceIndexIndex(1, 3);
+    const dA2 = carrier.distanceSquaredIndexIndex(1, 3);
+    ck.testFalse(dA === undefined);
+    ck.testFalse(dA2 === undefined);
+    ck.testCoordinate(xyz1.distanceSquared(xyz3), dA2!, "distance indexIndex in carrier");
+    ck.testCoordinate(xyz1.distance(xyz3), dA!, "distance indexIndex in carrier");
+
+    ck.testUndefined(carrier.distanceIndexIndex(0, 100));
+    ck.testUndefined(carrier.distanceIndexIndex(1000, 0));
+
+    ck.testUndefined(carrier.distanceSquaredIndexIndex(0, 100));
+    ck.testUndefined(carrier.distanceSquaredIndexIndex(1000, 0));
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Point3dArrayCarrierPushPop", () => {
+    const ck = new Checker();
+    const carrierA = new Point3dArrayCarrier([]);
+    const carrierB = new Point3dArrayCarrier([]);
+    ck.testUndefined(carrierA.front(), "front() in empty array");
+    ck.testUndefined(carrierA.back(), "back() in empty array");
+    const zData = [10, 11, 12, 13, 14, 22];
+    for (let k = 0; k < zData.length; k++) {
+      carrierA.pushXYZ(k + 1, 2 * k + 5, zData[k]);
+      carrierB.push(Point3d.create(k + 1, 2 * k + 5, zData[k]));
+    }
+    ck.testPoint3d(carrierA.front()!, carrierB.front()!);
+    ck.testPoint3d(carrierA.back()!, carrierB.back()!);
+
+    for (let k = 1; k < zData.length; k++) {
+      carrierA.pop();
+      carrierB.pop();
+      ck.testPoint3d(carrierA.front()!, carrierB.front()!);
+      ck.testPoint3d(carrierA.back()!, carrierB.back()!);
+    }
+    ck.testExactNumber(1, carrierA.length);
+    ck.testExactNumber(1, carrierB.length);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -852,6 +918,69 @@ describe("PolygonAreas", () => {
     ck.testCoordinate((centroidA as any).a, (centroidC as any).a);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "LShape");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("streamXYZ", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const zz = -14.79;
+    const pointA = [
+      Point3d.create(-0.9351812543901677, -7.103406859177103, zz),
+      Point3d.create(0.8399443606226988, 6.380010831659742, zz),
+      Point3d.create(-12.986794582812577, 8.200335547052022, zz),
+      Point3d.create(-13.582645174519337, 3.6744009645259488, zz),
+      Point3d.create(-3.545902502657718, 2.3530387241332935, zz),
+      Point3d.create(-4.725177525963828, -6.604444384177479, zz),
+      Point3d.create(-0.9351812543901677, -7.103406859177103, zz),
+    ];
+    const pointB = [
+      Point2d.create(-0.9351812543901677, -7.103406859177103),
+      Point2d.create(0.8399443606226988, 6.380010831659742),
+      Point2d.create(-12.986794582812577, 8.200335547052022),
+      Point2d.create(-13.582645174519337, 3.6744009645259488),
+      Point2d.create(-3.545902502657718, 2.3530387241332935),
+      Point2d.create(-4.725177525963828, -6.604444384177479),
+      Point2d.create(-0.9351812543901677, -7.103406859177103),
+    ];
+
+    const pointC = GrowableXYZArray.create(pointA);
+    const rangeC = Point3dArray.createRange(pointC);
+    const rangeA0 = Point3dArray.createRange(pointA);
+
+    ck.testRange3d(rangeA0, rangeC);
+    const rangeA1 = Range3d.createArray(pointA);
+    ck.testRange3d(rangeA0, rangeA1, "range by structured search, array");
+    const pointAB = [pointA, pointB];
+    const rangeAB0 = Point3dArray.createRange(pointAB);
+    const rangeAB1 = rangeA1.clone();
+    const rangeB0 = Point3dArray.createRange(pointB);
+    rangeAB1.extendRange(rangeB0);
+    ck.testRange3d(rangeAB0, rangeAB1, "create range variant");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "streamXYZ");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("cloneVariants", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
+    const pointB = Sample.createRectangle(-2, 4, 5, 2);
+
+    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
+    const dataA = Point3dArray.cloneDeepJSONNumberArrays(pointA);
+    ck.testExactNumber(11, dataA.length);
+    const dataABC = Point3dArray.cloneDeepJSONNumberArrays([pointA, pointB, pointC]);
+    const linestringsABC0 = LineString3d.createArrayOfLineString3d(dataABC);
+
+    const lsA = LineString3d.create(pointA);
+    const lsB = LineString3d.create(pointB);
+    const lsC = LineString3d.create(pointC);
+    if (ck.testExactNumber(3, linestringsABC0.length, "3 linestrings in flattened data")) {
+      ck.testTrue(lsA.isAlmostEqual(linestringsABC0[0]), "pointA");
+      ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
+      ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 

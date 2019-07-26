@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Document unit length rows/cols requirement of Matrix3d.toQuaternion",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Matt.Gooding@bentley.com"
+}

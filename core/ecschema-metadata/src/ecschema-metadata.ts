@@ -46,3 +46,7 @@ export * from "./Validation/Rules";
 export * from "./Validation/SchemaValidationVisitor";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
+export * from "./Validation/SchemaCompareDiagnostics";
+export * from "./Validation/SchemaComparer";
+export * from "./Validation/SchemaChanges";
+export * from "./Validation/SchemaCompareReporter";

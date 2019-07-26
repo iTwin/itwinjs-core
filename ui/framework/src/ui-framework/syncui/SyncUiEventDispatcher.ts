@@ -17,7 +17,7 @@ import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetE
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
 
-// cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
+// cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
@@ -30,8 +30,12 @@ export enum SyncUiEventId {
   ActiveContentChanged = "activecontentchanged",
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
-  /** Backstage has been closed. */
+  /** Backstage has been closed.
+   * @deprecated - Use BackstageEvent instead
+   */
   BackstageCloseEvent = "backstagecloseevent",
+  /** Backstage has been closed. */
+  BackstageEvent = "backstageevent",
   /** A Content Layout has been activated.  */
   ContentLayoutActivated = "contentlayoutactivated",
   /** A Content Control maintained by FrontstageManager has been activated. */
@@ -225,8 +229,8 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     });
 
-    Backstage.onBackstageCloseEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageCloseEvent);
+    Backstage.onBackstageEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     });
 
     WorkflowManager.onTaskActivatedEvent.addListener(() => {

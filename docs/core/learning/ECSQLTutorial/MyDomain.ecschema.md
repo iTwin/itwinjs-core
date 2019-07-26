@@ -151,7 +151,7 @@ Tracks the relationship between a Story and a Drawing generated from that Story.
 
 ##### Constraint Classes
 
-- [Story](mydomain.ecschema.md#story)
+- [Story](#story)
 
 #### Target
 

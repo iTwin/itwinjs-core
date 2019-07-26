@@ -223,7 +223,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * @param child child to add.
    * @return true if child is an acceptable type for this collection.
    */
-  public abstract tryAddChild(child: AnyCurve): boolean;
+  public abstract tryAddChild(child: AnyCurve | undefined): boolean;
   /** Return a child identified by by index */
   public abstract getChild(i: number): AnyCurve | undefined;
   /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed) */
@@ -298,8 +298,8 @@ export abstract class CurveChain extends CurveCollection {
   /** add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
    */
-  public tryAddChild(child: AnyCurve): boolean {
-    if (child instanceof CurvePrimitive) {
+  public tryAddChild(child: AnyCurve | undefined): boolean {
+    if (child && child instanceof CurvePrimitive) {
       this._curves.push(child);
       return true;
     }
@@ -377,8 +377,9 @@ export class BagOfCurves extends CurveCollection {
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves { return new BagOfCurves(); }
   /** Add a child  */
-  public tryAddChild(child: AnyCurve): boolean {
-    this._children.push(child);
+  public tryAddChild(child: AnyCurve | undefined): boolean {
+    if (child)
+      this._children.push(child);
     return true;
   }
   /** Get a child by index */

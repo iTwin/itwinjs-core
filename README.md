@@ -1,8 +1,8 @@
-﻿# The iModel.js Library
+﻿# iModel.js
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
-The [iModel.js](http://imodeljs.org) library is an open source platform for creating, querying, modifying, and displaying iModels.
+[iModel.js](http://imodeljs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 
 If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
 
@@ -44,28 +44,7 @@ Each package creates its own **node_modules** directory that contains symbolic l
 * [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
-## Supported Backend Platforms
-
-The iModel.js **backend** is built and tested on the following:
-
-* Windows 10 version 1803 (or greater)
-* Debian 9 "Stretch"
-
-In addition, **backends** are deployed on:
-
-* Windows Server 2016 Datacenter version 1607
-
-### Notes
-
-iModel.js **backends** should run on most Windows and Linux platforms that nodejs provides [Tier 1 support](https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list) for.  However, regular testing only occurs on the platforms listed above. Support for other platforms will be considered, but prioritized below them.
-
-### Backend Additional Prerequisites
-
-* Windows
-  * [Visual Studio 2017 C Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
-* Linux
-  * GLIBC 2.24 (or greater)
-  * GLIBCXX 3.4.22 (or greater)
+> See [supported platforms](./docs/core/learning/SupportedPlatforms.md) for further information.
 
 ## Build Instructions
 
@@ -87,7 +66,7 @@ The above commands iterate and perform their action against each package in the 
 
 For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
-Note that it is a good idea to `rush install` after each `git pull` as dependencies may have changed.
+> Note: It is a good idea to `rush install` after each `git pull` as dependencies may have changed.
 
 ## Source Code Edit Workflow
 
