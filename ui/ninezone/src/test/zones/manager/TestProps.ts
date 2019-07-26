@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ZonesManagerProps, getDefaultZonesManagerProps } from "../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
-import { getDefaultWidgetProps } from "../../../ui-ninezone/zones/manager/Widget";
+import { getDefaultWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
 
 // tslint:disable: completed-docs
 export namespace TestProps {
@@ -12,14 +12,7 @@ export namespace TestProps {
 
   export const inWidgetMode: ZonesManagerProps = {
     ...defaultProps,
-    zones: {
-      ...defaultProps.zones,
-      [8]: {
-        ...defaultProps.zones[8],
-        isInFooterMode: false,
-        allowsMerging: true,
-      },
-    },
+    isInFooterMode: false,
   };
 
   export const openedZone6: ZonesManagerProps = {
@@ -85,6 +78,34 @@ export namespace TestProps {
           stackId: 1,
         },
       },
+    },
+  };
+
+  export const draggedOpenedZone6: ZonesManagerProps = {
+    ...openedZone6,
+    zones: {
+      ...openedZone6.zones,
+      6: {
+        ...openedZone6.zones[6],
+        floating: {
+          bounds: {
+            left: 10,
+            top: 20,
+            right: 40,
+            bottom: 80,
+          },
+          stackId: 1,
+        },
+      },
+    },
+    draggedWidget: {
+      id: 6,
+      isUnmerge: true,
+      lastPosition: {
+        x: 10,
+        y: 20,
+      },
+      tabIndex: 5,
     },
   };
 
@@ -156,9 +177,9 @@ export namespace TestProps {
     ...defaultProps,
     widgets: {
       ...defaultProps.widgets,
-      8: getDefaultWidgetProps(8),
+      8: getDefaultWidgetManagerProps(8),
       9: {
-        ...getDefaultWidgetProps(9),
+        ...getDefaultWidgetManagerProps(9),
         tabIndex: 1,
       },
     },
@@ -166,7 +187,6 @@ export namespace TestProps {
       ...defaultProps.zones,
       8: {
         ...defaultProps.zones[8],
-        allowsMerging: true,
         bounds: {
           left: 10,
           top: 20,
@@ -429,7 +449,6 @@ export namespace TestProps {
       8: {
         ...defaultProps.zones[8],
         widgets: [],
-        allowsMerging: true,
       },
       9: {
         ...defaultProps.zones[9],

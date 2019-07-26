@@ -10,6 +10,14 @@ import { RelationshipConstraint } from "../Metadata/RelationshipClass";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 
+const formatString = (format: string, ...args: string[]) => {
+  return format.replace(/{(\d+)}/g, (match, theNumber) => {
+    return typeof args[theNumber] !== "undefined"
+      ? args[theNumber]
+      : match;
+  });
+};
+
 /**
  * Defines the possible diagnostic types.
  * @beta
@@ -48,7 +56,7 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
   /** The unformatted message text associated with the diagnostic. Value is static across all instances. */
   messageText: string;
   /** The arguments used when formatted the diagnostic instance's message. */
-  messageArgs: ARGS;
+  messageArgs?: ARGS;
   /** The EC object associated with the diagnostic instance. */
   ecDefinition: TYPE;
   /** The schema where the diagnostic originated. */
@@ -71,7 +79,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
    * @param ecDefinition The EC object to associate with the diagnostic.
    * @param messageArgs The arguments used when formatting the diagnostic message.
    */
-  constructor(ecDefinition: TYPE, messageArgs: ARGS) {
+  constructor(ecDefinition: TYPE, messageArgs?: ARGS) {
     this.ecDefinition = ecDefinition;
     this.messageArgs = messageArgs;
   }
@@ -90,7 +98,7 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
   /** The EC object to associate with the diagnostic. */
   public ecDefinition: TYPE;
   /** The arguments used when formatting the diagnostic message.  */
-  public messageArgs: ARGS;
+  public messageArgs?: ARGS;
 }
 
 /**
@@ -147,7 +155,7 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
  * @beta
  */
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
-  constructor(property: AnyProperty, messageArgs: ARGS) {
+  constructor(property: AnyProperty, messageArgs?: ARGS) {
     super(property, messageArgs);
   }
 
@@ -202,7 +210,7 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
   return class extends SchemaDiagnostic<ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 
@@ -218,7 +226,7 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
   return class extends SchemaItemDiagnostic<ITEM, ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 
@@ -234,7 +242,7 @@ export function createClassDiagnosticClass<ARGS extends any[]>(code: string, mes
   return class extends ClassDiagnostic<ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 
@@ -250,7 +258,7 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
   return class extends PropertyDiagnostic<ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 
@@ -266,7 +274,7 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
   return class extends RelationshipConstraintDiagnostic<ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 
@@ -282,7 +290,7 @@ export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]
   return class extends CustomAttributeContainerDiagnostic<ARGS> {
     public get code(): string { return code; }
     public get category(): DiagnosticCategory { return category; }
-    public get messageText(): string { return messageText; }
+    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
   };
 }
 

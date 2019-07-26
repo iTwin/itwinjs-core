@@ -1,0 +1,18 @@
+{
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+  "alias": "b",
+  "description": "This is a test Schema.",
+  "label": "SchemaB",
+  "name": "SchemaB",
+  "references": [
+    {
+      "name": "SchemaC",
+      "version": "04.00.04"
+    },
+    {
+      "name": "SchemaD",
+      "version": "05.00.05"
+    }
+  ],
+  "version": "03.00.03"
+}

@@ -44,7 +44,7 @@ describe("Functional Domain", () => {
     assert.equal(commits, 1);
     assert.equal(committed, 1);
 
-    const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
+    const codeSpec = CodeSpec.create(iModelDb, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 

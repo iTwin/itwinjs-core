@@ -7,6 +7,7 @@
 import { Transform } from "@bentley/geometry-core";
 import { ViewFlags, RenderMode, Feature } from "@bentley/imodeljs-common";
 import { Id64, Id64String, assert, lowerBound } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Branch, Batch } from "./Graphic";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
@@ -25,16 +26,18 @@ export class BranchState {
   public readonly clipVolume?: ClipPlanesVolume | ClipMaskVolume;
   public readonly planarClassifier?: PlanarClassifier;
   public readonly textureDrape?: TextureDrape;
+  public readonly iModel?: IModelConnection;
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
     const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
-    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier, branch.textureDrape);
+    const iModel = undefined !== branch.iModel ? branch.iModel : prev.iModel;
+    return new BranchState(vf, transform, ovrs, branch.clips, branch.planarClassifier, branch.textureDrape, iModel);
   }
 
-  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume, planarClassifier?: PlanarClassifier) {
-    return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip, planarClassifier);
+  public static create(ovrs: FeatureSymbology.Overrides, flags?: ViewFlags, transform?: Transform, clip?: ClipMaskVolume | ClipPlanesVolume, planarClassifier?: PlanarClassifier, iModel?: IModelConnection) {
+    return new BranchState(ViewFlags.createFrom(flags), undefined !== transform ? transform.clone() : Transform.createIdentity(), ovrs, clip, planarClassifier, undefined, iModel);
   }
 
   public static createForDecorations(): BranchState {
@@ -48,13 +51,14 @@ export class BranchState {
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
-  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, textureDrape?: TextureDrape) {
+  private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, textureDrape?: TextureDrape, iModel?: IModelConnection) {
     this._viewFlags = flags;
     this.transform = transform;
     this.symbologyOverrides = ovrs;
     this.clipVolume = clip;
     this.planarClassifier = planarClassifier;
     this.textureDrape = textureDrape;
+    this.iModel = iModel;
   }
 }
 
@@ -122,11 +126,17 @@ export class BranchStack {
  * @internal
  */
 export class BatchState {
+  private readonly _stack: BranchStack;
   private _batches: Batch[] = []; // NB: this list is ordered - but *not* indexed - by batch ID.
   private _curBatch?: Batch;
 
+  public constructor(stack: BranchStack) {
+    this._stack = stack;
+  }
+
   public get currentBatch(): Batch | undefined { return this._curBatch; }
   public get currentBatchId(): number { return undefined !== this._curBatch ? this._curBatch.batchId : 0; }
+  public get currentBatchIModel(): IModelConnection | undefined { return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined; }
   public get isEmpty(): boolean { return 0 === this._batches.length; }
 
   public push(batch: Batch, allowAdd: boolean): void {
@@ -143,7 +153,7 @@ export class BatchState {
   public reset(): void {
     assert(undefined === this.currentBatch);
     for (const batch of this._batches)
-      batch.batchId = 0;
+      batch.resetContext();
 
     this._batches.length = 0;
     this._curBatch = undefined;
@@ -195,7 +205,7 @@ export class BatchState {
 
   private getBatchId(batch: Batch, allowAdd: boolean): number {
     if (allowAdd && 0 === batch.batchId) {
-      batch.batchId = this.nextBatchId;
+      batch.setContext(this.nextBatchId, this._stack.top.iModel);
       this._batches.push(batch);
     }
 

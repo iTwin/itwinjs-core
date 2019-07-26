@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added Change Summary integration test, and fixed documentation. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

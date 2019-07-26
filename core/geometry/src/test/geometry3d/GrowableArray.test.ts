@@ -12,7 +12,8 @@ import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArrayCarrier, Point3dArray } from "../../geometry3d/PointHelpers";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -283,6 +284,12 @@ describe("GrowablePoint3dArray", () => {
       let lengthA = 0;
       for (let i = 0; i + 1 < n; i++) {
         lengthA += pointA.getPoint3dAtUncheckedPointIndex(i).distance(pointA.getPoint3dAtUncheckedPointIndex(i + 1));
+        const d0 = pointA.distance(i, i + 1);
+        const d1 = pointA.distanceIndexIndex(i, i + 1);
+        const d1Squared = pointA.distanceSquaredIndexIndex(i, i + 1);
+        ck.testCoordinate(d0!, d1!);
+        ck.testFalse(d1Squared === undefined);
+        ck.testCoordinate(d0! * d0!, d1Squared!);
       }
       const lengthA1 = pointA.sumLengths();
       ck.testCoordinate(lengthA, lengthA1, "polyline length");
@@ -296,6 +303,11 @@ describe("GrowablePoint3dArray", () => {
         ck.testTrue(pointA.compareLexicalBlock(a, b) < 0, " confirm lexical sort order");
         ck.testTrue(pointA.component(a, 0) <= pointA.component(b, 0), "confirm sort order x");
       }
+      ck.testUndefined (pointA.distanceIndexIndex (0, 1000));
+      ck.testUndefined (pointA.distanceIndexIndex (-1, 0));
+
+      ck.testUndefined (pointA.distanceSquaredIndexIndex (0, 1000));
+      ck.testUndefined (pointA.distanceSquaredIndexIndex (-1, 0));
     }
     ck.checkpoint("GrowablePoint3dArray.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
@@ -325,6 +337,8 @@ describe("GrowablePoint3dArray", () => {
           const s1 = pointA.compareLexicalBlock(k1, k0);
           ck.testExactNumber(1, s1);
         }
+        ck.testExactNumber(i, pointA.cyclicIndex(i));
+        ck.testExactNumber(i, pointA.cyclicIndex(i + pointA.length));
       }
       ck.testExactNumber(numWrap, numDup, "confirm numWrap duplicates");
     }

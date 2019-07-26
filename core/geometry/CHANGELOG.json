@@ -2,6 +2,81 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/geometry-core_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "When compressing linestrings, detect first/last segment colinear case."
+          },
+          {
+            "comment": "Consistent stroke counts on BezierCurve3d, BezierCurve3dH"
+          },
+          {
+            "comment": "Full 3d intersection CurveCurve.intersectionXYZ (no bsplines)"
+          },
+          {
+            "comment": "New method for polyline wire offset."
+          },
+          {
+            "comment": "WIP (1) improve duplicated edge handling in polygon booleans (2) improve variant point array handling"
+          },
+          {
+            "comment": "Polyline simplification by Puecker-Douglas (chord distance)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/geometry-core_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Export bilinear patch (used by bing elevation)"
+          },
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Add \"extend\" support to various CurvePrimitive.closestPoint methods."
+          },
+          {
+            "comment": "Add PolyfaceQuery methods to drape linestring to facets"
+          },
+          {
+            "comment": "Priority queue sweep logic in HalfEdgeGraph"
+          },
+          {
+            "comment": "(imodeljs-markup merge)"
+          },
+          {
+            "comment": "PolarData class for x-y-r-theta constraint solve.   CurvePathWithDistanceIndex expose path with getter."
+          },
+          {
+            "comment": "Region centroid and polygon boolean methods"
+          },
+          {
+            "comment": "TransitionSpiral bug fixes in transform, use of active interval"
+          },
+          {
+            "comment": "Prevent triangle flip hang"
+          },
+          {
+            "comment": "Bspline Curve chord tolerance"
+          },
+          {
+            "comment": "Add quick-exit completion tests in earcut triangulation"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/geometry-core_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

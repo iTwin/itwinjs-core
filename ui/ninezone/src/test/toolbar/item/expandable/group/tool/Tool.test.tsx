@@ -43,9 +43,9 @@ describe("<GroupTool />", () => {
     spy.notCalled.should.true;
   });
 
-  it("renders with betaBadge correctly", () => {
-    const sut = mount(<GroupTool betaBadge={true} />);
-    const badge = sut.find("div.nz-beta-badge");
+  it("renders with badge correctly", () => {
+    const sut = mount(<GroupTool badge={true} />);
+    const badge = sut.find("div.nz-badge");
     badge.length.should.eq(1);
   });
 

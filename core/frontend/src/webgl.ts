@@ -7,6 +7,7 @@
 // should use the abstractions supplied in /render/*, not the implementations in
 // /render/webgl/* which are subject to change at any time.
 
+export * from "./render/webgl/AttributeMap";
 export * from "./render/webgl/BranchState";
 export * from "./render/webgl/CachedGeometry";
 export * from "./render/webgl/ClipVolume";

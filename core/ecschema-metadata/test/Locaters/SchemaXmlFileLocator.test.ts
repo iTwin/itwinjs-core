@@ -122,33 +122,18 @@ describe("SchemaXmlFileLocater tests:", () => {
   });
 
   it("getSchema, references set", async () => {
-    const stub = await context.getSchema(new SchemaKey("SchemaA", 1, 1, 1), SchemaMatchType.Exact);
+    const schemaA = await context.getSchema(new SchemaKey("SchemaA", 1, 1, 1), SchemaMatchType.Exact);
     const schemaB = await context.getSchema(new SchemaKey("SchemaB", 2, 2, 2), SchemaMatchType.Exact);
     const schemaC = await context.getSchema(new SchemaKey("SchemaC", 3, 3, 3), SchemaMatchType.Exact);
     const schemaD = await context.getSchema(new SchemaKey("SchemaD", 4, 4, 4), SchemaMatchType.Exact);
 
-    assert.isDefined(stub);
-    assert.strictEqual(stub!.references.length, 2);
-    assert.deepEqual(stub!.references[0], schemaC);
-    assert.deepEqual(stub!.references[1], schemaB);
-    assert.deepEqual(stub!.references[0].references[0], schemaD);
-    assert.deepEqual(stub!.references[1].references[0], schemaC);
-    assert.deepEqual(stub!.references[1].references[1], schemaD);
-  });
-
-  it("getSchema, 2 digit references, references set", async () => {
-    const stub = await context.getSchema(new SchemaKey("SchemaA", 2, 0, 2), SchemaMatchType.Exact);
-    const schemaB = await context.getSchema(new SchemaKey("SchemaB", 3, 0, 3), SchemaMatchType.Exact);
-    const schemaC = await context.getSchema(new SchemaKey("SchemaC", 4, 0, 4), SchemaMatchType.Exact);
-    const schemaD = await context.getSchema(new SchemaKey("SchemaD", 5, 0, 5), SchemaMatchType.Exact);
-
-    assert.isDefined(stub);
-    assert.strictEqual(stub!.references.length, 2);
-    assert.deepEqual(stub!.references[0], schemaC);
-    assert.deepEqual(stub!.references[1], schemaB);
-    assert.deepEqual(stub!.references[0].references[0], schemaD);
-    assert.deepEqual(stub!.references[1].references[0], schemaC);
-    assert.deepEqual(stub!.references[1].references[1], schemaD);
+    assert.isDefined(schemaA);
+    assert.strictEqual(schemaA!.references.length, 2);
+    assert.deepEqual(schemaA!.references[0], schemaC);
+    assert.deepEqual(schemaA!.references[1], schemaB);
+    assert.deepEqual(schemaA!.references[0].references[0], schemaD);
+    assert.deepEqual(schemaA!.references[1].references[0], schemaC);
+    assert.deepEqual(schemaA!.references[1].references[1], schemaD);
   });
 
   it("getSchema, exact version, wrong minor, fails", async () => {

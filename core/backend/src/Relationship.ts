@@ -194,7 +194,7 @@ export class Relationships {
   public insertInstance(props: RelationshipProps): Id64String {
     const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (val.error)
-      throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggerCategory);
+      throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
 
     props.id = Id64.fromJSON(val.result);
     return props.id;
@@ -207,7 +207,7 @@ export class Relationships {
   public updateInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+      throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
   }
 
   /** Delete an Relationship instance from this iModel.

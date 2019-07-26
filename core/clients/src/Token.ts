@@ -169,7 +169,7 @@ export class AccessToken extends Token {
   public static foreignProjectAccessTokenJsonProperty = "ForeignProjectAccessToken";
   private _foreignJwt?: string;
 
-  /** Returns true if it's a Jason Web Token, and false if it's a SAML token
+  /** Returns true if it's a Json Web Token, and false if it's a SAML token
    * @internal
    */
   public get isJwt(): boolean {

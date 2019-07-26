@@ -32,6 +32,8 @@ export class GeometryCoreTestIO {
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
   public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[], dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!newGeometry)
+      return;
     if (newGeometry instanceof GeometryQuery) {
       if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
         newGeometry.tryTranslateInPlace(dx, dy, dz);
@@ -43,7 +45,9 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, g, dx, dy, dz);
     }
   }
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[], dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (!newGeometry)
+      return;
     if (newGeometry instanceof GeometryQuery) {
       const g1 = newGeometry.clone();
       if (g1)
@@ -108,7 +112,7 @@ export class GeometryCoreTestIO {
             momentData1.origin.plusScaled(unitX, 2.0 * rz),
             momentData1.origin,
             momentData1.origin.plusScaled(unitY, rz)]), dx, dy, dz);
-        this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees (0, 355)), dx, dy, dz);
+        this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)), dx, dy, dz);
         if (!xyOnly) {
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitZ.scale(ry), unitX.scale(ry)), dx, dy, dz);

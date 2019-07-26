@@ -58,9 +58,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param reporter The [[DiagnosticReporter]] to register.
    */
   public registerReporter(...reporters: IDiagnosticReporter[]) {
-    for (const reporter of reporters) {
+    for (const reporter of reporters)
       this._reporters.push(reporter);
-    }
   }
 
   /**
@@ -79,9 +78,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param schema a Schema object.
    */
   public async visitFullSchema(schema: Schema) {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applySchemaRules(schema, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -89,9 +87,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param schemaItem a SchemaItem object.
    */
   public async visitSchemaItem(schemaItem: SchemaItem) {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applySchemaItemRules(schemaItem, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -99,9 +96,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param ecClass an ECClass object.
    */
   public async visitClass(ecClass: AnyClass): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyClassRules(ecClass, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -109,9 +105,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param property an AnyProperty object.
    */
   public async visitProperty(property: AnyProperty): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyPropertyRules(property, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -119,9 +114,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param entityClass an EntityClass object.
    */
   public async visitEntityClass(entity: EntityClass): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyEntityRules(entity, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -129,9 +123,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param structClass a StructClass object.
    */
   public async visitStructClass(struct: StructClass): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyStructRules(struct, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -139,9 +132,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param mixin a Mixin object.
    */
   public async visitMixin(mixin: Mixin): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyMixinRules(mixin, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -149,9 +141,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param relationshipClass a RelationshipClass object.
    */
   public async visitRelationshipClass(relationship: RelationshipClass): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyRelationshipRules(relationship, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -159,9 +150,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param relationshipConstraint a RelationshipConstraint object.
    */
   public async visitRelationshipConstraint(constraint: RelationshipConstraint): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyRelationshipConstraintRules(constraint, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -169,9 +159,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param customAttributeClass a CustomAttributeClass object.
    */
   public async visitCustomAttributeClass(customAttribute: CustomAttributeClass): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyCustomAttributeRules(customAttribute, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -179,11 +168,10 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param customAttributeContainer a [[CustomAttributeContainerProps]] object.
    */
   public async visitCustomAttributeContainer(container: CustomAttributeContainerProps): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyCustomAttributeContainerRules(container, this._ruleSets[index]);
-    }
 
-    if (!container.customAttributes)
+    if (undefined === container.customAttributes)
       return;
 
     for (const [, customAttribute] of container.customAttributes) {
@@ -198,9 +186,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param enumeration an Enumeration object.
    */
   public async visitEnumeration(enumeration: Enumeration) {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyEnumerationRules(enumeration, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -208,9 +195,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param koq a KindOfQuantity object.
    */
   public async visitKindOfQuantity(koq: KindOfQuantity) {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyKindOfQuantityRules(koq, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -218,9 +204,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param category a PropertyCategory object.
    */
   public async visitPropertyCategory(category: PropertyCategory) {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyPropertyCategoryRules(category, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -228,9 +213,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param format a Format object.
    */
   public async visitFormat(format: Format): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyFormatRules(format, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -238,9 +222,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param unit a Unit object.
    */
   public async visitUnit(unit: Unit): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyUnitRules(unit, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -248,9 +231,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param invertedUnit an InvertedUnit object.
    */
   public async visitInvertedUnit(invertedUnit: InvertedUnit): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyInvertedUnitRules(invertedUnit, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -258,9 +240,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param unitSystem a UnitSystem object.
    */
   public async visitUnitSystem(unitSystem: UnitSystem): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyUnitSystemRules(unitSystem, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -268,9 +249,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param phenomena a Phenomenon object.
    */
   public async visitPhenomenon(phenomenon: Phenomenon): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyPhenomenonRules(phenomenon, this._ruleSets[index]);
-    }
   }
 
   /**
@@ -278,9 +258,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
    * @param constant a Constant object.
    */
   public async visitConstant(constant: Constant): Promise<void> {
-    for (const index of Object.keys(this._ruleSets)) {
+    for (const index of Object.keys(this._ruleSets))
       await this.applyConstantRules(constant, this._ruleSets[index]);
-    }
   }
 
   public async applySchemaRules(schema: Schema, ruleSet: IRuleSet) {

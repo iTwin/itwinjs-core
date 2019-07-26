@@ -9,3 +9,15 @@ exports[`IconComponent should render correctly with ReactNode 1`] = `
   </span>
 </i>
 `;
+
+exports[`IconComponent should render correctly with icon class string 1`] = `
+<i
+  className="icon icon-developer"
+/>
+`;
+
+exports[`IconComponent should render correctly with icon src string 1`] = `
+<i
+  className="icon src:test.svg"
+/>
+`;

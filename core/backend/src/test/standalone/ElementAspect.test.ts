@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { SpatialCategory } from "../../Category";
 import { Element, PhysicalElement } from "../../Element";
@@ -79,26 +79,17 @@ describe("ElementAspect", () => {
       assert.isTrue(aspect.classFullName === multiAspectsA[0].classFullName || aspect.classFullName === multiAspectsB[0].classFullName);
     });
 
-    let numErrorsCaught = 0;
     const rootSubject = iModel.elements.getRootSubject();
+    assert.equal(0, iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect").length, "Don't expect DgnPlatformTest:TestUniqueAspect aspects on the root Subject");
+    assert.equal(0, iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect").length, "Don't expect DgnPlatformTest:TestMultiAspect aspects on the root Subject");
+    assert.equal(0, iModel.elements.getAspects(rootSubject.id).length, "Don't expect any aspects on the root Subject");
 
-    try {
-      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect");
-      assert.isTrue(false, "Expected this line to be skipped");
-    } catch (error) {
-      numErrorsCaught++;
-      assert.isTrue(error instanceof Error);
-    }
+    // The 'Element' property is introduced by ElementUniqueAspect and ElementMultiAspect, but is not available at the ElementAspect base class.
+    // This is unfortunate, but is expected behavior and the reason why the getAllAspects method exists.
+    assert.throws(() => iModel.elements.getAspects(element.id, ElementAspect.classFullName), IModelError);
 
-    try {
-      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect");
-      assert.isTrue(false, "Expected this line to be skipped");
-    } catch (error) {
-      numErrorsCaught++;
-      assert.isTrue(error instanceof Error);
-    }
-
-    assert.equal(numErrorsCaught, 2);
+    const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
+    assert.equal(allAspects.length, 6);
   });
 
   it("should be able to insert, update, and delete MultiAspects", () => {

@@ -20,7 +20,7 @@ import { Point3d } from "./Point3dVector3d";
  */
 export class GrowableXYArray extends IndexedXYCollection {
   /**
-   * array of packed xyzxyzxyz components
+   * array of packed xyz xyz xyz components
    */
   private _data: Float64Array;
   /**

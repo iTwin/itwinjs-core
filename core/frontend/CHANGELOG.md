@@ -1,6 +1,76 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- added optional HTMLElement member to Marker
+- Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint.
+- catch load errors for Sprites
+- Remove colinear clip shape points. Grid spacing is a double.
+- Added tests for Spatial Classifications
+- Added TileAdmin option to disable "magnification" tile refinement strategy, which can prevent production of extraordinarily large tiles in some cases.
+- ViewManager.dropViewport clears tool events associated with the dropped viewport, preventing errors in async event processing code. Added Viewport.isDisposed property.
+- Added limited opt-in support for drawing tiles from secondary IModelConnections and locating elements within them. Users must implement tools that can properly handle results like a HitDetail pointing to a different IModelConnection than the one associated with the viewport.
+- Fix Viewport.addViewedModels() failing to update view if some models needed to be loaded asynchronously.
+- Fix empty message body when display Bing map attribution info.
+- Update beta PluginUiProvider interfaces.
+- Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs
+- Added method to get element mass properties.
+- Added option to discard alpha channel when converting ImageBuffer to HTMLCanvasElement.
+- Measure distance, allow snap outside project extents for version compare. Added measure length, area, and volume tools.
+- Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522.
+- Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application.
+- Choose handle location for for section plane that is visible in the view.
+- Temporarily undid change to save tokens in local storage. 
+- Added ToolAssistance support and Tool.iconSpec
+- The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Added userAgent, renderer, and vendor to WebGLRenderCompatibilityInfo
+- Cleaned up background map API
+- Support batch Ids in I3dm (instanced) tiles
+- Add support for applying bing elevation to background map (Terrain).
+- Avoid forwarding tile content request to backend if request is canceled while awaiting content from blob storage.
+- Support batch tables in 3d Tilesets.
+- Added SelectTool.processMiss method to better support clearing logical selections.
+- #128860 Clip from element change to try local range XZ or YZ when XY extents aren't valid.
+- Added Viewport.onChangeView event to notify listeners when a new ViewState becomes associated with the Viewport.
+- Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired.
+- Removed missing group descriptions
+- Support draping of background map tiles on reality models.
+- Added internal method to retrieve attachments from SheetViewState for use in saving/recalling views.
+- Fix for Bing attribution hotspot - was unreliable with elements behind it.
+- Fix bing map URL template - http: -> https:
+- Fix background map tile when child not found.
+- Fix failure to use geocoordinate system to transform map tiles.
+- Ensure new tiles are loaded when edge display is toggled.
+- fix usage of varyings
+- Fix incorrect range computation when Viewport.zoomToPlacementProps encounters a null range.
+- Added support for 'HTMLElement | string' for message strings
+- Allow index.html to set a CDN from which to load imodeljs external modules.
+- make Viewport.invaildateDecorations @beta, was @internal
+- add default unhandled exception handler to ToolAdmin
+- Added feature tracking info to UserInfo obtained by OidcBrowserClient. 
+- ensure we never have two active snap or tooltip requests
+- Refine tile selection for map tiles
+- Prevent default symbology overrides applying to subcategories whose appearances were explicitly overridden.
+- Add option to periodically purge unused tile trees from memory.
+- Allow Viewport's readImage() method to resize images as requested.
+- Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
+- #130062 fixed skybox for extreeme otho zoomin
+- exit on uncaught exception in render loop (Electron only)
+- thumbnail size was limited to 64K
+- Improve memory management for tile trees.
+- Update to TypeScript 3.5
+- A Viewport can now be instructed to load models when enabling their display.
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

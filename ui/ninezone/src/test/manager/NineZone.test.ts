@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { NineZoneManager, StagePanelType, Point } from "../../ui-ninezone";
 import { NineZoneManagerTestProps } from "./TestProps";
-import { ZonesManager, NineZone } from "../../ui-ninezone/zones/manager/Zones";
+import { ZonesManager } from "../../ui-ninezone/zones/manager/Zones";
 import { Rectangle } from "../../ui-ninezone/utilities/Rectangle";
 import { HorizontalAnchor } from "../../ui-ninezone/widget/Stacked";
 
@@ -56,12 +56,12 @@ describe("NineZoneManager", () => {
     it("should not update props if zones have not updated", () => {
       const sut = new NineZoneManager();
       const props = NineZoneManagerTestProps.defaultProps;
-      const zonesManager = new ZonesManager((p) => new NineZone(p));
+      const zonesManager = new ZonesManager();
       sinon.stub(sut, "getZonesManager").returns(zonesManager);
-      const handleTabClickStub = sinon.stub(zonesManager, "handleTabClick").returns(props.zones);
+      const handleWidgetTabClick = sinon.stub(zonesManager, "handleWidgetTabClick").returns(props.zones);
       const newProps = sut.handleWidgetTabClick(6, 11, props);
 
-      handleTabClickStub.calledOnceWithExactly(6, 11, props.zones).should.true;
+      handleWidgetTabClick.calledOnceWithExactly(6, 11, props.zones).should.true;
       newProps.should.eq(props, "props");
     });
   });
@@ -70,7 +70,7 @@ describe("NineZoneManager", () => {
     it("should add widget to new pane if stage panel target is set", () => {
       const sut = new NineZoneManager();
       sut.setPanelTarget({ panelId: "0", panelType: StagePanelType.Right });
-      const props = NineZoneManagerTestProps.draggingWidget6;
+      const props = NineZoneManagerTestProps.draggedWidget6;
       const newProps = sut.handleWidgetTabDragEnd(props);
 
       newProps.should.not.eq(props, "props");
@@ -85,15 +85,15 @@ describe("NineZoneManager", () => {
     });
 
     it("should close other widgets in pane to which new widget was added", () => {
-      const props = NineZoneManagerTestProps.draggingWidget9WithWidget6InRightPanel;
+      const props = NineZoneManagerTestProps.draggedWidget9WithWidget6InRightPanel;
       const sut = new NineZoneManager();
-      const zonesManager = new ZonesManager((p) => new NineZone(p));
+      const zonesManager = new ZonesManager();
       sinon.stub(sut, "getZonesManager").returns(zonesManager);
       sut.setPaneTarget({ panelId: "0", panelType: StagePanelType.Right, paneIndex: 0 });
-      const setWidgetTabIdSpy = sinon.spy(zonesManager, "setWidgetTabId");
+      const setWidgetTabIndexSpy = sinon.spy(zonesManager, "setWidgetTabIndex");
       const newProps = sut.handleWidgetTabDragEnd(props);
 
-      setWidgetTabIdSpy.calledOnceWithExactly(6, -1, sinon.match.any as any).should.true;
+      setWidgetTabIndexSpy.calledOnceWithExactly(6, -1, sinon.match.any as any).should.true;
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "zones");
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "zones.widgets");
@@ -110,7 +110,7 @@ describe("NineZoneManager", () => {
     });
 
     it("should set horizontal anchor if stage panel target is set", () => {
-      const props = NineZoneManagerTestProps.draggingWidget4;
+      const props = NineZoneManagerTestProps.draggedWidget4;
       const sut = new NineZoneManager();
       sut.setPanelTarget({ panelId: "0", panelType: StagePanelType.Right });
       const setWidgetHorizontalAnchorSpy = sinon.spy(sut.getZonesManager(), "setWidgetHorizontalAnchor");
@@ -132,7 +132,7 @@ describe("NineZoneManager", () => {
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
@@ -157,7 +157,7 @@ describe("NineZoneManager", () => {
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
@@ -172,38 +172,38 @@ describe("NineZoneManager", () => {
       newProps.zones.zones[6].floating!.bounds.bottom.should.eq(80, "zones.zones[6].floating.bounds.bottom");
     });
 
-    it("should offset dragging widget that was dragged from left stage panel", () => {
+    it("should offset dragged widget that was dragged from left stage panel", () => {
       const sut = new NineZoneManager();
       const props = NineZoneManagerTestProps.widget6InLeftPanel;
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "zones");
-      (!!newProps.zones.draggingWidget).should.true;
-      newProps.zones.draggingWidget!.lastPosition.x.should.eq(40, "zones.zones.draggingWidget.lastPosition.x");
-      newProps.zones.draggingWidget!.lastPosition.y.should.eq(0, "zones.zones.draggingWidget.lastPosition.y");
+      (!!newProps.zones.draggedWidget).should.true;
+      newProps.zones.draggedWidget!.lastPosition.x.should.eq(40, "zones.zones.draggedWidget.lastPosition.x");
+      newProps.zones.draggedWidget!.lastPosition.y.should.eq(0, "zones.zones.draggedWidget.lastPosition.y");
     });
 
-    it("should offset dragging widget that was dragged from top stage panel", () => {
+    it("should offset dragged widget that was dragged from top stage panel", () => {
       const sut = new NineZoneManager();
       const props = NineZoneManagerTestProps.widget6InTopPanel;
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "zones");
-      (!!newProps.zones.draggingWidget).should.true;
-      newProps.zones.draggingWidget!.lastPosition.x.should.eq(0, "zones.zones.draggingWidget.lastPosition.x");
-      newProps.zones.draggingWidget!.lastPosition.y.should.eq(80, "zones.zones.draggingWidget.lastPosition.y");
+      (!!newProps.zones.draggedWidget).should.true;
+      newProps.zones.draggedWidget!.lastPosition.x.should.eq(0, "zones.zones.draggedWidget.lastPosition.x");
+      newProps.zones.draggedWidget!.lastPosition.y.should.eq(80, "zones.zones.draggedWidget.lastPosition.y");
     });
 
     it("should not update props if zones and nested have not changed", () => {
@@ -212,7 +212,7 @@ describe("NineZoneManager", () => {
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
@@ -225,7 +225,7 @@ describe("NineZoneManager", () => {
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 6,
       }, props);
 
@@ -239,15 +239,15 @@ describe("NineZoneManager", () => {
     it("should open widget tab if dragging closed widget from stage panel", () => {
       const sut = new NineZoneManager();
       const props = NineZoneManagerTestProps.widget6and9InRightPanel;
-      const setWidgetTabIdSpy = sinon.spy(sut.getZonesManager(), "setWidgetTabId");
+      const setWidgetTabIndexSpy = sinon.spy(sut.getZonesManager(), "setWidgetTabIndex");
       const newProps = sut.handleWidgetTabDragStart({
         initialPosition: new Point(),
         widgetBounds: new Rectangle(),
-        tabId: 5,
+        tabIndex: 5,
         widgetId: 9,
       }, props);
 
-      setWidgetTabIdSpy.calledWithExactly(9, 5, sinon.match.any as any).should.true;
+      setWidgetTabIndexSpy.calledWithExactly(9, 5, sinon.match.any as any).should.true;
       newProps.should.not.eq(props, "props");
       newProps.zones.should.not.eq(props.zones, "props.zones");
       newProps.zones.widgets.should.not.eq(props.zones.widgets, "props.zones.widgets");

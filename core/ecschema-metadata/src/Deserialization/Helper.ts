@@ -3,35 +3,36 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AbstractParser, AbstractParserConstructor } from "./AbstractParser";
+import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { SchemaReferenceProps, ClassProps, RelationshipConstraintProps, PropertyProps } from "./JsonProps";
-import { SchemaContext } from "./../Context";
-import { parsePrimitiveType, parseSchemaItemType, SchemaItemType } from "./../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { AnyClass, AnySchemaItem } from "./../Interfaces";
-import { ECClass, MutableClass } from "./../Metadata/Class";
-import { Constant } from "./../Metadata/Constant";
-import { CustomAttribute } from "./../Metadata/CustomAttribute";
-import { EntityClass, MutableEntityClass } from "./../Metadata/EntityClass";
-import { Format } from "./../Metadata/Format";
-import { InvertedUnit } from "./../Metadata/InvertedUnit";
-import { KindOfQuantity, formatStringRgx } from "./../Metadata/KindOfQuantity";
-import { Mixin } from "./../Metadata/Mixin";
-import { Property, MutableProperty } from "./../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint, MutableRelationshipConstraint } from "./../Metadata/RelationshipClass";
-import { Schema, MutableSchema } from "./../Metadata/Schema";
-import { SchemaItem } from "./../Metadata/SchemaItem";
-import { Unit } from "./../Metadata/Unit";
-import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { SchemaContext } from "../Context";
+import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { AnyClass, AnySchemaItem } from "../Interfaces";
+import { ECClass, MutableClass } from "../Metadata/Class";
+import { Constant } from "../Metadata/Constant";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
+import { Format } from "../Metadata/Format";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { Mixin } from "../Metadata/Mixin";
+import { Property, MutableProperty } from "../Metadata/Property";
+import { RelationshipClass, RelationshipConstraint, MutableRelationshipConstraint } from "../Metadata/RelationshipClass";
+import { Schema, MutableSchema } from "../Metadata/Schema";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { SchemaKey, ECVersion, SchemaItemKey } from "../SchemaKey";
 import { SchemaPartVisitorDelegate, ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
+import { formatStringRgx } from "../utils/FormatEnums";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
 /**
- * @internal
- * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from serialized formats.
+ * This class properly handles the order the deserialization of ECSchemas and SchemaItems from serialized formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
+ * @internal
  */
 export class SchemaReadHelper<T = unknown> {
   private _context: SchemaContext;
@@ -39,8 +40,8 @@ export class SchemaReadHelper<T = unknown> {
   private _parserType: AbstractParserConstructor<T, unknown>;
   private _parser!: AbstractParser<unknown>;
 
-  // This is a cache of the schema we are loading. The schema also exists within the _context but in order
-  // to not have to go back to the context every time we use this cache.
+  // Cache of the schema currently being loaded. This schema is in the _context but to
+  // avoid going back to the context every time, the cache is used.
   private _schema?: Schema;
 
   constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor) {
@@ -95,7 +96,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributes());
+    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributeProviders());
 
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema);
@@ -141,7 +142,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    this.loadCustomAttributesSync(schema, this._parser.getSchemaCustomAttributes());
+    this.loadCustomAttributesSync(schema, this._parser.getSchemaCustomAttributeProviders());
 
     if (this._visitorHelper)
       this._visitorHelper.visitSchemaSync(schema);
@@ -155,7 +156,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    const refSchema = await this._context.getSchema(schemaKey);
+    const refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -168,7 +169,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    const refSchema = this._context.getSchemaSync(schemaKey);
+    const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (!refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -331,67 +332,102 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Finds the a SchemaItem matching the fullName first by checking the schema that is being deserialized. If it does
-   * not exist within the schema the SchemaContext will be searched.
-   * @param fullName The full name of the SchemaItem to search for.
+   * Given the full (Schema.ItemName) or qualified (alias:ItemName) item name, returns
+   * a tuple of strings in the format ["SchemaName", "ItemName"]. The schema name may be
+   * empty if the item comes from the schema being parsed.
+   * @param fullOrQualifiedName The full or qualified name of the schema item.
+   * @param schema The schema that will be used to lookup the schema name by alias, if necessary.
+   */
+  private static resolveSchemaAndItemName(fullOrQualifiedName: string, schema?: Schema): [string, string] {
+    const [schemaName, itemName] = SchemaItem.parseFullName(fullOrQualifiedName);
+
+    // If a schema is provided we attempt to resolve the alias by looking at the reference schemas.
+    if (undefined !== schema && -1 !== fullOrQualifiedName.indexOf(":")) {
+      const refName = schema.getReferenceNameByAlias(schemaName);
+      if (undefined === refName)
+        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not resolve schema alias '${schemaName}' for schema item '${itemName}.`);
+      return [refName, itemName];
+    }
+
+    return [schemaName, itemName];
+  }
+
+  /**
+   * Finds the a SchemaItem matching the name first by checking the schema that is being deserialized. If it does
+   * not exist within the schema, the SchemaContext will be searched.
+   * @param name The full (Schema.ItemName) or qualified (alias:ItemName) name of the SchemaItem to search for.
    * @param skipVisitor Used to break Mixin -appliesTo-> Entity -extends-> Mixin cycle.
+   * @param loadCallBack Only called if the SchemaItem had to be loaded.
    * @return The SchemaItem if it had to be loaded, otherwise undefined.
    */
-  private async findSchemaItem(fullName: string, skipVisitor = false): Promise<SchemaItem | undefined> {
-    const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
+  private async findSchemaItem(name: string, skipVisitor = false, loadCallBack?: (item: SchemaItem) => void): Promise<SchemaItem | undefined> {
+    let schemaItem: SchemaItem | undefined;
+    // TODO: A better solution should be investigated for handling both an alias and the schema name.
+    const [schemaName, itemName] = SchemaReadHelper.resolveSchemaAndItemName(name, this._schema);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
-    if (undefined === schemaName || schemaName.length === 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${fullName} is invalid without a schema name`);
+    if (undefined === schemaName || 0 === schemaName.length)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
     if (isInThisSchema && undefined === await this._schema!.getItem(itemName)) {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
-        const schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
+        schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitorHelper) {
           await this._visitorHelper.visitSchemaPart(schemaItem);
         }
+        if (loadCallBack && schemaItem)
+          loadCallBack(schemaItem);
+
         return schemaItem;
       }
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
     }
 
-    if (undefined === await this._context.getSchemaItem(new SchemaItemKey(itemName, new SchemaKey(schemaName))))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
+    schemaItem = await this._context.getSchemaItem(new SchemaItemKey(itemName, new SchemaKey(schemaName)));
+    if (undefined === schemaItem)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
 
-    return undefined;
+    return schemaItem;
   }
 
-  /*
-   * Finds the a SchemaItem matching the fullName first by checking the schema that is being deserialized. If it does
-   * not exist within the schema the SchemaContext will be searched.
-   * @param fullName The full name of the SchemaItem to search for.
+  /**
+   * Finds the a SchemaItem matching the name first by checking the schema that is being deserialized. If it does
+   * not exist within the schema, the SchemaContext will be searched.
+   * @param name The full (Schema.ItemName) or qualified (alias:ItemName) name of the SchemaItem to search for.
    * @param skipVisitor Used to break Mixin -appliesTo-> Entity -extends-> Mixin cycle.
+   * @param loadCallBack Only called if the SchemaItem had to be loaded.
    * @return The SchemaItem if it had to be loaded, otherwise undefined.
    */
-  private findSchemaItemSync(fullName: string, skipVisitor = false): SchemaItem | undefined {
-    const [schemaName, itemName] = SchemaItem.parseFullName(fullName);
+  private findSchemaItemSync(name: string, skipVisitor = false, loadCallBack?: (item: SchemaItem) => void): SchemaItem | undefined {
+    let schemaItem: SchemaItem | undefined;
+    // TODO: A better solution should be investigated for handling both an alias and the schema name.
+    const [schemaName, itemName] = SchemaReadHelper.resolveSchemaAndItemName(name, this._schema);
     const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
 
     if (undefined === schemaName || schemaName.length === 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${fullName} is invalid without a schema name`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
 
     if (isInThisSchema && undefined === this._schema!.getItemSync(itemName)) {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
-        const schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
+        schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitorHelper) {
           this._visitorHelper.visitSchemaPartSync(schemaItem);
         }
+        if (loadCallBack && schemaItem)
+          loadCallBack(schemaItem);
+
         return schemaItem;
       }
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
     }
 
-    if (undefined === this._context.getSchemaItemSync(new SchemaItemKey(itemName, new SchemaKey(schemaName))))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
+    schemaItem = this._context.getSchemaItemSync(new SchemaItemKey(itemName, new SchemaKey(schemaName)));
+    if (undefined === schemaItem)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${name}.`);
 
-    return undefined;
+    return schemaItem;
   }
 
   /**
@@ -555,10 +591,14 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawClass The serialized class data.
    */
   private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): Promise<void> {
+    const baseClassLoaded = async (baseClass: SchemaItem) => {
+      if (this._visitorHelper)
+        await this._visitorHelper.visitSchemaPart(baseClass);
+    };
+
     // Load base class first
-    let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
-      baseClass = await this.findSchemaItem(classProps.baseClass, true);
+      await this.findSchemaItem(classProps.baseClass, true, baseClassLoaded);
     }
 
     // Now deserialize the class itself, *before* any properties
@@ -569,10 +609,7 @@ export class SchemaReadHelper<T = unknown> {
       await this.loadPropertyTypes(classObj, propName, propType, rawProp);
     }
 
-    if (baseClass && this._visitorHelper)
-      await this._visitorHelper.visitSchemaPart(baseClass);
-
-    await this.loadCustomAttributes(classObj, this._parser.getClassCustomAttributes(rawClass));
+    await this.loadCustomAttributes(classObj, this._parser.getClassCustomAttributeProviders(rawClass));
   }
 
   /**
@@ -582,10 +619,14 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawClass The serialized class data.
    */
   private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): void {
+    const baseClassLoaded = async (baseClass: SchemaItem) => {
+      if (this._visitorHelper)
+        this._visitorHelper.visitSchemaPartSync(baseClass);
+    };
+
     // Load base class first
-    let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
-      baseClass = this.findSchemaItemSync(classProps.baseClass, true);
+      this.findSchemaItemSync(classProps.baseClass, true, baseClassLoaded);
     }
 
     // Now deserialize the class itself, *before* any properties
@@ -596,10 +637,7 @@ export class SchemaReadHelper<T = unknown> {
       this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
     }
 
-    if (baseClass && this._visitorHelper)
-      this._visitorHelper.visitSchemaPartSync(baseClass);
-
-    this.loadCustomAttributesSync(classObj, this._parser.getClassCustomAttributes(rawClass));
+    this.loadCustomAttributesSync(classObj, this._parser.getClassCustomAttributeProviders(rawClass));
   }
 
   /**
@@ -643,11 +681,15 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadMixin(mixin: Mixin, rawMixin: Readonly<unknown>): Promise<void> {
     const mixinProps = this._parser.parseMixin(rawMixin);
-    const appliesToClass = await this.findSchemaItem(mixinProps.appliesTo, true);
+
+    const appliesToLoaded = async (appliesToClass: SchemaItem) => {
+      if (this._visitorHelper)
+        await this._visitorHelper.visitSchemaPart(appliesToClass);
+    };
+
+    await this.findSchemaItem(mixinProps.appliesTo, true, appliesToLoaded);
 
     await this.loadClass(mixin, mixinProps, rawMixin);
-    if (appliesToClass && this._visitorHelper)
-      await this._visitorHelper.visitSchemaPart(appliesToClass);
   }
 
   /**
@@ -657,11 +699,15 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadMixinSync(mixin: Mixin, rawMixin: Readonly<unknown>): void {
     const mixinProps = this._parser.parseMixin(rawMixin);
-    const appliesToClass = this.findSchemaItemSync(mixinProps.appliesTo, true);
+
+    const appliesToLoaded = async (appliesToClass: SchemaItem) => {
+      if (this._visitorHelper)
+        await this._visitorHelper.visitSchemaPart(appliesToClass);
+    };
+
+    this.findSchemaItemSync(mixinProps.appliesTo, true, appliesToLoaded);
 
     this.loadClassSync(mixin, mixinProps, rawMixin);
-    if (appliesToClass && this._visitorHelper)
-      this._visitorHelper.visitSchemaPartSync(appliesToClass);
   }
 
   /**
@@ -675,7 +721,7 @@ export class SchemaReadHelper<T = unknown> {
     await this.loadRelationshipConstraint(rel.source, relationshipClassProps.source);
     await this.loadRelationshipConstraint(rel.target, relationshipClassProps.target);
 
-    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributes(rawRel);
+    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributeProviders(rawRel);
     await this.loadCustomAttributes(rel.source, sourceCustomAttributes);
     await this.loadCustomAttributes(rel.target, targetCustomAttributes);
   }
@@ -691,7 +737,7 @@ export class SchemaReadHelper<T = unknown> {
     this.loadRelationshipConstraintSync(rel.source, relationshipClassProps.source);
     this.loadRelationshipConstraintSync(rel.target, relationshipClassProps.target);
 
-    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributes(rawRel);
+    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributeProviders(rawRel);
     this.loadCustomAttributesSync(rel.source, sourceCustomAttributes);
     this.loadCustomAttributesSync(rel.target, targetCustomAttributes);
   }
@@ -745,32 +791,34 @@ export class SchemaReadHelper<T = unknown> {
         await this.findSchemaItem(typeName);
     };
 
-    switch (propType) {
-      case "PrimitiveProperty":
+    const lowerCasePropType = propType.toLowerCase();
+
+    switch (lowerCasePropType) {
+      case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         await loadTypeName(primPropertyProps.typeName);
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
         return this.loadProperty(primProp, primPropertyProps, rawProperty);
 
-      case "StructProperty":
+      case "structproperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         await loadTypeName(structPropertyProps.typeName);
         const structProp = await (classObj as MutableClass).createStructProperty(propName, structPropertyProps.typeName);
         return this.loadProperty(structProp, structPropertyProps, rawProperty);
 
-      case "PrimitiveArrayProperty":
+      case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         await loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
         return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
-      case "StructArrayProperty":
+      case "structarrayproperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         await loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, structArrPropertyProps.typeName);
         return this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
 
-      case "NavigationProperty":
+      case "navigationproperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
 
@@ -794,32 +842,34 @@ export class SchemaReadHelper<T = unknown> {
         this.findSchemaItemSync(typeName);
     };
 
-    switch (propType) {
-      case "PrimitiveProperty":
+    const lowerCasePropType = propType.toLowerCase();
+
+    switch (lowerCasePropType) {
+      case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         loadTypeName(primPropertyProps.typeName);
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
         return this.loadPropertySync(primProp, primPropertyProps, rawProperty);
 
-      case "StructProperty":
+      case "structproperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         loadTypeName(structPropertyProps.typeName);
         const structProp = (classObj as MutableClass).createStructPropertySync(propName, structPropertyProps.typeName);
         return this.loadPropertySync(structProp, structPropertyProps, rawProperty);
 
-      case "PrimitiveArrayProperty":
+      case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
         return this.loadPropertySync(primArrProp, primArrPropertyProps, rawProperty);
 
-      case "StructArrayProperty":
+      case "structarrayproperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = (classObj as MutableClass).createStructArrayPropertySync(propName, structArrPropertyProps.typeName);
         return this.loadPropertySync(structArrProp, structArrPropertyProps, rawProperty);
 
-      case "NavigationProperty":
+      case "navigationproperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
 
@@ -846,7 +896,7 @@ export class SchemaReadHelper<T = unknown> {
     }
 
     await propertyObj.deserialize(props);
-    await this.loadCustomAttributes(propertyObj, this._parser.getPropertyCustomAttributes(rawProperty));
+    await this.loadCustomAttributes(propertyObj, this._parser.getPropertyCustomAttributeProviders(rawProperty));
   }
 
   /**
@@ -865,17 +915,23 @@ export class SchemaReadHelper<T = unknown> {
     }
 
     propertyObj.deserializeSync(props);
-    this.loadCustomAttributesSync(propertyObj, this._parser.getPropertyCustomAttributes(rawProperty));
+    this.loadCustomAttributesSync(propertyObj, this._parser.getPropertyCustomAttributeProviders(rawProperty));
   }
 
   /**
-   * Load the customAttribute class dependencies for a set of CustomAttribute objects and add them to a given custom attribute container.
+   * Load the customAttribute class dependencies for a set of CustomAttribute objects and add
+   * them to a given custom attribute container.
    * @param container The CustomAttributeContainer that each CustomAttribute will be added to.
    * @param customAttributes An iterable set of parsed CustomAttribute objects.
    */
-  private async loadCustomAttributes(container: AnyCAContainer, customAttributes: Iterable<CustomAttribute>): Promise<void> {
-    for (const customAttribute of customAttributes) {
-      await this.findSchemaItem(customAttribute.className);
+  private async loadCustomAttributes(container: AnyCAContainer, caProviders: Iterable<CAProviderTuple>): Promise<void> {
+    for (const providerTuple of caProviders) {
+      // First tuple entry is the CA class name.
+      const caClass = await this.findSchemaItem(providerTuple[0]) as CustomAttributeClass;
+
+      // Second tuple entry ia a function that provides the CA instance.
+      const provider = providerTuple[1];
+      const customAttribute = provider(caClass);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
   }
@@ -885,9 +941,14 @@ export class SchemaReadHelper<T = unknown> {
    * @param container The CustomAttributeContainer that each CustomAttribute will be added to.
    * @param customAttributes An iterable set of parsed CustomAttribute objects.
    */
-  private loadCustomAttributesSync(container: AnyCAContainer, customAttributes: Iterable<CustomAttribute>): void {
-    for (const customAttribute of customAttributes) {
-      this.findSchemaItemSync(customAttribute.className);
+  private loadCustomAttributesSync(container: AnyCAContainer, caProviders: Iterable<CAProviderTuple>): void {
+    for (const providerTuple of caProviders) {
+      // First tuple entry is the CA class name.
+      const caClass = this.findSchemaItemSync(providerTuple[0]) as CustomAttributeClass;
+
+      // Second tuple entry ia a function that provides the CA instance.
+      const provider = providerTuple[1];
+      const customAttribute = provider(caClass);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
   }

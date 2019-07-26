@@ -5,99 +5,62 @@
 /** @module Zone */
 
 import * as React from "react";
-
-import { WidgetType, WidgetDef, WidgetState, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
-import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
-import { WidgetStack } from "../widgets/WidgetStack";
-import { ZoneTargets } from "../dragdrop/ZoneTargets";
-import { FrontstageManager } from "../frontstage/FrontstageManager";
-
-import {
-  DropTarget, Zone as NZ_Zone, RectangleProps, ZonesManagerWidgets,
-  Outline, ZoneManagerProps, WidgetZoneIndex, DraggingWidgetProps,
-} from "@bentley/ui-ninezone";
 import { CommonProps } from "@bentley/ui-core";
+import {
+  ZoneTargetType,
+  Zone as NZ_Zone,
+  RectangleProps,
+  Outline,
+  ZoneManagerProps,
+  WidgetZoneId,
+  DraggedWidgetManagerProps,
+  WidgetManagerProps,
+} from "@bentley/ui-ninezone";
+import { WidgetChangeHandler, TargetChangeHandler } from "../frontstage/FrontstageComposer";
+import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
+import { ZoneTargets } from "../dragdrop/ZoneTargets";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal
  */
 export interface FrameworkZoneProps extends CommonProps {
-  draggingWidget: DraggingWidgetProps | undefined;
-  getWidgetContentRef: (id: WidgetZoneIndex) => React.Ref<HTMLDivElement>;
-  targetedBounds?: RectangleProps;
-  widgetChangeHandler: WidgetChangeHandler;
-  targetChangeHandler: TargetChangeHandler;
-  dropTarget: DropTarget;
+  activeTabIndex: number;
+  draggedWidget: DraggedWidgetManagerProps | undefined;
+  dropTarget: ZoneTargetType | undefined;
   fillZone?: boolean;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   isHidden: boolean;
-  widgets: ZonesManagerWidgets;
-  zoneDefProvider: ZoneDefProvider;
-  zoneProps: ZoneManagerProps;
-}
-
-interface FrameworkZoneState {
-  updatedWidgetDef?: WidgetDef;
+  openWidgetId: WidgetZoneId | undefined;
+  targetChangeHandler: TargetChangeHandler;
+  targetedBounds?: RectangleProps;
+  widget: WidgetManagerProps | undefined;
+  widgetElement: React.ReactNode;
+  widgetChangeHandler: WidgetChangeHandler;
+  widgetTabs: WidgetTabs;
+  zone: ZoneManagerProps;
 }
 
 /** FrameworkZone React component.
  * @internal
  */
-export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
-
-  constructor(props: FrameworkZoneProps) {
-    super(props);
-  }
-
-  /** @internal */
-  public readonly state: Readonly<FrameworkZoneState> = {
-    updatedWidgetDef: undefined,
-  };
-
-  public componentDidMount(): void {
-    FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
-  }
-
-  public componentWillUnmount(): void {
-    FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
-  }
-
-  private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    const widgetDef = args.widgetDef;
-    const id = this.getWidgetPropsIdForDef(widgetDef);
-    if (!id)
-      return;
-
-    const zoneDef = this.props.zoneDefProvider.getZoneDef(id);
-
-    // istanbul ignore else
-    if (zoneDef) {
-      const visibleWidgets = zoneDef.widgetDefs.filter((wd) => wd.isVisible || wd === widgetDef);
-      for (let index = 0; index < visibleWidgets.length; index++) {
-        const wDef = visibleWidgets[index];
-        if (wDef === widgetDef) {
-          this.props.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
-          break;
-        }
-      }
-    }
-  }
-
+export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
   public render(): React.ReactNode {
-    const zIndexStyle: React.CSSProperties | undefined = this.props.zoneProps.floating ?
-      { zIndex: this.props.zoneProps.floating.stackId, position: "relative" } : undefined;
+    const zIndexStyle: React.CSSProperties | undefined = this.props.zone.floating ?
+      { zIndex: this.props.zone.floating.stackId, position: "relative" } : undefined;
+
     return (
       <span style={zIndexStyle}>
         <NZ_Zone
-          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
+          bounds={this.props.zone.floating ? this.props.zone.floating.bounds : this.props.zone.bounds}
           className={this.props.className}
           style={this.props.style}
           isHidden={this.props.isHidden}
         >
           {this._getWidget()}
         </NZ_Zone>
-        <NZ_Zone bounds={this.props.zoneProps.bounds}>
+        <NZ_Zone bounds={this.props.zone.bounds}>
           <ZoneTargets
-            zoneId={this.props.zoneProps.id}
+            zoneId={this.props.zone.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
@@ -107,49 +70,29 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     );
   }
 
-  private getWidgetPropsIdForDef(widgetDef: WidgetDef): number | undefined {
-    // istanbul ignore else
-    if (this.props.zoneProps.widgets.length > 0) {
-      for (const wId of this.props.zoneProps.widgets) {
-        const zoneDef = this.props.zoneDefProvider.getZoneDef(wId);
+  private _getWidget() {
+    const widget = this.props.widget;
+    if (!widget)
+      return null;
 
-        // istanbul ignore else
-        if (zoneDef) {
-          if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
-            return wId;
-        }
-      }
-    }
-
-    return undefined;
-  }
-
-  private _getWidget = () => {
-    if (this.props.zoneProps.widgets.length === 1) {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0]);
-      // istanbul ignore if
-      if (!zoneDef)
-        return null;
-
-      /** Return free-form nzWidgetProps */
-      if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
-        const widgetDef = zoneDef.widgetDefs[0];
-        return (widgetDef.isVisible) ? widgetDef.reactElement : null;
-      }
-    }
+    if (this.props.widgetElement !== undefined)
+      return this.props.widgetElement;
 
     return (
       <WidgetStack
-        draggingWidget={this.props.draggingWidget}
-        fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
+        activeTabIndex={this.props.activeTabIndex}
+        draggedWidget={this.props.draggedWidget}
+        fillZone={this.props.fillZone || this.props.zone.isLayoutChanged}
         getWidgetContentRef={this.props.getWidgetContentRef}
+        horizontalAnchor={widget.horizontalAnchor}
         isCollapsed={false}
+        isFloating={this.props.zone.floating ? true : false}
         isInStagePanel={false}
-        isFloating={this.props.zoneProps.floating ? true : false}
-        widgets={this.props.zoneProps.widgets}
+        openWidgetId={this.props.openWidgetId}
+        verticalAnchor={widget.verticalAnchor}
+        widgets={this.props.zone.widgets}
+        widgetTabs={this.props.widgetTabs}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        zoneDefProvider={this.props.zoneDefProvider}
-        zonesWidgets={this.props.widgets}
       />
     );
   }

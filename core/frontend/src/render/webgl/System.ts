@@ -10,18 +10,19 @@ import {
   IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
 } from "@bentley/geometry-core";
 import {
-  InstancedGraphicParams,
-  RenderGraphic,
   GraphicBranch,
-  RenderSystem,
-  RenderDiagnostics,
-  RenderTarget,
-  RenderClipVolume,
-  RenderPlanarClassifier,
+  GraphicBranchOptions,
   GraphicList,
+  InstancedGraphicParams,
   PackedFeatureTable,
-  WebGLExtensionName,
+  RenderClipVolume,
+  RenderDiagnostics,
+  RenderGraphic,
+  RenderPlanarClassifier,
   RenderSolarShadowMap,
+  RenderSystem,
+  RenderTarget,
+  WebGLExtensionName,
 } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -56,7 +57,6 @@ import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
 import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
 import { TileTree } from "../../tile/TileTree";
 import { SceneContext } from "../../ViewContext";
 import { SpatialViewState } from "../../ViewState";
@@ -105,6 +105,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "EXT_color_buffer_float",
   "EXT_shader_texture_lod",
   "ANGLE_instanced_arrays",
+  "OES_vertex_array_object",
 ];
 
 /** Describes the rendering capabilities of the host system.
@@ -146,6 +147,7 @@ export class Capabilities {
   public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
+  public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -156,8 +158,17 @@ export class Capabilities {
     return (null !== extObj) ? extObj as T : undefined;
   }
 
-  public static readonly optionalFeatures: WebGLFeature[] = [WebGLFeature.MrtTransparency, WebGLFeature.MrtPick, WebGLFeature.DepthTexture, WebGLFeature.FloatRendering, WebGLFeature.Instancing];
-  public static readonly requiredFeatures: WebGLFeature[] = [WebGLFeature.UintElementIndex, WebGLFeature.MinimalTextureUnits];
+  public static readonly optionalFeatures: WebGLFeature[] = [
+    WebGLFeature.MrtTransparency,
+    WebGLFeature.MrtPick,
+    WebGLFeature.DepthTexture,
+    WebGLFeature.FloatRendering,
+    WebGLFeature.Instancing,
+  ];
+  public static readonly requiredFeatures: WebGLFeature[] = [
+    WebGLFeature.UintElementIndex,
+    WebGLFeature.MinimalTextureUnits,
+  ];
 
   private get _hasRequiredTextureUnits(): boolean { return this.maxFragTextureUnits >= 4 && this.maxVertTextureUnits >= 5; }
 
@@ -509,7 +520,6 @@ export class System extends RenderSystem {
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
-  public readonly enableOptimizedSurfaceShaders: boolean;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _instancingExtension?: ANGLE_instanced_arrays;
   private readonly _textureBindings: TextureBinding[] = [];
@@ -646,7 +656,10 @@ export class System extends RenderSystem {
   public createPointCloud(args: PointCloudArgs): RenderGraphic | undefined { return Primitive.create(() => new PointCloudGeometry(args)); }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic { return new GraphicsArray(primitives); }
-  public createGraphicBranch(branch: GraphicBranch, transform: Transform, clips?: ClipPlanesVolume | ClipMaskVolume, classifierOrDrape?: PlanarClassifier | TextureDrape): RenderGraphic { return new Branch(branch, transform, clips, undefined, classifierOrDrape); }
+  public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
+    return new Branch(branch, transform, undefined, options);
+  }
+
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
@@ -772,7 +785,6 @@ export class System extends RenderSystem {
     this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
     this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
-    this.enableOptimizedSurfaceShaders = undefined !== options && true === options.enableOptimizedSurfaceShaders;
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
@@ -969,8 +981,7 @@ export class System extends RenderSystem {
           const wasInstanced = 0 !== (VertexAttribState.Instanced & oldState);
           const nowInstanced = 0 !== (VertexAttribState.Instanced & newState);
           if (wasInstanced !== nowInstanced) {
-            assert(undefined !== this._instancingExtension);
-            this._instancingExtension!.vertexAttribDivisorANGLE(i, nowInstanced ? 1 : 0);
+            this.vertexAttribDivisor(i, nowInstanced ? 1 : 0);
           }
         }
 
@@ -980,6 +991,11 @@ export class System extends RenderSystem {
       // Set the attribute back to disabled, but preserve the divisor.
       next[i] &= ~VertexAttribState.Enabled;
     }
+  }
+
+  public vertexAttribDivisor(index: number, divisor: number) {
+    assert(undefined !== this._instancingExtension);
+    this._instancingExtension!.vertexAttribDivisorANGLE(index, divisor);
   }
 
   public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {

@@ -15,6 +15,7 @@ import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Geometry } from "../Geometry";
 
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 
@@ -222,7 +223,7 @@ export abstract class CurveCollection extends GeometryQuery {
    * @param child child to add.
    * @return true if child is an acceptable type for this collection.
    */
-  public abstract tryAddChild(child: AnyCurve): boolean;
+  public abstract tryAddChild(child: AnyCurve | undefined): boolean;
   /** Return a child identified by by index */
   public abstract getChild(i: number): AnyCurve | undefined;
   /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed) */
@@ -256,13 +257,22 @@ export abstract class CurveChain extends CurveCollection {
     return this._curves;
   }
   /**
-   * Return curve primitive by index, interpreted cyclically if the Chain is a Loop.
-   *
-   * *  For a path, return undefined for any out-of-bounds index
-   * *  For a loop, an out-of-bounds index is mapped cyclically into bounds.
+   * Return curve primitive by index, interpreted cyclically for both Loop and Path
    * @param index index to array
    */
-  public abstract cyclicCurvePrimitive(index: number): CurvePrimitive | undefined;
+  /**
+   * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.
+   * * In particular, `-1` is the final curve.
+   * @param index cyclic index
+   */
+  public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
+    const n = this.children.length;
+    if (n === 0)
+      return undefined;
+
+    const index2 = Geometry.modulo(index, n);
+    return this.children[index2];
+  }
   /** Stroke the chain into a simple xyz array.
    * @param options tolerance parameters controlling the stroking.
    */
@@ -288,8 +298,8 @@ export abstract class CurveChain extends CurveCollection {
   /** add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
    */
-  public tryAddChild(child: AnyCurve): boolean {
-    if (child instanceof CurvePrimitive) {
+  public tryAddChild(child: AnyCurve | undefined): boolean {
+    if (child && child instanceof CurvePrimitive) {
       this._curves.push(child);
       return true;
     }
@@ -367,8 +377,9 @@ export class BagOfCurves extends CurveCollection {
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves { return new BagOfCurves(); }
   /** Add a child  */
-  public tryAddChild(child: AnyCurve): boolean {
-    this._children.push(child);
+  public tryAddChild(child: AnyCurve | undefined): boolean {
+    if (child)
+      this._children.push(child);
     return true;
   }
   /** Get a child by index */

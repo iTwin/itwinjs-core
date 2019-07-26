@@ -124,19 +124,87 @@ export class CodeSpec {
   public iModel: IModel;
   /** The id of this CodeSpec. */
   public id: Id64String;
+  /** The name of this CodeSpec. */
   public name: string;
-  public specScopeType: CodeScopeSpec.Type;
-  public scopeReq: CodeScopeSpec.ScopeRequirement;
-  public properties: any; // TODO: CodeSpec handlers and custom properties
+  /** The JSON properties for this CodeSpec.
+   * > Note: Use the getters and setters instead of accessing this directly.
+   * @internal
+   */
+  public properties: any;
 
-  public constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
+  /** Internal-only constructor. Proper use is to supply `properties` only or `scopeType` and `scopeReq` but not `properties`.
+   * > Note: The deprecation has to do with moving the constructor from public to internal
+   * @deprecated Use CodeSpec.create or CodeSpec.createFromJson instead of the internal constructor
+   * @internal
+   */
+  public constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
-    this.specScopeType = specScopeType;
-    this.scopeReq = (undefined !== scopeReq) ? scopeReq : CodeScopeSpec.ScopeRequirement.ElementId;
-    this.properties = properties;
+    if (properties) {
+      this.properties = properties;
+      if (!this.properties.scopeSpec) {
+        this.properties.scopeSpec = {};
+        this.scopeType = CodeScopeSpec.Type.Repository;
+      }
+    } else {
+      this.properties = { scopeSpec: {} };
+      this.scopeType = CodeScopeSpec.Type.Repository;
+    }
+    if (undefined !== scopeType) this.scopeType = scopeType;
+    if (undefined !== scopeReq) this.scopeReq = scopeReq;
   }
 
+  /** Create a new CodeSpec from the specified parameters
+   * > Note: CodeSpec.id will not be valid until inserted
+   * @see [CodeSpecs.insert]($backend)
+   */
+  public static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec {
+    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined); // tslint:disable-line:deprecation
+  }
+
+  /** Create a new CodeSpec directly from JSON. Used internally by the CodeSpecs.load function.
+   * @internal
+   */
+  public static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec {
+    return new CodeSpec(iModel, id, name, undefined, undefined, properties); // tslint:disable-line:deprecation
+  }
+
+  /** Will be true if the id of this CodeSpec is valid. */
   public get isValid(): boolean { return Id64.isValid(this.id); }
+
+  /** The scope type of this CodeSpec.
+   * @deprecated Use scopeType instead.
+   */
+  public get specScopeType(): CodeScopeSpec.Type { return this.scopeType; }
+  public set specScopeType(scopeType: CodeScopeSpec.Type) { this.scopeType = scopeType; }
+
+  /** The scope type of this CodeSpec. */
+  public get scopeType(): CodeScopeSpec.Type { return this.properties.scopeSpec.type; }
+  public set scopeType(scopeType: CodeScopeSpec.Type) { this.properties.scopeSpec.type = scopeType; }
+
+  /** Will be `CodeScopeSpec.ScopeRequirement.FederationGuid` if the scoping element is required to have a FederationGuid or `CodeScopeSpec.ScopeRequirement.ElementId` otherwise (which is the default). */
+  public get scopeReq(): CodeScopeSpec.ScopeRequirement {
+    return this.properties.scopeSpec.fGuidRequired ? CodeScopeSpec.ScopeRequirement.FederationGuid : CodeScopeSpec.ScopeRequirement.ElementId;
+  }
+  public set scopeReq(req: CodeScopeSpec.ScopeRequirement) {
+    if (CodeScopeSpec.ScopeRequirement.FederationGuid === req)
+      this.properties.scopeSpec.fGuidRequired = true;
+    else
+      this.properties.scopeSpec.fGuidRequired = undefined;
+  }
+
+  /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
+   * @beta
+   */
+  public get isManagedWithIModel(): boolean {
+    if (this.properties.spec && this.properties.spec.isManagedWithDgnDb !== undefined) {
+      return this.properties.spec.isManagedWithDgnDb;
+    }
+    return true;
+  }
+  public set isManagedWithIModel(value: boolean) {
+    if (!this.properties.spec) this.properties.spec = {};
+    this.properties.spec.isManagedWithDgnDb = value;
+  }
 }

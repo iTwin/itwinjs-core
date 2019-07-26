@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "1.2.0-dev.4",
+  "version": "1.3.0-dev.7",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -21,10 +21,11 @@
     "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
     "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
-    "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep \"ImodelChangesetPerformance|ElementAspectPerfomance\" --invert",
-    "cs-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
-    "eleAspect-perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
-    "backend-perf-tests": "npm run perftest && npm run cs-perftest && npm run eleAspect-perftest",
+    "perftest:pre": "npm run pretest && cpx \"./src/perftest/CSPerfConfig.json\" ./lib/perftest",
+    "perftest": "npm run perftest:crud && npm run perftest:cs && npm run perftest:elAspect",
+    "perftest:crud": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep PerformanceElementsTests",
+    "perftest:cs": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
+    "perftest:elAspect": "npm run perftest:pre && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999 --grep ElementAspectPerfomance",
     "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
   "repository": {
@@ -41,25 +42,25 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.2.0-dev.4",
-    "@bentley/geometry-core": "^1.2.0-dev.4",
-    "@bentley/imodeljs-clients": "^1.2.0-dev.4",
-    "@bentley/imodeljs-clients-backend": "^1.2.0-dev.4",
-    "@bentley/imodeljs-common": "^1.2.0-dev.4"
+    "@bentley/bentleyjs-core": "^1.3.0-dev.7",
+    "@bentley/geometry-core": "^1.3.0-dev.7",
+    "@bentley/imodeljs-clients": "^1.3.0-dev.7",
+    "@bentley/imodeljs-clients-backend": "^1.3.0-dev.7",
+    "@bentley/imodeljs-common": "^1.3.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "1.2.0-dev.4",
-    "@bentley/bentleyjs-core": "1.2.0-dev.4",
-    "@bentley/build-tools": "1.2.0-dev.4",
-    "@bentley/geometry-core": "1.2.0-dev.4",
-    "@bentley/imodeljs-clients": "1.2.0-dev.4",
-    "@bentley/imodeljs-clients-backend": "1.2.0-dev.4",
-    "@bentley/imodeljs-common": "1.2.0-dev.4",
-    "@bentley/perf-tools": "1.2.0-dev.4",
+    "@bentley/config-loader": "1.3.0-dev.7",
+    "@bentley/bentleyjs-core": "1.3.0-dev.7",
+    "@bentley/build-tools": "1.3.0-dev.7",
+    "@bentley/geometry-core": "1.3.0-dev.7",
+    "@bentley/imodeljs-clients": "1.3.0-dev.7",
+    "@bentley/imodeljs-clients-backend": "1.3.0-dev.7",
+    "@bentley/imodeljs-common": "1.3.0-dev.7",
+    "@bentley/perf-tools": "1.3.0-dev.7",
     "@types/chai": "^4.1.4",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
@@ -69,7 +70,6 @@
     "@types/node": "10.14.1",
     "@types/object-hash": "^1.2.0",
     "@types/semver": "^5.5.0",
-    "@types/form-data": "^2.2.1",
     "@types/multiparty": "^0.0.31",
     "@types/lru-cache": "^5.1.0",
     "asn1": "0.2.3",
@@ -88,9 +88,9 @@
     "webpack": "^4.20.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.136.0",
+    "@bentley/imodeljs-native": "~0.142.0",
     "azure-storage": "^2.10.2",
-    "form-data": "2.3.2",
+    "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "js-base64": "^2.4.5",

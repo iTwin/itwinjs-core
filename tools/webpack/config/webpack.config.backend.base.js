@@ -135,7 +135,7 @@ module.exports = (publicPath) => {
     plugins: [
       new ForkTsCheckerWebpackPlugin({
         tsconfig: paths.appTsConfig,
-        tslint: paths.appTsLint,
+        tslint: (process.env.NODE_ENV === "development") ? paths.appTsLint : undefined,
         async: false,
         silent: true,
       }),

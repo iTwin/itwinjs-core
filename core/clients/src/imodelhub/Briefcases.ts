@@ -12,7 +12,7 @@ import { ProgressInfo } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
-import { addSelectFileAccessKey, Query } from "./Query";
+import { addSelectFileAccessKey, Query, addSelectApplicationData } from "./Query";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 
@@ -78,6 +78,14 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
   public downloadUrl?: string;
 
+  /** Id of the application that created this Briefcase. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Id")
+  public applicationId?: string;
+
+  /** Name of the application that created this Briefcase. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Name")
+  public applicationName?: string;
+
   @ECJsonTypeMap.propertyToJson("ecdb", "accessMode")
   public accessMode?: BriefcaseAccessMode;
 
@@ -124,6 +132,15 @@ export class BriefcaseQuery extends Query {
    */
   public selectDownloadUrl(): this {
     addSelectFileAccessKey(this._query);
+    return this;
+  }
+
+  /**
+   * Query will additionally select data about application that created this [[Briefcase]].
+   * @returns This query.
+   */
+  public selectApplicationData() {
+    addSelectApplicationData(this._query);
     return this;
   }
 

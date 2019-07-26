@@ -24,7 +24,7 @@ export abstract class CloudStorageService {
   public initialize(): void { }
   public terminate(): void { }
   public abstract id: CloudStorageProvider;
-  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+  public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
   public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return Promise.resolve(undefined); }
 
@@ -49,13 +49,17 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public readonly id = CloudStorageProvider.Azure;
 
-  public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl {
+  public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl {
     const policy: as.common.SharedAccessPolicy = {
       AccessPolicy: {
         Permissions: as.BlobUtilities.SharedAccessPermissions.READ + as.BlobUtilities.SharedAccessPermissions.LIST,
         Expiry: expiry,
       },
     };
+
+    if (clientIp && clientIp !== "localhost" && clientIp !== "127.0.0.1" && clientIp !== "::1") {
+      policy.AccessPolicy.IPAddressOrRange = clientIp;
+    }
 
     const token = this._service.generateSharedAccessSignature(id.name, "", policy);
 
@@ -71,13 +75,37 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public async ensureContainer(name: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._service.createContainerIfNotExists(name, (error, _result, response) => {
-        if (error) {
-          reject(error);
-        }
+      this._service.createContainerIfNotExists(name, (error, result, response) => {
+        if (error || !response.isSuccessful) {
+          const reason = {
+            createContainerFailed: true,
+            containerName: name,
+            requestId: result.requestId,
+            responseStatus: response.statusCode,
+            responseError: undefined as any,
+            responseBody: "",
+          };
 
-        if (!response.isSuccessful) {
-          reject(response.error);
+          if (response.error) {
+            if (response.error instanceof Error) {
+              reason.responseError = {
+                name: response.error.name,
+                message: response.error.message,
+              };
+            } else {
+              reason.responseError = response.error;
+            }
+          }
+
+          if (response.body) {
+            if (Buffer.isBuffer(response.body)) {
+              reason.responseBody = response.body.toString();
+            } else {
+              reason.responseBody = response.body;
+            }
+          }
+
+          reject(reason);
         }
 
         // _result indicates whether container already existed...irrelevant to semantics of our API
@@ -103,18 +131,61 @@ export class AzureBlobStorage extends CloudStorageService {
         await this.ensureContainer(container);
 
         this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
-          if (error) {
-            reject(error);
-          }
+          if (error || !response.isSuccessful) {
+            const reason = {
+              uploadTileFailed: true,
+              containerName: container,
+              tileId: name,
+              tileSize: data.byteLength,
+              requestId: result.requestId,
+              responseStatus: response.statusCode,
+              responseError: undefined as any,
+              responseBody: "",
+            };
 
-          if (!response.isSuccessful) {
-            reject(response.error);
+            if (response.error) {
+              if (response.error instanceof Error) {
+                reason.responseError = {
+                  name: response.error.name,
+                  message: response.error.message,
+                };
+              } else {
+                reason.responseError = response.error;
+              }
+            }
+
+            if (response.body) {
+              if (Buffer.isBuffer(response.body)) {
+                reason.responseBody = response.body.toString();
+              } else {
+                reason.responseBody = response.body;
+              }
+            }
+
+            reject(reason);
           }
 
           resolve(result.etag);
         });
       } catch (error) {
-        reject(error);
+        const reason = {
+          threwWhileUploadingTile: true,
+          containerName: container,
+          tileId: name,
+          tileSize: data.byteLength,
+          error: undefined as any,
+        };
+
+        if (error instanceof Error) {
+          reason.error = {
+            name: error.name,
+            message: error.message,
+          };
+        } else {
+          reason.error = error;
+        }
+
+        reject(reason);
       }
     });
   }

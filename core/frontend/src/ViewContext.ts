@@ -5,17 +5,27 @@
 /** @module Rendering */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
+import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
+import { ColorDef, Frustum, FrustumPlanes, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget, RenderPlanarClassifier, RenderSolarShadowMap, RenderTextureDrape } from "./render/System";
+import {
+  CanvasDecoration,
+  Decorations,
+  GraphicBranch,
+  GraphicBranchOptions,
+  GraphicList,
+  RenderGraphic,
+  RenderTarget,
+  RenderPlanarClassifier,
+  RenderSolarShadowMap,
+  RenderTextureDrape,
+} from "./render/System";
 import { ScreenViewport, Viewport, ViewFrustum } from "./Viewport";
-import { ViewState3d } from "./ViewState";
 import { Tile } from "./tile/Tile";
 import { TileTree } from "./tile/TileTree";
 import { IModelApp } from "./IModelApp";
 
-const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
+const gridConstants = { minSeparation: 20, maxRefLines: 80, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -53,7 +63,7 @@ export class RenderContext {
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
   /** @internal */
-  public createGraphicBranch(branch: GraphicBranch, location: Transform, clip?: RenderClipVolume, classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, clip, classifierOrDrape); }
+  public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic { return this.target.renderSystem.createGraphicBranch(branch, location, opts); }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -94,83 +104,6 @@ export class DecorateContext extends RenderContext {
   constructor(vp: ScreenViewport, private readonly _decorations: Decorations) {
     super(vp);
     this.decorationDiv = vp.decorationDiv;
-  }
-
-  /** @internal */
-  public static getGridDimension(props: { nRepetitions: number, min: number }, gridSize: number, org: Point3d, dir: Point3d, points: Point3d[]): boolean {
-    // initialized only to avoid warning.
-    let distLow = 0.0;
-    let distHigh = 0.0;
-
-    for (let i = 0, n = points.length; i < n; ++i) {
-      const distance = org.vectorTo(points[i]).dotProduct(dir);
-      if (i) {
-        if (distance < distLow)
-          distLow = distance;
-        if (distance > distHigh)
-          distHigh = distance;
-      } else {
-        distLow = distHigh = distance;
-      }
-    }
-
-    if (distHigh <= distLow)
-      return false;
-
-    props.min = Math.floor(distLow / gridSize); // NOTE: Should be ok to let grid extend outside project extents since view extends padded for ground plane...
-    const max = Math.ceil(distHigh / gridSize);
-    props.nRepetitions = max - props.min;
-    props.min *= gridSize;
-
-    return true;
-  }
-
-  /** @internal */
-  public static getGridPlaneViewIntersections(planePoint: Point3d, planeNormal: Vector3d, vp: Viewport, useProjectExtents: boolean): Point3d[] {
-    const plane = Plane3dByOriginAndUnitNormal.create(planePoint, planeNormal);
-    if (undefined === plane)
-      return [];
-
-    const frust = vp.getFrustum();
-    const limitRange = useProjectExtents && vp.view.isSpatialView();
-
-    // Limit non-view aligned grid to project extents in spatial views...
-    if (limitRange) {
-      const range = vp.view.iModel.projectExtents.clone();
-      if (range.isNull)
-        return [];
-      range.intersect(frust.toRange(), range);
-      if (range.isNull)
-        return [];
-      frust.initFromRange(range);
-    }
-
-    const index = new Array<[number, number]>(
-      // lines connecting front to back
-      [Npc._000, Npc._001],
-      [Npc._100, Npc._101],
-      [Npc._010, Npc._011],
-      [Npc._110, Npc._111],
-      // around front face
-      [Npc._000, Npc._100],
-      [Npc._100, Npc._110],
-      [Npc._110, Npc._010],
-      [Npc._010, Npc._000],
-      // around back face.
-      [Npc._001, Npc._101],
-      [Npc._101, Npc._111],
-      [Npc._111, Npc._011],
-      [Npc._011, Npc._001]);
-
-    const intersections: CurveLocationDetail[] = [];
-    for (let i = 0, n = index.length; i < n; ++i) {
-      const corner1 = frust.getCorner(index[i][0]),
-        corner2 = frust.getCorner(index[i][1]);
-      const lineSegment = LineSegment3d.create(corner1, corner2);
-      lineSegment.appendPlaneIntersectionPoints(plane, intersections);
-    }
-
-    return intersections.map((cld: CurveLocationDetail) => cld.point.clone());
   }
 
   /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
@@ -238,264 +171,227 @@ export class DecorateContext extends RenderContext {
   /** Add an HTMLElement to be drawn as a decoration in this context's [[Viewport]]. */
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
-  /** @internal */
-  public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, isoGrid: boolean = false, fixedRepetitions?: Point2d): void {
-    const vp = this.viewport;
+  private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
+    const frus = vp.getFrustum();
+    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frus.toRange(), true, false, true);
+    if (undefined === geom || 1 !== geom.length)
+      return undefined;
+    const loop = geom[0];
+    if (!(loop instanceof Loop) || 1 !== loop.children.length)
+      return undefined;
+    const child = loop.getChild(0);
+    if (!(child instanceof LineString3d))
+      return undefined;
 
-    // rotMatrix returns new Vectors instead of references
-    const xVec = rMatrix.rowX(),
-      yVec = rMatrix.rowY(),
-      zVec = rMatrix.rowZ(),
-      viewZ = vp.rotation.getRow(2);
+    const work = new GrowableXYZArray();
+    const finalPoints = new GrowableXYZArray();
+    const convexSet = frus.getRangePlanes(false, false, 0);
+    convexSet.polygonClip(child.points, finalPoints, work);
+    if (finalPoints.length < 4)
+      return undefined;
 
-    if (!vp.isCameraOn && Math.abs(viewZ.dotProduct(zVec)) < 0.005)
-      return;
+    const shapePoints = finalPoints.getPoint3dArray();
+    loopPt.setFrom(shapePoints[0]);
 
-    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
-    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    if (!vp.isCameraOn)
+      return shapePoints;
 
-    let gridOrg = new Point3d();
-    let repetitions = new Point2d();
-
-    if (undefined === fixedRepetitions || 0 === fixedRepetitions.x || 0 === fixedRepetitions.y) {
-      // expect gridOrigin and zVec to be modified from this call
-      const intersections = DecorateContext.getGridPlaneViewIntersections(gridOrigin, zVec, vp, undefined !== fixedRepetitions);
-
-      if (intersections.length < 3)
-        return;
-
-      const min = new Point2d(),
-        xProps = { nRepetitions: repetitions.x, min: min.x },
-        yProps = { nRepetitions: repetitions.y, min: min.y };
-      if (!DecorateContext.getGridDimension(xProps, refSpacing.x, gridOrigin, Point3d.createFrom(xVec), intersections) ||
-        !DecorateContext.getGridDimension(yProps, refSpacing.y, gridOrigin, Point3d.createFrom(yVec), intersections))
-        return;
-
-      // update vectors. (workaround for native passing primitives by reference)
-      repetitions.x = xProps.nRepetitions; min.x = xProps.min;
-      repetitions.y = yProps.nRepetitions; min.y = yProps.min;
-
-      gridOrg.plus3Scaled(gridOrigin, 1, xVec, min.x, yVec, min.y, gridOrg);
-    } else {
-      gridOrg = gridOrigin;
-      repetitions = fixedRepetitions;
+    let lastZ = 0.0;
+    for (let i = 0; i < shapePoints.length - 1; ++i) {
+      const midPt = shapePoints[i].interpolate(0.5, shapePoints[i + 1]);
+      const viewPt = vp.worldToView(midPt);
+      if (i === 0 || viewPt.z > lastZ) {
+        loopPt.setFrom(midPt);
+        lastZ = viewPt.z;
+      }
     }
+    return shapePoints;
+  }
 
-    if (0 === repetitions.x || 0 === repetitions.y)
-      return;
-
-    const gridX = xVec.scale(refSpacing.x),
-      gridY = yVec.scale(refSpacing.y);
-
-    const testPt = gridOrg.plus2Scaled(gridX, repetitions.x / 2.0, gridY, repetitions.y / 2.0);
-
-    let maxGridPts = gridConstants.maxPoints;
-    let maxGridRefs = gridConstants.maxRefs;
-
-    if (maxGridPts < 10)
-      maxGridPts = 10;
-    if (maxGridRefs < 10)
-      maxGridRefs = 10;
-
-    // values are "per 1000 pixels"
-    const minGridSeparationPixels = 1000 / maxGridPts,
-      minRefSeparation = 1000 / maxGridRefs;
-    let meterPerPixel = vp.getPixelSizeAtPoint(testPt);
-
-    if ((refSpacing.x / meterPerPixel) < minRefSeparation || (refSpacing.y / meterPerPixel) < minRefSeparation)
-      gridsPerRef = 0;
-
-    // Avoid z fighting with coincident geometry
-    gridOrg.plusScaled(viewZ, meterPerPixel, gridOrg); // was SumOf(DPoint2dCR point, DPoint2dCR vector, double s)
-    meterPerPixel *= refScale;
-
-    const drawDots = ((refSpacing.x / meterPerPixel) > minGridSeparationPixels) && ((refSpacing.y / meterPerPixel) > minGridSeparationPixels);
-    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, undefined, undefined);
-
-    DecorateContext.drawGrid(builder, isoGrid, drawDots, gridOrg, gridX, gridY, gridsPerRef, repetitions, vp);
-    this.addDecorationFromBuilder(builder);
+  private getCurrentGridRefSeparation(lastPt: Point3d, thisPt0: Point3d, thisPt1: Point3d, thisPt: Point3d, thisRay: Ray3d, planeX: Plane3dByOriginAndUnitNormal, planeY: Plane3dByOriginAndUnitNormal) {
+    thisRay.getOriginRef().setFrom(thisPt0);
+    thisRay.getDirectionRef().setStartEnd(thisPt0, thisPt1); thisRay.getDirectionRef().normalizeInPlace();
+    planeX.getOriginRef().setFrom(lastPt);
+    planeY.getOriginRef().setFrom(lastPt);
+    const dotX = Math.abs(planeX.getNormalRef().dotProduct(thisRay.getDirectionRef()));
+    const dotY = Math.abs(planeY.getNormalRef().dotProduct(thisRay.getDirectionRef()));
+    return (undefined !== thisRay.intersectionWithPlane(dotX > dotY ? planeX : planeY, thisPt)) ? lastPt.distance(thisPt) : 0.0;
   }
 
   /** @internal */
-  public static drawGrid(graphic: GraphicBuilder, doIsogrid: boolean, drawDots: boolean, gridOrigin: Point3d, xVec: Vector3d, yVec: Vector3d, gridsPerRef: number, repetitions: Point2d, vp: Viewport) {
+  public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+    const vp = this.viewport;
     const eyePoint = vp.worldToViewMap.transform1.columnZ();
-    const viewZ = Vector3d.createFrom(eyePoint);
-
+    const eyeDir = Vector3d.createFrom(eyePoint);
     const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
     if (aa !== undefined) {
-      const xyzEye = viewZ.scale(aa);
-      viewZ.setFrom(gridOrigin.vectorTo(xyzEye));
+      const xyzEye = eyeDir.scale(aa);
+      eyeDir.setFrom(gridOrigin.vectorTo(xyzEye));
     }
-
-    let normResult = viewZ.normalize(viewZ);
+    const normResult = eyeDir.normalize(eyeDir);
     if (!normResult)
       return;
-    const zVec = xVec.crossProduct(yVec);
-    normResult = zVec.normalize(zVec);
-    if (!normResult)
+    const zVec = rMatrix.rowZ();
+    const eyeDot = eyeDir.dotProduct(zVec);
+    if (!vp.isCameraOn && Math.abs(eyeDot) < 0.005)
       return;
 
+    const plane = Plane3dByOriginAndUnitNormal.create(gridOrigin, zVec);
+    if (undefined === plane)
+      return;
+
+    const loopPt = Point3d.createZero();
+    const shapePoints = this.getClippedGridPlanePoints(vp, plane, loopPt);
+    if (undefined === shapePoints)
+      return;
+
+    const meterPerPixel = vp.getPixelSizeAtPoint(loopPt);
+    const refScale = (0 === gridsPerRef) ? 1.0 : gridsPerRef;
+    const refSpacing = Vector2d.create(spacing.x, spacing.y).scale(refScale);
+    const drawRefLines = !((refSpacing.x / meterPerPixel) < gridConstants.minSeparation || (refSpacing.y / meterPerPixel) < gridConstants.minSeparation);
+
+    const viewZ = vp.rotation.getRow(2);
+    const gridOffset = Point3d.create(viewZ.x * meterPerPixel, viewZ.y * meterPerPixel, viewZ.z * meterPerPixel); // Avoid z fighting with coincident geometry
+    const builder = this.createGraphicBuilder(GraphicType.WorldDecoration, Transform.createTranslation(gridOffset));
     const color = vp.getContrastToBackgroundColor();
-    const lineColor = color.clone();
-    const dotColor = color.clone();
-    const planeColor = color.clone();
-    lineColor.setTransparency(gridConstants.lineTransparency);
-    dotColor.setTransparency(gridConstants.dotTransparency);
-    planeColor.setTransparency(gridConstants.planeTransparency);
-    let linePat = LinePixels.Solid;
+    const planeColor = eyeDot < 0.0 ? ColorDef.red.clone() : color.clone(); planeColor.setTransparency(gridConstants.planeTransparency);
 
-    if (viewZ.dotProduct(zVec) < 0.0) {   // Provide visual indication that grid is being viewed from the back (grid z not towards eye)...
-      planeColor.setFrom(ColorDef.red);
-      planeColor.setTransparency(gridConstants.planeTransparency);
-      linePat = LinePixels.Code2;
-    }
+    builder.setBlankingFill(planeColor);
+    builder.addShape(shapePoints);
 
-    const gpr = gridsPerRef > 0 ? gridsPerRef : 1;
-    const rpg = 1 / gpr;
+    if (drawRefLines) {
+      const invMatrix = rMatrix.inverse();
+      const transform = Transform.createRefs(gridOrigin, invMatrix!);
+      const localRange = Range3d.createInverseTransformedArray(transform, shapePoints);
 
-    if (doIsogrid)
-      gridsPerRef = 0;  // turn off reference grid for iso
+      let minX = Math.floor(localRange.low.x / refSpacing.x);
+      let maxX = Math.ceil(localRange.high.x / refSpacing.x);
+      let minY = Math.floor(localRange.low.y / refSpacing.y);
+      let maxY = Math.ceil(localRange.high.y / refSpacing.y);
 
-    if (drawDots) {
-      const dotXVec = Vector3d.createFrom(xVec);
-      const dotYVec = Vector3d.createFrom(yVec);
+      const nRefRepetitionsX = (maxY - minY);
+      const nRefRepetitionsY = (maxX - minX);
 
-      dotXVec.scale(rpg, dotXVec);
-      dotYVec.scale(rpg, dotYVec);
+      minX *= refSpacing.x; maxX *= refSpacing.x;
+      minY *= refSpacing.y; maxY *= refSpacing.y;
 
-      graphic.setSymbology(dotColor, planeColor, 1);
-      DecorateContext.drawGridDots(graphic, doIsogrid, gridOrigin, dotYVec, repetitions.y * gpr, dotXVec, repetitions.x * gpr, gridsPerRef, vp);
-    }
+      let nGridRepetitionsX = nRefRepetitionsX;
+      let nGridRepetitionsY = nRefRepetitionsY;
+      const drawGridLines = (gridsPerRef > 1 && !((spacing.x / meterPerPixel) < gridConstants.minSeparation || (spacing.y / meterPerPixel) < gridConstants.minSeparation));
+      const dirPoints: Point3d[] = [Point3d.create(minX, minY), Point3d.create(minX, minY + refSpacing.y), Point3d.create(minX + refSpacing.x, minY)];
+      transform.multiplyPoint3dArrayInPlace(dirPoints);
 
-    if (0 < gridsPerRef) {
-      graphic.setSymbology(lineColor, planeColor, 1, linePat);
-      DecorateContext.drawGridRefs(graphic, gridOrigin, xVec, yVec, repetitions.x, repetitions.y);
-      DecorateContext.drawGridRefs(graphic, gridOrigin, yVec, xVec, repetitions.y, repetitions.x);
-    }
+      const xDir = Vector3d.createStartEnd(dirPoints[0], dirPoints[1]); xDir.normalizeInPlace();
+      const yDir = Vector3d.createStartEnd(dirPoints[0], dirPoints[2]); yDir.normalizeInPlace();
+      const dotX = xDir.dotProduct(viewZ);
+      const dotY = yDir.dotProduct(viewZ);
+      const unambiguousX = Math.abs(dotX) > 0.25;
+      const unambiguousY = Math.abs(dotY) > 0.25;
+      const reverseX = dotX > 0.0;
+      const reverseY = dotY > 0.0;
+      const refStepX = reverseY ? -refSpacing.x : refSpacing.x;
+      const refStepY = reverseX ? -refSpacing.y : refSpacing.y;
+      const fadeRefSteps = 8;
+      const fadeRefTransparencyStep = (255 - gridConstants.refTransparency) / (fadeRefSteps + 2);
 
-    // don't draw grid plane if perpendicular to view
-    if (viewZ.isPerpendicularTo(xVec))
-      return;
+      const lastPt = Point3d.createZero();
+      const planeX = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitX())!;
+      const planeY = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitY())!;
+      const thisPt = Point3d.create();
+      const thisPt0 = Point3d.create();
+      const thisPt1 = Point3d.create();
+      const thisRay = Ray3d.createZero();
 
-    // grid refs or points will give visual indication of grid plane...
-    // note: references to same points here are okay
-    const shapePoints: Point3d[] = [
-      gridOrigin,
-      gridOrigin.plusScaled(xVec, repetitions.x),
-      gridOrigin.plus2Scaled(xVec, repetitions.x, yVec, repetitions.y),
-      gridOrigin.plusScaled(yVec, repetitions.y),
-      gridOrigin,
-    ];
+      const refColor = color.clone(); refColor.setTransparency(gridConstants.refTransparency);
+      const linePat = eyeDot < 0.0 ? LinePixels.Code2 : LinePixels.Solid;
+      builder.setSymbology(refColor, planeColor, 1, linePat);
 
-    if (0 === gridsPerRef) {
-      graphic.setSymbology(lineColor, planeColor, 1, linePat);
-      graphic.addLineString(shapePoints);
-    }
+      for (let xRef = 0, refY = reverseX ? maxY : minY, doFadeX = false, xFade = 0; xRef <= nRefRepetitionsX && xFade < fadeRefSteps; ++xRef, refY += refStepY) {
+        const linePoints: Point3d[] = [Point3d.create(minX, refY), Point3d.create(maxX, refY)];
+        transform.multiplyPoint3dArrayInPlace(linePoints);
 
-    graphic.setBlankingFill(planeColor);
-    graphic.addShape(shapePoints);
-  }
+        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
 
-  /** Private grid-specific function for computing intersections of a ray with a convex set of clipping planes. */
-  private static getClipPlaneIntersection(clipDistance: { min: number, max: number }, origin: Point3d, direction: Vector3d, convexSet: ConvexClipPlaneSet): boolean {
-    clipDistance.min = -Number.MAX_VALUE;
-    clipDistance.max = Number.MAX_VALUE;
-
-    for (let i = 0; i < 6; i++) {
-      const plane = convexSet.planes[i];
-      const vD = plane.dotProductVector(direction);
-      const vN = plane.evaluatePoint(origin);
-
-      const testValue = -vN / vD;
-      if (vD > 0.0) {
-        if (testValue > clipDistance.min)
-          clipDistance.min = testValue;
-      } else if (vD < 0.0) {
-        if (testValue < clipDistance.max)
-          clipDistance.max = testValue;
-      }
-    }
-
-    return clipDistance.min < clipDistance.max;
-  }
-
-  private static drawGridDots(graphic: GraphicBuilder, doIsoGrid: boolean, origin: Point3d, rowVec: Vector3d, rowRepetitions: number, colVec: Vector3d, colRepetitions: number, refSpacing: number, vp: Viewport) {
-    const colSpacing = colVec.magnitude();
-    const colNormal = colVec.normalize();
-    if (!colNormal)
-      return;
-
-    const points: Point3d[] = [];
-
-    const cameraOn = vp.isCameraOn;
-    let zCamera = 0.0;
-    let zCameraLimit = 0.0;
-    const viewZ = Vector3d.create();
-
-    if (cameraOn) {
-      const view = vp.view as ViewState3d;
-      const camera = view.camera;
-      const sizeLimit = gridConstants.maxHorizon * colSpacing / vp.viewDelta.x;
-
-      vp.rotation.rowZ(viewZ);
-      zCamera = viewZ.dotProduct(camera.getEyePoint());
-      zCameraLimit = zCamera - camera.focusDist * sizeLimit;
-    }
-
-    const corners = vp.getFrustum();
-    const clipPlanes: ConvexClipPlaneSet = corners.getRangePlanes(true, true, 0);
-    const clipDistance = { min: 0, max: 0 };
-    for (let i = 0; i < rowRepetitions; i++) {
-      if (0 !== refSpacing && 0 === (i % refSpacing))
-        continue;
-
-      const dotOrigin = origin.plusScaled(rowVec, i);
-      if (DecorateContext.getClipPlaneIntersection(clipDistance, dotOrigin, colNormal, clipPlanes)) {
-        if (cameraOn) {
-          const startPoint = dotOrigin.plusScaled(colNormal, clipDistance.min);
-          const endPoint = dotOrigin.plusScaled(colNormal, clipDistance.max);
-          if (viewZ.dotProduct(startPoint) < zCameraLimit && viewZ.dotProduct(endPoint) < zCameraLimit)
-            continue;
+        if (doFadeX) {
+          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
+          builder.setSymbology(refColor, planeColor, 1, linePat);
+        } else if (nRefRepetitionsX > 10) {
+          if (doFadeX = (xRef > gridConstants.maxRefLines || (unambiguousX && 0 !== xRef && this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY) < gridConstants.minSeparation)))
+            nGridRepetitionsX = xRef;
         }
 
-        let nToDisplay = 0;
-        let jMin = Math.floor(clipDistance.min / colSpacing);
-        let jMax = Math.ceil(clipDistance.max / colSpacing);
+        thisPt0.interpolate(0.5, thisPt1, lastPt);
+        builder.addLineString(linePoints);
+      }
 
-        // Choose values that result in the least amount of dots between jMin-jMax and 0-colRepetitions...
-        jMin = jMin < 0 ? 0 : jMin;
-        jMax = jMax > colRepetitions ? colRepetitions : jMax;
+      refColor.setTransparency(gridConstants.refTransparency);
+      builder.setSymbology(refColor, planeColor, 1, linePat);
 
-        const isoOffset = doIsoGrid && (i & 1) ? 0.5 : 0.0;
-        for (let j = jMin; j <= jMax && nToDisplay < gridConstants.maxDotsInRow; j++) {
-          if (0 !== refSpacing && 0 === (j % refSpacing))
-            continue;
-          const point = dotOrigin.plusScaled(colVec, j + isoOffset);
-          if (cameraOn) {
-            const pointZ = viewZ.dotProduct(point);
-            if (pointZ < zCamera && pointZ > zCameraLimit)
-              points.push(point);
-          } else {
-            points.push(point);
+      for (let yRef = 0, refX = reverseY ? maxX : minX, doFadeY = false, yFade = 0; yRef <= nRefRepetitionsY && yFade < fadeRefSteps; ++yRef, refX += refStepX) {
+        const linePoints: Point3d[] = [Point3d.create(refX, minY), Point3d.create(refX, maxY)];
+        transform.multiplyPoint3dArrayInPlace(linePoints);
+
+        vp.worldToView(linePoints[0], thisPt0); thisPt0.z = 0.0;
+        vp.worldToView(linePoints[1], thisPt1); thisPt1.z = 0.0;
+
+        if (doFadeY) {
+          refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
+          builder.setSymbology(refColor, planeColor, 1, linePat);
+        } else if (nRefRepetitionsY > 10) {
+          if (doFadeY = (yRef > gridConstants.maxRefLines || (unambiguousY && 0 !== yRef && this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY) < gridConstants.minSeparation)))
+            nGridRepetitionsY = yRef;
+        }
+
+        thisPt0.interpolate(0.5, thisPt1, lastPt);
+        builder.addLineString(linePoints);
+      }
+
+      if (drawGridLines) {
+        const gridStepX = refStepX / gridsPerRef;
+        const gridStepY = refStepY / gridsPerRef;
+        const gridColor = color.clone();
+        const fadeGridTransparencyStep = (255 - gridConstants.gridTransparency) / (gridsPerRef + 2);
+
+        if (nGridRepetitionsX > 1) {
+          gridColor.setTransparency(gridConstants.gridTransparency);
+          builder.setSymbology(gridColor, planeColor, 1);
+
+          for (let xRef = 0, refY = reverseX ? maxY : minY; xRef < nGridRepetitionsX; ++xRef, refY += refStepY) {
+            const doFadeX = (nGridRepetitionsX < nRefRepetitionsX && (xRef === nGridRepetitionsX - 1));
+            for (let yGrid = 1, gridY = refY + gridStepY; yGrid < gridsPerRef; ++yGrid, gridY += gridStepY) {
+              const gridPoints: Point3d[] = [Point3d.create(minX, gridY), Point3d.create(maxX, gridY)];
+              transform.multiplyPoint3dArrayInPlace(gridPoints);
+              if (doFadeX) {
+                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * yGrid));
+                builder.setSymbology(gridColor, planeColor, 1);
+              }
+              builder.addLineString(gridPoints);
+            }
           }
-          nToDisplay++;
+        }
+
+        if (nGridRepetitionsY > 1) {
+          gridColor.setTransparency(gridConstants.gridTransparency);
+          builder.setSymbology(gridColor, planeColor, 1);
+
+          for (let yRef = 0, refX = reverseY ? maxX : minX; yRef < nGridRepetitionsY; ++yRef, refX += refStepX) {
+            const doFadeY = (nGridRepetitionsY < nRefRepetitionsY && (yRef === nGridRepetitionsY - 1));
+            for (let xGrid = 1, gridX = refX + gridStepX; xGrid < gridsPerRef; ++xGrid, gridX += gridStepX) {
+              const gridPoints: Point3d[] = [Point3d.create(gridX, minY), Point3d.create(gridX, maxY)];
+              transform.multiplyPoint3dArrayInPlace(gridPoints);
+              if (doFadeY) {
+                gridColor.setTransparency(gridConstants.gridTransparency + (fadeGridTransparencyStep * xGrid));
+                builder.setSymbology(gridColor, planeColor, 1);
+              }
+              builder.addLineString(gridPoints);
+            }
+          }
         }
       }
     }
-    if (points.length !== 0)
-      graphic.addPointString(points);
-  }
 
-  private static drawGridRefs(graphic: GraphicBuilder, org: Point3d, rowVec: Vector3d, colVec: Vector3d, rowRepetitions: number, colRepetitions: number) {
-    const gridEnd = org.plusScaled(colVec, colRepetitions);
-
-    for (let i = 0; i <= rowRepetitions; i += 1) {
-      const linePoints: Point3d[] = [
-        org.plusScaled(rowVec, i),
-        gridEnd.plusScaled(rowVec, i),
-      ];
-      graphic.addLineString(linePoints);
-    }
+    this.addDecorationFromBuilder(builder);
   }
 
   /** Display skyBox graphic that encompasses entire scene and rotates with camera.

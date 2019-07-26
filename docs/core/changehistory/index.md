@@ -1,104 +1,59 @@
-# 1.0.0 Change Notes
+# 1.2.0 Change Notes
 
-## Changes to [SelectionSet]($frontend) events and HiliteSet
+## Markers may now have HTML decorations
 
-HilitedSet has been renamed to HiliteSet and marked `alpha`. It now supports hiliting models and subcategories in addition to elements. By default it continues to be synchronized with the SelectionSet, but this can be overridden (Grigas' presentation viewport component does so, enabling him to control the hilite set independently from the selection set).
+Markers are used to position decorations in a view that follow a position in world coordinates. Previously they could display World Decorations and Canvas Decorations. They may now also include an optional HTML Decoration by assigning the "htmlElement" member. See [Marker]($frontend) documentation for details.
 
-SelectEventType enum has been renamed to [SelectionSetEventType]($frontend).
+## Updates to authorization
 
-The argument to [SelectionSet.onChanged]($frontend) has changed to [SelectionSetEvent]($frontend). You can switch on the `type` field to access the sets of added and/or removed Ids; or access the current contents directly via the `set` field.
+* [OidcBrowserClient]($frontend) now uses local storage instead of session storage to store access tokens. The state of the authorization would therefore now be preserved if the browser was closed and reopened.
+**Note**: The browser setting to clear local storage on exit must not be enabled.
 
-SelectionSet methods accepting an optional `sendEvent` argument have been marked private - it is not appropriate for external callers to suppress event dispatch.
+* [OidcBrowserClient]($frontend) can now be used in authorization code workflows. A new responseType parameter can be set to "code" to support these workflows. This also requires a new client to be registered.
 
-## Refinements to *snapshot* iModel API
+* [OidcAgentClient]($clients-backend) is now available as beta (it was marked internal earlier). Using the client requires an Agent registration and potential changes to the Connect Project settings - see more documentation in [OidcAgentClient]($clients-backend).
 
-The `IModelDb.createSnapshotFromSeed` **static** method has been replaced by the [IModelDb.createSnapshot]($backend) **instance** method.
-The reason is to make sure that the program/user had permission to open the iModel before making the *snapshot* copy.
-A related change is that [IModelDb.openSnapshot]($backend) will no longer open briefcases.
-Either [IModelDb.open]($backend) should be called to open the iModel or [IModelDb.createSnapshot]($backend) should have been called to make the *snapshot* ahead of time.
+## Support for vertex array objects
 
-Here is an example of how to adjust your source code:
+On systems that support the [required WebGL extension](https://developer.mozilla.org/en-US/docs/Web/API/OES_vertex_array_object), vertex array objects are used to improve display performance.
 
-```ts
-  const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName); // or IModelDb.open
-  const snapshotDb: IModelDb = seedDb.createSnapshot(snapshotFileName);
-  seedDb.closeSnapshot(); // or IModelDb.close
-  return snapshotDb;
-```
+## Display system bug fixes
 
-## Changes to IModelDb.open API
+* Fixed two bugs in which [Viewport.changeCategoryDisplay]($frontend) and [Viewport.addViewedModels]($frontend) would sometimes fail to immediately update the contents of the viewport.
 
-Removed the following parameters to [IModelDb.open]($backend) to simplify the implementation:
-* [OpenParams]($backend).pullOnly(): Use OpenParams.fixedVersion() or OpenParams.pullAndPush()
-* AccessMode: Using OpenParams.fixedVersion() always causes the briefcase to be shared, and using OpenParams.pullAndPush() always causes the briefcase to be exclusive.
+* Fixed a regression that prevented the tiles comprising the background map from being reprojected using the the geocoordinate system defined in the iModel, causing the map graphics to be incorrectly aligned with the model geometry.
 
-## Changes to OidcAgentClient
+* Fixed the behavior of the "Data Attribution" link that, when clicked, displays copyright information for map tiles displayed in the view. Previously it would always open an empty modal dialog. Now, if any copyright information is available, it will be correctly displayed in the dialog; otherwise, a toast message will be displayed indicating the unavailability of attribution.
 
-[OidcAgentClient]($clients-backend) now follows the typical OIDC client credentials authorization workflow. This implies the caller need not supply "serviceUserEmail" and "serviceUserPassword" as part of the configuration. For example:
+## Option to discard ImageBuffer alpha channel
 
-```ts
-const agentConfiguration:  = {
-      clientId: "some-client-id-obtained-through-registration",
-      clientSecret: "some-client-secret-obtained-through-registration",
-      scope: "context-registry-service imodelhub",
-    };
+Functions for converting the contents of an [ImageBuffer]($frontend) into an `HTMLCanvasElement` or PNG image now take an optional argument indicating whether or not the alpha channel should be preserved. [imageBufferToCanvas]($frontend), [imageBufferToPngDataUrl]($frontend), and [imageBufferToBase64EncodedPng]($frontend) all support the new argument.
 
-const agentClient = new OidcAgentClient(agentConfiguration);
-```
+## Enhancements to IModelDb.exportGraphics
 
-Note that what was OidcAgentClientV2 has now become [OidcAgentClient]($clients-backend) - i.e., the older OidcAgentClient has been entirely replaced.
+* [IModelDb.exportGraphics]($backend) can now optionally return information about [GeometryPart]($backend) instances encountered in a [GeometryStream]($common). [IModelDb.exportPartGraphics]($backend) can then be used to handle this information in a more efficient manner.
 
-**Most importantly, it's required that agent applications re-register and obtain a new configuration - clientId and clientSecret - the older registrations will NOT work anymore.**
+* [IModelDb.exportGraphics]($backend) can now optionally return information about linework (or "open") geometry encountered in a GeometryStream.
 
-## Changes to tile features
+* An example GLTF 2.0 exporter demonstrating these features is now available under test-apps in the iModel.js monorepo.
 
-Removed or modified some properties used to feature-gate various tile-related features.
+## Added a roadmap
 
-Frontend:
-  * Removed `TileAdmin.requestTilesWithoutEdges`. Tiles are now always requested without edges if edges are not required.
-  * Removed `TileAdmin.elideEmptyChildContentRequests`. Such requests are now always elided.
-  * `TileAdmin.enableInstancing` now defaults to `true` instead of `false`.
-  * Previously, if `TileAdmin.retryInterval` was undefined, requests for tile content and tile tree JSON would not be memoized. Now, they are always memoized, and the interval defaults to 1000ms if not explicitly defined.
-  * Previously, requests for tile content would by default use POST method and responses would not be cacheable. Now by default they use GET and responses are cacheable.
+[High level Roadmap](./Roadmap.md) - We want your feedback, check it out and help us improve it.
 
-Backend:
-  * Removed `IModelHostConfiguration.useTileContentThreadPool`. The thread pool is now always used.
+## Geometry
 
-## Changes to RPC type marshaling system
+* Various new methods for manipulating polygons and curves
+  * [RegionOps.computeXYAreaMoments]($geometry)
+  * [RegionOps.constructPolygonWireXYOffset]($geometry)
+  * [PolylineOps.compressByChordError]($geometry)
+  * [CurveCurve.intersectionXYZ]($geometry)
+* Correct stroking of [BezierCurve3d]($geometry)
 
-The iModel.js RPC system now permits only primitive values, "interface" objects that contain only data values, and binary data over the wire. Therefore, all RPC interface methods can only accept and return these types now.
+## iModel UI Enhancements
 
-It is no longer possible to send class instances, maps, sets, or objects with function members between the frontend and backend using the RPC system.
+* UI Items now support badging with BetaBadge. Applications can now specify an image to overlay on an item to highlight it. For example, early release tools can be marked with a badge to indicate their beta state.
 
-Binary data transfer is still supported via `Uint8Array`.
+* The 9-zone UI now supports an external set of Stage Panels. These panels can be used to move high-density widgets out of the area shared by the graphical viewport for ease of use. The Stage Panels feature is part of the ui-ninezone package and is in preview.
 
-These new type restrictions are enforced via the `require-basic-rpc-values` tslint rule. With these new restrictions in place, the RPC system is now compatible with aggressive webpacking policies that mangle class names at build time.
-
-
-## Changes to ECSql Query API
-
-This change breaks RPC interface [IModelReadRpcInterface]($common). Both frontend and backend developer must update there packages.
-
-Backend:
-  * Renamed `IModelDb.queryPage` to [IModelDb.queryRows]($backend). This method is also marked `internal` and user should not call it directly. Instead user should always use [IModelDb.query]($frontend). This method now also throw exception if query prepare fails.
-  * Changed methoid signature for [IModelDb.query]($backend). But first two parameters are same.
-
-Common:
-  * Renamed `IModelDb.queryPage` to [IModelDb.queryRows]($common).
-  * Removed `queryRowCount`method from [IModelReadRpcInterface]($common)
-
-Backend:
-  * Renamed `IModelDb.queryPage` to [IModelConnection.queryRows]($frontend). This method is also marked `internal` and user should not call it directly. Instead user should always use [IModelConnection.query]($frontend). This method now also throw exception if query prepare fails.
-  * Changed methoid signature for [IModelDb.query]($backend). But first two parameters are same.
-
-### How can you update code
-```ts
-      const rows = await imodel.queryPage("SELECT ECInstanceId FROM bis.Element LIMIT 1");
-```
-  can be be changed to following.
-```ts
-      const rows = [];
-      for await (const row of imodel.query("SELECT ECInstanceId FROM bis.Element LIMIT 1")) {
-        rows.push(row);
-      }
-```
+* Applications can now serialize and deserialize the layout and content of the ContentView using the SaveViewLayout class. The SavedView and SavedViewLayout classes are in preview.

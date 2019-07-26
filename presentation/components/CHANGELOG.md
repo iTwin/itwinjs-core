@@ -1,6 +1,27 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+*Version update only*
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Reorganize docs script output
+- include !lib/**/*.*css in .npmignore for presentation-components to includes css files in lib/module/prod
+- `treeWithFilteringSupport` HOC now sends the filtered data provider as the second parameter to `onFilterApplied` prop callback
+- Moved the part that determines hilite set out of `presentation-components` to `presentation-frontend` and expose it as a public API.
+- Clear tool selection set when models or categories are selected. Replace tool selection set with new selection when elements are selected.
+- Always clear tool selection set when applying unified selection. If there're elements in logical selection, they're added to selection set afterwards.
+- Do not clear selection set before replacing it - this causes unnecessary onChanged events
+- Implement hiliting for selected subjects, models and categories
+- Update to TypeScript 3.5
+- Fix `autoExpand` flag not being set for `TreeNodeItem`s
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

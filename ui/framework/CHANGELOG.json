@@ -2,6 +2,159 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/ui-framework_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update so both Tool and Navigation wigets refresh when PluginUiProvider is loaded."
+          },
+          {
+            "comment": "Support ToolbarItemInsertSpecs with conditional visibility. Update toolbar processing to better handle situations where number of visible items change."
+          },
+          {
+            "comment": "Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs"
+          },
+          {
+            "comment": "Bug 148507: Removed redundant call to OidcClient.initialize in UiFramework."
+          },
+          {
+            "comment": "Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application."
+          },
+          {
+            "comment": "Added CursorInformation and CursorPopup"
+          },
+          {
+            "comment": "Upgraded to Redux 4.0.3 that fixed combineReducers"
+          },
+          {
+            "comment": "Add basic support to display an svg file for an toolbar item image."
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "Fixed Toolbar resizing, ContextMenu className and $buic-row-hover & $buic-row-selection"
+          },
+          {
+            "comment": "Rerender widget tabs when WidgetDef changes."
+          },
+          {
+            "comment": "Close ListPicker on outside click."
+          },
+          {
+            "comment": "Ability to close Panel of PopupButton."
+          },
+          {
+            "comment": "remove node selection logic from model Tree"
+          },
+          {
+            "comment": "Convert Widget, Zone and StagePanel components to PureComponents."
+          },
+          {
+            "comment": "Model Picker: Fix presentation ruleset"
+          },
+          {
+            "comment": "VisibilityTree: Update visual styles."
+          },
+          {
+            "comment": "Visibility Tree: Only show Subject nodes which have child Subjects, PhysicalPartitions or SpatialLocationPartitions."
+          },
+          {
+            "comment": "React to ui-ninezone changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/ui-framework_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added beta badge support to toolbar buttons and widget tabs"
+          },
+          {
+            "comment": "Cleaned up console warnings"
+          },
+          {
+            "comment": "Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired."
+          },
+          {
+            "comment": "Added prefixes to Dialog & ContextMenu to CSS classes for positioning"
+          },
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Added support for 'HTMLElement | string' for message strings"
+          },
+          {
+            "comment": "Fixed Minimum/Maximum window toast message spam"
+          },
+          {
+            "comment": "Update tests."
+          },
+          {
+            "comment": "Fixed ActionButtonItemDef random key unit test"
+          },
+          {
+            "comment": "Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose."
+          },
+          {
+            "comment": "Save & Restore View Layouts"
+          },
+          {
+            "comment": "Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
+          },
+          {
+            "comment": "Added *.svg to .npmignore file"
+          },
+          {
+            "comment": "#137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool."
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "Fix model selector view sync problem"
+          },
+          {
+            "comment": "Added MessageManager.addToMessageCenter. ui-framework unit tests."
+          },
+          {
+            "comment": "Reuse ui-ninezone stage panels."
+          },
+          {
+            "comment": "Visibility Tree: Auto-expand root node"
+          },
+          {
+            "comment": "Visibility Tree: Fix incorrect category status when category is displayed directly under subject"
+          },
+          {
+            "comment": "Visibility Tree: Use a more fool-proof node type checking"
+          },
+          {
+            "comment": "Visibility Tree: Update subject node icons"
+          },
+          {
+            "comment": "Visibility Tree: Disable subjects and models if active view is not spatial"
+          },
+          {
+            "comment": "Visibility Tree: Avoid re-rendering the tree multiple times when receiving multiple view change notifications in a row"
+          },
+          {
+            "comment": "The VisibilityTree component now ensures displayed models are loaded."
+          },
+          {
+            "comment": "Added ViewSelector.updateShowSettings to control which view types are displayed"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/ui-framework_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

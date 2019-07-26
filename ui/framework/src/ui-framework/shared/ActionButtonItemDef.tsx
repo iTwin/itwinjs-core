@@ -44,6 +44,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     let dimension = 0;
     if (this.size)
       dimension = (orientation === Orientation.Horizontal) ? this.size.width : this.size.height;
+
     return dimension;
   }
 

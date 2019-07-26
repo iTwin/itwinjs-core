@@ -53,6 +53,12 @@ export class LocateOptions {
   public maxHits = 20;
   /** The [[HitSource]] identifying the caller. */
   public hitSource = HitSource.DataPoint;
+  /** If true, also test graphics from an IModelConnection other than the one associated with the Viewport.
+   * @note If you override this, you must be prepared to properly handle [[HitDetail]]s originating from other IModelConnections.
+   * @alpha
+   */
+  public allowExternalIModels = false;
+
   /** Make a copy of this LocateOptions. */
   public clone(): LocateOptions {
     const other = new LocateOptions();
@@ -60,6 +66,7 @@ export class LocateOptions {
     other.allowNonLocatable = this.allowNonLocatable;
     other.maxHits = this.maxHits;
     other.hitSource = this.hitSource;
+    other.allowExternalIModels = this.allowExternalIModels;
     return other;
   }
   public setFrom(other: LocateOptions): void {
@@ -67,8 +74,13 @@ export class LocateOptions {
     this.allowNonLocatable = other.allowNonLocatable;
     this.maxHits = other.maxHits;
     this.hitSource = other.hitSource;
+    this.allowExternalIModels = other.allowExternalIModels;
   }
-  public init() { this.allowDecorations = this.allowNonLocatable = false; this.maxHits = 20; this.hitSource = HitSource.DataPoint; }
+  public init() {
+    this.allowDecorations = this.allowNonLocatable = this.allowExternalIModels = false;
+    this.maxHits = 20;
+    this.hitSource = HitSource.DataPoint;
+  }
 }
 
 /** @public */
@@ -169,9 +181,11 @@ export class ElementPicker {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
           if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
             continue; // no geometry at this location...
+
           const distXY = testPointView.distance(testPoint);
           if (distXY > pixelRadius)
             continue; // ignore corners. it's a locate circle not square...
+
           const oldPoint = elmHits.get(pixel.elementId);
           if (undefined !== oldPoint) {
             if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
@@ -188,14 +202,19 @@ export class ElementPicker {
         const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
         if (undefined === pixel || undefined === pixel.elementId)
           continue;
+
         const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
         if (undefined === hitPointWorld)
           continue;
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass);
+
+        const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel);
         this.hitList!.addHit(hit);
+
         if (this.hitList!.hits.length > options.maxHits)
           this.hitList!.hits.length = options.maxHits; // truncate array...
       }
+
       result = this.hitList!.length;
     }, !options.allowNonLocatable);
 
@@ -253,7 +272,13 @@ export class ElementLocateManager {
       return LocateFilterStatus.Reject;
     }
 
-    if (undefined !== hit.subCategoryId) {
+    // Tools must opt-in to locate geometry from external iModels.
+    if (!this.options.allowExternalIModels && hit.isExternalIModelHit) {
+      out.reason = ElementLocateManager.getFailureMessageKey("ExternalIModel");
+      return LocateFilterStatus.Reject;
+    }
+
+    if (undefined !== hit.subCategoryId && !hit.isExternalIModelHit) {
       const appearance = hit.viewport.getSubCategoryAppearance(hit.subCategoryId);
       if (appearance.dontLocate) {
         out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");

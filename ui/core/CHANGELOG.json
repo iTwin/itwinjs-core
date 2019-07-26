@@ -2,6 +2,87 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/ui-core_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Checkbox: added theming"
+          },
+          {
+            "comment": "Remove flex-grow from dialog containers - not supported by Firefox"
+          },
+          {
+            "comment": "removed flex-grow from dialogs"
+          },
+          {
+            "comment": "Add missing space in scss files."
+          },
+          {
+            "comment": "Update styles on Select and Input components."
+          },
+          {
+            "comment": "Added CursorInformation and CursorPopup"
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "Fixed Toolbar resizing, ContextMenu className and $buic-row-hover & $buic-row-selection"
+          },
+          {
+            "comment": "Checkbox: Fix `onClick` event so that it can be used to stop event propagation"
+          },
+          {
+            "comment": "Remove excessive z-index CSS rule."
+          },
+          {
+            "comment": "Update light and dark theme colors."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/ui-core_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#137898 - It is not possible to turn on/off checkbox by clicking on label"
+          },
+          {
+            "comment": "Added prefixes to Dialog & ContextMenu to CSS classes for positioning"
+          },
+          {
+            "comment": "Copied source from react-numeric-input and converted to TypeScript for internal control"
+          },
+          {
+            "comment": "Modified regex for NumericInput"
+          },
+          {
+            "comment": "Allow CSS selector string to specify item in FocusTrap to receive focus."
+          },
+          {
+            "comment": "Reverted ContextMenuDirection and DialogAlignment breaking changes"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "ui-core unit tests"
+          },
+          {
+            "comment": "ui-core unit tests"
+          },
+          {
+            "comment": "ui-component unit tests. NumericInput strict=true default."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/ui-core_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

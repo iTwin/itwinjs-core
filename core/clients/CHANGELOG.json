@@ -2,6 +2,45 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-clients_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint."
+          },
+          {
+            "comment": "Fix broken links in docs"
+          },
+          {
+            "comment": "Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522."
+          },
+          {
+            "comment": "SAS token leaked in log"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-clients_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Added feature tracking info to userInfo obtained by OidcBrowserClient. "
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-clients_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

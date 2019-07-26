@@ -6,12 +6,15 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { UiEvent, CommonProps } from "@bentley/ui-core";
+import { UiEvent, CommonProps, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
 import { offsetAndContainInContainer, Point, PointProps, Rectangle, SizeProps, Tooltip } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 import { MessageSpan, MessageDiv } from "./MessageSpan";
+import { MessageManager } from "./MessageManager";
+
+// cSpell:ignore noicon
 
 /** Properties of [[PointerMessage]] component.
  * @public
@@ -30,6 +33,7 @@ interface PointerMessageState {
   message: HTMLElement | string;
   detailedMessage?: HTMLElement | string;
   position: PointProps;
+  messageDetails?: NotifyMessageDetails;
 }
 
 /** [[PointerMessageChangedEvent]] arguments.
@@ -43,6 +47,7 @@ export interface PointerMessageChangedEventArgs {
   relativePosition?: RelativePosition;
   viewport?: HTMLElement;
   pt?: XAndY;
+  messageDetails?: NotifyMessageDetails;
 }
 
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
@@ -50,11 +55,25 @@ export interface PointerMessageChangedEventArgs {
  */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
+/** [[PointerMessagePositionChangedEvent]] arguments.
+ * @internal
+ */
+interface PointerMessagePositionChangedEventArgs {
+  pt: XAndY;
+  relativePosition: RelativePosition;
+}
+
+/** Pointer Message Position Changed Event emitted by the [[PointerMessage]] component
+ * @internal
+ */
+class PointerMessagePositionChangedEvent extends UiEvent<PointerMessagePositionChangedEventArgs> { }
+
 /** Pointer message pops up near pointer when attempting an invalid interaction.
  * @public
  */
 export class PointerMessage extends React.Component<PointerMessageProps, PointerMessageState> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
+  private static readonly _onPointerMessagePositionChangedEvent = new PointerMessagePositionChangedEvent();
 
   public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return PointerMessage._pointerMessageChangedEvent; }
 
@@ -67,6 +86,14 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       relativePosition: message.relativePosition,
       viewport: message.viewport,
       pt: message.displayPoint,
+      messageDetails: message,
+    });
+  }
+
+  public static updateMessage(displayPoint: XAndY, relativePosition: RelativePosition): void {
+    PointerMessage._onPointerMessagePositionChangedEvent.emit({
+      pt: displayPoint,
+      relativePosition,
     });
   }
 
@@ -101,8 +128,9 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       return null;
 
     const className = classnames(
-      "uifw-popup-message-pointer",
+      "uifw-pointer-message",
       this.props.className);
+    const severity = MessageManager.getSeverity(this.state.messageDetails!);
 
     return (
       <Tooltip
@@ -111,24 +139,29 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
         position={this.state.position}
         style={this.props.style}
       >
-        {this.state.priority === OutputMessagePriority.Warning ? <span className="icon icon-status-warning" /> : <span />}
-        {this.state.priority === OutputMessagePriority.Error ? <span className="icon icon-status-error" /> : <span />}
-        {
-          this.state.message && <MessageSpan className="uifw-popup-message-brief" message={this.state.message} />
-        }
-        {
-          this.state.detailedMessage && <MessageDiv className="uifw-popup-message-detailed" message={this.state.detailedMessage} />
-        }
+        <div className="uifw-pointer-message-content">
+          {(severity !== MessageSeverity.None) &&
+            <span className="uifw-pointer-message-icon"><i className={`icon ${MessageContainer.getIconClassName(severity, false)}`} /></span>
+          }
+          <span className="uifw-pointer-message-text">
+            <MessageSpan className="uifw-pointer-message-brief" message={this.state.message} />
+            {this.state.detailedMessage &&
+              <MessageDiv className="uifw-pointer-message-detailed" message={this.state.detailedMessage} />
+            }
+          </span>
+        </div>
       </Tooltip>
     );
   }
 
   public componentDidMount(): void {
     PointerMessage.onPointerMessageChangedEvent.addListener(this._handlePointerMessageChangedEvent);
+    PointerMessage._onPointerMessagePositionChangedEvent.addListener(this._handlePointerMessagePositionChangedEvent);
   }
 
   public componentWillUnmount(): void {
     PointerMessage.onPointerMessageChangedEvent.removeListener(this._handlePointerMessageChangedEvent);
+    PointerMessage._onPointerMessagePositionChangedEvent.removeListener(this._handlePointerMessagePositionChangedEvent);
   }
 
   private _handleSizeChanged = (size: SizeProps) => {
@@ -145,12 +178,19 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       priority: args.priority,
       message: args.message,
       detailedMessage: args.detailedMessage,
+      messageDetails: args.messageDetails,
     }));
     this.updatePosition();
   }
 
+  private _handlePointerMessagePositionChangedEvent = (args: PointerMessagePositionChangedEventArgs) => {
+    this._relativePosition = args.relativePosition;
+    this._position = args.pt;
+    this.updatePosition();
+  }
+
   private updatePosition() {
-    const adjustmentOffset = 50;
+    const adjustmentOffset = 20;
     let offset: PointProps | undefined;
     switch (this._relativePosition) {
       case RelativePosition.Top:

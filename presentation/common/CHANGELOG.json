@@ -2,6 +2,36 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/presentation-common_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/presentation-common_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Reorganize docs script output"
+          },
+          {
+            "comment": "Add functions `KeySet.forEach` and `KeySet.forEachBatch`"
+          },
+          {
+            "comment": "Downgrade json-schema-faker dependency to version `0.5.0-rc16` as `rc17` causes some tests to crash"
+          },
+          {
+            "comment": "Add \"String\" value specification for `InstanceLabelOverride` rule"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/presentation-common_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

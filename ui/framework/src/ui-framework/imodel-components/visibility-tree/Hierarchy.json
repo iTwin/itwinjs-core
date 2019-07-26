@@ -55,7 +55,7 @@
               "Subject"
             ]
           },
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\"",
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
           "groupByLabel": false
@@ -75,7 +75,7 @@
               "Subject"
             ]
           },
-          "instanceFilter": "NOT (json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\") AND NOT (ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"References\" AND NOT this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\"))",
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\" AND (this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Subject\") OR this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:PhysicalPartition\") OR this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:SpatialLocationPartition\"))",
           "hideNodesInHierarchy": false,
           "groupByClass": false,
           "groupByLabel": false

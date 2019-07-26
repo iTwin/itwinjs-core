@@ -6,6 +6,7 @@
     "noIModels": "There are no IModels in Project {{projectName}}"
   },
   "keyinbrowser": {
+    "label": "Keyin Browser",
     "keyin": "Key-in",
     "args": "Arguments",
     "argsTip": "'|' separated arguments",
@@ -176,5 +177,10 @@
         "hiddenThroughCategory": "Category not displayed"
       }
     }
+  },
+  "toolAssistance": {
+    "title": "Tool Assistance",
+    "promptAtCursor": "Show prompt at cursor",
+    "moreInfo": "Click for more information"
   }
 }

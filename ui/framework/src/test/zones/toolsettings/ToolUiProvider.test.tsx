@@ -6,8 +6,10 @@ import * as React from "react";
 import { expect } from "chai";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools } from "../../../ui-framework";
-import { ToolAssistanceItem } from "@bentley/ui-ninezone";
+import {
+  ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget,
+  FrontstageProps, ConfigurableCreateInfo, ToolUiProvider, ContentControl, CoreTools,
+} from "../../../ui-framework";
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
 
 describe("ToolUiProvider", () => {
@@ -17,7 +19,6 @@ describe("ToolUiProvider", () => {
       super(info, options);
 
       this.toolSettingsNode = <Tool2Settings />;
-      this.toolAssistanceNode = <Tool2Assistance />;
     }
 
     public execute(): void {
@@ -41,19 +42,6 @@ describe("ToolUiProvider", () => {
             </tbody>
           </table>
         </div>
-      );
-    }
-  }
-
-  class Tool2Assistance extends React.Component {
-    public render(): React.ReactNode {
-      return (
-        <>
-          <ToolAssistanceItem>
-            <i className="icon icon-cursor" />
-            Identify piece to trim
-          </ToolAssistanceItem>
-        </>
       );
     }
   }
@@ -113,14 +101,11 @@ describe("ToolUiProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
-          expect(toolUiProvider.toolAssistanceNode).to.not.be.undefined;
         }
       }
 
       const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
-      const toolAssistanceNode = FrontstageManager.activeToolAssistanceNode;
-      expect(toolAssistanceNode).to.not.be.undefined;
     }
   });
 

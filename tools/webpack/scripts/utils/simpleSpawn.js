@@ -46,12 +46,6 @@ function handleInterrupts(callback) {
       .createInterface({
         input: process.stdin,
         output: process.stdout
-      })
-      .on("SIGINT", function () {
-        process.emit("SIGINT");
-      })
-      .addListener("close", function () {
-        process.emit("SIGINT");
       });
   }
 

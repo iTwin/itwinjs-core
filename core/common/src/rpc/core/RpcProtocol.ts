@@ -33,6 +33,7 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
   path: string;
   parameters: RpcSerializedValue;
   caching: RpcResponseCacheControl;
+  ip?: string;
 }
 
 /** An RPC operation request fulfillment.

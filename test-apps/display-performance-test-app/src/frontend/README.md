@@ -64,18 +64,16 @@ You can specify any view flag that is part of the ViewFlags class. The types of 
 
 You can specify any render option that is part of the RenderSystem.Options interface. The types of render options that can be specified include (but are not limited to):
 * disabledExtensions - This should contain an array of all the WebGL extensions that you wish to disable. The program will restart the IModelApp every time this value changes, to ensure that the render system is changed appropriately (so it is better to group things that use the same render options). The extensions that may be disabled are found in WebGLExtensionName, and they currently include the following: "WEBGL_draw_buffers", "OES_element_index_uint", "OES_texture_float", "OES_texture_half_float", "WEBGL_depth_texture", "EXT_color_buffer_float", "EXT_shader_texture_lod", and "ANGLE_instanced_arrays".
-* enableOptimizedSurfaceShaders - This should be a boolean value that describes whether or not you wish to enable optimized surface shaders. It defaults to false (i.e. not enabling the optimized shaders).
-* cullAgainstActiveVolume - If true, when a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance.
 * preserveShaderSourceCode - If true, preserve the shader source code as internal strings, useful for debugging purposes.
 * displaySolarShadows - If true, display solar shadows. (this will only cause shadows to be displayed if shadows are enabled in the view flags)
 
 You can specify any tile property that is part of the TileAdmin.Props interface. The types of tile properties that can be specified include (but are not limited to):
 * maxActiveRequests - The maximum number of simultaneously-active requests. Any requests beyond this maximum are placed into a priority queue. Default value: 10
-* disableThrottling - If true, the TileAdmin will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests. Default value: false
 * enableInstancing - If true, tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance. Default value: false
 * retryInterval - If defined, requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds.
 * elideEmptyChildContentRequests - If true, requests for content of a child tile will be elided if the child tile's range can be determined to be empty based on metadata embedded in the parent's content. Default value: false
 * requestTilesWithoutEdges - By default, when requesting tiles for a 3d view for which edge display is turned off, the response will include both surfaces and edges in the tile data. The tile deserialization code will then discard the edge data to save memory. This wastes bandwidth downloading unused data. Setting the following option to `true` will instead produce a response which omits all of the edge data, improving download speed and reducing space used in the browser cache. Default value: false
+* disableMagnification - If true, the TileAdmin will always subdivide tiles during refinement and never magnify them. Default value: false
 
 If any settings are not specified, the program will not change these settings. For example: if no view flags were specified, the program will not specifically alter the view flags (though the view flags may be altered depending on what settings the chosen view has applied or if a specific display style has been chosen that affects the view flags).
 
@@ -111,11 +109,11 @@ Below is an example json config file:
           "testType": "timing",
           "viewName": "V0",
           "renderOptions": {
-		      "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"],
-          "enableOptimizedSurfaceShaders": true
+            "disabledExtensions": ["WEBGL_draw_buffers", "OES_texture_half_float"],
+            "displaySolarShadows": true
 		      },
           "tileProps": {
-            "disableThrottling": false,
+            "disableMagnification": false,
             "elideEmptyChildContentRequests": false,
             "enableInstancing": true,
             "maxActiveRequests": 15,
@@ -290,17 +288,18 @@ The 'Render Options' column contains a string representation of the render optio
 * -float        - EXT_color_buffer_float has been disabled, so the ability to render a variety of floating point formats will not be available
 * -texLoad      - EXT_shader_texture_lod has been disabled, so additional texture functions to the OpenGL ES SHading Language which provide the shader writer with explicit control of LOD (Loevel of detail) will not be available
 * -instArrays   - ANGLE_instanced_arrays has been disabled, so the program will not be allowed to draw the same object or groups of similar objects multiple times, even if they share the same vertex data, primitive count, and type
-* +optSurf      - the optimized shaders will be used when in 3d views if the render mode is wireframe or if both the render mode is smooth shade and visible edges are turned off.
-* +cullActVol   - When a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance
+* +optSurf      - (no longer supported) the optimized shaders will be used when in 3d views if the render mode is wireframe or if both the render mode is smooth shade and visible edges are turned off.
+* +cullActVol   - (no longer supported) When a clip volume is applied to the view, geometry will be tested against the clip volume on the CPU and not drawn if it is entirely clipped, improving performance
 * +shadeSrc     - This preserves the shader source code as internal strings, useful for debugging purposes
 * +solShd       - Display solar shadows when the shadows view flag is enabled
 
 The 'Tile Props' column contains a string representation of the tile properties that have been set. This string representation may consist of any or all of the following:
-* -throt - The TileAdmin will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests
+* -throt - (no longer supported) The TileAdmin will immediately dispatch all requests, bypassing the throttling imposed by maxActiveRequests
 * +elide - Requests for content of a child tile will be elided if the child tile's range can be determined to be empty based on metadata embedded in the parent's content
 * +inst  - Tiles may represent repeated geometry as sets of instances. This can reduce tile size and tile generation time, and improve performance
 * +max   - The maximum number of simultaneously-active requests. Any requests beyond this maximum are placed into a priority queue. The max number specified will also be added to the end of this string representation
 * +retry - Requests for tile content or tile tree properties will be memoized and retried at the specified interval in milliseconds
+* -mag - The TileAdmin will always subdivide tiles during refinement and never use magnification
 
 The 'ReadPixels Selector' column contains a string representation of the Pixel.Selector that has been chosen for the readPixels call. The column entry will be blank if readPixels was not tested. The string representation may be any of the following:
 * +feature - Pixel.Selector.Feature is used; this reads the feature information for each pixel

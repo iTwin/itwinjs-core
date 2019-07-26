@@ -201,7 +201,7 @@ export class RulesetEmbedder {
   }
 
   private insertCodeSpec(name: string, scopeType: CodeScopeSpec.Type): Id64String {
-    const codeSpec = new CodeSpec(this._iModelDb, Id64.invalid, name, scopeType);
+    const codeSpec = CodeSpec.create(this._iModelDb, name, scopeType);
     return this._iModelDb.codeSpecs.insert(codeSpec);
   }
 

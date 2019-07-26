@@ -42,7 +42,7 @@ export class ToolUiManager {
   private static syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
     // istanbul ignore next
     if (toolId !== ToolUiManager._toolIdForToolSettings) {
-      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForToolSettings}}`);
+      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForToolSettings}`);
       return;
     }
 

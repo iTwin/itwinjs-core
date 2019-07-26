@@ -51,7 +51,11 @@ describe("NodeEventManager", () => {
     onSelectionModified.resetHistory();
     onSelectionReplaced.resetHistory();
     onCheckboxStateChanged.resetHistory();
-    manager = new NodeEventManager(mockOrchestrator.object, { onSelectionModified, onSelectionReplaced, onCheckboxStateChanged });
+    manager = new NodeEventManager(
+      mockOrchestrator.object,
+      true,
+      { onSelectionModified, onSelectionReplaced, onCheckboxStateChanged },
+    );
 
     tree = await initializeTree([{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }]);
     await Promise.all(tree.nodes().map((_node, index) => tree.requestNodeLoad(undefined, index)));
@@ -168,13 +172,13 @@ describe("NodeEventManager", () => {
   describe("setCheckboxState", () => {
     describe("when input node is not selected", () => {
       it("reports that input node's checkbox state has changed", () => {
-        const inputNode = tree.nodes()[0];
+        const inputNode = node0;
         manager.setCheckboxState(inputNode, CheckBoxState.On);
         expect(onCheckboxStateChanged).to.have.been.calledOnceWithExactly(sinon.match([{ node: inputNode, newState: CheckBoxState.On }]));
       });
     });
 
-    describe("when input node is selected", () => {
+    describe("when input and other nodes are selected", () => {
       it("reports that all selected nodes' checkbox states have changed", () => {
         node0.select();
         node2.select();
@@ -188,7 +192,7 @@ describe("NodeEventManager", () => {
           .returns(() => of([node1, node2, node3]))
           .verifiable();
 
-        manager.setCheckboxState(tree.nodes()[0], CheckBoxState.On);
+        manager.setCheckboxState(node0, CheckBoxState.On);
         expect(onCheckboxStateChanged.getCalls()).length(2);
         expect(onCheckboxStateChanged.firstCall).to.have.been.calledWithExactly(sinon.match([
           {
@@ -206,7 +210,7 @@ describe("NodeEventManager", () => {
           }]));
       });
 
-      it("does not check nodes with disabled checkboxes", async () => {
+      it("does not check nodes with disabled checkboxes", () => {
         node0.select();
         node1.select();
         node1.payload!.isCheckboxDisabled = true;
@@ -220,7 +224,7 @@ describe("NodeEventManager", () => {
           .returns(() => of([node1, node2]))
           .verifiable();
 
-        manager.setCheckboxState(tree.nodes()[0], CheckBoxState.On);
+        manager.setCheckboxState(node0, CheckBoxState.On);
         expect(onCheckboxStateChanged.getCalls()).length(2);
         expect(onCheckboxStateChanged.firstCall).to.have.been.calledWithExactly(sinon.match([
           {
@@ -232,6 +236,22 @@ describe("NodeEventManager", () => {
             node: node2,
             newState: CheckBoxState.On,
           }]));
+      });
+
+      describe("when bulk checkbox actions are disabled", () => {
+        it("reports that only the input node's checkbox state has changed", () => {
+          manager = new NodeEventManager(
+            mockOrchestrator.object,
+            false,
+            { onSelectionModified, onSelectionReplaced, onCheckboxStateChanged },
+          );
+          node0.select();
+          node1.select();
+          node2.select();
+          const inputNode = node0;
+          manager.setCheckboxState(inputNode, CheckBoxState.On);
+          expect(onCheckboxStateChanged).to.have.been.calledOnceWithExactly(sinon.match([{ node: inputNode, newState: CheckBoxState.On }]));
+        });
       });
     });
   });

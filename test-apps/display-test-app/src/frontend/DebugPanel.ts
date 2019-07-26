@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Viewport } from "@bentley/imodeljs-frontend";
-import { DiagnosticsPanel } from "@bentley/frontend-devtools";
+import { DiagnosticsPanel, createButton } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class DebugPanel extends ToolBarDropDown {
@@ -20,6 +20,24 @@ export class DebugPanel extends ToolBarDropDown {
 
     this._parentElement = parentElement;
     this._panel.element.className = "debugPanel";
+
+    const togglePinnedButton = createButton({
+      parent: this._element,
+      inline: true,
+      value: "Pin",
+      handler: (item) => {
+        this.togglePinnedState();
+
+        if (item.value === "Pin") {
+          item.value = "Pinned";
+          item.style.border = "inset";
+        } else {
+          item.value = "Pin";
+          item.style.border = "";
+        }
+      },
+    });
+    togglePinnedButton.div.style.cssFloat = "right";
 
     parentElement.appendChild(this._element);
   }

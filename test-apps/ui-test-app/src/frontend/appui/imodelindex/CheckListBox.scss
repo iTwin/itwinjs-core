@@ -19,12 +19,8 @@
   position: relative;
   cursor: pointer;
 
-  .label {
-    margin-left: $uicore-s;
-    flex: 1;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
+  .check-box-item-checkbox {
+    cursor: pointer;
   }
 
   &:hover {
@@ -40,35 +36,5 @@
     width: 100%;
     height: 1px;
     background: #eeeeee;
-  }
-}
-
-.check-box {
-  font-size: 12px;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid $uicore-inputs-border-color;
-  border-radius: 3px;
-  cursor: pointer;
-
-  /* hover over buttons */
-  &:hover  {
-    border-color: $uicore-blue;
-  }
-
-  &::before {
-    content: "";
-  }
-
-  &.checked {
-    background: $uicore-blue;
-    color: $uicore-white;
-
-    &::before {
-      content: "\2714";
-    }
   }
 }

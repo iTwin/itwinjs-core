@@ -126,7 +126,8 @@ export class BackgroundMapDrape extends TextureDrape {
     System.instance.context.viewport(0, 0, this._width, this._height);
 
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
-    const batchState = new BatchState();
+    const stack = new BranchStack();
+    const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
     const prevBgColor = FloatRgba.fromColorDef(ColorDef.white);
@@ -137,7 +138,7 @@ export class BackgroundMapDrape extends TextureDrape {
     target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
     target.branchStack.setViewFlags(drawingParams.viewFlags);
 
-    const renderCommands = new RenderCommands(target, new BranchStack(), batchState);
+    const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics);
 
     const system = System.instance;

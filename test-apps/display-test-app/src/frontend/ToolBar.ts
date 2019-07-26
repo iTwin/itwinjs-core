@@ -42,6 +42,8 @@ export function createImageButton(props: ImageButtonProps): HTMLElement {
 }
 
 export abstract class ToolBarDropDown {
+  protected _isPinned: boolean = false;
+
   public get onViewChanged(): Promise<void> | undefined { return undefined; }
 
   protected abstract _open(): void;
@@ -54,9 +56,16 @@ export abstract class ToolBarDropDown {
       this._open();
   }
 
-  public close(): void {
-    if (this.isOpen)
+  public close(): boolean {
+    if (this.isOpen && !this._isPinned) {
       this._close();
+      return true;
+    }
+    return false;
+  }
+
+  public togglePinnedState(): void {
+    this._isPinned = !this._isPinned;
   }
 }
 
@@ -99,7 +108,7 @@ class DropDown {
 export class ToolBar {
   public readonly element: HTMLElement;
   private readonly _dropDowns: DropDown[] = [];
-  private _currentlyOpen?: number;
+  private _currentlyOpen: Set<number> = new Set<number>();
 
   public constructor(container: HTMLElement) {
     this.element = container;
@@ -117,19 +126,19 @@ export class ToolBar {
   }
 
   public close(): void {
-    if (undefined === this._currentlyOpen)
-      return;
+    for (const currentlyOpen of this._currentlyOpen) {
+      const item = this._dropDowns[currentlyOpen];
+      assert(undefined !== item.dropDown);
+      assert(item.dropDown!.isOpen);
 
-    const item = this._dropDowns[this._currentlyOpen];
-    assert(undefined !== item.dropDown);
-    assert(item.dropDown!.isOpen);
-
-    item.dropDown!.close();
-    this._currentlyOpen = undefined;
+      const closeSuccess = item.dropDown!.close();
+      if (closeSuccess)
+        this._currentlyOpen.delete(currentlyOpen);
+    }
   }
 
   public async open(index: number): Promise<void> {
-    if (index === this._currentlyOpen)
+    if (this._currentlyOpen.has(index))
       return;
 
     this.close();
@@ -139,11 +148,11 @@ export class ToolBar {
     else
       item.dropDown.open();
 
-    this._currentlyOpen = index;
+    this._currentlyOpen.add(index);
   }
 
   public async toggle(index: number): Promise<void> {
-    if (index === this._currentlyOpen)
+    if (this._currentlyOpen.has(index))
       this.close();
     else
       await this.open(index);

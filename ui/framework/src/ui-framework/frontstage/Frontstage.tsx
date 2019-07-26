@@ -9,7 +9,7 @@ import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
-import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone, StagePanels, StagePanelsManager, Rectangle } from "@bentley/ui-ninezone";
+import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, Rectangle, widgetZoneIds } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -79,7 +79,7 @@ export interface FrontstageProps extends CommonProps {
 
 interface FrontstageState {
   isUiVisible: boolean;
-  widgetIdToContent: Partial<{ [id in WidgetZoneIndex]: HTMLDivElement | undefined }>;
+  widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>;
 }
 
 /** Frontstage React component.
@@ -87,8 +87,9 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
-  private _contentRefs = new Map<WidgetZoneIndex, React.Ref<HTMLDivElement>>();
+  private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
+  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
 
   /** @internal */
   constructor(props: FrontstageProps) {
@@ -112,8 +113,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     if (!this._zonesMeasurer.current || !this.props.runtimeProps)
       return;
     const bounds = Rectangle.create(this._zonesMeasurer.current.getBoundingClientRect());
-    if (bounds.equals(this.props.runtimeProps.nineZone.zones.bounds))
-      return;
     this.props.runtimeProps.nineZoneChangeHandler.handleZonesBoundsChange(bounds);
   }
 
@@ -185,7 +184,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return undefined;
   }
 
-  private static getZoneElement(zoneId: WidgetZoneIndex, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
+  private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
     let zoneElement: React.ReactElement<ZoneProps> | undefined;
 
     switch (zoneId) {
@@ -271,7 +270,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return panelElement;
   }
 
-  private _getContentRef = (widget: WidgetZoneIndex) => {
+  private _getContentRef = (widget: WidgetZoneId) => {
     const ref = this._contentRefs.get(widget);
     if (ref)
       return ref;
@@ -322,14 +321,19 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const panelKey = getNestedStagePanelKey(panelDef.location);
         const panels = runtimeProps.nineZone.nested.panels[panelKey.id];
         const panel = StagePanelsManager.getPanel(panelKey.type, panels);
+        const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
+
         const panelRuntimeProps: StagePanelRuntimeProps = {
+          draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
+          isTargeted: !!runtimeProps.nineZone.zones.target,
           panel,
           panelDef,
           stagePanelChangeHandler: runtimeProps.stagePanelChangeHandler,
           widgetChangeHandler: runtimeProps.widgetChangeHandler,
+          widgets: runtimeProps.nineZone.zones.widgets,
+          widgetTabs: runtimeProps.widgetTabs,
           zoneDefProvider: runtimeProps.zoneDefProvider,
-          zones: runtimeProps.nineZone.zones,
         };
 
         return React.cloneElement(panelElement, { runtimeProps: panelRuntimeProps });
@@ -339,8 +343,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return null;
   }
 
-  private cloneZoneElements(zones: WidgetZoneIndex[], nineZone: NineZone, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
-    return zones.map((zoneId: WidgetZoneIndex) => {
+  private cloneZoneElements(zoneIds: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
+    return zoneIds.map((zoneId: WidgetZoneId) => {
       const zoneElement = Frontstage.getZoneElement(zoneId, this.props) as React.ReactElement<ZoneProps>;
       if (!zoneElement || !React.isValidElement(zoneElement))
         return null;
@@ -357,28 +361,38 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       if (type !== undefined)
         return null;
 
-      const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
-      const ghostOutline = zone.getGhostOutlineBounds();
-      const dropTarget = zone.getDropTarget();
+      const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
+      const zones = runtimeProps.nineZone.zones;
+      const ghostOutline = zonesManager.getGhostOutlineBounds(zoneId, zones);
+      const dropTarget = zonesManager.getDropTarget(zoneId, zones);
+      const zone = zones.zones[zoneId];
+      const widget = zone.widgets.length > 0 ? zones.widgets[zone.widgets[0]] : undefined;
+      const openWidgetId = zone.widgets.find((wId) => zones.widgets[wId].tabIndex >= 0);
+      const activeTabIndex = openWidgetId ? zones.widgets[openWidgetId].tabIndex : 0;
+      const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
       const zoneRuntimeProps: ZoneRuntimeProps = {
-        draggingWidget: runtimeProps.nineZone.zones.draggingWidget,
-        getWidgetContentRef: this._getContentRef,
-        zoneDef,
-        zoneProps: runtimeProps.nineZone.zones.zones[zoneId],
-        widgetChangeHandler: runtimeProps.widgetChangeHandler,
-        targetChangeHandler: runtimeProps.targetChangeHandler,
-        zoneDefProvider: runtimeProps.zoneDefProvider,
-        ghostOutline,
+        activeTabIndex,
+        draggedWidget: draggedWidget && draggedWidget.id === zoneId ? draggedWidget : undefined,
         dropTarget,
+        getWidgetContentRef: this._getContentRef,
+        ghostOutline,
         isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ? false : !this.state.isUiVisible,
-        widgets: runtimeProps.nineZone.zones.widgets,
+        isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
+        openWidgetId,
+        targetChangeHandler: runtimeProps.targetChangeHandler,
+        widgetChangeHandler: runtimeProps.widgetChangeHandler,
+        widgetTabs: runtimeProps.widgetTabs,
+        widget,
+        zoneDef,
+        zoneDefProvider: runtimeProps.zoneDefProvider,
+        zone: runtimeProps.nineZone.zones.zones[zoneId],
       };
       return React.cloneElement(zoneElement, { key: zoneId, runtimeProps: zoneRuntimeProps });
     });
   }
 
-  private cloneWidgetContentElements(zones: WidgetZoneIndex[], nineZone: NineZone, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
-    const widgets = zones.reduce<Array<{ id: WidgetZoneIndex, def: WidgetDef, tabId: number }>>((prev, zoneId) => {
+  private cloneWidgetContentElements(zones: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
+    const widgets = zones.reduce<Array<{ id: WidgetZoneId, def: WidgetDef, tabIndex: number }>>((prev, zoneId) => {
       const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
 
       // istanbul ignore if
@@ -393,18 +407,18 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         prev.push({
           id: zoneId,
           def: widgetDefs[i],
-          tabId: i,
+          tabIndex: i,
         });
       }
 
       return prev;
     }, []);
     return widgets.map((widget) => {
-      const nzWidget = nineZone.getWidget(widget.id);
+      const nzWidget = runtimeProps.nineZone.zones.widgets[widget.id];
       return (
         <WidgetContentRenderer
-          isHidden={nzWidget.props.tabIndex !== widget.tabId}
-          key={`${widget.id}_${widget.tabId}`}
+          isHidden={nzWidget.tabIndex !== widget.tabIndex}
+          key={`${widget.id}_${widget.tabIndex}`}
           renderTo={this.state.widgetIdToContent[widget.id]}
           widget={widget.def}
         />
@@ -435,16 +449,10 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       flexFlow: "column",
     };
 
-    const zones = Object.keys(runtimeProps.nineZone.zones.zones)
-      .map((key) => Number(key) as WidgetZoneIndex).filter((z) => z !== 8);
-
-    const nineZone = new NineZone(runtimeProps.nineZone.zones);
     const frontstageDef = runtimeProps.frontstageDef;
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        {this.doContentLayoutRender()}
-
         <NZ_Zones style={zonesStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
@@ -464,13 +472,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
                   position: "relative",
                 }}
               >
-                {this.cloneZoneElements(zones, nineZone, runtimeProps)}
+                {this.doContentLayoutRender()}
+                {this.cloneZoneElements(Frontstage._zoneIds, runtimeProps)}
               </div>
             </StagePanels>
           </StagePanels>
-          {this.cloneZoneElements([8], nineZone, runtimeProps)}
+          {this.cloneZoneElements([8], runtimeProps)}
         </NZ_Zones>
-        {this.cloneWidgetContentElements(zones, nineZone, runtimeProps)}
+        {this.cloneWidgetContentElements(Frontstage._zoneIds, runtimeProps)}
       </div>
     );
   }
@@ -500,10 +509,9 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   public componentDidMount() {
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
 
+    this._content.style.display = this.props.isHidden ? "none" : null;
     if (!this.props.renderTo)
       return;
-    this._content.style.display = this.props.isHidden ? "none" : null;
-
     this.props.renderTo.appendChild(this._content);
   }
 

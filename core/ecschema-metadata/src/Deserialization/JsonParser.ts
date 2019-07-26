@@ -3,15 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AbstractParser } from "./AbstractParser";
+import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
   PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, StructClassProps, UnitSystemProps,
 } from "./JsonProps";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../SchemaKey";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 
 interface UnknownObject { readonly [name: string]: unknown; }
 function isObject(x: unknown): x is UnknownObject {
@@ -739,16 +740,6 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   /**
-   * Type checks EnumerationProperty and returns EnumerationPropertyProps interface
-   * @param jsonObj
-   * @returns EnumerationPropertyProps
-   */
-  public parseEnumerationProperty(jsonObj: UnknownObject): EnumerationPropertyProps {
-    this.checkPrimitiveOrEnumPropertyBaseProps(jsonObj);
-    return (jsonObj as unknown) as EnumerationPropertyProps;
-  }
-
-  /**
    * Type checks PrimitiveArrayProperty and returns PrimitiveArrayPropertyProps interface
    * @param jsonObj
    * @returns PrimitiveArrayPropertyProps
@@ -793,25 +784,25 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     return (jsonObj as unknown) as NavigationPropertyProps;
   }
 
-  public getSchemaCustomAttributes(): Iterable<CustomAttribute> {
-    return this.getCustomAttributes(this._rawSchema, "Schema", this._schemaName);
+  public getSchemaCustomAttributeProviders(): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(this._rawSchema, "Schema", this._schemaName);
   }
 
-  public getClassCustomAttributes(jsonObj: UnknownObject): Iterable<CustomAttribute> {
-    return this.getCustomAttributes(jsonObj, "ECClass", this._currentItemFullName);
+  public getClassCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(jsonObj, "ECClass", this._currentItemFullName);
   }
 
-  public getPropertyCustomAttributes(jsonObj: UnknownObject): Iterable<CustomAttribute> {
-    return this.getCustomAttributes(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
+  public getPropertyCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
+    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
   }
 
-  public getRelationshipConstraintCustomAttributes(jsonObj: UnknownObject): [Iterable<CustomAttribute> /* source */, Iterable<CustomAttribute> /* target */] {
-    const sourceCustomAttributes = this.getCustomAttributes(jsonObj.source as UnknownObject, "Source Constraint of", this._currentItemFullName);
-    const targetCustomAttributes = this.getCustomAttributes(jsonObj.target as UnknownObject, "Target Constraint of", this._currentItemFullName);
+  public getRelationshipConstraintCustomAttributeProviders(jsonObj: UnknownObject): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {
+    const sourceCustomAttributes = this.getCustomAttributeProviders(jsonObj.source as UnknownObject, "Source Constraint of", this._currentItemFullName);
+    const targetCustomAttributes = this.getCustomAttributeProviders(jsonObj.target as UnknownObject, "Target Constraint of", this._currentItemFullName);
     return [sourceCustomAttributes, targetCustomAttributes];
   }
 
-  private *getCustomAttributes(jsonObj: UnknownObject, type: string, name?: string): Iterable<CustomAttribute> {
+  private *getCustomAttributeProviders(jsonObj: UnknownObject, type: string, name?: string): Iterable<CAProviderTuple> {
     if (undefined !== jsonObj.customAttributes) {
       if (!Array.isArray(jsonObj.customAttributes))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
@@ -824,7 +815,12 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         if (typeof (instance.className) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes has an invalid 'className' attribute. It should be of type 'string'.`);
 
-        yield instance as CustomAttribute;
+        const provider = (_caClass: CustomAttributeClass) => {
+          return instance as CustomAttribute;
+        };
+
+        const caTuple: CAProviderTuple = [instance.className, provider];
+        yield caTuple;
       }
     }
   }

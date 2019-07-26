@@ -86,7 +86,7 @@ export class VersionQuery extends InstanceIdQuery {
    * Query will additionally select ids of [[Thumbnail]]s for given [[ThumbnailSize]]s.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if sizes array is undefined or empty.
-   * @alpha
+   * @beta
    */
   public selectThumbnailId(...sizes: ThumbnailSize[]): this {
     ArgumentCheck.nonEmptyArray("sizes", sizes);

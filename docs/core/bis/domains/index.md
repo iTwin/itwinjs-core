@@ -4,26 +4,36 @@ The following domains exist in [BIS](../index.md)
 
 ## Core
 
+### [Analytical](./Analytical.ecschema.md)
+
 ### [BisCore](./BisCore.ecschema.md)
 
 ### [Functional](./Functional.ecschema.md)
 
 ### [Generic](./Generic.ecschema.md)
 
+### [Linear Referencing](./LinearReferencing.ecschema.md)
+
 ## Shared across disciplines
 
-### [SpatialComposition](./spatial-composition.md)
+### [AECUnits](./AecUnits.ecschema.md)
 
-### [ClassificationSystems](./classification-systems.md)
+### [SpatialComposition](./SpatialComposition.ecschema.md)
 
-### [Grids](./grids.remarks.md)
+### [ClassificationSystems](./ClassificationSystems.ecschema.md)
+
+### [Grids](./Grids.ecschema.md)
 
 ## Building discipline
 
-### [BuildingSpatial](./building-spatial.md)
+### [Building Spatial](./BuildingSpatial.ecschema.md)
 
-## Application
+## Standard Schemas
 
-### [Building Concept Station](./building-concept-station.md)
+### [CoreCustomAttributes](./CoreCustomAttributes.ecschema.md)
 
-### [AecoSim Building Designer](./building-designer.md)
+### [ECDbMap](./ECDbMap.ecschema.md)
+
+### [Formats](./Formats.ecschema.md)
+
+### [Units](./Units.ecschema.md)

@@ -19,6 +19,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Geometry } from "../../Geometry";
+import { LineSegment3d } from "../../curve/LineSegment3d";
 
 function logGraph(graph: HalfEdgeGraph, title: any) {
   console.log(" ==begin== " + title);
@@ -46,45 +47,50 @@ export class GraphChecker {
       const nodeC = nodeA.vertexSuccessor;
       Point3d.create(nodeA.x, nodeA.y, 0, xyzA);
       Point3d.create(nodeB.x, nodeB.y, 0, xyzB);
-      nodeA.vectorToFaceSuccessor(vectorAB);
-      nodeC.vectorToFaceSuccessor(vectorAC);
-      vectorAB.unitPerpendicularXY(perpAB);
-      vectorAC.unitPerpendicularXY(perpAC);
-      const dAB = xyzA.distanceXY(xyzB);
-      const dTick = Math.min(dAB / numTick, maxTick);
-      const tickFraction = Geometry.safeDivideFraction(dTick, dAB, 0.0);
-      perpAB.scaleInPlace(dTick);
+      // if both ends are trivial, just put out the stroke . ..
+      if (nodeA.countEdgesAroundVertex() <= 2 && nodeB.countEdgesAroundVertex() <= 2) {
+        data.push(LineSegment3d.create(xyzA, xyzB));
+      } else {
+        nodeA.vectorToFaceSuccessor(vectorAB);
+        nodeC.vectorToFaceSuccessor(vectorAC);
+        vectorAB.unitPerpendicularXY(perpAB);
+        vectorAC.unitPerpendicularXY(perpAC);
+        const dAB = xyzA.distanceXY(xyzB);
+        const dTick = Math.min(dAB / numTick, maxTick);
+        const tickFraction = Geometry.safeDivideFraction(dTick, dAB, 0.0);
+        perpAB.scaleInPlace(dTick);
 
-      const linestring = LineString3d.create();
-      linestring.clear();
-      linestring.addPoint(xyzA);
-      xyzA.plusScaled(vectorAB, 2 * tickFraction, xyz);
-      if (nodeC === nodeA)
-        linestring.addPoint(xyz);
-      linestring.addPoint(xyz.plus(perpAB, xyz));
-      linestring.addPoint(xyzB);
-      data.push(linestring);
+        const linestring = LineString3d.create();
+        linestring.clear();
+        linestring.addPoint(xyzA);
+        xyzA.plusScaled(vectorAB, 2 * tickFraction, xyz);
+        if (nodeC === nodeA)
+          linestring.addPoint(xyz);
+        linestring.addPoint(xyz.plus(perpAB, xyz));
+        linestring.addPoint(xyzB);
+        data.push(linestring);
 
-      if (!vectorAB.isParallelTo(vectorAC)) {
-        let theta = vectorAB.angleToXY(vectorAC);
-        if (theta.radians < 0.0)
-          theta = Angle.createDegrees(theta.degrees + 360);
-        if (vectorAB.tryNormalizeInPlace() && vectorAC.tryNormalizeInPlace()) {
-          const linestringV = LineString3d.create();
-          linestringV.clear();
-          linestringV.addPoint(xyzA.plusScaled(vectorAB, dTick));
-          if (theta.degrees > 90) {
-            let numStep = 3;
-            if (theta.degrees > 180) numStep = 5;
-            if (theta.degrees > 270) numStep = 7;
-            const stepRadians = theta.radians / numStep;
-            for (let i = 1; i <= numStep; i++) {
-              vectorAB.rotateXY(Angle.createRadians(stepRadians), vectorAB);
-              linestringV.addPoint(xyzA.plusScaled(vectorAB, dTick));
+        if (!vectorAB.isParallelTo(vectorAC)) {
+          let theta = vectorAB.angleToXY(vectorAC);
+          if (theta.radians < 0.0)
+            theta = Angle.createDegrees(theta.degrees + 360);
+          if (vectorAB.tryNormalizeInPlace() && vectorAC.tryNormalizeInPlace()) {
+            const linestringV = LineString3d.create();
+            linestringV.clear();
+            linestringV.addPoint(xyzA.plusScaled(vectorAB, dTick));
+            if (theta.degrees > 90) {
+              let numStep = 3;
+              if (theta.degrees > 180) numStep = 5;
+              if (theta.degrees > 270) numStep = 7;
+              const stepRadians = theta.radians / numStep;
+              for (let i = 1; i <= numStep; i++) {
+                vectorAB.rotateXY(Angle.createRadians(stepRadians), vectorAB);
+                linestringV.addPoint(xyzA.plusScaled(vectorAB, dTick));
+              }
             }
+            linestringV.addPoint(xyzA.plusScaled(vectorAC, dTick));
+            data.push(linestringV);
           }
-          linestringV.addPoint(xyzA.plusScaled(vectorAC, dTick));
-          data.push(linestringV);
         }
       }
     }
@@ -92,7 +98,7 @@ export class GraphChecker {
     for (let i = count0; i < data.length; i++)
       data[i].tryTransformInPlace(transform);
   }
-  public static printToConsole = false;
+  public static printToConsole = true;
   public static dumpGraph(graph: HalfEdgeGraph) {
     const faces = graph.collectFaceLoops();
     const vertices = graph.collectVertexLoops();

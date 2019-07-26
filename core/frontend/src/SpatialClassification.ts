@@ -47,7 +47,13 @@ class ClassifierTreeSupplier implements TileTree.Supplier {
 
 const classifierTreeSupplier = new ClassifierTreeSupplier();
 
-class ClassifierTreeReference extends TileTree.Reference {
+/** @internal */
+export abstract class SpatialClassifierTileTreeReference extends TileTree.Reference {
+  public abstract get classifiers(): SpatialClassifiers;
+}
+
+/** @internal */
+class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
   private readonly _classifiers: SpatialClassifiers;
   private readonly _iModel: IModelConnection;
@@ -62,6 +68,8 @@ class ClassifierTreeReference extends TileTree.Reference {
     this._classifiedTree = classifiedTree;
     this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
   }
+
+  public get classifiers(): SpatialClassifiers { return this._classifiers; }
 
   public get treeOwner(): TileTree.Owner {
     const newId = this.createId(this._classifiers);
@@ -115,8 +123,13 @@ class ClassifierTreeReference extends TileTree.Reference {
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): TileTree.Reference {
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel);
+}
+
+/** @internal */
+export interface SpatialClassifiersContainer {
+  classifiers?: SpatialClassificationProps.Properties[];
 }
 
 /** Exposes a list of classifiers that allow one [[ModelState]] to classify another [[SpatialModel]] or reality model.
@@ -125,17 +138,15 @@ export function createClassifierTileTreeReference(classifiers: SpatialClassifier
  * @beta
  */
 export class SpatialClassifiers {
-  private readonly _jsonContainer: any;
+  private readonly _jsonContainer: SpatialClassifiersContainer;
   private _active?: SpatialClassificationProps.Properties;
-  private _classifiers: SpatialClassificationProps.Properties[] = [];
 
   /** @internal */
-  public constructor(jsonContainer: any) {
+  public constructor(jsonContainer: SpatialClassifiersContainer) {
     this._jsonContainer = jsonContainer;
-    const json = jsonContainer.classifiers as SpatialClassificationProps.Properties[];
+    const json = jsonContainer.classifiers;
     if (undefined !== json) {
       for (const props of json) {
-        this._classifiers.push(props);
         if (props.isActive) {
           if (undefined === this._active)
             this._active = props;
@@ -147,13 +158,16 @@ export class SpatialClassifiers {
   }
 
   /** The currently-active classifier, if any is active.
-   * @note The classifier passed to the setter must originate from this [[SpatialClassifiers]] object or it will not be applied.
+   * @note If the `Classifier` object supplied to the setter did not originate from this `SpatialClassifier`'s list but an equivalent entry exists in the list, that entry
+   * will be set as active - **not** the object supplied to the setter.
    */
   public get active(): SpatialClassificationProps.Classifier | undefined {
     return this._active;
   }
   public set active(active: SpatialClassificationProps.Classifier | undefined) {
-    if (active === this._active)
+    if (undefined === active && undefined === this._active)
+      return;
+    else if (undefined !== active && undefined !== this._active && SpatialClassificationProps.equalClassifiers(active, this._active))
       return;
 
     if (undefined === active) {
@@ -164,9 +178,12 @@ export class SpatialClassifiers {
       return;
     }
 
-    // Caller must supply a classifier that belongs to this object...
-    for (const classifier of this._classifiers) {
-      if (classifier === active) {
+    const classifiers = this._jsonContainer.classifiers;
+    if (undefined === classifiers)
+      return;
+
+    for (const classifier of classifiers) {
+      if (SpatialClassificationProps.equalClassifiers(classifier, active)) {
         if (undefined !== this._active)
           this._active.isActive = false;
 
@@ -179,17 +196,27 @@ export class SpatialClassifiers {
 
   /** Supplies an iterator over the list of available classifiers. */
   public [Symbol.iterator](): Iterator<SpatialClassificationProps.Classifier> {
-    return this._classifiers[Symbol.iterator]();
+    let classifiers = this._jsonContainer.classifiers;
+    if (undefined === classifiers)
+      classifiers = [];
+
+    return classifiers[Symbol.iterator]();
   }
 
   /** The number of available classifiers. */
-  public get length(): number { return this._classifiers.length; }
+  public get length(): number {
+    const classifiers = this._jsonContainer.classifiers;
+    return undefined !== classifiers ? classifiers.length : 0;
+  }
 
-  /** Add a new classifier to the list. */
-  public push(classifier: SpatialClassificationProps.Classifier): void {
+  /** Adds a new classifier to the list, if an equivalent classifier is not already present.
+   * @param classifier JSON representation of the new classifier
+   * @returns The copy of `classifier` that was added to the list, or undefined if an equivalent classifier already exists in the list.
+   */
+  public push(classifier: SpatialClassificationProps.Classifier): SpatialClassificationProps.Classifier | undefined {
     for (const existing of this)
-      if (existing === classifier)
-        return;
+      if (SpatialClassificationProps.equalClassifiers(existing, classifier))
+        return undefined;
 
     let list = this._jsonContainer.classifiers;
     if (undefined === list) {
@@ -199,5 +226,6 @@ export class SpatialClassifiers {
 
     const props: SpatialClassificationProps.Properties = { ...classifier, isActive: false };
     list.push(props);
+    return props;
   }
 }

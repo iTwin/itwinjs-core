@@ -2,6 +2,198 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-frontend_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added optional HTMLElement member to Marker"
+          },
+          {
+            "comment": "Product Backlog Items 148512: OidcBrowserClient can be used for authorization code workflows; Product Backlog Item 148571: Generalized OidcBrowserClient to work with Cesium and SharePoint."
+          },
+          {
+            "comment": "catch load errors for Sprites"
+          },
+          {
+            "comment": "Remove colinear clip shape points. Grid spacing is a double."
+          },
+          {
+            "comment": "Added tests for Spatial Classifications"
+          },
+          {
+            "comment": "Added TileAdmin option to disable \"magnification\" tile refinement strategy, which can prevent production of extraordinarily large tiles in some cases."
+          },
+          {
+            "comment": "ViewManager.dropViewport clears tool events associated with the dropped viewport, preventing errors in async event processing code. Added Viewport.isDisposed property."
+          },
+          {
+            "comment": "Added limited opt-in support for drawing tiles from secondary IModelConnections and locating elements within them. Users must implement tools that can properly handle results like a HitDetail pointing to a different IModelConnection than the one associated with the viewport."
+          },
+          {
+            "comment": "Fix Viewport.addViewedModels() failing to update view if some models needed to be loaded asynchronously."
+          },
+          {
+            "comment": "Fix empty message body when display Bing map attribution info."
+          },
+          {
+            "comment": "Update beta PluginUiProvider interfaces."
+          },
+          {
+            "comment": "Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs"
+          },
+          {
+            "comment": "Added method to get element mass properties."
+          },
+          {
+            "comment": "Added option to discard alpha channel when converting ImageBuffer to HTMLCanvasElement."
+          },
+          {
+            "comment": "Measure distance, allow snap outside project extents for version compare. Added measure length, area, and volume tools."
+          },
+          {
+            "comment": "Various OIDC related fixes - Bugs: 148507, 148508, Product Backlog Items: 148510, 148517, 148522."
+          },
+          {
+            "comment": "Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application."
+          },
+          {
+            "comment": "Choose handle location for for section plane that is visible in the view."
+          },
+          {
+            "comment": "Temporarily undid change to save tokens in local storage. "
+          },
+          {
+            "comment": "Added ToolAssistance support and Tool.iconSpec"
+          },
+          {
+            "comment": "The WebGL rendering system now takes advantage of Vertex Array Objects if they are available via an extension.  These provide a measurable performance increase in certain datasets."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-frontend_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added userAgent, renderer, and vendor to WebGLRenderCompatibilityInfo"
+          },
+          {
+            "comment": "Cleaned up background map API"
+          },
+          {
+            "comment": "Support batch Ids in I3dm (instanced) tiles"
+          },
+          {
+            "comment": "Add support for applying bing elevation to background map (Terrain)."
+          },
+          {
+            "comment": "Avoid forwarding tile content request to backend if request is canceled while awaiting content from blob storage."
+          },
+          {
+            "comment": "Support batch tables in 3d Tilesets."
+          },
+          {
+            "comment": "Added SelectTool.processMiss method to better support clearing logical selections."
+          },
+          {
+            "comment": "#128860 Clip from element change to try local range XZ or YZ when XY extents aren't valid."
+          },
+          {
+            "comment": "Added Viewport.onChangeView event to notify listeners when a new ViewState becomes associated with the Viewport."
+          },
+          {
+            "comment": "Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired."
+          },
+          {
+            "comment": "Removed missing group descriptions"
+          },
+          {
+            "comment": "Support draping of background map tiles on reality models."
+          },
+          {
+            "comment": "Added internal method to retrieve attachments from SheetViewState for use in saving/recalling views."
+          },
+          {
+            "comment": "Fix for Bing attribution hotspot - was unreliable with elements behind it."
+          },
+          {
+            "comment": "Fix bing map URL template - http: -> https:"
+          },
+          {
+            "comment": "Fix background map tile when child not found."
+          },
+          {
+            "comment": "Fix failure to use geocoordinate system to transform map tiles."
+          },
+          {
+            "comment": "Ensure new tiles are loaded when edge display is toggled."
+          },
+          {
+            "comment": "fix usage of varyings"
+          },
+          {
+            "comment": "Fix incorrect range computation when Viewport.zoomToPlacementProps encounters a null range."
+          },
+          {
+            "comment": "Added support for 'HTMLElement | string' for message strings"
+          },
+          {
+            "comment": "Allow index.html to set a CDN from which to load imodeljs external modules."
+          },
+          {
+            "comment": "make Viewport.invaildateDecorations @beta, was @internal"
+          },
+          {
+            "comment": "add default unhandled exception handler to ToolAdmin"
+          },
+          {
+            "comment": "Added feature tracking info to UserInfo obtained by OidcBrowserClient. "
+          },
+          {
+            "comment": "ensure we never have two active snap or tooltip requests"
+          },
+          {
+            "comment": "Refine tile selection for map tiles"
+          },
+          {
+            "comment": "Prevent default symbology overrides applying to subcategories whose appearances were explicitly overridden."
+          },
+          {
+            "comment": "Add option to periodically purge unused tile trees from memory."
+          },
+          {
+            "comment": "Allow Viewport's readImage() method to resize images as requested."
+          },
+          {
+            "comment": "Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId."
+          },
+          {
+            "comment": "#130062 fixed skybox for extreeme otho zoomin"
+          },
+          {
+            "comment": "exit on uncaught exception in render loop (Electron only)"
+          },
+          {
+            "comment": "thumbnail size was limited to 64K"
+          },
+          {
+            "comment": "Improve memory management for tile trees."
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "A Viewport can now be instructed to load models when enabling their display."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-frontend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

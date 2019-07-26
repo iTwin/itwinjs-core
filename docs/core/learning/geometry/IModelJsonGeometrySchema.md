@@ -1,5 +1,6 @@
 
 ## CurvePrimitive
+
 |constructor | remarks | json |
 |----|----|---|
 | LineSegment3d.create | Simple line segment | ` {"lineSegment":[[0,0,0],[4,0,0]]}`|
@@ -8,7 +9,9 @@
 | Arc3d.create | circular arc | ` {"arc":{"center":[0,0,0],"vectorX":[4,0,0],"vectorY":[0,4,0],"sweepStartEnd":[-45,90]}}`|
 | Arc3d.create | elliptic arc | ` {"arc":{"center":[0,0,0],"vectorX":[4,0,0],"vectorY":[0,12,0],"sweepStartEnd":[-45,190]}}`|
 | BSplineCurve3d.create | curve by poles | ` {"bcurve":{"points":[[0,0,0],[4,0,0],[4,4,0],[0,4,0]],"knots":[0,0,0,0,1,1,1,1],"closed":false,"order":4}}`|
+
 ## CurveCollections
+
 |constructor | remarks | json |
 |----|----|---|
 | Path.create | path with line, arc, line | ` {"path":[{"lineSegment":[[4,4,0],[4,0,0]]},{"arc":{"center":[0,0,0],"vectorX":[4,0,0],"vectorY":[0,4,0],"sweepStartEnd":[0,180]}},{"lineSegment":[[-4,4.898587196589413e-16,0],[0,0,0]]}]}`|
@@ -31,5 +34,4 @@
 
 | class name | property name | Minimal Example |
 |----|----|---|
-| CoordinateXYZ | isolated point | ` {"point":[0,0,0]}`|
-
+| CoordinateXYZ | isolated point | `{"point":[0,0,0]}`|

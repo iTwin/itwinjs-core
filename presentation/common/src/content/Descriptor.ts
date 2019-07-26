@@ -19,9 +19,9 @@ export interface SelectClassInfo {
   selectClassInfo: ClassInfo;
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
-  /** Relationship path to the [Primary class]($docs/learning/content/Terminology#primary-class) */
+  /** Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   pathToPrimaryClass: RelationshipPath;
-  /** Relationship paths to [Related property]($docs/learning/content/Terminology#related-properties) classes */
+  /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths: RelationshipPath[];
 }
 
@@ -59,7 +59,7 @@ export enum ContentFlags {
   /** Each content record additionally has a display label */
   ShowLabels = 1 << 2,
 
-  /** All content records are merged into a single record (see [Merging values]($docs/learning/content/Terminology#value-merging)) */
+  /** All content records are merged into a single record (see [Merging values]($docs/learning/terminology#value-merging)) */
   MergeResults = 1 << 3,
 
   /** Content has only distinct values */
@@ -126,7 +126,7 @@ export interface DescriptorOverrides {
   sortingFieldName?: string;
   /** Sort direction. Defaults to [[SortDirection.Ascending]] */
   sortDirection?: SortDirection;
-  /** [ECExpression]($docs/learning/ECExpressions.md) for filtering content */
+  /** [ECExpression]($docs/learning/presentation/ECExpressions.md) for filtering content */
   filterExpression?: string;
 }
 
@@ -149,7 +149,7 @@ export interface DescriptorSource {
   sortingField?: Field;
   /** Sorting direction */
   sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
   filterExpression?: string;
 }
 
@@ -180,7 +180,7 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
   public filterExpression?: string;
 
   /** Construct a new Descriptor using a `DescriptorSource` */

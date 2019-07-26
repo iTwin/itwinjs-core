@@ -76,9 +76,6 @@
       flex-grow: 1;
 
       > .nz-tabs-grip {
-        position: absolute;
-        height: 100%;
-
         @include uicore-z-index(widget-grip);
       }
     }
@@ -227,10 +224,6 @@
 
   &.nz-bottom-panel-anchor, &.nz-top-panel-anchor {
     height: 100%;
-
-    &:not(.nz-collapsed) {
-      min-height: $min-height;
-    }
 
     &:not(.nz-fill-zone) {
       max-height: fit-content;

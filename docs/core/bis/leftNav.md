@@ -31,10 +31,10 @@
 - [Schema Production Status](./intro/schema-production-status.md)
 - [BIS Schema Units](./intro/units.md)
 - [BIS Schema Validation](./intro/bis-schema-validation.md)
+- [BIS Schema Reference](./domains/index.md)
 - [BIS Glossary](./intro/glossary.md)
 
 <!-- TODO: The following are not linked in...?
-./domains/*
 ./intro/appendix-c-bis-domain-design-fundamentals.md
 -->
 

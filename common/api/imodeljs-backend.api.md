@@ -96,6 +96,8 @@ import { Lock } from '@bentley/imodeljs-clients';
 import { Logger } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
+import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
+import { MassPropertiesResponseProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
@@ -275,7 +277,7 @@ export class AzureBlobStorage extends CloudStorageService {
     // (undocumented)
     readonly id = CloudStorageProvider.Azure;
     // (undocumented)
-    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+    obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
@@ -589,7 +591,7 @@ export abstract class CloudStorageService {
         provider: CloudStorageProvider;
     };
     // (undocumented)
-    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date): CloudStorageContainerUrl;
+    abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     terminate(): void;
     // (undocumented)
@@ -1252,6 +1254,18 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     static readonly className: string;
     // (undocumented)
     element: RelatedElement;
+    // @beta
+    protected static onDelete(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onDeleted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInsert(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onInserted(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdate(_props: ElementAspectProps, _iModel: IModelDb): void;
+    // @beta
+    protected static onUpdated(_props: ElementAspectProps, _iModel: IModelDb): void;
     // @internal (undocumented)
     toJSON(): ElementAspectProps;
 }
@@ -1368,6 +1382,11 @@ export class Entity implements EntityProps {
 }
 
 // @beta
+export namespace ExportGraphics {
+    export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
+}
+
+// @beta
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @beta
@@ -1378,6 +1397,12 @@ export interface ExportGraphicsInfo {
     mesh: ExportGraphicsMesh;
     subCategory: Id64String;
     textureId?: Id64String;
+}
+
+// @beta
+export interface ExportGraphicsLines {
+    indices: Int32Array;
+    points: Float64Array;
 }
 
 // @beta
@@ -1395,6 +1420,72 @@ export interface ExportGraphicsProps {
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
+    onLineGraphics?: ExportLinesFunction;
+    partInstanceArray?: ExportPartInstanceProps[];
+}
+
+// @beta
+export type ExportLinesFunction = (info: ExportLinesInfo) => void;
+
+// @beta
+export interface ExportLinesInfo {
+    color: number;
+    elementId: Id64String;
+    lines: ExportGraphicsLines;
+    subCategory: Id64String;
+}
+
+// @beta
+export interface ExportPartDisplayProps {
+    // (undocumented)
+    categoryId: Id64String;
+    // (undocumented)
+    elmTransparency: number;
+    // (undocumented)
+    lineColor: number;
+    // (undocumented)
+    materialId: Id64String;
+    // (undocumented)
+    subCategoryId: Id64String;
+}
+
+// @beta
+export type ExportPartFunction = (info: ExportPartInfo) => void;
+
+// @beta
+export interface ExportPartGraphicsProps {
+    angleTol?: number;
+    chordTol?: number;
+    displayProps: ExportPartDisplayProps;
+    elementId: Id64String;
+    maxEdgeLength?: number;
+    onPartGraphics: ExportPartFunction;
+    onPartLineGraphics?: ExportPartLinesFunction;
+}
+
+// @beta
+export interface ExportPartInfo {
+    color: number;
+    materialId?: Id64String;
+    mesh: ExportGraphicsMesh;
+    textureId?: Id64String;
+}
+
+// @beta
+export interface ExportPartInstanceProps {
+    displayProps: ExportPartDisplayProps;
+    partId: Id64String;
+    partInstanceId: Id64String;
+    transform?: Float64Array;
+}
+
+// @beta
+export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
+
+// @beta
+export interface ExportPartLinesInfo {
+    color: number;
+    lines: ExportGraphicsLines;
 }
 
 // @public
@@ -1743,6 +1834,8 @@ export class IModelDb extends IModel {
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     // @beta
     exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+    // @beta
+    exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
     // (undocumented)
     readonly fontMap: FontMap;
@@ -1754,8 +1847,12 @@ export class IModelDb extends IModel {
     getGuid(): GuidString;
     getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
+    // @beta
+    getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    // @deprecated
     importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
+    importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
     // @internal
@@ -1829,9 +1926,9 @@ export namespace IModelDb {
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element>(elProps: ElementProps): T;
-        deleteAspect(ids: Id64Arg): void;
+        deleteAspect(aspectInstanceIds: Id64Arg): void;
         deleteElement(ids: Id64Arg): void;
-        getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[];
+        getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
@@ -1907,6 +2004,8 @@ export class IModelHost {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
     static readonly platform: typeof IModelJsNative;
+    // @internal
+    static readonly restrictTileUrlsByClientIp: boolean;
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
@@ -1940,6 +2039,8 @@ export class IModelHostConfiguration {
     // @internal
     logTileSizeThreshold: number;
     nativePlatform?: any;
+    // @beta
+    restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheCredentials?: CloudStorageServiceCredentials;
     // @internal
@@ -2096,6 +2197,10 @@ export namespace IModelJsNative {
         // (undocumented)
         exportGraphics(exportProps: ExportGraphicsProps): DbResult;
         // (undocumented)
+        exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+        // (undocumented)
+        exportSchemas(exportDirectory: string): DbResult;
+        // (undocumented)
         extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
         // (undocumented)
         extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
@@ -2125,6 +2230,8 @@ export namespace IModelJsNative {
         getIModelCoordinatesFromGeoCoordinates(points: string): string;
         // (undocumented)
         getIModelProps(): string;
+        // (undocumented)
+        getMassProperties(props: string): string;
         // (undocumented)
         getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
@@ -2158,7 +2265,7 @@ export namespace IModelJsNative {
         // (undocumented)
         importFunctionalSchema(): DbResult;
         // (undocumented)
-        importSchema(schemaPathname: string): DbResult;
+        importSchemas(schemaFileNames: string[]): DbResult;
         // (undocumented)
         inBulkOperation(): boolean;
         // (undocumented)
@@ -2246,6 +2353,8 @@ export namespace IModelJsNative {
         setIModelDb(iModelDb?: IModelDb): void;
         // (undocumented)
         startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
+        // (undocumented)
+        static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
         // (undocumented)
         updateElement(elemProps: string): IModelStatus;
         // (undocumented)
@@ -2669,7 +2778,7 @@ export namespace IModelJsNative {
     }
 }
 
-// @alpha (undocumented)
+// @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
     dispose(): void;
@@ -2678,9 +2787,11 @@ export class IModelTransformer {
     protected _excludedElementCategoryIds: Set<string>;
     protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
+    protected _excludedRelationshipClasses: Set<typeof Relationship>;
     excludeElement(sourceElementId: Id64String): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
     excludeElementClass(sourceClassFullName: string): void;
+    excludeRelationshipClass(sourceClassFullName: string): void;
     excludeSubject(subjectPath: string): void;
     findMissingPredecessors(sourceElement: Element): Id64Set;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
@@ -2700,26 +2811,33 @@ export class IModelTransformer {
     importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
     importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
-    importRelationships(sourceRelClassFullName: string): void;
+    importRelationships(baseRelClassFullName: string): void;
+    importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
     protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
+    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
     protected shouldExcludeElement(sourceElement: Element): boolean;
+    protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps[];
+    protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 
 // @internal @deprecated

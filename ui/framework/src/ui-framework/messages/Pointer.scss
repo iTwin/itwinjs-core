@@ -5,29 +5,40 @@
 
 @import "@bentley/ui-core/lib/ui-core/index";
 
-.uifw-popup-message-pointer {
-  background-color: $buic-background-tooltip;
-  padding: 5px 15px;
-  border-radius: 5px;
-  color: $buic-foreground-body;
+$uifw-pointer-message-opacity: 0.80;
 
-  .icon {
-    margin: 0 5px 0 0;
+.uifw-pointer-message {
+  border: {
+    color: $buic-foreground-disabled;
+    radius: 3px;
+    style: solid;
+    width: 1px;
   }
 
-  .icon-status-warning {
-    color: $buic-foreground-warning;
-  }
+  background-color: rgba(var(--buic-background-2-rgb), $uifw-pointer-message-opacity);
 
-  .icon-status-error {
-    color: $buic-foreground-alert;
-  }
+  .uifw-pointer-message-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 
-  .uifw-popup-message-brief {
-    @include uicore-text(body);
-  }
+    >.uifw-pointer-message-icon {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
 
-  .uifw-popup-message-detailed {
-    @include uicore-text(small);
+    >.uifw-pointer-message-text {
+      color: $buic-foreground-body;
+      padding-left: 3px;
+      padding-right: 3px;
+
+      >.uifw-pointer-message-brief {
+        @include uicore-text(body);
+      }
+
+      >.uifw-pointer-message-detailed {
+        @include uicore-text(small);
+      }
+    }
   }
 }

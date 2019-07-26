@@ -2,6 +2,114 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/imodeljs-backend_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added option to restrict tile cache URLs by client IP address."
+          },
+          {
+            "comment": "Apply change sets at the backend in a non-blocking worker thread. "
+          },
+          {
+            "comment": "Add ElementAspect handler methods"
+          },
+          {
+            "comment": "When deleting a parent element, make sure there are onDelete/onDeleted callbacks for child elements"
+          },
+          {
+            "comment": "Add support for linework to IModelDb.exportGraphics"
+          },
+          {
+            "comment": "The className parameter to IModelDb.Element.getAspects is now optional to allow all aspects to be returned"
+          },
+          {
+            "comment": "Deprecate IModelDb.importSchema in favor of IModelDb.importSchemas"
+          },
+          {
+            "comment": "Added method to get element mass properties."
+          },
+          {
+            "comment": "Add exportPartGraphics and accompanying interfaces"
+          },
+          {
+            "comment": "Capture tile upload errors using JSON.stringify."
+          },
+          {
+            "comment": "Fallback to toString for Error derivative errors in tile upload"
+          },
+          {
+            "comment": "Always report tile upload response on failure"
+          },
+          {
+            "comment": "Discover properties of azure 'error' object"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/imodeljs-backend_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Open fixes when briefcase requires merges. "
+          },
+          {
+            "comment": "Catch tile upload errors."
+          },
+          {
+            "comment": "Setting up briefcase is always from an older checkpoint. "
+          },
+          {
+            "comment": "Add materialId, subCategory to ExportGraphicsInfo"
+          },
+          {
+            "comment": "Fix crash in getViewThumbnail for odd number of bytes "
+          },
+          {
+            "comment": "Adding relationship class for GraphicalElement3dRepresentsElement."
+          },
+          {
+            "comment": "Initial implementation of the LinearReferencing typescript domain"
+          },
+          {
+            "comment": "Adding domain classes for all relatinships in the LinearReferencing schema."
+          },
+          {
+            "comment": "Exporting relationships module."
+          },
+          {
+            "comment": "Fixes to opening iModel-s ReadWrite from mutiple IModelConnection-s. "
+          },
+          {
+            "comment": "Fixed issues with deleting briefcases if there were errors with preparing briefcases. "
+          },
+          {
+            "comment": "Add a new method `forceLoadSchemas` to `IModelJsNative.ECPresentationManager`."
+          },
+          {
+            "comment": "Introduced AsyncMutex - a utility to run async blocks of code in sequence. "
+          },
+          {
+            "comment": "Properly document ModelSelector.models and CategorySelector.categories as Id64String arrays"
+          },
+          {
+            "comment": "Made `insertElement` not return Id64.invalid, throws error instead"
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          },
+          {
+            "comment": "Update property referenced in ULAS error message"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/imodeljs-backend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",
@@ -24,9 +132,6 @@
           },
           {
             "comment": "Improve reading and binding binary blob using concurrent query manager"
-          },
-          {
-            "comment": "Fixed typo in function name"
           },
           {
             "comment": "Modified ElementAspect Performance tests"
@@ -57,9 +162,6 @@
           },
           {
             "comment": "crash reporting, node-report opt-in"
-          },
-          {
-            "comment": "rush extract-api + rush change"
           },
           {
             "comment": "Throw IModelError if an IModelDb query would return too many rows"

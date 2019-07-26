@@ -1,6 +1,63 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 03 Jun 2019 18:09:39 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+
+## 1.2.0
+Wed, 24 Jul 2019 11:47:26 GMT
+
+### Updates
+
+- Update so both Tool and Navigation wigets refresh when PluginUiProvider is loaded.
+- Support ToolbarItemInsertSpecs with conditional visibility. Update toolbar processing to better handle situations where number of visible items change.
+- Add support for GroupItemInsertSpec, badges, and svg symbolId in ToolbarItemInsertSpecs
+- Bug 148507: Removed redundant call to OidcClient.initialize in UiFramework.
+- Add PluginUiManager class and PluginUiProvider interface that will be used by Plugins to specify UI components to add to an iModeljs application.
+- Added CursorInformation and CursorPopup
+- Upgraded to Redux 4.0.3 that fixed combineReducers
+- Add basic support to display an svg file for an toolbar item image.
+- Added ToolAssistance support and Tool.iconSpec
+- Fixed Toolbar resizing, ContextMenu className and $buic-row-hover & $buic-row-selection
+- Rerender widget tabs when WidgetDef changes.
+- Close ListPicker on outside click.
+- Ability to close Panel of PopupButton.
+- remove node selection logic from model Tree
+- Convert Widget, Zone and StagePanel components to PureComponents.
+- Model Picker: Fix presentation ruleset
+- VisibilityTree: Update visual styles.
+- Visibility Tree: Only show Subject nodes which have child Subjects, PhysicalPartitions or SpatialLocationPartitions.
+- React to ui-ninezone changes.
+
+## 1.1.0
+Mon, 01 Jul 2019 19:04:29 GMT
+
+### Updates
+
+- Added beta badge support to toolbar buttons and widget tabs
+- Cleaned up console warnings
+- Eliminate need to cache tool setting properties by ensuring active tool is available before activeToolChanged event is fired.
+- Added prefixes to Dialog & ContextMenu to CSS classes for positioning
+- Removed missing group descriptions
+- Added support for 'HTMLElement | string' for message strings
+- Fixed Minimum/Maximum window toast message spam
+- Update tests.
+- Fixed ActionButtonItemDef random key unit test
+- Removed 4 dangerouslySetInnerHtml usages to help with Security audit; 3 remain on purpose.
+- Save & Restore View Layouts
+- Fix Bug 127182 - Force toolsettings to refresh when a tool is started even if new toolId is same as active toolId.
+- Added *.svg to .npmignore file
+- #137311 - Fix issue where cached tool settings values in UI would get out of sync with actual values in tool.
+- Update to TypeScript 3.5
+- Fix model selector view sync problem
+- Added MessageManager.addToMessageCenter. ui-framework unit tests.
+- Reuse ui-ninezone stage panels.
+- Visibility Tree: Auto-expand root node
+- Visibility Tree: Fix incorrect category status when category is displayed directly under subject
+- Visibility Tree: Use a more fool-proof node type checking
+- Visibility Tree: Update subject node icons
+- Visibility Tree: Disable subjects and models if active view is not spatial
+- Visibility Tree: Avoid re-rendering the tree multiple times when receiving multiple view change notifications in a row
+- The VisibilityTree component now ensures displayed models are loaded.
+- Added ViewSelector.updateShowSettings to control which view types are displayed
 
 ## 1.0.0
 Mon, 03 Jun 2019 18:09:39 GMT

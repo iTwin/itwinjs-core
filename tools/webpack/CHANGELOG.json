@@ -2,6 +2,39 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@bentley/webpack-tools_v1.2.0",
+      "date": "Wed, 24 Jul 2019 11:47:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Closing STDIN no longer kills child processes created using simpleSpawn"
+          },
+          {
+            "comment": "Imported Svg now use hash of file path to help guarantee unique symbolId."
+          },
+          {
+            "comment": "Changed default behavior of `build` command: source maps are no longer generated unless the `--sourceMap` argument is provided."
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.1.0",
+      "tag": "@bentley/webpack-tools_v1.1.0",
+      "date": "Mon, 01 Jul 2019 19:04:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use latest fast-sass-loader with outputStyle option."
+          },
+          {
+            "comment": "Update to TypeScript 3.5"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.0",
       "tag": "@bentley/webpack-tools_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",

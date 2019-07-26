@@ -182,6 +182,9 @@ beta;LineStyleProps
 public;LocalAlignedBox3d = Range3d
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
+beta;MassPropertiesOperation
+beta;MassPropertiesRequestProps
+beta;MassPropertiesResponseProps
 public;MaterialProps
 internal;MeshEdge
 internal;MeshEdges

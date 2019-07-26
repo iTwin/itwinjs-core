@@ -15,6 +15,7 @@ import { StrengthDirection } from "../../src/ECObjects";
 import sinon = require("sinon");
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { SchemaContext } from "../../src/Context";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Mixin", () => {
 
@@ -298,6 +299,41 @@ describe("Mixin", () => {
       const mixinB = await schemaB.getItem<Mixin>("TestMixin");
       expect(mixinB).to.exist;
       expect(mixinB!.toJson(true, true)).to.not.have.property("modifier");
+    });
+  });
+
+  describe("toXml", () => {
+    const testSchema = createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.TestEntity",
+        modifier: "Abstract",
+      },
+      TestEntity: {
+        schemaItemType: "EntityClass",
+      },
+    });
+    const newDom = createEmptyXmlDocument();
+
+    it("should properly serialize", async () => {
+      const schema = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(schema);
+      const mixin = await schema.getItem<Mixin>("TestMixin");
+      expect(mixin).to.exist;
+      const serialized = await mixin!.toXml(newDom);
+      expect(serialized.nodeName).to.eql("ECEntityClass");
+      expect(serialized.hasAttribute("modifier")).to.eql(false);
+
+      const customAttributesResult = getElementChildrenByTagName(serialized, "ECCustomAttributes");
+      assert.strictEqual(customAttributesResult.length, 1);
+      const customAttributes = customAttributesResult[0];
+      const mixinPropsResult = getElementChildrenByTagName(customAttributes, "IsMixin");
+      assert.strictEqual(mixinPropsResult.length, 1);
+      const mixinProps = mixinPropsResult[0];
+      const appliesToResult = getElementChildrenByTagName(mixinProps, "AppliesToEntityClass");
+      assert.strictEqual(appliesToResult.length, 1);
+      const appliesTo = appliesToResult[0];
+      expect(appliesTo.textContent).to.eql("TestEntity");
     });
   });
 });
