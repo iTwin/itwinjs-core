@@ -28,7 +28,6 @@ export class FluentdBunyanLoggerConfig {
     params.fluentdPort = (fluentdConfig.fluentdPort || 9880);
     params.fluentdTimeout = (fluentdConfig.fluentdTimeout || 1500);
     params.seqServerUrl = (fluentdConfig.seqServerUrl || "http://localhost");
-    params.seqServerPort = (fluentdConfig.seqServerPort || 5341);
     params.seqApiKey = (fluentdConfig.seqApiKey || "InvalidApiKey");
 
     // nb: Define only one bunyan stream! Otherwise, we will get logging messages coming out multiple times, once for each stream. (https://github.com/trentm/node-bunyan/issues/334)

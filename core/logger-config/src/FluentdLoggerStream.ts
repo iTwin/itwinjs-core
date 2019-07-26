@@ -27,8 +27,6 @@ export interface IFluentdConfig {
   fluentdTimeout?: number;
   /** The URL of the seq server to send logs. Defaults to localhost. */
   seqServerUrl?: string;
-  /** The port of the seq server. Defaults to 5341. */
-  seqServerPort?: number;
   /** The API Key to use when sending logs to Seq */
   seqApiKey?: string;
 }
@@ -40,7 +38,6 @@ export class PostFluentd implements GenericPost {
     customHeaders["content-type"] = "application/json";
     customHeaders["seq-server"] = config.seqServerUrl;
     customHeaders["seq-apikey"] = config.seqApiKey;
-    customHeaders["seq-port"] = config.seqServerPort;
     // TODO: Handle SEQ_PORT (on fluentd side as well) and use kabab case instead of snake case.
     return {
       uri: config.fluentdHost + ":" + config.fluentdPort + "/seqlogging",
