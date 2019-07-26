@@ -86,7 +86,7 @@ describe("Technique tests", () => {
   });
 
   // NB: this can potentially take a long time, especially on our mac build machines.
-  it.only("should successfully compile all shader programs", () => {
+  it("should successfully compile all shader programs", () => {
     if (IModelApp.initialized) {
       expect(System.instance.techniques.compileShaders()).to.be.true;
     }

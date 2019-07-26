@@ -8,27 +8,35 @@ import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
 import { Material } from "../../render/webgl/Material";
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.
-function unpackMaterialParam(f: number): XYZ {
+function unpackMaterialParam(f: number): XY {
   const v = { x: 0, y: 0, z: 0 };
-  v.z = Math.floor(f / 256.0 / 256.0);
-  v.y = Math.floor((f - v.z * 256.0 * 256.0) / 256.0);
-  v.x = Math.floor(f - v.z * 256.0 * 256.0 - v.y * 256.0);
+  v.y = Math.floor(f / 256.0);
+  v.x = Math.floor(f - v.y * 256.0);
   return v;
 }
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack and normalize a vec3 material param from a packed float value.
-function unpackAndNormalizeMaterialParam(f: number): XYZ {
+function unpackAndNormalizeMaterialParam(f: number): XY {
   const v = unpackMaterialParam(f);
   v.x /= 255.0;
   v.y /= 255.0;
-  v.z /= 255.0;
   return v;
 }
 
-interface XYZ {
+interface XY {
   x: number;
   y: number;
+}
+
+interface XYZ extends XY {
   z: number;
+}
+
+interface PackedMaterialParams {
+  x: number; // diffuse and specular weights
+  y: number; // texture weight and specular red
+  z: number; // specular green and blue
+  w: number; // specular exponent
 }
 
 function colorFromVec(vec: XYZ): ColorDef {
@@ -50,12 +58,13 @@ interface DecodedMaterialParams extends MaterialParams {
   textureWeight: number;
 }
 
-function decodeMaterialParams(params: XYZ, rgba: Float32Array): DecodedMaterialParams {
-  const specularColor = unpackAndNormalizeMaterialParam(params.x);
-  const specularExponent = params.y;
-  const matWeights = unpackAndNormalizeMaterialParam(params.z);
+function decodeMaterialParams(params: PackedMaterialParams, rgba: Float32Array): DecodedMaterialParams {
+  const matWeights = unpackAndNormalizeMaterialParam(params.x);
+  const textureWeightAndSpecularR = unpackAndNormalizeMaterialParam(params.y);
+  const specularGB = unpackAndNormalizeMaterialParam(params.z);
+  const specularExponent = params.w;
 
-  const matSpecular = { x: specularColor.x, y: specularColor.y, z: specularColor.z, w: specularExponent };
+  const matSpecular = { x: textureWeightAndSpecularR.y, y: specularGB.x, z: specularGB.y, w: specularExponent };
 
   const rgbOverridden = -1 !== rgba[0];
   const diffuseColor = rgbOverridden ? ColorDef.from(rgba[0] * 255 + 0.5, rgba[1] * 255 + 0.5, rgba[2] * 255 + 0.5) : undefined;
@@ -67,7 +76,7 @@ function decodeMaterialParams(params: XYZ, rgba: Float32Array): DecodedMaterialP
     specularColor: colorFromVec(matSpecular),
     diffuse: matWeights.x,
     specular: matWeights.y,
-    textureWeight: matWeights.z,
+    textureWeight: textureWeightAndSpecularR.x,
     specularExponent: matSpecular.w,
     transparency,
     rgbOverridden,
@@ -86,6 +95,7 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     x: material.fragUniforms[0],
     y: material.fragUniforms[1],
     z: material.fragUniforms[2],
+    w: material.fragUniforms[3],
   };
 
   const actual = decodeMaterialParams(shaderParams, material.rgba);
@@ -107,11 +117,12 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
 
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
-  expect(actual.alphaOverridden).to.equal(1.0 !== expected.alpha);
+  expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
-  expectEqualFloats(1.0 - expected.alpha!, actual.transparency);
+  if (undefined !== expected.alpha)
+    expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
 function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
@@ -123,7 +134,7 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
   return params;
 }
 
-describe.only("Material", () => {
+describe("Material", () => {
   it("should pack and unpack parameters", () => {
     expectMaterialParams(makeMaterialParams({
       diffuseColor: ColorDef.black,
