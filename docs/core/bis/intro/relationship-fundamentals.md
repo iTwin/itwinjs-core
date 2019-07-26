@@ -129,4 +129,6 @@ Regarding subclassable Navigation Property relationships, ElementOwnsChildElemen
 
 Lastly, Navigation Properties can also be defined for Link table relationships. In this case, the link table relationship is specified as an end point of the Navigation Property relationship.
 
-> Next: [Schemas](./schemas-domains.md)
+---
+| Next: [Schemas](./schemas-domains.md)
+|:---

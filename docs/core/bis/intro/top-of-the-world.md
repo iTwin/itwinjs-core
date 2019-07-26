@@ -85,4 +85,6 @@ This allows `Document` elements to be organized by how they relate to the parent
 `Drawings` and `Sheets` are further broken down by `DrawingModels` and `SheetModels` which graphically break down the content of the drawing or sheet.
 
 -->
-> Next: [Single Responsible Party Principle](./srpp.md)
+---
+| Next: [Single Responsible Party Principle](./srpp.md)
+|:---

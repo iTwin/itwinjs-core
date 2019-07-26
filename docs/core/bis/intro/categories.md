@@ -93,4 +93,6 @@ Each iModel Bridge job should create a `DefinitionModel` for its Categories. Tha
 
 iModel Bridges should respect and use the standard SpatialCategories defined by the Domains.
 
-> Next: [Schema Customization](./schema-customization.md)
+---
+| Next: [Schema Customization](./schema-customization.md)
+|:---

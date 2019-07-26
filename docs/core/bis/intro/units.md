@@ -56,4 +56,7 @@ The SI units requirement only applies to numeric physical and geometry propertie
 
 ## Presentation Rules
 -->
-> Next: [BIS Schema Validation](./bis-schema-validation.md)
+
+---
+| Next: [BIS Schema Validation](./bis-schema-validation.md)
+|:---

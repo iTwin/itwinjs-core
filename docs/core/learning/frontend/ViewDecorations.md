@@ -17,7 +17,7 @@ A [InteractiveTool]($frontend) can also show decorations and does *not* need to 
 Sometimes decorations are meant to *intersperse* with the scene geometry, and sometimes they are meant to display atop of it. For this reason, there are 3 broad categories of View Decorations:
 
 - View Graphic Decorations - are drawn using iModel.js render primitives into the WebGL context.
-- Canvas Decoration - are drawn onto the 2d canvas using [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D). Canvas decorations are always on top of View Graphic Decorations
+- Canvas Decoration - are drawn onto the 2d canvas using [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D). Canvas decorations are always on top of View Graphic Decorations
 - HTML Decorations - are HTMLElements that are added to the DOM. HTML decorations are always on top of Canvas Decorations.
 
 > Note that a single [Decorator]($frontend) can create multiple Decorations, from any or all of the categories above.
@@ -60,7 +60,7 @@ The following example illustrates creating a pickable view graphic decoration in
 
 ### Canvas Decorations
 
-A [CanvasDecoration]($frontend) is drawn atop the scene using [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D).
+A [CanvasDecoration]($frontend) is drawn atop the scene using [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D).
 To add a CanvasDecoration, call [DecorateContext.addCanvasDecoration]($frontend) from your [Decorator.decorate]($frontend) method.
 
 CanvasDecorators must implement [CanvasDecoration.drawDecoration]($frontend) to supply visible graphics, by calling methods on CanvasRenderingContext2D.
@@ -90,9 +90,9 @@ If you return true from your `CanvasDecoration.pick` method, you can implement:
 
 ### HTML Decorations
 
-HTML Decorations are simply [HTMLElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) that you add to the DOM on top of your views. In your [Decorator.decorate]($frontend) method, use [DecorateContext.addHtmlDecoration]($frontend) to add HTML Decorations.
+HTML Decorations are simply [HTMLElements](https://developer.mozilla.org/docs/Web/API/HTMLElement) that you add to the DOM on top of your views. In your [Decorator.decorate]($frontend) method, use [DecorateContext.addHtmlDecoration]($frontend) to add HTML Decorations.
 
-HTML Decorators are appended to an [HTMLDivElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLDivElement) called "overlay-decorators" that is created by [ScreenViewport.create]($frontend).
+HTML Decorators are appended to an [HTMLDivElement](https://developer.mozilla.org/docs/Web/API/HTMLDivElement) called "overlay-decorators" that is created by [ScreenViewport.create]($frontend).
 All children of that Div are removed every frame, so you must re-add your HTML Decorator each time your [Decorator.decorate]($frontend) method is called.
 
 The "overlay-decorators" Div is stacked on top of the canvas, but behind the "overlay-tooltip" Div (where tooltips are displayed.)

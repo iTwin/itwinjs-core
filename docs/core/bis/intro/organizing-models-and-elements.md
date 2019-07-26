@@ -100,4 +100,6 @@ That last question needs elaboration. What are typical reasons why users need to
 
 As a boundary case, if one of the parts is clearly a “lead” part, e.g. a “Beam” with specific additions (welded on) or subtractions (cut out) then maybe parent-child is more appropriate. The decision to use parent-child modeling vs sub-modeling can be quite tricky. You should examine schemas from comparable domains and consult experts, if possible.
 
-> Next: [Modeling Systems](./modeling-systems.md)
+---
+| Next: [Modeling Systems](./modeling-systems.md)
+|:---

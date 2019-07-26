@@ -174,4 +174,6 @@ Structural Steel Detailing is an example of a domain that does ***not*** require
 
 Hydraulic Analysis, on the other hand, does require a custom modeling perspective. This perspective will model reality as a system that transports and stores water. Reality will be simplified into a network of conduits and other items, with properties and relationships appropriate for hydraulic analysis.
 
-> Next: [Top of the World](./top-of-the-world.md)
+---
+| Next: [Top of the World](./top-of-the-world.md)
+|:---

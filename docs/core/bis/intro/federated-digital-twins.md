@@ -50,4 +50,6 @@ There are two key ideas stemming from our sharing of the Physical Backbone acros
 
 Conversely, data that is completely phase-specific should be segregated from the Physical Backbone, as described in other topics of this documentation.
 
-> Next: [Modeling with BIS](./modeling-with-bis.md)
+---
+| Next: [Modeling with BIS](./modeling-with-bis.md)
+|:---

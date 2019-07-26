@@ -11,7 +11,7 @@ of [iModel.js apps](#TODO!).
 ### What is Webpack? ###
 As its name implies, `webpack-tools` makes extensive use of [webpack](https://webpack.js.org/).
 At its core, webpack is a module bundler – it combines files so you can use a module system like [RequireJS](https://requirejs.org/)
-or [ES6 imports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) in a web environment – where such
+or [ES6 imports](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/import) in a web environment – where such
 module systems aren't generally supported.  Lots of smaller modules may make sense on the server side of things (where the files are
 already on the filesystem), but the overhead of fetching these files via HTTP means that we need to combine them into a few larger files
 for the client side.

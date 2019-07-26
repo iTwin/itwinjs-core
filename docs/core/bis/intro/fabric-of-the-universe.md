@@ -22,7 +22,7 @@ See [ElementAspect Fundamentals](./elementaspect-fundamentals.md) for a more det
 
 ## Models
 
-A `Model` is a “container” of Elements that provides a context (and a Modeling Perspective) for the contained Elements.
+A `Model` is a *container* of Elements that provides a context (and a Modeling Perspective) for the contained Elements.
 
 See [Model Fundamentals](./model-fundamentals.md) for a more detailed discussion of Models.
 
@@ -34,4 +34,6 @@ Various ECRelationship classes are defined in BisCore to relate Models, Elements
 
 All BIS information is defined using the `Element`, `ElementAspect`, `Model` classes or by using relationships. BIS domain schemas (other than `BisCore`) can only define classes that (directly or indirectly) subclass classes defined in the `BisCore` domain.
 
-> Next: [Element Fundamentals](element-fundamentals.md)
+---
+| Next: [Element Fundamentals](element-fundamentals.md)
+|:---
