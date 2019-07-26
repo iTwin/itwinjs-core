@@ -9,7 +9,7 @@ import { ClippingType } from "../System";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
-import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 
@@ -669,7 +669,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
-      main.add(GLSLVertex.earlyDiscard);
+      main.add(earlyVertexDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -708,7 +708,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
-      main.add(GLSLVertex.discard);
+      main.add(vertexDiscard);
     }
 
     main.addline("  gl_Position = computePosition(rawPosition);");
@@ -720,7 +720,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
     if (undefined !== checkForLateDiscard) {
       prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
-      main.addline(GLSLVertex.lateDiscard);
+      main.addline(lateVertexDiscard);
     }
 
     prelude.addMain(main.source);
@@ -1076,7 +1076,7 @@ export class ProgramBuilder {
     // Debug output
     const debugVaryings = false;
     if (debugVaryings) {
-      const dbgLog = (x: string) => console.log(x);
+      const dbgLog = (x: string) => console.log(x); // tslint:disable-line:no-console
       const outSrc = false; // true for source out, false for just varying info
       if (this.frag.headerComment) {
         let tStr = "";

@@ -14,14 +14,14 @@ import {
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
 import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
+import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
-import { GLSLDecode } from "./Decode";
+import { unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
-import { addShaderFlags, GLSLCommon } from "./Common";
+import { addShaderFlags, extractNthBit } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Material } from "../Material";
@@ -226,7 +226,7 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
   if (classified) {
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   } else
     addSurfaceHiliter(builder);
 
@@ -264,7 +264,7 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
   builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
 
-  builder.addFunction(GLSLCommon.extractNthBit);
+  builder.addFunction(extractNthBit);
   builder.addFunction(extractSurfaceBit);
   builder.addFunction(isSurfaceBitSet);
 }
@@ -392,7 +392,7 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 }
 
 function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
-  builder.vert.addFunction(GLSLDecode.unquantize2d);
+  builder.vert.addFunction(unquantize2d);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
@@ -470,11 +470,11 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addWhiteOnWhiteReversal(builder.frag);
 
   if (FeatureMode.None === feat) {
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColorWithPreMultipliedAlpha);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
   } else {
     if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
-    builder.frag.addFunction(GLSLDecode.depthRgb);
+    builder.frag.addFunction(decodeDepthRgb);
     if (flags.isEdgeTestNeeded || flags.isClassified)
       addPickBufferOutputs(builder.frag);
     else

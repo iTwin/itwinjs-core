@@ -21,7 +21,7 @@ import {
 import { addFrustum, addShaderFlags } from "./Common";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
-import { GLSLDecode } from "./Decode";
+import { unquantize2d } from "./Decode";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { System } from "../System";
@@ -196,7 +196,7 @@ function addCommon(prog: ProgramBuilder) {
     });
   });
 
-  vert.addFunction(GLSLDecode.unquantize2d);
+  vert.addFunction(unquantize2d);
 
   vert.addAttribute("a_param", VariableType.Float, (shaderProg) => {
     shaderProg.addAttribute("a_param", (attr, params) => {

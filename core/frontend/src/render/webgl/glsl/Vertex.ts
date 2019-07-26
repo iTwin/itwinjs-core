@@ -8,7 +8,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit, RenderPass } from "../RenderFlags";
-import { GLSLDecode } from "./Decode";
+import { decodeUint16, decodeUint24 } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
 
@@ -138,8 +138,8 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
   vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
-  vert.addFunction(GLSLDecode.uint24);
-  vert.addFunction(GLSLDecode.uint16);
+  vert.addFunction(decodeUint24);
+  vert.addFunction(decodeUint16);
   vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
@@ -262,18 +262,18 @@ export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
   vert.addInitializer(computeFeatureAndMaterialIndex);
 }
 
-/** @internal */
-export namespace GLSLVertex {
-  // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-  // Also place it outside NDC range (for GL_POINTS)
-  const discardVertex = `
+// This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+// Also place it outside NDC range (for GL_POINTS)
+const discardVertex = `
 {
   gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   return;
 }
 `;
 
-  export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
-  export const discard = `  if (checkForDiscard())` + discardVertex;
-  export const lateDiscard = `  if (checkForLateDiscard())` + discardVertex;
-}
+/** @internal */
+export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
+/** @internal */
+export const vertexDiscard = `  if (checkForDiscard())` + discardVertex;
+/** @internal */
+export const lateVertexDiscard = `  if (checkForLateDiscard())` + discardVertex;

@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { ProgramBuilder, FragmentShaderComponent } from "../ShaderBuilder";
-import { GLSLFragment, addRenderTargetIndex } from "./Fragment";
+import { computeLinearDepth, addRenderTargetIndex } from "./Fragment";
 import { addModelViewMatrix } from "./Vertex";
 import { addFrustum, addEyeSpace } from "./Common";
 import { System } from "../System";
@@ -54,7 +54,7 @@ export function addTranslucency(prog: ProgramBuilder): void {
   addFrustum(prog);
   addModelViewMatrix(prog.vert);
 
-  frag.addFunction(GLSLFragment.computeLinearDepth);
+  frag.addFunction(computeLinearDepth);
   frag.addFunction(computeAlphaWeight);
 
   if (System.instance.capabilities.supportsMRTTransparency) {

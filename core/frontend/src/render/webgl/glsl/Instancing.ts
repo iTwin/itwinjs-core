@@ -8,7 +8,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { GL } from "../GL";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { addOvrFlagConstants } from "./FeatureSymbology";
-import { GLSLCommon } from "./Common";
+import { extractNthBit } from "./Common";
 
 const extractInstanceBit = `
   float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
@@ -57,7 +57,7 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
 
   addOvrFlagConstants(vert);
 
-  vert.addFunction(GLSLCommon.extractNthBit);
+  vert.addFunction(extractNthBit);
   vert.addFunction(extractInstanceBit);
 
   vert.addAttribute("a_instanceOverrides", VariableType.Vec4, (prog) => {

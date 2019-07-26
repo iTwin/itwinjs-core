@@ -6,7 +6,7 @@
 
 import { VariableType, FragmentShaderComponent, ShaderType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { GLSLFragment } from "./Fragment";
+import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FrustumUniformType, fromSumOf } from "../Target";
 import { Frustum, Npc } from "@bentley/imodeljs-common";
@@ -206,7 +206,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
     });
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorTexture);
   }
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   builder.vert.headerComment = "// ----- SkySphere -----";
   builder.frag.headerComment = "// ----- SkySphere -----";

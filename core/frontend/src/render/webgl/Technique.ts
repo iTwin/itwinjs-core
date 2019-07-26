@@ -25,7 +25,7 @@ import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDisc
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
-import { GLSLFragment, addPickBufferOutputs } from "./glsl/Fragment";
+import { assignFragColor, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum, addEyeSpace } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
@@ -158,7 +158,7 @@ export abstract class VariedTechnique implements Technique {
   protected addFeatureId(builder: ProgramBuilder, feat: FeatureMode) {
     const frag = builder.frag;
     if (FeatureMode.None === feat)
-      frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+      frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
     else {
       const vert = builder.vert;
       addFrustum(builder);

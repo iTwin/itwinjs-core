@@ -18,9 +18,9 @@ import { Hilite, ColorDef } from "@bentley/imodeljs-common";
 import { TextureUnit, OvrFlags } from "../RenderFlags";
 import { FeatureMode, IsEdgeTestNeeded, IsClassified } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
-import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
-import { GLSLCommon, addEyeSpace, addUInt32s } from "./Common";
-import { GLSLDecode } from "./Decode";
+import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
+import { extractNthBit, addEyeSpace, addUInt32s } from "./Common";
+import { decodeDepthRgb } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { UniformHandle } from "../Handle";
@@ -166,7 +166,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   assert(wantColor || !wantAlpha);
 
   vert.addGlobal("feature_invisible", VariableType.Boolean, "false");
-  vert.addFunction(GLSLCommon.extractNthBit);
+  vert.addFunction(extractNthBit);
   addOvrFlagConstants(vert);
 
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
@@ -318,7 +318,7 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexHiliteDiscard);
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
-  builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
 
 function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
@@ -515,8 +515,8 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, is
 
     if (FeatureMode.None === feat) {
       addSamplers(frag, false);
-      frag.addFunction(GLSLFragment.computeLinearDepth);
-      frag.addFunction(GLSLDecode.depthRgb);
+      frag.addFunction(computeLinearDepth);
+      frag.addFunction(decodeDepthRgb);
       frag.addFunction(readDepthAndOrder);
       addEyeSpace(builder);
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscard);
@@ -527,8 +527,8 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, is
       addSamplers(frag, true);
       addRenderOrderConstants(frag);
       addPixelWidthFactor(frag);
-      frag.addFunction(GLSLFragment.computeLinearDepth);
-      frag.addFunction(GLSLDecode.depthRgb);
+      frag.addFunction(computeLinearDepth);
+      frag.addFunction(decodeDepthRgb);
       frag.addFunction(readDepthAndOrder);
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
 
@@ -665,7 +665,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
  */
 export function addUniformHiliter(builder: ProgramBuilder): void {
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0);`);
-  builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
 
 /** For a uniform feature table, the feature ID output to pick buffers is equal to the batch ID.

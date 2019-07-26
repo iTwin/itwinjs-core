@@ -6,7 +6,7 @@
 
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { GLSLFragment } from "./Fragment";
+import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
@@ -20,7 +20,7 @@ export function createCopyStencilProgram(context: WebGLRenderingContext): Shader
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeColor);
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_hilite_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_hilite_color", (uniform, params) => {
       const vf = params.target.currentViewFlags;
