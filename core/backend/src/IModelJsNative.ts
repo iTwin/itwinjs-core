@@ -161,7 +161,7 @@ export declare namespace IModelJsNative {
     public importFunctionalSchema(): DbResult;
     public importSchemas(schemaFileNames: string[]): DbResult;
     public inBulkOperation(): boolean;
-    public insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
+    public insertCodeSpec(name: string, jsonProperties: string): ErrorStatusOrResult<IModelStatus, string>;
     public insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;
     public insertElementAspect(aspectProps: string): IModelStatus;
     public insertLinkTableRelationship(props: string): ErrorStatusOrResult<DbResult, string>;

@@ -1210,6 +1210,38 @@ describe("iModel", () => {
     assert.isFalse(testImodel.codeSpecs.hasId(Id64.invalid));
   });
 
+  it("validate CodeSpec properties", async () => {
+    const iModelFileName: string = IModelTestUtils.prepareOutputFile("IModel", "ReadWriteCodeSpec.bim");
+    const codeSpecName = "CodeSpec1";
+
+    // Write new CodeSpec to iModel
+    if (true) {
+      const iModelDb: IModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+      const codeSpec: CodeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      codeSpec.isManagedWithIModel = false;
+      const codeSpecId: Id64String = iModelDb.codeSpecs.insert(codeSpec);
+      assert.isTrue(Id64.isValidId64(codeSpec.id));
+      assert.equal(codeSpec.id, codeSpecId);
+      assert.equal(codeSpec.name, codeSpecName);
+      assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
+      assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.closeSnapshot();
+    }
+
+    // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
+    if (true) {
+      const iModelDb: IModelDb = IModelDb.openSnapshot(iModelFileName);
+      const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
+      assert.isTrue(Id64.isValidId64(codeSpec.id));
+      assert.equal(codeSpec.name, codeSpecName);
+      assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
+      assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.closeSnapshot();
+    }
+  });
+
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap(requestContext, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
