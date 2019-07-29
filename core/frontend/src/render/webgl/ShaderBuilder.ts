@@ -9,7 +9,7 @@ import { ClippingType } from "../System";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
-import { GLSLVertex, addPosition } from "./glsl/Vertex";
+import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } from "./glsl/Vertex";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { addClipping } from "./glsl/Clipping";
 import { AttributeDetails } from "./AttributeMap";
@@ -175,10 +175,10 @@ export class ShaderVariable {
  * @internal
  */
 export class ShaderVariables {
-  public readonly list: ShaderVariable[] = new Array<ShaderVariable>();
+  protected _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
-  public find(name: string): ShaderVariable | undefined { return this.list.find((v: ShaderVariable) => v.name === name); }
+  public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
 
   /** Add a new variable, if a variable with the same name does not already exist.  return true if added */
   public addVariable(v: ShaderVariable): boolean {
@@ -188,7 +188,7 @@ export class ShaderVariables {
       // assume same binding etc...
       return false;
     } else {
-      this.list.push(v);
+      this._list.push(v);
       return true;
     }
   }
@@ -212,7 +212,7 @@ export class ShaderVariables {
   /** Constructs the lines of glsl code declaring all of the variables. */
   public buildDeclarations(): string {
     let decls = "";
-    for (const v of this.list) {
+    for (const v of this._list) {
       decls += v.buildDeclaration() + "\n";
     }
 
@@ -224,7 +224,7 @@ export class ShaderVariables {
    * to add the corresponding Uniform or Attribute object to the ShaderProgram.
    */
   public addBindings(prog: ShaderProgram, predefined?: ShaderVariables): void {
-    for (const v of this.list) {
+    for (const v of this._list) {
       // Some variables exist in both frag and vert shaders - only add them to the program once.
       if (v.hasBinding && (undefined === predefined || undefined === predefined.find(v.name))) {
         v.addBinding(prog);
@@ -232,7 +232,7 @@ export class ShaderVariables {
     }
   }
 
-  public get length(): number { return this.list.length; }
+  public get length(): number { return this._list.length; }
 
   private findSlot(variableSize: number, loopSize: number, registers: number[]): number {
     // Find the first available slot into which to insert this variable
@@ -246,7 +246,6 @@ export class ShaderVariables {
     return -1;
   }
 
-  /*
   // Return string of varying types with their theoretical slot numbers
   public checkMaxVaryingVectors(fragSource: string): string {
     // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
@@ -262,7 +261,7 @@ export class ShaderVariables {
     let outStr = "";
     let slot = 0;
 
-    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    const varyings = this._list.filter((variable) => VariableScope.Varying === variable.scope);
     // Add in any built in vars that count as varyings if they are used
     if (fragSource.includes("gl_FragCoord")) {
       varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
@@ -315,7 +314,6 @@ export class ShaderVariables {
         return "";
     }
   }
-  */
 
   // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
   public exceedsMaxVaryingVectors(fragSource: string): boolean {
@@ -330,7 +328,7 @@ export class ShaderVariables {
     const loopSize = 64;
     const registers = Array(loopSize + 1).fill(0);
 
-    const varyings = this.list.filter((variable) => VariableScope.Varying === variable.scope);
+    const varyings = this._list.filter((variable) => VariableScope.Varying === variable.scope);
     // Add in any built in vars that count as varyings if they are used
     if (fragSource.includes("gl_FragCoord")) {
       varyings.push(ShaderVariable.create("gl_FragCoord", VariableType.Vec4, VariableScope.Varying));
@@ -436,35 +434,45 @@ export const enum ShaderBuilderFlags {
  * @internal
  */
 export class ShaderBuilder extends ShaderVariables {
-  public readonly components = new Array<string | undefined>();
-  public readonly functions: string[] = new Array<string>();
-  public readonly extensions: string[] = new Array<string>();
+  protected _components = new Array<string | undefined>();
+  protected _functions: string[] = [];
+  protected _extensions: string[] = [];
+  protected _macros: string[] = [];
   public headerComment: string = "";
   protected readonly _flags: ShaderBuilderFlags;
+  protected _initializers: string[] = new Array<string>();
 
   public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
   public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
 
+  public addInitializer(initializer: string): void {
+    if (-1 === this._initializers.indexOf(initializer))
+      this._initializers.push(initializer);
+  }
+
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
     super();
-    this.components.length = maxComponents;
+    this._components.length = maxComponents;
     this._flags = flags;
+    this.addMacro("#version 100");
+    this.addDefine("TEXTURE", "texture2D");
+    this.addDefine("TEXTURE_CUBE", "textureCube");
   }
 
   protected addComponent(index: number, component: string): void {
-    assert(index < this.components.length);
+    assert(index < this._components.length);
 
     // assume if caller is replacing an existing component, they know what they're doing...
-    this.components[index] = component;
+    this._components[index] = component;
   }
   protected removeComponent(index: number) {
-    assert(index < this.components.length);
-    this.components[index] = undefined;
+    assert(index < this._components.length);
+    this._components[index] = undefined;
   }
 
   protected getComponent(index: number): string | undefined {
-    assert(index < this.components.length);
-    return this.components[index];
+    assert(index < this._components.length);
+    return this._components[index];
   }
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
@@ -474,14 +482,14 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     if (undefined === this.findFunction(def)) {
-      this.functions.push(def);
+      this._functions.push(def);
     }
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
-    const index = this.functions.indexOf(existing);
+    const index = this._functions.indexOf(existing);
     if (-1 !== index) {
-      this.functions[index] = replacement;
+      this._functions[index] = replacement;
     }
 
     assert(-1 !== index);
@@ -489,24 +497,26 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public findFunction(func: string): string | undefined {
-    return this.functions.find((f: string | undefined) => f === func);
+    return this._functions.find((f: string | undefined) => f === func);
   }
 
   public addExtension(extName: string): void {
-    if (-1 === this.extensions.indexOf(extName)) {
-      this.extensions.push(extName);
-    }
+    if (-1 === this._extensions.indexOf(extName))
+      this._extensions.push(extName);
   }
 
-  protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined, isFrag: boolean = false, isLit: boolean = false, maxClippingPlanes: number = 0): SourceBuilder {
+  public addMacro(macro: string): void {
+    if (-1 === this._macros.indexOf(macro))
+      this._macros.push(macro);
+  }
+
+  public addDefine(name: string, value: string): void {
+    const macro = "#define " + name + " " + value;
+    this.addMacro(macro);
+  }
+
+  protected buildPreludeCommon(attrMap: Map<string, AttributeDetails> | undefined): SourceBuilder {
     const src = new SourceBuilder();
-
-    src.addline("#version 100");
-    src.addline("#define TEXTURE texture2D");
-    src.addline("#define TEXTURE_CUBE textureCube");
-
-    if (maxClippingPlanes > 0)
-      src.addline("#define MAX_CLIPPING_PLANES " + maxClippingPlanes);
 
     // Header comment
     src.newline();
@@ -515,16 +525,13 @@ export class ShaderBuilder extends ShaderVariables {
       src.newline();
     }
 
-    // Extensions
-    let needMultiDrawBuffers = false;
-    for (const ext of this.extensions) {
-      if (ext === "GL_EXT_draw_buffers") {
-        assert(System.instance.capabilities.supportsDrawBuffers, "GL_EXT_draw_buffers unsupported");
-        needMultiDrawBuffers = true;
-      }
+    // Macros
+    for (const macro of this._macros)
+      src.addline(macro);
 
+    // Extensions
+    for (const ext of this._extensions)
       src.addline("#extension " + ext + " : enable");
-    }
 
     // Default precisions
     src.addline("precision highp float;");
@@ -541,39 +548,24 @@ export class ShaderBuilder extends ShaderVariables {
       });
     }
 
-    if (!isFrag) {
-      src.addline("#define MAT_NORM g_nmx");
-      if (!this.usesInstancedGeometry) {
-        src.addline("#define MAT_MV u_mv");
-        src.addline("#define MAT_MVP u_mvp");
-        src.addline("#define MAT_MODEL u_modelMatrix");
-      } else {
-        src.addline("#define MAT_MV g_mv");
-        src.addline("#define MAT_MVP g_mvp");
-        src.addline("#define MAT_MODEL g_instancedModelMatrix");
-      }
-    } else {
-      src.addline("#define FragColor gl_FragColor");
-      if (needMultiDrawBuffers) {
-        src.addline("#define FragColor0 gl_FragData[0]");
-        src.addline("#define FragColor1 gl_FragData[1]");
-        src.addline("#define FragColor2 gl_FragData[2]");
-        src.addline("#define FragColor3 gl_FragData[3]");
-      }
-
-      if (isLit) {
-        // ###TODO: Source Lighting
-      }
-    }
-
     // Functions
-    for (const func of this.functions) {
+    for (const func of this._functions) {
       src.add(func);
     }
-    if (0 !== this.functions.length)
+    if (0 !== this._functions.length)
       src.newline();
 
     return src;
+  }
+
+  protected copyCommon(src: ShaderBuilder): void {
+    this.headerComment = src.headerComment;
+    this._initializers = [...src._initializers];
+    this._components = [...src._components];
+    this._functions = [...src._functions];
+    this._extensions = [...src._extensions];
+    this._list = [...src._list];
+    this._macros = [...src._macros];
   }
 }
 
@@ -588,7 +580,20 @@ export const enum VertexShaderComponent {
   // bool checkForEarlyDiscard(vec4 rawPos)
   CheckForEarlyDiscard,
   // (Optional) Compute feature overrides like visibility, rgb, transparency, line weight.
+  // void computeFeatureOverrides()
   ComputeFeatureOverrides,
+  // (Optional) Compute material parameters.
+  // void computeMaterial()
+  ComputeMaterial,
+  // (Optional) Compute the vertex's base color. Requires the program to have a `varying vec4 v_color`.
+  // vec4 computeBaseColor()
+  ComputeBaseColor,
+  // (Optional - does nothing if ComputeBaseColor not specified) Apply material overrides to vertex color
+  // vec4 applyMaterialColor(vec4 baseColor)
+  ApplyMaterialColor,
+  // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
+  // vec4 applyFeatureColor(vec4 baseColor)
+  ApplyFeatureColor,
   // (Optional) Return true if this vertex should be "discarded" (is not visible)
   // bool checkForDiscard()
   // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
@@ -609,17 +614,23 @@ export const enum VertexShaderComponent {
  */
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
-  private _initializers: string[] = new Array<string>();
-
-  public get computedVarying(): string[] { return this._computedVarying; }
-  public get initializers(): string[] { return this._initializers; }
 
   private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap); }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(VertexShaderComponent.COUNT, flags);
-    if (this.usesInstancedGeometry)
+
+    this.addDefine("MAT_NORM", "g_nmx");
+    if (this.usesInstancedGeometry) {
       addInstancedModelMatrixRTC(this);
+      this.addDefine("MAT_MV", "g_mv");
+      this.addDefine("MAT_MVP", "g_mvp");
+      this.addDefine("MAT_MODEL", "g_instancedModelMatrix");
+    } else {
+      this.addDefine("MAT_MV", "u_mv");
+      this.addDefine("MAT_MVP", "u_mvp");
+      this.addDefine("MAT_MODEL", "u_modelMatrix");
+    }
 
     addPosition(this, this.usesVertexTable);
   }
@@ -628,7 +639,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
   public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
   public unset(id: VertexShaderComponent) { this.removeComponent(id); }
 
-  public addInitializer(initializer: string): void { this._initializers.push(initializer); }
   public addComputedVarying(name: string, type: VariableType, computation: string): void {
     this.addVarying(name, type);
     this._computedVarying.push(computation);
@@ -661,7 +671,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
-      main.add(GLSLVertex.earlyDiscard);
+      main.add(earlyVertexDiscard);
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -670,10 +680,37 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("  computeFeatureOverrides();");
     }
 
+    const computeMaterial = this.get(VertexShaderComponent.ComputeMaterial);
+    if (undefined !== computeMaterial) {
+      prelude.addFunction("void computeMaterial()", computeMaterial);
+      main.addline("  computeMaterial();");
+    }
+
+    const computeBaseColor = this.get(VertexShaderComponent.ComputeBaseColor);
+    if (undefined !== computeBaseColor) {
+      assert(undefined !== this.find("v_color"));
+      prelude.addFunction("vec4 computeBaseColor()", computeBaseColor);
+      main.addline("vec4 baseColor = computeBaseColor();");
+
+      const applyMaterialColor = this.get(VertexShaderComponent.ApplyMaterialColor);
+      if (undefined !== applyMaterialColor) {
+        prelude.addFunction("vec4 applyMaterialColor(vec4 baseColor)", applyMaterialColor);
+        main.addline("baseColor = applyMaterialColor(baseColor);");
+      }
+
+      const applyFeatureColor = this.get(VertexShaderComponent.ApplyFeatureColor);
+      if (undefined !== applyFeatureColor) {
+        prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
+        main.addline("baseColor = applyFeatureColor(baseColor);");
+      }
+
+      main.addline("v_color = baseColor;");
+    }
+
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
-      main.add(GLSLVertex.discard);
+      main.add(vertexDiscard);
     }
 
     main.addline("  gl_Position = computePosition(rawPosition);");
@@ -685,11 +722,16 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
     if (undefined !== checkForLateDiscard) {
       prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
-      main.addline(GLSLVertex.lateDiscard);
+      main.addline(lateVertexDiscard);
     }
 
     prelude.addMain(main.source);
     return prelude.source;
+  }
+
+  public copyFrom(src: VertexShaderBuilder): void {
+    this.copyCommon(src);
+    this._computedVarying = [...src._computedVarying];
   }
 }
 
@@ -706,9 +748,6 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply material overrides to base color
   // vec4 applyMaterialOverrides(vec4 baseColor)
   ApplyMaterialOverrides,
-  // (Optional) Apply feature overrides to base color
-  // vec4 applyFeatureColor(vec4 baseColor)
-  ApplyFeatureColor,
   // (Optional) Adjust base color after material and/or feature overrides have been applied.
   // vec4 finalizeBaseColor(vec4 baseColor)
   FinalizeBaseColor,
@@ -755,10 +794,24 @@ export const enum FragmentShaderComponent {
  * @internal
  */
 export class FragmentShaderBuilder extends ShaderBuilder {
-  public maxClippingPlanes: number = 0;
+  private _maxClippingPlanes = 0;
+  public get maxClippingPlanes() { return this._maxClippingPlanes; }
+  public set maxClippingPlanes(max: number) {
+    if (max === this._maxClippingPlanes)
+      return;
+
+    this._maxClippingPlanes = max;
+    const macroIndex = this._macros.findIndex((x) => x.startsWith("#define MAX_CLIPPING_PLANES"));
+    if (-1 !== macroIndex)
+      this._macros[macroIndex] = "#define MAX_CLIPPING_PLANES " + max;
+    else
+      this.addDefine("MAX_CLIPPING_PLANES", max.toString());
+  }
 
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
+
+    this.addDefine("FragColor", "gl_FragColor");
   }
 
   public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
@@ -768,11 +821,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
   public addDrawBuffersExtension(): void {
     assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
     this.addExtension("GL_EXT_draw_buffers");
+    for (let i = 0; i < 4; i++)
+      this.addDefine("FragColor" + i, "gl_FragData[" + i + "]");
   }
 
   public buildSource(): string {
     const applyLighting = this.get(FragmentShaderComponent.ApplyLighting);
-    const prelude = this.buildPrelude(undefined, undefined !== applyLighting);
+    const prelude = this.buildPrelude(undefined);
 
     const computeBaseColor = this.get(FragmentShaderComponent.ComputeBaseColor);
     assert(undefined !== computeBaseColor);
@@ -782,6 +837,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
     const main = new SourceBuilder();
     main.newline();
+
+    // Initialization logic that should occur at start of main() - primarily global variables whose values
+    // are too complex to compute inline or which depend on uniforms and/or other globals.
+    for (const init of this._initializers) {
+      main.addline("  {" + init + "  }\n");
+    }
+
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
@@ -812,12 +874,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
       main.addline("  baseColor = applySolarShadowMap(baseColor);");
     }
-    const applyFeatureColor = this.get(FragmentShaderComponent.ApplyFeatureColor);
-    if (undefined !== applyFeatureColor) {
-      prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
-      main.addline("  baseColor = applyFeatureColor(baseColor);");
-    }
-
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
@@ -876,9 +932,13 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     return prelude.source;
   }
 
-  private buildPrelude(attrMap: Map<string, AttributeDetails> | undefined, isLit: boolean): SourceBuilder {
-    assert(this.maxClippingPlanes === 0 || this.get(FragmentShaderComponent.ApplyClipping) !== undefined);
-    return this.buildPreludeCommon(attrMap, true, isLit, this.maxClippingPlanes);
+  private buildPrelude(attrMap: Map<string, AttributeDetails> | undefined): SourceBuilder {
+    return this.buildPreludeCommon(attrMap);
+  }
+
+  public copyFrom(src: FragmentShaderBuilder): void {
+    this.copyCommon(src);
+    this.maxClippingPlanes = src.maxClippingPlanes;
   }
 }
 
@@ -1013,28 +1073,30 @@ export class ProgramBuilder {
     if (this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
-    /*
     // Debug output
-    const outSrc = true; // true for source out, false for just varying info
-    if (this.frag.headerComment) {
-      let tStr = "";
-      if (!outSrc) {
-        tStr = this.frag.headerComment + "\n";
-      }
-      const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
-      if (tStr2) {
-        if (outSrc) {
-          dbgLog("//===============================================================================================================");
-          dbgLog(vertSource);
-          dbgLog("//========= Varying Info =========");
-          dbgLog(tStr2);
-          dbgLog(fragSource);
-        } else {
-          dbgLog(tStr + tStr2);
+    const debugVaryings = false;
+    if (debugVaryings) {
+      const dbgLog = (x: string) => console.log(x); // tslint:disable-line:no-console
+      const outSrc = false; // true for source out, false for just varying info
+      if (this.frag.headerComment) {
+        let tStr = "";
+        if (!outSrc) {
+          tStr = this.frag.headerComment + "\n";
+        }
+        const tStr2 = this.vert.checkMaxVaryingVectors(fragSource);
+        if (tStr2) {
+          if (outSrc) {
+            dbgLog("//===============================================================================================================");
+            dbgLog(vertSource);
+            dbgLog("//========= Varying Info =========");
+            dbgLog(tStr2);
+            dbgLog(fragSource);
+          } else {
+            dbgLog(tStr + tStr2);
+          }
         }
       }
     }
-    */
 
     const prog = new ShaderProgram(gl, vertSource, fragSource, this._attrMap, this.vert.headerComment, this.frag.maxClippingPlanes);
     this.vert.addBindings(prog);
@@ -1050,34 +1112,8 @@ export class ProgramBuilder {
   /** Returns a deep copy of this program builder. */
   public clone(): ProgramBuilder {
     const clone = new ProgramBuilder(this._attrMap, this._flags);
-
-    // Copy from vertex builder
-    clone.vert.headerComment = this.vert.headerComment;
-    for (let i = 0; i < this.vert.computedVarying.length; i++)
-      clone.vert.computedVarying[i] = this.vert.computedVarying[i];
-    for (let i = 0; i < this.vert.initializers.length; i++)
-      clone.vert.initializers[i] = this.vert.initializers[i];
-    for (let i = 0; i < this.vert.components.length; i++)
-      clone.vert.components[i] = this.vert.components[i];
-    for (let i = 0; i < this.vert.functions.length; i++)
-      clone.vert.functions[i] = this.vert.functions[i];
-    for (let i = 0; i < this.vert.extensions.length; i++)
-      clone.vert.extensions[i] = this.vert.extensions[i];
-    for (let i = 0; i < this.vert.list.length; i++)
-      clone.vert.list[i] = this.vert.list[i];
-
-    // Copy from fragment builder
-    clone.frag.headerComment = this.frag.headerComment;
-    clone.frag.maxClippingPlanes = this.frag.maxClippingPlanes;
-    for (let i = 0; i < this.frag.components.length; i++)
-      clone.frag.components[i] = this.frag.components[i];
-    for (let i = 0; i < this.frag.functions.length; i++)
-      clone.frag.functions[i] = this.frag.functions[i];
-    for (let i = 0; i < this.frag.extensions.length; i++)
-      clone.frag.extensions[i] = this.frag.extensions[i];
-    for (let i = 0; i < this.frag.list.length; i++)
-      clone.frag.list[i] = this.frag.list[i];
-
+    clone.vert.copyFrom(this.vert);
+    clone.frag.copyFrom(this.frag);
     return clone;
   }
 }

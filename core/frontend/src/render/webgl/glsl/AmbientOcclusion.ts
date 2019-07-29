@@ -9,11 +9,11 @@
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
+import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
-import { GLSLDecode } from "./Decode";
+import { decodeDepthRgb } from "./Decode";
 import { readDepthAndOrder } from "./FeatureSymbology";
 import { addViewport } from "./Viewport";
 import { addFrustum } from "./Common";
@@ -144,15 +144,15 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
   const frag = builder.frag;
 
   addWindowToTexCoords(frag);
-  frag.addFunction(GLSLDecode.depthRgb);
+  frag.addFunction(decodeDepthRgb);
   frag.addFunction(readDepthAndOrder);
   frag.addFunction(computeNonLinearDepth);
   frag.addFunction(computePositionFromDepth);
   frag.addFunction(computeNormalFromDepth);
-  frag.addFunction(GLSLFragment.computeLinearDepth);
+  frag.addFunction(computeLinearDepth);
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusion);
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {

@@ -8,7 +8,7 @@ import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
@@ -140,11 +140,12 @@ export abstract class DrawCommand {
   public get pushOrPop(): PushOrPop | undefined { return undefined; }
 
   public get isPrimitiveCommand(): boolean { return undefined !== this.primitive; }
-  public get featureIndexType(): FeatureIndexType { return undefined !== this.primitive ? this.primitive.featureIndexType : FeatureIndexType.Empty; }
-  public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
+  public get hasFeatures(): boolean { return undefined !== this.primitive && this.primitive.hasFeatures; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
   public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
   public get isInstanced(): boolean { return undefined !== this.primitive ? this.primitive.isInstanced : false; }
+  public get hasMaterialAtlas(): boolean { return undefined !== this.primitive ? this.primitive.hasMaterialAtlas : false; }
+
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public get techniqueId(): TechniqueId { return undefined !== this.primitive ? this.primitive.techniqueId : TechniqueId.Invalid; }
   public getOmitStatus(_target: Target) { return OmitStatus.Neutral; }
@@ -246,8 +247,8 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   public computeIsFlashed(flashedId: Id64String): boolean {
     // ###TODO Can this be done in a less-ugly way? It's trying to determine if the batch's graphic is a classification primitive.
     const sp = this.primitive.cachedGeometry.asSurface;
-    if (undefined !== sp && undefined !== sp.mesh.features && sp.mesh.features.isUniform) {
-      const fi = sp.mesh.features.uniform!;
+    if (undefined !== sp && undefined !== sp.mesh.uniformFeatureId) {
+      const fi = sp.mesh.uniformFeatureId;
       const featureElementId = this._batch.featureTable.findElementId(fi);
       if (undefined !== featureElementId)
         return featureElementId.toString() === flashedId.toString();
@@ -405,11 +406,7 @@ export class RenderCommands {
       return;
     }
 
-    let ovrType = FeatureIndexType.Empty;
-    if (this._opaqueOverrides || this._translucentOverrides)
-      ovrType = command.featureIndexType;
-
-    const haveFeatureOverrides = FeatureIndexType.Empty !== ovrType;
+    const haveFeatureOverrides = (this._opaqueOverrides || this._translucentOverrides) && command.hasFeatures;
 
     if (RenderPass.Translucent === pass && this._addTranslucentAsOpaque) {
       switch (command.renderOrder) {
@@ -449,7 +446,7 @@ export class RenderCommands {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
         // Want these items to draw in general opaque pass so they are not in pick data.
-        if (FeatureIndexType.Empty === command.featureIndexType)
+        if (!command.hasFeatures)
           pass = RenderPass.OpaqueGeneral;
       /* falls through */
       case RenderPass.OpaqueGeneral:

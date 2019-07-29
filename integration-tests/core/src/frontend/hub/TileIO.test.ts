@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { ModelProps, RelatedElementProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
 import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileTree } from "@bentley/imodeljs-frontend";
@@ -322,7 +322,7 @@ describe("TileIO (WebGL)", () => {
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(Primitive);
         const plinePrim = batch.graphic as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
@@ -351,7 +351,7 @@ describe("TileIO (WebGL)", () => {
 
         expect(list.graphics[0]).to.be.instanceOf(Primitive);
         let plinePrim = list.graphics[0] as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.Uniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
@@ -365,7 +365,7 @@ describe("TileIO (WebGL)", () => {
 
         expect(list.graphics[1]).to.be.instanceOf(Primitive);
         plinePrim = list.graphics[1] as Primitive;
-        expect(plinePrim.featureIndexType).to.equal(FeatureIndexType.NonUniform);
+        expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(3);
@@ -868,7 +868,7 @@ describe("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
-        await this.testPrimaryTree(imodel, "4_0-0x1c");
+        await this.testPrimaryTree(imodel, "5_0-0x1c");
 
         // ###TODO: The tree Id is validated on back-end and rejected if the animation source Id does not identify an existing DisplayStyle with an attached schedule script.
         // Our test iModel lacks any such styles so test will fail.
@@ -889,7 +889,12 @@ describe("TileAdmin", () => {
     class App extends TileAdminApp {
       public static async testMajorVersion(maximumMajorTileFormatVersion: number | undefined, expectedMajorVersion: number): Promise<void> {
         const imodel = await App.start({ maximumMajorTileFormatVersion });
-        const treeId = maximumMajorTileFormatVersion === undefined || maximumMajorTileFormatVersion >= 4 ? "4_0-0x1c" : "0x1c";
+        let treeId = "0x1c";
+        if (undefined === maximumMajorTileFormatVersion || maximumMajorTileFormatVersion >= 4) {
+          const v = undefined !== maximumMajorTileFormatVersion ? maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+          treeId = v.toString() + "_0-0x1c";
+        }
+
         const tree = await imodel.tiles.getTileTreeProps(treeId);
 
         expect(tree).not.to.be.undefined;

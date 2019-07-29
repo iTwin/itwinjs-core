@@ -208,7 +208,7 @@ export class ElementPicker {
           continue;
 
         const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel);
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass, modelId, pixel.iModel, pixel.tileId);
         this.hitList!.addHit(hit);
 
         if (this.hitList!.hits.length > options.maxHits)

@@ -78,6 +78,14 @@ describe("Technique tests", () => {
     target.techniques.draw(drawParams);
   });
 
+  it("should compile material atlas program", () => {
+    const flags = new TechniqueFlags();
+    flags.setHasMaterialAtlas(true);
+    const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
+    const prog = tech.getShader(flags);
+    expect(prog.compile()).to.be.true;
+  });
+
   // NB: this can potentially take a long time, especially on our mac build machines.
   it("should successfully compile all shader programs", () => {
     if (IModelApp.initialized) {
