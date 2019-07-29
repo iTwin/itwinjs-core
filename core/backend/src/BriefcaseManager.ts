@@ -582,13 +582,12 @@ export class BriefcaseManager {
       }
     }
 
-    /** Create a new briefcase(and add it to the cache) */
-    // Acquire a briefcase if necessary
-    const hubBriefcase = hubBriefcases.length > 0 ? hubBriefcases[0] : await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
+    /** Acquire and create a new briefcase (and add it to the cache) */
+    const acquiredBriefcase = await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
     requestContext.enter();
 
     // Set up the briefcase and add it to the cache
-    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, hubBriefcase.briefcaseId!);
+    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, acquiredBriefcase.briefcaseId!);
     Logger.logTrace(loggerCategory, "BriefcaseManager.openPullAndPush - creating a new briefcase", () => newBriefcase.getDebugInfo());
     return newBriefcase;
   }
