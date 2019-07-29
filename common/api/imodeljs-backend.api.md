@@ -140,6 +140,7 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
+import { UsageType } from '@bentley/imodeljs-clients';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -2104,6 +2105,14 @@ export namespace IModelJsNative {
     version: string;
     let // (undocumented)
     logger: Logger;
+    export enum AuthType {
+        // (undocumented)
+        None = 0,
+        // (undocumented)
+        OIDC = 1,
+        // (undocumented)
+        SAML = 2
+    }
     export interface BriefcaseManagerOnConflictPolicy {
         deleteVsUpdate: number;
         updateVsDelete: number;
@@ -2436,6 +2445,8 @@ export namespace IModelJsNative {
         setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
         // (undocumented)
         setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
+        // (undocumented)
+        setupSupplementalRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     }
     // (undocumented)
     export const enum ECPresentationStatus {
@@ -2445,6 +2456,16 @@ export namespace IModelJsNative {
         InvalidArgument = 2,
         // (undocumented)
         Success = 0
+    }
+    // (undocumented)
+    export class ECSchemaXmlContext {
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export namespace ECSchemaXmlContext {
@@ -2474,16 +2495,6 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
-    }
-    // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2683,8 +2694,6 @@ export namespace IModelJsNative {
         importFont(sourceId: number): number;
     }
     // (undocumented)
-    export function initializeRegion(region: number): void;
-    // (undocumented)
     export interface NativeCrashReportingConfig {
         crashDir: string;
         enableCrashDumps?: boolean;
@@ -2702,6 +2711,24 @@ export namespace IModelJsNative {
     export class NativeDevTools {
         // (undocumented)
         static signal(signalType: number): boolean;
+    }
+    // (undocumented)
+    export class NativeUlasClient {
+        // (undocumented)
+        static initializeRegion(region: number): void;
+        // (undocumented)
+        static markFeature(accessToken: string, featureEvent: NativeUlasClientFeatureEvent, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
+        // (undocumented)
+        static trackUsage(accessToken: string, appVersionStr: string, projectId: GuidString, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
+    }
+    // (undocumented)
+    export interface NativeUlasClientFeatureEvent {
+        // (undocumented)
+        featureId: string;
+        // (undocumented)
+        projectId?: string;
+        // (undocumented)
+        versionStr: string;
     }
     // (undocumented)
     export function setCrashReporting(cfg: NativeCrashReportingConfig): void;

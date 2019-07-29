@@ -12,13 +12,12 @@ import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
-import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
 import { Transform, Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./DrawCommand";
 import { RenderPass } from "./RenderFlags";
-import { FloatRgba } from "./FloatRGBA";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
@@ -130,10 +129,9 @@ export class BackgroundMapDrape extends TextureDrape {
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
-    const prevBgColor = FloatRgba.fromColorDef(ColorDef.white);
-    prevBgColor.setFromFloatRgba(target.bgColor);
+    const prevBgColor = target.bgColor.tbgr;
 
-    target.bgColor.setFromColorDef(ColorDef.from(0, 0, 0, 255)); // Avoid white on white reversal.
+    target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
     target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
     target.branchStack.setViewFlags(drawingParams.viewFlags);
@@ -153,7 +151,7 @@ export class BackgroundMapDrape extends TextureDrape {
     });
 
     batchState.reset();   // Reset the batch Ids...
-    target.bgColor.setFromFloatRgba(prevBgColor);
+    target.bgColor.setTbgr(prevBgColor);
     if (prevPlan)
       target.changeRenderPlan(prevPlan);
 
