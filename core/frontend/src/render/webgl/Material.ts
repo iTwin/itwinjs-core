@@ -28,7 +28,7 @@ import { FloatRgb } from "./FloatRGBA";
  *  x: diffuse and specular weights
  *  y: texture weight and specular red
  *  z: specular green and blue
- *  z: specular exponent
+ *  w: specular exponent
  *
  * This packing is motivated by the limited max number of varying vectors guaranteed by WebGL.
  * A varying is used because:
