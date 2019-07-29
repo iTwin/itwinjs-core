@@ -294,7 +294,7 @@ describe("VisibilityTree", () => {
 
       const mockSubjectModelIds = (props: SubjectModelIdsMockProps) => {
         const q1 = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-        props.imodelMock.setup((x) => x.query(q1, undefined, moq.It.isAnyNumber()))
+        props.imodelMock.setup((x) => x.query(q1))
           .returns(async function* () {
             const list = new Array<{ id: Id64String, parentId: Id64String }>();
             props.subjectsHierarchy.forEach((ids, parentId) => ids.forEach((id) => list.push({ id, parentId })));
@@ -302,7 +302,7 @@ describe("VisibilityTree", () => {
               yield list.shift();
           });
         const q2 = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
-        props.imodelMock.setup((x) => x.query(q2, undefined, moq.It.isAnyNumber()))
+        props.imodelMock.setup((x) => x.query(q2))
           .returns(async function* () {
             const list = new Array<{ id: Id64String, subjectId: Id64String }>();
             props.subjectModels.forEach((modelIds, subjectId) => modelIds.forEach((modelId) => list.push({ id: modelId, subjectId })));
@@ -464,7 +464,7 @@ describe("VisibilityTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               await Promise.all([handler.getDisplayStatus(node), handler.getDisplayStatus(node)]);
               // expect the `query` to be called only twice (once for subjects and once for models)
-              imodelMock.verify((x) => x.query(moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
+              imodelMock.verify((x) => x.query(moq.It.isAnyString()), moq.Times.exactly(2));
             });
           });
 

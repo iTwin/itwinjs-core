@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "VisibilityTree: Fix not all models' visibility being changed when changing visibility of parent subject",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "grigas.petraitis@bentley.com"
+}
