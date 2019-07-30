@@ -8,7 +8,7 @@ import { PassThrough, Readable } from "stream";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
-  service: "azure";
+  service: "azure" | "external";
   account: string;
   accessKey: string;
 }

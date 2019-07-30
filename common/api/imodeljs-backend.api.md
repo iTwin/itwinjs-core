@@ -605,7 +605,7 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
-    service: "azure";
+    service: "azure" | "external";
 }
 
 // @beta (undocumented)
@@ -2009,7 +2009,7 @@ export class IModelHost {
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
-    // @internal (undocumented)
+    // @beta
     static tileCacheService: CloudStorageService;
     // @internal
     static readonly tileContentRequestTimeout: number;

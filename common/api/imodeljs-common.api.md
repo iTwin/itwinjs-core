@@ -659,7 +659,9 @@ export enum CloudStorageProvider {
     // (undocumented)
     Amazon = 1,
     // (undocumented)
-    Azure = 0
+    Azure = 0,
+    // (undocumented)
+    External = 3
 }
 
 // @beta (undocumented)

@@ -240,7 +240,12 @@ export class IModelHost {
   /** @internal */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
-  /** @internal */
+  /**
+   * @beta
+   * @note A reference implementation is set by default for [AzureBlobStorage]. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [CloudStorageService] and also set [IModelHostConfiguration.tileCacheCredentials] using "external" for the service name.
+   *       Note that the account and access key members of [CloudStorageServiceCredentials] may have blank values unless the custom service implementation uses them.
+   */
   public static tileCacheService: CloudStorageService;
 
   /** This method must be called before any iModel.js services are used.
@@ -373,9 +378,9 @@ export class IModelHost {
     if (undefined === credentials)
       return;
 
-    if (credentials.service === "azure") {
+    if (credentials.service === "azure" && !IModelHost.tileCacheService) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
-    } else {
+    } else if (credentials.service !== "external") {
       throw new IModelError(BentleyStatus.ERROR, "Unsupported cloud service credentials for tile cache.");
     }
   }
