@@ -690,10 +690,10 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    this.bgColor.setFromColorDef(plan.bgColor);
-    this.monoColor.setFromColorDef(plan.monoColor);
+    this.bgColor.setColorDef(plan.bgColor);
+    this.monoColor.setColorDef(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
-    this.hiliteColor.setFromColorDef(this.hiliteSettings.color);
+    this.hiliteColor.setColorDef(this.hiliteSettings.color);
     this.isFadeOutActive = plan.isFadeOutActive;
     this._transparencyThreshold = 0.0;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
@@ -1193,7 +1193,7 @@ export abstract class Target extends RenderTarget {
         return undefined;
 
       const adjustedTargetSize = Target._applyAspectRatioCorrection(new Point2d(wantRect.width, wantRect.height), targetSize);
-      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), new ColorDef(this.bgColor.colorDefValue).toHexString());
+      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), this.bgColor.toColorDef().toHexString());
 
       const resizedImage = canvasToImageBuffer(resizedCanvas);
       if (undefined !== resizedImage)

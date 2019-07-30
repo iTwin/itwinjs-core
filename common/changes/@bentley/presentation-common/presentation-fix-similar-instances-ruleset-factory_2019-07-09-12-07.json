@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add special handling for double values when creating 'similar instances' presentantation ruleset",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -203,9 +203,10 @@ class Geometry implements IDisposable {
   }
 }
 
-interface FeatureTableAndIModel {
+interface BatchInfo {
   featureTable: PackedFeatureTable;
   iModel?: IModelConnection;
+  tileId?: string;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -245,12 +246,12 @@ class PixelBuffer implements Pixel.Buffer {
     return undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
   }
 
-  private getFeatureTableAndIModel(pixelIndex: number): FeatureTableAndIModel | undefined {
+  private getBatchInfo(pixelIndex: number): BatchInfo | undefined {
     const featureId = this.getFeatureId(pixelIndex);
     if (undefined !== featureId) {
       const batch = this._batchState.find(featureId);
       if (undefined !== batch)
-        return { featureTable: batch.featureTable, iModel: batch.batchIModel };
+        return { featureTable: batch.featureTable, iModel: batch.batchIModel, tileId: batch.tileId };
     }
 
     return undefined;
@@ -297,7 +298,7 @@ class PixelBuffer implements Pixel.Buffer {
 
     const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
     const feature = haveFeatureIds ? this.getFeature(index) : undefined;
-    const featureTableAndIModel = haveFeatureIds ? this.getFeatureTableAndIModel(index) : undefined;
+    const batchInfo = haveFeatureIds ? this.getBatchInfo(index) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
@@ -334,13 +335,14 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let featureTable, iModel;
-    if (undefined !== featureTableAndIModel) {
-      featureTable = featureTableAndIModel.featureTable;
-      iModel = featureTableAndIModel.iModel;
+    let featureTable, iModel, tileId;
+    if (undefined !== batchInfo) {
+      featureTable = batchInfo.featureTable;
+      iModel = batchInfo.iModel;
+      tileId = batchInfo.tileId;
     }
 
-    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable, iModel);
+    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable, iModel, tileId);
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {

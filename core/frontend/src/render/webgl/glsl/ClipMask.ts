@@ -6,7 +6,7 @@
 
 import { ProgramBuilder, FragmentShaderComponent, VertexShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
-import { GLSLFragment } from "./Fragment";
+import { assignFragColor } from "./Fragment";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { AttributeMap } from "../AttributeMap";
 
@@ -22,7 +22,7 @@ export function createClipMaskProgram(context: WebGLRenderingContext): ShaderPro
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   return builder.buildProgram(context);
 }

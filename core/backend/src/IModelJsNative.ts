@@ -10,6 +10,7 @@ import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } 
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelDb, TxnIdString } from "./IModelDb";
 import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
+import { UsageType } from "@bentley/imodeljs-clients";
 
 /** Logger categories used by the native addon
  * @internal
@@ -49,7 +50,6 @@ export declare namespace IModelJsNative {
 
   export const version: string;
   export let logger: Logger;
-  export function initializeRegion(region: number): void;
   export function setUseTileCache(useTileCache: boolean): void;
   export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
   export function storeObjectInVault(obj: any, id: string): void;
@@ -161,7 +161,7 @@ export declare namespace IModelJsNative {
     public importFunctionalSchema(): DbResult;
     public importSchemas(schemaFileNames: string[]): DbResult;
     public inBulkOperation(): boolean;
-    public insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
+    public insertCodeSpec(name: string, jsonProperties: string): ErrorStatusOrResult<IModelStatus, string>;
     public insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;
     public insertElementAspect(aspectProps: string): IModelStatus;
     public insertLinkTableRelationship(props: string): ErrorStatusOrResult<DbResult, string>;
@@ -391,6 +391,7 @@ export declare namespace IModelJsNative {
     constructor(id?: string);
     public forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
+    public setupSupplementalRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;
     public getRulesetVariableValue(rulesetId: string, variableId: string, type: string): ErrorStatusOrResult<ECPresentationStatus, any>;
@@ -432,6 +433,23 @@ export declare namespace IModelJsNative {
     constructor();
     public doSnap(db: DgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public cancelSnap(): void;
+  }
+
+  export interface NativeUlasClientFeatureEvent {
+    featureId: string;
+    versionStr: string;
+    projectId?: string;
+  }
+  /** Authentication methods used by the native addon
+   * @internal
+   */
+  export enum AuthType {
+    None = 0, OIDC = 1, SAML = 2,
+  }
+  export class NativeUlasClient {
+    public static initializeRegion(region: number): void;
+    public static trackUsage(accessToken: string, appVersionStr: string, projectId: GuidString, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
+    public static markFeature(accessToken: string, featureEvent: NativeUlasClientFeatureEvent, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
   }
 
   export class DisableNativeAssertions implements IDisposable {

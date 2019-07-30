@@ -1304,11 +1304,16 @@ export namespace RulesetManagerState {
 
 // @public
 export class RulesetsFactory {
+    // @deprecated
     createSimilarInstancesRuleset(field: Field, record: Item): {
         ruleset: Ruleset;
         description: string;
     };
-}
+    createSimilarInstancesRulesetAsync(field: Field, record: Item, computeDisplayValue?: ComputeDisplayValueCallback): Promise<{
+        ruleset: Ruleset;
+        description: string;
+    }>;
+    }
 
 // @internal (undocumented)
 export interface RulesetVariablesState {

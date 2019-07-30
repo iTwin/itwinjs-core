@@ -2819,7 +2819,7 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection);
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string);
     clone(): HitDetail;
     // (undocumented)
     readonly distFraction: number;
@@ -2853,6 +2853,8 @@ export class HitDetail {
     readonly subCategoryId?: string | undefined;
     // (undocumented)
     readonly testPoint: Point3d;
+    // @alpha (undocumented)
+    readonly tileId?: string;
     // (undocumented)
     readonly viewport: ScreenViewport;
 }
@@ -4468,7 +4470,7 @@ export namespace Pixel {
     }
     export class Data {
         // @internal
-        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection);
+        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string);
         // (undocumented)
         readonly distanceFraction: number;
         // (undocumented)
@@ -4485,6 +4487,8 @@ export namespace Pixel {
         readonly planarity: Planarity;
         // (undocumented)
         readonly subCategoryId: Id64String | undefined;
+        // @internal (undocumented)
+        readonly tileId?: string;
         // (undocumented)
         readonly type: GeometryType;
     }
@@ -4578,9 +4582,16 @@ export namespace Primitives {
     // (undocumented)
     export type Point = Point2d | Point3d;
     // (undocumented)
-    export type Point2d = string[];
+    export type Point2d = string[] | number[] | {
+        x: number;
+        y: number;
+    };
     // (undocumented)
-    export type Point3d = string[];
+    export type Point3d = string[] | number[] | {
+        x: number;
+        y: number;
+        z: number;
+    };
     // (undocumented)
     export type ShortDate = string | Date;
     // (undocumented)
@@ -5087,7 +5098,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
-    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
+    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     // @internal (undocumented)
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;

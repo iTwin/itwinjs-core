@@ -21,8 +21,8 @@ export namespace Primitives {
 
   export type Numeric = Float | Int;
 
-  export type Point2d = string[];
-  export type Point3d = string[];
+  export type Point2d = string[] | number[] | { x: number, y: number };
+  export type Point3d = string[] | number[] | { x: number, y: number, z: number };
 
   export type Point = Point2d | Point3d;
   // tslint:disable-next-line

@@ -13,15 +13,15 @@ import {
   ShaderBuilder,
   ShaderBuilderFlags,
 } from "../ShaderBuilder";
-import { IsInstanced, IsAnimated, IsClassified, IsEdgeTestNeeded, FeatureMode, IsShadowable } from "../TechniqueFlags";
-import { GLSLFragment, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
-import { addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
+import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMaterialAtlas, TechniqueFlags } from "../TechniqueFlags";
+import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
+import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
-import { GLSLDecode } from "./Decode";
+import { unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
-import { addShaderFlags, GLSLCommon } from "./Common";
+import { addShaderFlags, extractNthBit } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Material } from "../Material";
@@ -29,55 +29,169 @@ import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import { MutableFloatRgb, FloatRgba } from "../FloatRGBA";
+import { FloatRgb, FloatRgba } from "../FloatRGBA";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
+import { unpackFloat } from "./Clipping";
 
+// NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
   vec4 sampleSurfaceTexture() {
-    // Textures do NOT contain premultiplied alpha. Multiply in shader.
-    vec4 texColor = TEXTURE(s_texture, v_texCoord);
-    return applyPreMultipliedAlpha(texColor);
+    return TEXTURE(s_texture, v_texCoord);
   }
 `;
 
-// u_matRgb.a = 1.0 if color overridden by material, 0.0 otherwise.
-// u_matAlpha.y = 1.0 if alpha overridden by material.
-// if this is a raster glyph, the sampled color has already been modified - do not modify further.
-const applyMaterialOverrides = `
-  float useMatColor = 1.0 - extractSurfaceBit(kSurfaceBit_IgnoreMaterial);
-  vec4 matColor = mix(baseColor, vec4(u_matRgb.rgb * baseColor.a, baseColor.a), useMatColor * u_matRgb.a);
-  matColor = mix(matColor, adjustPreMultipliedAlpha(matColor, u_matAlpha.x), useMatColor * u_matAlpha.y);
-  float textureWeight = u_textureWeight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
-  return mix(matColor, g_surfaceTexel, textureWeight);
+const applyMaterialColor = `
+  float useMatColor = float(use_material);
+  vec3 rgb = mix(baseColor.rgb, mat_rgb.rgb, useMatColor * mat_rgb.a);
+  float a = mix(baseColor.a, mat_alpha.x, useMatColor * mat_alpha.y);
+  return vec4(rgb, a);
 `;
 
-/** @internal */
-export function addMaterial(frag: FragmentShaderBuilder): void {
-  // ###TODO: We could pack rgb, alpha, and override flags into two floats.
-  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
-  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyMaterialOverrides);
+// if this is a raster glyph, the sampled color has already been modified - do not modify further.
+const applyTextureWeight = `
+  float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
+  vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
+  rgba.rgb = mix(rgba.rgb, v_color.rgb, extractSurfaceBit(kSurfaceBit_OverrideRgb));
+  rgba.a = mix(rgba.a, v_color.a, extractSurfaceBit(kSurfaceBit_OverrideAlpha));
+  return rgba;
+`;
 
-  frag.addUniform("u_matRgb", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_matRgb", (uniform, params) => {
-      const mat: Material = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform4fv(mat.diffuseUniform);
+const unpackMaterialParam = `
+vec2 unpackMaterialParam(float f) {
+  vec2 v;
+  v.y = floor(f / 256.0);
+  v.x = floor(f - v.y * 256.0);
+  return v;
+}`;
+
+const unpackAndNormalizeMaterialParam = `
+vec2 unpackAndNormalizeMaterialParam(float f) {
+  return unpackMaterialParam(f) / 255.0;
+}`;
+
+const decodeFragMaterialParams = `
+void decodeMaterialParams(vec4 params) {
+  mat_weights = unpackAndNormalizeMaterialParam(params.x);
+
+  vec2 texAndSpecR = unpackAndNormalizeMaterialParam(params.y);
+  mat_texture_weight = texAndSpecR.x;
+
+  vec2 specGB = unpackAndNormalizeMaterialParam(params.z);
+  mat_specular = vec4(texAndSpecR.y, specGB, params.w);
+}`;
+
+const decodeMaterialColor = `
+void decodeMaterialColor(vec4 rgba) {
+  mat_rgb = vec4(rgba.rgb, float(rgba.r >= 0.0));
+  mat_alpha = vec2(rgba.a, float(rgba.a >= 0.0));
+}`;
+
+// defaults: (0x6699, 0xffff, 0xffff, 13.5)
+const computeMaterialParams = `
+  const vec4 defaults = vec4(26265.0, 65535.0, 65535.0, 13.5);
+  return use_material ? getMaterialParams() : defaults;
+`;
+const getUniformMaterialParams = `vec4 getMaterialParams() { return u_materialParams; }`;
+
+// The 8-bit material index is stored with the 24-bit feature index, in the high byte.
+const readMaterialAtlas = `
+void readMaterialAtlas() {
+  float materialAtlasStart = u_vertParams.z * u_vertParams.w + u_numColors;
+  float materialIndex = g_featureAndMaterialIndex.w * 4.0 + materialAtlasStart;
+
+  vec2 tc = computeLUTCoords(materialIndex, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 rgba = TEXTURE(u_vertLUT, tc);
+
+  tc = computeLUTCoords(materialIndex + 1.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 weightsAndFlags = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+
+  tc = computeLUTCoords(materialIndex + 2.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec3 specularRgb = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5).rgb;
+
+  tc = computeLUTCoords(materialIndex + 3.0, u_vertParams.xy, g_vert_center, 1.0);
+  vec4 packedSpecularExponent = TEXTURE(u_vertLUT, tc);
+
+  float flags = weightsAndFlags.w;
+  mat_rgb = vec4(rgba.rgb, float(flags == 1.0 || flags == 3.0));
+  mat_alpha = vec2(rgba.a, float(flags == 2.0 || flags == 3.0));
+
+  float specularExponent = unpackFloat(packedSpecularExponent);
+  g_materialParams.x = weightsAndFlags.y + weightsAndFlags.z * 256.0;
+  g_materialParams.y = 255.0 + specularRgb.r * 256.0;
+  g_materialParams.z = specularRgb.g + specularRgb.b * 256.0;
+  g_materialParams.w = specularExponent;
+}`;
+const getAtlasMaterialParams = `vec4 getMaterialParams() { return g_materialParams; }`;
+
+/** @internal */
+export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas): void {
+  const frag = builder.frag;
+  assert(undefined !== frag.find("v_surfaceFlags"));
+
+  frag.addGlobal("mat_texture_weight", VariableType.Float);
+  frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
+  frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
+
+  frag.addFunction(unpackMaterialParam);
+  frag.addFunction(unpackAndNormalizeMaterialParam);
+  frag.addFunction(decodeFragMaterialParams);
+  frag.addInitializer("decodeMaterialParams(v_materialParams);");
+
+  frag.set(FragmentShaderComponent.ApplyMaterialOverrides, applyTextureWeight);
+
+  const vert = builder.vert;
+  vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
+  vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
+  vert.addGlobal("use_material", VariableType.Boolean);
+  vert.addInitializer("use_material = 0.0 == extractNthBit(floor(u_surfaceFlags + 0.5), kSurfaceBit_IgnoreMaterial);");
+
+  if (vert.usesInstancedGeometry) {
+    // ###TODO: Remove combination of technique flags - instances never use material atlases.
+    hasMaterialAtlas = HasMaterialAtlas.No;
+  } else {
+    addFeatureAndMaterialLookup(vert);
+  }
+
+  if (!hasMaterialAtlas) {
+    vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_materialColor", (uniform, params) => {
+        const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+        const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+        uniform.setUniform4fv(mat.rgba);
+      });
     });
-  });
-  frag.addUniform("u_matAlpha", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_matAlpha", (uniform, params) => {
-      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform2fv(mat.alphaUniform);
+
+    vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
+      prog.addGraphicUniform("u_materialParams", (uniform, params) => {
+        const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+        const mat = undefined !== info && !info.isAtlas ? info : Material.default;
+        uniform.setUniform4fv(mat.fragUniforms);
+      });
     });
-  });
-  frag.addUniform("u_textureWeight", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("u_textureWeight", (uniform, params) => {
-      const mat = params.target.currentViewFlags.materials && params.geometry.material ? params.geometry.material : Material.default;
-      uniform.setUniform1f(mat.textureWeight);
+
+    vert.addFunction(decodeMaterialColor);
+    vert.set(VertexShaderComponent.ComputeMaterial, "decodeMaterialColor(u_materialColor);");
+    vert.addFunction(getUniformMaterialParams);
+  } else {
+    vert.addUniform("u_numColors", VariableType.Float, (prog) => {
+      prog.addGraphicUniform("u_numColors", (uniform, params) => {
+        const info = params.geometry.materialInfo;
+        const numColors = undefined !== info && info.isAtlas ? info.vertexTableOffset : 0;
+        uniform.setUniform1f(numColors);
+      });
     });
-  });
+
+    vert.addGlobal("g_materialParams", VariableType.Vec4);
+    vert.addFunction(unpackFloat);
+    vert.addFunction(readMaterialAtlas);
+    vert.set(VertexShaderComponent.ComputeMaterial, "readMaterialAtlas();");
+    vert.addFunction(getAtlasMaterialParams);
+  }
+
+  vert.set(VertexShaderComponent.ApplyMaterialColor, applyMaterialColor);
+  builder.addFunctionComputedVarying("v_materialParams", VariableType.Vec4, "computeMaterialParams", computeMaterialParams);
 }
 
 const computePosition = `
@@ -110,12 +224,12 @@ function createCommon(instanced: IsInstanced, animated: IsAnimated, classified: 
 export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClassified): ProgramBuilder {
   const builder = createCommon(instanced, IsAnimated.No, classified, IsShadowable.No);
 
-  addSurfaceFlags(builder, true);
+  addSurfaceFlags(builder, true, false);
   addTexture(builder, IsAnimated.No);
   if (classified) {
     addHilitePlanarClassifier(builder);
     builder.vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   } else
     addSurfaceHiliter(builder);
 
@@ -139,6 +253,8 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_TransparencyThreshold", VariableType.Float, "4.0");
   builder.addConstant("kSurfaceBit_BackgroundFill", VariableType.Float, "5.0");
   builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
+  builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
+  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.");
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceMask_HasTexture", VariableType.Float, "1.0");
@@ -148,15 +264,17 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_TransparencyThreshold", VariableType.Float, "16.0");
   builder.addConstant("kSurfaceMask_BackgroundFill", VariableType.Float, "32.0");
   builder.addConstant("kSurfaceMask_HasColorAndNormal", VariableType.Float, "64.0");
+  builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
+  builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
 
-  builder.addFunction(GLSLCommon.extractNthBit);
+  builder.addFunction(extractNthBit);
   builder.addFunction(extractSurfaceBit);
   builder.addFunction(isSurfaceBitSet);
 }
 
 const getSurfaceFlags = "return u_surfaceFlags;";
 
-const computeSurfaceFlags = `
+const computeBaseSurfaceFlags = `
   float flags = u_surfaceFlags;
   if (feature_ignore_material) {
     bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
@@ -165,9 +283,22 @@ const computeSurfaceFlags = `
 
     flags += kSurfaceMask_IgnoreMaterial;
   }
+`;
 
+const computeColorSurfaceFlags = `
+  if (feature_rgb.r >= 0.0)
+    flags += kSurfaceMask_OverrideRgb;
+
+  if (feature_alpha >= 0.0)
+    flags += kSurfaceMask_OverrideAlpha;
+`;
+
+const returnSurfaceFlags = `
   return flags;
 `;
+
+const computeSurfaceFlags = computeBaseSurfaceFlags + returnSurfaceFlags;
+const computeSurfaceFlagsWithColor = computeBaseSurfaceFlags + computeColorSurfaceFlags + returnSurfaceFlags;
 
 /** @internal */
 export const octDecodeNormal = `
@@ -226,7 +357,7 @@ const computeBaseColor = `
   vec4 glyphColor = surfaceColor;
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  vec3 color = glyphColor.rgb / max(0.0001, glyphColor.a); // revert premultiplied alpha
+  vec3 color = glyphColor.rgb;
   vec3 delta = (color + epsilon) - white;
 
   // set to black if almost white
@@ -237,11 +368,12 @@ const computeBaseColor = `
   vec4 texColor = mix(g_surfaceTexel, glyphColor, u_applyGlyphTex);
 
   // If untextured, or textureWeight < 1.0, choose surface color.
-  return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(u_textureWeight));
+  return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(mat_texture_weight));
 `;
 
-function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean) {
-  builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", withFeatureOverrides ? computeSurfaceFlags : getSurfaceFlags);
+function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean, withFeatureColor: boolean) {
+  const compute = withFeatureOverrides ? (withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags) : getSurfaceFlags;
+  builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
@@ -263,7 +395,7 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 }
 
 function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
-  builder.vert.addFunction(GLSLDecode.unquantize2d);
+  builder.vert.addFunction(unquantize2d);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
@@ -278,7 +410,6 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
     });
   });
 
-  builder.frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
   builder.frag.addFunction(sampleSurfaceTexture);
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
@@ -295,30 +426,31 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
   });
 }
 
-const scratchBgColor: MutableFloatRgb = MutableFloatRgb.fromColorDef(ColorDef.white);
+const scratchBgColor = FloatRgb.fromColorDef(ColorDef.white);
 const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 /** @internal */
-export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced, isAnimated: IsAnimated, isClassified: IsClassified, isShadowable: IsShadowable, isEdgeTestNeeded: IsEdgeTestNeeded): ProgramBuilder {
-  const builder = createCommon(isInstanced, isAnimated, isClassified, isShadowable);
+export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
+  const builder = createCommon(flags.isInstanced, flags.isAnimated, flags.isClassified, flags.isShadowable);
   addShaderFlags(builder);
 
+  const feat = flags.featureMode;
   addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
-  addSurfaceFlags(builder, FeatureMode.Overrides === feat);
-  addSurfaceDiscard(builder, feat, isEdgeTestNeeded, isClassified);
-  addNormal(builder, isAnimated);
+  addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
+  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified);
+  addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
       const bgColor = params.target.bgColor.alpha === 0.0 ? blackColor : params.target.bgColor;
-      scratchBgColor.setRgbValues(bgColor.red, bgColor.green, bgColor.blue);
+      scratchBgColor.set(bgColor.red, bgColor.green, bgColor.blue);
       scratchBgColor.bind(uniform);
     });
   });
 
-  addTexture(builder, isAnimated);
+  addTexture(builder, flags.isAnimated);
 
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
@@ -341,12 +473,12 @@ export function createSurfaceBuilder(feat: FeatureMode, isInstanced: IsInstanced
   addWhiteOnWhiteReversal(builder.frag);
 
   if (FeatureMode.None === feat) {
-    builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+    builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColorWithPreMultipliedAlpha);
   } else {
-    if (isClassified)
+    if (flags.isClassified)
       addFeaturePlanarClassifier(builder);
-    builder.frag.addFunction(GLSLDecode.depthRgb);
-    if (isEdgeTestNeeded || isClassified)
+    builder.frag.addFunction(decodeDepthRgb);
+    if (flags.isEdgeTestNeeded || flags.isClassified)
       addPickBufferOutputs(builder.frag);
     else
       addAltPickBufferOutputs(builder.frag);

@@ -22,7 +22,7 @@ const getClipPlaneFloat = `
   }
 `;
 
-const unpackFloat = `
+export const unpackFloat = `
   float unpackFloat(vec4 v) {
     const float bias = 38.0;
     v *= 255.0;

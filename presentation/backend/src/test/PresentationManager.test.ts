@@ -103,6 +103,16 @@ describe("PresentationManager", () => {
         addon.verifyAll();
       });
 
+      it("sets up supplemental ruleset directories if supplied", () => {
+        const dirs = ["test1", "test2", "test2"];
+        const addonDirs = [path.join(__dirname, "../assets/supplemental-presentation-rules"), "test1", "test2"];
+        addon
+          .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
+          .verifiable();
+        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
       it("sets up locale directories if supplied", () => {
         const suppliedDirs = ["test1", "test2", "test2"];
         const addonDirs = [path.resolve(__dirname, "../assets/locales"), "test1", "test2"];

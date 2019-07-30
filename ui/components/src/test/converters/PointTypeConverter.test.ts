@@ -19,12 +19,24 @@ describe("Point2dTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct string", () => {
+    it("returns correct string for strings' array input", () => {
       expect(converter.convertToString(["50", "100"])).to.equal("50, 100");
+    });
+
+    it("returns correct string for numbers' array input", () => {
+      expect(converter.convertToString([50, 100])).to.equal("50, 100");
+    });
+
+    it("returns correct string for object input", () => {
+      expect(converter.convertToString({ x: 50, y: 100 })).to.equal("50, 100");
     });
 
     it("returns empty string if value is undefined", () => {
       expect(converter.convertToString(undefined)).to.equal("");
+    });
+
+    it("returns empty string if value is an empty array", () => {
+      expect(converter.convertToString([])).to.equal("");
     });
   });
 
@@ -77,8 +89,26 @@ describe("Point3dTypeConverter", () => {
     converter = new Point3dTypeConverter();
   });
 
-  it("convertToString", () => {
-    expect(converter.convertToString(["50", "100", "150"])).to.equal("50, 100, 150");
+  describe("convertToString", () => {
+    it("returns correct string for strings' array input", () => {
+      expect(converter.convertToString(["50", "100", "150"])).to.equal("50, 100, 150");
+    });
+
+    it("returns correct string for numbers' array input", () => {
+      expect(converter.convertToString([50, 100, 150])).to.equal("50, 100, 150");
+    });
+
+    it("returns correct string for object input", () => {
+      expect(converter.convertToString({ x: 50, y: 100, z: 150 })).to.equal("50, 100, 150");
+    });
+
+    it("rounds values to 2 decimal places", () => {
+      expect(converter.convertToString({ x: 50.123, y: 60.456, z: 70.101 })).to.equal("50.12, 60.46, 70.1");
+    });
+
+    it("returns empty string if value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.equal("");
+    });
   });
 
   describe("convertFromString", () => {

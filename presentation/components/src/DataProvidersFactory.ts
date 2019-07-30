@@ -6,6 +6,7 @@
 
 import { RulesetsFactory, Omit } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { TypeConverterManager } from "@bentley/ui-components";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import {
   IPresentationTableDataProvider, PresentationTableDataProvider,
@@ -35,10 +36,20 @@ export class DataProvidersFactory {
     this._rulesetsFactory = props && props.rulesetsFactory ? props.rulesetsFactory : new RulesetsFactory();
   }
 
+  private async computeDisplayValue(typename: string, value: string | number | boolean | { x: number, y: number, z?: number } | undefined, displayValue: string): Promise<string> {
+    if (typename === "navigation") {
+      // note: type converters can't convert raw navigation value (ECInstanceId) to
+      // display value - we have to use what's stored in the property record (supplied
+      // display value)
+      return displayValue;
+    }
+    return TypeConverterManager.getConverter(typename).convertToString(value);
+  }
+
   /**
    * Create a table data provider which returns instances of the same class and
    * having the same property value as the provided property record.
-   * @param propertiesProvider A field identifying which property of the record we should use
+   * @param propertiesProvider A properties provider that created the `record`
    * @param record A record whose similar instances should be found
    * @param props Configuration properties for the created provider
    */
@@ -53,7 +64,7 @@ export class DataProvidersFactory {
     if (!field)
       throw new Error("Properties provider doesn't have a property with provided record. Where did record come from?");
 
-    const result = this._rulesetsFactory.createSimilarInstancesRuleset(field, content.contentSet[0]);
+    const result = await this._rulesetsFactory.createSimilarInstancesRulesetAsync(field, content.contentSet[0], this.computeDisplayValue);
     return new TableDataProviderWithDescription({
       ...props,
       imodel: propertiesProvider.imodel,

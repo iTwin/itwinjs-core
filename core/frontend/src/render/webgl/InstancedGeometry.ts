@@ -11,7 +11,6 @@ import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
@@ -21,7 +20,7 @@ export class InstanceBuffers implements IDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
-  public readonly featuresInfo?: FeaturesInfo;
+  public readonly hasFeatures: boolean;
   public readonly symbology?: BufferHandle;
   public readonly shared: boolean;
   // The center of the range of the instances' translations.
@@ -35,12 +34,12 @@ export class InstanceBuffers implements IDisposable {
   // Holds the range computed from the above transforms
   private _range?: Range3d;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle, featuresInfo?: FeaturesInfo) {
+  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle) {
     this.shared = shared;
     this.numInstances = count;
     this.transforms = transforms;
     this.featureIds = featureIds;
-    this.featuresInfo = featuresInfo;
+    this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
     this._rtcCenter = rtcCenter;
     this._rtcTransform = Transform.createTranslation(this._rtcCenter);
@@ -87,14 +86,12 @@ export class InstanceBuffers implements IDisposable {
     if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
       return undefined;
 
-    const featuresInfo = FeaturesInfo.createFromFeatureIds(featureIds);
-
     let symBuf: BufferHandle | undefined;
     if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf, featuresInfo) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf) : undefined;
   }
 
   public getRtcTransform(modelMatrix: Transform): Transform {
@@ -189,11 +186,10 @@ export class InstancedGeometry extends CachedGeometry {
   public get hasAnimation() { return this._repr.hasAnimation; }
   public get qOrigin() { return this._repr.qOrigin; }
   public get qScale() { return this._repr.qScale; }
-  public get material() { return this._repr.material; }
+  public get materialInfo() { return this._repr.materialInfo; }
   public get polylineBuffers() { return this._repr.polylineBuffers; }
-  public set uniformFeatureIndices(_value: number) { assert(false); } // This is used for decoration graphics. No such thing as instanced decorations.
   public get isEdge() { return this._repr.isEdge; }
-  public get featuresInfo() { return this._buffers.featuresInfo; }
+  public get hasFeatures() { return this._buffers.hasFeatures; }
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
 
   public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
