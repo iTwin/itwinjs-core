@@ -40,12 +40,12 @@ import {
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
- * @alpha
+ * @deprecated
  */
 export class CategoryModelTree extends React.Component<
   CategoryModelTreeProps,
   CategoryModelTreeState
-> {
+  > {
   private _optionsElement: HTMLElement | null = null;
   private _allNodeIds: string[] = [];
   private _isMounted = false;
@@ -310,9 +310,9 @@ export class CategoryModelTree extends React.Component<
               (this.state.filterInfo && this.state.filterInfo.filtering) ||
               false
             }
-            onFilterCancel={this._onFilterCancel}
-            onFilterClear={this._onFilterClear}
-            onFilterStart={this._onFilterStart}
+            onFilterCancel={this._onFilterCancel.bind(this)}
+            onFilterClear={this._onFilterClear.bind(this)}
+            onFilterStart={this._onFilterStart.bind(this)}
             resultSelectorProps={{
               onSelectedChanged: this._onSelectedMatchChanged,
               resultCount:
@@ -322,10 +322,16 @@ export class CategoryModelTree extends React.Component<
           />
         )}
         <div className="option-group">
-          <span
-            className="icon icon-search"
-            onClick={this._onToggleSearchBox}
-          />
+          {!this.state.showSearchBox ?
+            <span
+              className="icon icon-search"
+              onClick={this._onToggleSearchBox.bind(this)}
+            /> :
+            <span
+              className="icon icon-close"
+              onClick={this._onToggleSearchBox.bind(this)}
+            />
+          }
           <span
             className="options icon icon-more-2"
             title={UiFramework.translate("categoriesModels.options")}
@@ -379,7 +385,15 @@ export class CategoryModelTree extends React.Component<
   }
 
   private _onToggleSearchBox() {
-    this.setState({ showSearchBox: !this.state.showSearchBox });
+    this._onFilterClear();
+    this.setState({
+      showSearchBox: !this.state.showSearchBox,
+      filterInfo: {
+        ...this.state.filterInfo,
+        filter: "",
+        filtering: false,
+      },
+    });
   }
 
   private _onFilterCancel() {
@@ -430,7 +444,7 @@ export class CategoryModelTree extends React.Component<
   }
 
   // tslint:disable-next-line:naming-convention
-  private onFilterApplied(_filter?: string): void {
+  private async onFilterApplied(_filter?: string): Promise<void> {
     if (this.state.filterInfo && this.state.filterInfo.filtering) {
       this.setState({
         filterInfo: {
@@ -631,6 +645,6 @@ export class CategoryModelTree extends React.Component<
 
 /**
  * Tree component with support for filtering
- * @alpha
+ * @internal
  */
 const CategoryModelFilterTree = treeWithFilteringSupport(Tree); // tslint:disable-line:variable-name

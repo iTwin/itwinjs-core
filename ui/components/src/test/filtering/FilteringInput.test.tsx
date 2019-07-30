@@ -27,11 +27,12 @@ describe("FilteringInput", () => {
         resultSelectorProps={{ onSelectedChanged: () => { }, resultCount: 0 }} />);
 
     expect(filteringInput.find("input[type=\"text\"]").first().exists()).to.be.true;
-    expect(filteringInput.find(".components-filtering-input-button").first().render().text())
-      .to.be.eq(TestUtils.i18n.translate("Components:button.label.search"));
+
+    const actionIcon = filteringInput.find(".components-filtering-input-input-components").childAt(0);
+    expect(actionIcon.render().hasClass("icon-search"));
   });
 
-  it("shows loading bar and 'Cancel' button when `filteringInProgress` gets changed from `false` to `true`", () => {
+  it("shows 'Cancel' button when `filteringInProgress` gets changed from `false` to `true`", () => {
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={false}
@@ -42,9 +43,8 @@ describe("FilteringInput", () => {
 
     filteringInput.setProps({ filteringInProgress: true });
 
-    expect(filteringInput.find(".components-filtering-input-loader").first().exists()).to.be.true;
-    expect(filteringInput.find(".components-filtering-input-button").first().render().text())
-      .to.be.eq(TestUtils.i18n.translate("Components:button.label.cancel"));
+    const actionIcon = filteringInput.find(".components-filtering-input-input-components").childAt(0);
+    expect(actionIcon.render().hasClass("icon-close"));
   });
 
   it("shows `ResultSelector` and 'X' button when `filteringInProgress` gets changed from `true` to `false` and stepping is enabled", () => {
@@ -73,7 +73,6 @@ describe("FilteringInput", () => {
 
     filteringInput.setProps({ filteringInProgress: false });
 
-    expect(filteringInput.find(".components-filtering-input-loader").first().exists()).to.be.false;
     expect(filteringInput.find(ResultSelector).first().exists()).to.be.false;
     expect(filteringInput.find(".components-filtering-input-clear").first().hasClass("icon-close"), "No X button found").to.be.true;
   });
@@ -94,8 +93,8 @@ describe("FilteringInput", () => {
     filteringInput.find("input[type=\"text\"]").first().simulate("change", { target: { value: "a" } });
 
     expect(filteringInput.find(ResultSelector).first().exists(), "No ResultSelector found").to.be.false;
-    expect(filteringInput.find(".components-filtering-input-button").first().render().text())
-      .to.be.eq(TestUtils.i18n.translate("Components:button.label.search"));
+    const actionIcon = filteringInput.find(".components-filtering-input-input-components").childAt(0);
+    expect(actionIcon.render().hasClass("icon-search"));
   });
 
   it("starts search when input is edited and 'Enter' key is pressed", () => {
@@ -133,7 +132,7 @@ describe("FilteringInput", () => {
     inputField.simulate("keyDown", { key: Key.Enter });
     expect(startCallback).to.not.be.called;
 
-    const searchButton = filteringInput.find(".components-filtering-input-button");
+    const searchButton = filteringInput.find(".components-filtering-input-input-components>.icon-search");
     searchButton.simulate("click");
     expect(startCallback).to.not.be.called;
   });
@@ -153,16 +152,16 @@ describe("FilteringInput", () => {
 
     const inputField = filteringInput.find("input[type=\"text\"]").first();
     inputField.simulate("change", { target: { value: "test" } });
-    filteringInput.find(".components-filtering-input-button").simulate("click");
+    filteringInput.find(".components-filtering-input-input-components>.icon-search").simulate("click");
     filteringInput.setProps({ filteringInProgress: true });
     expect(startCallback).to.be.calledOnce;
 
-    filteringInput.find(".components-filtering-input-button").simulate("click");
+    filteringInput.find(".components-filtering-input-input-components>.icon-close").simulate("click");
     filteringInput.setProps({ filteringInProgress: false });
     expect(cancelCallback).to.be.calledOnce;
 
     inputField.simulate("change", { target: { value: "test" } });
-    filteringInput.find(".components-filtering-input-button").simulate("click");
+    filteringInput.find(".components-filtering-input-input-components>.icon-search").simulate("click");
     filteringInput.setProps({ filteringInProgress: true });
     filteringInput.setProps({ filteringInProgress: false, resultCount: 10 });
     filteringInput.find(".components-filtering-input-clear").simulate("click");

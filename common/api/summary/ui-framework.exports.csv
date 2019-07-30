@@ -224,8 +224,8 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-alpha;ModelSelectorWidget 
-alpha;ModelSelectorWidgetControl 
+internal;ModelSelectorWidget 
+internal;ModelSelectorWidgetControl 
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 

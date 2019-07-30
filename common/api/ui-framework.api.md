@@ -2533,18 +2533,18 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @alpha
+// @internal @deprecated
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
-    // @internal (undocumented)
+    // (undocumented)
     componentDidMount(): void;
-    // @internal (undocumented)
+    // (undocumented)
     componentWillUnmount(): void;
-    // @internal (undocumented)
+    // (undocumented)
     render(): JSX.Element;
     }
 
-// @alpha
+// @internal
 export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
