@@ -2278,7 +2278,7 @@ export namespace IModelJsNative {
         // (undocumented)
         inBulkOperation(): boolean;
         // (undocumented)
-        insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
+        insertCodeSpec(name: string, jsonProperties: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
         insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;
         // (undocumented)
