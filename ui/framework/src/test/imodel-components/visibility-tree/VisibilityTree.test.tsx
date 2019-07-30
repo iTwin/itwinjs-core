@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
+import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random"; // tslint:disable-line: no-direct-imports
 import * as sinon from "sinon";
 import { render, cleanup, waitForElement, within, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
@@ -683,7 +684,7 @@ describe("VisibilityTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             const neverDrawn = new Set([key.id]);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDrawn);
-            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getDisplayStatus(node);
@@ -702,7 +703,7 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             const alwaysDrawn = new Set([key.id]);
-            vpMock.setup((x) => x.neverDrawn).returns(() => new Set());
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDrawn);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
@@ -720,8 +721,8 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
             viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
-            vpMock.setup((x) => x.neverDrawn).returns(() => new Set());
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getDisplayStatus(node);
@@ -738,8 +739,27 @@ describe("VisibilityTree", () => {
             viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
             viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
             const vpMock = mockViewport({ viewState: viewStateMock.object });
-            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set());
-            vpMock.setup((x) => x.neverDrawn).returns(() => new Set());
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              const result = handler.getDisplayStatus(node);
+              expect(isPromiseLike(result)).to.be.false;
+              expect(result).to.include({ isDisplayed: false });
+            });
+          });
+
+          it("returns false when model displayed, category displayed and some other element is exclusively 'always' displayed", async () => {
+            const node = createElementNode("0x2", "0x1");
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x1")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x2")).returns(() => true);
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => true);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => new Set([createRandomId()]));
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               const result = handler.getDisplayStatus(node);
@@ -1026,10 +1046,11 @@ describe("VisibilityTree", () => {
 
             const alwaysDisplayed = new Set<string>();
             const neverDisplayed = new Set([key.id]);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => false);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
-            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)), false)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running queries on the imodel
@@ -1054,18 +1075,48 @@ describe("VisibilityTree", () => {
 
             const alwaysDisplayed = new Set<string>();
             const neverDisplayed = new Set([key.id]);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => false);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => {
               return set.size === 3
                 && set.has(key.id)
                 && assemblyChildrenIds.reduce<boolean>((result, id) => (result && set.has(id)), true);
-            }))).verifiable();
+            }), false)).verifiable();
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+
+              await handler.changeVisibility(node, true);
+              vpMock.verifyAll();
+            });
+          });
+
+          it("makes element visible by adding to always displayed list when category is displayed, but element is hidden due to other elements exclusively always drawn", async () => {
+            const node = createElementNode("0x4", "0x3");
+            const key = node.__key.instanceKey;
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x4")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x3")).returns(() => true);
+
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+            const alwaysDisplayed = new Set<Id64String>([createRandomId()]);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => true);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => {
+              return set.size === 2 && set.has(key.id);
+            }), true)).verifiable();
+            vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running a query on the imodel
+              (handler as any).getAssemblyElementIds = async () => [];
 
               await handler.changeVisibility(node, true);
               vpMock.verifyAll();
@@ -1086,10 +1137,11 @@ describe("VisibilityTree", () => {
 
             const alwaysDisplayed = new Set([key.id]);
             const neverDisplayed = new Set<string>();
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => false);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
-            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)), false)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running queries on the imodel
@@ -1114,9 +1166,10 @@ describe("VisibilityTree", () => {
 
             const alwaysDisplayed = new Set([key.id]);
             const neverDisplayed = new Set<string>();
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => false);
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
             vpMock.setup((x) => x.neverDrawn).returns(() => neverDisplayed);
-            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 0)), false)).verifiable();
             vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => {
               return set.size === 3
                 && set.has(key.id)
@@ -1126,6 +1179,33 @@ describe("VisibilityTree", () => {
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+
+              await handler.changeVisibility(node, false);
+              vpMock.verifyAll();
+            });
+          });
+
+          it("makes element hidden by removing from always displayed list when category is displayed and there are exclusively always drawn elements", async () => {
+            const node = createElementNode("0x4", "0x3");
+            const key = node.__key.instanceKey;
+
+            const viewStateMock = moq.Mock.ofType<ViewState3d>();
+            viewStateMock.setup((x) => x.viewsCategory("0x3")).returns(() => true);
+            viewStateMock.setup((x) => x.isSpatialView()).returns(() => true);
+            viewStateMock.setup((x) => x.viewsModel("0x4")).returns(() => true);
+
+            const vpMock = mockViewport({ viewState: viewStateMock.object });
+
+            const alwaysDisplayed = new Set([key.id, createRandomId()]);
+            vpMock.setup((x) => x.isAlwaysDrawnExclusive).returns(() => true);
+            vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDisplayed);
+            vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
+            vpMock.setup((x) => x.setAlwaysDrawn(moq.It.is((set) => (set.size === 1 && !set.has(key.id))), true)).verifiable();
+            vpMock.setup((x) => x.setNeverDrawn(moq.It.is((set) => (set.size === 0)))).verifiable();
+
+            await using(createHandler({ viewport: vpMock.object }), async (handler) => {
+              // note: need to override to avoid running a query on the imodel
+              (handler as any).getAssemblyElementIds = async () => [];
 
               await handler.changeVisibility(node, false);
               vpMock.verifyAll();
