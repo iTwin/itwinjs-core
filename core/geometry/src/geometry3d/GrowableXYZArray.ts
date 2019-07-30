@@ -250,6 +250,24 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
+  /** access x of indexed point */
+  public getXAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index];
+  }
+
+  /** access y of indexed point */
+  public getYAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index + 1];
+  }
+
+  /** access y of indexed point */
+  public getZAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index + 2];
+  }
+
   /** copy xy into strongly typed Point2d */
   public getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined {
     const index = 3 * pointIndex;

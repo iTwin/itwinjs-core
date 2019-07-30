@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Triangulate cut faces in polyface clip.  Variant point data parse.  Bilinear Patch ray intersection\"",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

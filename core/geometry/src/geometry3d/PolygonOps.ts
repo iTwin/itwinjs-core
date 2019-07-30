@@ -254,7 +254,7 @@ export class PolygonOps {
    * *  For a polygon without self intersections, this is a convexity and orientation test: all positive is convex and counterclockwise,
    * all negative is convex and clockwise
    * *  Beware that a polygon which turns through more than a full turn can cross itself and close, but is not convex
-   * *  Returns 1 if all turns are to the left, -1 if all to the right, and 0 if there are any zero turns
+   * *  Returns 1 if all turns are to the left, -1 if all to the right, and 0 if there are any zero or reverse turns
    */
   public static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number {
     // Reduce count by trailing duplicates; leaves iLast at final index

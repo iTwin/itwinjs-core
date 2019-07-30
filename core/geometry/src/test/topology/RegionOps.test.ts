@@ -29,7 +29,6 @@ import { prettyPrint } from "../testFunctions";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 
@@ -217,7 +216,7 @@ describe("RegionOps", () => {
       Sample.appendSawTooth([], 1, 0.5, 1, 1, 3)]) {
       const growableSplat = GrowableXYZArray.create(splat);
       const data = [growableSplat, rectangle];
-      const range = Point3dArray.createRange(data);
+      const range = Range3d.createFromVariantData (data);
       const dx = range.xLength() * 2.0;
       const dy = range.yLength() * 2.0;
       y0 = 0.0;

@@ -240,6 +240,8 @@ export class XYZ implements XYAndZ {
   public isAlmostEqualMetric(other: XYAndZ): boolean { return this.maxDiff(other) <= Geometry.smallMetricDistance; }
   /** add x,y,z from other in place. */
   public addInPlace(other: XYAndZ): void { this.x += other.x; this.y += other.y; this.z += other.z; }
+  /** add x,y,z from other in place. */
+  public subtractInPlace(other: XYAndZ): void { this.x -= other.x; this.y -= other.y; this.z -= other.z; }
   /** add (in place) the scaled x,y,z of other */
   public addScaledInPlace(other: XYAndZ, scale: number): void {
     this.x += scale * other.x;

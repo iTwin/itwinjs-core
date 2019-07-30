@@ -30,6 +30,7 @@ public;BezierCurve3dH
 public;class BezierCurveBase 
 internal;BezierPolynomialAlgebra
 internal;BilinearPatch 
+internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
 public;Box 
 internal;BoxTopology

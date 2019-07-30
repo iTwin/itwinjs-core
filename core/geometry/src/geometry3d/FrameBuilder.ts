@@ -19,6 +19,8 @@ import { Arc3d } from "../curve/Arc3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Point3dArray } from "./PointHelpers";
+import { PolygonOps } from "./PolygonOps";
+import { GrowableXYZArray } from "./GrowableXYZArray";
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
  *
@@ -43,7 +45,7 @@ export class FrameBuilder {
   /** clear all accumulated point and vector data */
   public clear() { this._origin = undefined; this._vector0 = undefined; this._vector1 = undefined; this._vector2 = undefined; }
   constructor() { this.clear(); }
-  /** Try to assemble the data into a nonsingular transform.
+  /** Try to assemble the data into a non-singular transform.
    *
    * * If allowLeftHanded is false, vector0 and vector1 determine a right handed coordinate system.
    * * if allowLeftHanded is true, the z vector of the right handed system can be flipped to agree with vector2 direction.
@@ -63,7 +65,7 @@ export class FrameBuilder {
             matrix.scaleColumns(1.0, 1.0, -1.0);
           return Transform.createOriginAndMatrix(this._origin, matrix);
         }
-        // uh oh again -- clear vector1 and vector2, reannounce vector2 as possible vector1??
+        // uh oh again -- clear vector1 and vector2, re-announce vector2 as possible vector1??
         const vector2 = this._vector2;
         this._vector1 = this._vector2 = undefined;
         this.announceVector(vector2);
@@ -71,7 +73,7 @@ export class FrameBuilder {
     }
     return undefined;
   }
-  /**If vector0 is known but vector1 is not, make vector1 the cross of the upvector and vector0 */
+  /**If vector0 is known but vector1 is not, make vector1 the cross of the up-vector and vector0 */
   public applyDefaultUpVector(vector?: Vector3d) {
     if (vector && this._vector0 && !this._vector1 && !vector.isParallelTo(this._vector0)) {
       this._vector1 = vector.crossProduct(this._vector0);
@@ -171,6 +173,13 @@ export class FrameBuilder {
           if (this.savedVectorCount() > 1)
             break;
         }
+    } else if (data instanceof GrowableXYZArray) {
+      const point = Point3d.create();
+      for (let i = 0; this.savedVectorCount() < 2; i++) {
+        if (data.getPoint3dAtCheckedPointIndex(i, point) instanceof Point3d)
+          this.announcePoint(point);
+        else break;
+      }
     }
   }
   /** create a localToWorld frame for the given data.
@@ -239,6 +248,22 @@ export class FrameBuilder {
       const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
       if (matrix)
         return Transform.createRefs(origin, matrix);
+    }
+    return undefined;
+  }
+  /**
+   * try to create a frame whose xy plane is through points, with the points appearing CCW in the local frame.
+   *
+   * *  if 3 or more distinct points are present, the x axis is from the first point to the most distance, and y direction is toward the
+   * point most distant from that line.
+   * @param points array of points
+   */
+  public static createFrameWithCCWPolygon(points: Point3d[]): Transform | undefined {
+    if (points.length > 2) {
+      const ray = PolygonOps.centroidAreaNormal(points);
+      if (ray) {
+        return ray.toRigidZFrame();
+      }
     }
     return undefined;
   }
