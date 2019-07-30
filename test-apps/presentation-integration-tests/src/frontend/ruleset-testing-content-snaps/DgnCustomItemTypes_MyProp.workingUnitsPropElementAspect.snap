@@ -42,15 +42,15 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "2.62014859167284",
+    "description": "2.6201485916728364",
     "property": Object {
       "displayLabel": "Angle",
       "name": "workingUnitsPropElementAspect_Angle",
       "typename": "double",
     },
     "value": Object {
-      "displayValue": "2.62014859167284",
-      "value": 2.62014859167284,
+      "displayValue": "2.6201485916728364",
+      "value": 2.6201485916728364,
       "valueFormat": 0,
     },
   },

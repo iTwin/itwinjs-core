@@ -198,7 +198,7 @@ export class IModelHost {
       this.validateNativePlatformVersion();
 
     platform.logger = Logger;
-    platform.initializeRegion(region);
+    platform.NativeUlasClient.initializeRegion(region);
   }
 
   private static validateNativePlatformVersion(): void {

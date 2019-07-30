@@ -8,12 +8,12 @@ import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit, RenderPass } from "../RenderFlags";
-import { GLSLDecode } from "./Decode";
+import { decodeUint16, decodeUint24 } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addInstanceOverrides } from "./Instancing";
 
 const initializeVertLUTCoords = `
-  g_vertexLUTIndex = decodeUInt32(a_pos);
+  g_vertexLUTIndex = decodeUInt24(a_pos);
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 
@@ -26,18 +26,12 @@ vec4 unquantizeVertexPosition(vec3 pos, vec3 origin, vec3 scale) { return unquan
 `;
 
 // Need to read 2 rgba values to obtain 6 16-bit integers for position
-const unquantizeVertexPositionFromLUTPrelude = `
+const unquantizeVertexPositionFromLUT = `
 vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
   vec2 tc = g_vertexBaseCoords;
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-`;
-const computeFeatureIndexCoords = `
-  tc.x += g_vert_stepX;
-  g_featureIndexCoords = tc;
-`;
-const unquantizeVertexPositionFromLUTPostlude = `
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
   g_vertexData2 = enc2.zw;
   return unquantizePosition(qpos, origin, scale);
@@ -144,14 +138,9 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
   vert.addGlobal("g_vertexBaseCoords", VariableType.Vec2);
   vert.addGlobal("g_vertexData2", VariableType.Vec2);
 
-  vert.addFunction(GLSLDecode.uint32);
-  vert.addFunction(GLSLDecode.uint16);
-  if (vert.usesInstancedGeometry) {
-    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + unquantizeVertexPositionFromLUTPostlude);
-  } else {
-    vert.addGlobal("g_featureIndexCoords", VariableType.Vec2);
-    vert.addFunction(unquantizeVertexPositionFromLUTPrelude + computeFeatureIndexCoords + unquantizeVertexPositionFromLUTPostlude);
-  }
+  vert.addFunction(decodeUint24);
+  vert.addFunction(decodeUint16);
+  vert.addFunction(unquantizeVertexPositionFromLUT);
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
@@ -256,17 +245,32 @@ export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
 }
 
 /** @internal */
-export namespace GLSLVertex {
-  // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
-  // Also place it outside NDC range (for GL_POINTS)
-  const discardVertex = `
+export function addFeatureAndMaterialLookup(vert: VertexShaderBuilder): void {
+  assert(!vert.usesInstancedGeometry);
+  if (undefined !== vert.find("g_featureAndMaterialIndex"))
+    return;
+
+  const computeFeatureAndMaterialIndex = `
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += g_vert_stepX * 2.0;
+  g_featureAndMaterialIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);`;
+
+  vert.addGlobal("g_featureAndMaterialIndex", VariableType.Vec4);
+  vert.addInitializer(computeFeatureAndMaterialIndex);
+}
+
+// This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
+// Also place it outside NDC range (for GL_POINTS)
+const discardVertex = `
 {
   gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
   return;
 }
 `;
 
-  export const earlyDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
-  export const discard = `  if (checkForDiscard())` + discardVertex;
-  export const lateDiscard = `  if (checkForLateDiscard())` + discardVertex;
-}
+/** @internal */
+export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))` + discardVertex;
+/** @internal */
+export const vertexDiscard = `  if (checkForDiscard())` + discardVertex;
+/** @internal */
+export const lateVertexDiscard = `  if (checkForLateDiscard())` + discardVertex;

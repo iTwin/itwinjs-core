@@ -8,11 +8,11 @@ import { VariableType, FragmentShaderComponent, VariablePrecision } from "../Sha
 import { TextureUnit } from "../RenderFlags";
 import { ShaderProgram } from "../ShaderProgram";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
+import { assignFragColor, addWindowToTexCoords } from "./Fragment";
 import { BlurGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
 import { addViewport } from "./Viewport";
-import { GLSLDecode } from "./Decode";
+import { decodeDepthRgb } from "./Decode";
 
 // This shader applies a Gaussian blur in one dimension.
 const computeBlur = `
@@ -52,10 +52,10 @@ export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram
 
   addWindowToTexCoords(frag);
 
-  frag.addFunction(GLSLDecode.depthRgb);
+  frag.addFunction(decodeDepthRgb);
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlur);
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   addViewport(frag);
 

@@ -53,7 +53,7 @@ describe("RulesetTesting", () => {
   });
 
   // tslint:disable-next-line:only-arrow-functions
-  it("generates correct content for 'Items' ruleset", async function () {
+  it.skip("generates correct content for 'Items' ruleset", async function () {
     const builder = new ContentBuilder(imodel);
     // generate content using ruleset id
     const instances = await builder.createContentForInstancePerClass("Items");

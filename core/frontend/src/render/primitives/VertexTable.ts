@@ -467,13 +467,42 @@ export function isValidSurfaceType(value: number): boolean {
 }
 
 /** @internal */
+export interface SurfaceRenderMaterial {
+  readonly isAtlas: false;
+  readonly material: RenderMaterial;
+}
+
+/** @internal */
+export interface SurfaceMaterialAtlas {
+  readonly isAtlas: true;
+  // Overrides surface alpha to be translucent. Implies `overridesAlpha`.
+  readonly hasTranslucency: boolean;
+  // Overrides surface alpha to be opaque or translucent.
+  readonly overridesAlpha: boolean;
+  // offset past the END of the vertex data; equivalently, number of 32-bit colors in color table preceding material atlas.
+  readonly vertexTableOffset: number;
+  readonly numMaterials: number;
+}
+
+/** @internal */
+export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
+
+/** @internal */
+export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined {
+  if (undefined === source)
+    return undefined;
+  else
+    return { isAtlas: false, material: source };
+}
+
+/** @internal */
 export interface SurfaceParams {
   readonly type: SurfaceType;
   readonly indices: VertexIndices;
   readonly fillFlags: FillFlags;
   readonly hasBakedLighting: boolean;
   readonly texture?: RenderTexture;
-  readonly material?: RenderMaterial;
+  readonly material?: SurfaceMaterial;
 }
 
 /**
@@ -667,13 +696,14 @@ export class MeshParams {
     const vertices = VertexTable.buildFrom(builder, args.colors, args.features);
 
     const surfaceIndices = VertexIndices.fromArray(args.vertIndices!);
+
     const surface: SurfaceParams = {
       type: builder.type,
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
       hasBakedLighting: args.hasBakedLighting,
       texture: args.texture,
-      material: args.material,
+      material: createSurfaceMaterial(args.material),
     };
 
     const edges = convertEdges(args);

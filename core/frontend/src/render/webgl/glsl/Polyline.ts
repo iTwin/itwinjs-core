@@ -20,7 +20,7 @@ import {
 } from "./Vertex";
 import { addFrustum, addShaderFlags } from "./Common";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
-import { GLSLDecode } from "./Decode";
+import { unquantize2d } from "./Decode";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
 import { System } from "../System";
@@ -181,7 +181,7 @@ function addCommon(prog: ProgramBuilder) {
   vert.addGlobal("g_windowDir", VariableType.Vec2);
   vert.addInitializer(decodeAdjacentPositions);
 
-  vert.addFunction(GLSLDecode.unquantize2d);
+  vert.addFunction(unquantize2d);
 
   addLineWeight(vert);
 
@@ -194,7 +194,7 @@ function addCommon(prog: ProgramBuilder) {
 
 const decodePosition = `
 vec4 decodePosition(vec3 baseIndex) {
-  float index = decodeUInt32(baseIndex);
+  float index = decodeUInt24(baseIndex);
   vec2 tc = compute_vert_coords(index);
   vec4 e0 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
