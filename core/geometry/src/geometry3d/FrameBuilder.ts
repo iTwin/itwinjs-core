@@ -215,10 +215,10 @@ export class FrameBuilder {
     }
     return undefined;
   }
-  /** create a map with
-   * *  transform0 = the local to world
-   * *  transform1 = world to local
-   * * ideally all points in local xy plane
+  /** create a transform containing points or vectors in the given data.
+   * * The xy columns of the transform contain the first points or vectors of the data.
+   * * The z column is perpendicular to that xy plane.
+   * * The calculation favors the first points found.  It does not try to get a "best" plane.
    */
   public static createRightHandedLocalToWorld(...params: any[]): Transform | undefined {
     const builder = new FrameBuilder();

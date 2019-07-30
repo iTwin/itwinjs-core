@@ -9,10 +9,13 @@ ignore: true
 
 ## Geometry
 
+
 * Summary:
   * Triangulate cut faces in polyface clip.
   * Variant point data parse.
   * Bilinear Patch ray intersection
+  * polyline small feature filtering
+  * compute WireMoment on curves
 
 * When clipping a polyface with a plane, new method optionally outputs triangulation of the cut plane face.
   * (static) `clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFace?: boolean): Polyface;`
@@ -37,6 +40,8 @@ ignore: true
   * `myGrowableXYZArray.getXAtUncheckedPointIndex (pointIndex: number) : number;`
   * `myGrowableXYZArray.getYAtUncheckedPointIndex (pointIndex: number) : number;`
   * `myGrowableXYZArray.getZAtUncheckedPointIndex (pointIndex: number) : number;`
+  * `myGrowableXYZArray.length`
+  * `GrowableXYZArray.moveIndexToIndex (fromIndex, toIndex)`
 * `ParityRegion` methods to facilitate adding or creating with (strongly typed) loop objects
   * For both `create` or `add`, data presented as possibly deep arrays of arrays of loops is flattened to the ParityRegion form of a single array of Loops.
   * `(static) createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion;`
@@ -67,3 +72,10 @@ ignore: true
      * (static) `eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;`
   * Solve up to 4 roots of a pair of bilinear equations
      * (static) `solveBilinearPair(a0: number, b0: number, c0: number, d0: number, a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined;`
+* `PolylineOps` new methods
+  * (static) `PolylineOps.compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[]`
+  * (static) `PolylineOps,compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[]]`
+  * (static) `PolylineOps.compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[]`
+* `RegionOps` new methods
+  * (static) `RegionOps.computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined`
+

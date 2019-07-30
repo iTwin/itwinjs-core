@@ -44,6 +44,20 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /** Return the number of points in use. */
   public get length() { return this._xyzInUse; }
 
+  /** Set number of points.
+   * Pad zeros if length grows.
+   */
+  public set length(newLength: number) {
+    let oldLength = this.length;
+    if (newLength < oldLength) {
+      this._xyzInUse = newLength;
+    } else if (newLength > oldLength) {
+      this.ensureCapacity(newLength);
+      while (oldLength++ < newLength)
+        this.pushXYZ(0, 0, 0);
+    }
+  }
+
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
   /** Return the raw packed data.
@@ -194,6 +208,18 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._xyzInUse++;
   }
 
+  /** move the coordinates at fromIndex to toIndex.
+   * * No action if either index is invalid.
+   */
+  public moveIndexToIndex(fromIndex: number, toIndex: number) {
+    if (this.isIndexValid(fromIndex) && this.isIndexValid(toIndex)) {
+      let iA = fromIndex * 3;
+      let iB = toIndex * 3;
+      this._data[iB++] = this._data[iA++];
+      this._data[iB++] = this._data[iA++];
+      this._data[iB] = this._data[iA];
+    }
+  }
   /** Remove one point from the back.
    * * NOTE that (in the manner of std::vector native) this is "just" removing the point -- no point is NOT returned.
    * * Use `back ()` to get the last x,y,z assembled into a `Point3d `

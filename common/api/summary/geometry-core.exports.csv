@@ -66,10 +66,13 @@ public;CurveChainWithDistanceIndex
 public;class CurveCollection 
 public;CurveCurve
 public;CurveCurveApproachType
+internal;CurveCurveIntersectXY 
+internal;CurveCurveIntersectXYZ 
 public;CurveExtendMode
 public;CurveExtendOptions
 public;CurveIntervalRole
 public;CurveLocationDetail
+public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
@@ -80,6 +83,7 @@ internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
 public;FacetFaceData
 public;FrameBuilder
+internal;GaussMapper
 public;Geometry
 public;class GeometryHandler
 public;class GeometryQuery

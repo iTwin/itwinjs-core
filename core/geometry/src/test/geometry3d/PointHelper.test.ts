@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry, AxisScaleSelect } from "../../Geometry";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
@@ -18,7 +18,6 @@ import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } 
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { MatrixTests } from "./Point3dVector3d.test";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -145,77 +144,8 @@ describe("FrameBuilder", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("FrameBuilder.HelloVectors", () => {
-    const ck = new Checker();
-    const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
-    builder.announcePoint(Point3d.create(0, 1, 1));
-    ck.testExactNumber(0, builder.savedVectorCount());
-    ck.testExactNumber(0, builder.savedVectorCount());
-    builder.announceVector(Vector3d.create(0, 0, 0));
-    ck.testExactNumber(0, builder.savedVectorCount());
-
-    // loop body assumes each set of points has 3 leading independent vectors
-    for (const vectors of [
-      [Vector3d.create(1, 0, 0),
-      Vector3d.create(0, 1, 0),
-      Vector3d.create(0, 0, 1)],
-    ]) {
-      builder.clear();
-      const vector0 = vectors[0];
-      const vector1 = vectors[1];
-      const vector2 = vectors[2];
-      builder.announce(Point3d.create(1, 2, 3));
-      ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
-      builder.announce(vector0);
-      ck.testExactNumber(1, builder.savedVectorCount());
-      builder.announce(vector0);
-      ck.testExactNumber(1, builder.savedVectorCount());
-
-      ck.testExactNumber(2, builder.announceVector(vector1));
-      ck.testExactNumber(2, builder.announceVector(vector1.plusScaled(vector0, 2.0)));
-
-      ck.testExactNumber(3, builder.announceVector(vector2));
-
-    }
-    ck.checkpoint("FrameBuilder");
-    expect(ck.getNumErrors()).equals(0);
-  });
-
 });
 
-describe("FrameBuilder.HelloWorldB", () => {
-  it("FrameBuilder.HelloWorld", () => {
-    const ck = new Checker();
-
-    const nullRangeLocalToWorld = FrameBuilder.createLocalToWorldTransformInRange(Range3d.createNull(), AxisScaleSelect.Unit, 0, 0, 0, 2.0);
-    ck.testTransform(Transform.createIdentity(), nullRangeLocalToWorld, "frame in null range");
-
-    for (const range of [Range3d.createXYZXYZ(1, 2, 3, 5, 7, 9)]
-    ) {
-      for (const select of [
-        AxisScaleSelect.Unit,
-        AxisScaleSelect.LongestRangeDirection,
-        AxisScaleSelect.NonUniformRangeContainment]) {
-        const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
-        if (ck.testPointer(localToWorld) && localToWorld) {
-          MatrixTests.checkProperties(ck,
-            localToWorld.matrix,
-            select === AxisScaleSelect.Unit,  // unit axes in range are identity
-            select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
-            select === AxisScaleSelect.Unit,  // and of course rigid.
-            true, // always invertible
-            true);  // always diagonal
-          const worldCorners = range.corners();
-          worldCorners.push(range.fractionToPoint(0.5, 0.5, 0.5));
-        }
-      }
-    }
-
-    ck.checkpoint("FrameBuilder.HelloWorldB");
-    expect(ck.getNumErrors()).equals(0);
-  });
-});
 // ASSUME pointsA is planar with at least 3 points, and first turn is left.
 // (Therefore first cross product is its normal)
 function testCentroidNormal(ck: Checker, pointsA: Point3d[], expectedArea: number) {

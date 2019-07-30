@@ -32,6 +32,7 @@ export class AnalyticRoots {
 
 // @public
 export class Angle implements BeJSONFunctions {
+    addMultipleOf2PiInPlace(multiple: number): void;
     static adjustDegrees0To360(degrees: number): number;
     static adjustDegreesSigned180(degrees: number): number;
     static adjustRadians0To2Pi(radians: number): number;
@@ -1242,6 +1243,35 @@ export enum CurveCurveApproachType {
     PerpendicularChord = 1
 }
 
+// @internal
+export class CurveCurveIntersectXY extends NullGeometryHandler {
+    constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
+    computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
+    computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
+    dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
+    grabResults(reinitialize?: boolean): CurveLocationDetailArrayPair;
+    handleArc3d(arc0: Arc3d): any;
+    handleBSplineCurve3d(curve: BSplineCurve3d): any;
+    handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
+    handleLineSegment3d(segmentA: LineSegment3d): any;
+    handleLineString3d(lsA: LineString3d): any;
+    }
+
+// @internal
+export class CurveCurveIntersectXYZ extends NullGeometryHandler {
+    constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean);
+    computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
+    computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
+    createPlaneWithPreferredPerpendicular(origin: Point3d, vectorA: Vector3d, cosineValue: number, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined;
+    dispatchLineStringBSplineCurve(_lsA: LineString3d, _extendA: boolean, _curveB: BSplineCurve3d, _extendB: boolean, _reversed: boolean): any;
+    grabResults(reinitialize?: boolean): CurveLocationDetailArrayPair;
+    handleArc3d(arc0: Arc3d): any;
+    handleBSplineCurve3d(curve: BSplineCurve3d): any;
+    handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
+    handleLineSegment3d(segmentA: LineSegment3d): any;
+    handleLineString3d(lsA: LineString3d): any;
+    }
+
 // @public
 export enum CurveExtendMode {
     None = 0,
@@ -1293,6 +1323,13 @@ export class CurveLocationDetail {
     setIntervalRole(value: CurveIntervalRole): void;
     updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number): boolean;
     vectorInCurveLocationDetail?: Vector3d;
+}
+
+// @public
+export class CurveLocationDetailArrayPair {
+    constructor();
+    dataA: CurveLocationDetail[];
+    dataB: CurveLocationDetail[];
 }
 
 // @public
@@ -1441,6 +1478,15 @@ export class FrameBuilder {
     readonly hasOrigin: boolean;
     savedVectorCount(): number;
     }
+
+// @internal
+export class GaussMapper {
+    constructor(numGaussPoints: number);
+    gaussW: Float64Array;
+    gaussX: Float64Array;
+    mapXAndW(xA: number, xB: number): number;
+    mapXAndWFunction: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
+}
 
 // @public
 export class Geometry {
@@ -1714,8 +1760,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean;
     isCloseToPlane(plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     isIndexValid(index: number): boolean;
-    readonly length: number;
+    length: number;
     mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void;
+    moveIndexToIndex(fromIndex: number, toIndex: number): void;
     multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyTransformInPlace(transform: Transform): void;
@@ -2649,8 +2696,10 @@ export type Matrix4dProps = Point4dProps[];
 
 // @public
 export class MomentData {
+    accumulateLineMomentsXYZ(pointA: Point3d, pointB: Point3d): void;
     accumulatePointMomentsFromOrigin(points: Point3d[]): void;
     accumulateProducts(other: MomentData, scale: number): void;
+    accumulateScaledOuterProduct(point: XYAndZ, scaleFactor: number): void;
     accumulateTriangleMomentsXY(pointA: XAndY | undefined, pointB: XAndY, pointC: XAndY): void;
     accumulateTriangleToLineStringMomentsXY(sweepBase: XAndY | undefined, points: GrowableXYZArray): void;
     accumulateXYProductsInCentroidalFrame(productXX: number, productXY: number, productYY: number, area: number, origin: XAndY, vectorU: XAndY, vectorV: XAndY): void;
@@ -2673,6 +2722,7 @@ export class MomentData {
     signFactor(targetSign: number): number;
     static sortColumnsForIncreasingMoments(axes: Matrix3d, moments: Vector3d): void;
     sums: Matrix4d;
+    toJSON(): any;
     }
 
 // @public
@@ -3419,6 +3469,9 @@ export class PolygonOps {
 // @public
 export class PolylineOps {
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
+    static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
+    static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
+    static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static edgeLengthRange(points: Point3d[]): Range1d;
 }
 
@@ -3818,6 +3871,7 @@ export class RegionOps {
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
     static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;

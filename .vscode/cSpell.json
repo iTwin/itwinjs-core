@@ -158,6 +158,7 @@
         "nodeaddonapi",
         "nonconvex",
         "nonnull",
+        "nonsingular",
         "nullptr",
         "numericinput",
         "numeronyms",

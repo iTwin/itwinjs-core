@@ -264,7 +264,6 @@ function testPolygonOffset(polygons: Point3d[][],
   let x0 = 0;
   let y0 = 0;
 
-  const context = new PolygonWireOffsetContext();
   for (const points of polygons) {
     const range = Range3d.createArray(points);
     const yStep = 2.0 * range.yLength();
@@ -276,7 +275,7 @@ function testPolygonOffset(polygons: Point3d[][],
         continue;
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
       for (const offsetDistance of distances) {
-        const stickA = context.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
+        const stickA = RegionOps.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
       }
       y0 += yStep;
