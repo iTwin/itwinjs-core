@@ -91,6 +91,11 @@ export class IModelHostConfiguration {
    */
   public restrictTileUrlsByClientIp?: boolean;
 
+  /** Whether to compress cached tiles.
+   * @beta
+   */
+  public compressCachedTiles?: boolean;
+
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
    * @internal
    */
@@ -371,6 +376,11 @@ export class IModelHost {
    * @internal
    */
   public static get restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
+
+  /** Whether to compress cached tiles.
+   * @internal
+   */
+  public static get compressCachedTiles(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.compressCachedTiles ? true : false); }
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;

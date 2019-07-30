@@ -614,6 +614,8 @@ export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
     // (undocumented)
+    contentEncoding?: "gzip";
+    // (undocumented)
     type?: string;
 }
 
@@ -1994,6 +1996,8 @@ export class IModelHost {
     static authorizationClient: IAuthorizationClient | undefined;
     // (undocumented)
     static backendVersion: string;
+    // @internal
+    static readonly compressCachedTiles: boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -2024,6 +2028,8 @@ export class IModelHost {
 export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
+    // @beta
+    compressCachedTiles?: boolean;
     // (undocumented)
     concurrentQuery: Config;
     // @alpha

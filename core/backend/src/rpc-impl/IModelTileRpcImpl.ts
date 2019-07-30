@@ -10,6 +10,7 @@ import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
+import { CloudStorageUploadOptions } from "../CloudStorageBackend";
 
 interface TileRequestProps {
   requestContext: ClientRequestContext;
@@ -187,7 +188,13 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     setTimeout(async () => {
       try {
         const cache = CloudStorageTileCache.getCache();
-        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content);
+
+        const options: CloudStorageUploadOptions = {};
+        if (IModelHost.compressCachedTiles) {
+          options.contentEncoding = "gzip";
+        }
+
+        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content, options);
       } catch (err) {
         Logger.logError(BackendLoggerCategory.IModelTileRequestRpc, JSON.stringify(err));
       }
