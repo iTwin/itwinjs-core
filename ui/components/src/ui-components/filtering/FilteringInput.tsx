@@ -59,12 +59,20 @@ export enum InputContext {
  * @public
  */
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
+  private _inputElement = React.createRef<HTMLInputElement>();
+
   constructor(props: FilteringInputProps) {
     super(props);
     this.state = {
       searchText: "",
       context: InputContext.ReadyToFilter,
     };
+  }
+
+  private focus() {
+    // istanbul ignore else
+    if (this._inputElement.current)
+      this._inputElement.current.focus();
   }
 
   private _onSearchButtonClick = () => {
@@ -81,11 +89,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   private _onCancelButtonClick = () => {
     this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
     this.props.onFilterCancel();
+    this.focus();
   }
 
   private _onClearButtonClick = () => {
     this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
     this.props.onFilterClear();
+    this.focus();
   }
 
   private _onFilterKeyDown = (e: React.KeyboardEvent<HTMLElement>): void => {
@@ -125,6 +135,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       >
         <span className="components-filtering-input-input">
           <input type="text"
+            ref={this._inputElement}
             autoFocus={this.props.autoFocus}
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}

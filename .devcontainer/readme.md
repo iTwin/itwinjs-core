@@ -6,8 +6,8 @@ Ensure both Containers and Hyper-V are enabled in Windows.
 
 - Open the Start Menu and starting typing "Turn Windows features on or off" to select it
 - Ensure both 'Containers' and all of 'Hyper-V' are enabled.
-  - [Hyper-V MS Docs](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
-  - [Container MS Docs](https://docs.microsoft.com/en-us/virtualization/windowscontainers/quick-start/quick-start-windows-10-linux)
+  - [Hyper-V MS Docs](https://docs.microsoft.com/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
+  - [Container MS Docs](https://docs.microsoft.com/virtualization/windowscontainers/quick-start/quick-start-windows-10-linux)
   - Hyper-V requires that virtualization is enabled in your BIOS. Every BIOS is different, so use Google or ask around if you encounter related errors.
 
 Install [Docker CE](https://hub.docker.com/editions/community/docker-ce-desktop-windows) ([direct](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)). Keep all defaults. Tested with version 2.0.0.3 (engine 18.09.2); newer versions should likely work as well.

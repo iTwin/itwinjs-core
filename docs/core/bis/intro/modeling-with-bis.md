@@ -79,4 +79,6 @@ The [**FederationGuid**](./glossary.md#federationguid) is optional but can be us
 
 **UserLabel** is an optional property of an Element that can be used as an informal name in the GUI, but it does not have to be unique. In some GUIs, if the UserLabel is null, the CodeValue will be used as a display label.
 
-> Next: [BIS Organization](./bis-organization.md)
+---
+| Next: [BIS Organization](./bis-organization.md)
+|:---

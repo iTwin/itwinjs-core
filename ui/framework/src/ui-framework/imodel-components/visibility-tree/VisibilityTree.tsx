@@ -358,8 +358,12 @@ export class VisibilityHandler implements IDisposable {
       return { isDisabled: true, isDisplayed: false, tooltip: createTooltip("disabled", "element.modelNotDisplayed") };
     if (this._props.viewport.neverDrawn !== undefined && this._props.viewport.neverDrawn.has(elementId))
       return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughNeverDrawnList") };
-    if (this._props.viewport.alwaysDrawn !== undefined && this._props.viewport.alwaysDrawn.has(elementId))
-      return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+    if (this._props.viewport.alwaysDrawn !== undefined) {
+      if (this._props.viewport.alwaysDrawn.has(elementId))
+        return { isDisplayed: true, tooltip: createTooltip("visible", "element.displayedThroughAlwaysDrawnList") };
+      if (this._props.viewport.alwaysDrawn.size !== 0 && this._props.viewport.isAlwaysDrawnExclusive)
+        return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenDueToOtherElementsExclusivelyAlwaysDrawn") };
+    }
     if (categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed)
       return { isDisplayed: true, tooltip: createTooltip("visible", undefined) };
     return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
@@ -422,22 +426,23 @@ export class VisibilityHandler implements IDisposable {
   private async changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean) {
     const isDisplayedByDefault = modelId && this.getModelDisplayStatus(modelId).isDisplayed
       && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
+    const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
     const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
     const elementIds = [id, ...await this.getAssemblyElementIds(id)];
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
-        if (!isDisplayedByDefault)
+        if (!isDisplayedByDefault || isHiddenDueToExclusiveAlwaysDrawnElements)
           currAlwaysDrawn.add(elementId);
       } else {
         currAlwaysDrawn.delete(elementId);
-        if (isDisplayedByDefault)
+        if (isDisplayedByDefault && !isHiddenDueToExclusiveAlwaysDrawnElements)
           currNeverDrawn.add(elementId);
       }
     });
     this._props.viewport.setNeverDrawn(currNeverDrawn);
-    this._props.viewport.setAlwaysDrawn(currAlwaysDrawn);
+    this._props.viewport.setAlwaysDrawn(currAlwaysDrawn, this._props.viewport.isAlwaysDrawnExclusive);
   }
 
   private onVisibilityChangeInternal() {
@@ -488,7 +493,7 @@ class SubjectModelIdsCache {
   private async initSubjectsHierarchy() {
     this._subjectsHierarchy = new Map();
     const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-    const result = this._imodel.query(ecsql, undefined, 1000);
+    const result = this._imodel.query(ecsql);
     for await (const row of result) {
       let list = this._subjectsHierarchy.get(row.parentId);
       if (!list) {
@@ -502,7 +507,7 @@ class SubjectModelIdsCache {
   private async initSubjectModels() {
     this._subjectModels = new Map();
     const ecsql = `SELECT p.ECInstanceId id, p.Parent.Id subjectId FROM bis.InformationPartitionElement p JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId`;
-    const result = this._imodel.query(ecsql, undefined, 1000);
+    const result = this._imodel.query(ecsql);
     for await (const row of result) {
       let list = this._subjectModels.get(row.subjectId);
       if (!list) {

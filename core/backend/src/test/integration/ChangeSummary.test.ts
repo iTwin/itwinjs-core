@@ -6,7 +6,7 @@ import * as path from "path";
 import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64String, Id64, PerfLogger, ChangeSetStatus, using, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState, IModel, SubCategoryAppearance, ColorDef, RelatedElement } from "@bentley/imodeljs-common";
+import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
 import {
   BriefcaseManager, ChangeSummaryManager, ChangeSummary,
   IModelDb, OpenParams, IModelJsFs, AuthorizedBackendRequestContext, ElementOwnsChildElements,
@@ -583,7 +583,7 @@ describe("ChangeSummary (#integration)", () => {
 
     // Setup the hierarchy as element3 -> element1
     const element3 = iModel.elements.getElement(elementId3);
-    element3.parent = new RelatedElement({ id: elementId1, relClassName: ElementOwnsChildElements.classFullName });
+    element3.parent = new ElementOwnsChildElements(elementId1);
     iModel.elements.updateElement(element3);
     iModel.saveChanges("Updated element1 as the parent of element3");
 
@@ -591,7 +591,7 @@ describe("ChangeSummary (#integration)", () => {
     await iModel.pushChanges(managerRequestContext, () => "Setup test model");
 
     // Modify the hierarchy to element3 -> element2
-    element3.parent = new RelatedElement({ id: elementId2, relClassName: ElementOwnsChildElements.classFullName });
+    element3.parent = new ElementOwnsChildElements(elementId2);
     iModel.elements.updateElement(element3);
     iModel.saveChanges("Updated element2 as the parent of element3");
 

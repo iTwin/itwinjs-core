@@ -16,7 +16,7 @@ Describes a strongly typed *kind* for a property. This kind identifies what is b
 
 **relativeError** The number of significant digits values of this kind have. Zero means none set.
 
-**presentationFormats** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.
+**presentationUnits** A list of [Formats](./ec-format.md) or [format overrides](#format-overrides) that can be used to display the value in the UI.  The first format in the list is used as the default presentation of the value.
 
 The first format in the list is considered the default presentation format.  The [format](./ec-format.md) used when displaying this kind of value in the UI.
 

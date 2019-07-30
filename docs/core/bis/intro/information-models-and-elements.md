@@ -119,4 +119,6 @@ The following tables lists the Model types that typically contains specific subc
 
 <!-- TODO:  mention *any model* rules for LinkElement and InformationRecordElement? -->
 
-> Next: [PhysicalModel Hierarchy](./physical-hierarchy-organization.md)
+---
+| Next: [PhysicalModel Hierarchy](./physical-hierarchy-organization.md)
+|:---

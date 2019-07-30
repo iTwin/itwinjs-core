@@ -89,10 +89,12 @@ class FrustumDecoration {
     // Back plane
     builder.setSymbology(backAndBottomColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(backPts);
+    builder.addShape(backPts);
 
     // Front plane
     builder.setSymbology(frontAndTopLeftColor, ColorDef.black, edgeWeight, edgeStyle);
     builder.addLineString(frontPts);
+    builder.addShape(frontPts);
 
     // Bottom edge
     builder.setSymbology(backAndBottomColor, ColorDef.black, edgeWeight, edgeStyle);

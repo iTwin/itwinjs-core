@@ -89,4 +89,6 @@ Additionally, concepts defined in these Road & Rail domains are needed in other 
 
 Lastly, several Civil applications can be built on top of all these Road & Rail domains. These Civil applications may focus on specific assets and lifecycle phases in the Road & Rail disciplines. However, BIS ECSchemas referenced by them are expected to be useful across the entire lifecycle of assets in the Road & Rail disciplines.
 
-> Next: [Information Hierarchy](./information-hierarchy.md)
+---
+| Next: [Information Hierarchy](./information-hierarchy.md)
+|:---

@@ -5522,7 +5522,7 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
+    filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
     static hidden: boolean;
     // (undocumented)

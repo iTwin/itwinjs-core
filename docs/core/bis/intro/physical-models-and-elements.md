@@ -87,4 +87,6 @@ As discussed in [Modeling with BIS](./modeling-with-bis.md), there are many enti
 4. Supplement with more figures.
 -->
 
-> Next: [Functional Models and Elements](./functional-models-and-elements.md)
+---
+| Next: [Functional Models and Elements](./functional-models-and-elements.md)
+|:---

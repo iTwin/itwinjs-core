@@ -191,20 +191,18 @@ export class DecorateContext extends RenderContext {
       return undefined;
 
     const shapePoints = finalPoints.getPoint3dArray();
-    loopPt.setFrom(shapePoints[0]);
-
-    if (!vp.isCameraOn)
-      return shapePoints;
-
-    let lastZ = 0.0;
-    for (let i = 0; i < shapePoints.length - 1; ++i) {
-      const midPt = shapePoints[i].interpolate(0.5, shapePoints[i + 1]);
-      const viewPt = vp.worldToView(midPt);
-      if (i === 0 || viewPt.z > lastZ) {
-        loopPt.setFrom(midPt);
-        lastZ = viewPt.z;
+    let closeIndex = 0;
+    if (vp.isCameraOn) {
+      let lastZ = 0.0;
+      for (let i = 0; i < shapePoints.length; ++i) {
+        vp.worldToView(shapePoints[i], loopPt);
+        if (i === 0 || loopPt.z > lastZ) {
+          lastZ = loopPt.z;
+          closeIndex = i;
+        }
       }
     }
+    loopPt.setFrom(shapePoints[closeIndex]);
     return shapePoints;
   }
 
@@ -294,6 +292,7 @@ export class DecorateContext extends RenderContext {
       const fadeRefSteps = 8;
       const fadeRefTransparencyStep = (255 - gridConstants.refTransparency) / (fadeRefSteps + 2);
 
+      let lastDist = 0.0;
       const lastPt = Point3d.createZero();
       const planeX = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitX())!;
       const planeY = Plane3dByOriginAndUnitNormal.create(lastPt, Vector3d.unitY())!;
@@ -316,9 +315,16 @@ export class DecorateContext extends RenderContext {
         if (doFadeX) {
           refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++xFade));
           builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (nRefRepetitionsX > 10) {
-          if (doFadeX = (xRef > gridConstants.maxRefLines || (unambiguousX && 0 !== xRef && this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY) < gridConstants.minSeparation)))
-            nGridRepetitionsX = xRef;
+        } else if (xRef > 0 && nRefRepetitionsX > 10) {
+          if (xRef > gridConstants.maxRefLines) {
+            doFadeX = true;
+          } else if (unambiguousX && (vp.isCameraOn || 1 === xRef)) {
+            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+            if (thisDist < gridConstants.minSeparation)
+              doFadeX = (vp.isCameraOn ? (xRef > 1 && thisDist < lastDist) : true);
+            lastDist = thisDist;
+          }
+          if (doFadeX) nGridRepetitionsX = xRef;
         }
 
         thisPt0.interpolate(0.5, thisPt1, lastPt);
@@ -338,9 +344,16 @@ export class DecorateContext extends RenderContext {
         if (doFadeY) {
           refColor.setTransparency(gridConstants.refTransparency + (fadeRefTransparencyStep * ++yFade));
           builder.setSymbology(refColor, planeColor, 1, linePat);
-        } else if (nRefRepetitionsY > 10) {
-          if (doFadeY = (yRef > gridConstants.maxRefLines || (unambiguousY && 0 !== yRef && this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY) < gridConstants.minSeparation)))
-            nGridRepetitionsY = yRef;
+        } else if (yRef > 0 && nRefRepetitionsY > 10) {
+          if (yRef > gridConstants.maxRefLines) {
+            doFadeY = true;
+          } else if (unambiguousY && (vp.isCameraOn || 1 === yRef)) {
+            const thisDist = this.getCurrentGridRefSeparation(lastPt, thisPt0, thisPt1, thisPt, thisRay, planeX, planeY);
+            if (thisDist < gridConstants.minSeparation)
+              doFadeY = (vp.isCameraOn ? (yRef > 1 && thisDist < lastDist) : true);
+            lastDist = thisDist;
+          }
+          if (doFadeY) nGridRepetitionsY = yRef;
         }
 
         thisPt0.interpolate(0.5, thisPt1, lastPt);

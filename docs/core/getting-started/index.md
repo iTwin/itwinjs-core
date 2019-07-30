@@ -12,14 +12,15 @@ Writing an iModel.js application requires the following software:
 - [Git](https://git-scm.com/downloads)
   - This is the source code control system for the iModel.js repositories.
 
-
 ### Suggested Tools
+
 The following tools are very helpful and highly suggested for working with iModel.js:
+
 - [Visual Studio Code](https://code.visualstudio.com/)
   - This is the recommended editor and debugger for iModel.js applications.
   - VS Code also supplies a graphical user interface for working with Git.
   - The following VS Code extensions can also be quite helpful:
-    - [TSLint](https://marketplace.visualstudio.com/items?itemName=eg2.tslint) (use tslint.json from @bentley/build-tools to enforce Bentley coding standards)
+    - [TSLint](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-tslint-plugin) (use tslint.json from @bentley/build-tools to enforce Bentley coding standards)
     - [Debugger for Chrome](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome)
     - [GitLens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens) (great tools for using Git inside VSCode)
     - [MarkdownLint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint) (for editing documentation)
@@ -33,6 +34,7 @@ To be able to view/read [iModel](../learning/imodels) data, you will need access
 _Note: Skip to step 3, if you already have a Bentley User Account._
 
 ## 3. Register your Application
+
 Once you have a Bentley User account, you will need to register the application you are about to create so it can access iModelHub.
 
 **[Register Here](./registration-dashboard.md)**
@@ -46,9 +48,11 @@ An interactive application obtains information from an iModel and presents that 
 iModel agents and services are apps that have no interactive user interface.
 
 ## 4. Create a Sample Project
+
 Once you have a registered application, you will need an iModel. Our registration process makes it easy to create a new project in our “iModel Test Drive” organization, populate it with content, and give access to other developers.
 
 The content can be either:
+
 - **Bentley supplied example content** – Recommended if you are just starting out. Simply select an example from the Project Registration page.
 
 OR
@@ -59,17 +63,19 @@ OR
 
 _Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization._
 
-
 ## 5. Get the Sample Code
+
 The Github repositories for the applications described in step 3.
 
 <a href="https://github.com/imodeljs/simple-viewer-app" target="_blank">Simple Viewer App</a><br/>
 An example of an *interactive application* which can:
+
 - Embed an iModel.js viewport into your application to display graphical data.
 - Browse iModel catalog and view element properties.
 
 [iModel Query Agent](https://github.com/imodeljs/imodel-query-agent)<br/>
 An example of an *agent application* which can:
+
 - Listen to changes made to an iModel on the iModelHub.
 - Construct a 'Change Summary' of useful information.
 
@@ -78,6 +84,7 @@ An example of an *agent application* which can:
 <br/>
 
 ---
+
 ### Recommended Reading
 
 - [TypeScript](http://www.typescriptlang.org/)

@@ -902,7 +902,7 @@ export abstract class Target extends RenderTarget {
 
       this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics, true);
       this.recordPerformanceMetric("Init Commands");
-      this.compositor.drawForReadPixels(this._renderCommands);
+      this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
       this._stack.pop();
 
       this._isReadPixelsInProgress = false;

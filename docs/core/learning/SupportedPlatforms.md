@@ -19,7 +19,7 @@ They should run on most Windows and Linux platforms with [Tier 1 support](https:
   - GLIBC 2.24 (or greater)
   - GLIBCXX 3.4.22 (or greater)
 - Windows
-  - [Visual Studio 2017 C Runtime](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+  - [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads)
 
 ## Supported Browsers
 
