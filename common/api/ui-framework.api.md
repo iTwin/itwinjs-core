@@ -167,6 +167,14 @@ export interface ActionItemButtonProps extends CommonProps {
     onSizeKnown?: (size: SizeProps) => void;
 }
 
+// @beta
+export interface ActionItemSpec extends BackstageItemSpec {
+    // (undocumented)
+    execute: (args?: any) => void;
+    // (undocumented)
+    readonly itemType: BackstageItemType.ActionItem;
+}
+
 // @public
 export type ActionsUnion<A extends ActionCreatorsObject> = ReturnType<A[keyof A]>;
 
@@ -284,6 +292,20 @@ export class Backstage extends React_2.Component<BackstageProps, BackstageState>
     readonly state: BackstageState;
 }
 
+// @beta
+export class BackstageComposer extends React_2.Component<BackstageProps, BackstageComposerState> {
+    constructor(props: BackstageProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    getBackstageItemNodes(): React_2.ReactNode[];
+    // (undocumented)
+    render(): React_2.ReactNode;
+    // @internal (undocumented)
+    readonly state: Readonly<BackstageComposerState>;
+}
+
 // @public
 export class BackstageEvent extends UiEvent<BackstageEventArgs> {
 }
@@ -294,12 +316,52 @@ export interface BackstageEventArgs {
     isVisible: boolean;
 }
 
+// @beta
+export class BackstageItemManager {
+    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): ActionItemSpec;
+    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): CustomItemSpec;
+    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): StageLauncher;
+    static getBackstageItemProvider(providerId: string): BackstageItemProvider | undefined;
+    static getBackstageItemSpecs(): BackstageItemSpec[];
+    static readonly hasRegisteredProviders: boolean;
+    static readonly onBackstageItemProviderRegisteredEvent: BeEvent<(ev: BackstageItemProviderRegisteredEventArgs) => void>;
+    static register(itemProvider: BackstageItemProvider): void;
+    static unregister(itemProviderId: string): void;
+}
+
 // @public
 export interface BackstageItemProps extends LabelProps, DescriptionProps, TooltipProps, IconProps {
     isActive?: boolean;
     isEnabled?: boolean;
     stateFunc?: (state: Readonly<BackstageItemState>) => BackstageItemState;
     stateSyncIds?: string[];
+}
+
+// @beta
+export interface BackstageItemProvider {
+    readonly id: string;
+    provideBackstageItems: () => BackstageItemSpec[];
+    provideCustomBackstageItem?: (itemSpec: CustomItemSpec) => React_2.ReactNode;
+}
+
+// @beta
+export interface BackstageItemProviderRegisteredEventArgs {
+    // (undocumented)
+    providerId: string;
+}
+
+// @beta
+export interface BackstageItemSpec {
+    badge?: BadgeType;
+    condition?: ConditionalDisplaySpecification;
+    groupPriority: number;
+    icon?: string;
+    itemId: string;
+    itemPriority: number;
+    itemType: BackstageItemType;
+    label: string;
+    subtitle?: string;
+    toolTip?: string;
 }
 
 // @public
@@ -318,6 +380,13 @@ export interface BackstageItemState {
     tooltip: string;
 }
 
+// @beta
+export enum BackstageItemType {
+    ActionItem = 1,
+    CustomItem = 3,
+    StageLauncher = 2
+}
+
 // @public
 export interface BackstageProps extends CommonProps {
     // (undocumented)
@@ -330,6 +399,12 @@ export interface BackstageProps extends CommonProps {
     onClose?: () => void;
     // (undocumented)
     showOverlay?: boolean;
+}
+
+// @beta
+export enum BadgeType {
+    None = 0,
+    TechnicalPreview = 1
 }
 
 // @public
@@ -506,6 +581,24 @@ export class CommandLaunchBackstageItem extends React_2.PureComponent<CommandLau
 // @public
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
     commandId: string;
+}
+
+// @beta
+export interface ConditionalDisplaySpecification {
+    // (undocumented)
+    syncEventIds: string[];
+    // (undocumented)
+    testFunc: () => boolean;
+    // (undocumented)
+    type: ConditionalDisplayType;
+}
+
+// @beta
+export enum ConditionalDisplayType {
+    // (undocumented)
+    EnableState = 1,
+    // (undocumented)
+    Visibility = 0
 }
 
 // @beta
@@ -848,6 +941,10 @@ export class CoreTools {
     // (undocumented)
     static readonly toggleCameraViewCommand: ToolItemDef;
     // (undocumented)
+    static readonly viewRedoCommand: ToolItemDef;
+    // (undocumented)
+    static readonly viewUndoCommand: ToolItemDef;
+    // (undocumented)
     static readonly walkViewCommand: ToolItemDef;
     // (undocumented)
     static readonly windowAreaCommand: ToolItemDef;
@@ -1098,6 +1195,14 @@ export interface CustomItemProps extends ItemProps {
     customId?: string;
     // (undocumented)
     reactElement: React.ReactNode;
+}
+
+// @beta
+export interface CustomItemSpec extends BackstageItemSpec {
+    // (undocumented)
+    customItemProviderId: string;
+    // (undocumented)
+    readonly itemType: BackstageItemType.CustomItem;
 }
 
 // @public
@@ -1428,7 +1533,7 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
 export const FrameworkReducer: (state: import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./UiFramework").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>>) => import("./utils/redux-ts").CombinedReducerState<{
+}>, action: import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./utils/redux-ts").DeepReadonlyObject<import("./utils/redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>>) => import("./utils/redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2896,9 +3001,19 @@ export class SeparatorBackstageItem extends React_2.PureComponent<BackstageItemP
 // @beta
 export interface SessionState {
     // (undocumented)
+    accessToken: any | undefined;
+    // (undocumented)
     activeSelectionScope: string;
     // (undocumented)
     availableSelectionScopes: PresentationSelectionScope[];
+    // (undocumented)
+    defaultIModelViewportControlId: string | undefined;
+    // (undocumented)
+    defaultRulesetId: string | undefined;
+    // (undocumented)
+    defaultViewId: string | undefined;
+    // (undocumented)
+    iModelConnection: any | undefined;
     // (undocumented)
     iModelId: string;
     // (undocumented)
@@ -2908,9 +3023,19 @@ export interface SessionState {
 // @beta
 export enum SessionStateActionId {
     // (undocumented)
+    SetAccessToken = "sessionstate:set-access-token",
+    // (undocumented)
     SetActiveIModelId = "sessionstate:set-active-imodelid",
     // (undocumented)
     SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
+    // (undocumented)
+    SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
+    // (undocumented)
+    SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
+    // (undocumented)
+    SetDefaultViewId = "sessionstate:set-default-viewid",
+    // (undocumented)
+    SetIModelConnection = "sessionstate:set-imodel-connection",
     // (undocumented)
     SetNumItemsSelected = "sessionstate:set-num-items-selected",
     // (undocumented)
@@ -2923,13 +3048,18 @@ export const SessionStateActions: {
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./utils/redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setSelectionScope: (activeSelectionScope: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetSelectionScope, string>;
     setActiveIModelId: (iModelId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
+    setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
+    setDefaultViewId: (viewId: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
+    setDefaultRulesetId: (rulesetid: string) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
+    setIModelConnection: (iModelConnection: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetIModelConnection, any>;
+    setAccessToken: (accessToken: any) => import("./utils/redux-ts").ActionWithPayload<SessionStateActionId.SetAccessToken, any>;
 };
 
 // @beta
 export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 // @beta
-export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState;
+export function SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly<SessionState>;
 
 // @alpha
 export class SheetCard extends React_2.Component<SheetCardProps, SheetCardState> {
@@ -3086,6 +3216,22 @@ export interface SplitterPaneTargetProps {
     onTargetChanged: (paneIndex: number | undefined) => void;
     // (undocumented)
     paneIndex: number;
+}
+
+// @beta
+export interface StageLauncher extends BackstageItemSpec {
+    // (undocumented)
+    readonly itemType: BackstageItemType.StageLauncher;
+    // (undocumented)
+    stageId: string;
+}
+
+// @beta
+export interface StageLauncher extends BackstageItemSpec {
+    // (undocumented)
+    readonly itemType: BackstageItemType.StageLauncher;
+    // (undocumented)
+    stageId: string;
 }
 
 // @alpha
@@ -3779,6 +3925,8 @@ export class UiFramework {
     // @beta (undocumented)
     static readonly frameworkStateKey: string;
     // (undocumented)
+    static getAccessToken(): AccessToken | undefined;
+    // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
     // (undocumented)
     static getActiveIModelId(): string;
@@ -3788,6 +3936,14 @@ export class UiFramework {
     static getAvailableSelectionScopes(): PresentationSelectionScope[];
     // @beta (undocumented)
     static getColorTheme(): string;
+    // (undocumented)
+    static getDefaultIModelViewportControlId(): string | undefined;
+    // (undocumented)
+    static getDefaultRulesetId(): string | undefined;
+    // (undocumented)
+    static getDefaultViewId(): string | undefined;
+    // (undocumented)
+    static getIModelConnection(): IModelConnection | undefined;
     // @beta (undocumented)
     static getIsUiVisible(): boolean;
     // @beta (undocumented)
@@ -3810,6 +3966,8 @@ export class UiFramework {
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
     // (undocumented)
+    static setAccessToken(accessToken: AccessToken, immediateSync?: boolean): void;
+    // (undocumented)
     static setAccudrawSnapMode(snapMode: SnapMode): void;
     // (undocumented)
     static setActiveIModelId(iModelId: string): void;
@@ -3817,6 +3975,14 @@ export class UiFramework {
     static setActiveSelectionScope(selectionScopeId: string): void;
     // @beta (undocumented)
     static setColorTheme(theme: string): void;
+    // (undocumented)
+    static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync?: boolean): void;
+    // (undocumented)
+    static setDefaultRulesetId(viewId: string, immediateSync?: boolean): void;
+    // (undocumented)
+    static setDefaultViewId(viewId: string, immediateSync?: boolean): void;
+    // (undocumented)
+    static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // @beta (undocumented)
     static setIsUiVisible(visible: boolean): void;
     // @beta (undocumented)

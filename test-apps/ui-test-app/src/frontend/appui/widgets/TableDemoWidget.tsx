@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { SampleAppIModelApp } from "../..";
-
 import {
   ConfigurableCreateInfo,
   WidgetControl,
   DragDropLayerManager,
+  UiFramework,
 } from "@bentley/ui-framework";
 import {
   Table,
@@ -25,7 +24,10 @@ export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TableDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
+    if (UiFramework.getIModelConnection())
+      this.reactElement = <TableDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
+    else
+      this.reactElement = null;
   }
 }
 

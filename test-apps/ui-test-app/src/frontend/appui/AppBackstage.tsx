@@ -26,12 +26,12 @@ interface AppBackstageProps {
 }
 
 function mapStateToProps(state: RootState) {
-  const appState = state.sampleAppState;
+  const frameworkState = state.frameworkState;
 
-  if (!appState)
+  if (!frameworkState)
     return undefined;
 
-  return { accessToken: appState.accessToken };
+  return { accessToken: frameworkState.sessionState.accessToken };
 }
 
 class AppBackstageComponent extends React.Component<AppBackstageProps> {

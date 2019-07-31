@@ -4,10 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module State */
 
-import { createAction, ActionsUnion } from "./utils/redux-ts";
-import { PresentationSelectionScope } from "./UiFramework";
+// The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
+// import { IModelConnection } from "@bentley/imodeljs-frontend";
+// import { AccessToken } from "@bentley/imodeljs-clients";
+import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
-// cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid
+// cSpell:ignore configurableui snapmode toolprompt sessionstate imodelid viewid viewportid rulesetid
+
+/** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
+ * Added to avoid an api-extract error caused by using SelectionScope.
+ * @beta
+ */
+export interface PresentationSelectionScope {
+  id: string;
+  label: string;
+}
+
 /** Action Ids used by Redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  *  Since these are also used as sync ids they should be in lowercase.
  * @beta
@@ -17,6 +29,11 @@ export enum SessionStateActionId {
   SetAvailableSelectionScopes = "sessionstate:set-available-selection-scopes",
   SetSelectionScope = "sessionstate:set-selection-scope",
   SetActiveIModelId = "sessionstate:set-active-imodelid",
+  SetIModelConnection = "sessionstate:set-imodel-connection",
+  SetAccessToken = "sessionstate:set-access-token",
+  SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
+  SetDefaultViewId = "sessionstate:set-default-viewid",
+  SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
 }
 
 /** The portion of state managed by the SessionStateReducer.
@@ -27,6 +44,11 @@ export interface SessionState {
   availableSelectionScopes: PresentationSelectionScope[];
   activeSelectionScope: string;
   iModelId: string;
+  defaultIModelViewportControlId: string | undefined;
+  defaultViewId: string | undefined;
+  defaultRulesetId: string | undefined;
+  iModelConnection: any | undefined;
+  accessToken: any | undefined;
 }
 
 const defaultSelectionScope = { id: "element", label: "Element" } as PresentationSelectionScope;
@@ -41,6 +63,11 @@ const initialState: SessionState = {
   activeSelectionScope: defaultSelectionScope.id,
   /** set to iModelId if an iModel is active else it is an empty string, so initialize to empty string */
   iModelId: "",
+  defaultIModelViewportControlId: undefined,
+  defaultViewId: undefined,
+  defaultRulesetId: undefined,
+  iModelConnection: undefined,
+  accessToken: undefined,
 };
 
 /** An object with a function that creates each SessionStateReducer that can be handled by our reducer.
@@ -51,6 +78,11 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setSelectionScope: (activeSelectionScope: string) => createAction(SessionStateActionId.SetSelectionScope, activeSelectionScope),
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
+  setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
+  setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
+  setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
+  setIModelConnection: (iModelConnection: any) => createAction(SessionStateActionId.SetIModelConnection, iModelConnection),
+  setAccessToken: (accessToken: any) => createAction(SessionStateActionId.SetAccessToken, accessToken),
 };
 
 /** Union of SessionState Redux actions
@@ -61,7 +93,7 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 /** Handles actions to update SessionState.
  * @beta
  */
-export function SessionStateReducer(state: SessionState = initialState, _action: SessionStateActionsUnion): SessionState {
+export function SessionStateReducer(state: SessionState = initialState, _action: SessionStateActionsUnion): DeepReadonly<SessionState> {
   switch (_action.type) {
     case SessionStateActionId.SetNumItemsSelected: {
       // istanbul ignore else
@@ -92,6 +124,21 @@ export function SessionStateReducer(state: SessionState = initialState, _action:
         return { ...state, iModelId: _action.payload };
       else
         return { ...state, iModelId: "" };
+    }
+    case SessionStateActionId.SetDefaultIModelViewportControlId: {
+      return { ...state, defaultIModelViewportControlId: _action.payload };
+    }
+    case SessionStateActionId.SetDefaultViewId: {
+      return { ...state, defaultViewId: _action.payload };
+    }
+    case SessionStateActionId.SetDefaultRulesetId: {
+      return { ...state, defaultRulesetId: _action.payload };
+    }
+    case SessionStateActionId.SetIModelConnection: {
+      return { ...state, iModelConnection: _action.payload };
+    }
+    case SessionStateActionId.SetAccessToken: {
+      return { ...state, accessToken: _action.payload };
     }
   }
 

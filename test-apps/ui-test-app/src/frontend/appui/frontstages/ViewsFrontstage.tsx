@@ -368,7 +368,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
       execute: () => {
-        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
@@ -446,7 +446,7 @@ class FrontstageToolWidget extends React.Component {
   private get _restoreContentLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
-        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        const iModelConnection = UiFramework.getIModelConnection();
         if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
           // Parse SavedViewLayoutProps
           const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
@@ -737,7 +737,7 @@ class FrontstageNavigationWidget extends React.Component {
       customId: "sampleApp:viewSelector",
       reactElement: (
         <ViewSelector
-          imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}
+          imodel={UiFramework.getIModelConnection()}
           listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
         />
       ),
@@ -770,7 +770,7 @@ class FrontstageNavigationWidget extends React.Component {
     return (
       <NavigationWidget
         navigationAidId="CubeNavigationAid"
-        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection!}
+        iModelConnection={UiFramework.getIModelConnection()}
         horizontalItems={this._horizontalToolbarItems}
         verticalItems={this._verticalToolbarItems}
       />
