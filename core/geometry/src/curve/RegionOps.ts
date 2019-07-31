@@ -243,7 +243,7 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
  * * `ParityRegion` -- a collection of loops, interpreted by parity rules.
  *    * The common "One outer loop and many Inner loops" is a parity region.
  * * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * @alpha
+ * @beta
  */
 export class RegionOps {
   /**
@@ -364,7 +364,7 @@ export class RegionOps {
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistance distance of offset from wire.  Positive is left.
-   * @alpha
+   * @beta
    */
   public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
     const context = new PolygonWireOffsetContext();
