@@ -58,14 +58,13 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
-import { Point } from '@bentley/ui-ninezone';
+import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
-import { PointProps } from '@bentley/ui-ninezone';
+import { PointProps } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
-import { Rectangle } from '@bentley/ui-ninezone';
-import { RectangleProps } from '@bentley/ui-ninezone';
+import { RectangleProps } from '@bentley/ui-core';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/imodeljs-frontend';
 import { ResizeHandle } from '@bentley/ui-ninezone';
@@ -73,7 +72,8 @@ import { Ruleset } from '@bentley/presentation-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SheetProps } from '@bentley/imodeljs-common';
-import { Size } from '@bentley/ui-ninezone';
+import { Size } from '@bentley/ui-core';
+import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -128,11 +128,11 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // @internal (undocumented)
     static getRandomId(): string;
     // (undocumented)
-    handleSizeKnown: (size: Size) => void;
+    handleSizeKnown: (size: SizeProps) => void;
     // (undocumented)
     parameters?: any;
     // (undocumented)
-    size?: Size;
+    size?: SizeProps;
     // (undocumented)
     toolbarReactNode(index?: number): React_2.ReactNode;
 }
@@ -164,7 +164,7 @@ export interface ActionItemButtonProps extends CommonProps {
     // (undocumented)
     isEnabled?: boolean;
     // (undocumented)
-    onSizeKnown?: (size: Size) => void;
+    onSizeKnown?: (size: SizeProps) => void;
 }
 
 // @public
@@ -943,11 +943,11 @@ export class CursorInformation {
     // @internal
     static clearCursorDirections(): void;
     static readonly cursorDirection: CursorDirection;
-    static cursorPosition: Point;
+    static cursorPosition: PointProps;
     static readonly cursorX: number;
     static readonly cursorY: number;
     static getRelativePositionFromCursorDirection(cursorDirection: CursorDirection): RelativePosition;
-    static handleMouseMove(point: Point): void;
+    static handleMouseMove(point: PointProps): void;
     static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
 }
 
@@ -962,7 +962,7 @@ export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopup
     // @internal (undocumented)
     static fadeOutTime: number;
     // @internal (undocumented)
-    static getPopupRect(pt: Point, offset: Point, popupSize: Size | undefined, relativePosition: RelativePosition): Rectangle;
+    static getPopupRect(pt: PointProps, offset: PointProps, popupSize: SizeProps | undefined, relativePosition: RelativePosition): RectangleProps;
     // @internal (undocumented)
     render(): JSX.Element;
     }
@@ -989,13 +989,13 @@ export class CursorPopupManager {
     static readonly onCursorPopupsChangedEvent: CursorPopupsChangedEvent;
     // @internal (undocumented)
     static readonly onCursorPopupUpdatePositionEvent: CursorPopupUpdatePositionEvent;
-    static open(id: string, content: React_2.ReactNode, pt: Point, offset: Point, relativePosition: RelativePosition, priority?: number, options?: CursorPopupOptions): void;
+    static open(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number, options?: CursorPopupOptions): void;
     // (undocumented)
     static readonly popupCount: number;
     // (undocumented)
     static readonly popups: CursorPopupInfo[];
-    static update(id: string, content: React_2.ReactNode, pt: Point, offset: Point, relativePosition: RelativePosition, priority?: number): void;
-    static updatePosition(pt: Point): void;
+    static update(id: string, content: React_2.ReactNode, pt: PointProps, offset: PointProps, relativePosition: RelativePosition, priority?: number): void;
+    static updatePosition(pt: PointProps): void;
     }
 
 // @alpha
@@ -1013,10 +1013,10 @@ export interface CursorPopupProps extends CommonProps {
     // (undocumented)
     id: string;
     // (undocumented)
-    offset: Point;
-    onSizeKnown?: (size: Size) => void;
+    offset: PointProps;
+    onSizeKnown?: (size: SizeProps) => void;
     // (undocumented)
-    pt: Point;
+    pt: PointProps;
     // (undocumented)
     relativePosition: RelativePosition;
     // (undocumented)
@@ -1051,7 +1051,7 @@ export class CursorPopupUpdatePositionEvent extends UiEvent<CursorPopupUpdatePos
 // @internal
 export interface CursorPopupUpdatePositionEventArgs {
     // (undocumented)
-    pt: Point;
+    pt: PointProps;
 }
 
 // @alpha (undocumented)
@@ -1060,7 +1060,7 @@ export class CursorPrompt {
     // @internal
     close(fadeOut: boolean): void;
     // (undocumented)
-    display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: Point, relativePosition?: RelativePosition): void;
+    display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: PointProps, relativePosition?: RelativePosition): void;
     }
 
 // @alpha
@@ -1072,9 +1072,9 @@ export interface CursorUpdatedEventArgs {
     // (undocumented)
     direction: CursorDirection;
     // (undocumented)
-    newPt: Point;
+    newPt: PointProps;
     // (undocumented)
-    oldPt: Point;
+    oldPt: PointProps;
 }
 
 // @beta
@@ -2362,7 +2362,7 @@ export interface ListPickerProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
     // (undocumented)
-    onSizeKnown?: (size: Size) => void;
+    onSizeKnown?: (size: SizeProps) => void;
     // (undocumented)
     setEnabled: (item: ListItem, enabled: boolean) => any;
     // (undocumented)
@@ -2743,7 +2743,7 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     onExpanded?: (expand: boolean) => void;
     // (undocumented)
-    onSizeKnown?: (size: Size) => void;
+    onSizeKnown?: (size: SizeProps) => void;
 }
 
 // @beta

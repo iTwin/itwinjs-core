@@ -5,11 +5,10 @@
 /** @module ToolSettings */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ToolSettings,
   ToolSettingsTab,
-  RectangleProps,
   Zone,
   TitleBarButton,
 } from "@bentley/ui-ninezone";

@@ -7,10 +7,11 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { AnnularSector, Annulus, Point } from "./Annulus";
+import { AnnularSector, Annulus } from "./Annulus";
+import { CommonProps } from "../utils/Props";
+import { Point } from "../utils/Point";
 
 import "./RadialMenu.scss";
-import { CommonProps } from "../utils/Props";
 
 /** Properties for [[RadialMenu]]
  * @beta
@@ -134,7 +135,7 @@ export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState
   }
 
   private _handleKeyUp = (event: KeyboardEvent) => {
-    if (event.keyCode === 27 /*<Esc>*/ && this.props.onEsc)
+    if (event.key === "Escape" && this.props.onEsc)
       this.props.onEsc(event);
   }
 
@@ -207,7 +208,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
     let t = "";
     let path = "";
     if (sector) {
-      size = sector.start.p1.distTo(sector.end.p2) * 2;
+      size = sector.start.p1.getDistanceTo(sector.end.p2) * 2;
       path = sector.path;
 
       const parent = sector.parent;

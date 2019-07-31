@@ -7,7 +7,7 @@
 import { Point, PointProps } from "./Point";
 import { Size, SizeProps } from "./Size";
 
-/** Describes [[Rectangle]].
+/** Describes 2d bounds.
  * @beta
  */
 export interface RectangleProps {
@@ -18,7 +18,7 @@ export interface RectangleProps {
 }
 
 /** Available corners of [[Rectangle]].
- * @alpha
+ * @internal
  */
 export enum Corner {
   TopLeft,
@@ -28,7 +28,7 @@ export enum Corner {
 }
 
 /** Describes and provides methods to work with 2d bounds.
- * @alpha
+ * @internal
  */
 export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[RectangleProps]]. */
@@ -171,7 +171,7 @@ export class Rectangle implements RectangleProps {
    * @returns true if this rectangle contains other rectangle.
    * @note Inclusive.
    */
-  public contains(other: RectangleProps) {
+  public contains(other: RectangleProps): boolean {
     return other.left >= this.left && other.right <= this.right && other.top >= this.top && other.bottom <= this.bottom;
   }
 

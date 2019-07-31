@@ -8,8 +8,8 @@ import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, Orientation, NoChildrenProps } from "@bentley/ui-core";
-import { Direction, Size, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
+import { CommonProps, Orientation, NoChildrenProps, Size } from "@bentley/ui-core";
+import { Direction, ToolbarPanelAlignment, Toolbar as NZ_Toolbar } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 
 import { ItemList } from "../shared/ItemMap";

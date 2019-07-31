@@ -7,8 +7,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
-import { CommonProps } from "@bentley/ui-core";
-import { Point } from "@bentley/ui-ninezone";
+import { CommonProps, Point } from "@bentley/ui-core";
 
 import { UiFramework } from "../UiFramework";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";

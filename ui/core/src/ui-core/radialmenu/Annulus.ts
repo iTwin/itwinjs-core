@@ -4,29 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RadialMenu */
 
-/**
- * 2D Point
- * @internal
- */
-export class Point {
-  public x: number = 0;
-  public y: number = 0;
-  constructor(x?: number, y?: number) {
-    this.x = x || 0;
-    this.y = y || 0;
-  }
-  /**
-   * Calculates the 2D Euclidean distance between this point and the parameter p
-   */
-  public distTo = (p: Point) => {
-    const dx = this.x - p.x;
-    const dy = this.y - p.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  /** checks for equality with the components of this, and point parameter */
-  public equals = (point: Point) => this.x === point.x && this.y === point.y;
-}
+import { Point } from "../utils/Point";
 
 /**
  * 2D Line consisting of a start point, and an end point

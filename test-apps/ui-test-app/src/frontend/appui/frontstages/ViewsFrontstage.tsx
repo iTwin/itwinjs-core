@@ -82,9 +82,8 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
 
-import { SvgSprite, ScrollView } from "@bentley/ui-core";
+import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
-import { Point } from "@bentley/ui-ninezone";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;

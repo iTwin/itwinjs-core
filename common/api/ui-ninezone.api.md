@@ -9,8 +9,13 @@ import * as CSS from 'csstype';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
+import { Point } from '@bentley/ui-core';
+import { PointProps } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
+import { Rectangle } from '@bentley/ui-core';
+import { RectangleProps } from '@bentley/ui-core';
+import { SizeProps } from '@bentley/ui-core';
 
 // @alpha
 export class AppButton extends React.PureComponent<AppButtonProps> {
@@ -168,18 +173,6 @@ export const containVertically: (componentBounds: RectangleProps, containerBound
 
 // @internal
 export type ContentZoneId = 5;
-
-// @alpha
-export enum Corner {
-    // (undocumented)
-    BottomLeft = 3,
-    // (undocumented)
-    BottomRight = 2,
-    // (undocumented)
-    TopLeft = 0,
-    // (undocumented)
-    TopRight = 1
-}
 
 // @internal
 export class Css {
@@ -560,7 +553,7 @@ export interface ItemProps extends CommonProps {
     isDisabled?: boolean;
     onClick?: () => void;
     onKeyDown?: (e: React.KeyboardEvent) => void;
-    onSizeKnown?: (size: Size) => void;
+    onSizeKnown?: (size: SizeProps) => void;
     title?: string;
 }
 
@@ -948,109 +941,10 @@ export interface PanelsProviderProps {
     panels: React.RefObject<HTMLElement>;
 }
 
-// @alpha
-export class Point implements PointProps {
-    constructor(x?: number, y?: number);
-    static create(pointProps: PointProps): Point;
-    // (undocumented)
-    equals(other: PointProps): boolean;
-    getDistanceTo(other: PointProps): number;
-    getManhattanDistanceTo(other: PointProps): number;
-    getOffsetTo(other: PointProps): Point;
-    // (undocumented)
-    offset(offset: PointProps): Point;
-    // (undocumented)
-    offsetX(offset: number): Point;
-    // (undocumented)
-    offsetY(offset: number): Point;
-    // (undocumented)
-    setX(x: number): Point;
-    // (undocumented)
-    setY(y: number): Point;
-    // (undocumented)
-    toProps(): PointProps;
-    // (undocumented)
-    readonly x: number;
-    // (undocumented)
-    readonly y: number;
-}
-
-// @beta
-export interface PointProps {
-    // (undocumented)
-    readonly x: number;
-    // (undocumented)
-    readonly y: number;
-}
-
 // @beta
 export interface ProgressProps extends CommonProps, NoChildrenProps {
     progress: number;
     status: Status;
-}
-
-// @alpha
-export class Rectangle implements RectangleProps {
-    constructor(left?: number, top?: number, right?: number, bottom?: number);
-    // (undocumented)
-    readonly bottom: number;
-    // (undocumented)
-    center(): Point;
-    // (undocumented)
-    containHorizontallyIn(other: RectangleProps): Rectangle;
-    // (undocumented)
-    containIn(other: RectangleProps): Rectangle;
-    // (undocumented)
-    contains(other: RectangleProps): boolean;
-    containsPoint(point: PointProps): boolean;
-    // (undocumented)
-    containVerticallyIn(other: RectangleProps): Rectangle;
-    static create(props: RectangleProps): Rectangle;
-    static createFromSize(size: SizeProps): Rectangle;
-    equals(other: RectangleProps): boolean;
-    // (undocumented)
-    getCorner(corner: Corner): Point;
-    // (undocumented)
-    getHeight(): number;
-    getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
-    // (undocumented)
-    getSize(): Size;
-    getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
-    // (undocumented)
-    getWidth(): number;
-    inset(left: number, top: number, right: number, bottom: number): Rectangle;
-    // (undocumented)
-    intersects(other: RectangleProps): boolean;
-    // (undocumented)
-    readonly left: number;
-    offset(offset: PointProps): Rectangle;
-    offsetX(offset: number): Rectangle;
-    offsetY(offset: number): Rectangle;
-    outerMergeWith(other: RectangleProps): Rectangle;
-    // (undocumented)
-    readonly right: number;
-    setHeight(height: number): Rectangle;
-    setPosition(position: PointProps): Rectangle;
-    setSize(size: SizeProps): Rectangle;
-    setWidth(width: number): Rectangle;
-    // (undocumented)
-    readonly top: number;
-    // (undocumented)
-    topLeft(): Point;
-    // (undocumented)
-    toProps(): RectangleProps;
-}
-
-// @beta
-export interface RectangleProps {
-    // (undocumented)
-    readonly bottom: number;
-    // (undocumented)
-    readonly left: number;
-    // (undocumented)
-    readonly right: number;
-    // (undocumented)
-    readonly top: number;
 }
 
 // @alpha
@@ -1150,25 +1044,6 @@ export interface ScrollableToolSettingsProps extends CommonProps {
 export class ScrollIndicator extends React.PureComponent<ChevronProps> {
     // (undocumented)
     render(): JSX.Element;
-}
-
-// @beta
-export class Size implements SizeProps {
-    constructor(width?: number, height?: number);
-    static create(size: SizeProps): Size;
-    equals(other: SizeProps): boolean;
-    // (undocumented)
-    readonly height: number;
-    // (undocumented)
-    readonly width: number;
-}
-
-// @beta
-export interface SizeProps {
-    // (undocumented)
-    readonly height: number;
-    // (undocumented)
-    readonly width: number;
 }
 
 // @beta

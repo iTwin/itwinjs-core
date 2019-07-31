@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
-import { withTimeout, Button, ButtonType, ButtonProps, Omit, OmitChildrenProp, withOnOutsideClick } from "@bentley/ui-core";
+import { withTimeout, Button, ButtonType, ButtonProps, Omit, OmitChildrenProp, withOnOutsideClick, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { Backstage } from "@src/backstage/Backstage";
 import { BackstageItem } from "@src/backstage/Item";
 import { BackstageSeparator } from "@src/backstage/Separator";
@@ -52,9 +52,6 @@ import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
-import { PointProps, Point } from "@src/utilities/Point";
-import { RectangleProps, Rectangle } from "@src/utilities/Rectangle";
-import { Size, SizeProps } from "@src/utilities/Size";
 import { WidgetContent } from "@src/widget/rectangular/Content";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
 import { TabGroup, HandleMode } from "@src/widget/rectangular/tab/Group";
@@ -1854,7 +1851,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}

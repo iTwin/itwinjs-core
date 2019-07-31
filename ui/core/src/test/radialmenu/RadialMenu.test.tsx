@@ -79,7 +79,7 @@ describe("RadialMenu", () => {
       const spyMethod = sinon.fake();
       const component = render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onEsc={spyMethod} />);
       const item = component.getByTestId("core-radial-menu");
-      item.dispatchEvent(createBubbledEvent("keyup", { keyCode: 27 /* <Esc> */ }));
+      item.dispatchEvent(createBubbledEvent("keyup", { key: "Escape" }));
       spyMethod.should.have.been.called;
     });
 

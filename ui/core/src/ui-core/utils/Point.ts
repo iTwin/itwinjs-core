@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Describes [[Point]].
+/** Describes 2d points.
  * @beta
  */
 export interface PointProps {
@@ -13,7 +13,7 @@ export interface PointProps {
 }
 
 /** Describes and provides methods to work with 2d points.
- * @alpha
+ * @internal
  */
 export class Point implements PointProps {
   /** Creates point from [[PointProps]]. */
@@ -31,7 +31,7 @@ export class Point implements PointProps {
     return Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.y, 2));
   }
 
-  /** Calculates gridlike distance to other point. */
+  /** Calculates grid-like distance to other point. */
   public getManhattanDistanceTo(other: PointProps): number {
     return Math.abs(this.x - other.x) + Math.abs(this.y - other.y);
   }

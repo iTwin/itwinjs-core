@@ -5,8 +5,8 @@
 /** @module Zone */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { ZoneTargetType, RectangleProps, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps } from "@bentley/ui-ninezone";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
+import { ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";

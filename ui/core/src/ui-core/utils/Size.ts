@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-/** Describes [[Size]].
+/** Describes 2d dimensions.
  * @beta
  */
 export interface SizeProps {
@@ -12,8 +12,8 @@ export interface SizeProps {
   readonly height: number;
 }
 
-/** Describes 2d dimensions.
- * @beta
+/** Describes and provides methods to work with 2d dimensions.
+ * @internal
  */
 export class Size implements SizeProps {
   /** Creates a size from [[SizeProps]]. */

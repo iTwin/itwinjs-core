@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 
 import { ToolAssistance, RelativePosition } from "@bentley/imodeljs-frontend";
-import { Point } from "@bentley/ui-ninezone";
+import { Point } from "@bentley/ui-core";
 
 import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
 import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";

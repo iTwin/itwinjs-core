@@ -6,16 +6,16 @@
 
 import * as React from "react";
 
+import { CommonProps, SizeProps } from "@bentley/ui-core";
+import { Item } from "@bentley/ui-ninezone";
+
 import { Icon } from "../shared/IconComponent";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-
-import { Item, Size } from "@bentley/ui-ninezone";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { CommonProps } from "@bentley/ui-core";
 import { BetaBadge } from "../betabadge/BetaBadge";
 
 /** Properties that must be specified for a ActionItemButton component
@@ -24,7 +24,7 @@ import { BetaBadge } from "../betabadge/BetaBadge";
 export interface ActionItemButtonProps extends CommonProps {
   actionItem: ActionButtonItemDef;
   isEnabled?: boolean;
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
 }
 
 /** Helper method to set state from props */

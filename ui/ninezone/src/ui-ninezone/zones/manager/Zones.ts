@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
+import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
-import { RectangleProps, Rectangle } from "../../utilities/Rectangle";
 import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager } from "./Widget";
 import { getDefaultZoneManagerProps, ZoneManagerProps, FOOTER_HEIGHT, ZoneManager } from "./Zone";
-import { PointProps, Point } from "../../utilities/Point";
 import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
 import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy } from "./ResizeStrategy";
 import { LeftZones, TopZones, RightZones, BottomZones } from "./AdjacentZones";

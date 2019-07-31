@@ -6,11 +6,10 @@
 
 import * as React from "react";
 
+import { Orientation, SizeProps } from "@bentley/ui-core";
+
 import { CommandHandler, ItemProps } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
-
-import { Size } from "@bentley/ui-ninezone";
-import { Orientation } from "@bentley/ui-core";
 import { ActionItemButton } from "../toolbar/ActionItemButton";
 
 /** Abstract base class that is used by classes to execute an action when pressed.
@@ -19,7 +18,7 @@ import { ActionItemButton } from "../toolbar/ActionItemButton";
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
-  public size?: Size;
+  public size?: SizeProps;
 
   constructor(itemProps: ItemProps) {
     super(itemProps);
@@ -36,7 +35,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     }
   }
 
-  public handleSizeKnown = (size: Size) => {
+  public handleSizeKnown = (size: SizeProps) => {
     this.size = size;
   }
 

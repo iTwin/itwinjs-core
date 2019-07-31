@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ZoneManager, getDefaultZoneManagerProps, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../ui-ninezone/zones/manager/Zone";
-import { RectangleProps, Rectangle } from "../../../ui-ninezone/utilities/Rectangle";
+import { RectangleProps, Rectangle } from "@bentley/ui-core";
 
 describe("ZoneManager", () => {
   describe("setAllowsMerging", () => {
