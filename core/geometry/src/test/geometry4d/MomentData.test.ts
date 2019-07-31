@@ -12,11 +12,12 @@ import { MomentData } from "../../geometry4d/MomentData";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CurveChain } from "../../curve/CurveCollection";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { Angle } from "../../geometry3d/Angle";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { RegionOps } from "../../curve/RegionOps";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 
 /* tslint:disable:no-console variable-name */
 /** Add individual segments of  xyz array to parent. */
@@ -124,6 +125,42 @@ describe("MomentData", () => {
       y0 += shift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "ParityAndUnionRegions");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("WireMoments", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const y0 = 0.0;
+    const strokeOptions = StrokeOptions.createForCurves();
+    strokeOptions.maxEdgeLength = 0.1;
+    let x0 = 0;
+    for (const sampleSet of [
+      Sample.createSmoothCurvePrimitives(),
+      Sample.createBsplineCurves(true)]) {
+      for (const g of sampleSet) {
+        const range = g.range();
+        const dy = range.yLength() * 2.0;
+        const rawSums = RegionOps.computeXYZWireMomentSums(g)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0, 0);
+        GeometryCoreTestIO.showMomentData(allGeometry, rawSums, true, x0, y0, 0);
+        // GeometryCoreTestIO.showMomentData(allGeometry, principalMoments, true, x0, y0, 0);
+        if (g instanceof CurveCollection) {
+          const strokes = g.cloneStroked(strokeOptions);
+          const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
+          GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);
+        } else if (g instanceof CurvePrimitive) {
+          const strokes = LineString3d.create();
+          g.emitStrokes(strokes, strokeOptions);
+          const strokeSums = RegionOps.computeXYZWireMomentSums(strokes)!;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokes, x0, y0 + dy, 0);
+          GeometryCoreTestIO.showMomentData(allGeometry, strokeSums, true, x0, y0 + dy, 0);
+        }
+        x0 += 10.0 * range.xLength();
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "WireMoments");
     expect(ck.getNumErrors()).equals(0);
   });
 

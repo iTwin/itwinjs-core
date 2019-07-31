@@ -140,7 +140,6 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
-import { UsageType } from '@bentley/imodeljs-clients';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -303,6 +302,7 @@ export enum BackendLoggerCategory {
     IModelDb = "imodeljs-backend.IModelDb",
     IModelHost = "imodeljs-backend.IModelHost",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    IModelTileUpload = "imodeljs-backend.IModelTileUpload",
     // @alpha
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
@@ -2107,10 +2107,6 @@ export namespace IModelJsNative {
         readChangeSets(changeSetTokens: string): ChangeSetStatus;
         reopenBriefcase(openMode: OpenMode): DbResult;
     }
-    const // (undocumented)
-    version: string;
-    let // (undocumented)
-    logger: Logger;
     export enum AuthType {
         // (undocumented)
         None = 0,
@@ -2124,6 +2120,10 @@ export namespace IModelJsNative {
         updateVsDelete: number;
         updateVsUpdate: number;
     }
+    const // (undocumented)
+    version: string;
+    let // (undocumented)
+    logger: Logger;
     // (undocumented)
     export class BriefcaseManagerResourcesRequest {
         // (undocumented)
@@ -2155,6 +2155,45 @@ export namespace IModelJsNative {
     }
     // (undocumented)
     export function clearLogLevelCache(): void;
+    // (undocumented)
+    export namespace ConcurrentQuery {
+        export interface Config {
+            autoExpireTimeForCompletedQuery?: number;
+            cachedStatementsPerThread?: number;
+            concurrent?: number;
+            idleCleanupTime?: number;
+            maxQueueSize?: number;
+            minMonitorInterval?: number;
+            pollInterval?: number;
+            quota?: QueryQuota;
+            useSharedCache?: boolean;
+            useUncommitedRead?: boolean;
+        }
+        export enum PollStatus {
+            // (undocumented)
+            Done = 1,
+            // (undocumented)
+            Error = 5,
+            // (undocumented)
+            NotFound = 6,
+            // (undocumented)
+            NotInitialized = 0,
+            // (undocumented)
+            Partial = 3,
+            // (undocumented)
+            Pending = 2,
+            // (undocumented)
+            Timeout = 4
+        }
+        export enum PostStatus {
+            // (undocumented)
+            Done = 1,
+            // (undocumented)
+            NotInitialized = 0,
+            // (undocumented)
+            QueueSizeExceeded = 2
+        }
+    }
     export class DgnDb implements IConcurrentQueryManager {
         constructor();
         // (undocumented)
@@ -2184,7 +2223,7 @@ export namespace IModelJsNative {
         // (undocumented)
         closeIModel(): void;
         // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
+        concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
         // (undocumented)
         createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
         // (undocumented)
@@ -2210,9 +2249,9 @@ export namespace IModelJsNative {
         // (undocumented)
         executeTest(testName: string, params: string): string;
         // (undocumented)
-        exportGraphics(exportProps: ExportGraphicsProps): DbResult;
+        exportGraphics(exportProps: any): DbResult;
         // (undocumented)
-        exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+        exportPartGraphics(exportProps: any): DbResult;
         // (undocumented)
         exportSchemas(exportDirectory: string): DbResult;
         // (undocumented)
@@ -2311,15 +2350,15 @@ export namespace IModelJsNative {
         openIModel(dbName: string, mode: OpenMode): DbResult;
         // (undocumented)
         pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
+            status: ConcurrentQuery.PollStatus;
             result: string;
             rowCount: number;
         };
         // (undocumented)
-        pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
+        pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, TileContentState | TileContent>;
         // (undocumented)
         postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
+            status: ConcurrentQuery.PostStatus;
             taskId: number;
         };
         // (undocumented)
@@ -2365,7 +2404,7 @@ export namespace IModelJsNative {
         // (undocumented)
         setDbGuid(guid: GuidString): DbResult;
         // (undocumented)
-        setIModelDb(iModelDb?: IModelDb): void;
+        setIModelDb(iModelDb?: any): void;
         // (undocumented)
         startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
         // (undocumented)
@@ -2401,7 +2440,7 @@ export namespace IModelJsNative {
         // (undocumented)
         closeDb(): void;
         // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
+        concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
         // (undocumented)
         createDb(dbName: string): DbResult;
         // (undocumented)
@@ -2414,13 +2453,13 @@ export namespace IModelJsNative {
         openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
         // (undocumented)
         pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
+            status: ConcurrentQuery.PollStatus;
             result: string;
             rowCount: number;
         };
         // (undocumented)
         postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
+            status: ConcurrentQuery.PostStatus;
             taskId: number;
         };
         // (undocumented)
@@ -2464,16 +2503,6 @@ export namespace IModelJsNative {
         Success = 0
     }
     // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
-    }
-    // (undocumented)
     export namespace ECSchemaXmlContext {
         // (undocumented)
         export interface SchemaKey {
@@ -2501,6 +2530,16 @@ export namespace IModelJsNative {
             // (undocumented)
             LatestWriteCompatible = 2
         }
+    }
+    // (undocumented)
+    export class ECSchemaXmlContext {
+        constructor();
+        // (undocumented)
+        addSchemaPath(path: string): void;
+        // (undocumented)
+        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
+        // (undocumented)
+        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
     }
     // (undocumented)
     export class ECSqlBinder {
@@ -2664,16 +2703,16 @@ export namespace IModelJsNative {
     // (undocumented)
     export interface IConcurrentQueryManager {
         // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
+        concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
         // (undocumented)
         pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
+            status: ConcurrentQuery.PollStatus;
             result: string;
             rowCount: number;
         };
         // (undocumented)
         postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
+            status: ConcurrentQuery.PostStatus;
             taskId: number;
         };
     }
@@ -2808,6 +2847,28 @@ export namespace IModelJsNative {
         content: Uint8Array;
         // (undocumented)
         elapsedSeconds: number;
+    }
+    export enum TileContentState {
+        // (undocumented)
+        Loading,
+        // (undocumented)
+        New,
+        // (undocumented)
+        Pending
+    }
+    export type TxnIdString = string;
+    // (undocumented)
+    export enum UsageType {
+        // (undocumented)
+        Beta,
+        // (undocumented)
+        HomeUse,
+        // (undocumented)
+        PreActivation,
+        // (undocumented)
+        Production,
+        // (undocumented)
+        Trial
     }
 }
 

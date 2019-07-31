@@ -212,6 +212,23 @@ describe("Matrix3d.Factors", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("FactorRigidScaleExample", () => {
+    const ck = new Checker();
+    for (const rigidScale0 of [
+      Matrix3d.createRowValues(0.019908485552297163, -0.0040687348173572974, 0,
+        0.0040687348173572974, 0.019908485552297163, 0,
+        0, 0, 0.020320000000000008)]) {
+      const data = rigidScale0.factorRigidWithSignedScale();
+      if (ck.testDefined(data) && data) {
+        const quat = data.rigidAxes.toQuaternion();
+        const rigidAxes1 = Matrix3d.createFromQuaternion(quat);
+        ck.testMatrix3d(data.rigidAxes, rigidAxes1, "matrix quat matrix RT");
+      }
+    }
+    ck.checkpoint("Matrix3d.FactorRigidScaleExample");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("AxisAndAngleOfRotationA", () => {
     const ck = new Checker();
 
@@ -263,7 +280,7 @@ describe("Matrix3d.Factors", () => {
           if (ck.testPointer(matrix3, "good data for createRotation") && matrix3)
             ck.testMatrix3d(matrix1, matrix3, "AxisAngle3 maps to same Matrix3d");
         }
-*/
+  */
         const data2 = matrix1.getAxisAndAngleOfRotation();
         // remark: don't directly compare data.axis and axis -- they might be negated !!!
         // instead check that data generates the same matrix.
@@ -774,4 +791,12 @@ describe("InverseVariants", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("Misc", () => {
+    const ck = new Checker();
+    const matrixA = Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(13))!;
+    const matrixB = Matrix3d.createZero();
+    ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(matrixB), "singular matrix trapped at multiplication");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

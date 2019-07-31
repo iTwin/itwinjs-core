@@ -14,6 +14,8 @@ import { Matrix3d } from "./Matrix3d";
 import { IndexedXYCollection } from "./IndexedXYCollection";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Point3d } from "./Point3dVector3d";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
+import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public
@@ -105,6 +107,12 @@ export class GrowableXYArray extends IndexedXYCollection {
     return newPoints;
   }
 
+  /** Restructure MultiLineStringDataVariant as array of GrowableXYZArray */
+  public static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined {
+    const collector = new PointStreamGrowableXYZArrayCollector();
+    VariantPointDataStream.streamXYZ(data, collector);
+    return collector.claimArrayOfGrowableXYZArray();
+  }
   /** push a point to the end of the array */
   public push(toPush: XAndY) {
     this.pushXY(toPush.x, toPush.y);

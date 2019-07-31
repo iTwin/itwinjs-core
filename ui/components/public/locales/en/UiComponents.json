@@ -109,5 +109,8 @@
   },
   "errors": {
     "unable-to-parse-quantity": "Unable to parse string into quantity"
+  },
+  "filteringInput": {
+    "placeholder": "Search..."
   }
 }

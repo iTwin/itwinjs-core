@@ -1,3 +1,7 @@
+---
+deltaDoc: true
+version: '1.2.0'
+---
 # 1.2.0 Change Notes
 
 ## Markers may now have HTML decorations
@@ -15,7 +19,7 @@ Markers are used to position decorations in a view that follow a position in wor
 
 ## Support for vertex array objects
 
-On systems that support the [required WebGL extension](https://developer.mozilla.org/en-US/docs/Web/API/OES_vertex_array_object), vertex array objects are used to improve display performance.
+On systems that support the [required WebGL extension](https://developer.mozilla.org/docs/Web/API/OES_vertex_array_object), vertex array objects are used to improve display performance.
 
 ## Display system bug fixes
 
@@ -27,11 +31,11 @@ On systems that support the [required WebGL extension](https://developer.mozilla
 
 ## Option to discard ImageBuffer alpha channel
 
-Functions for converting the contents of an [ImageBuffer]($frontend) into an `HTMLCanvasElement` or PNG image now take an optional argument indicating whether or not the alpha channel should be preserved. [imageBufferToCanvas]($frontend), [imageBufferToPngDataUrl]($frontend), and [imageBufferToBase64EncodedPng]($frontend) all support the new argument.
+Functions for converting the contents of an [ImageBuffer]($common) into an `HTMLCanvasElement` or PNG image now take an optional argument indicating whether or not the alpha channel should be preserved. [imageBufferToCanvas]($frontend), [imageBufferToPngDataUrl]($frontend), and [imageBufferToBase64EncodedPng]($frontend) all support the new argument.
 
 ## Enhancements to IModelDb.exportGraphics
 
-* [IModelDb.exportGraphics]($backend) can now optionally return information about [GeometryPart]($backend) instances encountered in a [GeometryStream]($common). [IModelDb.exportPartGraphics]($backend) can then be used to handle this information in a more efficient manner.
+* [IModelDb.exportGraphics]($backend) can now optionally return information about [GeometryPart]($backend) instances encountered in a [GeometryStreamProps]($common). [IModelDb.exportPartGraphics]($backend) can then be used to handle this information in a more efficient manner.
 
 * [IModelDb.exportGraphics]($backend) can now optionally return information about linework (or "open") geometry encountered in a GeometryStream.
 

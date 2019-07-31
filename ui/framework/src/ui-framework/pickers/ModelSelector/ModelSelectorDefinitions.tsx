@@ -25,14 +25,14 @@ import {
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxInfo } from "@bentley/ui-core";
 
-/** @alpha */
+/** @internal */
 export type TreeNodePromise = Promise<DelayLoadedTreeNodeItem | undefined>;
-/** @alpha */
+/** @internal */
 export type TreeNodeArrayPromise = Promise<DelayLoadedTreeNodeItem[]>;
 
 /**
  * Model Group used by [[ModelSelectorWidget]]
- * @alpha
+ * @internal
  */
 export interface ModelGroup {
   /** Identifier for group as a member of [[Groups]] */
@@ -49,7 +49,7 @@ export interface ModelGroup {
 
 /**
  * Group types available for [[ModelSelectorWidget]] picker
- * @alpha
+ * @internal
  */
 export enum Groups {
   Models,
@@ -58,7 +58,7 @@ export enum Groups {
 
 /**
  * Properties for the [[ModelSelectorWidget]] component
- * @alpha
+ * @internal
  */
 export interface ModelSelectorWidgetProps {
   /** [[IModelConnection]] for current iModel */
@@ -71,7 +71,7 @@ export interface ModelSelectorWidgetProps {
 
 /**
  * State for the [[ModelSelectorWidget]] component
- * @alpha
+ * @internal
  */
 export interface ModelSelectorWidgetState {
   expand: boolean;
@@ -82,7 +82,7 @@ export interface ModelSelectorWidgetState {
 
 /**
  * Information used for filtering in [[CategoryModelTree]]
- * @alpha
+ * @internal
  */
 export interface FilterInfo {
   filter?: string;
@@ -93,7 +93,7 @@ export interface FilterInfo {
 
 /**
  * Properties for the [[CategoryModelTree]] component
- * @alpha
+ * @internal
  */
 export interface CategoryModelTreeProps {
   /** [[IModelConnection]] for current iModel */
@@ -106,7 +106,7 @@ export interface CategoryModelTreeProps {
 
 /**
  * State for the [[CategoryModelTree]] component
- * @alpha
+ * @internal
  */
 export interface CategoryModelTreeState {
   activeGroup: ModelGroup;
@@ -120,7 +120,7 @@ export interface CategoryModelTreeState {
 /**
  * Implementation of a PresentationTreeDataProvider that manages model and category
  * data in [[CategoryModelTree]]
- * @alpha
+ * @internal
  */
 export class ModelSelectorDataProvider
   implements IPresentationTreeDataProvider {

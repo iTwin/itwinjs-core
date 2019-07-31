@@ -12,6 +12,8 @@ import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
+import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 /**
  * Base class for Range1d, Range2d, Range3d.
  * @public
@@ -212,6 +214,12 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       result.extendPoint(p);
     return result;
   }
+  /** Create a range from freely structured MultiLineStringDataVariant. */
+  public static createFromVariantData(data: MultiLineStringDataVariant): Range3d {
+    const collector = new PointStreamRangeCollector();
+    VariantPointDataStream.streamXYZ(data, collector);
+    return collector.claimResult();
+  }
   /** create a Range3d enclosing the transformed points. */
   public static createTransformed<T extends Range3d>(transform: Transform, ...point: Point3d[]): T {
     const result = this.createNull<T>();
@@ -221,14 +229,14 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     return result;
   }
   /** create a Range3d enclosing the transformed points. */
-  public static createTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[]): T {
+  public static createTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T {
     const result = this.createNull<T>();
     result.extendArray(points, transform);
     return result;
   }
 
   /** create a Range3d enclosing the points after inverse transform. */
-  public static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[]): T {
+  public static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T {
     const result = this.createNull<T>();
     result.extendInverseTransformedArray(points, transform);
     return result;
@@ -297,10 +305,10 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     else  // growable array -- this should be implemented without point extraction !!!
       if (transform)
         for (let i = 0; i < points.length; i++)
-          this.extendTransformedXYZ(transform, points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
+          this.extendTransformedXYZ(transform, points.getXAtUncheckedPointIndex(i), points.getYAtUncheckedPointIndex(i), points.getZAtUncheckedPointIndex(i));
       else
         for (let i = 0; i < points.length; i++)
-          this.extendXYZ(points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
+          this.extendXYZ(points.getXAtUncheckedPointIndex(i), points.getYAtUncheckedPointIndex(i), points.getZAtUncheckedPointIndex(i));
   }
 
   /** extend a range around an array of points (optionally transformed) */
@@ -310,7 +318,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         this.extendInverseTransformedXYZ(transform, point.x, point.y, point.z);
     else  // growable array -- this should be implemented without point extraction !!!
       for (let i = 0; i < points.length; i++)
-        this.extendInverseTransformedXYZ(transform, points.getPoint3dAtUncheckedPointIndex(i).x, points.getPoint3dAtUncheckedPointIndex(i).y, points.getPoint3dAtUncheckedPointIndex(i).z);
+        this.extendInverseTransformedXYZ(transform, points.getXAtUncheckedPointIndex(i), points.getYAtUncheckedPointIndex(i), points.getZAtUncheckedPointIndex(i));
   }
 
   /** multiply the point x,y,z by transform and use the coordinate to extend this range.

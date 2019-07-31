@@ -65,6 +65,11 @@ export enum BackendLoggerCategory {
   IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
 
   /** The logger category used by the following classes:
+   * - IModelTileRpcImpl (Tile Uploading)
+   */
+  IModelTileUpload = "imodeljs-backend.IModelTileUpload",
+
+  /** The logger category used by the following classes:
    * - [[Relationship]]
    */
   Relationship = "imodeljs-backend.Relationship",

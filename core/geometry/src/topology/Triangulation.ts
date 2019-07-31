@@ -11,7 +11,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3dArray } from "../geometry3d/PointHelpers";
+import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
 
 /**
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.
@@ -286,25 +286,9 @@ export class Triangulator {
    */
   public static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id: number = 0): HalfEdge[] {
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
-    const seeds: HalfEdge[] = [];
-    let baseNode: HalfEdge | undefined;
-    let nodeB: HalfEdge | undefined;
-    let nodeC: HalfEdge | undefined;
-    Point3dArray.streamXYZXYZ(data,
-      (_childData: MultiLineStringDataVariant, _isLeaf: boolean) => { baseNode = undefined, nodeB = undefined; },
-      (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => {
-        nodeC = graph.createEdgeXYZXYZ(x0, y0, z0, id, x1, y1, z1, id);
-        if (baseNode === undefined) {
-          baseNode = nodeC;
-          nodeB = baseNode.faceSuccessor;
-        } else {
-          HalfEdge.pinch(nodeB!, nodeC);
-          nodeB = nodeC.faceSuccessor;
-        }
-      },
-      (_childData: MultiLineStringDataVariant, _isLeaf: boolean) => { if (baseNode !== undefined) seeds.push(baseNode); baseNode = undefined, nodeB = undefined; },
-    );
-    return seeds;
+    const assembler = new AssembleXYZXYZChains(graph, id);
+    VariantPointDataStream.streamXYZ(data, assembler);
+    return assembler.claimSeeds ();
   }
 
   /**
@@ -784,4 +768,54 @@ export class Triangulator {
     return true;
   }
 
+}
+
+/**
+ * Internal class for assembling chains
+ * @internal
+ */
+class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
+  // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
+  private _seeds?: HalfEdge[];
+  private _baseNode: HalfEdge | undefined;
+  private _nodeB: HalfEdge | undefined;
+  private _nodeC: HalfEdge | undefined;
+  private _graph: HalfEdgeGraph;
+  private _id: any;
+  public constructor(graph: HalfEdgeGraph, id: any) {
+    super();
+    this._graph = graph;
+    this._id = id;
+  }
+  public startChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {
+    super.startChain(chainData, isLeaf);
+    this._baseNode = undefined;
+    this._nodeB = undefined;
+  }
+  public handleXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) {
+    this._nodeC = this._graph.createEdgeXYZXYZ(x0, y0, z0, this._id, x1, y1, z1, this._id);
+    if (this._baseNode === undefined) {
+      this._baseNode = this._nodeC;
+      this._nodeB = this._baseNode!.faceSuccessor;
+    } else {
+      HalfEdge.pinch(this._nodeB!, this._nodeC);
+      this._nodeB = this._nodeC!.faceSuccessor;
+    }
+  }
+  public endChain(chainData: MultiLineStringDataVariant, isLeaf: boolean): void {
+    super.endChain(chainData, isLeaf);
+    if (this._baseNode !== undefined) {
+      if (this._seeds === undefined)
+        this._seeds = [];
+      this._seeds.push(this._baseNode);
+    }
+    this._baseNode = undefined;
+    this._nodeB = undefined;
+    this._nodeC = undefined;
+  }
+  public claimSeeds(): HalfEdge[] {
+    if (this._seeds === undefined)
+      return [];
+    return this._seeds;
+  }
 }

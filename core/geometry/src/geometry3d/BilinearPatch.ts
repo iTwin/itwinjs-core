@@ -12,6 +12,10 @@ import { Transform } from "./Transform";
 import { UVSurface } from "./GeometryHandler";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { Geometry } from "../Geometry";
+import { SmallSystem } from "../numerics/Polynomials";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Ray3d } from "./Ray3d";
+import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 
 /**
  * * A Bilinear patch is defined by its 4 corner points.
@@ -171,6 +175,54 @@ export class BilinearPatch implements UVSurface {
       u0 * (this.point01.y - this.point00.y) + u * (this.point11.y - this.point10.y),
       u0 * (this.point01.z - this.point00.z) + u * (this.point11.z - this.point10.z),
       result);
+  }
+  /** if data[ib][pivotColumn] is larger (abs) than data[ia][pivotColumn] swap the iA and iB arrays */
+  private static conditionalPivot(pivotColumn: number, data: Float64Array[], iA: number, iB: number) {
+    if (Math.abs(data[iB][pivotColumn]) > Math.abs(data[iA][pivotColumn])) {
+      const q = data[iA];
+      data[iA] = data[iB];
+      data[iB] = q;
+    }
+  }
+  /**
+   * Compute the (points of) intersection with a ray.
+   * @param ray ray in space
+   * @returns 1 or 2 points if there are intersections, undefined if no intersections
+   */
+  public intersectRay(ray: Ray3d): CurveAndSurfaceLocationDetail[] | undefined {
+    const vectorU = this.point10.minus(this.point00);
+    const vectorV = this.point01.minus(this.point00);
+    const vectorW = this.point11.minus(this.point10);
+    vectorW.subtractInPlace(vectorV);
+    // coefficients of (each component of)
+    //    `ray.origin + t * ray.direction = point00 + u * vectorU + v * vectorV + u*v*vectorW`
+    // for x as typical direction as x, the scalar equation with coefficient order for arrays is
+    //    `0 = -ray.origin.x * t + (point00.x - ray.origin.x) + u * vectorU.x + v * vectorV.x + u * v * vectorW.x`
+    // (and that particular equation is invoked to isolate t when uv is known)
+    const coffs = [
+      new Float64Array([-ray.direction.x, this.point00.x - ray.origin.x, vectorU.x, vectorV.x, vectorW.x]),
+      new Float64Array([-ray.direction.y, this.point00.y - ray.origin.y, vectorU.y, vectorV.y, vectorW.y]),
+      new Float64Array([-ray.direction.z, this.point00.z - ray.origin.z, vectorU.z, vectorV.z, vectorW.z])];
+    // bring the largest ray.direction coefficient to the 0 equation.
+    BilinearPatch.conditionalPivot(0, coffs, 0, 1);
+    BilinearPatch.conditionalPivot(0, coffs, 0, 2);
+    SmallSystem.eliminateFromPivot(coffs[0], 0, coffs[1], -1.0);
+    SmallSystem.eliminateFromPivot(coffs[0], 0, coffs[2], -1.0);
+    const uvArray = SmallSystem.solveBilinearPair(
+      coffs[1][1], coffs[1][2], coffs[1][3], coffs[1][4],
+      coffs[2][1], coffs[2][2], coffs[2][3], coffs[2][4]);
+    if (uvArray) {
+      const result: CurveAndSurfaceLocationDetail[] = [];
+      for (const uv of uvArray) {
+        const t = -(coffs[0][1] + coffs[0][2] * uv.x + (coffs[0][3] + coffs[0][4] * uv.x) * uv.y) / coffs[0][0];
+        const point = ray.fractionToPoint(t);
+        result.push(new CurveAndSurfaceLocationDetail(
+          CurveLocationDetail.createRayFractionPoint(ray, t, point),
+          UVSurfaceLocationDetail.createSurfaceUVPoint(this, uv, point)));
+      }
+      return result;
+    }
+    return undefined;
   }
   /**
    * Returns the larger of the u-direction edge lengths at v=0 and v=1

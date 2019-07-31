@@ -2,15 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+// *** OK to depend on bentleyjs-core and imodeljs-common
 import {
   BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbOpcode, DbResult, GuidString, Id64String,
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
 import { ElementProps, ChangedElements, QueryLimit, QueryQuota, QueryPriority } from "@bentley/imodeljs-common";
-import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
-import { IModelDb, TxnIdString } from "./IModelDb";
-import { Config, PollStatus, PostStatus } from "./ConcurrentQuery";
-import { UsageType } from "@bentley/imodeljs-clients";
+// *** Add no dependencies on other packages! ***
+// *** Add no dependencies on other packages! ***
+// *** Add no dependencies on other packages! ***
 
 /** Logger categories used by the native addon
  * @internal
@@ -34,6 +34,13 @@ export declare namespace IModelJsNative {
     name: string;
     value: string;
   }
+
+  export enum UsageType {
+    Production, Trial, Beta, HomeUse, PreActivation,
+  }
+
+  /** A string that identifies a Txn. */
+  export type TxnIdString = string;
 
   export interface NativeCrashReportingConfig {
     /** The directory to which *.dmp and/or iModelJsNativeCrash*.properties.txt files are written. */
@@ -67,16 +74,73 @@ export declare namespace IModelJsNative {
     /** Result of the operation. This property is defined if the operation completed successfully */
     result?: ResultType;
   }
+  export namespace ConcurrentQuery {
+    /** Configuration for concurrent query manager
+     * @internal
+     */
+    export interface Config {
+      /** Time seconds after which any completed query result will be purged */
+      autoExpireTimeForCompletedQuery?: number;
+      /** Number of concurrent worker to use. By default set to available CPUs */
+      concurrent?: number;
+      /** Number of ECSQL cached statement held by a single worker */
+      cachedStatementsPerThread?: number;
+      /** Maximum size of query queue after which incoming queries are rejected */
+      maxQueueSize?: number;
+      /** Minimum time interval in seconds after which monitor starts. */
+      minMonitorInterval?: number;
+      /** idle period of time in seconds after which resources and caches are purged */
+      idleCleanupTime?: number;
+      /** Poll interval in milliseconds. */
+      pollInterval?: number;
+      /** Global restriction on query quota */
+      quota?: QueryQuota;
+      /** Use sqlite shared cache option */
+      useSharedCache?: boolean;
+      /** Read uncommited read for better performance */
+      useUncommitedRead?: boolean;
+    }
+
+    /** Post status for concurrent query manager
+     *  @internal
+     */
+    export enum PostStatus {
+      NotInitialized = 0,
+      Done = 1,
+      QueueSizeExceeded = 2,
+    }
+
+    /** Poll status for concurrent query manager
+     *  @internal
+     */
+    export enum PollStatus {
+      NotInitialized = 0,
+      Done = 1,
+      Pending = 2,
+      Partial = 3,
+      Timeout = 4,
+      Error = 5,
+      NotFound = 6,
+    }
+  }
   export interface IConcurrentQueryManager {
-    concurrentQueryInit(config: Config): boolean;
-    postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
-    pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
+    concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
+    postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: ConcurrentQuery.PostStatus, taskId: number };
+    pollConcurrentQuery(taskId: number): { status: ConcurrentQuery.PollStatus, result: string, rowCount: number };
   }
   export interface TileContent {
     content: Uint8Array;
     elapsedSeconds: number;
   }
-
+  /** Represents the current state of a pollable tile content request.
+   * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+   * @internal
+   */
+  export enum TileContentState {
+    New, // Request was just created and enqueued.
+    Pending, // Request is enqueued but not yet being processed.
+    Loading, // Request is being actively processed.
+  }
   export class BriefcaseManagerResourcesRequest {
     public reset(): void;
     public isEmpty(): boolean;
@@ -125,8 +189,8 @@ export declare namespace IModelJsNative {
     public enableTxnTesting(): void;
     public endMultiTxnOperation(): DbResult;
     public executeTest(testName: string, params: string): string;
-    public exportGraphics(exportProps: ExportGraphicsProps): DbResult;
-    public exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+    public exportGraphics(exportProps: any/*ExportGraphicsProps*/): DbResult;
+    public exportPartGraphics(exportProps: any/*ExportPartGraphicsProps*/): DbResult;
     public exportSchemas(exportDirectory: string): DbResult;
     public extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
     public extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
@@ -151,7 +215,7 @@ export declare namespace IModelJsNative {
     public getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
     public getSchemaItem(schemaName: string, itemName: string): ErrorStatusOrResult<IModelStatus, string>;
     public getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
-    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
+    public pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, TileContentState | TileContent>;
     public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public getTxnDescription(txnId: TxnIdString): string;
     public getUndoString(): string;
@@ -196,7 +260,7 @@ export declare namespace IModelJsNative {
     public setBriefcaseManagerOptimisticConcurrencyControlPolicy(conflictPolicy: BriefcaseManagerOnConflictPolicy): RepositoryStatus;
     public setBriefcaseManagerPessimisticConcurrencyControlPolicy(): RepositoryStatus;
     public setDbGuid(guid: GuidString): DbResult;
-    public setIModelDb(iModelDb?: IModelDb): void;
+    public setIModelDb(iModelDb?: any/*IModelDb*/): void;
     public startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
     public updateElement(elemProps: string): IModelStatus;
     public updateElementAspect(aspectProps: string): IModelStatus;
@@ -204,9 +268,9 @@ export declare namespace IModelJsNative {
     public updateLinkTableRelationship(props: string): DbResult;
     public updateModel(modelProps: string): IModelStatus;
     public updateProjectExtents(newExtentsJson: string): void;
-    public concurrentQueryInit(config: Config): boolean;
-    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
-    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
+    public concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: ConcurrentQuery.PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: ConcurrentQuery.PollStatus, result: string, rowCount: number };
     public static vacuum(dbName: string, pageSize?: number): DbResult;
     public static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
   }
@@ -261,9 +325,9 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
-    public concurrentQueryInit(config: Config): boolean;
-    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: PostStatus, taskId: number };
-    public pollConcurrentQuery(taskId: number): { status: PollStatus, result: string, rowCount: number };
+    public concurrentQueryInit(config: ConcurrentQuery.Config): boolean;
+    public postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): { status: ConcurrentQuery.PostStatus, taskId: number };
+    public pollConcurrentQuery(taskId: number): { status: ConcurrentQuery.PollStatus, result: string, rowCount: number };
   }
 
   export class ChangedElementsECDb implements IDisposable {

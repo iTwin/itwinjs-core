@@ -84,6 +84,7 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 
 import { SvgSprite, ScrollView } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
+import { Point } from "@bentley/ui-ninezone";
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
@@ -480,7 +481,23 @@ class FrontstageToolWidget extends React.Component {
             {FrontstageManager.activeToolSettingsNode}
           </CursorPopupContent>
         );
-        CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, 20, RelativePosition.TopRight);
+        // CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
+        CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
+        CursorPopupManager.open("testTR", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 11);
+        CursorPopupManager.open("test2", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 10);
+        CursorPopupManager.open("test3", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 11);
+        CursorPopupManager.open("test4", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 10);
+        CursorPopupManager.open("test5", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 11);
+        CursorPopupManager.open("test6", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 10);
+        CursorPopupManager.open("test7", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 11);
+        CursorPopupManager.open("test8", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 10);
+        CursorPopupManager.open("test9", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 11);
+        CursorPopupManager.open("test10", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 10);
+        CursorPopupManager.open("test11", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 11);
+        CursorPopupManager.open("test12", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 10);
+        CursorPopupManager.open("test13", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 11);
+        CursorPopupManager.open("testBR", <CursorPopupContent>Hello</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 10);
+        CursorPopupManager.open("testBR2", <CursorPopupContent>World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 11);
         CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
         document.addEventListener("keyup", this._handleCursorPopupKeypress);
       },
@@ -497,7 +514,7 @@ class FrontstageToolWidget extends React.Component {
 
   private _handleCursorUpdated(args: CursorUpdatedEventArgs) {
     // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
-    CursorPopupManager.updatePosition(args.newPt, 20, RelativePosition.TopRight);
+    CursorPopupManager.updatePosition(args.newPt);
   }
 
   private _handleCursorPopupKeypress = (event: any) => {
@@ -510,6 +527,21 @@ class FrontstageToolWidget extends React.Component {
 
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
+    CursorPopupManager.close("test2", false);
+    CursorPopupManager.close("test3", false);
+    CursorPopupManager.close("test4", false);
+    CursorPopupManager.close("test5", false);
+    CursorPopupManager.close("test6", false);
+    CursorPopupManager.close("test7", false);
+    CursorPopupManager.close("test8", false);
+    CursorPopupManager.close("test9", false);
+    CursorPopupManager.close("test10", false);
+    CursorPopupManager.close("test11", false);
+    CursorPopupManager.close("test12", false);
+    CursorPopupManager.close("test13", false);
+    CursorPopupManager.close("testTR", false);
+    CursorPopupManager.close("testBR", false);
+    CursorPopupManager.close("testBR2", false);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }

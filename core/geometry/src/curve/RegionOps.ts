@@ -5,7 +5,7 @@
 
 /** @module Curve */
 
-import { AnyRegion } from "./CurveChain";
+import { AnyRegion, AnyCurve } from "./CurveChain";
 import { MomentData } from "../geometry4d/MomentData";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
@@ -19,6 +19,7 @@ import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { PolygonWireOffsetContext } from "./PolygonOffsetContext";
 import { CurveCollection } from "./CurveCollection";
+import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -242,11 +243,13 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
  * * `ParityRegion` -- a collection of loops, interpreted by parity rules.
  *    * The common "One outer loop and many Inner loops" is a parity region.
  * * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * @alpha
+ * @beta
  */
 export class RegionOps {
   /**
-   * Return moment data for a loop, parity region, or union region.
+   * Return moment sums for a loop, parity region, or union region.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
    * @param root any Loop, ParityRegion, or UnionRegion.
    */
   public static computeXYAreaMoments(root: AnyRegion): MomentData | undefined {
@@ -257,6 +260,17 @@ export class RegionOps {
       return result;
     }
     return undefined;
+  }
+  /** Return MomentData with the sums of wire moments.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   */
+  public static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined {
+    const handler = new CurveWireMomentsXYZ();
+    handler.visitLeaves(root);
+    const result = handler.momentData;
+    result.shiftOriginAndSumsToCentroidOfSums();
+    return result;
   }
 
   /**
@@ -350,7 +364,7 @@ export class RegionOps {
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistance distance of offset from wire.  Positive is left.
-   * @alpha
+   * @beta
    */
   public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
     const context = new PolygonWireOffsetContext();

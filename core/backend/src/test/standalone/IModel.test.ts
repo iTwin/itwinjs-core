@@ -37,7 +37,7 @@ import {
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionPartition,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
@@ -1278,6 +1278,14 @@ describe("iModel", () => {
 
     // Delete the model
     testImodel.models.deleteModel(newModelId);
+
+    // Test insertModel error handling
+    assert.throws(() => {
+      testImodel.models.insertModel({
+        classFullName: DefinitionModel.classFullName,
+        modeledElement: { id: "0x10000000bad" },
+      });
+    }, IModelError);
   });
 
   it("should create model with custom relationship to modeled element", async () => {

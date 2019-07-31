@@ -7160,7 +7160,7 @@ export class ToolAdmin {
 export class ToolAssistance {
     static readonly altKey: string;
     static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
     static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
     static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
     static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
@@ -7168,16 +7168,16 @@ export class ToolAssistance {
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static downSymbol: string;
+    static readonly downSymbol: string;
     static readonly inputsLabel: string;
-    static leftSymbol: string;
-    static rightSymbol: string;
+    static readonly leftSymbol: string;
+    static readonly rightSymbol: string;
     static readonly shiftKey: string;
     static readonly shiftKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly shiftKeyboardInfoNoSymbol: ToolAssistanceKeyboardInfo;
-    static shiftSymbol: string;
+    static readonly shiftSymbol: string;
     static readonly shiftSymbolKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static upSymbol: string;
+    static readonly upSymbol: string;
 }
 
 // @alpha

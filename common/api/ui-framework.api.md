@@ -64,6 +64,7 @@ import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-ninezone';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
+import { Rectangle } from '@bentley/ui-ninezone';
 import { RectangleProps } from '@bentley/ui-ninezone';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/imodeljs-frontend';
@@ -951,84 +952,96 @@ export class CursorInformation {
 }
 
 // @alpha
-export class CursorPopup extends React_2.Component<CommonProps, CursorPopupState> {
+export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
     // @internal
-    constructor(props: CommonProps);
-    // @internal (undocumented)
+    constructor(props: CursorPopupProps);
+    // (undocumented)
     componentDidMount(): void;
-    // @internal (undocumented)
+    // (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
-    render(): JSX.Element | null;
-}
-
-// @internal
-export class CursorPopupCloseEvent extends UiEvent<CursorPopupCloseEventArgs> {
-}
-
-// @internal
-export interface CursorPopupCloseEventArgs {
-    // (undocumented)
-    apply: boolean;
-    // (undocumented)
-    fadeOut?: boolean;
-    // (undocumented)
-    id: string;
-}
+    static fadeOutTime: number;
+    // @internal (undocumented)
+    static getPopupRect(pt: Point, offset: Point, popupSize: Size | undefined, relativePosition: RelativePosition): Rectangle;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
 
 // @alpha
 export const CursorPopupContent: React_2.FunctionComponent<CommonDivProps>;
+
+// @internal
+export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> {
+}
+
+// @internal
+export interface CursorPopupFadeOutEventArgs {
+    // (undocumented)
+    id: string;
+}
 
 // @alpha
 export class CursorPopupManager {
     static close(id: string, apply: boolean, fadeOut?: boolean): void;
     // @internal (undocumented)
-    static readonly onCursorPopupCloseEvent: CursorPopupCloseEvent;
+    static readonly onCursorPopupFadeOutEvent: CursorPopupFadeOutEvent;
     // @internal (undocumented)
-    static readonly onCursorPopupOpenEvent: CursorPopupOpenEvent;
+    static readonly onCursorPopupsChangedEvent: CursorPopupsChangedEvent;
     // @internal (undocumented)
     static readonly onCursorPopupUpdatePositionEvent: CursorPopupUpdatePositionEvent;
-    static open(id: string, content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition, props?: CursorPopupProps): void;
-    static update(id: string, content: React.ReactNode, pt: Point, offset: number, relativePosition: RelativePosition): void;
-    static updatePosition(pt: Point, offset: number, relativePosition: RelativePosition): void;
-}
-
-// @internal
-export class CursorPopupOpenEvent extends UiEvent<CursorPopupOpenEventArgs> {
-}
-
-// @internal
-export interface CursorPopupOpenEventArgs {
+    static open(id: string, content: React_2.ReactNode, pt: Point, offset: Point, relativePosition: RelativePosition, priority?: number, options?: CursorPopupOptions): void;
     // (undocumented)
-    content: React.ReactNode;
+    static readonly popupCount: number;
     // (undocumented)
-    id: string;
-    // (undocumented)
-    offset: number;
-    // (undocumented)
-    props?: CursorPopupProps;
-    // (undocumented)
-    pt: Point;
-    // (undocumented)
-    relativePosition: RelativePosition;
-}
+    static readonly popups: CursorPopupInfo[];
+    static update(id: string, content: React_2.ReactNode, pt: Point, offset: Point, relativePosition: RelativePosition, priority?: number): void;
+    static updatePosition(pt: Point): void;
+    }
 
 // @alpha
-export interface CursorPopupProps {
+export interface CursorPopupOptions {
     onApply?: () => void;
     onClose?: () => void;
     shadow?: boolean;
     title?: string;
 }
 
+// @alpha
+export interface CursorPopupProps extends CommonProps {
+    // (undocumented)
+    content: React_2.ReactNode;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    offset: Point;
+    onSizeKnown?: (size: Size) => void;
+    // (undocumented)
+    pt: Point;
+    // (undocumented)
+    relativePosition: RelativePosition;
+    // (undocumented)
+    shadow?: boolean;
+    // (undocumented)
+    title?: string;
+}
+
+// @public
+export class CursorPopupRenderer extends React_2.Component<any, CursorPopupRendererState> {
+    constructor(props: any);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React_2.ReactNode;
+    }
+
 // @internal
 export enum CursorPopupShow {
     // (undocumented)
-    Close = 0,
+    FadeOut = 1,
     // (undocumented)
-    FadeOut = 2,
-    // (undocumented)
-    Open = 1
+    Open = 0
 }
 
 // @internal
@@ -1038,20 +1051,16 @@ export class CursorPopupUpdatePositionEvent extends UiEvent<CursorPopupUpdatePos
 // @internal
 export interface CursorPopupUpdatePositionEventArgs {
     // (undocumented)
-    offset: number;
-    // (undocumented)
     pt: Point;
-    // (undocumented)
-    relativePosition: RelativePosition;
 }
 
 // @alpha (undocumented)
 export class CursorPrompt {
-    constructor(timeOut: number);
+    constructor(timeOut: number, fadeOut: boolean);
+    // @internal
+    close(fadeOut: boolean): void;
     // (undocumented)
-    close(): void;
-    // (undocumented)
-    display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: number, relativePosition?: RelativePosition): void;
+    display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: Point, relativePosition?: RelativePosition): void;
     }
 
 // @alpha
@@ -2533,18 +2542,18 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
     render(): React_2.ReactNode;
 }
 
-// @alpha
+// @internal @deprecated
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
-    // @internal (undocumented)
+    // (undocumented)
     componentDidMount(): void;
-    // @internal (undocumented)
+    // (undocumented)
     componentWillUnmount(): void;
-    // @internal (undocumented)
+    // (undocumented)
     render(): JSX.Element;
     }
 
-// @alpha
+// @internal
 export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
@@ -3505,11 +3514,12 @@ export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldPr
     }
 
 // @alpha
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout">;
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt">;
 
 // @alpha
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
     cursorPromptTimeout: number;
+    fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
     uiSettings: UiSettings;
 }
