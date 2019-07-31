@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Code, CodeSpec, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
+import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
-import { ElementAspect, ExternalSourceAspect } from "./ElementAspect";
+import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -38,6 +38,8 @@ export class IModelTransformer {
   protected _excludedElementClasses = new Set<typeof Element>();
   /** The set of Elements that were skipped during a prior transformation pass. */
   protected _skippedElementIds = new Set<Id64String>();
+  /** The set of classes of ElementAspects that will be excluded (polymorphically) from transformation to the target iModel. */
+  protected _excludedElementAspectClasses = new Set<typeof ElementAspect>();
   /** The set of classes of Relationships that will be excluded (polymorphically) from transformation to the target iModel. */
   protected _excludedRelationshipClasses = new Set<typeof Relationship>();
 
@@ -49,6 +51,7 @@ export class IModelTransformer {
     this._sourceDb = sourceDb;
     this._targetDb = targetDb;
     this._importContext = new IModelHost.platform.ImportContext(this._sourceDb.nativeDb, this._targetDb.nativeDb);
+    this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
   }
 
   /** Dispose any native resources associated with this IModelImporter. */
@@ -120,6 +123,11 @@ export class IModelTransformer {
     this._excludedElementClasses.add(this._sourceDb.getJsClass<typeof Element>(sourceClassFullName));
   }
 
+  /** Add a rule to exclude all ElementAspects of a specified class. */
+  public excludeElementAspectClass(sourceClassFullName: string): void {
+    this._excludedElementAspectClasses.add(this._sourceDb.getJsClass<typeof ElementAspect>(sourceClassFullName));
+  }
+
   /** Add a rule to exclude all Relationships of a specified class. */
   public excludeRelationshipClass(sourceClassFullName: string): void {
     this._excludedRelationshipClasses.add(this._sourceDb.getJsClass<typeof Relationship>(sourceClassFullName));
@@ -167,10 +175,17 @@ export class IModelTransformer {
 
   /** Called after processing a source Relationship when that processing caused a new Relationship to be inserted in the target iModel.
    * @param _sourceRelationship The sourceRelationship that was processed
-   * @param _targetRelInstanceId The instance Id of the Relationship that was inserted into the target iModel.
+   * @param _targetRelationshipProps The RelationshipProps that were inserted into the target iModel.
    * @note A subclass can override this method to be notified after Relationships have been inserted.
    */
-  protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void { }
+  protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void { }
+
+  /** Called after processing a source Relationship when that processing caused an existing Relationship to be updated in the target iModel.
+   * @param _sourceRelationship The sourceRelationship that was processed
+   * @param _targetRelationshipProps The RelationshipProps that were updated in the target iModel.
+   * @note A subclass can override this method to be notified after Relationships have been inserted.
+   */
+  protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void { }
 
   /** Called after a source Relationship was purposely excluded from the target iModel.
    * @param _sourceRelationship The source Relationship that was excluded from transformation.
@@ -180,20 +195,20 @@ export class IModelTransformer {
 
   /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel.
    * @param _sourceElement The sourceElement that was processed
-   * @param _targetElementIds An array of ElementIds that identify the Elements that were inserted into the target iModel because of processing the source Element.
+   * @param _targetElementProps The ElementProps that were inserted into the target iModel because of processing the source Element.
    * @note A subclass can override this method to be notified after Elements have been inserted. This can be used to establish relationships or for other operations that require knowing ElementIds.
    */
-  protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void { }
+  protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void { }
 
   /** Called after processing a source Element when that processing caused an Element or Elements to be updated in the target iModel.
    * @param _sourceElement The sourceElement that was processed
-   * @param _targetElementIds An array of ElementIds that identify the Elements that were updated in the target iModel because of processing the source Element.
+   * @param _targetElementProps The ElementProps that were updated in the target iModel because of processing the source Element.
    * @note A subclass can override this method to be notified after Elements have been updated. This can be used to establish relationships or for other operations that require knowing ElementIds.
    */
-  protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void { }
+  protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void { }
 
   /** Called after it was determined that it was not possible to import a source Element. This is usually because one or more required predecessors has not been imported yet.
-   * @param sourceElement The source Element that was skipped.
+   * @param _sourceElement The source Element that was skipped.
    * @note A subclass can override this method to be notified after an Element has been skipped.
    */
   protected onElementSkipped(_sourceElement: Element): void { }
@@ -203,6 +218,30 @@ export class IModelTransformer {
    * @note A subclass can override this method to be notified after an Element has been excluded.
    */
   protected onElementExcluded(_sourceElement: Element): void { }
+
+  /** Called after a source ElementAspect was purposely excluded from the target iModel.
+   * @param _sourceElementAspect The source ElementAspect that was excluded from transformation.
+   * @note A subclass can override this method to be notified after an ElementAspect has been excluded.
+   */
+  protected onElementAspectExcluded(_sourceElementAspect: ElementAspect): void { }
+
+  /** Called after an ElementAspect was inserted into the target iModel.
+   * @param _targetElementAspect The ElementAspectProps that were inserted into the target iModel.
+   * @note A subclass can override this method to be notified after ElementAspects have been inserted.
+   */
+  protected onElementAspectInserted(_targetElementAspect: ElementAspectProps): void { }
+
+  /** Called after an ElementAspect was updated in the target iModel.
+   * @param _targetElementAspect The ElementAspectProps that were updated in the target iModel.
+   * @note A subclass can override this method to be notified after ElementAspects have been updated.
+   */
+  protected onElementAspectUpdated(_targetElementAspect: ElementAspectProps): void { }
+
+  /** Called after an ElementAspect was deleted from the target iModel.
+   * @param _targetElementAspect The target ElementAspect that was deleted.
+   * @note A subclass can override this method to be notified after an ElementAspect has been deleted.
+   */
+  protected onElementAspectDeleted(_targetElementAspect: ElementAspect): void { }
 
   /** Returns true if the specified sourceElement should be excluded from the target iModel.
    * @param sourceElement The Element from the source iModel to consider
@@ -230,7 +269,7 @@ export class IModelTransformer {
   }
 
   /** Format an Id for the Logger. The base implementation returns a hex string.
-   * @note This can be overridden if an integer (to match SQLite Expert) or base-36 string (to match UI) is desired instead.
+   * @note This can be overridden if an integer (to match SQLite Expert) or a base-36 string (to match UI) is desired instead.
    */
   protected formatIdForLogger(id: Id64String): string {
     return id;
@@ -252,6 +291,11 @@ export class IModelTransformer {
     return `${elementProps.classFullName} ${namePiece}[${this.formatIdForLogger(elementProps.id!)}]`;
   }
 
+  /** Format an ElementAspect for the Logger. */
+  protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string {
+    return `${elementAspectProps.classFullName} elementId=[${this.formatIdForLogger(elementAspectProps.element.id)}]`;
+  }
+
   /** Mark the specified Element as skipped so its processing can be deferred. */
   protected skipElement(sourceElement: Element): void {
     this._skippedElementIds.add(sourceElement.id);
@@ -259,33 +303,25 @@ export class IModelTransformer {
   }
 
   /** Transform the specified sourceElement into ElementProps for the target iModel.
-   * The most common case is 1 sourceElement transformed to 1 targetElement, but there are cases where a single sourceElement is transformed into multiple target Elements.
    * @param sourceElement The Element from the source iModel to transform.
-   * @returns An array of ElementProps for the target iModel.
+   * @returns ElementProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
    */
-  protected transformElement(sourceElement: Element): ElementProps[] {
-    const array: ElementProps[] = [];
+  protected transformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElement.id);
     targetElementProps.federationGuid = sourceElement.federationGuid; // cloneElement strips off federationGuid
-    array.push(targetElementProps);
-    return array;
+    return targetElementProps;
   }
 
   /** Insert the transformed Element into the target iModel.
    * @param targetElementProps The ElementProps for the Element that will be inserted into the target iModel.
-   * @param sourceAspectProps The ExternalSourceAspect owned by the target Element that will track the source Element.
+   * @returns The ElementId of the newly inserted Element.
    * @note A subclass can override this method to provide custom insert behavior.
    */
-  protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
-    if (!Id64.isValidId64(sourceAspectProps.identifier)) {
-      throw new IModelError(IModelStatus.InvalidId, "ExternalSourceAspect.identifier not provided", Logger.logError, loggerCategory);
-    }
+  protected insertElement(targetElementProps: ElementProps): Id64String {
     const targetElementId: Id64String = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
-    this.remapElement(sourceAspectProps.identifier, targetElementId);
     Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatElementForLogger(targetElementProps)}`);
-    sourceAspectProps.element.id = targetElementId;
-    this._targetDb.elements.insertAspect(sourceAspectProps);
+    return targetElementId;
   }
 
   /** Transform the specified sourceElement and update result into the target iModel.
@@ -321,7 +357,9 @@ export class IModelTransformer {
     return true;
   }
 
-  /** Determine if any predecessors have not been imported yet. */
+  /** Determine if any predecessors have not been imported yet.
+   * @param sourceElement The Element from the source iModel
+   */
   public findMissingPredecessors(sourceElement: Element): Id64Set {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((elementId: Id64String) => {
@@ -347,15 +385,11 @@ export class IModelTransformer {
     let targetElementId: Id64String | undefined = this.findTargetElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
-        const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
-        if (transformedElementProps.length > 0) {
-          transformedElementProps[0].id = targetElementId;
-          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-          for (const targetElementProps of transformedElementProps) {
-            this.updateElement(targetElementProps, sourceAspectProps);
-          }
-          this.onElementUpdated(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
-        }
+        const targetElementProps: ElementProps = this.transformElement(sourceElement);
+        targetElementProps.id = targetElementId;
+        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+        this.updateElement(targetElementProps, sourceAspectProps);
+        this.onElementUpdated(sourceElement, targetElementProps);
       }
     } else {
       const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement); // WIP: move into transformElement?
@@ -364,28 +398,22 @@ export class IModelTransformer {
         this.onElementSkipped(sourceElement);
         return; // skipping an element will also skip its children or sub-models
       }
-      const transformedElementProps: ElementProps[] = this.transformElement(sourceElement);
-      targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(transformedElementProps[0].code));
+      const targetElementProps: ElementProps = this.transformElement(sourceElement);
+      targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (targetElementId === undefined) {
-        if (transformedElementProps.length > 0) {
-          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId);
-          for (const targetElementProps of transformedElementProps) {
-            this.insertElement(targetElementProps, sourceAspectProps);
-          }
-          this.onElementInserted(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
-        }
+        targetElementId = this.insertElement(targetElementProps);
+        this.remapElement(sourceElement.id, targetElementId!);
+        this.onElementInserted(sourceElement, targetElementProps);
+        this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId));
       } else if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
-        if (transformedElementProps.length > 0) {
-          this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
-          transformedElementProps[0].id = targetElementId;
-          const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-          for (const targetElementProps of transformedElementProps) {
-            this.updateElement(targetElementProps, sourceAspectProps);
-          }
-          this.onElementUpdated(sourceElement, transformedElementProps.map((elementProps: ElementProps) => elementProps.id!));
-        }
+        this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+        targetElementProps.id = targetElementId;
+        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+        this.updateElement(targetElementProps, sourceAspectProps);
+        this.onElementUpdated(sourceElement, targetElementProps);
       }
     }
+    this.importElementAspects(sourceElementId, targetElementId);
     this.importChildElements(sourceElementId, targetScopeElementId);
   }
 
@@ -501,16 +529,18 @@ export class IModelTransformer {
       try {
         // check for an existing relationship
         const relSourceAndTarget = { sourceId: targetRelationshipProps.sourceId, targetId: targetRelationshipProps.targetId };
-        const relProps = this._targetDb.relationships.getInstanceProps<RelationshipProps>(targetRelationshipProps.classFullName, relSourceAndTarget);
+        const targetRelationship = this._targetDb.relationships.getInstance(targetRelationshipProps.classFullName, relSourceAndTarget);
         // if relationship found, update it
-        targetRelationshipProps.id = relProps.id;
-        this.updateRelationship(targetRelationshipProps);
-        // WIP: need to determine if there is actually anything to update before an onUpdated callback makes sense
+        targetRelationshipProps.id = targetRelationship.id;
+        if (this.hasRelationshipChanged(targetRelationship, targetRelationshipProps)) {
+          this.updateRelationship(targetRelationshipProps);
+          this.onRelationshipUpdated(sourceRelationship, targetRelationshipProps);
+        }
       } catch (error) {
         // catch NotFound error and insert relationship
         if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
-          const targetRelInstanceId: Id64String = this.insertRelationship(targetRelationshipProps);
-          this.onRelationshipInserted(sourceRelationship, targetRelInstanceId);
+          this.insertRelationship(targetRelationshipProps);
+          this.onRelationshipInserted(sourceRelationship, targetRelationshipProps);
         } else {
           throw error;
         }
@@ -570,6 +600,223 @@ export class IModelTransformer {
     }
     this._targetDb.relationships.updateInstance(targetRelationshipProps);
     Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
+  }
+
+  /** Returns true if a change within a Relationship is detected.
+   * @param relationship The current persistent Relationship
+   * @param relationshipProps The new RelationshipProps to compare against
+   * @returns `true` if a change is detected
+   */
+  private hasRelationshipChanged(relationship: Relationship, relationshipProps: RelationshipProps): boolean {
+    let changed: boolean = false;
+    relationship.forEachProperty((propertyName: string) => {
+      if (!changed && (relationship[propertyName] !== relationshipProps[propertyName])) {
+        changed = true;
+      }
+    }, true);
+    return changed;
+  }
+
+  /** Import ElementAspects from the specified source Element into the target iModel.
+   * @param sourceElementId The ElementId of the source Element that owns the ElementAspects to be transformed.
+   * @param targetElementId The ElementId of the target Element that will own the ElementAspects after transformation.
+   */
+  private importElementAspects(sourceElementId: Id64String, targetElementId: Id64String): void {
+    this.importUniqueAspects(sourceElementId, targetElementId);
+    this.importMultiAspects(sourceElementId, targetElementId);
+  }
+
+  /** Import ElementUniqueAspects from the specified source Element into the target iModel.
+   * @param sourceElementId The ElementId of the source Element that owns the ElementUniqueAspects to be transformed.
+   * @param targetElementId The ElementId of the target Element that will own the ElementUniqueAspects after transformation.
+   */
+  private importUniqueAspects(sourceElementId: Id64String, targetElementId: Id64String): void {
+    const sourceUniqueAspects: ElementAspect[] = this._sourceDb.elements.getAspects(sourceElementId, ElementUniqueAspect.classFullName);
+    const targetUniqueAspectClasses = new Set<string>();
+    sourceUniqueAspects.forEach((sourceUniqueAspect: ElementAspect) => {
+      if (this.shouldExcludeElementAspect(sourceUniqueAspect)) {
+        this.onElementAspectExcluded(sourceUniqueAspect);
+      } else {
+        const targetUniqueAspectProps: ElementAspectProps = this.transformElementAspect(sourceUniqueAspect, targetElementId);
+        targetUniqueAspectClasses.add(targetUniqueAspectProps.classFullName);
+        const targetAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, targetUniqueAspectProps.classFullName);
+        if (targetAspects.length === 0) {
+          this.insertElementAspect(targetUniqueAspectProps);
+          this.onElementAspectInserted(targetUniqueAspectProps);
+        } else if (this.hasElementAspectChanged(targetAspects[0], targetUniqueAspectProps)) {
+          this.updateElementAspect(targetUniqueAspectProps);
+          this.onElementAspectUpdated(targetUniqueAspectProps);
+        }
+      }
+    });
+    const targetUniqueAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ElementUniqueAspect.classFullName);
+    targetUniqueAspects.forEach((targetUniqueAspect: ElementAspect) => {
+      if (!targetUniqueAspectClasses.has(targetUniqueAspect.classFullName)) {
+        if (this.shouldDeleteElementAspect(targetUniqueAspect)) {
+          this.deleteElementAspect(targetUniqueAspect);
+          this.onElementAspectDeleted(targetUniqueAspect);
+        }
+      }
+    });
+  }
+
+  /** Import ElementMultiAspects from the specified source Element into the target iModel.
+   * @param sourceElementId The ElementId of the source Element that owns the ElementMultiAspects to be transformed.
+   * @param targetElementId The ElementId of the target Element that will own the ElementMultiAspects after transformation.
+   */
+  private importMultiAspects(sourceElementId: Id64String, targetElementId: Id64String): void {
+    // Get all source MultiAspects
+    const sourceMultiAspects: ElementAspect[] = this._sourceDb.elements.getAspects(sourceElementId, ElementMultiAspect.classFullName);
+
+    // Use exclusion rules to filter source MultiAspects
+    const filteredSourceAspects: ElementAspect[] = sourceMultiAspects.filter((sourceMultiAspect: ElementAspect) => {
+      if (this.shouldExcludeElementAspect(sourceMultiAspect)) {
+        this.onElementAspectExcluded(sourceMultiAspect);
+        return false;
+      }
+      return true;
+    });
+
+    // Transform remaining source MultiAspects into target ElementAspectProps
+    const targetAspectPropsArray: ElementAspectProps[] = filteredSourceAspects.map((sourceMultiAspect: ElementAspect) => {
+      return this.transformElementAspect(sourceMultiAspect, targetElementId);
+    });
+
+    // Determine the set of MultiAspect classes to consider
+    const targetMultiAspectClasses = new Set<string>();
+    targetAspectPropsArray.forEach((targetMultiAspectsProps: ElementAspectProps) => targetMultiAspectClasses.add(targetMultiAspectsProps.classFullName));
+
+    // Handle MultiAspects in groups by class
+    targetMultiAspectClasses.forEach((aspectClassFullName: string) => {
+      const filteredTargetAspectPropsArray = targetAspectPropsArray.filter((aspectProps) => aspectClassFullName === aspectProps.classFullName);
+      const targetAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, aspectClassFullName);
+      if (filteredTargetAspectPropsArray.length >= targetAspects.length) {
+        let index = 0;
+        filteredTargetAspectPropsArray.forEach((aspectProps: ElementAspectProps) => {
+          if (index < targetAspects.length) {
+            aspectProps.id = targetAspects[index].id;
+            if (this.hasElementAspectChanged(targetAspects[index], aspectProps)) {
+              this.updateElementAspect(aspectProps);
+              this.onElementAspectUpdated(aspectProps);
+            }
+          } else {
+            this.insertElementAspect(aspectProps);
+            this.onElementAspectInserted(aspectProps);
+          }
+          index++;
+        });
+      } else {
+        let index = 0;
+        targetAspects.forEach((aspect: ElementAspect) => {
+          if (index < filteredTargetAspectPropsArray.length) {
+            filteredTargetAspectPropsArray[index].id = aspect.id;
+            if (this.hasElementAspectChanged(aspect, filteredTargetAspectPropsArray[index])) {
+              this.updateElementAspect(filteredTargetAspectPropsArray[index]);
+              this.onElementAspectUpdated(filteredTargetAspectPropsArray[index]);
+            }
+          } else if (this.shouldDeleteElementAspect(aspect)) {
+            this.deleteElementAspect(aspect);
+            this.onElementAspectDeleted(aspect);
+          }
+          index++;
+        });
+      }
+    });
+
+    // Detect deletes
+    const targetMultiAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ElementMultiAspect.classFullName);
+    targetMultiAspects.forEach((targetMultiAspect: ElementAspect) => {
+      if (!targetMultiAspectClasses.has(targetMultiAspect.classFullName)) {
+        if (this.shouldDeleteElementAspect(targetMultiAspect)) {
+          this.deleteElementAspect(targetMultiAspect);
+          this.onElementAspectDeleted(targetMultiAspect);
+        }
+      }
+    });
+  }
+
+  /** Returns true if the specified sourceElementAspect should be excluded from the target iModel.
+   * @param sourceElementAspect The ElementAspect from the source iModel to consider
+   * @returns `true` if sourceElementAspect should be excluded from the target iModel or `false` if sourceElementAspect should be transformed into the target iModel.
+   * @note A subclass can override this method to provide custom ElementAspect exclusion behavior.
+   */
+  protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean {
+    for (const excludedElementAspectClass of this._excludedElementAspectClasses) {
+      if (sourceElementAspect instanceof excludedElementAspectClass) {
+        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementAspectForLogger(sourceElementAspect)} by class`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.
+   * @param sourceElementAspect The ElementAspect from the source iModel to be transformed.
+   * @param targetElementId The ElementId of the target Element that will own the ElementAspects after transformation.
+   * @returns ElementAspectProps for the target iModel.
+   * @note A subclass can override this method to provide custom transform behavior.
+   */
+  protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+    const targetElementAspectProps: ElementAspectProps = sourceElementAspect.toJSON();
+    targetElementAspectProps.id = Id64.invalid;
+    targetElementAspectProps.element.id = targetElementId;
+    sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
+      if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
+        targetElementAspectProps[propertyName] = this.findTargetElementId(sourceElementAspect[propertyName]);
+      }
+    }, true);
+    return targetElementAspectProps;
+  }
+
+  /** Insert the transformed ElementAspect into the target iModel.
+   * @param targetElementAspectProps The ElementAspectProps to be inserted into the target iModel.
+   * @note A subclass can override this method to provide custom insert behavior.
+   */
+  protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void {
+    this._targetDb.elements.insertAspect(targetElementAspectProps);
+    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
+  }
+
+  /** Update the transformed ElementAspect in the target iModel.
+   * @param targetElementAspectProps The ElementAspectProps to be updated in the target iModel.
+   * @note A subclass can override this method to provide custom update behavior.
+   */
+  protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void {
+    this._targetDb.elements.updateAspect(targetElementAspectProps);
+    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
+  }
+
+  /** Delete the specified ElementAspect from the target iModel.
+   * @param targetElementAspect The ElementAspectProps to be updated in the target iModel.
+   * @note A subclass can override this method to provide custom update behavior.
+   */
+  protected deleteElementAspect(targetElementAspect: ElementAspect): void {
+    this._targetDb.elements.deleteAspect(targetElementAspect.id);
+    Logger.logInfo(loggerCategory, `(Target) Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
+  }
+
+  /** Returns true if a change within an ElementAspect is detected.
+   * @param aspect The current persistent ElementAspect
+   * @param aspectProps The new ElementAspectProps to compare against
+   * @returns `true` if a change is detected
+   */
+  private hasElementAspectChanged(aspect: ElementAspect, aspectProps: ElementAspectProps): boolean {
+    let changed: boolean = false;
+    aspect.forEachProperty((propertyName: string) => {
+      if (!changed && (propertyName !== "element") && (aspect[propertyName] !== aspectProps[propertyName])) {
+        changed = true;
+      }
+    }, true);
+    return changed;
+  }
+
+  /** Returns true if the detected potential delete of the specified targetElementAspect should happen.
+   * @param targetElementAspect The ElementAspect from the target iModel to consider
+   * @returns `true` if targetElementAspect should be deleted from the target iModel or `false` if not.
+   * @note A subclass can override this method to provide custom ElementAspect delete behavior.
+   */
+  protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean {
+    return (targetElementAspect instanceof ExternalSourceAspect) ? false : true;
   }
 
   /** Import all schemas from the source iModel into the target iModel. */

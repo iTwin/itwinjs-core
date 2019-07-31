@@ -109,3 +109,23 @@ export class SpatialLocationIsOfType extends RelatedElement {
     super({ id, relClassName });
   }
 }
+
+/** Relates an [[Element]] and an [[ElementUniqueAspect]] that it owns.
+ * @public
+ */
+export class ElementOwnsUniqueAspect extends RelatedElement {
+  public static classFullName = "BisCore:ElementOwnsUniqueAspect";
+  public constructor(parentId: Id64String, relClassName: string = ElementOwnsUniqueAspect.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}
+
+/** Relates an [[Element]] and an [[ElementMultiAspect]] that it owns.
+ * @public
+ */
+export class ElementOwnsMultiAspects extends RelatedElement {
+  public static classFullName = "BisCore:ElementOwnsMultiAspects";
+  public constructor(parentId: Id64String, relClassName: string = ElementOwnsMultiAspects.classFullName) {
+    super({ id: parentId, relClassName });
+  }
+}

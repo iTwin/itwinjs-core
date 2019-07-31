@@ -1333,6 +1333,20 @@ export class ElementOwnsChildElements extends RelatedElement {
 }
 
 // @public
+export class ElementOwnsMultiAspects extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
+export class ElementOwnsUniqueAspect extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static readonly className: string;
@@ -2875,14 +2889,17 @@ export namespace IModelJsNative {
 // @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     dispose(): void;
     excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
+    protected _excludedElementAspectClasses: Set<typeof ElementAspect>;
     protected _excludedElementCategoryIds: Set<string>;
     protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
     protected _excludedRelationshipClasses: Set<typeof Relationship>;
     excludeElement(sourceElementId: Id64String): void;
+    excludeElementAspectClass(sourceClassFullName: string): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
     excludeElementClass(sourceClassFullName: string): void;
     excludeRelationshipClass(sourceClassFullName: string): void;
@@ -2890,6 +2907,7 @@ export class IModelTransformer {
     findMissingPredecessors(sourceElement: Element): Id64Set;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string;
     protected formatElementForLogger(elementProps: ElementProps): string;
     protected formatIdForLogger(id: Id64String): string;
     protected formatModelForLogger(modelProps: ModelProps): string;
@@ -2909,28 +2927,38 @@ export class IModelTransformer {
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
-    protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected insertElement(targetElementProps: ElementProps): Id64String;
+    protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
     protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
+    protected onElementAspectDeleted(_targetElementAspect: ElementAspect): void;
+    protected onElementAspectExcluded(_sourceElementAspect: ElementAspect): void;
+    protected onElementAspectInserted(_targetElementAspect: ElementAspectProps): void;
+    protected onElementAspectUpdated(_targetElementAspect: ElementAspectProps): void;
     protected onElementExcluded(_sourceElement: Element): void;
-    protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onElementSkipped(_sourceElement: Element): void;
-    protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
-    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void;
+    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
+    protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
     protected shouldExcludeElement(sourceElement: Element): boolean;
+    protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean;
     protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
-    protected transformElement(sourceElement: Element): ElementProps[];
+    protected transformElement(sourceElement: Element): ElementProps;
+    protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 
