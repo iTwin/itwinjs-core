@@ -122,7 +122,7 @@ export class ViewsFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage id="ViewsFrontstage"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         topLeft={
@@ -621,7 +621,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
-      AppTools.appSelectElementCommand,
+      CoreTools.selectElementCommand,
       this._openNestedAnimationStage,
       new ToolItemDef({
         toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",

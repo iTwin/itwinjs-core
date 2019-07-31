@@ -80,7 +80,7 @@ export class SelectionTool extends PrimitiveTool {
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.selectionMode; }
   protected wantEditManipulators(): boolean { return SelectionMethod.Pick === this.selectionMethod; }
   protected wantPickableDecorations(): boolean { return this.wantEditManipulators(); } // Allow pickable decorations selection to be independent of manipulators...
-  protected wantToolSettings(): boolean { return false; }
+  protected wantToolSettings(): boolean { return true; }
 
   public get selectionMethod(): SelectionMethod { return this._selectionMethodValue.value as SelectionMethod; }
   public set selectionMethod(method: SelectionMethod) { this._selectionMethodValue.value = method; }

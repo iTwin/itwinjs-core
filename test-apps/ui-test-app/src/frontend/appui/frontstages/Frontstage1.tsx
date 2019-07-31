@@ -74,7 +74,7 @@ export class Frontstage1 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
       <Frontstage id="Test1"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
         defaultContentId="TestContent1"
@@ -220,7 +220,7 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ActionItemButton actionItem={AppTools.appSelectElementCommand} />
+          <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage1} />

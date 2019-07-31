@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update SelectTool to set want tool setting property to true.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

@@ -13,7 +13,7 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions,
+  IModelAppOptions, SelectionTool,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
@@ -32,7 +32,6 @@ import { AppBackstage } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
-import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { UiProviderTool } from "./tools/UiProviderTool";
@@ -216,11 +215,10 @@ export class SampleAppIModelApp {
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
-    AppSelectTool.register();
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
 
-    IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
+    IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
   }
 
   public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {

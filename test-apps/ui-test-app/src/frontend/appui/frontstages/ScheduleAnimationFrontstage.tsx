@@ -3,8 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Frontstage, FrontstageProvider, FrontstageProps, ContentGroup } from "@bentley/ui-framework";
-import { AppTools } from "../../tools/ToolSpecifications";
+import { Frontstage, FrontstageProvider, FrontstageProps, ContentGroup, CoreTools } from "@bentley/ui-framework";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
 
@@ -22,7 +21,7 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage id="ScheduleAnimationFrontstage"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}

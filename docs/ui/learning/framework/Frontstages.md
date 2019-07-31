@@ -40,7 +40,7 @@ export class SampleFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
       <Frontstage id="Test1"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
         isInFooterMode={true}
