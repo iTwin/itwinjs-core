@@ -333,7 +333,7 @@ describe("ToolAssistanceField", () => {
     toolAssistanceField.setState({ showPromptAtCursor: true });
 
     const spyMethod = sinon.spy();
-    CursorPopupManager.onCursorPopupOpenEvent.addListener(spyMethod);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.addListener(spyMethod);
 
     const notifications = new AppNotificationManager();
     const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
@@ -343,7 +343,7 @@ describe("ToolAssistanceField", () => {
 
     spyMethod.called.should.true;
 
-    CursorPopupManager.onCursorPopupOpenEvent.removeListener(spyMethod);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.removeListener(spyMethod);
     wrapper.unmount();
   });
 
@@ -360,7 +360,7 @@ describe("ToolAssistanceField", () => {
     FrontstageManager.onToolIconChangedEvent.emit({ iconSpec: "icon-placeholder" });
 
     const spyMethod = sinon.spy();
-    CursorPopupManager.onCursorPopupOpenEvent.addListener(spyMethod);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.addListener(spyMethod);
 
     const notifications = new AppNotificationManager();
     const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
@@ -374,7 +374,7 @@ describe("ToolAssistanceField", () => {
 
     spyMethod.called.should.true;
 
-    CursorPopupManager.onCursorPopupOpenEvent.removeListener(spyMethod);
+    CursorPopupManager.onCursorPopupUpdatePositionEvent.removeListener(spyMethod);
     wrapper.unmount();
   });
 

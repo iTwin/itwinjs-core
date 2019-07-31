@@ -20,8 +20,8 @@ import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { CursorInformation } from "../cursor/CursorInformation";
+import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 
 import "./configurableui.scss";
 
@@ -75,7 +75,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <PointerMessage />
         <KeyboardShortcutMenu />
         <InputFieldMessage />
-        <CursorPopup />
+        <CursorPopupRenderer />
       </div>
     );
   }

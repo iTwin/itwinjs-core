@@ -88,13 +88,13 @@ alpha;CursorDirection
 alpha;CursorDirectionParts
 alpha;CursorInformation
 alpha;CursorPopup 
-internal;CursorPopupCloseEvent 
-internal;CursorPopupCloseEventArgs
 alpha;CursorPopupContent: React_2.FunctionComponent
+internal;CursorPopupFadeOutEvent 
+internal;CursorPopupFadeOutEventArgs
 alpha;CursorPopupManager
-internal;CursorPopupOpenEvent 
-internal;CursorPopupOpenEventArgs
-alpha;CursorPopupProps
+alpha;CursorPopupOptions
+alpha;CursorPopupProps 
+public;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
