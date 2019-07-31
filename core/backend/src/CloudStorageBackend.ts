@@ -80,18 +80,24 @@ export class AzureBlobStorage extends CloudStorageService {
       this._service.createContainerIfNotExists(name, (error, _result, response) => {
         if (error || !response.isSuccessful) {
           reject(new ServerError(response.statusCode, "Unable to create tile container."));
+        } else {
+          // _result indicates whether container already existed...irrelevant to semantics of our API
+          resolve();
         }
-
-        // _result indicates whether container already existed...irrelevant to semantics of our API
-        resolve();
       });
     });
   }
 
   public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string> {
     return new Promise(async (resolve, reject) => {
-      const source = new PassThrough();
-      source.end(data);
+      let source: PassThrough;
+
+      try {
+        source = new PassThrough();
+        source.end(data);
+      } catch (err) {
+        return reject(new IModelError(BentleyStatus.ERROR, `Unable to create upload stream for "${name}".`));
+      }
 
       const createOptions: as.BlobService.CreateBlockBlobRequestOptions = {
         contentSettings: {
@@ -109,14 +115,14 @@ export class AzureBlobStorage extends CloudStorageService {
 
           const uploader = this._service.createWriteStreamToBlockBlob(container, name, createOptions, (error, result, response) => {
             if (pipelineError) {
-              reject(pipelineError);
+              return reject(pipelineError);
             }
 
             if (error || !response.isSuccessful) {
               reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+            } else {
+              resolve(result.etag);
             }
-
-            resolve(result.etag);
           });
 
           const compressor = zlib.createGzip();
@@ -129,9 +135,9 @@ export class AzureBlobStorage extends CloudStorageService {
           this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
             if (error || !response.isSuccessful) {
               reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+            } else {
+              resolve(result.etag);
             }
-
-            resolve(result.etag);
           });
         }
       } catch (error) {

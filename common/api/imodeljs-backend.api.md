@@ -302,6 +302,7 @@ export enum BackendLoggerCategory {
     IModelDb = "imodeljs-backend.IModelDb",
     IModelHost = "imodeljs-backend.IModelHost",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    IModelTileUpload = "imodeljs-backend.IModelTileUpload",
     // @alpha
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
