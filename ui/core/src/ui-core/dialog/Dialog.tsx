@@ -207,6 +207,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         containerStyle.height = this.state.height;
     }
 
+    if (maxHeight) {
+      containerStyle.maxHeight = maxHeight + "px";
+    }
+
     const buttons = this.getFooterButtons(this.props);
 
     const footerElement = footer || (buttons.length > 0 && <div className={"core-dialog-buttons"}>{buttons}</div>);
