@@ -1875,6 +1875,7 @@ export class IModelDb extends IModel {
     // @internal
     readonly isOpen: boolean;
     readonly isReadonly: boolean;
+    readonly isSnapshot: boolean;
     // @deprecated
     readonly isStandalone: boolean;
     // (undocumented)
@@ -3496,6 +3497,8 @@ export class OpenParams {
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
+    readonly isSnapshot: boolean;
+    // @deprecated
     readonly isStandalone: boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
