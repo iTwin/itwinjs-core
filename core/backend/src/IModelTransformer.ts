@@ -296,6 +296,13 @@ export class IModelTransformer {
     return `${elementAspectProps.classFullName} elementId=[${this.formatIdForLogger(elementAspectProps.element.id)}]`;
   }
 
+  /** Return the Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
+   * @note A subclass must override this method if multiple iModels are being combined into a single iModel.
+   */
+  protected getTargetScopeElementId(): Id64String {
+    return IModel.rootSubjectId;
+  }
+
   /** Mark the specified Element as skipped so its processing can be deferred. */
   protected skipElement(sourceElement: Element): void {
     this._skippedElementIds.add(sourceElement.id);
@@ -341,12 +348,12 @@ export class IModelTransformer {
 
   /** Returns true if a change within sourceElement is detected.
    * @param sourceElement The Element from the source iModel
-   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    * @param targetElementId The Element from the target iModel to compare against.
    * @note A subclass can override this method to provide custom change detection behavior.
    */
-  protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean {
+  protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean {
     const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
+    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
       if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
@@ -373,9 +380,8 @@ export class IModelTransformer {
 
   /** Import the specified Element and its child Elements (if applicable).
    * @param sourceElementId Identifies the Element from the source iModel to import.
-   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
+  public importElement(sourceElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `--> importElement(${this.formatIdForLogger(sourceElementId)})`);
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     if (this.shouldExcludeElement(sourceElement)) {
@@ -383,8 +389,9 @@ export class IModelTransformer {
       return; // excluding an element will also exclude its children or sub-models
     }
     let targetElementId: Id64String | undefined = this.findTargetElementId(sourceElementId);
+    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
     if (Id64.isValidId64(targetElementId)) {
-      if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
+      if (this.hasElementChanged(sourceElement, targetElementId)) {
         const targetElementProps: ElementProps = this.transformElement(sourceElement);
         targetElementProps.id = targetElementId;
         const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
@@ -405,7 +412,7 @@ export class IModelTransformer {
         this.remapElement(sourceElement.id, targetElementId!);
         this.onElementInserted(sourceElement, targetElementProps);
         this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId));
-      } else if (this.hasElementChanged(sourceElement, targetScopeElementId, targetElementId)) {
+      } else if (this.hasElementChanged(sourceElement, targetElementId)) {
         this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
         targetElementProps.id = targetElementId;
         const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
@@ -414,39 +421,37 @@ export class IModelTransformer {
       }
     }
     this.importElementAspects(sourceElementId, targetElementId);
-    this.importChildElements(sourceElementId, targetScopeElementId);
+    this.importChildElements(sourceElementId);
   }
 
   /** Import child elements into the target IModelDb
    * @param sourceElementId Import the child elements of this element in the source IModelDb.
-   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void {
+  public importChildElements(sourceElementId: Id64String): void {
     const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
     if (childElementIds.length > 0) {
       Logger.logTrace(loggerCategory, `--> importChildElements(${this.formatIdForLogger(sourceElementId)})`);
     }
     for (const childElementId of childElementIds) {
-      this.importElement(childElementId, targetScopeElementId);
+      this.importElement(childElementId);
     }
   }
 
   /** Import matching sub-models into the target IModelDb
    * @param modeledElementClass The [Element.classFullName]($backend) to use to query for which sub-models to import.
-   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importModels(modeledElementClass: string, targetScopeElementId: Id64String): void {
+  public importModels(modeledElementClass: string): void {
     Logger.logTrace(loggerCategory, `--> importModels(${modeledElementClass})`);
-    const sql = `SELECT ECInstanceId AS id FROM ${modeledElementClass}`;
+    const sql = `SELECT ECInstanceId FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const modeledElementId: Id64String = statement.getRow().id;
+        const modeledElementId: Id64String = statement.getValue(0).getId();
         const modeledElement: Element = this._sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: true });
         if (this.shouldExcludeElement(modeledElement)) {
           this.onElementExcluded(modeledElement);
         } else {
           this.importModel(modeledElementId);
-          this.importModelContents(modeledElementId, targetScopeElementId);
+          this.importModelContents(modeledElementId);
         }
       }
     });
@@ -475,16 +480,14 @@ export class IModelTransformer {
 
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
-   * @param targetScopeElementId Identifies an Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void {
+  public importModelContents(sourceModeledElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `--> importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
-    const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
+    const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", sourceModeledElementId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        this.importElement(row.id, targetScopeElementId);
+        this.importElement(statement.getValue(0).getId());
       }
     });
   }
@@ -494,7 +497,7 @@ export class IModelTransformer {
     Logger.logTrace(loggerCategory, `--> importSkippedElements(), numSkipped=${this._skippedElementIds.size}`);
     this._skippedElementIds.forEach((elementId: Id64String) => {
       this._skippedElementIds.delete(elementId);
-      this.importElement(elementId, IModel.rootSubjectId /* WIP */);
+      this.importElement(elementId);
     });
     if (this._skippedElementIds.size > 0) {
       throw new IModelError(IModelStatus.BadRequest, "Not all skipped elements could be processed", Logger.logError, loggerCategory);
@@ -865,15 +868,14 @@ export class IModelTransformer {
 
   /** Attempts to import everything from the source iModel into the target iModel. */
   public importAll(): void {
-    const targetScopeElementId: Id64String = IModel.rootSubjectId; // WIP
     this.initFromExternalSourceAspects();
     this.importCodeSpecs();
     this.importFonts();
-    this.importElement(IModel.rootSubjectId, targetScopeElementId);
-    this.importModels(DefinitionPartition.classFullName, targetScopeElementId);
-    this.importModels(InformationPartitionElement.classFullName, targetScopeElementId);
-    this.importModels(Drawing.classFullName, targetScopeElementId);
-    this.importModels(Sheet.classFullName, targetScopeElementId);
+    this.importElement(IModel.rootSubjectId);
+    this.importModels(DefinitionPartition.classFullName);
+    this.importModels(InformationPartitionElement.classFullName);
+    this.importModels(Drawing.classFullName);
+    this.importModels(Sheet.classFullName);
     this.importSkippedElements();
     this.importRelationships(ElementRefersToElements.classFullName);
   }

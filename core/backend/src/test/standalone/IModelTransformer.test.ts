@@ -742,7 +742,7 @@ describe("IModelTransformer", () => {
     await testDataManager.createSourceDb();
     await testDataManager.prepareTargetDb();
     // initialize logging
-    if (true) {
+    if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
