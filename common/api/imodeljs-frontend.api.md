@@ -3431,7 +3431,7 @@ export interface LinkElementsInfo {
         start: number;
         end: number;
     }>;
-    onClick: (record: PropertyRecord, text: string) => void;
+    onClick?: (record: PropertyRecord, text: string) => void;
 }
 
 // @public

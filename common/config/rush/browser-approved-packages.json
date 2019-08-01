@@ -451,6 +451,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "linkifyjs",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "lodash",
       "allowedCategories": [ "frontend", "tools" ]
     },
