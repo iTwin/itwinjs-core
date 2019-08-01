@@ -708,7 +708,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
 
   /** Return the distance between two points in the array.
-   * @deprecated -- use distanceIndexIndex
+   * @deprecated use distanceIndexIndex
    */
   public distance(i: number, j: number): number | undefined {
     if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {

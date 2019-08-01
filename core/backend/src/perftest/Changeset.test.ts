@@ -146,7 +146,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
   rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-  await rwIModel.importSchema(requestContext, schemaPathname).catch();
+  await rwIModel.importSchemas(requestContext, [schemaPathname]).catch();
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
   await rwIModel.concurrencyControl.request(requestContext);
   rwIModel.saveChanges("schema change pushed");

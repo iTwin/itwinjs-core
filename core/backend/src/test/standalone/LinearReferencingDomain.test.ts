@@ -32,9 +32,9 @@ describe("LinearReferencing Domain", () => {
     await LinearReferencingSchema.importSchema(requestContext, iModelDb);
     LinearReferencingSchema.registerSchema();
 
-    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
+    BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchemas below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchema(requestContext, path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml"));
+    await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestLinearReferencing.ecschema.xml")]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory

@@ -31,7 +31,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated - Use BackstageEvent instead
+   * @deprecated Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */

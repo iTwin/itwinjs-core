@@ -28,7 +28,7 @@ describe("ExcludedElements", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {

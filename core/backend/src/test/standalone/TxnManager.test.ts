@@ -20,7 +20,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchema(requestContext, schemaFileName); // will throw an exception if import fails
+    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     props = {
       classFullName: "TestBim:TestPhysicalObject",
