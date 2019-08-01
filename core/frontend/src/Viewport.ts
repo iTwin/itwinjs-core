@@ -377,14 +377,47 @@ export enum CoordSystem {
   World,
 }
 
+/** An object to animate a transition of a [[Viewport]].
+ * Only one animator may be associated with a viewport at a time. Registering a new
+ * animator interrupts and replaces any existing animator.
+ * The animator's animate() function will be invoked just prior to the rendering of each frame.
+ * The animator may be removed in response to certain changes to the viewport - e.g., when
+ * the viewport is closed, or viewing tools operate on it, etc.
+ * @beta
+ */
+export interface Animator {
+  /** Apply animation to the viewport. Return true when animation is completed, causing the animator to be removed from the viewport. */
+  animate(): boolean;
+
+  /** Invoked to abort this Animator. This method is called if [[Viewport.setAnimator]] is called before `animate` returns true */
+  interrupt(): void;
+}
+
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
  * @see [[Viewport.animateFrustumChange]]
  */
-class Animator {
+class FrustumAnimator implements Animator {
   private readonly _currFrustum = new Frustum();
   private _startTime?: BeTimePoint;
   private _interpolator?: SmoothTransformBetweenFrusta;
-  private moveToTime(time: number) { this.interpolateFrustum(time / this.totalTime.milliseconds); }
+
+  private moveToTime(time: number) {
+    const vp = this.viewport;
+    const fraction = time / this.totalTime.milliseconds;
+    // if we're done, set the final state directly
+    if (fraction >= 1.0 || undefined === this._interpolator) {
+      if (undefined !== this.undoState) {
+        vp.view.setFromUndo(this.undoState); // from undo, set up final state from ViewStateUndo so we don't need to worry about aspect ratio adjustments, etc.
+        vp.setupFromView(); // don't use frustum
+        return;
+      }
+      this._currFrustum.setFrom(this.endFrustum); // make sure we use the end frustum verbatim.
+    } else {
+      this._interpolator.fractionToWorldCorners(fraction, this._currFrustum.points);
+    }
+
+    vp.setupViewFromFrustum(this._currFrustum);
+  }
 
   /** Construct a new Animator.
    * @param totalTime The duration of the animation.
@@ -392,13 +425,8 @@ class Animator {
    * @param startFrustum The Viewport's starting Frustum at the beginning of the animation.
    * @param endFrustum The Viewport's ending Frustum after the animation.
    */
-  public constructor(public totalTime: BeDuration, public viewport: Viewport, public startFrustum: Frustum, public endFrustum: Frustum) {
+  public constructor(public totalTime: BeDuration, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
     this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
-  }
-
-  private interpolateFrustum(fraction: number): void {
-    this._interpolator!.fractionToWorldCorners(fraction, this._currFrustum.points);
-    this.viewport.setupViewFromFrustum(this._currFrustum);
   }
 
   /**
@@ -407,7 +435,7 @@ class Animator {
    */
   public animate(): boolean {
     if (!this._interpolator) {
-      this.viewport.setupViewFromFrustum(this.endFrustum);
+      this.moveToTime(1.0);
       return true;
     }
 
@@ -436,70 +464,7 @@ class Animator {
 
   /** Abort this animation, moving immediately to the final frame. */
   public interrupt(): void {
-    if (this._startTime)
-      this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
-  }
-}
-
-/** Status for [[ViewportAnimator.animate]].
- * @public
- */
-export enum RemoveMe { No = 0, Yes = 1 }
-
-/** An object to animate a transition of a [[Viewport]].
- * Only one animator may be associated with a viewport at a time. Registering a new
- * animator replaces any existing animator.
- * The animator's animate() function will be invoked just prior to the rendering of each frame.
- * The return value of animate() indicates whether to keep the animator active or to remove it.
- * The animator may also be removed in response to certain changes to the viewport - e.g., when
- * the viewport is closed, or its view controller changed, etc.
- * @public
- */
-export interface ViewportAnimator {
-  /** Apply animation to the viewport. Return `RemoveMe.Yes` when animation is completed, causing the animator to be removed from the viewport. */
-  animate(viewport: Viewport): RemoveMe;
-
-  /** Invoked when this ViewportAnimator is removed from the viewport, e.g. because it was replaced by a new animator, the viewport was closed -
-   * that is, for any reason other than returning RemoveMe.Yes from animate()
-   */
-  onInterrupted(viewport: Viewport): void;
-}
-
-/** A ViewportAnimator that animates decorations. While the animator is
- * active, decorations will be invalidated on each frame. The animator's
- * animateDecorations() function will be invoked to update any animation state; then
- * decorations will be re-requested and rendered.
- * @alpha
- */
-export class DecorationAnimator implements ViewportAnimator {
-  private _start: BeTimePoint;
-  private _stop: BeTimePoint;
-
-  constructor(duration: BeDuration) {
-    this._start = BeTimePoint.now();
-    this._stop = this._start.plus(duration);
-  }
-
-  /** Override to update animation state, which can then be used on the next call to produce decorations.
-   * @param viewport The viewport being animated
-   * @param durationPercent The ratio of duration elapsed, in [0.0,1.0]
-   * @returns RemoveMe.Yes to immediately remove this animator, RemoveMe::No to continue animating until duration elapsed or animator interrupted.
-   * If this animator is interrupted, this function will be immediately invoked with durationPercent=1.0.
-   */
-  public animateDecorations(_viewport: Viewport, _durationPercent: number): RemoveMe { return RemoveMe.No; }
-
-  public animate(vp: Viewport): RemoveMe {
-    vp.invalidateDecorations();
-    const total = this._stop.milliseconds - this._start.milliseconds;
-    const elapsed = BeTimePoint.now().milliseconds - this._start.milliseconds;
-    const ratio = Math.min(elapsed / total, 1.0);
-    const removeMe = this.animateDecorations(vp, ratio);
-    return (RemoveMe.Yes === removeMe || ratio === 1.0) ? RemoveMe.Yes : RemoveMe.No;
-  }
-
-  public onInterrupted(vp: Viewport): void {
-    vp.invalidateDecorations();
-    this.animateDecorations(vp, 1.0);
+    this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
   }
 }
 
@@ -2193,11 +2158,9 @@ export abstract class Viewport implements IDisposable {
   /** Get a copy of the current (adjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, true, box); }
 
-  private finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
+  protected finishViewChange(_startFrust: Frustum, options?: ViewChangeOptions) {
     options = options === undefined ? {} : options;
     this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
-    if (options.animateFrustumChange === undefined || options.animateFrustumChange)
-      this.animateFrustumChange(startFrust, this.getFrustum(), options.animationTime);
   }
 
   /** Scroll the view by a given number of pixels.
@@ -2377,25 +2340,20 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  public animate() {
+  public doAnimation() {
     if (this._animator && this._animator.animate())
       this._animator = undefined;
   }
 
-  /** @internal */
-  public removeAnimator() { this.setAnimator(undefined); }
-  private setAnimator(animator: Animator | undefined) {
+  /** Set or clear the animator for this Viewport.
+   * @param animator The new animator for this Viewport, or undefined to remove current animator.
+   * @note current animator's `interrupt` method will be called (if it has not completed yet)
+   * @beta
+   */
+  public setAnimator(animator?: Animator) {
     if (this._animator)
-      this._animator.interrupt(); // will be destroyed
+      this._animator.interrupt();
     this._animator = animator;
-  }
-
-  /** @internal */
-  public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration) {
-    if (!animationTime || 0.0 >= animationTime.milliseconds)
-      animationTime = ToolSettings.animationTime;
-
-    this.setAnimator(new Animator(animationTime, this, start, end));
   }
 
   /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
@@ -2609,7 +2567,7 @@ export abstract class Viewport implements IDisposable {
     // Start timer for tile loading time
     const timer = new StopWatch(undefined, true);
 
-    this.animate();
+    this.doAnimation();
 
     // Allow ViewState instance to change any state which might affect logic below...
     view.onRenderFrame(this);
@@ -2982,6 +2940,20 @@ export class ScreenViewport extends Viewport {
     mapResult.setFrom(projectedPt);
     return mapResult;
   }
+  /** @internal */
+  public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
+    if (!animationTime || 0.0 >= animationTime.milliseconds)
+      animationTime = ToolSettings.animationTime;
+
+    this.setAnimator(new FrustumAnimator(animationTime, this, start, end, fromUndo));
+  }
+
+  protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
+    options = options === undefined ? {} : options;
+    this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
+    if (options.animateFrustumChange === undefined || options.animateFrustumChange)
+      this.animateFrustumChange(startFrust, this.getFrustum(CoordSystem.World, false), options.animationTime);
+  }
 
   /** @internal */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
@@ -3099,9 +3071,9 @@ export class ScreenViewport extends Viewport {
   private finishUndoRedo(animationTime?: BeDuration): void {
     this.updateChangeFlags(this.view);
     const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
-    this.synchWithView(false);
+    this.setupFromView();
     if (undefined !== animationTime && undefined !== startFrust)
-      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime);
+      this.animateFrustumChange(startFrust, this.getFrustum(), animationTime, this._currentBaseline);
   }
 
   /** Clear the view undo buffer and establish the current ViewState as the new baseline. */
@@ -3150,14 +3122,16 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
+  public drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void {
     if (hit)
       ScreenViewport.drawLocateHitDetail(context, aperture, hit);
 
     if (isLocateCircleOn) {
       // draw a filled and outlined circle to represent the size of the location aperture in the current view.
       const radius = Math.floor(aperture * 0.5) + 0.5;
-      const position = this.worldToView(pt); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+      const position = viewPt.clone();
+      position.x = Math.floor(position.x) + 0.5;
+      position.y = Math.floor(position.y) + 0.5;
       const drawDecoration = (ctx: CanvasRenderingContext2D) => {
         ctx.beginPath();
         ctx.strokeStyle = "rgba(255,255,255,.4)";

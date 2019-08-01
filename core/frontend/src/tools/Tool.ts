@@ -56,6 +56,15 @@ export class ToolSettings {
   public static wheelZoomBumpDistance = Constant.oneCentimeter;
   /** Scale factor for zooming with mouse wheel. */
   public static wheelZoomRatio = 1.75;
+  /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
+  public static viewingInertia = {
+    /** Flag to enable inertia. */
+    enabled: true,
+    /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
+    damping: .9,
+    /** Maximum duration of the inertia operation. Important when frame rates are low. */
+    duration: BeDuration.fromMilliseconds(450),
+  };
 }
 
 /** @public */

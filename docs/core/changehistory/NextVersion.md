@@ -7,8 +7,11 @@ ignore: true
 
 ![grid example](./grid.png "Example showing drawing grid")
 
-## Geometry
+## Pan and Rotate viewing operations support inertia
 
+The viewing tools Pan and Rotate now optionally support inertia. If the tools are used with a *flicking* action, they continue briefly with a decaying inertial effect. The behavior of the inertia is controlled by [ToolSettings.viewingInertia]($frontend).
+
+## Geometry
 
 * Summary:
   * Triangulate cut faces in polyface clip.
@@ -28,7 +31,7 @@ ignore: true
     * GrowableXYZArray with points packed (x,y,z,  x,y,z,  x,y,z, ...)
   * Methods to convert the variant structures to specific preferred types:
     * (static) `GrowableXYZArray.createArrayOfGrowableXYZArrayFromVariantData (data: MultiLineStringDataVariant): GrowableXYZArray[];`
-       * Return array of GrowableXYZArray.
+      * Return array of GrowableXYZArray.
     * (static) `LineString3d.createArrayOfLineString3dFromVariantData (data: MultiLineStringDataVariant): LineString3d[];`
     * (static) `Range3d.createFromVariantData(data: MultiLineStringDataVariant):Range3d`
     * (static) `Point3dArray.convertVariantDataToDeepXYZNumberArrays(data: MultiLineStringDataVariant): any[];`
@@ -69,13 +72,11 @@ ignore: true
   * `myPoint.subtractInPlace (vector: XYAndZ);
 * Numerics
   * Gaussian elimination step for inplace updated of subset of a row `rowB[i] += a * rowA[i]` for `i > pivotIndex`
-     * (static) `eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;`
   * Solve up to 4 roots of a pair of bilinear equations
-     * (static) `solveBilinearPair(a0: number, b0: number, c0: number, d0: number, a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined;`
+    * (static) `solveBilinearPair(a0: number, b0: number, c0: number, d0: number, a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined;`
 * `PolylineOps` new methods
   * (static) `PolylineOps.compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[]`
   * (static) `PolylineOps,compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[]]`
   * (static) `PolylineOps.compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[]`
 * `RegionOps` new methods
   * (static) `RegionOps.computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined`
-

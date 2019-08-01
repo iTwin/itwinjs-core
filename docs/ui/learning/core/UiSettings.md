@@ -1,3 +1,0 @@
-# UiSettings
-
-* [UiSettings]($core:UiSettings)

@@ -38,7 +38,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
-  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
@@ -934,12 +934,35 @@ describe("iModel", () => {
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
     imodel4.elements.deleteElement(elid);
-    try {
-      imodel4.elements.getElement(elid);
-      assert.fail("should fail to load the element.");
-    } catch (error) {
-      // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
-    }
+    assert.throws(() => imodel4.elements.getElement(elid), IModelError);
+  });
+
+  it("should handle parent and child deletion properly", () => {
+    const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
+    const category: SpatialCategory = imodel4.elements.getElement<SpatialCategory>(categoryId);
+    const subCategory: SubCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
+    assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
+
+    const modelId = PhysicalModel.insert(imodel4, IModel.rootSubjectId, "MyTestPhysicalModel");
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+    };
+    const parentId = imodel4.elements.insertElement(elementProps);
+    elementProps.parent = new ElementOwnsChildElements(parentId);
+    const childId1 = imodel4.elements.insertElement(elementProps);
+    const childId2 = imodel4.elements.insertElement(elementProps);
+    assert.exists(imodel4.elements.getElement(parentId));
+    assert.exists(imodel4.elements.getElement(childId1));
+    assert.exists(imodel4.elements.getElement(childId2));
+    imodel4.elements.deleteElement(parentId);
+    assert.throws(() => imodel4.elements.getElement(parentId), IModelError);
+    assert.throws(() => imodel4.elements.getElement(childId1), IModelError);
+    assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
   function checkElementMetaData(obj: EntityMetaData) {
@@ -1337,7 +1360,6 @@ describe("iModel", () => {
     // Create a couple of physical elements.
     const elementProps: GeometricElementProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: testImodel,
       model: newModelId,
       category: spatialCategoryId,
       code: Code.createEmpty(),

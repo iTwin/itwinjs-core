@@ -10,11 +10,12 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, ViewRect } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
+import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -90,6 +91,8 @@ export abstract class ViewTool extends InteractiveTool {
 
 /** @internal */
 export abstract class ViewingToolHandle {
+  protected readonly _lastPtNpc = new Point3d();
+
   constructor(public viewTool: ViewManip) { }
   public onReinitialize(): void { }
   public focusOut(): void { }
@@ -737,42 +740,85 @@ class ViewTargetCenter extends ViewingToolHandle {
   }
 }
 
-/** ViewingToolHandle for performing the "pan view" operation */
-class ViewPan extends ViewingToolHandle {
-  private _anchorPt: Point3d = new Point3d();
-  private _lastPtNpc: Point3d = new Point3d();
-  public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
+/** A ViewingToolHandle with inertia.
+ * If the handle is used with *throwing action* (mouse is moving when button goes up or via a touch with movement).
+ * it continues to move briefly causing the operation to continue.
+ */
+abstract class HandleWithInertia extends ViewingToolHandle implements Animator {
+  protected _duration!: BeDuration;
+  protected _end!: BeTimePoint;
+  protected _inertiaVec?: Vector3d;
+  public noMotion(_ev: BeButtonEvent): boolean {
+    this._inertiaVec = undefined;
+    return false;
+  }
 
-  public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
-    const vp = ev.viewport!;
-    const newPtWorld = ev.point.clone();
-    const thisPtNpc = vp.worldToNpc(newPtWorld);
-    const firstPtNpc = vp.worldToNpc(this._anchorPt);
+  public doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean {
+    if (ToolSettings.viewingInertia.enabled && !inDynamics && undefined !== this._inertiaVec)
+      return this.beginAnimation();
 
-    thisPtNpc.z = firstPtNpc.z;
+    const thisPtNpc = ev.viewport!.worldToNpc(ev.point);
+    thisPtNpc.z = this._lastPtNpc.z;
 
+    this._inertiaVec = undefined;
     if (this._lastPtNpc.isAlmostEqual(thisPtNpc, 1.0e-10))
       return true;
 
-    vp.npcToWorld(thisPtNpc, newPtWorld);
-    this._lastPtNpc.setFrom(thisPtNpc);
-    return this.doPan(newPtWorld);
+    this._inertiaVec = this._lastPtNpc.vectorTo(thisPtNpc);
+    return this.perform(thisPtNpc);
   }
 
+  /** Set this handle to become the Viewport's animator */
+  protected beginAnimation() {
+    this._duration = ToolSettings.viewingInertia.duration;
+    if (this._duration.isTowardsFuture) { // ensure duration is towards future. Otherwise, don't start animation
+      this._end = BeTimePoint.fromNow(this._duration);
+      this.viewTool.viewport!.setAnimator(this);
+    }
+    return true;
+  }
+
+  /** Move this handle during the inertia duration */
+  public animate(): boolean {
+    if (undefined === this._inertiaVec)
+      return true; // handle was removed
+
+    // get the fraction of the inertia duration that remains. The decay is a combination of the number of iterations (see damping below)
+    // and time. That way the handle slows down even if the framerate is lower.
+    const remaining = ((this._end.milliseconds - BeTimePoint.now().milliseconds) / this._duration.milliseconds);
+    const pt = this._lastPtNpc!.plusScaled(this._inertiaVec, remaining);
+
+    // if we're not moving any more, or if the duration has elapsed, we're done
+    if (remaining <= 0 || (this._lastPtNpc!.minus(pt).magnitudeSquared() < .000001)) {
+      this.viewTool.viewport!.saveViewUndo();
+      return true; // remove this as the animator
+    }
+    this.perform(pt); // perform the viewing operation
+    this._inertiaVec.scaleInPlace(ToolSettings.viewingInertia.damping); // dampen the inertia vector
+    return false;
+  }
+
+  public interrupt() { }
+  protected abstract perform(thisPtNpc: Point3d): boolean;
+}
+
+/** ViewingToolHandle for performing the "pan view" operation */
+class ViewPan extends HandleWithInertia {
+  public get handleType() { return ViewHandleType.Pan; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
+
   public firstPoint(ev: BeButtonEvent) {
+    this._inertiaVec = undefined;
     const vp = ev.viewport!;
-    this._anchorPt.setFrom(ev.rawPoint);
+    vp.worldToNpc(ev.rawPoint, this._lastPtNpc);
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (vp.isCameraOn) {
-      const visiblePoint = vp.pickNearestVisibleGeometry(this._anchorPt, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
+      const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
       if (undefined !== visiblePoint) {
-        this._anchorPt.setFrom(visiblePoint);
+        vp.worldToNpc(visiblePoint, this._lastPtNpc); // set the anchor point in NPC
       } else {
-        const firstPtNpc = vp.worldToNpc(this._anchorPt);
-        firstPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
-        this._anchorPt = vp.npcToWorld(firstPtNpc, this._anchorPt);
+        this._lastPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
       }
     }
 
@@ -793,12 +839,11 @@ class ViewPan extends ViewingToolHandle {
     out.priority = ViewManipPriority.Low;
     return true;
   }
-
-  public doPan(newPtWorld: Point3d) {
+  /** perform the view pan operation */
+  protected perform(thisPtNpc: Point3d) {
     const vp = this.viewTool.viewport!;
+    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
     const view = vp.view;
-    const dist = newPtWorld.vectorTo(this._anchorPt);
-
     if (view.is3d()) {
       if (ViewStatus.Success !== view.moveCameraWorld(dist))
         return false;
@@ -806,17 +851,17 @@ class ViewPan extends ViewingToolHandle {
       view.setOrigin(view.getOrigin().plus(dist));
     }
 
-    vp.synchWithView(false);
+    vp.setupFromView();
+    this._lastPtNpc.setFrom(thisPtNpc);
     return true;
   }
 }
 
 /** ViewingToolHandle for performing the "rotate view" operation */
-class ViewRotate extends ViewingToolHandle {
-  private _lastPtNpc = new Point3d();
-  private _firstPtNpc = new Point3d();
-  private _frustum = new Frustum();
-  private _activeFrustum = new Frustum();
+class ViewRotate extends HandleWithInertia {
+  private readonly _frustum = new Frustum();
+  private readonly _activeFrustum = new Frustum();
+  private readonly _anchorPtNpc = new Point3d();
   public get handleType() { return ViewHandleType.Rotate; }
   public getHandleCursor() { return "move"; }
 
@@ -828,6 +873,8 @@ class ViewRotate extends ViewingToolHandle {
   }
 
   public firstPoint(ev: BeButtonEvent) {
+    this._inertiaVec = undefined;
+
     const tool = this.viewTool;
     const vp = ev.viewport!;
 
@@ -837,11 +884,8 @@ class ViewRotate extends ViewingToolHandle {
         tool.setTargetCenterWorld(visiblePoint, false, false);
     }
 
-    const pickPt = ev.rawPoint.clone();
-    const pickPtOrig = pickPt.clone();
-
-    vp.worldToNpc(pickPtOrig, this._firstPtNpc);
-    this._lastPtNpc.setFrom(this._firstPtNpc);
+    vp.worldToNpc(ev.rawPoint, this._anchorPtNpc);
+    this._lastPtNpc.setFrom(this._anchorPtNpc);
 
     vp.getWorldFrustum(this._activeFrustum);
     this._frustum.setFrom(this._activeFrustum);
@@ -851,74 +895,71 @@ class ViewRotate extends ViewingToolHandle {
     return true;
   }
 
-  public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
+  public perform(ptNpc: Point3d): boolean {
     const tool = this.viewTool;
-    const viewport = tool.viewport!;
-    const ptNpc = viewport.worldToNpc(ev.point);
-    if (this._lastPtNpc.isAlmostEqual(ptNpc, 1.0e-10)) // no movement since last point
-      return true;
+    const vp = tool.viewport!;
 
-    if (this._firstPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
-      ptNpc.setFrom(this._firstPtNpc);
+    if (this._anchorPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
+      ptNpc.setFrom(this._anchorPtNpc);
 
-    this._lastPtNpc.setFrom(ptNpc);
-    const currentFrustum = viewport.getWorldFrustum();
+    const currentFrustum = vp.getWorldFrustum();
     const frustumChange = !currentFrustum.equals(this._activeFrustum);
     if (frustumChange)
       this._frustum.setFrom(currentFrustum);
-    else if (!viewport.setupViewFromFrustum(this._frustum))
-      return false;
+    else {
+      if (!vp.setupViewFromFrustum(this._frustum))
+        return false;
+    }
 
-    const currPt = viewport.npcToView(ptNpc);
+    const currPt = vp.npcToView(ptNpc);
     if (frustumChange)
-      this._firstPtNpc.setFrom(ptNpc);
+      this._anchorPtNpc.setFrom(ptNpc);
 
-    let radians: Angle;
+    let angle: Angle;
     let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
-    if (!viewport.view.allow3dManipulations()) {
-      const centerPt = viewport.worldToView(worldPt);
-      const firstPt = viewport.npcToView(this._firstPtNpc);
+    if (!vp.view.allow3dManipulations()) {
+      const centerPt = vp.worldToView(worldPt);
+      const firstPt = vp.npcToView(this._anchorPtNpc);
       const vector0 = Vector2d.createStartEnd(centerPt, firstPt);
       const vector1 = Vector2d.createStartEnd(centerPt, currPt);
-      radians = vector0.angleTo(vector1);
+      angle = vector0.angleTo(vector1);
       worldAxis = Vector3d.unitZ();
     } else {
-      const viewRect = viewport.viewRect;
-      const xExtent = viewRect.width;
-      const yExtent = viewRect.height;
+      const viewRect = vp.viewRect;
 
-      viewport.npcToView(ptNpc, currPt);
-      const firstPt = viewport.npcToView(this._firstPtNpc);
+      vp.npcToView(ptNpc, currPt);
+      const firstPt = vp.npcToView(this._anchorPtNpc);
 
       const xDelta = (currPt.x - firstPt.x);
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : viewport.rotation.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotation.getRow(1);
 
       // Movement in screen y == rotation about screen X...
-      const yAxis = viewport.rotation.getRow(0);
+      const yAxis = vp.rotation.getRow(0);
 
-      const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (xExtent / xDelta)))! : Matrix3d.createIdentity();
-      const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (yExtent / yDelta)))! : Matrix3d.createIdentity();
+      const xRMatrix = xDelta ? Matrix3d.createRotationAroundVector(xAxis, Angle.createRadians(Math.PI / (viewRect.width / xDelta)))! : Matrix3d.identity;
+      const yRMatrix = yDelta ? Matrix3d.createRotationAroundVector(yAxis, Angle.createRadians(Math.PI / (viewRect.height / yDelta)))! : Matrix3d.identity;
       const worldRMatrix = yRMatrix.multiplyMatrixMatrix(xRMatrix);
       const result = worldRMatrix.getAxisAndAngleOfRotation();
-      radians = Angle.createRadians(-result.angle.radians);
+      angle = Angle.createRadians(-result.angle.radians);
       worldAxis = result.axis;
     }
 
-    this.rotateViewWorld(worldPt, worldAxis, radians);
-    viewport.getWorldFrustum(this._activeFrustum);
+    this.rotateViewWorld(worldPt, worldAxis, angle);
+    vp.getWorldFrustum(this._activeFrustum);
+    this._lastPtNpc.setFrom(ptNpc);
 
     return true;
   }
 
-  private rotateViewWorld(worldOrigin: Point3d, worldAxisVector: Vector3d, primaryAngle: Angle) {
-    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxisVector, primaryAngle);
+  private rotateViewWorld(worldPt: Point3d, worldAxis: Vector3d, angle: Angle) {
+    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxis, angle);
     if (!worldMatrix)
       return;
-    const worldTransform = Transform.createFixedPointAndMatrix(worldOrigin, worldMatrix!);
+    const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix!);
     const frustum = this._frustum.transformBy(worldTransform);
     this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
@@ -997,8 +1038,8 @@ class ViewLook extends ViewingToolHandle {
 
 /** ViewingToolHandle for performing the "scroll view" operation */
 class ViewScroll extends ViewingToolHandle {
-  private _anchorPtView = new Point3d();
-  private _lastPtView = new Point3d();
+  private readonly _anchorPtView = new Point3d();
+  private readonly _lastPtView = new Point3d();
   public get handleType() { return ViewHandleType.Scroll; }
   public getHandleCursor(): string { return IModelApp.viewManager.crossHairCursor; }
 
@@ -1113,9 +1154,9 @@ class ViewScroll extends ViewingToolHandle {
 
 /** ViewingToolHandle for performing the "zoom view" operation */
 class ViewZoom extends ViewingToolHandle {
-  private _anchorPtView = new Point3d();
-  private _anchorPtNpc = new Point3d();
-  private _lastPtView = new Point3d();
+  private readonly _anchorPtView = new Point3d();
+  private readonly _anchorPtNpc = new Point3d();
+  private readonly _lastPtView = new Point3d();
   private _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
   public getHandleCursor() { return IModelApp.viewManager.crossHairCursor; }
