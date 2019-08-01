@@ -187,6 +187,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     readonly center: Point3d;
     circularRadius(): number | undefined;
     clone(): Arc3d;
+    cloneAtZ(z?: number): Arc3d;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
@@ -199,6 +200,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     static createUnitCircle(): Arc3d;
     static createXY(center: Point3d, radius: number, sweep?: AngleSweep): Arc3d;
     static createXYEllipse(center: Point3d, radiusA: number, radiusB: number, sweep?: AngleSweep): Arc3d;
+    static createXYZXYZXYZ(cx: number, cy: number, cz: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;
     curveLength(): number;
     curveLengthBetweenFractions(fraction0: number, fraction1: number): number;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -206,6 +208,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
     endPoint(result?: Point3d): Point3d;
     extendRange(range: Range3d, transform?: Transform): void;
+    fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d;
     fractionToPoint(fraction: number, result?: Point3d): Point3d;
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
@@ -3744,7 +3747,7 @@ export class Ray2d {
     cwPerpendicularRay(): Ray2d;
     readonly direction: Vector2d;
     fractionToPoint(f: number): Point2d;
-    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dhds: number[]): boolean;
+    intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean;
     normalizeDirectionInPlace(): boolean;
     readonly origin: Point2d;
     parallelRay(leftFraction: number): Ray2d;
@@ -3872,7 +3875,9 @@ export class RegionOps {
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
     static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
     static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
+    static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined;
+    static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean): CurveCollection | undefined;
     static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
@@ -3926,6 +3931,7 @@ export class Sample {
     static appendPhases(linestring: LineString3d, numPhase: number, ...vectors: Vector3d[]): void;
     static appendSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number): Point3d[];
     static appendSplits(points: Point3d[], target: Point3d, numSplit: number, includeTarget: boolean): void;
+    static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[];
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
     static createAllGeometryQueryTypes(): GeometryQuery[];
     static createArcRegions(): Loop[];
@@ -3957,6 +3963,7 @@ export class Sample {
     static createGrowableArrayCirclePoints(radius: number, numEdge: number, closed?: boolean, centerX?: number, centerY?: number, data?: GrowableXYZArray): GrowableXYZArray;
     static createGrowableArrayCountedSteps(a0: number, delta: number, n: number): GrowableFloat64Array;
     static createInvertibleTransforms(): Transform[];
+    static createLineArcPaths(): Path[];
     static createLineStrings(): LineString3d[];
     static createLShapedPolygon(x0: number, y0: number, ax: number, ay: number, bx: number, by: number, z?: number): Point3d[];
     static createManyArcs(skewFactors?: number[]): Arc3d[];

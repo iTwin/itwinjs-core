@@ -39,6 +39,13 @@ The viewing tools Pan and Rotate now optionally support inertia. If the tools ar
 * (static) `FrameBuilder.createFrameWithCCWPolygon (points: Point3d[])`
   * Create a transform in the plane of points.
   * flip Z directed so the polygon has CCW orientation.
+* `Arc3d` methods
+  * (static) `Arc3d.cloneAtZ(z?: number): Arc3d`
+  Return projection to plane at `z`
+  * (static) `Arc3d.createXYZXYZXYZ(cx: number, cy: number, cz: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, sweep?:     * AngleSweep, result?: Arc3d): Arc3d;`
+    * create an arc with center, vector to 0 degree point, and vector to 90 degree point.
+  * (static) `Arc3d.fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d;`
+    * evaluate a point at fraction position "along" the arc and at multiple of the radius.
 * `GrowableXYZArray` instance methods to access individual x,y,z by point index without creating Point3d object:
   * `myGrowableXYZArray.getXAtUncheckedPointIndex (pointIndex: number) : number;`
   * `myGrowableXYZArray.getYAtUncheckedPointIndex (pointIndex: number) : number;`
@@ -80,3 +87,9 @@ The viewing tools Pan and Rotate now optionally support inertia. If the tools ar
   * (static) `PolylineOps.compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[]`
 * `RegionOps` new methods
   * (static) `RegionOps.computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined`
+  * (static) `RegionOps.constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;`
+    * Create a path or loop offset by distance (positive to left)
+  * (static) `RegionOps.createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean): CurveCollection | undefined;`
+    * Create a curve structure, choosing type `Loop`, `Path`, or `BagOfCurves` appropriate to how the inputs join.
+
+

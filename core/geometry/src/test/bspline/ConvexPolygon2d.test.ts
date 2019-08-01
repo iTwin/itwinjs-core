@@ -57,7 +57,7 @@ function checkHullChords(hull: ConvexPolygon2d, step: number, ck: Checker) {
     }
   }
 }
-
+// cspell:word lisajoue
 function lisajoue(theta: number, a: number): Point2d {
   const r = Math.cos(a * theta);
   return Point2d.create(r * Math.cos(theta), r * Math.sin(theta));
@@ -198,9 +198,9 @@ describe("ConvexPolygon2d", () => {
     const ck = new Checker();
     const points: Point2d[] = [];
     const a = 3.29;
-    const dtheta = 0.34;
+    const dTheta = 0.34;
     const numPoints = 1000;
-    for (let theta = 0.01; points.length < numPoints; theta += dtheta) {
+    for (let theta = 0.01; points.length < numPoints; theta += dTheta) {
       points.push(lisajoue(theta * theta, a));
     }
 
