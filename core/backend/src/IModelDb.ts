@@ -972,7 +972,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
     return briefcaseEntry.iModelDb;
