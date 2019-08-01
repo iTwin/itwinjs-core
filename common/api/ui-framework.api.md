@@ -928,32 +928,8 @@ export class CoreTools {
     static readonly fitViewCommand: ToolItemDef;
     // (undocumented)
     static readonly flyViewCommand: ToolItemDef;
-    // (undocumented)
-    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
     // @beta
     static readonly keyinBrowserButtonItemDef: CustomItemDef;
-    // (undocumented)
-    static readonly markupArrowToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupCloudToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupDistanceToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupEllipseToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupLineToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupPlaceTextToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupPolygonToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupRectangleToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupSelectToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupSketchToolDef: ToolItemDef;
-    // (undocumented)
-    static readonly markupSymbolToolDef: ToolItemDef;
     // (undocumented)
     static readonly panViewCommand: ToolItemDef;
     // (undocumented)
@@ -2517,6 +2493,32 @@ export enum MapMode {
 }
 
 // @public
+export class MarkupTools {
+    // (undocumented)
+    static readonly arrowToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly cloudToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly distanceToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly ellipseToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly lineToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly placeTextToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly polygonToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly rectangleToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly selectToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly sketchToolDef: ToolItemDef;
+    // (undocumented)
+    static readonly symbolToolDef: ToolItemDef;
+}
+
+// @public
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> {
 }
 
@@ -3813,6 +3815,7 @@ export class ToolInformation {
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
     constructor(toolItemProps: ToolItemProps);
+    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
     // (undocumented)
     readonly id: string;
     // (undocumented)

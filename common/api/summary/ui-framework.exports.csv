@@ -217,6 +217,7 @@ beta;ListPickerItemProps
 beta;ListPickerProps
 beta;ListPickerPropsExtended 
 alpha;MapMode
+public;MarkupTools
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool Definitions 1`] = `
+exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup Tool Definitions 1`] = `
 <ToolWidgetWithDef
   horizontalToolbar={
     <Toolbar
@@ -27,7 +27,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "Select",
+                "toolId": "Markup.Select",
               }
             }
           />
@@ -45,13 +45,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-fit-to-view",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Fit",
+                "toolId": "Markup.Line",
               }
             }
           />
@@ -69,13 +69,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-window-area",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.WindowArea",
+                "toolId": "Markup.Rectangle",
               }
             }
           />
@@ -93,13 +93,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-zoom",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Zoom",
+                "toolId": "Markup.Polygon",
               }
             }
           />
@@ -117,13 +117,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-hand-2",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Pan",
+                "toolId": "Markup.Cloud",
               }
             }
           />
@@ -141,13 +141,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-gyroscope",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Rotate",
+                "toolId": "Markup.Ellipse",
               }
             }
           />
@@ -165,13 +165,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-walk",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Walk",
+                "toolId": "Markup.Arrow",
               }
             }
           />
@@ -189,13 +189,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-camera",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.ToggleCamera",
+                "toolId": "Markup.Distance",
               }
             }
           />
@@ -213,13 +213,13 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-airplane",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "View.Fly",
+                "toolId": "Markup.Sketch",
               }
             }
           />
@@ -237,13 +237,37 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-plane",
+                "iconSpec": "icon-placeholder",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
                 "stateSyncIds": Array [],
-                "toolId": "ViewClip.ByPlane",
+                "toolId": "Markup.Text.Place",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Symbol",
               }
             }
           />
@@ -257,7 +281,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_appButton": undefined,
       "_handleSyncUiEvent": [Function],
       "_label": "",
-      "_toolbarBaseName": "[Test1]ToolWidget",
+      "_toolbarBaseName": "[TestFrontstage]ToolWidget",
       "_tooltip": "",
       "classId": undefined,
       "fillZone": false,
@@ -284,34 +308,4 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
     }
   }
 />
-`;
-
-exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
-<ExpandableItem
-  betaBadge={true}
-  iconSpec="icon-process"
-  labelKey="UiFramework:keyinbrowser.label"
-  panel={
-    <WithOnOutsideClick
-      className="nz-toolbar-item-expandable-group-panel"
-      onOutsideClick={[Function]}
-    >
-      <KeyinBrowser
-        onExecute={[Function]}
-      />
-    </WithOnOutsideClick>
-  }
->
-  <Item
-    badge={<BetaBadge />}
-    icon={
-      <Unknown
-        iconSpec="icon-process"
-      />
-    }
-    onClick={[Function]}
-    onKeyDown={[Function]}
-    title="keyinbrowser.label"
-  />
-</ExpandableItem>
 `;
