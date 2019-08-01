@@ -1487,13 +1487,13 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const childIds: Id64String[] = this.queryChildren(id);
-        if (childIds.length > 0)
-          this.deleteElement(childIds);
-
         const props = this.getElementProps(id);
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
+
+        const childIds: Id64String[] = this.queryChildren(id);
+        if (childIds.length > 0)
+          this.deleteElement(childIds);
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
