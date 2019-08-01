@@ -15,6 +15,10 @@ import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
   IModelAppOptions, SelectionTool,
 } from "@bentley/imodeljs-frontend";
+import {
+  MarkupApp,
+} from "@bentley/imodeljs-markup";
+
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -170,6 +174,7 @@ export class SampleAppIModelApp {
     Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
+    await MarkupApp.initialize();
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";

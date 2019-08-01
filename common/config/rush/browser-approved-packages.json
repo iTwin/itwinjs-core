@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-markup",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",

@@ -85,6 +85,7 @@
     "@bentley/imodeljs-frontend": "1.3.0-dev.12",
     "@bentley/imodeljs-common": "1.3.0-dev.12",
     "@bentley/imodeljs-clients": "1.3.0-dev.12",
+    "@bentley/imodeljs-markup": "1.3.0-dev.12",
     "@bentley/presentation-common": "1.3.0-dev.12",
     "@bentley/presentation-frontend": "1.3.0-dev.12",
     "@bentley/presentation-testing": "1.3.0-dev.12",
@@ -143,7 +144,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^0.0.22",
+    "@bentley/icons-generic-webfont": "^0.0.26",
     "@bentley/presentation-components": "1.3.0-dev.12",
     "classnames": "^2.2.5",
     "immutable": "^3.8.2",

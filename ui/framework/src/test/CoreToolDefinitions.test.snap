@@ -247,6 +247,270 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
               }
             }
           />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-cursor",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Select",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Line",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Rectangle",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Polygon",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Cloud",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Ellipse",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Arrow",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Distance",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Sketch",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Text.Place",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Symbol",
+              }
+            }
+          />
         </UNDEFINED>
       }
       panelAlignment={0}

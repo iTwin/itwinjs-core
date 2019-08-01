@@ -46,9 +46,9 @@ describe("<SpeedTimeline />", () => {
     expect(renderedComponent).not.to.be.undefined;
     // renderedComponent.debug();
     expect(valueChanged).to.be.false;
-    const sliderDiv = renderedComponent.getByRole ("slider");
+    const sliderDiv = renderedComponent.getByRole("slider");
     expect(sliderDiv).not.to.be.undefined;
-    const ariaValue = sliderDiv.getAttribute ("aria-valuenow");
+    const ariaValue = sliderDiv.getAttribute("aria-valuenow");
     expect(ariaValue).to.be.equal("3");
   });
 });
