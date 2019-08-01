@@ -1,10 +1,10 @@
 # Bentley npm Script Guidelines
 
-This document is intended to provide suggestions for writing your own package's npm scripts for things such as building, running tests, and adding code coverage. The imodeljs-related repositories have moved away from gulp and gulp plugins to favor a more direct approach of running tasks. This allows us to depend directly on various npm packages instead of relying on gulp "middle-man" plugins that may not see the same update frequency as the npm packages themselves. For examples of npm scripts in use, please look at both the imodeljs-core repository (a multi-package setup) and the geometry-core repository (a single package).
+This document is intended to provide suggestions for writing your own package's npm scripts for things such as building, running tests, and adding code coverage. The imodeljs-related repositories have moved away from gulp and gulp plugins to favor a more direct approach of running tasks. This allows us to depend directly on various npm packages instead of relying on gulp "middle-man" plugins that may not see the same update frequency as the npm packages themselves. For examples of npm scripts in use, please look at the imodeljs repository.
 
 npm scripts are used by adding properties to the "scripts" object in a package's package.json file. These properties correspond to names that can be passed to the `npm run` command to execute the properties' values as shell commands. For more information on creating and running scripts with npm, [this article](https://www.keithcirkel.co.uk/how-to-use-npm-as-a-build-tool/) may be helpful to read.
 
-The bentleyjs-tools repository includes a number of preconfigured node.js scripts to ease the development process. This includes scripts for testing, linting, and basic code coverage numbers. More information about these scripts can be found in the root bentleyjs-tools README.
+The build-tools package includes a number of preconfigured node.js scripts to ease the development process. This includes scripts for testing, linting, and basic code coverage numbers. More information about these scripts can be found in the build-tools README.
 
 ## Building
 

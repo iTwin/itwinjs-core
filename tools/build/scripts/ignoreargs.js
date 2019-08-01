@@ -11,18 +11,18 @@ const yargs = require("yargs");
 
 // Get the arguments using the ubiquitous yargs package.
 function getArgs() {
-    const args = yargs
-        .option("verbose", {
-            alias: "v"
-        })
-        .option("detail", {
-            alias: "d",
-            type: "number",
-        })
-        .help().argv;
-    return args;
+  const args = yargs
+    .option("verbose", {
+      alias: "v"
+    })
+    .option("detail", {
+      alias: "d",
+      type: "number",
+    })
+    .help().argv;
+  return args;
 }
 
 cmdLineArgs = getArgs();
 if (cmdLineArgs.verbose || cmdLineArgs.detail > 2)
-    console.log("ignoring these arguments", cmdLineArgs);
+  console.log("ignoring these arguments", cmdLineArgs);

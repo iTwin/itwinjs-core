@@ -5,8 +5,8 @@ iModelHub sends [IModelHubGlobalEvent]($clients)s for operations occuring on any
 
 To receive events, the service has to:
 1. [Subscribe to global events](#creating-global-events-subscription), specifying [types of events](#global-event-types) it wants to receive.
-2. Get a [GlobalEventSAS]($clients) token, that is used to authenticate to Global Events service. See [GlobalEventHandler.getSASToken]($clients) or [getting global events](#getting-global-events).
-3. Send a request to get the first event from that subscription's queue. See [getting global events](#getting-global-events).
+1. Get a [GlobalEventSAS]($clients) token, that is used to authenticate to Global Events service. See [GlobalEventHandler.getSASToken]($clients) or [getting global events](#getting-global-events).
+1. Send a request to get the first event from that subscription's queue. See [getting global events](#getting-global-events).
 
 Instead of repeating steps 2 and 3, it's possible to [create a listener](#create-a-global-events-listener) that continuously receives events from a subscription.
 

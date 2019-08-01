@@ -14,8 +14,6 @@ The supported release tags are:
 * `@internal`
 * `@deprecated`
 
-> Note: The `@hidden` release tag is also currently supported, but all uses should transition to `@internal` or `@alpha` so that it can be de-supported.
-
 Details about each tag are below.
 
 ### @public
@@ -48,12 +46,6 @@ However, *internal* API items are effectively *public* from the maintainers pers
 
 > Note: This definition of `@internal` requires us to set the `--stripInternal` [option of the TypeScript compiler](http://www.typescriptlang.org/docs/handbook/compiler-options.html) to `false`.
 
-### @hidden
-
-As mentioned above, all uses of the `@hidden` tag should transition to either `@internal` or `@alpha`.
-Both `@internal` and `@alpha` will cause the API item to be hidden from the public SDK documentation.
-The distinction is that *internal* indicates that the API item is never meant to be public, while *alpha* API items are not yet ready for public feedback but are intended to be public in the future.
-
 ### @deprecated
 
 The `@deprecated` release tags is used for API items that were formerly `@public` but are no longer optimal.
@@ -74,7 +66,7 @@ Release Tag | Affects Package Semantic Version | Included in Public SDK Document
 `@public` | Yes | Yes
 `@beta` | No | Yes
 `@alpha` | No | No
-`@internal` / `@hidden` | Yes | No
+`@internal` | Yes | No
 `@deprecated` | Yes | Yes
 
 ## API Items

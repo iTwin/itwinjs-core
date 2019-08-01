@@ -4,11 +4,12 @@ While the bulk of an iModel.js app is portable, it must also be tailored to fit 
 
 ## App Packaging and Deployment
 
-And app is prepared for deployment by "last mile" scripts. Different scripts will be used to package and deploy Web apps, Electron apps, and mobile apps. The packaging of the app will vary by configuration and target platform. The scripts will normally select different entry points for different deployments, as explained next.
+An app is prepared for deployment by "last mile" scripts. Different scripts will be used to package and deploy Web apps, Electron apps, and mobile apps. The packaging of the app will vary by configuration and target platform. The scripts will normally select different entry points for different deployments, as explained next.
 
 ## Configuration-Specific Main
 
 An app [frontend](../learning/Glossary.md#frontend) typically has a different "main" for each configuration to do the following:
+
 * Change the app's UI and functionality to suit the configuration and platform.
   * Do platform-specific initialization:
     * UI "chrome"
@@ -16,10 +17,11 @@ An app [frontend](../learning/Glossary.md#frontend) typically has a different "m
     * Other platform integration
   * [Tailor the GUI](#change-the-gui)
 * [Configure interfaces on the client side](../learning/RpcInterface.md#client-side-configuration).
-    * You may apply the [backends-for-frontends pattern](#backends-for-frontends).
-    * Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
+  * You may apply the [backends-for-frontends pattern](#backends-for-frontends).
+  * Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
 
 An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuation. For more information, see:
+
 * [Web app](../learning/WriteAnInteractiveWebApp.md)
 * [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)
 * [Mobile app](../learning/WriteAnInteractiveMobileApp.md)

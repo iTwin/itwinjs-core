@@ -43,14 +43,12 @@ const options = [
   "--reporter-options", `mochaFile=${paths.appJUnitTestResults}`,
 ];
 
-if (defineWindow) {
+if (defineWindow)
   options.push("--require", "jsdom-global/register");
-}
 
 const offlineOptions = [];
-if (argv.offline === "mock") {
+if (argv.offline === "mock")
   offlineOptions.push("--offline", "mock");
-}
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
@@ -62,9 +60,8 @@ const debugOptions = argv.debug ? [
 let grepOptions = [];
 if (argv.grep) {
   grepOptions = ["--grep", argv.grep];
-  if (argv.invert) {
+  if (argv.invert)
     grepOptions.push("--invert");
-  }
 }
 
 const args = [

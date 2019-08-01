@@ -30,7 +30,6 @@ if (docJson === undefined || docJson.children === undefined) {
   process.exit(1);
 }
 
-
 const coverageJSON = {
   files: []
 };
@@ -93,11 +92,11 @@ function checkForDocumentation(child) {
   }
 
   if ((child.comment !== undefined && child.comment.shortText !== undefined) ||
-  (child.signatures !== undefined && child.signatures[0].comment !== undefined && child.signatures[0].comment.shortText !== undefined)) {
+    (child.signatures !== undefined && child.signatures[0].comment !== undefined && child.signatures[0].comment.shortText !== undefined)) {
     fileObject.documented++;
   } else {
     fileObject.undocumented++;
-    switch(child.kind) {
+    switch (child.kind) {
       case 4:
         fileObject.enumerations++;
         break;
@@ -161,6 +160,5 @@ generalStream.once("open", (fd) => {
   generalStream.write("</body></html>");
   generalStream.end();
 });
-
 
 console.log("Generated documentation coverage file: " + process.cwd() + "\\lib\\docs\\coverage.html");

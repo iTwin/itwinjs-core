@@ -5,7 +5,7 @@ The documentation for the iModel.js website is authored from two sources:
 1. Markdown (`.md`) files in the `docs` directory
 2. TypeDoc comments in source `.ts` files
 
-Each type of file is processed (using BeMetalSmith scripts) to create `.html` files for the documentation website. It is often necessary to create links across the content of the website. These are the rules for the syntax, in the respective source files, to create those links.
+Each type of file is processed (using [MetalSmith](https://metalsmith.io/) scripts) to create `.html` files for the documentation website. It is often necessary to create links across the content of the website. These are the rules for the syntax, in the respective source files, to create those links.
 
 ## Linking to TypeDoc generated content
 
