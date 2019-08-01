@@ -107,7 +107,7 @@ describe("PerformanceElementsTests", () => {
 
         const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await seedIModel.importSchema(new BackendRequestContext(), testSchemaName);
+        await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
         seedIModel.setAsMaster();
         assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + name), name + "is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

@@ -220,7 +220,7 @@ class TestDataManager {
     // Import desired target schemas
     const requestContext = new BackendRequestContext();
     const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
-    await this.targetDb.importSchema(requestContext, targetSchemaFileName);
+    await this.targetDb.importSchemas(requestContext, [targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = this.targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
     assert.isTrue(Id64.isValidId64(targetCodeSpecId));
@@ -242,7 +242,7 @@ class TestDataManager {
     this.sourceDb.saveChanges();
     BriefcaseManager.createStandaloneChangeSet(this.sourceDb.briefcase); // importSchema below will fail if this is not called to flush local changes
     const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
-    await this.sourceDb.importSchema(requestContext, sourceSchemaFileName);
+    await this.sourceDb.importSchemas(requestContext, [sourceSchemaFileName]);
     // Embed font
     if (Platform.platformName.startsWith("win")) {
       this.sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });

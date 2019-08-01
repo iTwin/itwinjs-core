@@ -97,7 +97,7 @@ export class OpenParams {
   public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
   /** Returns true if equal and false otherwise */
@@ -254,7 +254,7 @@ export class IModelDb extends IModel {
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
-   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
+   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[open]] or [[openSnapshot]] instead.
    * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
@@ -352,7 +352,7 @@ export class IModelDb extends IModel {
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
+   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel. Callers should migrate to [[closeSnapshot]].
    * @internal
    */
   public closeStandalone(): void {
@@ -674,7 +674,8 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @deprecated use [IModelDb.withPreparedStatement]($backend) or [IModelDb.query]($backend) instead.
+   * @see [IModelDb.withPreparedStatement]($backend), [IModelDb.query]($backend)
+   * @deprecated Use [[withPreparedStatement]] or [[query]] instead.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -918,7 +919,7 @@ export class IModelDb extends IModel {
 
   /** Import a single ECSchema.
    * @see importSchemas
-   * @deprecated It is better to import a collection of schemas together rather than individually.
+   * @deprecated use [[importSchemas]] instead as it is better to import a collection of schemas together rather than individually.
    */
   public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
     return this.importSchemas(requestContext, [schemaFileName]);

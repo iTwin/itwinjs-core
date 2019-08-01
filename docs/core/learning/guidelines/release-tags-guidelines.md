@@ -61,6 +61,10 @@ Third parties should avoid *deprecated* API items if possible as they will likel
 From the maintainer perspective, *deprecated* API items follow the same rules as *public* API items within the current major release.
 *Deprecated* API items and the comment after the `@deprecated` tag are included in the public SDK documentation.
 
+> Note: The deprecation message is used verbatim by the `deprecation` lint rule and is also included in the SDK documentation.
+The deprecation message should include the replacement API item linked using the `[[replacement]]` (double square bracket) link syntax so that the SDK documentation will have a hyperlink and the lint message will mention the replacement item in a readable form.
+More advanced linking syntax should not be used as it would distract in the lint rule case.
+
 ### Release Tag Summary
 
 The following table summarizes the affects of each release tag:
