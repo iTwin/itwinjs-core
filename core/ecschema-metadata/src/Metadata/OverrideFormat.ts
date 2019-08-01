@@ -3,10 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { Schema } from "./Schema";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Unit } from "./Unit";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "../utils/FormatEnums";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -54,6 +56,25 @@ export class OverrideFormat {
 
   public hasFormatTrait(formatTrait: FormatTraits) {
     return (this.parent.formatTraits & formatTrait) === formatTrait;
+  }
+
+  /** Returns the format string of this override in the Xml full name format.
+   * @alpha
+   */
+  public fullNameXml(koqSchema: Schema): string {
+    let fullName = XmlSerializationUtils.createXmlTypedName(koqSchema, this.parent.schema, this.parent.name);
+
+    if (undefined !== this.precision)
+      fullName += `(${this.precision.toString()})`;
+
+    if (undefined === this._units)
+      return fullName;
+    for (const [unit, unitLabel] of this._units) {
+      fullName += "[";
+      fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unit.schema, unit.name);
+      fullName += `|${unitLabel}]`;
+    }
+    return fullName;
   }
 
   /**
