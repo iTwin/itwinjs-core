@@ -3368,7 +3368,7 @@ export type TxnIdString = string;
 export class TxnManager {
     constructor(_iModel: IModelDb);
     beginMultiTxnOperation(): DbResult;
-    cancelTo(txnId: TxnIdString): any;
+    cancelTo(txnId: TxnIdString): IModelStatus;
     describeChangeSet(endTxnId?: TxnIdString): string;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
@@ -3409,7 +3409,7 @@ export class TxnManager {
     reportError(error: ValidationError): void;
     reverseAll(): IModelStatus;
     reverseSingleTxn(): IModelStatus;
-    reverseTo(txnId: TxnIdString): any;
+    reverseTo(txnId: TxnIdString): IModelStatus;
     reverseTxns(numOperations: number): IModelStatus;
     readonly validationErrors: ValidationError[];
 }
