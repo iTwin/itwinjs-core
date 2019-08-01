@@ -24,7 +24,6 @@ alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps
 alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 internal;ContentZoneId = 5
-alpha;Corner
 internal;Css
 internal;CssProperties
 alpha;DefaultHistoryManager: HistoryManager
@@ -141,11 +140,7 @@ alpha;Panel
 alpha;PanelProps 
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
-alpha;Point 
-beta;PointProps
 beta;ProgressProps 
-alpha;Rectangle 
-beta;RectangleProps
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
 alpha;ResizeGrip 
@@ -158,8 +153,6 @@ alpha;ScrollableProps
 beta;ScrollableToolSettings 
 beta;ScrollableToolSettingsProps 
 alpha;ScrollIndicator 
-beta;Size 
-beta;SizeProps
 beta;Snap 
 beta;SnapMode 
 beta;SnapModePanel 

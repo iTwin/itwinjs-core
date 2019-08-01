@@ -6,8 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Timer, CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { Rectangle } from "../../utilities/Rectangle";
+import { Timer, CommonProps, NoChildrenProps, Rectangle } from "@bentley/ui-core";
 import { Css } from "../../utilities/Css";
 import "./Toast.scss";
 

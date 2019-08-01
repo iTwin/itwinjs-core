@@ -11,6 +11,7 @@ import {
   CoreTools,
 } from "../ui-framework";
 import { Direction, Toolbar, Item } from "@bentley/ui-ninezone";
+import { MarkupApp } from "@bentley/imodeljs-markup";
 
 describe("CoreToolDefinitions", () => {
 
@@ -18,6 +19,7 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await MarkupApp.initialize();
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =
@@ -35,6 +37,18 @@ describe("CoreToolDefinitions", () => {
             <ActionItemButton actionItem={CoreTools.toggleCameraViewCommand} />
             <ActionItemButton actionItem={CoreTools.flyViewCommand} />
             <ActionItemButton actionItem={CoreTools.sectionByPlaneCommand} />
+
+            <ActionItemButton actionItem={CoreTools.markupSelectToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupLineToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupRectangleToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupPolygonToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupCloudToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupEllipseToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupArrowToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupDistanceToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupSketchToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupPlaceTextToolDef} />
+            <ActionItemButton actionItem={CoreTools.markupSymbolToolDef} />
           </>
         }
       />;

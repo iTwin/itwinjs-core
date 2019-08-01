@@ -73,11 +73,16 @@ export class OpenParams {
     this.validate();
   }
 
-  /** Returns true if the open params open a snapshot Db */
+  /** Returns true if the OpenParams open a standalone iModel
+   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of an iModel *snapshot*.
+   */
   public get isStandalone(): boolean { return this.syncMode === undefined; }
 
+  /** Returns true if the OpenParams open a snapshot iModel */
+  public get isSnapshot(): boolean { return this.isStandalone; } // tslint:disable-line: deprecation
+
   private validate() {
-    if (this.isStandalone && this.syncMode !== undefined)
+    if (this.isSnapshot && this.syncMode !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
     if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush) {
@@ -330,12 +335,18 @@ export class IModelDb extends IModel {
     return imodelDb;
   }
 
-  /**
-   * Returns true if this is a standalone iModel
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+  /** Returns true if this is a standalone iModel
+   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
    */
   public get isStandalone(): boolean {
-    return this.briefcase.openParams.isStandalone;
+    return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
+  }
+
+  /** Returns true if this is a *snapshot* iModel
+   * @see [[openSnapshot]]
+   */
+  public get isSnapshot(): boolean {
+    return this.briefcase.openParams.isSnapshot;
   }
 
   /** Close this standalone iModel, if it is currently open

@@ -9,14 +9,30 @@ import * as React from "react";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
-  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool,
+  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool, ViewUndoTool, ViewRedoTool, Tool,
   ViewClipDecorationProvider,
 } from "@bentley/imodeljs-frontend";
+import {
+  SelectTool as Markup_SelectTool,
+  LineTool as Markup_LineTool,
+  RectangleTool as Markup_RectangleTool,
+  PolygonTool as Markup_PolygonTool,
+  CloudTool as Markup_CloudTool,
+  EllipseTool as Markup_EllipseTool,
+  ArrowTool as Markup_ArrowTool,
+  DistanceTool as Markup_DistanceTool,
+  SketchTool as Markup_SketchTool,
+  SymbolTool as Markup_SymbolTool,
+  PlaceTextTool as Markup_PlaceTextTool,
+} from "@bentley/imodeljs-markup";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
 import { CustomItemDef } from "./shared/CustomItemDef";
 import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { BaseItemState } from "../ui-framework/shared/ItemDefBase";
+import { ContentViewManager } from "./content/ContentViewManager";
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -157,4 +173,96 @@ export class CoreTools {
     });
   }
 
+  // TODO - Need to provide a sync message that is fire when the Undo/Redo button needs to be refreshed in the
+  // active view.
+  public static get viewUndoCommand() {
+    return new ToolItemDef({
+      toolId: ViewUndoTool.toolId,
+      iconSpec: ViewUndoTool.iconSpec,
+      label: () => ViewUndoTool.flyover,
+      tooltip: () => ViewUndoTool.description,
+      execute: () => { IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView); },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          returnState.isEnabled = activeContentControl.viewport.isRedoPossible;
+        return returnState;
+      },
+    });
+  }
+
+  public static get viewRedoCommand() {
+    return new ToolItemDef({
+      toolId: ViewRedoTool.toolId,
+      iconSpec: ViewRedoTool.iconSpec,
+      label: () => ViewRedoTool.flyover,
+      tooltip: () => ViewRedoTool.description,
+      execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          returnState.isEnabled = activeContentControl.viewport.isRedoPossible;
+        return returnState;
+      },
+    });
+  }
+
+  public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef {
+    return new ToolItemDef({
+      toolId: tool.toolId,
+      iconSpec: iconSpec ? iconSpec : tool.iconSpec ? tool.iconSpec : "icon-placeholder",
+      label: () => tool.flyover,
+      tooltip: () => tool.description,
+      execute: () => { IModelApp.tools.run(tool.toolId, args); },
+    });
+  }
+
+  /* Markup tools - Application must call 'MarkupApp.initialize()' before using the following definitions */
+  public static get markupSelectToolDef() {
+    return CoreTools.getItemDefForTool(Markup_SelectTool, "icon-cursor");
+  }
+
+  public static get markupLineToolDef() {
+    return CoreTools.getItemDefForTool(Markup_LineTool);
+  }
+
+  public static get markupRectangleToolDef() {
+    return CoreTools.getItemDefForTool(Markup_RectangleTool);
+  }
+
+  public static get markupPolygonToolDef() {
+    return CoreTools.getItemDefForTool(Markup_PolygonTool);
+  }
+
+  public static get markupCloudToolDef() {
+    return CoreTools.getItemDefForTool(Markup_CloudTool);
+  }
+
+  public static get markupEllipseToolDef() {
+    return CoreTools.getItemDefForTool(Markup_EllipseTool);
+  }
+
+  public static get markupArrowToolDef() {
+    return CoreTools.getItemDefForTool(Markup_ArrowTool);
+  }
+
+  public static get markupDistanceToolDef() {
+    return CoreTools.getItemDefForTool(Markup_DistanceTool);
+  }
+
+  public static get markupSketchToolDef() {
+    return CoreTools.getItemDefForTool(Markup_SketchTool);
+  }
+
+  public static get markupPlaceTextToolDef() {
+    return CoreTools.getItemDefForTool(Markup_PlaceTextTool);
+  }
+
+  public static get markupSymbolToolDef() {
+    return CoreTools.getItemDefForTool(Markup_SymbolTool);
+  }
 }

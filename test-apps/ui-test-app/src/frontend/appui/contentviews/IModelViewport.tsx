@@ -29,6 +29,7 @@ const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 /** iModel Viewport Control
  */
 export class IModelViewportControl extends ViewportContentControl {
+  public static id = "IModelViewport";
   private _options: any;
 
   private _onPlayPauseAnimation = (isPlaying: boolean): void => {
@@ -186,4 +187,4 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
   }
 }
 
-ConfigurableUiManager.registerControl("IModelViewport", IModelViewportControl);
+ConfigurableUiManager.registerControl(IModelViewportControl.id, IModelViewportControl);

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { Size } from "@bentley/ui-ninezone";
+import { SizeProps } from "@bentley/ui-core";
 
 import { CustomItemProps } from "./ItemProps";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
@@ -14,7 +14,7 @@ import { ActionButtonItemDef } from "./ActionButtonItemDef";
 /** @internal */
 interface CloneProps {
   key: string;
-  onSizeKnown: (size: Size) => void;
+  onSizeKnown: (size: SizeProps) => void;
 }
 
 /** An Item that renders a React component.

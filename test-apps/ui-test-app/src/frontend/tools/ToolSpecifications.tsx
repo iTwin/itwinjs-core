@@ -16,7 +16,6 @@ import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
-import { AppSelectTool } from "../tools/AppSelectTool";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 
 // cSpell:ignore appui
@@ -24,16 +23,6 @@ import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
 
 export class AppTools {
-  public static get appSelectElementCommand() {
-    return new ToolItemDef({
-      toolId: AppSelectTool.toolId,
-      iconSpec: "icon-cursor",
-      labelKey: "SampleApp:tools.AppSelect.flyover",
-      tooltipKey: "SampleApp:tools.AppSelect.description",
-      execute: () => { IModelApp.tools.run(AppSelectTool.toolId); },
-    });
-  }
-
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,

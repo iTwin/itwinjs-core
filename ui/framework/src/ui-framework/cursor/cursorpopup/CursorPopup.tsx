@@ -6,9 +6,9 @@
 
 import * as React from "react";
 
-import { CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
+import { CommonProps, CommonDivProps, Div, PointProps, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { Size, Point, Rectangle, TitleBar } from "@bentley/ui-ninezone";
+import { TitleBar } from "@bentley/ui-ninezone";
 
 import "./CursorPopup.scss";
 import { CursorPopupFadeOutEventArgs, CursorPopupManager } from "./CursorPopupManager";
@@ -20,13 +20,13 @@ import classnames = require("classnames");
 export interface CursorPopupProps extends CommonProps {
   id: string;
   content: React.ReactNode;
-  pt: Point;
-  offset: Point;
+  pt: PointProps;
+  offset: PointProps;
   relativePosition: RelativePosition;
   title?: string;
   shadow?: boolean;
   /** Function called when size is known. */
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
 }
 
 /** Enum for showing CursorPopup
@@ -50,7 +50,7 @@ interface CursorPopupState {
 export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupState> {
 
   private _isMounted: boolean = false;
-  private _popupSize: Size = new Size(0, 0);
+  private _popupSize: SizeProps = new Size(0, 0);
 
   /** @internal */
   public static fadeOutTime = 500;
@@ -83,11 +83,11 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
   }
 
   /** @internal */
-  public static getPopupRect(pt: Point, offset: Point, popupSize: Size | undefined, relativePosition: RelativePosition): Rectangle {
+  public static getPopupRect(pt: PointProps, offset: PointProps, popupSize: SizeProps | undefined, relativePosition: RelativePosition): RectangleProps {
     const popupRect = { top: 0, left: 0, right: 0, bottom: 0 };
 
     if (popupSize === undefined)
-      return Rectangle.create(popupRect);
+      return popupRect;
 
     switch (relativePosition) {
       case RelativePosition.Top:
@@ -140,7 +140,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
         break;
     }
 
-    return Rectangle.create(popupRect);
+    return popupRect;
   }
 
   private setDivRef(div: HTMLDivElement | null) {

@@ -3,12 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "./TestUtils";
 import { UiFramework, ColorTheme } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import { Presentation } from "@bentley/presentation-frontend";
-import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
+import { NoRenderApp, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@bentley/bentleyjs-core";
+import * as moq from "typemoq";
+
+import TestUtils, { MockAccessToken } from "./TestUtils";
 
 describe("UiFramework", () => {
 
@@ -110,6 +113,29 @@ describe("UiFramework", () => {
     expect(UiFramework.getActiveIModelId()).to.eq(testValue);
     TestUtils.terminateUiFramework();
   });
+
+  it("SessionState setters/getters", async () => {
+    await TestUtils.initializeUiFramework();
+
+    const mockToken = new MockAccessToken();
+    UiFramework.setAccessToken(mockToken);
+    expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id);
+
+    UiFramework.setDefaultRulesetId("TestRuleSet");
+    expect(UiFramework.getDefaultRulesetId()).to.eq("TestRuleSet");
+
+    UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
+    expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
+
+    const testViewId: Id64String = "0x12345678";
+    UiFramework.setDefaultViewId(testViewId);
+    expect(UiFramework.getDefaultViewId()).to.eq(testViewId);
+
+    const imodelMock = moq.Mock.ofType<IModelConnection>();
+    UiFramework.setIModelConnection(imodelMock.object);
+    expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
+  });
+
 });
 
 // before we can test setting scope to a valid scope id we must make sure Presentation Manager is initialized.

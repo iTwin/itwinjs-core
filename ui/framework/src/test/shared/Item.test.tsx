@@ -9,8 +9,7 @@ import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
 import { ItemProps } from "../../ui-framework/shared/ItemProps";
-import { Orientation } from "@bentley/ui-core";
-import { Size } from "@bentley/ui-ninezone";
+import { Orientation, Size } from "@bentley/ui-core";
 
 describe("Item", () => {
 

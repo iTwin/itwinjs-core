@@ -13,29 +13,34 @@ import {
 
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions,
+  IModelAppOptions, SelectionTool,
 } from "@bentley/imodeljs-frontend";
+import {
+  MarkupApp,
+} from "@bentley/imodeljs-markup";
+
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
+  BackstageItemManager,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
-import { AppBackstage } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
+import { AppBackstageItemProvider } from "./appui/AppBackstageItemProvider";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
-import { AppSelectTool } from "./tools/AppSelectTool";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 import { UiProviderTool } from "./tools/UiProviderTool";
+import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
 
 // Mobx demo
 import { configure as mobxConfigure } from "mobx";
@@ -57,21 +62,17 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (request) => (request.findTokenPropsParameter() || new IModelToken("test", "test", "test", "test", OpenMode.Readonly)));
 
-// cSpell:ignore SETIMODELCONNECTION setTestProperty sampleapp setaccesstoken uitestapp setisimodellocal
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
  * Use lower case strings to be compatible with SyncUi processing.
  */
 export enum SampleAppUiActionId {
-  setIModelConnection = "sampleapp:setimodelconnection",
-  setAccessToken = "sampleapp:setaccesstoken",
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
 }
 
 export interface SampleAppState {
-  iModelConnection?: IModelConnection;
-  accessToken?: AccessToken;
   testProperty: string;
   animationViewId: string;
   isIModelLocal: boolean;
@@ -86,8 +87,6 @@ const initialState: SampleAppState = {
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
 // tslint:disable-next-line:variable-name
 export const SampleAppActions = {
-  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, iModelConnection),
-  setAccessToken: (accessToken: AccessToken) => createAction(SampleAppUiActionId.setAccessToken, accessToken),
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
@@ -116,12 +115,6 @@ export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
   switch (action.type) {
-    case SampleAppUiActionId.setIModelConnection: {
-      return { ...state, iModelConnection: action.payload };
-    }
-    case SampleAppUiActionId.setAccessToken: {
-      return { ...state, accessToken: action.payload };
-    }
     case SampleAppUiActionId.setTestProperty: {
       return { ...state, testProperty: action.payload };
     }
@@ -181,6 +174,7 @@ export class SampleAppIModelApp {
     Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
+    await MarkupApp.initialize();
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
@@ -216,11 +210,15 @@ export class SampleAppIModelApp {
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
-    AppSelectTool.register();
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
 
-    IModelApp.toolAdmin.defaultToolId = AppSelectTool.toolId;
+    IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
+
+    BackstageItemManager.register(new AppBackstageItemProvider());
+
+    // store name of this registered control in Redux store so it can be access by plugins
+    UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
   }
 
   public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
@@ -235,7 +233,7 @@ export class SampleAppIModelApp {
   }
 
   public static async closeCurrentIModel() {
-    const currentIModelConnection = this.getIModelConnection();
+    const currentIModelConnection = UiFramework.getIModelConnection();
     if (currentIModelConnection) {
       SyncUiEventDispatcher.clearConnectionEvents(currentIModelConnection);
 
@@ -243,6 +241,7 @@ export class SampleAppIModelApp {
         await currentIModelConnection.closeSnapshot();
       else
         await currentIModelConnection.close();
+      UiFramework.setIModelConnection(undefined);
     }
   }
 
@@ -251,7 +250,11 @@ export class SampleAppIModelApp {
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
-    SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+    UiFramework.setIModelConnection(iModelConnection, true);
+
+    // store the first selected viewId as default - mostly used by frontstages defined in plugins that want to open a IModelViewport
+    if (viewIdsSelected && viewIdsSelected.length > 0)
+      UiFramework.setDefaultViewId(viewIdsSelected[0]);
 
     // we create a Frontstage that contains the views that we want.
     const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
@@ -268,7 +271,7 @@ export class SampleAppIModelApp {
   }
 
   public static async showIModelIndex(contextId: string, iModelId: string) {
-    const currentConnection = SampleAppIModelApp.getIModelConnection();
+    const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelToken.iModelId !== iModelId)) {
       // Close the current iModelConnection
       await SampleAppIModelApp.closeCurrentIModel();
@@ -280,7 +283,7 @@ export class SampleAppIModelApp {
       SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
       // store the IModelConnection in the sample app store
-      SampleAppIModelApp.setIModelConnection(iModelConnection, true);
+      UiFramework.setIModelConnection(iModelConnection, true);
     }
 
     await SampleAppIModelApp.showFrontstage("IModelIndex");
@@ -299,7 +302,7 @@ export class SampleAppIModelApp {
     const accessToken = await IModelApp.authorizationClient!.getAccessToken();
 
     // NOTE: do we need to store access token since its store in OidcClient?
-    SampleAppIModelApp.setAccessToken(accessToken);
+    UiFramework.setAccessToken(accessToken);
 
     if (!accessToken)
       return;
@@ -367,24 +370,8 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp.store.getState().sampleAppState.animationViewId;
   }
 
-  public static setIModelConnection(iModelConnection: IModelConnection, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SampleAppUiActionId.setIModelConnection, iModelConnection, immediateSync);
-  }
-
   public static setIsIModelLocal(isIModelLocal: boolean, immediateSync = false) {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setIsIModelLocal, isIModelLocal, immediateSync);
-  }
-
-  public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SampleAppUiActionId.setAccessToken, accessToken, immediateSync);
-  }
-
-  public static getAccessToken(): AccessToken | undefined {
-    return SampleAppIModelApp.store.getState().sampleAppState.accessToken;
-  }
-
-  public static getIModelConnection(): IModelConnection | undefined {
-    return SampleAppIModelApp.store.getState().sampleAppState.iModelConnection;
   }
 
   public static get isIModelLocal(): boolean {
@@ -418,7 +405,7 @@ export class SampleAppViewer extends React.Component<any> {
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
           <BeDragDropContext>
-            <ConfigurableUiContent appBackstage={<AppBackstage />} />
+            <ConfigurableUiContent appBackstage={<BackstageComposer />} />
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

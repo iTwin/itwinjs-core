@@ -51,7 +51,8 @@
     "exit": "Exit",
     "imodelopen": "IModel Open",
     "imodelindex": "IModel Index",
-    "fileSelect": "Open Local File"
+    "fileSelect": "Open Local File",
+    "custom": "Custom"
   },
   "zone6": {
     "month": "Month",

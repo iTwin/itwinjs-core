@@ -20,6 +20,7 @@ import {
   FrontstageProps,
   ZoneLocation,
   ActionItemButton,
+  CoreTools,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -66,7 +67,7 @@ export class Frontstage3 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test3"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true}

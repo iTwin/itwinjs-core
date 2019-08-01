@@ -17,9 +17,42 @@ import {
 import { TestFrontstage } from "./FrontstageTestUtils";
 import TestUtils from "../TestUtils";
 
+class StorageMock {
+  private _storage: { [key: string]: any } = {};
+
+  public setItem(key: string, value: string) {
+    this._storage[key] = value || "";
+  }
+
+  public getItem(key: string) {
+    return key in this._storage ? this._storage[key] : null;
+  }
+
+  public removeItem(key: string) {
+    delete this._storage[key];
+  }
+
+  public get length() {
+    return Object.keys(this._storage).length;
+  }
+
+  public key(i: number) {
+    const keys = Object.keys(this._storage);
+    return keys[i] || null;
+  }
+}
+
+const mySessionStorage = new StorageMock();
+
+const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
+
 describe("FrontstageManager", () => {
 
   before(async () => {
+    Object.defineProperty(window, "sessionStorage", {
+      get: () => mySessionStorage,
+    });
+
     await TestUtils.initializeUiFramework();
 
     MockRender.App.startup();
@@ -30,6 +63,10 @@ describe("FrontstageManager", () => {
 
   after(() => {
     MockRender.App.shutdown();
+
+    // restore the overriden property getter
+    Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
+
   });
 
   it("findWidget should return undefined when no active frontstage", async () => {

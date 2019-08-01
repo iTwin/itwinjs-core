@@ -91,6 +91,8 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsMultiAspects 
+public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
 public;ElementUniqueAspect 
 public;ElevationCallout 

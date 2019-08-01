@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 
 import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { Point } from "@bentley/ui-ninezone";
+import { Point } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 
 import { CursorPopup, CursorPopupContent, CursorPopupShow } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";

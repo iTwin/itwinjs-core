@@ -5,8 +5,9 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { PointProps } from "@bentley/ui-core";
 import { createRect } from "../../../Utils";
-import { HorizontalAnchor, Tab, TabMode, TabModeHelpers, PointProps } from "../../../../ui-ninezone";
+import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
 import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
 

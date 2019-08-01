@@ -129,6 +129,8 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/BackstageComposer";
+export * from "./ui-framework/backstage/BackstageItemManager";
 
 export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/CubeNavigationAid";

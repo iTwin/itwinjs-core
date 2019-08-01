@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { SampleAppIModelApp } from "../..";
-
 import {
   ConfigurableUiManager, ConfigurableCreateInfo,
   WidgetControl,
   DragDropLayerManager,
+  UiFramework,
 } from "@bentley/ui-framework";
 
 import {
@@ -30,7 +29,10 @@ export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <BreadcrumbDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
+    if (UiFramework.getIModelConnection())
+      this.reactElement = <BreadcrumbDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
+    else
+      this.reactElement = null;
   }
 }
 

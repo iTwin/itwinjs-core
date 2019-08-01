@@ -2,7 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle, Corner, RectangleProps } from "../../ui-ninezone";
+import { Rectangle, Corner, RectangleProps, Point } from "../../ui-core";
+import { expect } from "chai";
+
+// cSpell:ignore offsetted
 
 describe("Rectangle", () => {
   it("unspecified bounds should be 0", () => {
@@ -283,4 +286,70 @@ describe("Rectangle", () => {
     contained.top.should.eq(5);
     contained.bottom.should.eq(17);
   });
+
+  it("create should create rectangle", () => {
+    const sut = Rectangle.create({ left: 1, top: 2, right: 3, bottom: 4 });
+    sut.left.should.eq(1);
+    sut.top.should.eq(2);
+    sut.right.should.eq(3);
+    sut.bottom.should.eq(4);
+  });
+
+  it("inset should return updated rectangle", () => {
+    const sut = new Rectangle(0, 0, 10, 10);
+    const sut2 = sut.inset(1, 2, 3, 4);
+    sut2.left.should.eq(1);
+    sut2.top.should.eq(2);
+    sut2.right.should.eq(7);
+    sut2.bottom.should.eq(6);
+  });
+
+  it("setWidth should update width", () => {
+    const sut = new Rectangle(0, 0, 10, 10);
+    const sut2 = sut.setWidth(20);
+    sut2.right.should.eq(20);
+  });
+
+  it("containIn should return correct rectangle", () => {
+    const sut1 = Rectangle.create({ left: 0, top: 0, right: 10, bottom: 10 });
+    const sut2 = Rectangle.create({ left: 5, top: 5, right: 20, bottom: 20 });
+    const result = sut1.containIn(sut2);
+    expect(result.equals(new Rectangle(5, 5, 15, 15))).to.be.true;
+  });
+
+  it("center should return correct point", () => {
+    const sut = new Rectangle(0, 0, 10, 10);
+    const result = sut.center();
+    expect(result.equals(new Point(5, 5))).to.be.true;
+  });
+
+  it("toProps should return correct props", () => {
+    const sut = new Rectangle(0, 5, 10, 20);
+    const props = sut.toProps();
+    props.left.should.eq(0);
+    props.top.should.eq(5);
+    props.right.should.eq(10);
+    props.bottom.should.eq(20);
+  });
+
+  it("getVerticalSegmentBounds should return correct point", () => {
+    const sut = new Rectangle(0, 0, 30, 30);
+    let result = sut.getVerticalSegmentBounds(0, 3);
+    expect(result.equals(new Rectangle(0, 0, 30, 10))).to.be.true;
+    result = sut.getVerticalSegmentBounds(1, 3);
+    expect(result.equals(new Rectangle(0, 10, 30, 20))).to.be.true;
+    result = sut.getVerticalSegmentBounds(2, 3);
+    expect(result.equals(new Rectangle(0, 20, 30, 30))).to.be.true;
+  });
+
+  it("getHorizontalSegmentBounds should return correct point", () => {
+    const sut = new Rectangle(0, 0, 30, 30);
+    let result = sut.getHorizontalSegmentBounds(0, 3);
+    expect(result.equals(new Rectangle(0, 0, 10, 30))).to.be.true;
+    result = sut.getHorizontalSegmentBounds(1, 3);
+    expect(result.equals(new Rectangle(10, 0, 20, 30))).to.be.true;
+    result = sut.getHorizontalSegmentBounds(2, 3);
+    expect(result.equals(new Rectangle(20, 0, 30, 30))).to.be.true;
+  });
+
 });

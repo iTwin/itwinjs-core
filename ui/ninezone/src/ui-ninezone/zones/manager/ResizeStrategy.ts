@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import { RectangleProps, Rectangle } from "../../utilities/Rectangle";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
 import { HorizontalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId, ZonesManagerProps, ZonesManager } from "./Zones";
 
