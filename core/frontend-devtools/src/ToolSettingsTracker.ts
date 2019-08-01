@@ -8,7 +8,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { createCheckBox } from "./CheckBox";
-import { createNumericInput } from "./NumericInput";
+import { createNumericInput, createLabeledNumericInput } from "./NumericInput";
 import { createNestedMenu } from "./NestedMenu";
 
 /** @alpha */
@@ -172,6 +172,29 @@ export class ToolSettingsTracker {
     div.style.display = "block";
     div.style.textAlign = "left";
     settingsDiv.appendChild(div);
+
+    createLabeledNumericInput({
+      id: "num_inertiaDamping",
+      parent: settingsDiv,
+      value: ToolSettings.viewingInertia.damping,
+      handler: (value, _) => { ToolSettings.viewingInertia.damping = value; IModelApp.toolAdmin.exitViewTool(); },
+      min: 0,
+      max: 1,
+      step: 0.05,
+      parseAsFloat: true,
+      name: "Interial damping: ",
+    });
+    createLabeledNumericInput({
+      id: "num_inertiaDuration",
+      parent: settingsDiv,
+      value: ToolSettings.viewingInertia.duration.milliseconds / 1000,
+      handler: (value, _) => { ToolSettings.viewingInertia.duration = BeDuration.fromMilliseconds(value * 1000); IModelApp.toolAdmin.exitViewTool(); },
+      min: 0,
+      max: 10,
+      step: 0.5,
+      parseAsFloat: true,
+      name: "Interial duration (seconds): ",
+    });
   }
 
   public dispose(): void { }

@@ -16,6 +16,7 @@ public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
+beta;Animator
 internal;AppearanceOverrideProps
 beta;ArrayValue 
 internal;Attachments
@@ -77,7 +78,6 @@ internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
 public;DecorateContext 
-alpha;DecorationAnimator 
 public;Decorations 
 public;Decorator
 internal;DefaultViewTouchTool 
@@ -251,7 +251,6 @@ alpha;QuantityFormatter
 beta;QuantityType
 alpha;RangeEditorParams 
 public;RelativePosition
-public;RemoveMe
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -391,7 +390,6 @@ internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
-public;ViewportAnimator
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 

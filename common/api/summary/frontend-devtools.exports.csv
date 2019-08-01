@@ -18,6 +18,7 @@ alpha;createButton(props: ButtonProps): Button
 alpha;createCheckBox(props: CheckBoxProps): CheckBox
 alpha;createColorInput(props: ColorInputProps): ColorInput
 alpha;createComboBox(props: ComboBoxProps): ComboBox
+alpha;createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput
 alpha;createNestedMenu(props: NestedMenuProps): NestedMenu
 alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInputElement
 alpha;createRadioBox(props: RadioBoxProps): RadioBox
@@ -26,6 +27,8 @@ alpha;createTextBox(props: TextBoxProps): TextBox
 alpha;DiagnosticsPanel
 alpha;FpsTracker
 alpha;FrustumDecorator 
+alpha;LabeledNumericInput
+alpha;LabeledNumericInputProps 
 alpha;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
