@@ -6,7 +6,7 @@
 
 import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 import { Config } from "@bentley/imodeljs-clients";
 

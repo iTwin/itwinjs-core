@@ -27,7 +27,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Entity } from "./Entity";
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";

@@ -13,7 +13,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceA
 import { IModelDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
