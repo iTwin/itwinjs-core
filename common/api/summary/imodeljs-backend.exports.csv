@@ -156,7 +156,6 @@ public;IModelHost
 public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
-internal;IModelJsNative
 alpha;IModelTransformer
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
@@ -194,7 +193,6 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;NativeLoggerCategory
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 

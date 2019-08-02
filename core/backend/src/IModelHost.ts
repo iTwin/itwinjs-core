@@ -16,7 +16,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { FunctionalSchema } from "./domains/Functional";
 import { GenericSchema } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";

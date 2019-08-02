@@ -8,7 +8,7 @@ import { assert, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentle
 import { IModelError, IModelStatus, QueryLimit, QueryPriority, QueryResponse, QueryResponseStatus, QueryQuota } from "@bentley/imodeljs-common";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { PostStatus, PollStatus } from "./ConcurrentQuery";
