@@ -5,15 +5,16 @@
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Drawing, Element, InformationPartitionElement, Sheet, Subject } from "./Element";
+import { DefinitionPartition, Element, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -193,14 +194,21 @@ export class IModelTransformer {
    */
   protected onRelationshipExcluded(_sourceRelationship: Relationship): void { }
 
-  /** Called after processing a source Element when that processing caused an Element or Elements to be inserted in the target iModel.
+  /** Called after processing a source Model when it caused a Model to be inserted in the target iModel.
+   * @param _sourceModel The source Model that was processed
+   * @param _targetModelProps The ModelProps that were inserted into the target iModel.
+   * @note A subclass can override this method to be notified after Models have been inserted.
+   */
+  protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void { }
+
+  /** Called after processing a source Element when it caused an Element to be inserted in the target iModel.
    * @param _sourceElement The sourceElement that was processed
    * @param _targetElementProps The ElementProps that were inserted into the target iModel because of processing the source Element.
    * @note A subclass can override this method to be notified after Elements have been inserted. This can be used to establish relationships or for other operations that require knowing ElementIds.
    */
   protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void { }
 
-  /** Called after processing a source Element when that processing caused an Element or Elements to be updated in the target iModel.
+  /** Called after processing a source Element when it caused an Element or Elements to be updated in the target iModel.
    * @param _sourceElement The sourceElement that was processed
    * @param _targetElementProps The ElementProps that were updated in the target iModel because of processing the source Element.
    * @note A subclass can override this method to be notified after Elements have been updated. This can be used to establish relationships or for other operations that require knowing ElementIds.
@@ -445,23 +453,30 @@ export class IModelTransformer {
     const sql = `SELECT ECInstanceId FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const modeledElementId: Id64String = statement.getValue(0).getId();
-        const modeledElement: Element = this._sourceDb.elements.getElement({ id: modeledElementId, wantGeometry: true });
-        if (this.shouldExcludeElement(modeledElement)) {
-          this.onElementExcluded(modeledElement);
-        } else {
-          this.importModel(modeledElementId);
-          this.importModelContents(modeledElementId);
-        }
+        this.importModel(statement.getValue(0).getId());
       }
     });
+  }
+
+  /** Import the model container, contents, and sub-models into the target IModelDb
+   * @param sourceModeledElementId Import this model from the source IModelDb.
+   */
+  public importModel(sourceModeledElementId: Id64String): void {
+    Logger.logTrace(loggerCategory, `--> importModel(${this.formatIdForLogger(sourceModeledElementId)})`);
+    const modeledElement: Element = this._sourceDb.elements.getElement({ id: sourceModeledElementId, wantGeometry: true });
+    if (this.shouldExcludeElement(modeledElement)) {
+      this.onElementExcluded(modeledElement);
+    } else {
+      this.importModelContainer(sourceModeledElementId);
+      this.importModelContents(sourceModeledElementId);
+      this.importSubModels(sourceModeledElementId);
+    }
   }
 
   /** Import the model (the container only) into the target IModelDb
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
-  public importModel(sourceModeledElementId: Id64String): void {
-    Logger.logTrace(loggerCategory, `--> importModel(${this.formatIdForLogger(sourceModeledElementId)})`);
+  private importModelContainer(sourceModeledElementId: Id64String): void {
     const targetModeledElementId = this.findTargetElementId(sourceModeledElementId);
     try {
       if (this._targetDb.models.getModelProps(targetModeledElementId)) {
@@ -469,19 +484,17 @@ export class IModelTransformer {
       }
     } catch (error) {
       // catch NotFound error and insertModel
-      const modelProps: ModelProps = this._sourceDb.models.getModelProps(sourceModeledElementId);
-      modelProps.modeledElement.id = targetModeledElementId;
-      modelProps.id = targetModeledElementId;
-      modelProps.parentModel = this.findTargetElementId(modelProps.parentModel!);
-      this._targetDb.models.insertModel(modelProps);
-      Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatModelForLogger(modelProps)}`);
+      const sourceModel: Model = this._sourceDb.models.getModel(sourceModeledElementId);
+      const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
+      this.insertModel(targetModelProps);
+      this.onModelInserted(sourceModel, targetModelProps);
     }
   }
 
   /** Import the model contents into the target IModelDb
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
    */
-  public importModelContents(sourceModeledElementId: Id64String): void {
+  private importModelContents(sourceModeledElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `--> importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
@@ -490,6 +503,40 @@ export class IModelTransformer {
         this.importElement(statement.getValue(0).getId());
       }
     });
+  }
+
+  /** Import the sub-models below the specified model. */
+  private importSubModels(sourceParentModelId: Id64String): void {
+    const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+      statement.bindId("parentModelId", sourceParentModelId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        this.importModel(statement.getValue(0).getId());
+      }
+    });
+  }
+
+  /** Transform the specified sourceModel into ModelProps for the target iModel.
+   * @param sourceModel The Model from the source iModel to be transformed.
+   * @param targetModeledElementId The transformed Model will *break down* or *detail* this Element in the target iModel.
+   * @returns ModelProps for the target iModel.
+   * @note A subclass can override this method to provide custom transform behavior.
+   */
+  protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
+    const targetModelProps: ModelProps = sourceModel.toJSON();
+    targetModelProps.modeledElement.id = targetModeledElementId;
+    targetModelProps.id = targetModeledElementId;
+    targetModelProps.parentModel = Id64.invalid; // insertModel will properly initialize
+    return targetModelProps;
+  }
+
+  /** Insert the transformed Model into the target iModel.
+   * @param targetModelProps The ModelProps that will be inserted into the target iModel.
+   * @note A subclass can override this method to provide custom insert behavior.
+   */
+  protected insertModel(targetModelProps: ModelProps): void {
+    this._targetDb.models.insertModel(targetModelProps);
+    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatModelForLogger(targetModelProps)}`);
   }
 
   /** Import elements that were skipped in a prior pass */
@@ -874,8 +921,6 @@ export class IModelTransformer {
     this.importElement(IModel.rootSubjectId);
     this.importModels(DefinitionPartition.classFullName);
     this.importModels(InformationPartitionElement.classFullName);
-    this.importModels(Drawing.classFullName);
-    this.importModels(Sheet.classFullName);
     this.importSkippedElements();
     this.importRelationships(ElementRefersToElements.classFullName);
   }

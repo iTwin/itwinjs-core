@@ -2140,7 +2140,6 @@ export class IModelTransformer {
     importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String): void;
     importModels(modeledElementClass: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
@@ -2149,6 +2148,7 @@ export class IModelTransformer {
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected insertModel(targetModelProps: ModelProps): void;
     protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementAspectDeleted(_targetElementAspect: ElementAspect): void;
@@ -2159,6 +2159,7 @@ export class IModelTransformer {
     protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void;
+    protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void;
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
@@ -2176,6 +2177,7 @@ export class IModelTransformer {
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
     protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;

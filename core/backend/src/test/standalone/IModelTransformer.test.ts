@@ -7,7 +7,7 @@ import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, S
 import {
   AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec, ElementAspectProps,
+  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec, ElementAspectProps, ModelProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as hash from "object-hash";
@@ -17,7 +17,7 @@ import {
   DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector,
-  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject, Model,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -28,6 +28,7 @@ class TestIModelTransformer extends IModelTransformer {
   public numUpdateElementCalls = 0;
   public numExcludedElementCalls = 0;
 
+  public numModelsInserted = 0;
   public numElementsInserted = 0;
   public numElementsUpdated = 0;
   public numElementsExcluded = 0;
@@ -133,6 +134,12 @@ class TestIModelTransformer extends IModelTransformer {
   protected onElementExcluded(sourceElement: Element): void {
     this.numElementsExcluded++;
     super.onElementExcluded(sourceElement);
+  }
+
+  /** Count the number of Models inserted in this callback */
+  protected onModelInserted(sourceModel: Model, targetModelProps: ModelProps): void {
+    this.numModelsInserted++;
+    super.onModelInserted(sourceModel, targetModelProps);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
@@ -852,10 +859,11 @@ describe("IModelTransformer", () => {
       transformer.dispose();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
-      assert.isAbove(transformer.numElementAspectsExcluded, 0);
+      assert.isAbove(transformer.numModelsInserted, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
       assert.isAbove(transformer.numElementsUpdated, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
+      assert.isAbove(transformer.numElementAspectsExcluded, 0);
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
       assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementCalls);
       assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
@@ -885,6 +893,7 @@ describe("IModelTransformer", () => {
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
+      assert.equal(transformer.numModelsInserted, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 0);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
@@ -905,6 +914,7 @@ describe("IModelTransformer", () => {
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
       transformer.dispose();
+      assert.equal(transformer.numModelsInserted, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 3);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
