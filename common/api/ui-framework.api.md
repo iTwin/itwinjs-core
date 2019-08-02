@@ -3846,6 +3846,8 @@ export interface ToolSettingsZoneProps extends CommonProps {
     // (undocumented)
     bounds: RectangleProps;
     // (undocumented)
+    isClosed: boolean;
+    // (undocumented)
     isHidden: boolean;
 }
 

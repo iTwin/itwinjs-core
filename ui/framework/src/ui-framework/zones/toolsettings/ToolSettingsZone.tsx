@@ -37,6 +37,7 @@ interface ToolSettingsZoneState {
 export interface ToolSettingsZoneProps extends CommonProps {
   bounds: RectangleProps;
   isHidden: boolean;
+  isClosed: boolean;
 }
 
 /** Tool Settings Zone React component.
@@ -46,14 +47,15 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   private _toolSettingsLabel: string;
 
   /** @internal */
-  public readonly state: Readonly<ToolSettingsZoneState> = {
-    toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
-  };
+  public readonly state: Readonly<ToolSettingsZoneState>;
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
     this._toolSettingsLabel = UiFramework.translate("general.toolSettings");
+    this.state = {
+      toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
+    };
   }
 
   public componentDidMount(): void {
