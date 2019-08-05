@@ -39,6 +39,11 @@ export enum WebGLFeature {
    * This feature indicates that the system has enough texture units available for the shaders to run properly.
    */
   MinimalTextureUnits = "minimal texture units",
+  /**
+   * This feature allows a logarithmic depth buffer to be used.  Without this feature, z-fighting will be much more likely
+   * to occur.
+   */
+  FragDepth = "fragment depth",
 }
 
 /** Describes the state of render compatibility.

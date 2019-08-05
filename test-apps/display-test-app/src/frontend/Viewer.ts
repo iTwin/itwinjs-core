@@ -77,7 +77,6 @@ class DebugTools extends ToolBarDropDown {
       click: () => IModelApp.tools.run("Plugin", ["wmsPlugin.js"]),
       tooltip: "Test WMS Weather Maps",
     }));
-
     this._element.appendChild(createToolButton({
       className: "bim-icon-savedview",
       click: () => saveImage(IModelApp.viewManager.selectedView!),

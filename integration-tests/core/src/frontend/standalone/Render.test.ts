@@ -19,6 +19,40 @@ import {
   ViewRect,
 } from "@bentley/imodeljs-frontend";
 import { Point2d } from "@bentley/geometry-core";
+import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
+
+describe("Test VAO creation", () => {
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    IModelApp.startup({ renderSys: renderSysOpts });
+  });
+
+  after(async () => {
+    IModelApp.shutdown();
+  });
+
+  it("should create VAO BuffersContainer object", async () => {
+    const buffers = BuffersContainer.create();
+    expect(buffers instanceof VAOContainer).to.be.true;
+  });
+});
+
+describe("Test VBO creation", () => {
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
+    IModelApp.startup({ renderSys: renderSysOpts });
+  });
+
+  after(async () => {
+    IModelApp.shutdown();
+  });
+
+  it("should create VBO BuffersContainer object", async () => {
+    const buffers = BuffersContainer.create();
+    expect(buffers instanceof VBOContainer).to.be.true;
+  });
+});
 
 describe("Render mirukuru with VAOs disabled", () => {
   let imodel: IModelConnection;

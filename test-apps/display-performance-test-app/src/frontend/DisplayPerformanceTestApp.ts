@@ -6,7 +6,7 @@
 import { Id64, Id64Arg, Id64String, OpenMode, StopWatch, assert } from "@bentley/bentleyjs-core";
 import { Config, HubIModel, OidcFrontendClientConfiguration, Project } from "@bentley/imodeljs-clients";
 import {
-  BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
+  BackgroundMapProps, BackgroundMapType, BentleyCloudRpcManager, DisplayStyleProps, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, MobileRpcConfiguration, MobileRpcManager, RpcConfiguration, RpcOperation, RenderMode,
   SnapshotIModelRpcInterface, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
@@ -145,6 +145,9 @@ function getRenderOpts(): string {
             case "ANGLE_instanced_arrays":
               optString += "-instArrays";
               break;
+            case "EXT_frag_depth":
+              optString += "-fragDepth";
+              break;
             default:
               optString += "-" + ext;
               break;
@@ -162,6 +165,9 @@ function getRenderOpts(): string {
         break;
       case "displaySolarShadows":
         if (value) optString += "+solShd";
+        break;
+      case "logarithmicZBuffer":
+        if (value) optString += "+logZBuf";
         break;
       default:
         if (value) optString += "+" + key;
@@ -197,6 +203,39 @@ function getTileProps(): string {
     }
   }
   return tilePropsStr;
+}
+
+function getBackgroundMapProps(): string {
+  let bmPropsStr = "";
+  const bmProps = activeViewState.viewState!.displayStyle.backgroundMap.settings;
+  switch (bmProps.providerName) {
+    case "BingProvider":
+      break;
+    case "MapBoxProvider":
+      bmPropsStr += "MapBox";
+      break;
+    default:
+      bmPropsStr += bmProps.providerName;
+      break;
+  }
+  switch (bmProps.mapType) {
+    case BackgroundMapType.Hybrid:
+      break;
+    case BackgroundMapType.Aerial:
+      bmPropsStr += "+aer";
+      break;
+    case BackgroundMapType.Street:
+      bmPropsStr += "+st";
+      break;
+    default:
+      bmPropsStr += "+type" + bmProps.mapType;
+      break;
+  }
+  if (bmProps.groundBias !== 0) bmPropsStr += "+bias" + bmProps.groundBias;
+  if (bmProps.applyTerrain) bmPropsStr += "+terr";
+  if (bmProps.useDepthBuffer) bmPropsStr += "+depth";
+  if (typeof (bmProps.transparency) === "number") bmPropsStr += "+trans" + bmProps.transparency;
+  return bmPropsStr;
 }
 
 function getViewFlagsString(): string {
@@ -334,6 +373,7 @@ function getRowData(finalFrameTimings: Array<Map<string, number>>, configs: Defa
   rowData.set("View Flags", getViewFlagsString() !== "" ? " " + getViewFlagsString() : "");
   rowData.set("Render Options", getRenderOpts() !== "" ? " " + getRenderOpts() : "");
   rowData.set("Tile Props", getTileProps() !== "" ? " " + getTileProps() : "");
+  rowData.set("Bkg Map Props", getBackgroundMapProps() !== "" ? " " + getBackgroundMapProps() : "");
   if (pixSelectStr) rowData.set("ReadPixels Selector", " " + pixSelectStr);
   rowData.set("Tile Loading Time", curTileLoadingTime);
   rowData.set("Test Name", getTestName(configs));
@@ -411,6 +451,7 @@ function getTestName(configs: DefaultConfigs, prefix?: string, isImage = false, 
   testName += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
   testName += getRenderOpts() !== "" ? "_" + getRenderOpts() : "";
   testName += getTileProps() !== "" ? "_" + getTileProps() : "";
+  testName += getBackgroundMapProps() !== "" ? "_" + getBackgroundMapProps() : "";
   testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
   if (!ignoreDupes) {
     let testNum = isImage ? testNamesImages.get(testName) : testNamesTimings.get(testName);
@@ -462,6 +503,7 @@ class DefaultConfigs {
   public testType?: string;
   public displayStyle?: string;
   public viewFlags?: any; // ViewFlags, except we want undefined for anything not specifically set
+  public backgroundMap?: BackgroundMapProps;
   public renderOptions?: RenderSystem.Options;
   public tileProps?: TileAdmin.Props;
 
@@ -496,6 +538,7 @@ class DefaultConfigs {
       this.renderOptions = this.updateData(prevConfigs.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
       this.tileProps = this.updateData(prevConfigs.tileProps, this.tileProps) as TileAdmin.Props || undefined;
       this.viewFlags = this.updateData(prevConfigs.viewFlags, this.viewFlags);
+      this.backgroundMap = this.updateData(prevConfigs.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
     } else if (jsonData.argOutputPath)
       this.outputPath = jsonData.argOutputPath;
     if (jsonData.view) this.view = new ViewSize(jsonData.view.width, jsonData.view.height);
@@ -526,6 +569,7 @@ class DefaultConfigs {
     this.renderOptions = this.updateData(jsonData.renderOptions, this.renderOptions) as RenderSystem.Options || undefined;
     this.tileProps = this.updateData(jsonData.tileProps, this.tileProps) as TileAdmin.Props || undefined;
     this.viewFlags = this.updateData(jsonData.viewFlags, this.viewFlags); // as ViewFlags || undefined;
+    this.backgroundMap = this.updateData(jsonData.backgroundMap, this.backgroundMap) as BackgroundMapProps || undefined;
 
     debugPrint("view: " + (this.view !== undefined ? (this.view!.width + "X" + this.view!.height) : "undefined"));
     debugPrint("numRendersToTime: " + this.numRendersToTime);
@@ -545,6 +589,7 @@ class DefaultConfigs {
     debugPrint("tileProps: " + this.tileProps);
     debugPrint("renderOptions: " + this.renderOptions);
     debugPrint("viewFlags: " + this.viewFlags);
+    debugPrint("backgroundMap: " + this.backgroundMap);
   }
 
   private getRenderModeCode(value: any): RenderMode | undefined {
@@ -815,6 +860,11 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
         else
           (testConfig.viewFlags as Options)[key] = (activeViewState.viewState.displayStyle.viewFlags as Options)[key];
       }
+    }
+    if (undefined !== testConfig.backgroundMap) {
+      // Use the testConfig.backgroundMap data for each property in Background if it exists; otherwise, keep using the viewState's ViewFlags info
+      const bmSettings = activeViewState.viewState.displayStyle.backgroundMap.settings;
+      activeViewState.viewState.displayStyle.backgroundMap.settings = bmSettings.clone(testConfig.backgroundMap);
     }
   }
 

@@ -26,6 +26,7 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
+internal;BackgroundTerrainTileTreeReference 
 alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
@@ -52,6 +53,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
+internal;CesiumWorldTerrainTileLoader 
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -73,7 +75,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -129,6 +131,8 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, gcsConverterAvailable: boolean): Promise
+internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GraphicBranch 
@@ -186,6 +190,8 @@ internal;LockedStates
 public;LookViewTool 
 alpha;ManipulatorToolEvent
 internal;MapImageryTileTreeReference 
+internal;MapTileGeometryAttributionProvider
+internal;class MapTileLoaderBase 
 internal;class MapTileTreeReference 
 public;MarginPercent
 public;Marker 
@@ -247,6 +253,7 @@ beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
+internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
 alpha;RangeEditorParams 
@@ -325,6 +332,7 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;class TerrainProvider 
+internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
 internal;TextureDrapes
 internal;TextureImage
@@ -402,7 +410,9 @@ public;class ViewTool
 beta;ViewUndoEvent
 public;ViewUndoTool 
 public;WalkViewTool 
-internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context"
+internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth"
+internal;WebMapTileLoader 
+internal;WebMapTileTreeProps 
 internal;WheelEventProcessor
 public;WindowAreaTool 
 public;ZoomToOptions

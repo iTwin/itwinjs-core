@@ -3,9 +3,30 @@ ignore: true
 ---
 # NextVersion
 
-## Improved drawing grid appearance and performance
+## Display system enhancements
+
+### Improved drawing grid appearance and performance
 
 ![grid example](./grid.png "Example showing drawing grid")
+
+### Map depth, transparency, and elevation
+
+The background map is typically drawn behind all other geometry. This can be disorienting when viewing geometry that should be located below the ground. Now, the map can be rendered with depth, so that underground geometry is not visible when looking down at the map; or with transparency, so that underground geometry is only partially visible beneath the map. Additionally, the map can be draped onto real-world terrain meshes obtained from the [Cesium World Terrain](https://cesium.com/content/) service. All of these settings can be controlled by modifying the [BackgroundMapSettings]($common) associated with a [DisplayStyleState]($frontend).
+
+* Top-left: Ordinary background map
+* Top-right: Background map with depth
+* Bottom-left: Background map with transparency
+* Bottom-right: Background map with terrain
+
+![background map](./assets/map.png "Different ways of rendering the background map")
+
+### Improved depth buffer resolution
+
+When drawing geometry spanning large distances, visual artifacts like [z-fighting](https://en.wikipedia.org/wiki/Z-fighting) can occur as a result of the limited number of bits in the graphics driver's [depth buffer](https://en.wikipedia.org/wiki/Z-buffering). Typically these artifacts are addressed by reducing the maximum viewable distance, but this is not ideal. Instead, when the viewing distance is sufficiently large and the required [WebGL extension](https://www.khronos.org/registry/webgl/extensions/EXT_frag_depth/) is available on the client, a [logarithmic depth buffer](http://tulrich.com/geekstuff/log_depth_buffer.txt) is used to optimize the resolution of the depth buffer resulting in a larger viewable distance with fewer artifacts.
+
+### Material atlases
+
+The [RenderMaterial]($common) applied to a surface defines how the surface interacts with lighting, its diffuse color and transparency, and so on. This information must be sent to the graphics driver when drawing the surface. Previously, when generating tiles, surfaces with differing materials would not be batched together into larger meshes, resulting in a larger number of draw calls and therefore reduced performance. Now, surfaces using up to 255 different, un-textured materials can be batched into a single mesh. The impact on frames-per-second can be quite significant, particularly for models originating in applications like Revit which use materials extensively. An order-of-magnitude reduction in the number of draw calls, and consequent doubling of frames-per-second, was observed in one such model.
 
 ## Pan and Rotate viewing operations support inertia
 

@@ -339,6 +339,10 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
+alpha;TerrainHeightOriginMode
+alpha;TerrainProps
+alpha;TerrainProviderName = "CesiumWorldTerrain"
+alpha;TerrainSettings
 internal;TestRpcManager
 public;TextString
 public;TextStringProps

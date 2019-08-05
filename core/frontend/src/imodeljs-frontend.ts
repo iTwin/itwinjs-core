@@ -57,6 +57,8 @@ export * from "./tile/TileAdmin";
 export * from "./tile/Tile";
 export * from "./tile/TileTree";
 export * from "./tile/WebMapTileTree";
+export * from "./tile/BackgroundTerrainTileTree";
+export * from "./tile/CesiumWorldTerrainTileTree";
 export * from "./tile/BingElevation";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";

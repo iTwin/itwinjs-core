@@ -125,6 +125,7 @@ async function main() {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
     preserveShaderSourceCode: configuration.preserveShaderSourceCode,
     displaySolarShadows: configuration.displaySolarShadows,
+    logarithmicDepthBuffer: configuration.logarithmicZBuffer,
   };
 
   if (configuration.disableInstancing)

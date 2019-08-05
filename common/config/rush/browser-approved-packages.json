@@ -880,7 +880,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "webpack-dev-server",

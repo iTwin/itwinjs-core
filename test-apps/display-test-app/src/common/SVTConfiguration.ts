@@ -19,6 +19,7 @@ export interface SVTConfiguration {
   preserveShaderSourceCode?: boolean;
   displaySolarShadows?: boolean; // default ON
   tileTreeExpirationSeconds?: number;
+  logarithmicZBuffer?: boolean; // default ON (if extension supported)
 }
 
 export interface ConnectProjectConfiguration {

@@ -328,6 +328,12 @@ export class RenderCommands {
     backgroundMapGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
+  /** Add overlay graphics to the world overlay pass */
+  public addOverlayGraphics(overlayGraphics: GraphicList): void {
+    this._forcedRenderPass = RenderPass.WorldOverlay;
+    overlayGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
 
   public addDecorations(dec: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
     this._forcedRenderPass = forcedPass;
@@ -546,7 +552,7 @@ export class RenderCommands {
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, backgroundMap: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, backgroundMap: GraphicList, overlayGraphics?: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -566,6 +572,8 @@ export class RenderCommands {
 
     this.addGraphics(scene);
     this.addBackgroundMapGraphics(backgroundMap);
+    if (undefined !== overlayGraphics)
+      this.addOverlayGraphics(overlayGraphics);
 
     if (undefined !== dynamics && 0 < dynamics.length) {
       this.addDecorations(dynamics);

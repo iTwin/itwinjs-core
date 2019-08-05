@@ -105,6 +105,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_depth_texture",
   "EXT_color_buffer_float",
   "EXT_shader_texture_lod",
+  "EXT_frag_depth",
   "ANGLE_instanced_arrays",
   "OES_vertex_array_object",
   "WEBGL_lose_context",
@@ -150,6 +151,7 @@ export class Capabilities {
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
   public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
+  public get supportsFragDepth(): boolean { return this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -166,6 +168,7 @@ export class Capabilities {
     WebGLFeature.DepthTexture,
     WebGLFeature.FloatRendering,
     WebGLFeature.Instancing,
+    WebGLFeature.FragDepth,
   ];
   public static readonly requiredFeatures: WebGLFeature[] = [
     WebGLFeature.UintElementIndex,
@@ -200,6 +203,8 @@ export class Capabilities {
       features.push(WebGLFeature.MrtPick);
     if (this._hasRequiredTextureUnits)
       features.push(WebGLFeature.MinimalTextureUnits);
+    if (this.supportsFragDepth)
+      features.push(WebGLFeature.FragDepth);
 
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);
@@ -334,6 +339,7 @@ export class Capabilities {
     Debug.print(() => "            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
     Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
     Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
+    Debug.print(() => "               fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
@@ -617,6 +623,9 @@ export class System extends RenderSystem {
 
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
+
+    if (!capabilities.supportsFragDepth)
+      options.logarithmicDepthBuffer = false;
 
     return new System(canvas, context, capabilities, options);
   }

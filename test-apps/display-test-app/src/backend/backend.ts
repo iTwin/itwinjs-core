@@ -47,6 +47,7 @@ function setupStandaloneConfiguration() {
       }
 
     configuration.displaySolarShadows = true;
+    configuration.logarithmicZBuffer = undefined === process.env.SVT_DISABLE_LOG_Z || "false" === process.env.SVT_DISABLE_LOG_Z;
 
     configuration.preserveShaderSourceCode = undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE;
 

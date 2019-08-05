@@ -57,8 +57,8 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "7.0");
 }
 
-const computeLUTFeatureIndex = `vec4(g_featureAndMaterialIndex.xyz, 0.0)`;
-const computeInstanceFeatureIndex = `vec4(a_featureId, 0.0)`;
+const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
+const computeInstanceFeatureIndex = `a_featureId`;
 function computeFeatureIndex(instanced: boolean): string {
   return `g_featureIndex = ` + (instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex) + `;`;
 }
@@ -66,7 +66,7 @@ function getFeatureIndex(instanced: boolean): string {
   return `
   float getFeatureIndex() {
     g_featureIndex = ` + computeFeatureIndex(instanced) + `;
-    return decodeUInt24(g_featureIndex.xyz);
+    return decodeUInt24(g_featureIndex);
   }`;
 }
 
@@ -109,7 +109,7 @@ float computeLineCode() {
 `;
 
 function addFeatureIndex(vert: VertexShaderBuilder): void {
-  vert.addGlobal("g_featureIndex", VariableType.Vec4);
+  vert.addGlobal("g_featureIndex", VariableType.Vec3);
   vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
 
   if (!vert.usesInstancedGeometry)
@@ -386,16 +386,13 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
   // Converting to ints to test since varying floats can be interpolated incorrectly
   ivec4 featId_i = ivec4(featId * 255.0 + 0.5);
-  ivec4 v_feature_id_i = ivec4(v_feature_id * 255.0 + 0.5);
-  bool isSameFeature = featId_i == v_feature_id_i;
+  ivec4 feature_id_i = ivec4(feature_id * 255.0 + 0.5);
+  bool isSameFeature = featId_i == feature_id_i;
 
   // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
   // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
   return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5)))));
 `;
-
-/** @internal */
-export const computeFeatureId = `v_feature_id = addUInt32s(u_batch_id, g_featureIndex) / 255.0;`;
 
 function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_None", VariableType.Float, "0.0");
@@ -458,8 +455,8 @@ const scratchBytes = new Uint8Array(4);
 const scratchBatchId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchComponents = [0, 0, 0, 0];
 
-function addBatchId(vert: VertexShaderBuilder) {
-  vert.addUniform("u_batch_id", VariableType.Vec4, (prog) => {
+function addBatchId(builder: ShaderBuilder) {
+  builder.addUniform("u_batch_id", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_batch_id", (uniform, params) => {
       const batchId = params.target.currentBatchId;
       scratchBatchId[0] = batchId;
@@ -473,11 +470,28 @@ function addBatchId(vert: VertexShaderBuilder) {
 }
 
 /** @internal */
-export function addFeatureId(builder: ProgramBuilder) {
+export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
   const vert = builder.vert;
-  vert.addFunction(addUInt32s);
-  builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeFeatureId);
-  addBatchId(vert);
+  const frag = builder.frag;
+  frag.addGlobal("feature_id", VariableType.Vec4);
+  if (!computeInFrag) {
+    vert.addFunction(addUInt32s);
+    addBatchId(vert);
+    const computeId = `v_feature_id = addUInt32s(u_batch_id, vec4(g_featureIndex, 0.0)) / 255.0;`;
+    builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeId);
+
+    frag.addInitializer("feature_id = v_feature_id;");
+  } else {
+    frag.addFunction(addUInt32s);
+    builder.addInlineComputedVarying("v_feature_index", VariableType.Vec3, "v_feature_index = g_featureIndex;");
+
+    addBatchId(frag);
+    const computeId = `
+      vec4 featureIndex = vec4(floor(v_feature_index + 0.5), 0.0);
+      feature_id = addUInt32s(u_batch_id, featureIndex) / 255.0;
+    `;
+    frag.addInitializer(computeId);
+  }
 }
 
 // For hidden line + solid fill modes...translucent + opaque passes only.
@@ -487,7 +501,7 @@ const isBelowTransparencyThreshold = `
 `;
 
 /** @internal */
-export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, isEdgeTestNeeded: IsEdgeTestNeeded, isClassified: IsClassified) {
+export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, isEdgeTestNeeded: IsEdgeTestNeeded, isClassified: IsClassified, computeIdInFrag: boolean) {
   const frag = builder.frag;
   const vert = builder.vert;
 
@@ -522,7 +536,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, is
 
       addEyeSpace(builder);
       builder.addInlineComputedVarying("v_lineWeight", VariableType.Float, "v_lineWeight = computeLineWeight();");
-      addFeatureId(builder);
+      addFeatureId(builder, computeIdInFrag);
     }
 
     addRenderOrder(frag);
@@ -530,7 +544,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, feat: FeatureMode, is
   } else if (isClassified && FeatureMode.None !== feat) {
     addFeatureIndex(vert);
     addEyeSpace(builder);
-    addFeatureId(builder);
+    addFeatureId(builder, computeIdInFrag);
     addRenderOrder(frag);
   }
 }
@@ -567,7 +581,7 @@ const computeFeatureOverrides = `
 
     if (alphaOverridden)
       feature_alpha = rgba.a;
-  }
+    }
 
   linear_feature_overrides = vec4(1.0 == extractNthFeatureBit(flags, kOvrBit_Weight),
                                   value.g * 256.0,
@@ -666,8 +680,7 @@ export function addUniformHiliter(builder: ProgramBuilder): void {
  * @internal
  */
 export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
-  // addFeatureIndex()
-  builder.vert.addGlobal("g_featureIndex", VariableType.Vec4, "vec4(0.0)", true);
+  builder.vert.addGlobal("g_featureIndex", VariableType.Vec3, "vec3(0.0)", true);
 
   // addFeatureSymbology()
   builder.frag.addUniform("v_feature_emphasis", VariableType.Float, (prog) => {
