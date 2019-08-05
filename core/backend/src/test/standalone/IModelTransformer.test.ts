@@ -5,7 +5,7 @@
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
+  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
   IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec, ElementAspectProps, ModelProps,
 } from "@bentley/imodeljs-common";
@@ -25,7 +25,9 @@ import { KnownTestLocations } from "../KnownTestLocations";
 /** Specialization of IModelTransformer for testing */
 class TestIModelTransformer extends IModelTransformer {
   public numInsertElementCalls = 0;
+  public numInsertElementProvenanceCalls = 0;
   public numUpdateElementCalls = 0;
+  public numUpdateElementProvenanceCalls = 0;
   public numExcludedElementCalls = 0;
 
   public numModelsInserted = 0;
@@ -83,10 +85,22 @@ class TestIModelTransformer extends IModelTransformer {
     return super.insertElement(targetElementProps);
   }
 
+  /** Override insertElementProvenance to count calls */
+  protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    this.numInsertElementProvenanceCalls++;
+    return super.insertElementProvenance(sourceElement, targetElementId);
+  }
+
   /** Override updateElement to count calls */
-  protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+  protected updateElement(targetElementProps: ElementProps): void {
     this.numUpdateElementCalls++;
-    super.updateElement(targetElementProps, sourceAspectProps);
+    super.updateElement(targetElementProps);
+  }
+
+  /** Override insertElementProvenance to count calls */
+  protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    this.numUpdateElementProvenanceCalls++;
+    return super.updateElementProvenance(sourceElement, targetElementId);
   }
 
   /** Override shouldExcludeElement to count calls and exclude all Element from the Functional schema */
@@ -869,7 +883,9 @@ describe("IModelTransformer", () => {
       assert.isAbove(transformer.numModelsInserted, 0);
       assert.equal(transformer.numModelsUpdated, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
+      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
       assert.isAbove(transformer.numElementsUpdated, 0);
+      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
       assert.isAbove(transformer.numElementsExcluded, 0);
       assert.isAbove(transformer.numElementAspectsExcluded, 0);
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
@@ -907,7 +923,9 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsUpdated, 0);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       assert.equal(transformer.numInsertElementCalls, 0);
+      assert.equal(transformer.numInsertElementProvenanceCalls, 0);
       assert.equal(transformer.numUpdateElementCalls, 0);
+      assert.equal(transformer.numUpdateElementProvenanceCalls, 0);
       assert.equal(transformer.numExcludedElementCalls, numElementsExcluded);
       assert.equal(numTargetElements, count(testDataManager.targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
@@ -926,7 +944,9 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numModelsInserted, 0);
       assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
+      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
       assert.equal(transformer.numElementsUpdated, 3);
+      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       testDataManager.targetDb.saveChanges();
       testDataManager.assertUpdatesInTargetDb();

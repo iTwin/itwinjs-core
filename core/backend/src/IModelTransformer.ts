@@ -151,17 +151,17 @@ export class IModelTransformer {
     return subjectId;
   }
 
-  // WIP: Missing targetScopeElementId
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel. */
   public initFromExternalSourceAspects(): void {
-    const sql = `SELECT Element.Id AS elementId FROM ${ExternalSourceAspect.classFullName}`;
+    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
+    const sql = `SELECT Element.Id FROM ${ExternalSourceAspect.classFullName}`;
     this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const row = statement.getRow();
-        const aspects: ElementAspect[] = this._targetDb.elements.getAspects(row.elementId, ExternalSourceAspect.classFullName);
+        const elementId: Id64String = statement.getValue(0).getId();
+        const aspects: ElementAspect[] = this._targetDb.elements.getAspects(elementId, ExternalSourceAspect.classFullName);
         for (const aspect of aspects) {
-          if (aspect.kind === Element.className) {
-            this._importContext.addElementId(aspect.identifier, row.elementId);
+          if ((aspect.scope.id === targetScopeElementId) && (aspect.kind === Element.className)) {
+            this._importContext.addElementId(aspect.identifier, elementId);
           }
         }
       }
@@ -348,17 +348,14 @@ export class IModelTransformer {
 
   /** Transform the specified sourceElement and update result into the target iModel.
    * @param targetElementId The Element in the target iModel to update
-   * @param sourceAspectProps The ExternalSourceAspect owned by the target Element that will track the source Element.
    * @note A subclass can override this method to provide custom update behavior.
    */
-  protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+  protected updateElement(targetElementProps: ElementProps): void {
     if (!targetElementProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
     this._targetDb.elements.updateElement(targetElementProps);
     Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementForLogger(targetElementProps)}`);
-    ExternalSourceAspect.deleteForElement(this._targetDb, sourceAspectProps.scope.id, targetElementProps.id);
-    this._targetDb.elements.insertAspect(sourceAspectProps);
   }
 
   /** Returns true if a change within sourceElement is detected.
@@ -404,14 +401,13 @@ export class IModelTransformer {
       return; // excluding an element will also exclude its children or sub-models
     }
     let targetElementId: Id64String | undefined = this.findTargetElementId(sourceElementId);
-    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
     if (Id64.isValidId64(targetElementId)) {
       if (this.hasElementChanged(sourceElement, targetElementId)) {
         const targetElementProps: ElementProps = this.transformElement(sourceElement);
         targetElementProps.id = targetElementId;
-        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-        this.updateElement(targetElementProps, sourceAspectProps);
+        this.updateElement(targetElementProps);
         this.onElementUpdated(sourceElement, targetElementProps);
+        this.updateElementProvenance(sourceElement, targetElementId);
       }
     } else {
       const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement); // WIP: move into transformElement?
@@ -426,13 +422,13 @@ export class IModelTransformer {
         targetElementId = this.insertElement(targetElementProps);
         this.remapElement(sourceElement.id, targetElementId!);
         this.onElementInserted(sourceElement, targetElementProps);
-        this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId));
+        this.insertElementProvenance(sourceElement, targetElementId);
       } else if (this.hasElementChanged(sourceElement, targetElementId)) {
         this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
         targetElementProps.id = targetElementId;
-        const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-        this.updateElement(targetElementProps, sourceAspectProps);
+        this.updateElement(targetElementProps);
         this.onElementUpdated(sourceElement, targetElementProps);
+        this.updateElementProvenance(sourceElement, targetElementId);
       }
     }
     this.importElementAspects(sourceElementId, targetElementId);
@@ -450,6 +446,26 @@ export class IModelTransformer {
     for (const childElementId of childElementIds) {
       this.importElement(childElementId);
     }
+  }
+
+  /** Record provenance about the source Element for change detection.
+   * @param sourceElement The source Element that was processed to cause the insert into the target iModel.
+   * @param targetElementId The Id of the target Element that was inserted.
+   */
+  protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
+    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId));
+  }
+
+  /** Record provenance about the source Element for change detection.
+   * @param sourceElement The source Element that was processed to cause the update within the target iModel.
+   * @param targetElementId The Id of the target Element that was updated.
+   */
+  protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
+    const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
+    ExternalSourceAspect.deleteForElement(this._targetDb, sourceAspectProps.scope.id, targetElementId);
+    this._targetDb.elements.insertAspect(sourceAspectProps);
   }
 
   /** Import matching sub-models into the target IModelDb

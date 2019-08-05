@@ -2148,6 +2148,7 @@ export class IModelTransformer {
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
     protected insertModel(targetModelProps: ModelProps): void;
     protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
@@ -2180,8 +2181,9 @@ export class IModelTransformer {
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateElement(targetElementProps: ElementProps): void;
     protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
     protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
