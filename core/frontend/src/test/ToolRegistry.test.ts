@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
@@ -78,29 +78,29 @@ describe("ToolRegistry", () => {
   });
 
   it("Should find some partial matches for 'plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("plac");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plac");
     showSearchResults("Matches for 'plac':", searchResults);
   });
 
   it("Should find some partial matches for 'plce'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("plce");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("plce");
     showSearchResults("Matches for 'plce':", searchResults);
   });
 
   it("Should find some partial matches for 'cone plac'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("cone plac");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("cone plac");
     showSearchResultsUsingIndexApi("Matches for 'cone plac':", searchResults);
   });
   it("Should find some partial matches for 'vie'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("vie");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("vie");
     showSearchResultsUsingIndexApi("Matches for 'vie':", searchResults);
   });
   it("Should find some partial matches for 'place '", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("place ");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("place ");
     showSearchResults("Matches for 'place ':", searchResults);
   });
   it("Should find some nomatch results 'fjt'", async () => {
-    const searchResults: FuzzySearchResults<typeof Tool> | undefined = IModelApp.tools.findPartialMatches("fjt");
+    const searchResults: FuzzySearchResults<typeof Tool> = IModelApp.tools.findPartialMatches("fjt");
     showSearchResults("Matches for 'place ':", searchResults);
   });
 });
@@ -114,10 +114,8 @@ function caretStringFromBoldMask(keyin: string, boldMask: boolean[]): string {
   return boldString;
 }
 
-function showSearchResults(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
-  assert.isDefined(searchResults);
-  if (!searchResults)
-    return;
+function showSearchResults(title: string, searchResults: FuzzySearchResults<typeof Tool>) {
+  expect(searchResults.length).to.be.greaterThan(0);
   logResult(searchResults.length, title);
 
   for (const thisResult of searchResults) {

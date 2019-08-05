@@ -27,6 +27,7 @@ alpha;createTextBox(props: TextBoxProps): TextBox
 alpha;DiagnosticsPanel
 alpha;FpsTracker
 alpha;FrustumDecorator 
+alpha;KeyinHandler
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
 alpha;MemoryTracker
@@ -47,6 +48,7 @@ alpha;SliderProps
 alpha;StatsTracker
 alpha;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
+alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 alpha;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
 alpha;ToolSettingsTracker

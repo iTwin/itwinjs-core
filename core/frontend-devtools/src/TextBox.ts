@@ -14,13 +14,19 @@ export interface TextBox {
 export type TextBoxHandler = (textbox: HTMLInputElement) => void;
 
 /** @alpha */
+export type TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void;
+
+/** @alpha */
 export interface TextBoxProps {
   label?: string;
   id: string;
   parent?: HTMLElement;
   handler?: TextBoxHandler;
+  keypresshandler?: TextBoxKeyPressHandler;
+  focushandler?: TextBoxHandler;
   tooltip?: string;
   inline?: boolean;
+  list?: string; // if defined, contains the id of a datalist to bind to this textbox for autocompletion
 }
 
 /** @alpha */
@@ -46,8 +52,23 @@ export function createTextBox(props: TextBoxProps): TextBox {
     props.parent.appendChild(div);
 
   const handler = props.handler;
-  if (undefined !== handler)
+  if (undefined !== handler) {
     textbox.onchange = () => handler(textbox);
+  }
+
+  const keypresshandler = props.keypresshandler;
+  if (undefined !== keypresshandler) {
+    textbox.onkeypress = (ev: KeyboardEvent) => keypresshandler(textbox, ev);
+  }
+
+  const focushandler = props.focushandler;
+  if (undefined !== focushandler) {
+    textbox.onfocus = () => focushandler(textbox);
+  }
+
+  if (undefined !== props.list) {
+    textbox.setAttribute("list", props.list);
+  }
 
   if (undefined !== props.tooltip)
     div.title = props.tooltip;

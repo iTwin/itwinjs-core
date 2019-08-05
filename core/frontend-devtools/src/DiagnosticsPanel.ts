@@ -12,6 +12,7 @@ import { createComboBox } from "./ComboBox";
 import { ChangeFlag, ChangeFlags, PrimitiveVisibility, Target, Tile, Viewport } from "@bentley/imodeljs-frontend";
 import { FrustumDecorator } from "./FrustumDecoration";
 import { toggleProjectExtents } from "./ProjectExtents";
+import { KeyinHandler } from "./KeyinHandler";
 
 const flagNames: Array<[ChangeFlag, string]> = [
   [ChangeFlag.AlwaysDrawn, "Always Drawn"],
@@ -48,6 +49,7 @@ export class DiagnosticsPanel {
   private readonly _memoryTracker: MemoryTracker;
   private readonly _statsTracker: StatsTracker;
   private readonly _toolSettingsTracker: ToolSettingsTracker;
+  private readonly _keyinHandler: KeyinHandler;
   private readonly _frustumCheckbox: CheckBox;
   private readonly _projectExtentsCheckbox: CheckBox;
   private readonly _removeEventListener: () => void;
@@ -109,6 +111,9 @@ export class DiagnosticsPanel {
     this.addSeparator();
     this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
 
+    this.addSeparator();
+    this._keyinHandler = new KeyinHandler(this._element, vp);
+
     this._removeEventListener = vp.onChangeView.addListener(() => this.onViewChanged());
   }
 
@@ -122,6 +127,7 @@ export class DiagnosticsPanel {
     this._memoryTracker.dispose();
     this._statsTracker.dispose();
     this._toolSettingsTracker.dispose();
+    this._keyinHandler.dispose();
 
     this._viewport.debugBoundingBoxes = Tile.DebugBoundingBoxes.None;
     this._viewport.freezeScene = false;

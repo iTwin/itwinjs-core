@@ -19,6 +19,7 @@ export * from "./MemoryTracker";
 export * from "./ProjectExtents";
 export * from "./TileStatisticsTracker";
 export * from "./ToolSettingsTracker";
+export * from "./KeyinHandler";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
