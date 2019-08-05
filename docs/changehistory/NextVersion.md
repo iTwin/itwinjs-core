@@ -32,6 +32,16 @@ The [RenderMaterial]($common) applied to a surface defines how the surface inter
 
 The viewing tools Pan and Rotate now optionally support inertia. If the tools are used with a *flicking* action, they continue briefly with a decaying inertial effect. The behavior of the inertia is controlled by [ToolSettings.viewingInertia]($frontend).
 
+## Shadow maps
+
+Shadows can now be displayed in 3d views. The implementation uses exponential variance shadow maps to minimize the visual artifacts associated with traditional shadow maps to the extent possible under the limitations imposed by WebGL 1. To enable shadows for a view, set [ViewFlags.shadows]($common) to `true`. To change the time of day (and therefore the sun direction from which shadows are cast), use [DisplayStyle3dState.setSunTime]($frontend).
+
+![shadow example](./assets/shadows.png "Shadows")
+
+> Note: This feature is currently feature-gated; to enable it, set [RenderSystem.Options.displaySolarShadows]($frontend) to `true` when initializing your [IModelApp]($frontend).
+
+> Note: This feature requires 2 WebGL extensions: EXT_texture_filter_anisotropic and either of OES_texture_float_linear of OES_texture_half_float_linear. On systems that do not support these extensions, shadows will not be displayed.
+
 ## Geometry
 
 * Summary:

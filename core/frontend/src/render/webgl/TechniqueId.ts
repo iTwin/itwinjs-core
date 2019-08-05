@@ -37,6 +37,7 @@ export const enum TechniqueId {
   CopyStencil,
   ClearPickAndColor,
   ClipMask,
+  EVSMFromDepth,
   SkyBox,
   SkySphereGradient,
   SkySphereTexture,

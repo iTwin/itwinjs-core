@@ -4,41 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
-/** A specific WebGL rendering feature.
+/** Describes the required and optional WebGL features used by the [[RenderSystem]].
  * @beta
  */
 export enum WebGLFeature {
-  /**
-   * This feature allows transparency to occur more efficiently.  The renderer will require less passes to achieve
-   * transparency due to the presence of enough renderable attachments.
-   */
+  /** This feature allows transparent geometry to be rendered more efficiently, using 1 pass instead of 2. */
   MrtTransparency = "mrt transparency",
-  /**
-   * This feature allows picking to occur more efficiently.  The renderer will require less passes to achieve picking
-   * due to the presence of enough renderable attachments.
-   */
+  /** This feature allows picking to occur more efficiently, using 1 pass instead of 3. */
   MrtPick = "mrt pick",
-  /**
-   * This feature provides the renderer a large enough range of element indices for drawing to happen properly.
-   */
+  /** This feature ensures large meshes (with more than 21,845 triangles) can be rendered. */
   UintElementIndex = "uint element index",
-  /**
-   * This feature allows transparency to achieve the optimal quality.  Without this feature, transparency will "wash out"
-   * more easily.
-   */
+  /** This feature allows transparency to achieve the optimal quality. Without this feature, overlapping transparent geometry will "wash out" more easily. */
   FloatRendering = "float rendering",
-  /**
-   * This feature allows for the display of non-3D classification data and solar shadows.
-   */
+  /** This feature allows for the display of non-3D classification data and solar shadows. */
   DepthTexture = "depth texture",
-  /**
-   * This feature allows instancing of geometry in order to optimize rendering speed.
-   */
+  /** This feature allows instancing of repeated geometry, which can reduce memory consumption. */
   Instancing = "instancing",
-  /**
-   * This feature indicates that the system has enough texture units available for the shaders to run properly.
-   */
+  /** This feature indicates that the system has enough texture units available for the shaders to run properly. */
   MinimalTextureUnits = "minimal texture units",
+  /** Indicates that shadow maps are supported. Without this feature, shadows cannot be displayed. */
+  ShadowMaps = "shadow maps",
   /**
    * This feature allows a logarithmic depth buffer to be used.  Without this feature, z-fighting will be much more likely
    * to occur.

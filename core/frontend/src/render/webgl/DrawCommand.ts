@@ -271,13 +271,14 @@ export class RenderCommands {
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
   private readonly _commands: DrawCommands[];
-  private readonly _stack: BranchStack; // refers to the Target's BranchStack
-  private readonly _batchState: BatchState; // refers to the Target's BatchState
+  private _target: Target;
+  private _stack: BranchStack; // refers to the Target's BranchStack
+  private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
   private _addTranslucentAsOpaque: boolean = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
-  public readonly target: Target;
+  public get target(): Target { return this._target; }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -308,12 +309,19 @@ export class RenderCommands {
   public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
 
   constructor(target: Target, stack: BranchStack, batchState: BatchState) {
-    this.target = target;
+    this._target = target;
     this._stack = stack;
     this._batchState = batchState;
     this._commands = Array<DrawCommands>(RenderPass.COUNT);
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
+  }
+
+  public reset(target: Target, stack: BranchStack, batchState: BatchState): void {
+    this._target = target;
+    this._stack = stack;
+    this._batchState = batchState;
+    this.clear();
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
