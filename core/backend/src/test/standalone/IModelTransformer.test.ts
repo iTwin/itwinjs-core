@@ -29,6 +29,7 @@ class TestIModelTransformer extends IModelTransformer {
   public numExcludedElementCalls = 0;
 
   public numModelsInserted = 0;
+  public numModelsUpdated = 0;
   public numElementsInserted = 0;
   public numElementsUpdated = 0;
   public numElementsExcluded = 0;
@@ -140,6 +141,12 @@ class TestIModelTransformer extends IModelTransformer {
   protected onModelInserted(sourceModel: Model, targetModelProps: ModelProps): void {
     this.numModelsInserted++;
     super.onModelInserted(sourceModel, targetModelProps);
+  }
+
+  /** Count the number of Models updated in this callback */
+  protected onModelUpdated(sourceModel: Model, targetModelProps: ModelProps): void {
+    this.numModelsUpdated++;
+    super.onModelUpdated(sourceModel, targetModelProps);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
@@ -860,6 +867,7 @@ describe("IModelTransformer", () => {
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
       assert.isAbove(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
       assert.isAbove(transformer.numElementsUpdated, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
@@ -894,6 +902,7 @@ describe("IModelTransformer", () => {
       transformer.importAll();
       transformer.dispose();
       assert.equal(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 0);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
@@ -915,6 +924,7 @@ describe("IModelTransformer", () => {
       transformer.importAll();
       transformer.dispose();
       assert.equal(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 3);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);

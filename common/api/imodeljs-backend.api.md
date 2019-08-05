@@ -2160,6 +2160,7 @@ export class IModelTransformer {
     protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void;
+    protected onModelUpdated(_sourceModel: Model, _targetModelProps: ModelProps): void;
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
@@ -2181,6 +2182,7 @@ export class IModelTransformer {
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
     protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 

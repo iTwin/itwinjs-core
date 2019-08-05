@@ -201,6 +201,13 @@ export class IModelTransformer {
    */
   protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void { }
 
+  /** Called after processing a source Model when it caused a Model to be updated in the target iModel.
+   * @param _sourceModel The source Model that was processed
+   * @param _targetModelProps The ModelProps that were updated into the target iModel.
+   * @note A subclass can override this method to be notified after Models have been updated.
+   */
+  protected onModelUpdated(_sourceModel: Model, _targetModelProps: ModelProps): void { }
+
   /** Called after processing a source Element when it caused an Element to be inserted in the target iModel.
    * @param _sourceElement The sourceElement that was processed
    * @param _targetElementProps The ElementProps that were inserted into the target iModel because of processing the source Element.
@@ -477,17 +484,24 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   private importModelContainer(sourceModeledElementId: Id64String): void {
+    const sourceModel: Model = this._sourceDb.models.getModel(sourceModeledElementId);
     const targetModeledElementId = this.findTargetElementId(sourceModeledElementId);
     try {
-      if (this._targetDb.models.getModelProps(targetModeledElementId)) {
-        return; // already imported
+      const targetModel: Model = this._targetDb.models.getModel(targetModeledElementId); // throws IModelError.NotFound if model does not exist
+      const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
+      if (this.hasModelChanged(targetModel, targetModelProps)) {
+        this.updateModel(targetModelProps);
+        this.onModelUpdated(sourceModel, targetModelProps);
       }
     } catch (error) {
       // catch NotFound error and insertModel
-      const sourceModel: Model = this._sourceDb.models.getModel(sourceModeledElementId);
-      const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
-      this.insertModel(targetModelProps);
-      this.onModelInserted(sourceModel, targetModelProps);
+      if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
+        const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
+        this.insertModel(targetModelProps);
+        this.onModelInserted(sourceModel, targetModelProps);
+        return;
+      }
+      throw error;
     }
   }
 
@@ -516,6 +530,25 @@ export class IModelTransformer {
     });
   }
 
+  /** Returns true if a change within a Model is detected.
+   * @param model The current persistent Model
+   * @param modelProps The new ModelProps to compare against
+   * @returns `true` if a change is detected
+   */
+  private hasModelChanged(model: Model, modelProps: ModelProps): boolean {
+    let changed: boolean = false;
+    model.forEachProperty((propertyName: string) => {
+      if (!changed) {
+        if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
+          changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
+        } else {
+          changed = model[propertyName] !== modelProps[propertyName];
+        }
+      }
+    }, true);
+    return changed;
+  }
+
   /** Transform the specified sourceModel into ModelProps for the target iModel.
    * @param sourceModel The Model from the source iModel to be transformed.
    * @param targetModeledElementId The transformed Model will *break down* or *detail* this Element in the target iModel.
@@ -526,7 +559,7 @@ export class IModelTransformer {
     const targetModelProps: ModelProps = sourceModel.toJSON();
     targetModelProps.modeledElement.id = targetModeledElementId;
     targetModelProps.id = targetModeledElementId;
-    targetModelProps.parentModel = Id64.invalid; // insertModel will properly initialize
+    targetModelProps.parentModel = this.findTargetElementId(targetModelProps.parentModel!);
     return targetModelProps;
   }
 
@@ -537,6 +570,15 @@ export class IModelTransformer {
   protected insertModel(targetModelProps: ModelProps): void {
     this._targetDb.models.insertModel(targetModelProps);
     Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatModelForLogger(targetModelProps)}`);
+  }
+
+  /** Update the transformed Model within the target iModel.
+   * @param targetModelProps The ModelProps that will be updated in the target iModel.
+   * @note A subclass can override this method to provide custom update behavior.
+   */
+  protected updateModel(targetModelProps: ModelProps): void {
+    this._targetDb.models.updateModel(targetModelProps);
+    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatModelForLogger(targetModelProps)}`);
   }
 
   /** Import elements that were skipped in a prior pass */
