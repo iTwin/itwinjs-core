@@ -2900,8 +2900,10 @@ export class ScreenViewport extends Viewport {
       result.setFrom(picker.getHit(0)!.getPoint());
       return result;
     }
-    if (undefined === this.backgroundMapPlane)
-      return undefined;
+    // If no background map is displayed, use ACS xy plane as this is where unsnapped points would be projected to.
+    let plane = this.backgroundMapPlane;
+    if (undefined === plane)
+      plane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2))!;
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
     const direction = Vector3d.createFrom(eyePoint);
@@ -2913,12 +2915,12 @@ export class ScreenViewport extends Viewport {
     direction.scaleToLength(-1.0, direction);
     const rayToEye = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
-    if (undefined === rayToEye.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+    if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
       return undefined;
 
-    const mapResult = undefined !== out ? out : new Point3d();
-    mapResult.setFrom(projectedPt);
-    return mapResult;
+    const planeResult = undefined !== out ? out : new Point3d();
+    planeResult.setFrom(projectedPt);
+    return planeResult;
   }
   /** @internal */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
