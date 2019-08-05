@@ -166,6 +166,9 @@ export function createColorInput(props: ColorInputProps): ColorInput;
 export function createComboBox(props: ComboBoxProps): ComboBox;
 
 // @alpha (undocumented)
+export function createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput;
+
+// @alpha (undocumented)
 export function createNestedMenu(props: NestedMenuProps): NestedMenu;
 
 // @alpha (undocumented)
@@ -205,6 +208,24 @@ export class FrustumDecorator implements Decorator {
     // (undocumented)
     static enable(vp: Viewport): void;
     }
+
+// @alpha (undocumented)
+export interface LabeledNumericInput {
+    // (undocumented)
+    div: HTMLDivElement;
+    // (undocumented)
+    input: HTMLInputElement;
+    // (undocumented)
+    label: HTMLLabelElement;
+}
+
+// @alpha (undocumented)
+export interface LabeledNumericInputProps extends NumericInputProps {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name: string;
+}
 
 // @alpha (undocumented)
 export class MemoryTracker {

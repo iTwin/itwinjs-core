@@ -5,12 +5,14 @@
 /** @module StatusBar */
 
 import * as React from "react";
+
+import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { ZoneManagerProps, ZoneTargetType, Zone, Outline } from "@bentley/ui-ninezone";
+
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 import { StatusBar } from "../widgets/StatusBar";
 import { StatusBarWidgetControl } from "../widgets/StatusBarWidgetControl";
-import { ZoneManagerProps, ZoneTargetType, Zone, Rectangle, RectangleProps, Outline } from "@bentley/ui-ninezone";
-import { CommonProps } from "@bentley/ui-core";
 
 /** Properties for the [[StatusBarZone]] component
  * @internal

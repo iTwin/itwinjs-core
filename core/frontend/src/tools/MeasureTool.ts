@@ -847,7 +847,9 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     if (this._useSelection) {
       if (0 === this._acceptedMeasurements.length && undefined !== ev.viewport) {
         await this.doMeasureSelectedElements(ev.viewport);
-        return EventHandled.Yes;
+        if (0 !== this._acceptedMeasurements.length)
+          return EventHandled.Yes;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.NotSuportedElmType")));
       }
       this.onReinitialize();
       return EventHandled.Yes;

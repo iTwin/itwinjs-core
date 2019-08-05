@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import { PointProps, Point } from "../utilities/Point";
-import { RectangleProps, Rectangle } from "../utilities/Rectangle";
+import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ZonesManagerProps, WidgetZoneId, ZonesManager } from "../zones/manager/Zones";
 import { NineZoneNestedStagePanelsManagerProps, NineZoneNestedStagePanelsManager } from "./NestedStagePanels";
 import { StagePanelType, StagePanelsManager } from "../../ui-ninezone";

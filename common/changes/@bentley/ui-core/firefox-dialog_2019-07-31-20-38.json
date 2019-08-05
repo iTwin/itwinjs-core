@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed Dialog component height on different browsers",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

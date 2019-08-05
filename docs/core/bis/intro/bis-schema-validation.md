@@ -197,4 +197,6 @@ Embedding relationships should not have 'Has' in the class name.
 
 Struct classes must not have base classes.
 
-> Next: [BIS Glossary](./glossary.md)
+---
+| Next: [BIS Glossary](./glossary.md)
+|:---

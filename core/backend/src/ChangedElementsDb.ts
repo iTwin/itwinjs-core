@@ -6,7 +6,7 @@
 
 import { IModelError, IModelStatus, ChangedElements } from "@bentley/imodeljs-common";
 import { DbResult, OpenMode, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, ChangeSetToken, ECDbOpenMode, BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractContext } from "./imodeljs-backend";
 import { ChangeSet, ChangesType, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import * as path from "path";

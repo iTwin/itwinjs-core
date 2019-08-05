@@ -58,4 +58,6 @@ Plant does have functional breakdown for pipelines and instrument loops that gro
 
 ![Model Hierarchy](./media/plantfuncmodel.png)
 
-> Next: [Analysis Models and Elements](./analysis-models-and-elements.md)
+---
+| Next: [Analysis Models and Elements](./analysis-models-and-elements.md)
+|:---

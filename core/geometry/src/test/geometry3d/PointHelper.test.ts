@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry, AxisScaleSelect } from "../../Geometry";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
@@ -18,7 +18,6 @@ import { Point3dArray, Point2dArray, Vector3dArray, Point4dArray, NumberArray } 
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { MatrixTests } from "./Point3dVector3d.test";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -28,7 +27,7 @@ import { Point4d } from "../../geometry4d/Point4d";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraph } from "../../topology/Graph";
 
-import { Triangulator } from "../../topology/Triangulation";
+import { Triangulator, MultiLineStringDataVariant } from "../../topology/Triangulation";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Loop } from "../../curve/Loop";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -42,8 +41,8 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 function equivalentCircleRadius(centroidData: Ray3d): number {
   return Math.sqrt(centroidData.a === undefined ? 0.0 : centroidData.a / Math.PI);
 }
-describe("FrameBuilder.HelloWorld", () => {
-  it("FrameBuilder.HelloWorld", () => {
+describe("FrameBuilder", () => {
+  it("HelloWorld", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
@@ -101,6 +100,28 @@ describe("FrameBuilder.HelloWorld", () => {
     ck.checkpoint("FrameBuilder");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("createFrameWithCCWPolygon", () => {
+    const ck = new Checker();
+    ck.testUndefined(FrameBuilder.createFrameWithCCWPolygon([
+      Point3d.create(1, 2, 3)]), "detect incomplete frame data");
+    ck.testUndefined(FrameBuilder.createFrameWithCCWPolygon([
+      Point3d.create(1, 2, 3), Point3d.create(1, 2, 3), Point3d.create(1, 2, 3)]), "detect singular frame data");
+
+    const triangle0 = [Point3d.create(1, 0), Point3d.create(0, 1), Point3d.create(0, 0)];
+    const triangle1 = Point3dArray.clonePoint3dArray(triangle0);
+    triangle1.reverse();
+    const frame0 = FrameBuilder.createFrameWithCCWPolygon(triangle0);
+    const frame1 = FrameBuilder.createFrameWithCCWPolygon(triangle1);
+    if (ck.testDefined(frame0) && ck.testDefined(frame1) && frame0 && frame1) {
+      const unitZ0 = frame0.matrix.columnZ();
+      const unitZ1 = frame1.matrix.columnZ();
+      ck.testCoordinate(-1, unitZ0.dotProduct(unitZ1), "opposing unit Z vectors");
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("TrilinearMap", () => {
     const ck = new Checker();
     const range = Range3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 7, 8));
@@ -118,82 +139,13 @@ describe("FrameBuilder.HelloWorld", () => {
     ck.testTrue(Point2dArray.isAlmostEqual(undefined, undefined));
     ck.testTrue(Point3dArray.isAlmostEqual(undefined, undefined));
     ck.testTrue(Vector3dArray.isAlmostEqual(undefined, undefined));
-    const emptyArray = Point3dArray.cloneWithMaxEdgeLength ([], 1);
-    ck.testExactNumber (0, emptyArray.length);
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  it("FrameBuilder.HelloVectors", () => {
-    const ck = new Checker();
-    const builder = new FrameBuilder();
-    ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
-    builder.announcePoint(Point3d.create(0, 1, 1));
-    ck.testExactNumber(0, builder.savedVectorCount());
-    ck.testExactNumber(0, builder.savedVectorCount());
-    builder.announceVector(Vector3d.create(0, 0, 0));
-    ck.testExactNumber(0, builder.savedVectorCount());
-
-    // loop body assumes each set of points has 3 leading independent vectors
-    for (const vectors of [
-      [Vector3d.create(1, 0, 0),
-      Vector3d.create(0, 1, 0),
-      Vector3d.create(0, 0, 1)],
-    ]) {
-      builder.clear();
-      const vector0 = vectors[0];
-      const vector1 = vectors[1];
-      const vector2 = vectors[2];
-      builder.announce(Point3d.create(1, 2, 3));
-      ck.testUndefined(builder.getValidatedFrame(), "frame in progress");
-      builder.announce(vector0);
-      ck.testExactNumber(1, builder.savedVectorCount());
-      builder.announce(vector0);
-      ck.testExactNumber(1, builder.savedVectorCount());
-
-      ck.testExactNumber(2, builder.announceVector(vector1));
-      ck.testExactNumber(2, builder.announceVector(vector1.plusScaled(vector0, 2.0)));
-
-      ck.testExactNumber(3, builder.announceVector(vector2));
-
-    }
-    ck.checkpoint("FrameBuilder");
+    const emptyArray = Point3dArray.cloneWithMaxEdgeLength([], 1);
+    ck.testExactNumber(0, emptyArray.length);
     expect(ck.getNumErrors()).equals(0);
   });
 
 });
 
-describe("FrameBuilder.HelloWorldB", () => {
-  it("FrameBuilder.HelloWorld", () => {
-    const ck = new Checker();
-
-    const nullRangeLocalToWorld = FrameBuilder.createLocalToWorldTransformInRange(Range3d.createNull(), AxisScaleSelect.Unit, 0, 0, 0, 2.0);
-    ck.testTransform(Transform.createIdentity(), nullRangeLocalToWorld, "frame in null range");
-
-    for (const range of [Range3d.createXYZXYZ(1, 2, 3, 5, 7, 9)]
-    ) {
-      for (const select of [
-        AxisScaleSelect.Unit,
-        AxisScaleSelect.LongestRangeDirection,
-        AxisScaleSelect.NonUniformRangeContainment]) {
-        const localToWorld = FrameBuilder.createLocalToWorldTransformInRange(range, select, 0, 0, 0, 2.0);
-        if (ck.testPointer(localToWorld) && localToWorld) {
-          MatrixTests.checkProperties(ck,
-            localToWorld.matrix,
-            select === AxisScaleSelect.Unit,  // unit axes in range are identity
-            select === AxisScaleSelect.Unit,  // and of course unitPerpendicular
-            select === AxisScaleSelect.Unit,  // and of course rigid.
-            true, // always invertible
-            true);  // always diagonal
-          const worldCorners = range.corners();
-          worldCorners.push(range.fractionToPoint(0.5, 0.5, 0.5));
-        }
-      }
-    }
-
-    ck.checkpoint("FrameBuilder.HelloWorldB");
-    expect(ck.getNumErrors()).equals(0);
-  });
-});
 // ASSUME pointsA is planar with at least 3 points, and first turn is left.
 // (Therefore first cross product is its normal)
 function testCentroidNormal(ck: Checker, pointsA: Point3d[], expectedArea: number) {
@@ -451,6 +403,23 @@ describe("PolygonOps", () => {
       }
       if (node0 === faceSeed)
         break;
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("XYTurningDirections", () => {
+    const ck = new Checker();
+    for (const close of [false, true]) {
+      // Note "star" construction with same inner and outer radius is a circle.
+      const circle = Sample.createStar(1, 1, 0, 2, 2, 5, close);
+      ck.testExactNumber(1, PolygonOps.testXYPolygonTurningDirections(circle), " CCW circle turn counts");
+      circle.reverse();
+      ck.testExactNumber(-1, PolygonOps.testXYPolygonTurningDirections(circle), " CW circle turn counts");
+
+      const star = Sample.createStar(1, 2, 0, 5, 2, 5, close);
+      ck.testExactNumber(0, PolygonOps.testXYPolygonTurningDirections(star), " CCW circle turn counts");
+      star.reverse();
+      ck.testExactNumber(0, PolygonOps.testXYPolygonTurningDirections(star), " CW circle turn counts");
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -945,16 +914,16 @@ describe("PolygonAreas", () => {
     ];
 
     const pointC = GrowableXYZArray.create(pointA);
-    const rangeC = Point3dArray.createRange(pointC);
-    const rangeA0 = Point3dArray.createRange(pointA);
+    const rangeC = Range3d.createFromVariantData(pointC);
+    const rangeA0 = Range3d.createFromVariantData(pointA);
 
     ck.testRange3d(rangeA0, rangeC);
     const rangeA1 = Range3d.createArray(pointA);
     ck.testRange3d(rangeA0, rangeA1, "range by structured search, array");
     const pointAB = [pointA, pointB];
-    const rangeAB0 = Point3dArray.createRange(pointAB);
+    const rangeAB0 = Range3d.createFromVariantData(pointAB);
     const rangeAB1 = rangeA1.clone();
-    const rangeB0 = Point3dArray.createRange(pointB);
+    const rangeB0 = Range3d.createFromVariantData(pointB);
     rangeAB1.extendRange(rangeB0);
     ck.testRange3d(rangeAB0, rangeAB1, "create range variant");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonAreas", "streamXYZ");
@@ -970,8 +939,10 @@ describe("PolygonAreas", () => {
     const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
     const dataA = Point3dArray.cloneDeepJSONNumberArrays(pointA);
     ck.testExactNumber(11, dataA.length);
+    const dataB = Point3dArray.cloneDeepXYZPoint3dArrays(pointA);
+    ck.testExactNumber(11, dataB.length, "Round Trip as Point3d[]");
     const dataABC = Point3dArray.cloneDeepJSONNumberArrays([pointA, pointB, pointC]);
-    const linestringsABC0 = LineString3d.createArrayOfLineString3d(dataABC);
+    const linestringsABC0 = LineString3d.createArrayOfLineString3dFromVariantData(dataABC);
 
     const lsA = LineString3d.create(pointA);
     const lsB = LineString3d.create(pointB);
@@ -981,6 +952,55 @@ describe("PolygonAreas", () => {
       ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
       ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  /**
+   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
+   */
+  it("deprecatedStreamXYZ", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
+    const pointB = Sample.createRectangle(-2, 4, 5, 2);
+
+    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
+    const dataABC = [pointA, pointB, pointC];
+    const rangeOld = Range3d.createNull();
+    Point3dArray.streamXYZ(dataABC,
+      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
+      (x: number, y: number, z: number) => { rangeOld.extendXYZ(x, y, z); },
+      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
+    );
+    const rangeNew = Range3d.createFromVariantData(dataABC);
+    ck.testRange3d(rangeNew, rangeOld);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  /**
+   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
+   */
+  it("deprecatedStreamXYZXYZ", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
+    const pointB = Sample.createRectangle(-2, 4, 5, 2);
+
+    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
+    const dataABC = [pointA, pointB, pointC];
+    const rangeOld = Range3d.createNull();
+    Point3dArray.streamXYZXYZ(dataABC,
+      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
+      (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => {
+        rangeOld.extendXYZ(x0, y0, z0);
+        rangeOld.extendXYZ(x1, y1, z1);
+      },
+      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
+    );
+    const rangeNew = Range3d.createFromVariantData(dataABC);
+    ck.testRange3d(rangeNew, rangeOld);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

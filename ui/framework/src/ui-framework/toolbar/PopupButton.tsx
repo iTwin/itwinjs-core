@@ -7,8 +7,8 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { ExpandableItem, Item, Size } from "@bentley/ui-ninezone";
-import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
@@ -16,10 +16,10 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { Icon } from "../shared/IconComponent";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import "./PopupButton.scss";
-import { BetaBadge } from "../betabadge/BetaBadge";
 
 // cSpell:ignore popupbutton
 
@@ -44,7 +44,7 @@ export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderProp
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
   noPadding?: boolean;
 }
 

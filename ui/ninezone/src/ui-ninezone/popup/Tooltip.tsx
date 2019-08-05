@@ -6,11 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Point, PointProps, Rectangle, RectangleProps, Size, SizeProps } from "@bentley/ui-core";
 import { CssProperties } from "../utilities/Css";
-import { Point, PointProps } from "../utilities/Point";
-import { Rectangle, RectangleProps } from "../utilities/Rectangle";
-import { SizeProps, Size } from "../utilities/Size";
 import "./Tooltip.scss";
 
 /** Properties of [[Tooltip]] component.
@@ -103,7 +100,7 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
 /** Function to apply offset and contain tooltip bounds in container.
  * @internal
  */
-export const offsetAndContainInContainer = (tooltipBounds: RectangleProps, containerSize: SizeProps, offset: PointProps = new Point(20, 20)) => {
+export const offsetAndContainInContainer = (tooltipBounds: RectangleProps, containerSize: SizeProps, offset: PointProps = new Point(20, 20)): Point => {
   let newBounds = Rectangle.create(tooltipBounds).offset(offset);
   const containerBounds = Rectangle.createFromSize(containerSize);
   if (containerBounds.contains(newBounds))

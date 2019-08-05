@@ -9,8 +9,8 @@ import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelRe
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
+  IModelJsNative, NativeLoggerCategory,
 } from "../imodeljs-backend";
-import { IModelJsNative, NativeLoggerCategory } from "../IModelJsNative";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";

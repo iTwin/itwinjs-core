@@ -48,4 +48,6 @@ TODO - Replace diagrams with better ones?
 ![Granularity](./media/granularity.png)
 -->
 
-> Next: [Relationship Fundamentals](./relationship-fundamentals.md)
+---
+| Next: [Relationship Fundamentals](./relationship-fundamentals.md)
+|:---

@@ -30,6 +30,8 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
+// cSpell:ignore focustrap
+
 export * from "./ui-core/focustrap/FocusTrap";
 
 export * from "./ui-core/hocs/withIsPressed";
@@ -72,7 +74,10 @@ export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 export * from "./ui-core/uisettings/SessionUiSettings";
 
+export * from "./ui-core/utils/Point";
 export * from "./ui-core/utils/Props";
+export * from "./ui-core/utils/Rectangle";
+export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiError";
 export * from "./ui-core/utils/UiEvent";

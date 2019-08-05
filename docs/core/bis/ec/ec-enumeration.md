@@ -6,19 +6,19 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 ## Attributes
 
-**typeName** defines the name of this ECEnumeration. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.
+**typeName** defines the name of this ECEnumeration. Must be a valid [ECName](./ec-name.md) and be unique among all other items in a schema.  (Required)
 
-**backingTypeName** The type for the value of each enumerator
+**backingTypeName** The type for the value of each enumerator (Required)
 
 - Valid types are:
   - `int`
   - `string`
 
-**description** User facing description of the enumeration. Localized and may be shown in the UI.
+**description** User facing description of the enumeration. Localized and may be shown in the UI. (Optional)
 
-**displayLabel** a localized display label that will be used instead of the name in the GUI. If not set the Type Name of the enumeration will be used
+**displayLabel** a localized display label that will be used instead of the name in the GUI. If not set the Type Name of the enumeration will be used (Optional)
 
-**strict** If true only values defined in the enumerators are valid. If false, any value of the backing type is allowed.
+**strict** If true only values defined in the enumerators are valid. If false, any value of the backing type is allowed. (Optional, default is false)
 
 ## Sub-Elements
 
@@ -30,6 +30,10 @@ Defines an individual Label/Value pair in an ECEnumeration definition
 
 #### Attributes
 
-**value** The value for this enumerator, must be unique in the context of the ECEnumeration it belongs to.
+**name** Defines the name of this ECEnumerator. Must be a valid [ECName](./ec-name.md) and be unique among all other Enumerators in this Enumeration. (Required)
 
-**displayLabel** a localized display label that will be used instead of the name in the GUI. If not set the Value will be used
+**value** The value for this enumerator, must be unique in the context of the ECEnumeration it belongs to. (Required)
+
+**displayLabel** A localized display label that will be used instead of the name in the GUI. If not set the Value will be used. (Optional)
+
+**description** User facing description of the enumerator. Localized and may be shown in the UI. (Optional)

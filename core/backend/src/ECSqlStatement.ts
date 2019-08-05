@@ -10,7 +10,7 @@ import { Config } from "@bentley/imodeljs-clients";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;

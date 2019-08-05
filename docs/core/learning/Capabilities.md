@@ -108,7 +108,7 @@ Display [application-generated graphics](./frontend/ViewDecorations.md) that *de
 There are 3 types of View Decorations, and they may exist in any combination in a single view:
 
 1. ✔️️ [View](./frontend/ViewDecorations.md#view-graphic-decorations) - rendered with WebGL
-2. ✔️️️️ [Canvas](./frontend/ViewDecorations.md#canvas-decorations) - rendered with [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
+2. ✔️️️️ [Canvas](./frontend/ViewDecorations.md#canvas-decorations) - rendered with [CanvasRenderingContext2D](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D)
 3. ✔️️ [HTML](./frontend/ViewDecorations.md#html-decorations) - rendered with the DOM
 
 ### Markers
@@ -149,7 +149,7 @@ Load data from many sources into a single Viewport.
 
 ## Markup
 
-Create and edit [SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)-based markups for describing, discussing, and tracking issues.
+Create and edit [SVG](https://developer.mozilla.org/docs/Web/SVG)-based markups for describing, discussing, and tracking issues.
 
 - ✔️️ Arrows
 - ✔️️ Clouds

@@ -95,6 +95,8 @@ export enum HitDetailType {
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
+  /** @alpha */
+  public readonly tileId?: string;
 
   /** Create a new HitDetail from the inputs to and results of a locate operation.
    * @param testPoint The world coordinate space point that was used as the locate point.
@@ -109,11 +111,13 @@ export class HitDetail {
    * @param geometryClass The GeometryClass for a persistent element hit.
    * @param iModel The IModelConnection from which the hit originated. This should almost always be left undefined, unless the hit is known to have originated from an iModel other than the one associated with the viewport.
    * @param modelId Optionally the Id of the [[ModelState]] from which the hit originated.
+   * @param tileId Optionally the Id of the Tile from which the hit originated.
    */
   public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
-    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection) {
+    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string) {
     this._iModel = iModel;
+    this.tileId = tileId;
   }
 
   /** Get the type of HitDetail.

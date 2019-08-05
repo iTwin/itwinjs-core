@@ -14,7 +14,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;

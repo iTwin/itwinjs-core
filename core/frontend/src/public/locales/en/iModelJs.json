@@ -57,6 +57,7 @@
   },
   "Errors": {
     "ReloadPage": "😞 Oops, something went horribly wrong - please reload the page.",
+    "WebGLContextLost": "The WebGL rendering context was lost. Closing other browser tabs before reloading the page may help.",
     "Details": "In case you're interested in the gory details:"
   }
 }

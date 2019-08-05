@@ -347,4 +347,16 @@ export class Angle implements BeJSONFunctions {
         //    const vv = vx * vx + vy * vy + vz * vz;
         return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
     }
+    /**
+     * Add a multiple of a full circle angle (360 degrees, 2PI) in place.
+     * @param multiple multiplier factor
+     */
+    public addMultipleOf2PiInPlace(multiple: number) {
+        if (this._degrees !== undefined) {
+            this._degrees += multiple * 360.0;
+            this._radians = Angle.degreesToRadians(this._degrees);
+        } else {
+            this._radians += multiple * Angle.pi2Radians;
+        }
+    }
 }

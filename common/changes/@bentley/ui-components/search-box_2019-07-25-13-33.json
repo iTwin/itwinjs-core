@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update FilteringInput to use updated search box design from UX.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Allison.Jenkins@bentley.com"
+}

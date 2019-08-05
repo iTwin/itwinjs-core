@@ -74,4 +74,6 @@ Other schema designers can create Aspects that can be attached to Stair or one o
 
 Relationships – like Aspects – can be defined for the Stair class (and its superclasses) without any knowledge by the Stair class designer. Users may take advantage of these Relationships to other Elements at any point in time.
 
-> Next: [Schema Versioning](./schema-versioning-and-generations.md)
+---
+| Next: [Schema Versioning](./schema-versioning-and-generations.md)
+|:---

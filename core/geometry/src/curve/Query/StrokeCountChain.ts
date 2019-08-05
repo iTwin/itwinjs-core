@@ -13,7 +13,7 @@ import { Loop } from "../Loop";
 import { Range1d } from "../../geometry3d/Range";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Geometry } from "../../Geometry";
-
+// cspell:word remapa
 /**
  * abstract methods for callbacks during sweeps of collections of StrokeCount Structures.
  * * A set of StrokeCountMaps are to be visited multiple times.
@@ -25,7 +25,7 @@ import { Geometry } from "../../Geometry";
  *   * second level is primitive within chain.
  *     * If the primitives in a set are "single component", second level is lowest.
  *        * startSweep() and endSweep() calls are two parameters, with undefined componentIndex
- *     * If the primitives in a set are multicomponet, there is a third level looping through corresponding components.
+ *     * If the primitives in a set are multi-component, there is a third level looping through corresponding components.
  * `
  *    if (!cb.startSweeps (chainIndex, primitiveIndex, componentIndex))
  *      return false;
@@ -42,15 +42,15 @@ import { Geometry } from "../../Geometry";
  */
 export abstract class StrokeCountMapMultipassVisitor {
   /**
-   * called to announce the begnining of one or more sweeps through related StrokeCountMap's
+   * called to announce the beginning of one or more sweeps through related StrokeCountMap's
    * @param chainIndex index of loop or path within the various contours.
-   * @param primitiveIndexx index of primitive within the loop or path.
+   * @param primitiveIndex index of primitive within the loop or path.
    * @param componentIndex optional component index.
    * @returns the number of sweeps to perform.
    */
   public startSweeps(_chainIndex: number, _primitiveIndex: number, _componentIndex?: number): boolean { return true; }
   /**
-   * announce the begninning of a sweep pass.
+   * announce the beginning of a sweep pass.
    * @param pass the index (0,1...) for this sweep pass.
    * @return true to execute this pass.  false to break from the pass loop (next method called is endSweeps)
    */
@@ -296,7 +296,7 @@ export class StrokeCountSection {
     const numSection = sections.length;
     if (!callback.startSweeps(chainIndex, primitiveIndex, componentIndex)) return false;
     if (componentIndex === undefined) {
-      // there are corresponding primitves directly at the section, chain, primitive index:
+      // there are corresponding primitives directly at the section, chain, primitive index:
       for (let pass = 0; ; pass++) {
         if (!callback.startPass(pass))
           break;
@@ -307,8 +307,8 @@ export class StrokeCountSection {
           return false;
       }
     } else {
-      // there are corresponding primitves at the section, chain, primitive,componentIndex
-      // there are corresponding primitves directly at the section, chain, primitive index:
+      // there are corresponding primitives at the section, chain, primitive,componentIndex
+      // there are corresponding primitives directly at the section, chain, primitive index:
       for (let pass = 0; ; pass++) {
         if (!callback.startPass(pass))
           break;
@@ -401,7 +401,7 @@ export class StrokeCountSection {
     }
   }
   /**
-   * Given two compatibile stroke sets (as returned by getStrokes) extend a range
+   * Given two compatible stroke sets (as returned by getStrokes) extend a range
    * with the distances between corresponding points.
    * * Each set of strokes may be:
    *   * linestring

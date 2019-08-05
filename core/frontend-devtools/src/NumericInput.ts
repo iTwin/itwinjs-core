@@ -47,3 +47,39 @@ export function createNumericInput(props: NumericInputProps, useFloat: boolean =
 
   return input;
 }
+
+/** @alpha */
+export interface LabeledNumericInputProps extends NumericInputProps {
+  name: string;
+  id: string;
+}
+
+/** @alpha */
+export interface LabeledNumericInput {
+  input: HTMLInputElement;
+  div: HTMLDivElement;
+  label: HTMLLabelElement;
+}
+
+/** @alpha */
+export function createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput {
+  const div = document.createElement("div");
+
+  const label = document.createElement("label");
+  label.htmlFor = props.id;
+  label.innerText = props.name;
+  div.appendChild(label);
+
+  const inputProps = { ...props };
+  inputProps.parent = div;
+  inputProps.display = "inline";
+  const input = createNumericInput(inputProps, true === props.parseAsFloat);
+
+  if (undefined !== props.parent)
+    props.parent.appendChild(div);
+
+  if (undefined !== props.tooltip)
+    div.title = props.tooltip;
+
+  return { label, div, input };
+}

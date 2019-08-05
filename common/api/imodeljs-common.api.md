@@ -659,7 +659,9 @@ export enum CloudStorageProvider {
     // (undocumented)
     Amazon = 1,
     // (undocumented)
-    Azure = 0
+    Azure = 0,
+    // (undocumented)
+    External = 3
 }
 
 // @beta (undocumented)
@@ -3692,35 +3694,23 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
     export class Params {
         constructor(key?: string);
-        // (undocumented)
+        alpha: number | undefined;
         ambient: number;
         static readonly defaults: Params;
-        // (undocumented)
         diffuse: number;
-        // (undocumented)
         diffuseColor?: ColorDef;
-        // (undocumented)
         emissiveColor?: ColorDef;
         static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
         key?: string;
-        // (undocumented)
         reflect: number;
-        // (undocumented)
         reflectColor?: ColorDef;
-        // (undocumented)
         refract: number;
-        // (undocumented)
         shadows: boolean;
-        // (undocumented)
         specular: number;
-        // (undocumented)
         specularColor?: ColorDef;
         // (undocumented)
         specularExponent: number;
-        // (undocumented)
         textureMapping?: TextureMapping;
-        // (undocumented)
-        transparency: number;
     }
 }
 

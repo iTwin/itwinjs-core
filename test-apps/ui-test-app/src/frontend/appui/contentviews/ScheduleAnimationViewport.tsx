@@ -5,7 +5,10 @@
 import * as React from "react";
 
 import { ViewportComponent, TimelineDataProvider, TimelineComponent } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager, ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider } from "@bentley/ui-framework";
+import {
+  ConfigurableCreateInfo, ConfigurableUiManager, ViewportContentControl, ContentViewManager,
+  ScheduleAnimationTimelineDataProvider, AnalysisAnimationTimelineDataProvider, UiFramework,
+} from "@bentley/ui-framework";
 import { ScreenViewport, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
@@ -24,9 +27,12 @@ export class ScheduleAnimationViewportControl extends ViewportContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const _iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection!;
+    const _iModelConnection = UiFramework.getIModelConnection();
 
-    this.reactElement = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
+    if (_iModelConnection)
+      this.reactElement = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
+    else
+      this.reactElement = null;
   }
 }
 

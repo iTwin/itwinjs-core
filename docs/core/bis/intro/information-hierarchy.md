@@ -70,4 +70,6 @@ TODO
 
 ![Information Hierarchy](./media/information-hierarchy.png)
 
-> Next: [Modeling Perspectives](./modeling-perspectives.md)
+---
+| Next: [Modeling Perspectives](./modeling-perspectives.md)
+|:---

@@ -16,7 +16,7 @@ import {
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost, Platform } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -582,13 +582,12 @@ export class BriefcaseManager {
       }
     }
 
-    /** Create a new briefcase(and add it to the cache) */
-    // Acquire a briefcase if necessary
-    const hubBriefcase = hubBriefcases.length > 0 ? hubBriefcases[0] : await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
+    /** Acquire and create a new briefcase (and add it to the cache) */
+    const acquiredBriefcase = await BriefcaseManager.acquireBriefcase(requestContext, iModelId);
     requestContext.enter();
 
     // Set up the briefcase and add it to the cache
-    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, hubBriefcase.briefcaseId!);
+    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, acquiredBriefcase.briefcaseId!);
     Logger.logTrace(loggerCategory, "BriefcaseManager.openPullAndPush - creating a new briefcase", () => newBriefcase.getDebugInfo());
     return newBriefcase;
   }
@@ -735,7 +734,7 @@ export class BriefcaseManager {
       res = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId);
+      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
 
       // verify that all following values were set correctly by unsafeSetBriefcaseId()
       assert(nativeDb.getBriefcaseId() === briefcase.briefcaseId);

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
 
-import { Point } from "@bentley/ui-ninezone";
+import { Point } from "@bentley/ui-core";
 import {
   KeyboardShortcutProps,
   CommandItemDef,

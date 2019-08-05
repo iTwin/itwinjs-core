@@ -5,10 +5,10 @@
 /** @module Widget */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, RectangleProps, Rectangle } from "@bentley/ui-core";
 import {
-  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, PointProps, TabSeparator,
-  WidgetZoneId, TabMode, HandleMode, Rectangle, DraggedWidgetManagerProps, RectangleProps, VerticalAnchorHelpers,
+  Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
+  WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers,
 } from "@bentley/ui-ninezone";
 import { BetaBadge } from "../betabadge/BetaBadge";
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";

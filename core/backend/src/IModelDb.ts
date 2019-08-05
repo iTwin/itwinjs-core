@@ -27,7 +27,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { Entity } from "./Entity";
 import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
@@ -73,11 +73,16 @@ export class OpenParams {
     this.validate();
   }
 
-  /** Returns true if the open params open a snapshot Db */
+  /** Returns true if the OpenParams open a standalone iModel
+   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of an iModel *snapshot*.
+   */
   public get isStandalone(): boolean { return this.syncMode === undefined; }
 
+  /** Returns true if the OpenParams open a snapshot iModel */
+  public get isSnapshot(): boolean { return this.isStandalone; } // tslint:disable-line: deprecation
+
   private validate() {
-    if (this.isStandalone && this.syncMode !== undefined)
+    if (this.isSnapshot && this.syncMode !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
     if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush) {
@@ -92,7 +97,7 @@ export class OpenParams {
   public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
   /** Returns true if equal and false otherwise */
@@ -249,7 +254,7 @@ export class IModelDb extends IModel {
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
-   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[openSnapshot]] or [[open]] instead.
+   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[open]] or [[openSnapshot]] instead.
    * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
@@ -330,18 +335,24 @@ export class IModelDb extends IModel {
     return imodelDb;
   }
 
-  /**
-   * Returns true if this is a standalone iModel
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+  /** Returns true if this is a standalone iModel
+   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
    */
   public get isStandalone(): boolean {
-    return this.briefcase.openParams.isStandalone;
+    return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
+  }
+
+  /** Returns true if this is a *snapshot* iModel
+   * @see [[openSnapshot]]
+   */
+  public get isSnapshot(): boolean {
+    return this.briefcase.openParams.isSnapshot;
   }
 
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
-   * @deprecated The confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*. Callers should migrate to [[closeSnapshot]].
+   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel. Callers should migrate to [[closeSnapshot]].
    * @internal
    */
   public closeStandalone(): void {
@@ -663,7 +674,8 @@ export class IModelDb extends IModel {
    * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @deprecated use [IModelDb.withPreparedStatement]($backend) or [IModelDb.query]($backend) instead.
+   * @see [IModelDb.withPreparedStatement]($backend), [IModelDb.query]($backend)
+   * @deprecated Use [[withPreparedStatement]] or [[query]] instead.
    */
   public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
     return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
@@ -907,7 +919,7 @@ export class IModelDb extends IModel {
 
   /** Import a single ECSchema.
    * @see importSchemas
-   * @deprecated It is better to import a collection of schemas together rather than individually.
+   * @deprecated use [[importSchemas]] instead as it is better to import a collection of schemas together rather than individually.
    */
   public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
     return this.importSchemas(requestContext, [schemaFileName]);
@@ -961,7 +973,7 @@ export class IModelDb extends IModel {
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
     if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not found in briefcase cache", () => iModelToken);
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
     return briefcaseEntry.iModelDb;
@@ -988,7 +1000,7 @@ export class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.scopeType, codeSpec.scopeReq);
+    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggerCategory);
     return Id64.fromJSON(result);
   }
@@ -1476,13 +1488,13 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
-        const childIds: Id64String[] = this.queryChildren(id);
-        if (childIds.length > 0)
-          this.deleteElement(childIds);
-
         const props = this.getElementProps(id);
         const jsClass = iModel.getJsClass<typeof Element>(props.classFullName) as any; // "as any" so we can call the protected methods
         jsClass.onDelete(props, iModel);
+
+        const childIds: Id64String[] = this.queryChildren(id);
+        if (childIds.length > 0)
+          this.deleteElement(childIds);
 
         const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
@@ -1916,13 +1928,13 @@ export class TxnManager {
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString) { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString) { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.

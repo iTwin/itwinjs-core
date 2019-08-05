@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WireMoment computation; polyline filters for short edge, small triangle, perpendicular projection",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

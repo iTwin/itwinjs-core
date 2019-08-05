@@ -836,6 +836,12 @@ export class AnimationBranchState {
 // @internal
 export type AnimationBranchStates = Map<string, AnimationBranchState>;
 
+// @beta
+export interface Animator {
+    animate(): boolean;
+    interrupt(): void;
+}
+
 // @internal (undocumented)
 export interface AppearanceOverrideProps {
     // (undocumented)
@@ -1714,6 +1720,8 @@ export class CurrentInputState {
     // (undocumented)
     onStartDrag(button: BeButton): void;
     // (undocumented)
+    point: Point3d;
+    // (undocumented)
     qualifiers: BeModifierKeys;
     // (undocumented)
     rawPoint: Point3d;
@@ -1727,8 +1735,6 @@ export class CurrentInputState {
     touchTapCount?: number;
     // (undocumented)
     touchTapTimer?: number;
-    // (undocumented)
-    uorPoint: Point3d;
     // (undocumented)
     updateDownPoint(ev: BeButtonEvent): void;
     // (undocumented)
@@ -1777,16 +1783,6 @@ export class DecorateContext extends RenderContext {
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;
 }
-
-// @alpha
-export class DecorationAnimator implements ViewportAnimator {
-    constructor(duration: BeDuration);
-    // (undocumented)
-    animate(vp: Viewport): RemoveMe;
-    animateDecorations(_viewport: Viewport, _durationPercent: number): RemoveMe;
-    // (undocumented)
-    onInterrupted(vp: Viewport): void;
-    }
 
 // @public
 export class Decorations implements IDisposable {
@@ -2819,7 +2815,7 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection);
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string);
     clone(): HitDetail;
     // (undocumented)
     readonly distFraction: number;
@@ -2853,6 +2849,8 @@ export class HitDetail {
     readonly subCategoryId?: string | undefined;
     // (undocumented)
     readonly testPoint: Point3d;
+    // @alpha (undocumented)
+    readonly tileId?: string;
     // (undocumented)
     readonly viewport: ScreenViewport;
 }
@@ -3429,7 +3427,7 @@ export interface LinkElementsInfo {
         start: number;
         end: number;
     }>;
-    onClick: (record: PropertyRecord, text: string) => void;
+    onClick?: (record: PropertyRecord, text: string) => void;
 }
 
 // @public
@@ -4468,7 +4466,7 @@ export namespace Pixel {
     }
     export class Data {
         // @internal
-        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection);
+        constructor(feature?: Feature, distanceFraction?: number, type?: GeometryType, planarity?: Planarity, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string);
         // (undocumented)
         readonly distanceFraction: number;
         // (undocumented)
@@ -4485,6 +4483,8 @@ export namespace Pixel {
         readonly planarity: Planarity;
         // (undocumented)
         readonly subCategoryId: Id64String | undefined;
+        // @internal (undocumented)
+        readonly tileId?: string;
         // (undocumented)
         readonly type: GeometryType;
     }
@@ -4825,14 +4825,6 @@ export enum RelativePosition {
     TopRight = 5
 }
 
-// @public
-export enum RemoveMe {
-    // (undocumented)
-    No = 0,
-    // (undocumented)
-    Yes = 1
-}
-
 // @beta
 export abstract class RenderClipVolume implements IDisposable {
     protected constructor(clipVector: ClipVector);
@@ -5094,7 +5086,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
-    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic;
+    abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     // @internal (undocumented)
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
@@ -5149,6 +5141,8 @@ export abstract class RenderSystem implements IDisposable {
     loadTexture(id: Id64String, iModel: IModelConnection): Promise<RenderTexture | undefined>;
     // @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
+    // @internal (undocumented)
+    loseContext(): boolean;
     // @internal (undocumented)
     readonly maxTextureSize: number;
     // @internal (undocumented)
@@ -5391,6 +5385,8 @@ export class ScreenViewport extends Viewport {
     addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
+    // @internal (undocumented)
+    animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState): void;
     clearViewUndo(): void;
@@ -5399,7 +5395,9 @@ export class ScreenViewport extends Viewport {
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
-    drawLocateCursor(context: DecorateContext, pt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
+    drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
+    // (undocumented)
+    protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions): void;
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
@@ -5518,7 +5516,7 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
+    filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
     static hidden: boolean;
     // (undocumented)
@@ -7154,7 +7152,7 @@ export class ToolAdmin {
 export class ToolAssistance {
     static readonly altKey: string;
     static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
+    static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
     static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
     static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
     static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
@@ -7162,16 +7160,16 @@ export class ToolAssistance {
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static downSymbol: string;
+    static readonly downSymbol: string;
     static readonly inputsLabel: string;
-    static leftSymbol: string;
-    static rightSymbol: string;
+    static readonly leftSymbol: string;
+    static readonly rightSymbol: string;
     static readonly shiftKey: string;
     static readonly shiftKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly shiftKeyboardInfoNoSymbol: ToolAssistanceKeyboardInfo;
-    static shiftSymbol: string;
+    static readonly shiftSymbol: string;
     static readonly shiftSymbolKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static upSymbol: string;
+    static readonly upSymbol: string;
 }
 
 // @alpha
@@ -7259,6 +7257,11 @@ export class ToolSettings {
     static startDragDistanceInches: number;
     static touchMoveDelay: BeDuration;
     static touchMoveDistanceInches: number;
+    static viewingInertia: {
+        enabled: boolean;
+        damping: number;
+        duration: BeDuration;
+    };
     static viewToolPickRadiusInches: number;
     static walkCameraAngle: Angle;
     static walkEnforceZUp: boolean;
@@ -7577,7 +7580,7 @@ export class ViewClipControlArrow {
 
 // @alpha
 export class ViewClipDecoration extends EditManipulator.HandleProvider {
-    constructor(_clipView: Viewport, _clipEventHandler?: ViewClipEventHandler | undefined);
+    constructor(_clipView: ScreenViewport, _clipEventHandler?: ViewClipEventHandler | undefined);
     // (undocumented)
     static clear(): void;
     // (undocumented)
@@ -7605,13 +7608,13 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     protected _clipShapeExtents?: Range1d;
     // (undocumented)
-    protected _clipView: Viewport;
+    protected _clipView: ScreenViewport;
     // (undocumented)
     protected _controlIds: string[];
     // (undocumented)
     protected _controls: ViewClipControlArrow[];
     // (undocumented)
-    static create(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    static create(vp: ScreenViewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
     // (undocumented)
     protected createControls(): Promise<boolean>;
     // (undocumented)
@@ -7625,7 +7628,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     doClipShapeSetZExtents(extents: Range1d): boolean;
     // (undocumented)
-    static get(vp: Viewport): ViewClipDecoration | undefined;
+    static get(vp: ScreenViewport): ViewClipDecoration | undefined;
     // (undocumented)
     getControlIndex(id: string): number;
     // (undocumented)
@@ -7651,7 +7654,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static toggle(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
+    static toggle(vp: ScreenViewport, clipEventHandler?: ViewClipEventHandler): string | undefined;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
 }
@@ -7670,17 +7673,17 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     hideDecoration(): void;
     // (undocumented)
-    onActivateClip(viewport: Viewport, interactive: boolean): void;
+    onActivateClip(viewport: ScreenViewport, interactive: boolean): void;
     readonly onActiveClipChanged: BeEvent<(viewport: Viewport, eventType: ClipEventType, provider: ViewClipDecorationProvider) => void>;
     readonly onActiveClipRightClick: BeEvent<(hit: HitDetail, ev: BeButtonEvent, provider: ViewClipDecorationProvider) => void>;
     // (undocumented)
-    onClearClip(viewport: Viewport): void;
+    onClearClip(viewport: ScreenViewport): void;
     // (undocumented)
-    onModifyClip(viewport: Viewport): void;
+    onModifyClip(viewport: ScreenViewport): void;
     // (undocumented)
-    onNewClip(viewport: Viewport): void;
+    onNewClip(viewport: ScreenViewport): void;
     // (undocumented)
-    onNewClipPlane(viewport: Viewport): void;
+    onNewClipPlane(viewport: ScreenViewport): void;
     // (undocumented)
     onRightClick(hit: HitDetail, ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -7691,9 +7694,9 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     // (undocumented)
     protected _settings?: ViewClipSettingsProvider;
     // (undocumented)
-    showDecoration(vp: Viewport): void;
+    showDecoration(vp: ScreenViewport): void;
     // (undocumented)
-    toggleDecoration(vp: Viewport): void;
+    toggleDecoration(vp: ScreenViewport): void;
 }
 
 // @alpha
@@ -8056,6 +8059,8 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     abstract readonly handleType: ViewHandleType;
     // (undocumented)
+    protected readonly _lastPtNpc: Point3d;
+    // (undocumented)
     motion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     noMotion(_ev: BeButtonEvent): boolean;
@@ -8248,10 +8253,6 @@ export abstract class Viewport implements IDisposable {
     // @internal (undocumented)
     readonly analysisStyle: AnalysisStyle | undefined;
     // @internal (undocumented)
-    animate(): void;
-    // @internal (undocumented)
-    animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration): void;
-    // @internal (undocumented)
     animationFraction: number;
     // @internal
     applyViewState(val: ViewState): void;
@@ -8291,10 +8292,14 @@ export abstract class Viewport implements IDisposable {
     displayStyle: DisplayStyleState;
     // (undocumented)
     dispose(): void;
+    // @internal (undocumented)
+    doAnimation(): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     featureOverrideProvider: FeatureOverrideProvider | undefined;
+    // (undocumented)
+    protected finishViewChange(_startFrust: Frustum, options?: ViewChangeOptions): void;
     // @internal
     flashDuration: number;
     // @internal
@@ -8403,8 +8408,6 @@ export abstract class Viewport implements IDisposable {
     // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal (undocumented)
-    removeAnimator(): void;
-    // @internal (undocumented)
     renderFrame(): boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
     readonly rotation: Matrix3d;
@@ -8412,6 +8415,8 @@ export abstract class Viewport implements IDisposable {
     readonly scheduleTime: number;
     scroll(screenDist: Point2d, options?: ViewChangeOptions): void;
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
+    // @beta
+    setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
     // @internal
     setFlashed(id: string | undefined, duration: number): void;
@@ -8466,12 +8471,6 @@ export abstract class Viewport implements IDisposable {
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
-}
-
-// @public
-export interface ViewportAnimator {
-    animate(viewport: Viewport): RemoveMe;
-    onInterrupted(viewport: Viewport): void;
 }
 
 // @public
@@ -8874,7 +8873,7 @@ export class WalkViewTool extends ViewManip {
 }
 
 // @internal (undocumented)
-export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object";
+export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context";
 
 // @internal
 export class WheelEventProcessor {

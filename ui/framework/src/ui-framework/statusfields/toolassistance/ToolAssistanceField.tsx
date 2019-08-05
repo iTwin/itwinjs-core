@@ -39,12 +39,14 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
   uiSettings: UiSettings;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
+  /** Fade Out the Cursor Prompt when closed. */
+  fadeOutCursorPrompt: boolean;
 }
 
 /** Default properties of [[ToolAssistanceField]] component.
  * @alpha
  */
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout">;
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt">;
 
 /** @internal */
 interface ToolAssistanceFieldState {
@@ -66,6 +68,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
     includePromptAtCursor: true,
     cursorPromptTimeout: 5000,
+    fadeOutCursorPrompt: true,
     uiSettings: new LocalUiSettings(),
   };
 
@@ -81,7 +84,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showPromptAtCursor: false,
     };
 
-    this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout);
+    this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
   }
 
   /** @internal */

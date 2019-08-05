@@ -44,7 +44,7 @@ export class PolyfaceData {
   public pointIndex: number[];
   /** booleans indicating visibility of corresponding edges */
   public edgeVisible: boolean[];
-  /** Coordinates of normal vectors, packed as numbers in a contguous array */
+  /** Coordinates of normal vectors, packed as numbers in a contiguous array */
   public normal: GrowableXYZArray | undefined;
   /** indices of normals at facet vertices. */
   public normalIndex: number[] | undefined;
@@ -60,7 +60,7 @@ export class PolyfaceData {
   public colorIndex: number[] | undefined;
   /** Face data will remain empty until a face is specified. */
   public face: FacetFaceData[];
-  /** Auxilliary data */
+  /** Auxiliary data */
   public auxData: PolyfaceAuxData | undefined;
   /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false) {
@@ -159,7 +159,7 @@ export class PolyfaceData {
   }
   /**
    * * Copy data from other to this.
-   * * This is the essense of transfering coordinates spread throughout a large polyface into a visitor's single facet.
+   * * This is the essence of transferring coordinates spread throughout a large polyface into a visitor's single facet.
    * * "other" is the large polyface
    * * "this" is the visitor
    * * does NOT copy face data - visitors reference the FacetFaceData array for the whole polyface!!
@@ -299,7 +299,7 @@ export class PolyfaceData {
       }
     }
   }
-  /** Return the range of the point array (optionally transfomred) */
+  /** Return the range of the point array (optionally transformed) */
   public range(result?: Range3d, transform?: Transform): Range3d {
     result = result ? result : Range3d.createNull();
     result.extendArray(this.point, transform);

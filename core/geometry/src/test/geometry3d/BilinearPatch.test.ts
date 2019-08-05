@@ -13,7 +13,8 @@ import { Angle } from "../../geometry3d/Angle";
 import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Geometry } from "../../Geometry";
-
+import { Ray3d } from "../../geometry3d/Ray3d";
+/* tslint:disable: no-console */
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));
   const patch1 = patch.cloneTransformed(transform)!;
@@ -53,6 +54,45 @@ describe("BilinearPatch", () => {
     verifyPatch(ck, BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1));
     verifyPatch(ck, BilinearPatch.createXYZ(1, 2, 3, 5, 2, -1, 6, 7, 10, -4, 2, 1));
     ck.checkpoint("BilinearPatch.Create");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("IntersectRay", () => {
+    const ck = new Checker();
+    for (const patch of [
+      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0),
+      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1),
+      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 1, 1)]) {
+      const uv = Point2d.create(0.2, 0.4);
+      const tangentPlane = patch.uvFractionToPointAndTangents(uv.x, uv.y);
+      const perp = tangentPlane.vectorU.crossProduct(tangentPlane.vectorV);
+
+      const ray = Ray3d.create(tangentPlane.origin.plusScaled(perp, 1.0), perp.scale(-4.0));
+      const expectedFraction = 0.25;
+      const intersections = patch.intersectRay(ray);
+      if (intersections) {
+        let numMatch = 0;
+        for (const detail of intersections) {
+          ck.testPoint3d(ray.fractionToPoint(detail.curveDetail.fraction),
+            patch.uvFractionToPoint(detail.surfaceDetail.uv.x, detail.surfaceDetail.uv.y));
+          if (Geometry.isSameCoordinate(expectedFraction, detail.curveDetail.fraction)) {
+            numMatch++;
+          }
+        }
+        if (!ck.testExactNumber(1, numMatch, "number of ray patch intersections", intersections)) {
+
+          console.log("\n PATCH", patch);
+          console.log("RAY", ray);
+          for (const detail of intersections)
+            console.log({
+              fraction: detail.curveDetail.fraction,
+              uv: [detail.surfaceDetail.uv.x, detail.surfaceDetail.uv.y],
+              point: detail.surfaceDetail.point.toJSON(),
+            });
+        }
+      }
+    }
+    ck.checkpoint("BilinearPatch.IntersectRay");
     expect(ck.getNumErrors()).equals(0);
   });
 

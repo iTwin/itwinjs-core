@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as Moq from "typemoq";
 import * as sinon from "sinon";
+import { RectangleProps, PointProps, Rectangle } from "@bentley/ui-core";
 import {
-  Rectangle, ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
-  getClosedWidgetTabIndex, RectangleProps, ZoneManager, DraggedWidgetManager,
+  ZoneTargetType, ZonesManagerProps, HorizontalAnchor, ZonesManager, getZoneCell, WidgetZoneId,
+  getClosedWidgetTabIndex, ZoneManager, DraggedWidgetManager,
 } from "../../../ui-ninezone";
 import { TestProps } from "./TestProps";
 import { widgetZoneIds } from "../../../ui-ninezone/zones/manager/Zones";
 import { ResizeHandle } from "../../../ui-ninezone/widget/Stacked";
 import { ResizeStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
-import { PointProps } from "../../../ui-ninezone/utilities/Point";
 
 describe("ZonesManager", () => {
   const managerProps = Moq.Mock.ofType<ZonesManagerProps>();

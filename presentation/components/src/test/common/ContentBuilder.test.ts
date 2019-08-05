@@ -15,7 +15,7 @@ import {
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
-import { ContentBuilder } from "../../common/ContentBuilder";
+import { ContentBuilder, getLinks } from "../../common/ContentBuilder";
 import { PrimitiveValue } from "@bentley/imodeljs-frontend";
 
 describe("ContentBuilder", () => {
@@ -133,6 +133,33 @@ describe("ContentBuilder", () => {
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
+    });
+
+    it("creates record with links property without onClick handler but with macher set when display value is primitive in the item", () => {
+      const property: Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const field = new PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: "some value",
+      };
+      const displayValues = {
+        [field.name]: "some display value with link www.link.com",
+      };
+      const item = new Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, [], { test: "custom value" });
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(record.links).to.be.not.undefined;
+      expect(record.links!.onClick).to.be.undefined;
+      expect(record.links!.matcher).to.be.not.undefined;
+      expect(record.links!.matcher).to.be.equal(getLinks);
     });
 
     it("throws on invalid primitive value", () => {
@@ -607,4 +634,33 @@ describe("ContentBuilder", () => {
 
   });
 
+});
+
+describe("getlinks", () => {
+
+  it("detects any number of any type of url links or emails in a passed value", () => {
+    const testLinksWithIndexes = [
+      { link: "testLink.com", linksIndexes: [{ start: 0, end: 12 }] },
+      { link: "text without any links or emai addreses", linksIndexes: [] },
+      { link: "www.testLink.com", linksIndexes: [{ start: 0, end: 16 }] },
+      { link: "https://www.testLink.com", linksIndexes: [{ start: 0, end: 24 }] },
+      { link: "test link string testLink.com", linksIndexes: [{ start: 17, end: 29 }] },
+      { link: "test link testLink.com string", linksIndexes: [{ start: 10, end: 22 }] },
+      { link: "testLink.com www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 12 }, { start: 13, end: 32 }] },
+      { link: "www.testLink.com www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 16 }, { start: 17, end: 36 }] },
+      { link: "https://www.testLink.com https://www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 24 }, { start: 25, end: 52 }] },
+      { link: "test links string testLink.com, TestLinkTwo.com", linksIndexes: [{ start: 18, end: 30 }, { start: 32, end: 47 }] },
+      { link: "test links testLink.com string TestLinkTwo.com", linksIndexes: [{ start: 11, end: 23 }, { start: 31, end: 46 }] },
+      { link: "testLink.com testLink.com", linksIndexes: [{ start: 0, end: 12 }, { start: 13, end: 25 }] },
+      { link: "test link1: testLink.com, test link two: testLink.com", linksIndexes: [{ start: 12, end: 24 }, { start: 41, end: 53 }] },
+    ];
+    testLinksWithIndexes.forEach((testLinkWithIndexes) => {
+      const linkResults = getLinks(testLinkWithIndexes.link);
+      expect(linkResults.length).to.be.equal(testLinkWithIndexes.linksIndexes.length);
+      for (let i = 0; i < linkResults.length; i++) {
+        expect(linkResults[i].start).to.be.equal(testLinkWithIndexes.linksIndexes[i].start);
+        expect(linkResults[i].end).to.be.equal(testLinkWithIndexes.linksIndexes[i].end);
+      }
+    });
+  });
 });

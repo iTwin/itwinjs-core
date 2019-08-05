@@ -79,16 +79,16 @@ export interface ToolAssistanceInstructions {
 export class ToolAssistance {
 
   /** Up key symbol. */
-  public static upSymbol: string = "\u2bc5";
+  public static readonly upSymbol: string = "\u2bc5";
   /** Down key symbol. */
-  public static downSymbol: string = "\u2bc6";
+  public static readonly downSymbol: string = "\u2bc6";
   /** Left key symbol. */
-  public static leftSymbol: string = "\u2bc7";
+  public static readonly leftSymbol: string = "\u2bc7";
   /** Right key symbol. */
-  public static rightSymbol: string = "\u2bc8";
+  public static readonly rightSymbol: string = "\u2bc8";
 
   /** Keyboard info for Arrow keys. */
-  public static arrowKeyboardInfo: ToolAssistanceKeyboardInfo = {
+  public static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo = {
     keys: [ToolAssistance.upSymbol],
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
@@ -124,7 +124,7 @@ export class ToolAssistance {
   }
 
   /** Shift key symbol. */
-  public static shiftSymbol: string = "\u21e7";
+  public static readonly shiftSymbol: string = "\u21e7";
 
   /** Keyboard info for Shift key with symbol. */
   public static get shiftKeyboardInfo(): ToolAssistanceKeyboardInfo {

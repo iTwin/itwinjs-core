@@ -5,8 +5,7 @@
 /** @module Cursor */
 
 import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
-import { Point } from "@bentley/ui-ninezone";
+import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
 /** @alpha */
 export enum CursorDirectionParts {
@@ -33,8 +32,8 @@ export enum CursorDirection {
  * @alpha
  */
 export interface CursorUpdatedEventArgs {
-  oldPt: Point;
-  newPt: Point;
+  oldPt: PointProps;
+  newPt: PointProps;
   direction: CursorDirection;
 }
 
@@ -53,9 +52,9 @@ export class CursorInformation {
   private static _cursorDirections = new Array<CursorDirection>();
 
   /** Sets the cursor position. */
-  public static set cursorPosition(pt: Point) { this._cursorPosition = pt; }
+  public static set cursorPosition(pt: PointProps) { this._cursorPosition = Point.create(pt); }
   /** Gets the cursor position. */
-  public static get cursorPosition(): Point { return this._cursorPosition; }
+  public static get cursorPosition(): PointProps { return this._cursorPosition; }
   /** Gets the cursor X position. */
   public static get cursorX(): number { return this._cursorPosition.x; }
   /** Gets the cursor Y position. */
@@ -68,9 +67,9 @@ export class CursorInformation {
   public static readonly onCursorUpdatedEvent = new CursorUpdatedEvent();
 
   /** Handles the mouse movement.  Sets the cursor position and direction and emits onCursorUpdatedEvent. */
-  public static handleMouseMove(point: Point): void {
+  public static handleMouseMove(point: PointProps): void {
     const oldPt = CursorInformation.cursorPosition;
-    const direction = this._determineMostFrequentDirection(this._cursorDirections, this.cursorPosition, point);
+    const direction = this._determineMostFrequentDirection(this._cursorDirections, this._cursorPosition, Point.create(point));
 
     this.cursorPosition = point;
     this._cursorDirection = direction;

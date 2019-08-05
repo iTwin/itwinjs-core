@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { SampleAppIModelApp } from "../..";
-
 import {
   ConfigurableCreateInfo,
   WidgetControl,
   DragDropLayerManager,
+  UiFramework,
 } from "@bentley/ui-framework";
 import { Tree, TreeProps, withTreeDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -25,7 +24,10 @@ export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TreeDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection} />;
+    if (UiFramework.getIModelConnection())
+      this.reactElement = <TreeDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
+    else
+      this.reactElement = null;
   }
 }
 

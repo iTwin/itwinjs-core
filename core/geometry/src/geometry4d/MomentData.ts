@@ -249,6 +249,30 @@ export class MomentData {
       this.sums.addScaledOuterProductInPlace(vectorC, vectorC, r1_12);
     }
   }
+  /** add scaled outer product of (4d, unit weight) point to this.sums */
+  public accumulateScaledOuterProduct(point: XYAndZ, scaleFactor: number) {
+    this.setOriginXYZIfNeeded(point.x, point.y, 0.0);
+    const vectorA = MomentData._vectorA = Point4d.create(point.x - this.origin.x, point.y - this.origin.y, point.z - this.origin.z, 1.0, MomentData._vectorA);
+    this.sums.addScaledOuterProductInPlace(vectorA, vectorA, scaleFactor);
+  }
+  /** Accumulate wire moment integral from pointA to pointB */
+  public accumulateLineMomentsXYZ(pointA: Point3d, pointB: Point3d) {
+    this.setOriginXYZIfNeeded(pointA.x, pointA.y, pointA.z);
+    const x0 = this.origin.x;
+    const y0 = this.origin.y;
+    const z0 = this.origin.z;
+    const vectorA = MomentData._vectorA = Point4d.create(pointA.x - x0, pointA.y - y0, pointA.z - z0, 1.0, MomentData._vectorA);
+    const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, pointB.z - z0, 1.0, MomentData._vectorB);
+    const detJ = pointA.distance(pointB);
+    const r1_3 = detJ / 3.0;
+    const r1_6 = detJ / 6.0;
+    this.sums.addScaledOuterProductInPlace(vectorA, vectorA, r1_3);
+    this.sums.addScaledOuterProductInPlace(vectorA, vectorB, r1_6);
+    this.sums.addScaledOuterProductInPlace(vectorB, vectorA, r1_6);
+    this.sums.addScaledOuterProductInPlace(vectorB, vectorB, r1_3);
+
+  }
+
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
   /** compute moments of triangles from a base point to the given linestring.
@@ -307,5 +331,16 @@ export class MomentData {
   public accumulateProducts(other: MomentData, scale: number) {
     this.setOriginIfNeeded(other.origin);
     this.sums.addTranslationSandwichInPlace(other.sums, this.origin.x - other.origin.x, this.origin.y - other.origin.y, this.origin.z - other.origin.z, scale);
+  }
+  /**
+   * Convert to a json data object with:
+   */
+  public toJSON(): any {
+    return {
+      origin: this.origin,
+      sums: this.sums.toJSON(),
+      radiusOfGyration: this.radiusOfGyration.toJSON(),
+      localToWorld: this.localToWorldMap.toJSON(),
+    };
   }
 }

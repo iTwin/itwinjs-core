@@ -62,4 +62,6 @@ In this example, the Building instance is providing the CodeScope for the Floor.
 
 For a given Element, the combination of it `CodeSpec`, `CodeScope`, and `CodeValue` properties must be unique within the BIS repository. All `null` values are considered to be unique.
 
-> Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
+---
+| Next: [ElementAspect Fundamentals](./elementaspect-fundamentals.md)
+|:---

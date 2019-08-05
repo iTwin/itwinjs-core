@@ -9,7 +9,7 @@ import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
-import { GLSLFragment } from "./Fragment";
+import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeColor = "return TEXTURE(u_color, v_texCoord);";
@@ -22,7 +22,7 @@ export function createCopyColorProgram(context: WebGLRenderingContext, copyAlpha
   const frag = builder.frag;
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, copyAlpha ? computeColor : computeColorNoAlpha);
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_color", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
       const geom = params.geometry as SingleTexturedViewportQuadGeometry;

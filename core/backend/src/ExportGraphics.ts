@@ -152,7 +152,7 @@ export interface ExportPartInfo {
 }
 
 /** A callback function that receives generated graphics for a [GeometryPart]($imodeljs-backend).
- * See [IModelDb.exportPartsGraphics]($imodeljs-backend)
+ * See [IModelDb.exportPartGraphics]($imodeljs-backend)
  * @beta Waiting for feedback from community before finalizing.
  */
 export type ExportPartFunction = (info: ExportPartInfo) => void;
@@ -169,7 +169,7 @@ export interface ExportPartLinesInfo {
 }
 
 /** A callback function that receives generated line graphics for a [GeometryPart]($imodeljs-backend).
- * See [IModelDb.exportPartsGraphics]($imodeljs-backend)
+ * See [IModelDb.exportPartGraphics]($imodeljs-backend)
  * @beta Waiting for feedback from community before finalizing.
  */
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;

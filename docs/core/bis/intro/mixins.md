@@ -41,4 +41,6 @@ By convention, interface-like Mixin classes have class names with an “I” pre
 2. The Mixin is expected to be used by code or logic that will not know which class has incorporated the Mixin.
 3. The Mixin has no properties and is used as a *marker* class.
 
-> Next: [Model Fundamentals](./model-fundamentals.md)
+---
+| Next: [Model Fundamentals](./model-fundamentals.md)
+|:---

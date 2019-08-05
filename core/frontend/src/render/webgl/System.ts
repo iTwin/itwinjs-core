@@ -62,6 +62,7 @@ import { SceneContext } from "../../ViewContext";
 import { SpatialViewState } from "../../ViewState";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
+import { ToolAdmin } from "../../tools/ToolAdmin";
 
 // tslint:disable:no-const-enum
 
@@ -106,6 +107,7 @@ const knownExtensions: WebGLExtensionName[] = [
   "EXT_shader_texture_lod",
   "ANGLE_instanced_arrays",
   "OES_vertex_array_object",
+  "WEBGL_lose_context",
 ];
 
 /** Describes the rendering capabilities of the host system.
@@ -660,7 +662,7 @@ export class System extends RenderSystem {
     return new Branch(branch, transform, undefined, options);
   }
 
-  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): RenderGraphic { return new Batch(graphic, features, range); }
+  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic { return new Batch(graphic, features, range, tileId); }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
@@ -788,6 +790,22 @@ export class System extends RenderSystem {
 
     // Make this System a subscriber to the the IModelConnection onClose event
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
+
+    canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
+  }
+
+  public loseContext(): boolean {
+    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
+    if (undefined === ext)
+      return false;
+
+    ext.loseContext();
+    return true;
+  }
+
+  private async handleContextLoss(): Promise<void> {
+    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
+    return ToolAdmin.exceptionHandler(msg);
   }
 
   private getIdMap(imodel: IModelConnection): IdMap {

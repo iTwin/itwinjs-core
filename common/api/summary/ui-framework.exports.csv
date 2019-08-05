@@ -5,6 +5,7 @@ public;class ActionButtonItemDef
 public;ActionCreatorsObject =
 public;ActionItemButton 
 public;ActionItemButtonProps 
+beta;ActionItemSpec 
 public;ActionsUnion
 public;ActionTypes
 public;ActionWithPayload
@@ -20,11 +21,18 @@ beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProp
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
+beta;BackstageComposer 
 public;BackstageEvent 
 public;BackstageEventArgs
+beta;BackstageItemManager
 public;BackstageItemProps 
+beta;BackstageItemProvider
+beta;BackstageItemProviderRegisteredEventArgs
+beta;BackstageItemSpec
 public;BackstageItemState
+beta;BackstageItemType
 public;BackstageProps 
+beta;BadgeType
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -45,6 +53,8 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
+beta;ConditionalDisplaySpecification
+beta;ConditionalDisplayType
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -88,13 +98,13 @@ alpha;CursorDirection
 alpha;CursorDirectionParts
 alpha;CursorInformation
 alpha;CursorPopup 
-internal;CursorPopupCloseEvent 
-internal;CursorPopupCloseEventArgs
 alpha;CursorPopupContent: React_2.FunctionComponent
+internal;CursorPopupFadeOutEvent 
+internal;CursorPopupFadeOutEventArgs
 alpha;CursorPopupManager
-internal;CursorPopupOpenEvent 
-internal;CursorPopupOpenEventArgs
-alpha;CursorPopupProps
+alpha;CursorPopupOptions
+alpha;CursorPopupProps 
+public;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
@@ -103,6 +113,7 @@ alpha;CursorUpdatedEvent
 alpha;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
+beta;CustomItemSpec 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -224,8 +235,8 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-alpha;ModelSelectorWidget 
-alpha;ModelSelectorWidgetControl 
+internal;ModelSelectorWidget 
+internal;ModelSelectorWidgetControl 
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 
@@ -271,7 +282,7 @@ beta;SessionState
 beta;SessionStateActionId
 beta;SessionStateActions:
 beta;SessionStateActionsUnion = ActionsUnion
-beta;SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState
+beta;SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -287,6 +298,8 @@ alpha;SolarTimelineDataProvider
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
+beta;StageLauncher 
+beta;StageLauncher 
 alpha;StagePanel 
 public;StagePanelChangeHandler
 alpha;StagePanelDef 

@@ -248,4 +248,6 @@ Element->ElementAspect
 (other)
 -->
 
-> Next: [Codes](./codes.md)
+---
+| Next: [Codes](./codes.md)
+|:---

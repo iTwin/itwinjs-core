@@ -19,6 +19,7 @@ import {
   ContentGroup,
   ContentLayoutDef,
   ActionItemButton,
+  CoreTools,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -69,7 +70,7 @@ export class Frontstage2 extends FrontstageProvider {
 
     return (
       <Frontstage id="Test2"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={false} applicationData={{ key: "value" }}
 

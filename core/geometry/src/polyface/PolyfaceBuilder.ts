@@ -39,6 +39,9 @@ import { CylindricalRangeQuery } from "../curve/Query/CylindricalRange";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { BilinearPatch } from "../geometry3d/BilinearPatch";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
+import { Triangulator } from "../topology/Triangulation";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 /* tslint:disable:variable-name prefer-for-of*/
 
@@ -1159,8 +1162,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const contourA = surface.getSweepContourRef();
       contourA.purgeFacets();
 
-      contourA.emitFacets(this, true, undefined);
-      contourA.emitFacets(this, false, sweepTransform);
+      contourA.emitFacets(this, false, undefined);
+      contourA.emitFacets(this, true, sweepTransform);
     }
   }
 
@@ -1305,7 +1308,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPolygonGrowableXYZArray(points: GrowableXYZArray) {
     // don't use trailing points that match start point.
     let numPointsToUse = points.length;
-    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distance(0, numPointsToUse - 1)!))
+    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
       numPointsToUse--;
     let index = 0;
     if (!this._reversed) {
@@ -1427,6 +1430,27 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     builder.addGraphFaces(graph, faces);
     builder.endFace();
     return builder.claimPolyface();
+  }
+
+  /** Create a polyface containing triangles in a (space) polygon.
+   * * The polyface contains only coordinate data (no params or normals).
+   */
+  public static polygonToTriangulatedPolyface(points: Point3d[], localToWorld?: Transform): IndexedPolyface | undefined {
+    if (!localToWorld)
+      localToWorld = FrameBuilder.createFrameWithCCWPolygon(points);
+    if (localToWorld) {
+      const localPoints = localToWorld.multiplyInversePoint3dArray(points)!;
+      const areaXY = PolygonOps.areaXY(localPoints);
+      if (areaXY < 0.0)
+        localPoints.reverse();
+      const graph = Triangulator.createTriangulatedGraphFromSingleLoop(localPoints);
+      if (graph) {
+        const polyface = this.graphToPolyface(graph);
+        polyface.tryTransformInPlace(localToWorld);
+        return polyface;
+      }
+    }
+    return undefined;
   }
 
   /**

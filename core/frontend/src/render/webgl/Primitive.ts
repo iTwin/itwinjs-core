@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { FeatureIndexType } from "@bentley/imodeljs-common";
 import { Target, PrimitiveVisibility } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -74,15 +73,7 @@ export class Primitive extends Graphic {
     return this.cachedGeometry.getRenderPass(target);
   }
 
-  public get featureIndexType(): FeatureIndexType {
-    const feature = this.cachedGeometry.featuresInfo;
-    return undefined !== feature ? feature.type : FeatureIndexType.Empty;
-  }
-
-  public get usesMaterialColor(): boolean {
-    const materialData = this.cachedGeometry.material;
-    return undefined !== materialData && (materialData.overridesRgb || materialData.overridesAlpha);
-  }
+  public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
 
   public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
 
@@ -94,12 +85,12 @@ export class Primitive extends Graphic {
     }
   }
 
-  public setUniformFeatureIndices(featId: number): void { this.cachedGeometry.uniformFeatureIndices = featId; }
   public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
   public get isInstanced(): boolean { return this.cachedGeometry.isInstanced; }
   public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
   public get isEdge(): boolean { return this.cachedGeometry.isEdge; }
   public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
+  public get hasMaterialAtlas(): boolean { return this.cachedGeometry.hasMaterialAtlas; }
 
   public toPrimitive(): Primitive { return this; }
 

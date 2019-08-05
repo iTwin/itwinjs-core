@@ -20,4 +20,6 @@ In different contexts (like different lifecycle phases), responsibilities will c
 
 See [Overlapping Systems](./overlapping-systems.md) for guidance on dealing with `PhysicalElement`s that are part of two physical systems.
 
-> Next: [Overlapping Systems](./overlapping-systems.md)
+---
+| Next: [Overlapping Systems](./overlapping-systems.md)
+|:---

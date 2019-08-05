@@ -2,13 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError, ServerError } from "@bentley/imodeljs-common";
 import * as as from "azure-storage";
-import { PassThrough, Readable } from "stream";
+import { PassThrough, Readable, pipeline } from "stream";
+import * as zlib from "zlib";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
-  service: "azure";
+  service: "azure" | "external";
   account: string;
   accessKey: string;
 }
@@ -17,6 +18,7 @@ export interface CloudStorageServiceCredentials {
 export interface CloudStorageUploadOptions {
   type?: string;
   cacheControl?: string;
+  contentEncoding?: "gzip";
 }
 
 /** @beta */
@@ -75,117 +77,71 @@ export class AzureBlobStorage extends CloudStorageService {
 
   public async ensureContainer(name: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._service.createContainerIfNotExists(name, (error, result, response) => {
+      this._service.createContainerIfNotExists(name, (error, _result, response) => {
         if (error || !response.isSuccessful) {
-          const reason = {
-            createContainerFailed: true,
-            containerName: name,
-            requestId: result.requestId,
-            responseStatus: response.statusCode,
-            responseError: undefined as any,
-            responseBody: "",
-          };
-
-          if (response.error) {
-            if (response.error instanceof Error) {
-              reason.responseError = {
-                name: response.error.name,
-                message: response.error.message,
-              };
-            } else {
-              reason.responseError = response.error;
-            }
-          }
-
-          if (response.body) {
-            if (Buffer.isBuffer(response.body)) {
-              reason.responseBody = response.body.toString();
-            } else {
-              reason.responseBody = response.body;
-            }
-          }
-
-          reject(reason);
+          reject(new ServerError(response.statusCode, "Unable to create tile container."));
+        } else {
+          // _result indicates whether container already existed...irrelevant to semantics of our API
+          resolve();
         }
-
-        // _result indicates whether container already existed...irrelevant to semantics of our API
-
-        resolve();
       });
     });
   }
 
   public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string> {
     return new Promise(async (resolve, reject) => {
-      const source = new PassThrough();
-      source.end(data);
+      let source: PassThrough;
+
+      try {
+        source = new PassThrough();
+        source.end(data);
+      } catch (err) {
+        return reject(new IModelError(BentleyStatus.ERROR, `Unable to create upload stream for "${name}".`));
+      }
 
       const createOptions: as.BlobService.CreateBlockBlobRequestOptions = {
         contentSettings: {
-          contentType: options ? options.type : "application/octet-stream",
-          cacheControl: options ? options.cacheControl : "private, max-age=31536000, immutable",
+          contentType: (options && options.type) ? options.type : "application/octet-stream",
+          cacheControl: (options && options.cacheControl) ? options.cacheControl : "private, max-age=31536000, immutable",
         },
       };
 
       try {
         await this.ensureContainer(container);
 
-        this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
-          if (error || !response.isSuccessful) {
-            const reason = {
-              uploadTileFailed: true,
-              containerName: container,
-              tileId: name,
-              tileSize: data.byteLength,
-              requestId: result.requestId,
-              responseStatus: response.statusCode,
-              responseError: undefined as any,
-              responseBody: "",
-            };
+        if (options && options.contentEncoding === "gzip") {
+          createOptions.contentSettings!.contentEncoding = options.contentEncoding;
+          let pipelineError: NodeJS.ErrnoException;
 
-            if (response.error) {
-              if (response.error instanceof Error) {
-                reason.responseError = {
-                  name: response.error.name,
-                  message: response.error.message,
-                };
-              } else {
-                reason.responseError = response.error;
-              }
+          const uploader = this._service.createWriteStreamToBlockBlob(container, name, createOptions, (error, result, response) => {
+            if (pipelineError) {
+              return reject(pipelineError);
             }
 
-            if (response.body) {
-              if (Buffer.isBuffer(response.body)) {
-                reason.responseBody = response.body.toString();
-              } else {
-                reason.responseBody = response.body;
-              }
+            if (error || !response.isSuccessful) {
+              reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+            } else {
+              resolve(result.etag);
             }
+          });
 
-            reject(reason);
-          }
+          const compressor = zlib.createGzip();
 
-          resolve(result.etag);
-        });
-      } catch (error) {
-        const reason = {
-          threwWhileUploadingTile: true,
-          containerName: container,
-          tileId: name,
-          tileSize: data.byteLength,
-          error: undefined as any,
-        };
-
-        if (error instanceof Error) {
-          reason.error = {
-            name: error.name,
-            message: error.message,
-          };
+          pipeline(source, compressor, uploader, (err) => {
+            pipelineError = err;
+            reject(err);
+          });
         } else {
-          reason.error = error;
+          this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
+            if (error || !response.isSuccessful) {
+              reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+            } else {
+              resolve(result.etag);
+            }
+          });
         }
-
-        reject(reason);
+      } catch (error) {
+        reject(error);
       }
     });
   }

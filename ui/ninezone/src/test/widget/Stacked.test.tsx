@@ -5,13 +5,13 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createRect } from "../Utils";
 
+import { Point, Rectangle } from "@bentley/ui-core";
+
+import { createRect } from "../Utils";
 import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
 import { VerticalAnchorHelpers, VerticalAnchor, ResizeHandle } from "../../ui-ninezone/widget/Stacked";
 import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
-import { Point } from "../../ui-ninezone/utilities/Point";
-import { Rectangle } from "../../ui-ninezone/utilities/Rectangle";
 
 describe("<Stacked />", () => {
   let createRefStub: sinon.SinonStub | undefined;

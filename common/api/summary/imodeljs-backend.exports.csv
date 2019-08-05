@@ -91,6 +91,8 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsMultiAspects 
+public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
 public;ElementUniqueAspect 
 public;ElevationCallout 
@@ -154,7 +156,6 @@ public;IModelHost
 public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
-internal;IModelJsNative
 alpha;IModelTransformer
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
@@ -192,7 +193,6 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;NativeLoggerCategory
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 

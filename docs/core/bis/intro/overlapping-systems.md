@@ -15,4 +15,6 @@ When the collaboration is “done”, and both `Element`s are consistent, the no
 
 Consistency checks can ensure that all NADs are eliminated before designs are finalized and published for use in construction or operations, where redundant modeling of the same physical Entity creates problems.
 
-> Next: [Physical Models and Elements](./physical-models-and-elements.md)
+---
+| Next: [Physical Models and Elements](./physical-models-and-elements.md)
+|:---

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Mass properties tool, report error when selection contains no valid elements for operation.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

@@ -11,12 +11,14 @@ import { Point2d } from "./Point2dVector2d";
 import { XYAndZ, XAndY } from "./XYZProps";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-import { LineStringDataVariant, MultiLineStringDataVariant } from "../topology/Triangulation";
+import { MultiLineStringDataVariant, LineStringDataVariant } from "../topology/Triangulation";
 
 import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { VariantPointDataStream, PointStringDeepXYZArrayCollector } from "./PointStreaming";
 import { Range3d } from "./Range";
+
 /**
  * The `NumberArray` class contains static methods that act on arrays of numbers.
  * @public
@@ -105,7 +107,7 @@ export class NumberArray {
   /** Return the max absolute difference between corresponding entries in two arrays of numbers
    * * If sizes are mismatched, only the smaller length is tested.
    */
-  public static maxAbsDiff(dataA: number[], dataB: number[]): number {
+  public static maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number {
     let a = 0.0;
     const n = Math.min(dataA.length, dataB.length);
     for (let i = 0; i < n; i++) { a = Math.max(a, Math.abs(dataA[i] - dataB[i])); }
@@ -660,8 +662,35 @@ export class Point3dArray {
     }
     return result;
   }
+  /** Pack isolated x,y,z args as a json `[x,y,z]` */
+  private static xyzToArray(x: number, y: number, z: number): number[] { return [x, y, z]; }
+
+  /**
+   * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as arrays of 3 numbers `[1,2,3]`
+   * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
+   */
+  public static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): any[] {
+    const collector = new PointStringDeepXYZArrayCollector(this.xyzToArray);
+    VariantPointDataStream.streamXYZ(data, collector);
+    return collector.claimResult();
+  }
+  /**
+   * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as `Point3d`.
+   * @param data point data with various leaf forms such as `[1,2,3]`, `{x:1,y:2,z:3}`, `Point3d`
+   */
+  public static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[] {
+    const collector = new PointStringDeepXYZArrayCollector(Point3d.create);
+    VariantPointDataStream.streamXYZ(data, collector);
+    return collector.claimResult();
+  }
+  /**
+   * @deprecated Use Range3d.createFromVariantData (data)
+   * @param data
+   */
+  public static createRange(data: MultiLineStringDataVariant): Range3d { return Range3d.createFromVariantData(data); }
   private static _workPoint?: Point3d;
-  /** Invoke a callback with each x,y,z from an array of points in variant forms.
+  /** @deprecated - use VariantPointStream.streamXYZXYZ (handler)
+   * Invoke a callback with each x,y,z from an array of points in variant forms.
    * @param startChainCallback called to announce the beginning of points (or recursion)
    * @param pointCallback (index, x,y,z) = function to receive point coordinates one by one
    * @param endChainCallback called to announce the end of handling of an array.
@@ -692,6 +721,7 @@ export class Point3dArray {
         if (startChainCallback)
           startChainCallback(data, false);
         for (const child of data) {
+          // tslint:disable-next-line: deprecation
           numPoint += this.streamXYZ((child as unknown) as LineStringDataVariant, startChainCallback, pointCallback, endChainCallback);
         }
         if (endChainCallback)
@@ -711,20 +741,13 @@ export class Point3dArray {
     }
     return numPoint;
   }
-  /** Create a range for loosely structured point data. */
-  public static createRange(data: MultiLineStringDataVariant): Range3d {
-    const range = Range3d.createNull();
-    this.streamXYZ(data,
-      undefined,
-      (x: number, y: number, z: number) => { range.extendXYZ(x, y, z); },
-      undefined);
-    return range;
-  }
-  /** Invoke a callback with each x,y,z from an array of points in variant forms.
-   * @param startChainCallback callback of the form `startChainCallback (source, isLeaf)` to be called with the source array at each level.
-   * @param segmentCallback callback of the form `segmentCallback (index0, x0,y0,z0, index1, x1,y1,z1)`
-   * @param endChainCallback callback of the form `endChainCallback (source, isLeaf)` to be called with the source array at each level.
-  */
+/**
+ * @deprecated - use VariantPointStream.streamXYZXYZ (handler)
+ * Invoke a callback with each x,y,z from an array of points in variant forms.
+ * @param startChainCallback callback of the form `startChainCallback (source, isLeaf)` to be called with the source array at each level.
+ * @param segmentCallback callback of the form `segmentCallback (index0, x0,y0,z0, index1, x1,y1,z1)`
+ * @param endChainCallback callback of the form `endChainCallback (source, isLeaf)` to be called with the source array at each level.
+*/
   public static streamXYZXYZ(data: MultiLineStringDataVariant,
     startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined,
     segmentCallback: (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => void,
@@ -755,6 +778,7 @@ export class Point3dArray {
         if (startChainCallback)
           startChainCallback(data, false);
         for (const child of data) {
+          // tslint:disable-next-line: deprecation
           numSegment += this.streamXYZXYZ((child as unknown) as LineStringDataVariant, startChainCallback, segmentCallback, endChainCallback);
         }
         if (endChainCallback)
@@ -779,29 +803,5 @@ export class Point3dArray {
     }
     return numSegment;
   }
-  /**
-   * clone all the coordinates into [1,2,3]-style json objects, collected in an array structure that matches the input.
-   * @param data
-   */
-  public static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): any[] {
-    const resultStack: any[] = [];
-    resultStack.push([]); // the final result accumulates here.
-    this.streamXYZ(data,
-      (_child: MultiLineStringDataVariant, _isLeaf: boolean) => {
-        resultStack.push([]);
-      },
-      (x: number, y: number, z: number) => {
-        // leafArray should always be defined..
-        resultStack[resultStack.length - 1].push([x, y, z]);
-      },
-      (_child: MultiLineStringDataVariant, _sLeaf: boolean) => {
-        const q = resultStack[resultStack.length - 1];
-        resultStack.pop();
-        resultStack[resultStack.length - 1].push(q);
-      });
-    const r = resultStack[0];
-    if (r.length === 1)
-      return r[0];
-    return r;
-  }
+
 }

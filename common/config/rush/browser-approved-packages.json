@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/imodeljs-markup",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
@@ -449,6 +449,10 @@
     {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "linkifyjs",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",

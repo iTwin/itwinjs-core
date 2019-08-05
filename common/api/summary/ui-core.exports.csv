@@ -30,6 +30,7 @@ public;ContextMenuItemProps
 public;ContextMenuProps 
 public;ContextSubMenu 
 public;ContextSubMenuProps 
+internal;Corner
 beta;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -110,7 +111,8 @@ alpha;NumericInputProps
 public;Omit
 beta;OmitChildrenProp
 public;Orientation
-internal;Point
+internal;Point 
+beta;PointProps
 beta;Popup 
 beta;PopupProps 
 beta;Position
@@ -123,6 +125,8 @@ public;RadioProps
 internal;ReactNumericInput 
 alpha;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+internal;Rectangle 
+beta;RectangleProps
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 
@@ -130,6 +134,8 @@ public;Select
 public;SelectProps 
 beta;SessionUiSettings 
 internal;shallowDiffers: (a:
+internal;Size 
+beta;SizeProps
 public;SmallText: React.FunctionComponent
 public;SortDirection
 public;Spinner 

@@ -80,7 +80,7 @@ export class SelectionTool extends PrimitiveTool {
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.selectionMode; }
   protected wantEditManipulators(): boolean { return SelectionMethod.Pick === this.selectionMethod; }
   protected wantPickableDecorations(): boolean { return this.wantEditManipulators(); } // Allow pickable decorations selection to be independent of manipulators...
-  protected wantToolSettings(): boolean { return false; }
+  protected wantToolSettings(): boolean { return true; }
 
   public get selectionMethod(): SelectionMethod { return this._selectionMethodValue.value as SelectionMethod; }
   public set selectionMethod(method: SelectionMethod) { this._selectionMethodValue.value = method; }
@@ -529,7 +529,7 @@ export class SelectionTool extends PrimitiveTool {
     return (modifier === BeModifierKeys.Shift && this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
+  public async filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus> {
     if (!this.wantPickableDecorations() && !hit.isElementHit)
       return LocateFilterStatus.Reject;
 
@@ -538,7 +538,10 @@ export class SelectionTool extends PrimitiveTool {
       return LocateFilterStatus.Accept;
 
     const isSelected = this.iModel.selectionSet.has(hit.sourceId);
-    return ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
+    const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
+    if (out && LocateFilterStatus.Reject === status)
+      out.explanation = IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error." + (isSelected ? "AlreadySelected" : "NotSelected"));
+    return status;
   }
 
   public onRestartTool(): void { this.exitTool(); }
@@ -581,7 +584,6 @@ export class SelectionTool extends PrimitiveTool {
 
     // load latest values from session
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
-      { propertyName: SelectionTool._methodsName, value: this._selectionMethodValue },
       { propertyName: SelectionTool._modesName, value: this._selectionModeValue },
     ]);
 
@@ -607,8 +609,6 @@ export class SelectionTool extends PrimitiveTool {
       const saveWantManipulators = this.wantEditManipulators();
       if (this._selectionMethodValue.update(updatedValue.value)) {
         const currWantManipulators = this.wantEditManipulators();
-        if (this.wantToolSettings())
-          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._methodsName, value: this._selectionMethodValue });
         if (saveWantManipulators !== currWantManipulators)
           IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop);
         changed = true;

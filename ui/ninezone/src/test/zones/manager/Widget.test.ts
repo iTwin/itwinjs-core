@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DraggedWidgetManager, DraggedWidgetManagerProps } from "../../../ui-ninezone/zones/manager/Widget";
-import { PointProps } from "../../../ui-ninezone/utilities/Point";
+import { PointProps } from "@bentley/ui-core";
 
 const props: DraggedWidgetManagerProps = {
   id: 6,
