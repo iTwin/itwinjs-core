@@ -107,14 +107,6 @@ export class ViewAttributes {
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
 
-    const logZ = this.addCheckbox("Logarithmic Depth", (enabled: boolean) => {
-      (this._vp.target as any).debugUseLogZ = enabled;
-      this.sync();
-    }, flagsDiv).checkbox;
-    this._updates.push((_view: ViewState) => {
-      logZ.checked = (this._vp.target as any).debugUseLogZ;
-    });
-
     this.addEdgeDisplay();
 
     this.addEnvironmentEditor();

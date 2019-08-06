@@ -386,7 +386,15 @@ export class Tool {
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n && IModelApp.i18n.translate(this._keyinKey)); }
+  public static get keyin(): string {
+    if (!this.hasOwnProperty("_keyin"))
+      this._keyin = IModelApp.i18n.translate(this._keyinKey);
+
+    if (undefined === this._keyin)
+      throw new IModelError(-1, "Every tool must have a unique keyin");
+
+    return this._keyin!;
+  }
 
   /**
    * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the

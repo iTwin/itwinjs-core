@@ -49,7 +49,7 @@ export class DiagnosticsPanel {
   private readonly _memoryTracker: MemoryTracker;
   private readonly _statsTracker: StatsTracker;
   private readonly _toolSettingsTracker: ToolSettingsTracker;
-  private readonly _keyinHandler: KeyinHandler;
+  public readonly keyinHandler: KeyinHandler;
   private readonly _frustumCheckbox: CheckBox;
   private readonly _projectExtentsCheckbox: CheckBox;
   private readonly _removeEventListener: () => void;
@@ -112,7 +112,7 @@ export class DiagnosticsPanel {
     this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
 
     this.addSeparator();
-    this._keyinHandler = new KeyinHandler(this._element, vp);
+    this.keyinHandler = new KeyinHandler(this._element, vp);
 
     this._removeEventListener = vp.onChangeView.addListener(() => this.onViewChanged());
   }
@@ -127,7 +127,7 @@ export class DiagnosticsPanel {
     this._memoryTracker.dispose();
     this._statsTracker.dispose();
     this._toolSettingsTracker.dispose();
-    this._keyinHandler.dispose();
+    this.keyinHandler.dispose();
 
     this._viewport.debugBoundingBoxes = Tile.DebugBoundingBoxes.None;
     this._viewport.freezeScene = false;

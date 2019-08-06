@@ -190,6 +190,8 @@ export class DiagnosticsPanel {
     dispose(): void;
     // (undocumented)
     readonly element: HTMLElement;
+    // (undocumented)
+    readonly keyinHandler: KeyinHandler;
     }
 
 // @alpha (undocumented)
@@ -216,6 +218,8 @@ export class KeyinHandler {
     readonly autoCompleteList: DataList;
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    readonly focus: () => void;
     // (undocumented)
     readonly keyins: string[];
 }

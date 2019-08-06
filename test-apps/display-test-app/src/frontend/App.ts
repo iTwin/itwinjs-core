@@ -5,8 +5,21 @@
 
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  SnapMode, ToolTipOptions, TileAdmin, IModelAppOptions, SelectionTool,
+  AccuSnap,
+  IModelApp,
+  IModelAppOptions,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
+  RenderTargetDebugControl,
+  ScreenViewport,
+  SelectionTool,
+  SnapMode,
+  TileAdmin,
+  Tool,
+  ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
@@ -113,13 +126,52 @@ class Notifications extends NotificationManager {
   }
 }
 
-export class SVTSelectionTool extends SelectionTool {
+class SVTSelectionTool extends SelectionTool {
   public static toolId = "SVTSelect";
   protected initSelectTool() {
     super.initSelectTool();
 
     // ###TODO Want to do this only if version comparison enabled, but meh.
     IModelApp.locateManager.options.allowExternalIModels = true;
+  }
+}
+
+/** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
+ * ###TODO: Move to frontend-devtools package.
+ */
+abstract class DebugControlTool extends Tool {
+  public run(_args: any[]): boolean {
+    const view = IModelApp.viewManager.selectedView;
+    const control = undefined !== view ? view.target.debugControl : undefined;
+    if (undefined !== control)
+      this.execute(control, view!);
+
+    return true;
+  }
+
+  protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
+}
+
+class LoseContextTool extends DebugControlTool {
+  public static toolId = "LoseContext";
+  public execute(control: RenderTargetDebugControl, _vp: ScreenViewport): void {
+    control.loseContext();
+  }
+}
+
+class ToggleReadPixelsTool extends DebugControlTool {
+  public static toolId = "ToggleReadPixels";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.drawForReadPixels = !control.drawForReadPixels;
+    vp.invalidateScene();
+  }
+}
+
+class ToggleUseLogZTool extends DebugControlTool {
+  public static toolId = "ToggleUseLogZ";
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.useLogZ = !control.useLogZ;
+    vp.invalidateRenderPlan();
   }
 }
 
@@ -140,6 +192,10 @@ export class DisplayTestApp {
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
+
+    LoseContextTool.register(svtToolNamespace);
+    ToggleReadPixelsTool.register(svtToolNamespace);
+    ToggleUseLogZTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
   }

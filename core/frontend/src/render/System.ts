@@ -749,6 +749,18 @@ export class PackedFeatureTable {
   }
 }
 
+/** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
+ * @internal
+ */
+export interface RenderTargetDebugControl {
+  /** Destroy this target's webgl context. Returns false if this behavior is not supported. */
+  loseContext(): boolean;
+  /** If true, render to the screen as if rendering off-screen for readPixels(). */
+  drawForReadPixels: boolean;
+  /** If true, use log-z depth buffer (assuming supported by client). */
+  useLogZ: boolean;
+}
+
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
  * Application code rarely interacts directly with a RenderTarget - instead, it interacts with a Viewport which forwards requests to the implementation
  * of the RenderTarget.
@@ -800,6 +812,8 @@ export abstract class RenderTarget implements IDisposable {
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+
+  public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
 }
 
 /** Describes a texture loaded from an HTMLImageElement
@@ -1122,9 +1136,6 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public enableDiagnostics(_enable: RenderDiagnostics): void { }
-
-  /** @internal */
-  public loseContext(): boolean { return false; }
 
   /** @internal */
   public get supportsLogZBuffer(): boolean { return true === this.options.logarithmicDepthBuffer; }

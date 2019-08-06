@@ -5287,8 +5287,6 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     loadTextureImage(id: Id64String, iModel: IModelConnection): Promise<TextureImage | undefined>;
     // @internal (undocumented)
-    loseContext(): boolean;
-    // @internal (undocumented)
     readonly maxTextureSize: number;
     // @internal (undocumented)
     onInitialized(): void;
@@ -5341,6 +5339,8 @@ export abstract class RenderTarget implements IDisposable {
     changeTextureDrapes(_drapes: TextureDrapeMap): void;
     // (undocumented)
     createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
+    // (undocumented)
+    readonly debugControl: RenderTargetDebugControl | undefined;
     static depthFromDisplayPriority(priority: number): number;
     // (undocumented)
     dispose(): void;
@@ -5380,6 +5380,13 @@ export abstract class RenderTarget implements IDisposable {
     abstract readonly viewRect: ViewRect;
     // (undocumented)
     abstract readonly wantInvertBlackBackground: boolean;
+}
+
+// @internal
+export interface RenderTargetDebugControl {
+    drawForReadPixels: boolean;
+    loseContext(): boolean;
+    useLogZ: boolean;
 }
 
 // @internal
@@ -6312,7 +6319,7 @@ export class SyncFlags {
 }
 
 // @internal (undocumented)
-export abstract class Target extends RenderTarget {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
     protected constructor(rect?: ViewRect);
     // (undocumented)
     readonly activePlanarClassifiers: PlanarClassifiers;
@@ -6387,15 +6394,17 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     protected _dcAssigned: boolean;
     // (undocumented)
-    protected debugPaint(): void;
+    readonly debugControl: RenderTargetDebugControl;
     // (undocumented)
-    debugUseLogZ: boolean;
+    protected debugPaint(): void;
     // (undocumented)
     protected _decorations?: Decorations;
     // (undocumented)
     readonly decorationState: BranchState;
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    drawForReadPixels: boolean;
     // (undocumented)
     drawFrame(sceneMilSecElapsed?: number): void;
     // (undocumented)
@@ -6467,6 +6476,8 @@ export abstract class Target extends RenderTarget {
     // (undocumented)
     readonly isReadPixelsInProgress: boolean;
     // (undocumented)
+    loseContext(): boolean;
+    // (undocumented)
     readonly monoColor: FloatRgba;
     // (undocumented)
     readonly nearPlaneCenter: Point3d;
@@ -6530,6 +6541,8 @@ export abstract class Target extends RenderTarget {
     readonly techniques: Techniques;
     // (undocumented)
     readonly transparencyThreshold: number;
+    // (undocumented)
+    useLogZ: boolean;
     // (undocumented)
     readonly viewMatrix: Transform;
     // (undocumented)

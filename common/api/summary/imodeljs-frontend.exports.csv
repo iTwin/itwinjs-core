@@ -271,6 +271,7 @@ public;class RenderSystem
 public;RenderSystem
 beta;Options
 internal;class RenderTarget 
+internal;RenderTargetDebugControl
 internal;class RenderTextureDrape 
 public;RotateViewTool 
 alpha;RotationMode

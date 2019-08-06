@@ -84,6 +84,7 @@ function keyinChanged(textBox: HTMLInputElement) {
 export class KeyinHandler {
   public readonly autoCompleteList: DataList;
   public readonly keyins: string[];
+  public readonly focus: () => void;
 
   public constructor(parent: HTMLElement, _vp: Viewport) {
     this.keyins = findKeyins();
@@ -114,6 +115,10 @@ export class KeyinHandler {
       inline: true,
       tooltip: "Click here to execute the key-in",
     });
+
+    this.focus = () => {
+      keyinTextBox.textbox.focus();
+    };
   }
 
   public dispose(): void { }
