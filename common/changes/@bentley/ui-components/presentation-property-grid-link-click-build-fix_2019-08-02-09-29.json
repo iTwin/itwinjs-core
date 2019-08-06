@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed property grid tests.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Laurynas.Vaisys@bentley.com"
+}

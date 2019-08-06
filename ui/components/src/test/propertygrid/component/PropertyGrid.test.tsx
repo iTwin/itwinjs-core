@@ -93,7 +93,7 @@ describe("PropertyGrid", () => {
       dataProvider.getData = async (): Promise<PropertyData> => ({
         label: faker.random.word(),
         description: faker.random.words(),
-        categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+        categories: [...categories],
         records: {
           Group_1: [testRecord],
           Group_2: [records[0]],
@@ -111,18 +111,69 @@ describe("PropertyGrid", () => {
       expect(records[0].links).to.be.undefined;
     });
 
-    it("sets passed in props onPropertyLinkClick event handler to record links onClick property", async () => {
+    it("sets default onPropertyLinkClick event handler to records with link property if not passed with props", async () => {
       const testMatcher = (_displayValue: string) => [];
-      const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      testRecord.links = {
+      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      // tslint:disable-next-line: object-literal-key-quotes
+      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
+      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
+      testNestedRecord1.links = {
         matcher: testMatcher,
       };
+      testNestedRecord2.links = {
+        matcher: testMatcher,
+      };
+      testArrayRecord.links = {
+        matcher: testMatcher,
+      };
+
       dataProvider.getData = async (): Promise<PropertyData> => ({
         label: faker.random.word(),
         description: faker.random.words(),
-        categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+        categories: [...categories],
         records: {
-          Group_1: [testRecord],
+          Group_1: [testArrayRecord],
+          Group_2: [records[0]],
+        },
+      });
+      const wrapper = mount(<PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider} />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      expect(testArrayRecord.links!.onClick).to.be.not.undefined;
+      expect(testNestedRecord1.links!.onClick).to.be.not.undefined;
+      expect(testNestedRecord2.links!.onClick).to.be.not.undefined;
+    });
+
+    it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
+      const testMatcher = (_displayValue: string) => [];
+      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      // tslint:disable-next-line: object-literal-key-quotes
+      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
+      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
+      testNestedRecord1.links = {
+        matcher: testMatcher,
+      };
+      testNestedRecord2.links = {
+        matcher: testMatcher,
+      };
+      testStructRecord.links = {
+        matcher: testMatcher,
+      };
+
+      dataProvider.getData = async (): Promise<PropertyData> => ({
+        label: faker.random.word(),
+        description: faker.random.words(),
+        categories: [...categories],
+        records: {
+          Group_1: [testArrayRecord],
+          Group_2: [records[0]],
         },
       });
       const propertyLinkClickFn = () => { };
@@ -135,35 +186,21 @@ describe("PropertyGrid", () => {
 
       wrapper.update();
 
-      expect(testRecord.links!.onClick).to.be.equal(propertyLinkClickFn);
-    });
-
-    it("sets default onPropertyLinkClick event handler to data provider if not passed with props", async () => {
-      const testMatcher = (_displayValue: string) => [];
-      const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      testRecord.links = {
-        matcher: testMatcher,
-      };
-      dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
-        description: faker.random.words(),
-        categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
-        records: {
-          Group_1: [testRecord],
-        },
-      });
-      const wrapper = mount(<PropertyGrid
-        orientation={Orientation.Horizontal}
-        dataProvider={dataProvider} />);
-
-      await TestUtils.flushAsyncOperations();
-
-      wrapper.update();
-
-      expect(testRecord.links!.onClick).to.be.not.undefined;
+      expect(testNestedRecord1.links!.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testStructRecord.links!.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testNestedRecord2.links!.onClick).to.be.equal(propertyLinkClickFn);
     });
 
     describe("default onPropertyLinkClick behaviour", () => {
+      const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+
+      before(() => {
+        location = locationMockRef.object;
+      });
+
+      after(() => {
+        locationMockRef.reset();
+      });
 
       it("opens new window if the link text was found in record and it was not an email", async () => {
         const testMatcher = (_displayValue: string) => [];
@@ -174,9 +211,10 @@ describe("PropertyGrid", () => {
         dataProvider.getData = async (): Promise<PropertyData> => ({
           label: faker.random.word(),
           description: faker.random.words(),
-          categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+          categories: [...categories],
           records: {
             Group_1: [testRecord],
+            Group_2: [records[0]],
           },
         });
         const wrapper = mount(<PropertyGrid
@@ -208,9 +246,10 @@ describe("PropertyGrid", () => {
         dataProvider.getData = async (): Promise<PropertyData> => ({
           label: faker.random.word(),
           description: faker.random.words(),
-          categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+          categories: [...categories],
           records: {
             Group_1: [testRecord],
+            Group_2: [records[0]],
           },
         });
         const wrapper = mount(<PropertyGrid
@@ -244,9 +283,10 @@ describe("PropertyGrid", () => {
         dataProvider.getData = async (): Promise<PropertyData> => ({
           label: faker.random.word(),
           description: faker.random.words(),
-          categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+          categories: [...categories],
           records: {
             Group_1: [testRecord],
+            Group_2: [records[0]],
           },
         });
         const wrapper = mount(<PropertyGrid
@@ -275,24 +315,23 @@ describe("PropertyGrid", () => {
         dataProvider.getData = async (): Promise<PropertyData> => ({
           label: faker.random.word(),
           description: faker.random.words(),
-          categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
+          categories: [...categories],
           records: {
             Group_1: [testRecord],
+            Group_2: [records[0]],
           },
         });
         const wrapper = mount(<PropertyGrid
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider} />);
 
-        const locationMockRef = moq.Mock.ofType<Location>();
         await TestUtils.flushAsyncOperations();
-        location = locationMockRef.object;
         wrapper.update();
 
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "test display label with testLink.com someLink@mail.com otherLink@mail.com"), "someOtherLink@mail.com");
-        expect(locationMockRef.object.href = "mailto:someOtherLink@mail.com");
+        expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
       });
     });
 

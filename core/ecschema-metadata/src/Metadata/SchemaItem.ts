@@ -47,9 +47,9 @@ export abstract class SchemaItem {
         itemJson.schemaVersion = this.key.schemaKey.version.toString();
     }
     itemJson.schemaItemType = schemaItemTypeToString(this.schemaItemType);
-    if (this.label !== undefined)
+    if (undefined !== this.label)
       itemJson.label = this.label;
-    if (this.description !== undefined)
+    if (undefined !== this.description)
       itemJson.description = this.description;
     return itemJson;
   }

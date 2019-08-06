@@ -61,9 +61,10 @@ describe("Render Compatibility", () => {
   it("should query proper render compatibility info assuming software rendering ignoring performance caveat", () => {
     overriddenFunctions.overrideCreateContext(undefined, false);
     const compatibility = IModelApp.queryRenderCompatibility();
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingRequiredFeatures.length).to.equal(0);
-    expect(compatibility.missingOptionalFeatures.length).to.equal(0);
+    expect(compatibility.missingOptionalFeatures.length).to.equal(1);
+    expect(compatibility.missingOptionalFeatures[0]).to.equal("fragment depth");
     expect(compatibility.contextErrorMessage).to.be.undefined;
     overriddenFunctions.restore();
   });
@@ -120,6 +121,29 @@ describe("Render Compatibility", () => {
     const compatibility = caps.init(context!, ["WEBGL_depth_texture"]);
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
     expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.DepthTexture)).to.not.equal(-1);
+  });
+
+  it("should turn off logarithmicZBuffer if the gl frag depth extension is not available", () => {
+    const canvas = _createCanvas();
+    expect(canvas).to.not.be.undefined;
+    const context = System.createContext(canvas!);
+    expect(context).to.not.be.undefined;
+
+    const caps = new Capabilities();
+    const compatibility = caps.init(context!, ["EXT_frag_depth"]);
+    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
+    expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FragDepth)).to.not.equal(-1);
+    expect(caps.supportsFragDepth).to.be.false;
+
+    let renderSysOpts: RenderSystem.Options = { logarithmicDepthBuffer: false };
+    let testSys = System.create(renderSysOpts);
+    expect(testSys.options.logarithmicDepthBuffer).to.be.false;
+    renderSysOpts = { logarithmicDepthBuffer: true };
+    testSys = System.create(renderSysOpts);
+    expect(testSys.options.logarithmicDepthBuffer).to.equal(testSys.capabilities.supportsFragDepth);
+    renderSysOpts = { logarithmicDepthBuffer: true, disabledExtensions: ["EXT_frag_depth"] };
+    testSys = System.create(renderSysOpts);
+    expect(testSys.options.logarithmicDepthBuffer).to.be.false;
   });
 
   it("should query proper render compatibility info assuming lack of instancing support", () => {
@@ -196,6 +220,7 @@ describe("System WebGL Capabilities", () => {
     expect(cap.supportsTextureFloat).to.be.false;
     expect(cap.supportsTextureHalfFloat).to.be.false;
     expect(cap.supportsShaderTextureLOD).to.be.false;
+    expect(cap.supportsFragDepth).to.be.false;
   });
 
   // ###TODO: Disabled for now.  Need a way to make a fresh GL obj with new WebGLTestContext API.

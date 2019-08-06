@@ -135,12 +135,16 @@ export class Zone extends React.Component<ZoneProps> {
     // istanbul ignore else
     if (runtimeProps.zone.widgets.length === 1) {
       if (zoneDef.isToolSettings) {
+        const widgetDef = zoneDef.getSingleWidgetDef();
+        const isClosed = widgetDef ? (widgetDef.state === WidgetState.Closed || widgetDef.state === WidgetState.Hidden) : false;
+
         return (
           <ToolSettingsZone
             className={this.props.className}
             style={this.props.style}
             bounds={runtimeProps.zone.bounds}
-            isHidden={runtimeProps.isHidden} />
+            isHidden={runtimeProps.isHidden}
+            isClosed={isClosed} />
         );
       } else if (zoneDef.isStatusBar) {
         if (runtimeProps.zone.id !== 8)

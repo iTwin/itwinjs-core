@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#155077 Project point to ACS plane when zooming if an element isn't identify and no background map is displayed.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

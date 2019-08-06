@@ -17,9 +17,13 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { PolygonWireOffsetContext } from "./PolygonOffsetContext";
-import { CurveCollection } from "./CurveCollection";
+import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
+import { CurveCollection, BagOfCurves } from "./CurveCollection";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
+import { Geometry } from "../Geometry";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -369,8 +373,52 @@ export class RegionOps {
   public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
-
   }
+  /**
+   * Construct curves that are offset from a Path or Loop
+   * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
+   * * Offset distance is defined as positive to the left.
+   * * If offsetDistanceOrOptions is given as a number, default options are applied.
+   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
+   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * if the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are
+   *      * outside the arc
+   *      * have uniform turn angle less than `options.maxChamferDegrees`
+   *      * each line segment (except first and last) touches the arc at its midpoint.
+   *   * Otherwise the prior and successor curves are extended to simple intersection.
+   * @param curves input curves
+   * @param offsetDistanceOrOptions offset controls.
+   */
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+    const options = JointOptions.create(offsetDistanceOrOptions);
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  }
+  /** Create curve collection of subtype determined by gaps between the input curves.
+   * * If (a) wrap is requested and (b) all curves connect head-to-tail (including wraparound), assemble as a `loop`.
+   * * If all curves connect head-to-tail except for closure, return a `Path`.
+   * * If there are internal gaps, return a `BagOfCurves`
+   * * If input array has zero length, return undefined.
+   */
+  public static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap: boolean = true): CurveCollection | undefined {
+    const n = curves.length;
+    if (n === 0)
+      return undefined;
+    let maxGap = 0.0;
+    if (wrap)
+      maxGap = Geometry.maxXY(maxGap, curves[0].startPoint().distance(curves[n - 1].endPoint()));
+    for (let i = 0; i + 1 < n; i++)
+      maxGap = Geometry.maxXY(maxGap, curves[i].endPoint().distance(curves[i + 1].startPoint()));
+    let collection: Loop | Path | BagOfCurves;
+    if (Geometry.isSmallMetricDistance(maxGap)) {
+      collection = wrap ? Loop.create() : Path.create();
+    } else {
+      collection = BagOfCurves.create();
+    }
+    for (const c of curves)
+      collection.tryAddChild(c);
+    return collection;
+  }
+
   private static _graphCheckPointFunction?: GraphCheckPointFunction;
   /**
    * Announce Checkpoint function for use during booleans

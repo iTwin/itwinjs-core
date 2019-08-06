@@ -7,7 +7,7 @@
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
-  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
+  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
   QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
@@ -783,7 +783,8 @@ export abstract class RenderTarget implements IDisposable {
   public dispose(): void { }
   public reset(): void { }
   public abstract changeScene(scene: GraphicList): void;
-  public changeBackgroundMap(_scene: GraphicList): void { }
+  public abstract changeBackgroundMap(_graphics: GraphicList): void;
+  public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
@@ -973,7 +974,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
-  public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
+  public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
 
     // corners
@@ -1001,6 +1002,11 @@ export abstract class RenderSystem implements IDisposable {
 
     rasterTile.texture = tileTexture;
     rasterTile.isPlanar = true;
+
+    if (undefined !== featureIndex) {
+      rasterTile.features.featureID = featureIndex;
+      rasterTile.features.type = FeatureIndexType.Uniform;
+    }
 
     const trimesh = this.createTriMesh(rasterTile);
     if (undefined === trimesh)
@@ -1119,12 +1125,16 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public loseContext(): boolean { return false; }
+
+  /** @internal */
+  public get supportsLogZBuffer(): boolean { return true === this.options.logarithmicDepthBuffer; }
 }
 
 /** @internal */
-export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" |
-  "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" |
-  "WEBGL_lose_context";
+export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
+  "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
+  "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
+  "EXT_frag_depth";
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -1133,7 +1143,8 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
  * @public
  */
 export namespace RenderSystem {
-  /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup.
+  /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
+   *
    * @beta
    */
   export interface Options {
@@ -1154,13 +1165,21 @@ export namespace RenderSystem {
      */
     preserveShaderSourceCode?: boolean;
 
-    /** If true display solar shadows.
+    /** If true, display solar shadows when enabled by [ViewFlags.shadows]($common).
      *
      * Default value: false
      *
-     * @internal
+     * @beta
      */
     displaySolarShadows?: boolean;
+
+    /** If the view frustum is sufficiently large, and the EXT_frag_depth WebGL extension is available, use a logarithmic depth buffer to improve depth buffer resolution. Framerate may degrade to an extent while the logarithmic depth buffer is in use. If this option is disabled, or the extension is not supported, the near and far planes of very large view frustums will instead be moved to reduce the draw distance.
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    logarithmicDepthBuffer?: boolean;
   }
 }
 

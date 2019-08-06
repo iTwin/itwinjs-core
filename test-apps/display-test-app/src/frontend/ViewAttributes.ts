@@ -18,6 +18,7 @@ import {
   BackgroundMapProps,
   BackgroundMapProviderName,
   BackgroundMapType,
+  TerrainProps,
   RenderMode,
   ViewFlags,
   ColorDef,
@@ -106,11 +107,19 @@ export class ViewAttributes {
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
 
+    const logZ = this.addCheckbox("Logarithmic Depth", (enabled: boolean) => {
+      (this._vp.target as any).debugUseLogZ = enabled;
+      this.sync();
+    }, flagsDiv).checkbox;
+    this._updates.push((_view: ViewState) => {
+      logZ.checked = (this._vp.target as any).debugUseLogZ;
+    });
+
     this.addEdgeDisplay();
 
     this.addEnvironmentEditor();
 
-    this.addBackgroundMap();
+    this.addBackgroundMapOrTerrain();
     this.addAmbientOcclusion();
 
     // Set initial states
@@ -503,32 +512,33 @@ export class ViewAttributes {
     this._updates.push((view) => ao.update(view));
   }
 
-  private addBackgroundMap(): void {
+  private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
+  private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
-    const getBackgroundMap = (view: ViewState) => view.displayStyle.settings.backgroundMap;
 
     const div = document.createElement("div");
     div.appendChild(document.createElement("hr")!);
 
-    const comboBoxesDiv = document.createElement("div")!;
+    const backgroundSettingsDiv = document.createElement("div")!;
 
-    const showHideDropDowns = (show: boolean) => {
+    const showOrHideSettings = (show: boolean) => {
       const display = show ? "block" : "none";
-      comboBoxesDiv.style.display = display;
+      backgroundSettingsDiv.style.display = display;
     };
 
     const enableMap = (enabled: boolean) => {
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf.backgroundMap = enabled;
       this._vp.viewFlags = vf;
-      showHideDropDowns(enabled);
+      backgroundSettingsDiv.style.display = enabled ? "block" : "none";
+      showOrHideSettings(enabled);
       this.sync();
     };
     const checkbox = this.addCheckbox("Background Map", enableMap, div).checkbox;
 
-    const providers = createComboBox({
-      parent: comboBoxesDiv,
-      name: "Provider: ",
+    const imageryProviders = createComboBox({
+      parent: backgroundSettingsDiv,
+      name: "Imagery: ",
       id: "viewAttr_MapProvider",
       entries: [
         { name: "Bing", value: "BingProvider" },
@@ -538,7 +548,7 @@ export class ViewAttributes {
     }).select;
 
     const types = createComboBox({
-      parent: comboBoxesDiv,
+      parent: backgroundSettingsDiv,
       name: "Type: ",
       id: "viewAttr_mapType",
       entries: [
@@ -549,21 +559,20 @@ export class ViewAttributes {
       handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
     }).select;
 
-    const groundBiasDiv = document.createElement("div") as HTMLDivElement;
-    const groundBiasLabel = document.createElement("label") as HTMLLabelElement;
-    groundBiasLabel.style.display = "inline";
-    groundBiasLabel.htmlFor = "ts_viewToolPickRadiusInches";
-    groundBiasLabel.innerText = "Ground Bias: ";
-    groundBiasDiv.appendChild(groundBiasLabel);
-    const groundBias = createNumericInput({
-      parent: groundBiasDiv,
-      value: getBackgroundMap(this._vp.view).groundBias,
-      handler: (value) => this.updateBackgroundMap({ groundBias: value }),
-    }, true);
-    groundBiasDiv.style.display = "block";
-    groundBiasDiv.style.textAlign = "left";
-    comboBoxesDiv.appendChild(groundBiasDiv);
-    const terrainCheckbox = this.addCheckbox("Terrain", (enabled: boolean) => { this.updateBackgroundMap({ applyTerrain: enabled }); }, comboBoxesDiv).checkbox;
+    const terrainSettings = this.addTerrainSettings();
+    const mapSettings = this.addMapSettings();
+
+    const enableTerrain = (enable: boolean) => {
+      this.updateBackgroundMap({ applyTerrain: enable });
+      terrainSettings.style.display = enable ? "block" : "none";
+      mapSettings.style.display = enable ? "none" : "block";
+      this.sync();
+    };
+
+    const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
+    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
+    backgroundSettingsDiv.appendChild(mapSettings);
+    backgroundSettingsDiv.appendChild(terrainSettings);
 
     this._updates.push((view) => {
       const visible = isMapSupported(view);
@@ -572,22 +581,109 @@ export class ViewAttributes {
         return;
 
       checkbox.checked = view.viewFlags.backgroundMap;
-      showHideDropDowns(checkbox.checked);
+      showOrHideSettings(checkbox.checked);
 
-      const map = getBackgroundMap(view);
-      providers.value = map.providerName;
+      const map = this.getBackgroundMap(view);
+      imageryProviders.value = map.providerName;
       types.value = map.mapType.toString();
-      groundBias.value = map.groundBias.toString();
       terrainCheckbox.checked = map.applyTerrain;
+      enableTerrain(terrainCheckbox.checked);
     });
-
-    div.appendChild(comboBoxesDiv);
-
+    div.appendChild(backgroundSettingsDiv);
     this._element.appendChild(div);
+  }
+
+  private addMapSettings() {
+    const mapSettingsDiv = document.createElement("div");
+    const groundBiasDiv = document.createElement("div") as HTMLDivElement;
+    const groundBiasLabel = document.createElement("label") as HTMLLabelElement;
+    groundBiasLabel.style.display = "inline";
+    groundBiasLabel.htmlFor = "ts_viewToolPickRadiusInches";
+    groundBiasLabel.innerText = "Ground Bias: ";
+    groundBiasDiv.appendChild(groundBiasLabel);
+    const groundBias = createNumericInput({
+      parent: groundBiasDiv,
+      value: this.getBackgroundMap(this._vp.view).groundBias,
+      handler: (value) => this.updateBackgroundMap({ groundBias: value }),
+    }, true);
+    groundBiasDiv.style.display = "block";
+    groundBiasDiv.style.textAlign = "left";
+    mapSettingsDiv.appendChild(groundBiasDiv);
+
+    const depthCheckbox = this.addCheckbox("Depth", (enabled: boolean) => this.updateBackgroundMap({ useDepthBuffer: enabled }), mapSettingsDiv).checkbox;
+    const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), mapSettingsDiv).checkbox;
+    this._updates.push((view) => {
+      const map = this.getBackgroundMap(view);
+      groundBias.value = map.groundBias.toString();
+      depthCheckbox.checked = map.useDepthBuffer;
+      transCheckbox.checked = false !== map.transparency;
+    });
+    return mapSettingsDiv;
   }
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
+  }
+
+  private addTerrainSettings() {
+    const getTerrainSettings = (view: ViewState) => view.displayStyle.settings.backgroundMap.terrainSettings;
+    const updateTerrainSettings = (props: TerrainProps) => this._vp.changeBackgroundMapProps({ terrainSettings: props });
+
+    const settingsDiv = document.createElement("div")!;
+    const heightOriginMode: HTMLSelectElement = createComboBox({
+      name: "Height Origin Mode: ",
+      id: "viewAttr_TerrainHeightOrigin",
+      entries: [
+        { name: "GPS (Geodetic/Ellipsoid)", value: "0" },
+        { name: "Sea Level (Geoid)", value: "1" },
+        { name: "Ground", value: "2" },
+      ],
+      handler: (select) => { updateTerrainSettings({ heightOriginMode: parseInt(select.value, 10) }); },
+    }).select;
+
+    const heightOriginDiv = document.createElement("div") as HTMLDivElement;
+    const heightOriginLabel = document.createElement("label") as HTMLLabelElement;
+    heightOriginLabel.style.display = "inline";
+    heightOriginLabel.htmlFor = "ts_viewToolPickRadiusInches";
+    heightOriginLabel.innerText = "Model Height: ";
+    heightOriginDiv.appendChild(heightOriginLabel);
+    const heightOrigin = createNumericInput({
+      parent: heightOriginDiv,
+      value: getTerrainSettings(this._vp.view).heightOrigin,
+      handler: (value) => updateTerrainSettings({ heightOrigin: value }),
+    }, true);
+    heightOriginDiv.appendChild(heightOriginMode);
+    heightOriginDiv.style.display = "block";
+    heightOriginDiv.style.textAlign = "left";
+    settingsDiv.appendChild(heightOriginDiv);
+
+    const lightingCheckBox = this.addCheckbox("Terrain Lighting", (enabled: boolean) => updateTerrainSettings({ applyLighting: enabled }), settingsDiv).checkbox;
+
+    const exaggerationDiv = document.createElement("div") as HTMLDivElement;
+    const exaggerationLabel = document.createElement("label") as HTMLLabelElement;
+    exaggerationLabel.style.display = "inline";
+    exaggerationLabel.htmlFor = "ts_viewToolPickRadiusInches";
+    exaggerationLabel.innerText = "Exaggeration: ";
+    exaggerationDiv.appendChild(exaggerationLabel);
+    const exaggeration = createNumericInput({
+      parent: exaggerationDiv,
+      value: getTerrainSettings(this._vp.view).exaggeration,
+      handler: (value) => updateTerrainSettings({ exaggeration: value }),
+    }, true);
+    exaggerationDiv.style.display = "block";
+    exaggerationDiv.style.textAlign = "left";
+    settingsDiv.appendChild(exaggerationDiv);
+
+    this._updates.push((view) => {
+      const map = view.displayStyle.settings.backgroundMap;
+      const terrainSettings = map.terrainSettings;
+      heightOriginMode.value = terrainSettings.heightOriginMode.toString();
+      heightOrigin.value = terrainSettings.heightOrigin.toString();
+      lightingCheckBox.checked = terrainSettings.applyLighting;
+      exaggeration.value = terrainSettings.exaggeration.toString();
+    });
+
+    return settingsDiv;
   }
 
   private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent?: HTMLElement): CheckBox {

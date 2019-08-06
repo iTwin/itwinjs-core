@@ -530,7 +530,7 @@
       "request": "launch",
       "name": "Debug buildIModelJsModule",
       "program": "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/buildIModelJsModule.js",
-      "cwd": "${workspaceRoot}/test-apps/ui-test-app/",
+      "cwd": "${workspaceRoot}/plugins/wms/",
       "outFiles": [
         "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/*.js",
       ],

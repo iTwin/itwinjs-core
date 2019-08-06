@@ -1,0 +1,18 @@
+{
+  "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": "./node_modules",
+    "outDir": "./lib"
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx"
+  ],
+  "exclude": [
+    "lib",
+    "node_modules",
+    "test"
+  ]
+}

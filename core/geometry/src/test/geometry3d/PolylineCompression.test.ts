@@ -115,7 +115,7 @@ describe("GlobalCompression", () => {
       for (const fractal of [
         Sample.createFractalHatReversingPattern(depth, 0.05)]) {
 
-        const dataRange = Point3dArray.createRange(fractal);
+        const dataRange = Range3d.createFromVariantData(fractal);
         const qBase = 0.001 * dataRange.diagonal().magnitude();
         for (const factor of [1.0, 5.0, 10.0, 50.0, 100.0, 200.0]) {
           const q = factor * qBase;

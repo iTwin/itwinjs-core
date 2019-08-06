@@ -202,6 +202,28 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const matrix = Matrix3d.createColumns(vector0, vector90, normal);
     return Arc3d.createRefs(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360(), result);
   }
+  /** Return a clone of this arc, projected to given z value.
+   * * If `z` is omitted, the clone is at the z of the center.
+   * * Note that projection to fixed z can change circle into ellipse (and (rarely) ellipse to circle)
+   */
+  public cloneAtZ(z?: number): Arc3d {
+    if (z === undefined)
+      z = this._center.z;
+    return Arc3d.createXYZXYZXYZ(
+      this._center.x, this._center.y, this._center.z,
+      this._matrix.coffs[0], this._matrix.coffs[3], z,
+      this._matrix.coffs[1], this._matrix.coffs[4], z,
+      this._sweep);
+  }
+
+  /**
+   * Create an arc by center (cx,cy,xz) with vectors (ux,uy,uz) and (vx,vy,vz) to points at 0 and 90 degrees in parameter space.
+   * @param result optional preallocated result
+   */
+  public static createXYZXYZXYZ(cx: number, cy: number, cz: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
+    return Arc3d.create(Point3d.create(cx, cy, cz), Vector3d.create(ux, uy, uz), Vector3d.create(vx, vy, vz), sweep, result);
+  }
+
   /**
    * Return a quick estimate of the eccentricity of the ellipse.
    * * The estimator is the cross magnitude of the product of vectors U and V, divided by square of the larger magnitude
@@ -268,6 +290,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const radians = this._sweep.fractionToRadians(fraction);
     return this._matrix.originPlusMatrixTimesXY(this._center, Math.cos(radians), Math.sin(radians), result);
   }
+  /**
+   * Convert fractional arc and radial positions to xyz coordinates
+   * @param fraction fractional position on arc
+   * @param result optional preallocated result
+   */
+  public fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d {
+    const radians = this._sweep.fractionToRadians(arcFraction);
+    return this._matrix.originPlusMatrixTimesXY(this._center, radialFraction * Math.cos(radians), radialFraction * Math.sin(radians), result);
+  }
+
   /**
    * Convert a fractional position to xyz coordinates and derivative with respect to fraction.
    * @param fraction fractional position on arc

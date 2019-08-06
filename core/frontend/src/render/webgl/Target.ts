@@ -63,22 +63,12 @@ const enum FrustumData {
  * @internal
  */
 export class FrustumUniforms {
-  private _planeData: Float32Array;
-  private _frustumData: Float32Array;
+  private readonly _planeData: Float32Array = new Float32Array(4);
+  private readonly _frustumData: Float32Array = new Float32Array(3);
+  private readonly _logZData = new Float32Array(2);
+  private _useLogZ = false;
 
-  public constructor() {
-    const pData = [];
-    pData[Plane.kTop] = 0.0;
-    pData[Plane.kBottom] = 0.0;
-    pData[Plane.kLeft] = 0.0;
-    pData[Plane.kRight] = 0.0;
-    const fData = [];
-    fData[FrustumData.kNear] = 0.0;
-    fData[FrustumData.kFar] = 0.0;
-    fData[FrustumData.kType] = 0.0;
-    this._planeData = new Float32Array(pData);
-    this._frustumData = new Float32Array(fData);
-  }
+  public constructor() { }
 
   public get frustumPlanes(): Float32Array { return this._planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
   public get frustum(): Float32Array { return this._frustumData; } // uniform vec3 u_frustum; // { near, far, type }
@@ -87,16 +77,24 @@ export class FrustumUniforms {
   public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
   public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
 
+  // uniform vec2 u_logZ where x = 1/near and y = log(far/near)
+  public get logZ(): Float32Array | undefined { return this._useLogZ ? this._logZData : undefined; }
+
   public setPlanes(top: number, bottom: number, left: number, right: number): void {
     this._planeData[Plane.kTop] = top;
     this._planeData[Plane.kBottom] = bottom;
     this._planeData[Plane.kLeft] = left;
     this._planeData[Plane.kRight] = right;
   }
-  public setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType): void {
+  public setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType, useLogZ: boolean): void {
     this._frustumData[FrustumData.kNear] = nearPlane;
     this._frustumData[FrustumData.kFar] = farPlane;
     this._frustumData[FrustumData.kType] = type as number;
+    this._useLogZ = useLogZ && (FrustumUniformType.Perspective === type);
+    if (this._useLogZ) {
+      this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
+      this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : 1;
+    }
   }
 }
 
@@ -254,6 +252,7 @@ export abstract class Target extends RenderTarget {
   private _batchState = new BatchState(this._stack);
   private _scene: GraphicList = [];
   private _backgroundMap: GraphicList = [];
+  private _overlayGraphics: GraphicList = [];
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;
   private _dynamics?: GraphicList;
@@ -308,6 +307,7 @@ export abstract class Target extends RenderTarget {
   public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
   private _solarShadowMap?: SolarShadowMap;
   private _backgroundMapDrape?: BackgroundMapDrape;
+  public debugUseLogZ = true; // Used strictly by display-test-app to allow log-z to be toggled interactively
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -324,6 +324,7 @@ export abstract class Target extends RenderTarget {
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
+  public get wantLogZ(): boolean { return undefined !== this.frustumUniforms.logZ; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   public set currentOverrides(ovr: FeatureOverrides | undefined) {
@@ -353,7 +354,6 @@ export abstract class Target extends RenderTarget {
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
   public get branchStack(): BranchStack { return this._stack; }
   public get solarShadowMap(): SolarShadowMap | undefined { return this._solarShadowMap; }
-  public get backgroundMapDrape(): BackgroundMapDrape | undefined { return this._backgroundMapDrape; }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
@@ -554,6 +554,9 @@ export abstract class Target extends RenderTarget {
   public changeBackgroundMap(backgroundMap: GraphicList) {
     this._backgroundMap = backgroundMap;
   }
+  public changeOverlayGraphics(overlayGraphics: GraphicList) {
+    this._overlayGraphics = overlayGraphics;
+  }
   public changeTextureDrapes(textureDrapes: TextureDrapeMap) {
     if (this._textureDrapes)
       for (const textureDrape of this._textureDrapes)
@@ -639,7 +642,7 @@ export abstract class Target extends RenderTarget {
       ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
 
       this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee, false);
     } else if (newFraction > 0.999) { // ortho
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
@@ -652,7 +655,7 @@ export abstract class Target extends RenderTarget {
       this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
 
       this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic);
+      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic, false);
     } else { // perspective
       const scale = 1.0 / (1.0 - newFraction);
       const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
@@ -672,7 +675,7 @@ export abstract class Target extends RenderTarget {
       this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
 
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective);
+      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.debugUseLogZ);
     }
   }
 
@@ -900,7 +903,7 @@ export abstract class Target extends RenderTarget {
       const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
       this.pushState(state);
 
-      this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics, true);
+      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
       this.recordPerformanceMetric("Init Commands");
       this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
       this._stack.pop();
@@ -914,7 +917,7 @@ export abstract class Target extends RenderTarget {
       this.recordPerformanceMetric("Begin Draw Texture Drapes");
       this.drawTextureDrapes();
       this.recordPerformanceMetric("Begin Paint");
-      this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics);
+      this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics);
 
       this.recordPerformanceMetric("Init Commands");
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
@@ -1081,7 +1084,7 @@ export abstract class Target extends RenderTarget {
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
-    this._renderCommands.init(this._scene, this._backgroundMap, this._decorations, this._dynamics, true);
+    this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
     this.recordPerformanceMetric("Init Commands");
 

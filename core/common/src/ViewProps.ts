@@ -134,6 +134,104 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
   subCategory?: Id64String;
 }
 
+/** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
+ * @alpha
+ * @see [[TerrainProps]]
+ */
+export type TerrainProviderName = "CesiumWorldTerrain";
+
+/**  JSON represenation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
+ * @see [[DisplayStyleSettingsProps]]
+ * @see [[BackgroundMapProps]]
+ * @alpha
+ */
+export interface TerrainProps {
+  /** Indentifies the provider currently only CesiumWorldTerrain is supported. */
+  providerName?: string;
+  /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration. Default value: 1.0 */
+  exaggeration?: number;
+  /**  Applying lighting can help to visualize subtle terrain variation.  Default value: true */
+  applyLighting?: boolean;
+  /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value: 0.0 */
+  heightOrigin?: number;
+  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Ground */
+  heightOriginMode?: TerrainHeightOriginMode;
+}
+
+/** Correction modes for terrain height
+ * @alpha
+ * @see [[TerrainProps]]
+ */
+export enum TerrainHeightOriginMode {
+  Geodetic = 0,   // Height value indicates the geodetic height of the IModel origin (also refered to as ellipsoidal or GPS height)
+  Geoid = 1,      // Height value indicates the geoidal height of the IModel origin (commonly refered toas sea level).
+  Ground = 2,     // Height value indicates the height of the IModel origin relative to ground level at project center.
+}
+
+/**  Normalized version of [[TerrainProps]] for which provider has been validated and default values of all members are used.
+ * @alpha
+ */
+export class TerrainSettings {
+  /** Indentifies the provider currently only CesiumWorldTerrain supported. */
+  public readonly providerName: TerrainProviderName;
+  /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration.  Default value: 1.0 */
+  public readonly exaggeration: number;
+  /**  Applying lighting can help to visualize subtle terrain variations. Default value: true */
+  public readonly applyLighting: boolean;
+  /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value 0.0 */
+  public readonly heightOrigin: number;
+  /** Determines how/if the heightOrigin is applied to the terrain height. Default value: ground */
+  public readonly heightOriginMode: TerrainHeightOriginMode;
+
+  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = true, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Ground) {
+    this.providerName = providerName;
+    this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
+    this.applyLighting = applyLighting;
+    this.heightOrigin = heightOrigin;
+    this.heightOriginMode = heightOriginMode;
+  }
+  public static fromJSON(json?: TerrainProps) {
+    if (undefined === json)
+      return new TerrainSettings();
+
+    const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
+    return new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
+  }
+  public toJSON() {
+    return {
+      providerName: this.providerName,
+      exaggeration: this.exaggeration,
+      applyLightng: this.applyLighting,
+      heightOrigin: this.heightOrigin,
+      heightOriginMode: this.heightOriginMode,
+    };
+  }
+  public equals(other: TerrainSettings): boolean {
+    return this.providerName === other.providerName && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode;
+  }
+  /** Returns true if these settings are equivalent to the supplied JSON settings. */
+  public equalsJSON(json?: BackgroundMapProps): boolean {
+    return this.equals(TerrainSettings.fromJSON(json));
+  }
+  /** Create a copy of this TerrainSettings, optionally modifying some of its properties.
+   * @param changedProps JSON representation of the properties to change.
+   * @returns A TerrainSettings with all of its properties set to match those of`this`, except those explicitly defined in `changedProps`.
+   */
+  public clone(changedProps?: TerrainProps): TerrainSettings {
+    if (undefined === changedProps)
+      return this;
+
+    const props = {
+      providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
+      exaggeration: undefined !== changedProps.exaggeration ? changedProps.exaggeration : this.exaggeration,
+      applyLighting: undefined !== changedProps.applyLighting ? changedProps.applyLighting : this.applyLighting,
+      heightOrigin: undefined !== changedProps.heightOrigin ? changedProps.heightOrigin : this.heightOrigin,
+      heightOriginMode: undefined !== changedProps.heightOriginMode ? changedProps.heightOriginMode : this.heightOriginMode,
+    };
+    return TerrainSettings.fromJSON(props);
+  }
+}
+
 /** Describes the type of background map displayed by a [[DisplayStyle]]
  * @see [[BackgroundMapProps]]
  * @see [[DisplayStyleSettingsProps]]
@@ -162,8 +260,16 @@ export interface BackgroundMapProps {
     /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
     mapType?: BackgroundMapType;
   };
-  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
+  transparency?: number | false;
+  /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
+  useDepthBuffer?: boolean;
+  /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   applyTerrain?: boolean;
+  /** Properties associated with terrain display
+   * @alpha
+   */
+  terrainSettings?: TerrainProps;
 }
 
 /** The current set of supported background map providers.
@@ -177,16 +283,30 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 export class BackgroundMapSettings {
   /** Elevation in meters, relative to sea level. */
   public readonly groundBias: number;
-  /** Identifies the provider from which map graphics will be obtained. */
+  /** Identifies the provider from which map imagert will be obtained. */
   public readonly providerName: BackgroundMapProviderName;
   /** The type of map graphics to be drawn. */
   public readonly mapType: BackgroundMapType;
-  /** If applyTerrain then is true terrain heights will be applied to the background map. If false map is planar */
+  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
+  public readonly transparency: number | false;
+  /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
+  public readonly useDepthBuffer: boolean;
+  /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   public readonly applyTerrain: boolean;
+  /**  Settings associated with terrain display
+   * @alpha
+   */
+  public readonly terrainSettings: TerrainSettings;
+  /**  */
 
-  public constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias: number = 0, applyTerrain = false) {
+  /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
+  public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
+
+  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps) {
     this.groundBias = groundBias;
     this.providerName = providerName;
+    this.useDepthBuffer = useDepthBuffer;
+    this.transparency = false !== transparency ? Math.min(1, Math.max(0, transparency)) : false;
     this.applyTerrain = applyTerrain;
     switch (mapType) {
       case BackgroundMapType.Street:
@@ -196,6 +316,7 @@ export class BackgroundMapSettings {
       default:
         this.mapType = BackgroundMapType.Hybrid;
     }
+    this.terrainSettings = TerrainSettings.fromJSON(terrainSettings);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -205,7 +326,7 @@ export class BackgroundMapSettings {
 
     const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
     const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.applyTerrain);
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.useDepthBuffer, json.transparency, json.applyTerrain, json.terrainSettings);
   }
 
   public toJSON(): BackgroundMapProps {
@@ -214,6 +335,8 @@ export class BackgroundMapSettings {
       providerName: this.providerName,
       applyTerrain: this.applyTerrain,
       providerData: { mapType: this.mapType },
+      transparency: this.transparency,
+      terrainSettings: this.terrainSettings.toJSON(),
     };
   }
 
@@ -223,7 +346,8 @@ export class BackgroundMapSettings {
   }
 
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType && this.applyTerrain === other.applyTerrain;
+    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
+      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -237,7 +361,10 @@ export class BackgroundMapSettings {
     const props = {
       providerName: undefined !== changedProps.providerName ? changedProps.providerName : this.providerName,
       groundBias: undefined !== changedProps.groundBias ? changedProps.groundBias : this.groundBias,
+      transparency: undefined !== changedProps.transparency ? changedProps.transparency : this.transparency,
+      useDepthBuffer: undefined !== changedProps.useDepthBuffer ? changedProps.useDepthBuffer : this.useDepthBuffer,
       applyTerrain: undefined !== changedProps.applyTerrain ? changedProps.applyTerrain : this.applyTerrain,
+      terrainSettings: undefined !== changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings) : this.terrainSettings,
       providerData: {
         mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
       },

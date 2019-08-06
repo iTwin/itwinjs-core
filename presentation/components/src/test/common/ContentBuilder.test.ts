@@ -504,6 +504,41 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
+    it("creates record with multiple nested content values which have links in them", () => {
+      const nestedField = createRandomPrimitiveField();
+      const field = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+      const values = {
+        [field.name]: [{
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.name]: "some value 1",
+          },
+          displayValues: {
+            [nestedField.name]: "some display value 1 with link testLink.com",
+          },
+          mergedFieldNames: [],
+        }, {
+          primaryKeys: [createRandomECInstanceKey()],
+          values: {
+            [nestedField.name]: "some value 2",
+          },
+          displayValues: {
+            [nestedField.name]: "some display value 2 with link testLinkTwo.com",
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const item = new Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(record).to.matchSnapshot();
+    });
+
     it("creates record with merged outside nested content value", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),

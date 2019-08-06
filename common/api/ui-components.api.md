@@ -1875,7 +1875,7 @@ export interface PropertyGridProps extends CommonProps {
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
     // @beta
-    onPropertyLinkClick?: (property: PropertyRecord) => void;
+    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
     onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;

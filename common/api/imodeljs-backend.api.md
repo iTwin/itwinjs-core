@@ -2108,7 +2108,9 @@ export class IModelJsFsStats {
 // @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
+    detectElementDeletes(): void;
     dispose(): void;
     excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
@@ -2131,16 +2133,16 @@ export class IModelTransformer {
     protected formatIdForLogger(id: Id64String): string;
     protected formatModelForLogger(modelProps: ModelProps): string;
     protected formatRelationshipForLogger(relProps: RelationshipProps): string;
-    protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
+    protected getTargetScopeElementId(): Id64String;
+    protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     importAll(): void;
-    importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    importChildElements(sourceElementId: Id64String): void;
     importCodeSpec(codeSpecName: string): void;
     importCodeSpecs(): void;
-    importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
-    importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
+    importModels(modeledElementClass: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
@@ -2148,16 +2150,21 @@ export class IModelTransformer {
     initFromExternalSourceAspects(): void;
     protected insertElement(targetElementProps: ElementProps): Id64String;
     protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
+    protected insertModel(targetModelProps: ModelProps): void;
     protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
     protected onElementAspectDeleted(_targetElementAspect: ElementAspect): void;
     protected onElementAspectExcluded(_sourceElementAspect: ElementAspect): void;
     protected onElementAspectInserted(_targetElementAspect: ElementAspectProps): void;
     protected onElementAspectUpdated(_targetElementAspect: ElementAspectProps): void;
+    protected onElementDeleted(_targetElement: Element): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onElementSkipped(_sourceElement: Element): void;
     protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void;
+    protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void;
+    protected onModelUpdated(_sourceModel: Model, _targetModelProps: ModelProps): void;
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
     protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
@@ -2165,6 +2172,7 @@ export class IModelTransformer {
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected shouldDeleteElement(_targetElement: Element): boolean;
     protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
     protected shouldExcludeElement(sourceElement: Element): boolean;
     protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean;
@@ -2175,9 +2183,12 @@ export class IModelTransformer {
     protected _targetDb: IModelDb;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateElement(targetElementProps: ElementProps): void;
     protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
+    protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 

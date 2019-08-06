@@ -79,7 +79,7 @@ export class AzureBlobStorage extends CloudStorageService {
     return new Promise((resolve, reject) => {
       this._service.createContainerIfNotExists(name, (error, _result, response) => {
         if (error || !response.isSuccessful) {
-          reject(new ServerError(response.statusCode, "Unable to create tile container."));
+          reject(new ServerError(this._computeStatusCode(response), this._computeErrorMessage("Unable to create tile container.", error)));
         } else {
           // _result indicates whether container already existed...irrelevant to semantics of our API
           resolve();
@@ -119,7 +119,7 @@ export class AzureBlobStorage extends CloudStorageService {
             }
 
             if (error || !response.isSuccessful) {
-              reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+              reject(new ServerError(this._computeStatusCode(response), this._computeErrorMessage(`Unable to upload "${name}" (compressed).`, error)));
             } else {
               resolve(result.etag);
             }
@@ -134,7 +134,7 @@ export class AzureBlobStorage extends CloudStorageService {
         } else {
           this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
             if (error || !response.isSuccessful) {
-              reject(new ServerError(response.statusCode, `Unable to upload "${name}".`));
+              reject(new ServerError(this._computeStatusCode(response), this._computeErrorMessage(`Unable to upload "${name}".`, error)));
             } else {
               resolve(result.etag);
             }
@@ -144,5 +144,27 @@ export class AzureBlobStorage extends CloudStorageService {
         reject(error);
       }
     });
+  }
+
+  private _computeStatusCode(response?: as.ServiceResponse): number {
+    if (typeof (response) === "undefined") {
+      return BentleyStatus.ERROR;
+    }
+
+    return response.statusCode;
+  }
+
+  private _computeErrorMessage(prefix: string, error?: any): string {
+    let message = prefix;
+
+    if (typeof (error) !== "undefined") {
+      if (error instanceof Error) {
+        message += ` (${error.toString()})`;
+      } else {
+        message += ` (${JSON.stringify(error)})`;
+      }
+    }
+
+    return message;
   }
 }

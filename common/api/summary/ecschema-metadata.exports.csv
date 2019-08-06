@@ -75,7 +75,6 @@ internal;formatTypeToString(type: FormatType): string
 alpha;FormatUnitChange 
 alpha;FormatUnitChanges 
 beta;FractionalPrecision
-internal;generateFormatString(format: Format | OverrideFormat): string
 internal;getItemNamesFromFormatString(formatString: string): Iterable
 beta;IDiagnostic
 beta;IDiagnosticReporter

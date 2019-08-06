@@ -17,7 +17,7 @@ import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMa
 import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
-import { unquantize2d, decodeDepthRgb } from "./Decode";
+import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
@@ -58,27 +58,14 @@ const applyTextureWeight = `
   return rgba;
 `;
 
-const unpackMaterialParam = `
-vec2 unpackMaterialParam(float f) {
-  vec2 v;
-  v.y = floor(f / 256.0);
-  v.x = floor(f - v.y * 256.0);
-  return v;
-}`;
-
-const unpackAndNormalizeMaterialParam = `
-vec2 unpackAndNormalizeMaterialParam(float f) {
-  return unpackMaterialParam(f) / 255.0;
-}`;
-
 const decodeFragMaterialParams = `
 void decodeMaterialParams(vec4 params) {
-  mat_weights = unpackAndNormalizeMaterialParam(params.x);
+  mat_weights = unpackAndNormalize2Bytes(params.x);
 
-  vec2 texAndSpecR = unpackAndNormalizeMaterialParam(params.y);
+  vec2 texAndSpecR = unpackAndNormalize2Bytes(params.y);
   mat_texture_weight = texAndSpecR.x;
 
-  vec2 specGB = unpackAndNormalizeMaterialParam(params.z);
+  vec2 specGB = unpackAndNormalize2Bytes(params.z);
   mat_specular = vec4(texAndSpecR.y, specGB, params.w);
 }`;
 
@@ -134,8 +121,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
   frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
-  frag.addFunction(unpackMaterialParam);
-  frag.addFunction(unpackAndNormalizeMaterialParam);
+  addUnpackAndNormalize2Bytes(frag);
   frag.addFunction(decodeFragMaterialParams);
   frag.addInitializer("decodeMaterialParams(v_materialParams);");
 
@@ -435,9 +421,12 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
-  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
+  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  const computeFeatureIdInFrag = 0 !== flags.isShadowable && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+
+  addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
-  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified);
+  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified, computeFeatureIdInFrag);
   addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).

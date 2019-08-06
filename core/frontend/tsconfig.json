@@ -11,7 +11,8 @@
   "exclude": [
     "lib",
     "node_modules",
-    "src/webworker/"
+    "src/webworker/",
+    "src/plugin/BrowserLocalPluginLoader.ts"
   ],
   "references": [
     {

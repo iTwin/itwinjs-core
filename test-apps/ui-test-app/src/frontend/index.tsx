@@ -15,9 +15,7 @@ import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
   IModelAppOptions, SelectionTool,
 } from "@bentley/imodeljs-frontend";
-import {
-  MarkupApp,
-} from "@bentley/imodeljs-markup";
+import { MarkupApp } from "@bentley/imodeljs-markup";
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
@@ -134,7 +132,6 @@ export interface RootState {
   sampleAppState: SampleAppState;
   frameworkState?: FrameworkState;
 }
-
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
   public static store: Store<RootState>;
@@ -174,7 +171,6 @@ export class SampleAppIModelApp {
     Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
-    await MarkupApp.initialize();
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
@@ -219,6 +215,8 @@ export class SampleAppIModelApp {
 
     // store name of this registered control in Redux store so it can be access by plugins
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
+
+    await MarkupApp.initialize();
   }
 
   public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
@@ -389,9 +387,6 @@ export class SampleAppViewer extends React.Component<any> {
     super(props);
 
     AppUi.initialize();
-
-    // tslint:disable-next-line:no-console
-    console.log("Versions:", (window as any).iModelJsVersions);
 
     if (UiFramework.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises

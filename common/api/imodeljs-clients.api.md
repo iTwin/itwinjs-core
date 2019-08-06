@@ -1535,6 +1535,8 @@ export interface Response {
     header: any;
     // (undocumented)
     status: number;
+    // (undocumented)
+    text: string | undefined;
 }
 
 // @beta

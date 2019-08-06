@@ -88,7 +88,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     return [];
   }
 
-  private _onClick = (_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  private _onClick = () => {
     // istanbul ignore else
     if (this.state.currentToolId && this.state.currentToolId.length > 0) {
       const foundTool = IModelApp.tools.find(this.state.currentToolId);
@@ -121,12 +121,27 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     this.setState({ currentArgs: event.target.value });
   }
 
+  private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+    // istanbul ignore else
+    if ("Enter" === event.key) {
+      event.stopPropagation();
+      this._onClick();
+    }
+  }
+
+  private _onArgsFocus = (event: React.FocusEvent<HTMLInputElement>): void => {
+    // istanbul ignore else
+    if (event.target) {
+      event.target.select();
+    }
+  }
+
   /** @internal */
   public render(): React.ReactNode {
     return (
       <div className="uif-keyinbrowser-div">
         <LabeledSelect label={this._toolIdLabel} data-testid="uif-keyin-select" id="uif-keyin-select" value={this.state.currentToolId} onChange={this._onKeyinSelected} options={this.state.keyins} />
-        <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs} data-testid="uif-keyin-arguments" id="uif-keyin-arguments" type="text" onChange={this._onArgumentsChange} />
+        <LabeledInput label={this._argsLabel} title={this._argsTip} value={this.state.currentArgs} data-testid="uif-keyin-arguments" id="uif-keyin-arguments" type="text" onKeyDown={this._onKeyDown} onChange={this._onArgumentsChange} onFocus={this._onArgsFocus} />
         <Button data-testid="uif-keyin-browser-execute" onClick={this._onClick}>{this._executeLabel}</Button>
       </div>
     );

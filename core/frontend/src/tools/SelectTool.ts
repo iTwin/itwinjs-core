@@ -449,6 +449,9 @@ export class SelectionTool extends PrimitiveTool {
 
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined) {
+      if (hit.isModelHit)
+        return EventHandled.Yes;    // Reality models, background maps etc... not selectable.
+
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
 

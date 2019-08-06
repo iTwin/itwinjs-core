@@ -392,8 +392,8 @@ describe("PolygonOffset", () => {
 
     const offsetDistances = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5];
     //     const offsetDistances = [0.7];
-    testPolygonOffset([pointsA, points], "SpikeInside", offsetDistances, -1);
-    testPolygonOffset([pointsA, points], "SpikeOutside", offsetDistances, 1);
+    testPolygonOffset([pointsA, points], "SpikeRight", offsetDistances, -1);
+    testPolygonOffset([pointsA, points], "SpikeLeft", offsetDistances, 1);
   });
 
   it("TestGouge", () => {

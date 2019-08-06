@@ -101,10 +101,14 @@ const knownExtensions: WebGLExtensionName[] = [
   "WEBGL_draw_buffers",
   "OES_element_index_uint",
   "OES_texture_float",
+  "OES_texture_float_linear",
   "OES_texture_half_float",
+  "OES_texture_half_float_linear",
+  "EXT_texture_filter_anisotropic",
   "WEBGL_depth_texture",
   "EXT_color_buffer_float",
   "EXT_shader_texture_lod",
+  "EXT_frag_depth",
   "ANGLE_instanced_arrays",
   "OES_vertex_array_object",
   "WEBGL_lose_context",
@@ -147,17 +151,29 @@ export class Capabilities {
   public get supportsInstancing(): boolean { return this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined; }
   public get supports32BitElementIndex(): boolean { return this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
   public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
+  public get supportsTextureFloatLinear(): boolean { return this.queryExtensionObject<OES_texture_float_linear>("OES_texture_float_linear") !== undefined; }
   public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
+  public get supportsTextureHalfFloatLinear(): boolean { return this.queryExtensionObject<OES_texture_half_float_linear>("OES_texture_half_float_linear") !== undefined; }
+  public get supportsTextureFilterAnisotropic(): boolean { return this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
   public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
+  public get supportsFragDepth(): boolean { return this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
 
+  public get supportsShadowMaps(): boolean {
+    return (undefined !== this.findExtension("OES_texture_float") || undefined !== this.findExtension("OES_texture_half_float"));
+  }
+
+  private findExtension(name: WebGLExtensionName): any {
+    const ext = this._extensionMap[name];
+    return null !== ext ? ext : undefined;
+  }
+
   /** Queries an extension object if available.  This is necessary for other parts of the system to access some constants within extensions. */
   public queryExtensionObject<T>(ext: WebGLExtensionName): T | undefined {
-    const extObj: any = this._extensionMap[ext];
-    return (null !== extObj) ? extObj as T : undefined;
+    return this.findExtension(ext) as T;
   }
 
   public static readonly optionalFeatures: WebGLFeature[] = [
@@ -166,6 +182,8 @@ export class Capabilities {
     WebGLFeature.DepthTexture,
     WebGLFeature.FloatRendering,
     WebGLFeature.Instancing,
+    WebGLFeature.ShadowMaps,
+    WebGLFeature.FragDepth,
   ];
   public static readonly requiredFeatures: WebGLFeature[] = [
     WebGLFeature.UintElementIndex,
@@ -198,8 +216,12 @@ export class Capabilities {
       features.push(WebGLFeature.MrtTransparency);
     if (this.supportsMRTPickShaders)
       features.push(WebGLFeature.MrtPick);
+    if (this.supportsShadowMaps)
+      features.push(WebGLFeature.ShadowMaps);
     if (this._hasRequiredTextureUnits)
       features.push(WebGLFeature.MinimalTextureUnits);
+    if (this.supportsFragDepth)
+      features.push(WebGLFeature.FragDepth);
 
     if (DepthType.TextureUnsignedInt24Stencil8 === this._maxDepthType)
       features.push(WebGLFeature.DepthTexture);
@@ -334,6 +356,7 @@ export class Capabilities {
     Debug.print(() => "            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
     Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
     Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
+    Debug.print(() => "               fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
@@ -617,6 +640,11 @@ export class System extends RenderSystem {
 
     // set actual gl state to match desired state defaults
     context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
+
+    if (!capabilities.supportsShadowMaps)
+      options.displaySolarShadows = false;
+    if (!capabilities.supportsFragDepth)
+      options.logarithmicDepthBuffer = false;
 
     return new System(canvas, context, capabilities, options);
   }

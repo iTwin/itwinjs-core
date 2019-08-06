@@ -135,7 +135,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         topCenter={
           <Zone
             widgets={[
-              <Widget isToolSettings={true} />,
+              <Widget isToolSettings={true} defaultState={WidgetState.Open} />,
             ]}
           />
         }

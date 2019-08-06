@@ -30,7 +30,7 @@ export class Ray2d {
   public static createOriginAndDirection(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin.clone(), direction.clone());
   }
-  /** Captuer `origin` and `direction` as ray member variables. */
+  /** Capture `origin` and `direction` as ray member variables. */
   public static createOriginAndDirectionCapture(origin: Point2d, direction: Vector2d): Ray2d {
     return new Ray2d(origin, direction);
   }
@@ -69,16 +69,16 @@ export class Ray2d {
   /**
    * Intersect this ray (ASSUMED NORMALIZED) with unbounded line defined by points.
    *  (The normalization assumption affects test for parallel vectors.)
-   *  Fraction and dhds passed as number[] to use by reference... Sticking to return of true and false in the case fraction is zero after
+   *  Fraction and dHds passed as number[] to use by reference... Sticking to return of true and false in the case fraction is zero after
    *  a true safe divide
    */
-  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dhds: number[]): boolean {
+  public intersectUnboundedLine(linePointA: Point2d, linePointB: Point2d, fraction: number[], dHds: number[]): boolean {
     const lineDirection = linePointA.vectorTo(linePointB);
     const vector0 = linePointA.vectorTo(this._origin);
     const h0 = vector0.crossProduct(lineDirection);
-    dhds[0] = this._direction.crossProduct(lineDirection);
+    dHds[0] = this._direction.crossProduct(lineDirection);
     // h = h0 + s * dh
-    const ff = Geometry.conditionalDivideFraction(-h0, dhds[0]);
+    const ff = Geometry.conditionalDivideFraction(-h0, dHds[0]);
     if (ff !== undefined) {
       fraction[0] = ff;
       return true;
@@ -230,7 +230,7 @@ export class ConvexPolygon2d {
 
   /**
    * Return 2 distances bounding the intersection of the ray with a convex hull.
-   * ASSUME (for tolerancing) the ray has normalized direction vector.
+   * ASSUME (for tolerance) the ray has normalized direction vector.
    * Both negative and positive distances along the ray are possible.
    * Returns range with extremities if less than 3 points, distanceA > distanceB, or if cross product < 0
    */
@@ -246,9 +246,9 @@ export class ConvexPolygon2d {
     let xy0 = this._hullPoints[n - 1];
     for (const xy1 of this._hullPoints) {
       const distance: number[] = [];
-      const dhds: number[] = [];
-      if (ray.intersectUnboundedLine(xy0, xy1, distance, dhds)) {
-        if (dhds[0] > 0.0) {
+      const dHds: number[] = [];
+      if (ray.intersectUnboundedLine(xy0, xy1, distance, dHds)) {
+        if (dHds[0] > 0.0) {
           if (distance[0] < distanceB)
             distanceB = distance[0];
         } else {
@@ -273,7 +273,7 @@ export class ConvexPolygon2d {
     return range;
   }
 
-  /** Return the range of (fractional) ray postions for projections of all points from the arrays. */
+  /** Return the range of (fractional) ray positions for projections of all points from the arrays. */
   public rangeAlongRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
     for (const xy1 of this._hullPoints)
@@ -281,7 +281,7 @@ export class ConvexPolygon2d {
     return range;
   }
 
-  /** Return the range of (fractional) ray postions for projections of all points from the arrays. */
+  /** Return the range of (fractional) ray positions for projections of all points from the arrays. */
   public rangePerpendicularToRay(ray: Ray2d): Range1d {
     const range = Range1d.createNull();
     for (const xy1 of this._hullPoints)

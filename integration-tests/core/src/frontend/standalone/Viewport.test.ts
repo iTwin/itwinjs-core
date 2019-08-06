@@ -177,20 +177,80 @@ describe("Viewport", () => {
     };
 
     // Set up baseline values for all properties
-    test({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 },
-      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
+    test({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    // Set values to the current values
+    test({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    // Undefined values => preserve current name, type, & bias
+    test({ providerName: undefined, providerData: { mapType: undefined }, groundBias: undefined, transparency: undefined, useDepthBuffer: undefined, applyTerrain: undefined },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    // Missing values => preserve current name, type, & bias
+    test({},
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    // Invalid provider => use default instead
+    test({ providerName: "NonExistentProvider" }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    // Change provider only
+    test({ providerName: "MapBoxProvider" }, { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // Invalid provider => use default instead
-    test({ providerName: "NonExistentProvider" }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
+    test({ providerName: "" }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // providerData missing mapType => preserve current mapType
-    test({ providerData: {} }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5 });
-
-    // Change mapType only
-    test({ providerData: { mapType: BackgroundMapType.Aerial } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial }, groundBias: 1234.5 });
+    test({ providerData: {} }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // invalid mapType => use default
-    test({ providerData: { mapType: 9876 } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: 1234.5 });
+    test({ providerData: { mapType: -1 } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change mapType only
+    test({ providerData: { mapType: BackgroundMapType.Aerial } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // invalid mapType => use default
+    test({ providerData: { mapType: 9876 } }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change groundBias only to int
+    test({ groundBias: 543 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: 543, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change groundBias to negative
+    test({ groundBias: -50.3 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -50.3, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change provider & type
+    test({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial }, groundBias: -50.3, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change type & bias
+    test({ providerData: { mapType: BackgroundMapType.Street }, groundBias: 0.03 },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 0.03, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change provider & bias
+    test({ providerName: "BingProvider", groundBias: 0 },
+      { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: 0, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Test invalid provider & type => name & type revert to default
+    test({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: -10 },
+      { providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street }, groundBias: -10, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ providerName: "NonExistentProvider", providerData: { mapType: 4 } },
+      { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+
+    // Change transparency to a number
+    test({ transparency: 0.0 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 0.0, useDepthBuffer: true, applyTerrain: true });
+    test({ transparency: 1.0 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 1.0, useDepthBuffer: true, applyTerrain: true });
+    test({ transparency: 0.7 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 0.7, useDepthBuffer: true, applyTerrain: true });
+    test({ transparency: -2.0 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 0.0, useDepthBuffer: true, applyTerrain: true });
+    test({ transparency: 2.0 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 1.0, useDepthBuffer: true, applyTerrain: true });
+
+    // Change transparency to false
+    test({ transparency: false }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: false, useDepthBuffer: true, applyTerrain: true });
+
+    // Change applyTerrain to false
+    test({ applyTerrain: false }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: false, useDepthBuffer: true, applyTerrain: false });
+
+    // Change useDepthBuffer to false
+    test({ useDepthBuffer: false }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: false, useDepthBuffer: false, applyTerrain: false });
+
+    // Test that transparency cannot be enabled unless the depth buffer is also enabled
+    // test({ useDepthBuffer: false, transparency: 0.5 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: false, useDepthBuffer: false, applyTerrain: false });
+    // test({ useDepthBuffer: true, transparency: 0.5 }, { providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }, groundBias: -10, transparency: 0.5, useDepthBuffer: true, applyTerrain: false });
 
     // etc...test valid and invalid combinations. try to make the tests fail.
   });

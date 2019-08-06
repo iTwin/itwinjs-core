@@ -278,6 +278,7 @@
         "XYZUVW",
         "XYZW",
         "XYZXYZ",
+        "xyzxyzxyz",
         "zbuffer"
     ],
     // flagWords - list of words to be always considered incorrect

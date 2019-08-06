@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added test for ContentBuilder to verify that links property is set for nested PropertyRecord.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Laurynas.Vaisys@bentley.com"
+}

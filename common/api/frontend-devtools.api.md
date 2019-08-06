@@ -210,6 +210,17 @@ export class FrustumDecorator implements Decorator {
     }
 
 // @alpha (undocumented)
+export class KeyinHandler {
+    constructor(parent: HTMLElement, _vp: Viewport);
+    // (undocumented)
+    readonly autoCompleteList: DataList;
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    readonly keyins: string[];
+}
+
+// @alpha (undocumented)
 export interface LabeledNumericInput {
     // (undocumented)
     div: HTMLDivElement;
@@ -443,7 +454,12 @@ export interface TextBox {
 export type TextBoxHandler = (textbox: HTMLInputElement) => void;
 
 // @alpha (undocumented)
+export type TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void;
+
+// @alpha (undocumented)
 export interface TextBoxProps {
+    // (undocumented)
+    focushandler?: TextBoxHandler;
     // (undocumented)
     handler?: TextBoxHandler;
     // (undocumented)
@@ -451,7 +467,11 @@ export interface TextBoxProps {
     // (undocumented)
     inline?: boolean;
     // (undocumented)
+    keypresshandler?: TextBoxKeyPressHandler;
+    // (undocumented)
     label?: string;
+    // (undocumented)
+    list?: string;
     // (undocumented)
     parent?: HTMLElement;
     // (undocumented)

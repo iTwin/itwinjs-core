@@ -1,0 +1,311 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup Tool Definitions 1`] = `
+<ToolWidgetWithDef
+  horizontalToolbar={
+    <Toolbar
+      expandsTo={3}
+      items={
+        <UNDEFINED>
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-cursor",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Select",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Line",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Rectangle",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Polygon",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Cloud",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Ellipse",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Arrow",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Distance",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Sketch",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Text.Place",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_label": [Function],
+                "_tooltip": [Function],
+                "betaBadge": false,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-placeholder",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Markup.Symbol",
+              }
+            }
+          />
+        </UNDEFINED>
+      }
+      panelAlignment={0}
+    />
+  }
+  toolWidgetDef={
+    ToolWidgetDef {
+      "_appButton": undefined,
+      "_handleSyncUiEvent": [Function],
+      "_label": "",
+      "_toolbarBaseName": "[TestFrontstage]ToolWidget",
+      "_tooltip": "",
+      "classId": undefined,
+      "fillZone": false,
+      "horizontalDirection": 3,
+      "horizontalItems": undefined,
+      "horizontalPanelAlignment": 0,
+      "id": "toolWidget",
+      "isFloating": false,
+      "isFloatingStateSupported": false,
+      "isFloatingStateWindowResizable": true,
+      "isFreeform": false,
+      "isStatusBar": false,
+      "isToolSettings": false,
+      "priority": 0,
+      "renderHorizontalToolbar": [Function],
+      "renderVerticalToolbar": [Function],
+      "state": 4,
+      "stateChanged": false,
+      "syncEventIds": Array [],
+      "verticalDirection": 2,
+      "verticalItems": undefined,
+      "verticalPanelAlignment": 0,
+      "widgetType": 0,
+    }
+  }
+/>
+`;

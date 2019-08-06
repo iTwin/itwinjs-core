@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

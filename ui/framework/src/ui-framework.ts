@@ -8,6 +8,7 @@ export * from "./ui-framework/SessionState";
 export * from "./ui-framework/FrameworkState";
 export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
+export * from "./ui-framework/MarkupToolDefinitions";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";

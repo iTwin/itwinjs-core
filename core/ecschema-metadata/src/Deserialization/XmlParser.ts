@@ -357,10 +357,11 @@ export class XmlParser extends AbstractParser<Element> {
     const _presentationUnits = this.getOptionalAttribute(xmlElement, "presentationUnits");
     let presentationUnits: string[] | undefined;
     if (_presentationUnits)
-      presentationUnits = _presentationUnits.split(";");
+      presentationUnits = this.getQualifiedPresentationUnits(_presentationUnits.split(";"));
 
-    const persistenceUnit = this.getRequiredAttribute(xmlElement, "persistenceUnit",
+    let persistenceUnit = this.getRequiredAttribute(xmlElement, "persistenceUnit",
       `The KindOfQuantity ${this._currentItemFullName} is missing the required 'persistenceUnit' attribute.`);
+    persistenceUnit = this.getQualifiedTypeName(persistenceUnit);
 
     return {
       ...itemProps,
@@ -515,11 +516,12 @@ export class XmlParser extends AbstractParser<Element> {
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has an invalid 'Composite' element. It should have 1-4 Unit elements.`);
 
       for (const unit of unitsResult) {
-        const name = unit.textContent;
+        let name = unit.textContent;
         if (null === name || 0 === name.length)
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has a Composite with an invalid Unit. One of the Units is missing the required 'name' attribute.`);
 
         const label = this.getOptionalAttribute(unit, "label");
+        name = this.getQualifiedTypeName(name);
         units.push({ name, label });
       }
 
@@ -1215,5 +1217,33 @@ export class XmlParser extends AbstractParser<Element> {
       return this._schemaReferenceNames.get(nameParts[0].toLowerCase()) + "." + nameParts[1];
 
     throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
+  }
+
+  /** The rest of the API uses the full name format of `{SchemaName}.{SchemaItemName}`,
+   * meaning all of the references in the format string need to be changed.
+   */
+  private getQualifiedPresentationUnits(presentationUnits: string[]): string[] {
+    const res: string[] = [];
+    for (const presentationUnit of presentationUnits) {
+      // we split the presentation unit by square parantheses [ ], f:DefaultReal(6)[u:FT|feet] will be splitted into f:DefaultReal(6) and u:FT|feet
+      // we format the first one and the next one will be put into [ ] again
+      const presentationUnitFormats = presentationUnit.split(/[\[\]]/g);
+      let qualifiedPresentation: string = "";
+      qualifiedPresentation = this.getQualifiedTypeName(presentationUnitFormats[0]);
+      if (presentationUnitFormats.length > 1) {
+        for (let i = 1; i < presentationUnitFormats.length; ++i) {
+          if (presentationUnitFormats[i].length === 0)
+            continue;
+          const verticalSlashIdx = presentationUnitFormats[i].indexOf("|");
+          const overrideFormat = this.getQualifiedTypeName(presentationUnitFormats[i].slice(0, verticalSlashIdx));
+          const formatLabel = presentationUnitFormats[i].slice(verticalSlashIdx);
+          qualifiedPresentation += "[" + overrideFormat + formatLabel + "]";
+        }
+      }
+
+      res.push(qualifiedPresentation);
+    }
+
+    return res;
   }
 }

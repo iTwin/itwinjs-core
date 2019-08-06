@@ -9,22 +9,9 @@ import * as React from "react";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
-  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool, ViewUndoTool, ViewRedoTool, Tool,
+  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool, ViewUndoTool, ViewRedoTool,
   ViewClipDecorationProvider,
 } from "@bentley/imodeljs-frontend";
-import {
-  SelectTool as Markup_SelectTool,
-  LineTool as Markup_LineTool,
-  RectangleTool as Markup_RectangleTool,
-  PolygonTool as Markup_PolygonTool,
-  CloudTool as Markup_CloudTool,
-  EllipseTool as Markup_EllipseTool,
-  ArrowTool as Markup_ArrowTool,
-  DistanceTool as Markup_DistanceTool,
-  SketchTool as Markup_SketchTool,
-  SymbolTool as Markup_SymbolTool,
-  PlaceTextTool as Markup_PlaceTextTool,
-} from "@bentley/imodeljs-markup";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
@@ -209,60 +196,5 @@ export class CoreTools {
         return returnState;
       },
     });
-  }
-
-  public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef {
-    return new ToolItemDef({
-      toolId: tool.toolId,
-      iconSpec: iconSpec ? iconSpec : tool.iconSpec ? tool.iconSpec : "icon-placeholder",
-      label: () => tool.flyover,
-      tooltip: () => tool.description,
-      execute: () => { IModelApp.tools.run(tool.toolId, args); },
-    });
-  }
-
-  /* Markup tools - Application must call 'MarkupApp.initialize()' before using the following definitions */
-  public static get markupSelectToolDef() {
-    return CoreTools.getItemDefForTool(Markup_SelectTool, "icon-cursor");
-  }
-
-  public static get markupLineToolDef() {
-    return CoreTools.getItemDefForTool(Markup_LineTool);
-  }
-
-  public static get markupRectangleToolDef() {
-    return CoreTools.getItemDefForTool(Markup_RectangleTool);
-  }
-
-  public static get markupPolygonToolDef() {
-    return CoreTools.getItemDefForTool(Markup_PolygonTool);
-  }
-
-  public static get markupCloudToolDef() {
-    return CoreTools.getItemDefForTool(Markup_CloudTool);
-  }
-
-  public static get markupEllipseToolDef() {
-    return CoreTools.getItemDefForTool(Markup_EllipseTool);
-  }
-
-  public static get markupArrowToolDef() {
-    return CoreTools.getItemDefForTool(Markup_ArrowTool);
-  }
-
-  public static get markupDistanceToolDef() {
-    return CoreTools.getItemDefForTool(Markup_DistanceTool);
-  }
-
-  public static get markupSketchToolDef() {
-    return CoreTools.getItemDefForTool(Markup_SketchTool);
-  }
-
-  public static get markupPlaceTextToolDef() {
-    return CoreTools.getItemDefForTool(Markup_PlaceTextTool);
-  }
-
-  public static get markupSymbolToolDef() {
-    return CoreTools.getItemDefForTool(Markup_SymbolTool);
   }
 }

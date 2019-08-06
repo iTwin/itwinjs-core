@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { addModelViewMatrix } from "./Vertex";
 import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
@@ -106,6 +107,7 @@ const computeEyeSpace = "v_eyeSpace = (MAT_MV * rawPosition).rgb;";
 
 /** @internal */
 export function addEyeSpace(builder: ProgramBuilder) {
+  addModelViewMatrix(builder.vert);
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, computeEyeSpace);
 }
 

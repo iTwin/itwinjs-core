@@ -22,6 +22,7 @@ import {
   Range3d,
   Transform,
   Vector3d,
+  Map4d,
 } from "@bentley/geometry-core";
 import {
   BoundingSphere,
@@ -488,7 +489,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         return Tile.SelectParent.No;
 
       // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
-      if (this.root.loader.parentsAndChildrenExclusive)
+      if (args.parentsAndChildrenExclusive)
         selected.length = initialSize;
     }
 
@@ -721,10 +722,7 @@ export namespace Tile {
     public planarClassifier?: RenderPlanarClassifier;
     public drape?: RenderTextureDrape;
     public readonly viewClip?: ClipVector;
-
-    public getPixelSizeAtPoint(inPoint?: Point3d): number {
-      return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
-    }
+    public parentsAndChildrenExclusive: boolean;
 
     private static _scratchTileToView = Matrix4d.createIdentity();
     private static _scratchTileToWorld = Matrix4d.createIdentity();
@@ -733,7 +731,7 @@ export namespace Tile {
       if (tile.root.isBackgroundMap) {
         /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
         const rangeCorners = tile.contentRange.corners();
-        const worldToView = this.viewFrustum ? this.viewFrustum.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
+        const worldToView = this.worldToViewMap;
         Matrix4d.createTransform(this.location, DrawArgs._scratchTileToWorld);
         DrawArgs._scratchTileToWorld.multiplyMatrixMatrix(worldToView.transform0, DrawArgs._scratchTileToView);
         const xRange = Range1d.createNull(), yRange = Range1d.createNull();
@@ -753,15 +751,20 @@ export namespace Tile {
       const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
       const center = this.getTileCenter(tile);
 
-      const pixelSizeAtPt = this.getPixelSizeAtPoint(center);
+      const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
+      const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
+      const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
       return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
     }
 
     public get frustumPlanes(): FrustumPlanes {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
+    public get worldToViewMap(): Map4d {
+      return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
+    }
 
-    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
+    public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume, parentsAndChildrenExclusive = true) {
       this.location = location;
       this.root = root;
       this.clipVolume = clip;
@@ -779,6 +782,8 @@ export namespace Tile {
       // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
       if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
         this.viewClip = context.viewport.view.getViewClip();
+
+      this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
     }
 
     public get tileSizeModifier(): number { return 1.0; } // ###TODO? may adjust for performance, or device pixel density, etc

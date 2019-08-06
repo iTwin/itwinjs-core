@@ -16,7 +16,7 @@ import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./ScratchDrawParams";
@@ -29,20 +29,21 @@ import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 
 class PlanarClassifierDrawArgs extends Tile.DrawArgs {
-  constructor(private _classifierPlanes: FrustumPlanes, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
+  constructor(private _classifierPlanes: FrustumPlanes, private _worldToViewMap: Map4d, private _classifier: PlanarClassifier, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
     super(context, location, root, now, purgeOlderThan, clip);
   }
   public get frustumPlanes(): FrustumPlanes { return this._classifierPlanes; }
+  public get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public drawGraphics(): void {
     if (!this.graphics.isEmpty) {
       this._classifier.addGraphic(this.context.createBranch(this.graphics, this.location));
     }
   }
 
-  public static create(context: SceneContext, classifier: PlanarClassifier, tileTree: TileTree, planes: FrustumPlanes) {
+  public static create(context: SceneContext, classifier: PlanarClassifier, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d) {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new PlanarClassifierDrawArgs(planes, classifier, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
+    return new PlanarClassifierDrawArgs(planes, worldToViewMap, classifier, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
   }
 }
 
@@ -133,14 +134,23 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === viewState)
       return;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState);
-    if (!projection.textureFrustum || !projection.projectionMatrix)
+    const requiredHeight = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);
+    const requiredWidth = requiredHeight;
+
+    if (requiredWidth !== this._width || requiredHeight !== this._height)
+      this.dispose();
+
+    this._width = requiredWidth;
+    this._height = requiredHeight;
+
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState, this._width, this._height);
+    if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
 
-    const drawArgs = PlanarClassifierDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum));
+    const drawArgs = PlanarClassifierDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
     tileTree.draw(drawArgs);
   }
 
@@ -153,14 +163,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._graphics === undefined)
       return;
 
-    const requiredHeight = 2 * Math.max(target.viewRect.width, target.viewRect.height);
-    const requiredWidth = requiredHeight;
-
-    if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this.dispose();
-
-    this._width = requiredWidth;
-    this._height = requiredHeight;
     const useMRT = System.instance.capabilities.supportsDrawBuffers;
 
     if (undefined === this._fbo) {

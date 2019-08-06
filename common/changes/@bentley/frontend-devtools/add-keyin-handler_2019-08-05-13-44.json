@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add a frontend keyin UI and handler.",
+      "packageName": "@bentley/frontend-devtools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Mark.Schlosser@bentley.com"
+}

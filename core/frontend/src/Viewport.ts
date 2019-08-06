@@ -394,77 +394,45 @@ export interface Animator {
 }
 
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
- * @see [[Viewport.animateFrustumChange]]
+ * @internal
  */
 class FrustumAnimator implements Animator {
   private readonly _currFrustum = new Frustum();
   private _startTime?: BeTimePoint;
   private _interpolator?: SmoothTransformBetweenFrusta;
 
-  private moveToTime(time: number) {
+  private moveToFraction(fraction: number): boolean {
     const vp = this.viewport;
-    const fraction = time / this.totalTime.milliseconds;
     // if we're done, set the final state directly
     if (fraction >= 1.0 || undefined === this._interpolator) {
-      if (undefined !== this.undoState) {
-        vp.view.setFromUndo(this.undoState); // from undo, set up final state from ViewStateUndo so we don't need to worry about aspect ratio adjustments, etc.
+      if (undefined !== this.undoState) { // from undo, set final state directly to avoid inconsistencies due to frustum adjustments (e.g. aspect ratio)
+        vp.view.setFromUndo(this.undoState);
         vp.setupFromView(); // don't use frustum
-        return;
+      } else {
+        vp.setupViewFromFrustum(this.endFrustum);
       }
-      this._currFrustum.setFrom(this.endFrustum); // make sure we use the end frustum verbatim.
-    } else {
-      this._interpolator.fractionToWorldCorners(fraction, this._currFrustum.points);
-    }
-
-    vp.setupViewFromFrustum(this._currFrustum);
-  }
-
-  /** Construct a new Animator.
-   * @param totalTime The duration of the animation.
-   * @param viewport The Viewport to animate.
-   * @param startFrustum The Viewport's starting Frustum at the beginning of the animation.
-   * @param endFrustum The Viewport's ending Frustum after the animation.
-   */
-  public constructor(public totalTime: BeDuration, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
-    this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
-  }
-
-  /**
-   * Move to the appropriate frame, based on the current time, for the current animation.
-   * @return true when finished to terminate the animation.
-   */
-  public animate(): boolean {
-    if (!this._interpolator) {
-      this.moveToTime(1.0);
       return true;
     }
+    this._interpolator.fractionToWorldCorners(Math.max(fraction, 0), this._currFrustum.points);
+    vp.setupViewFromFrustum(this._currFrustum);
+    return false;
+  }
 
+  public constructor(public totalTime: BeDuration, public viewport: ScreenViewport, public startFrustum: Frustum, public endFrustum: Frustum, public undoState?: ViewStateUndo) {
+    if (totalTime.isTowardsFuture)
+      this._interpolator = SmoothTransformBetweenFrusta.create(startFrustum.points, endFrustum.points);
+  }
+
+  public animate() {
     const currTime = BeTimePoint.now();
-    if (!this._startTime)
+    if (undefined === this._startTime)
       this._startTime = currTime;
 
-    const totalTimeMillis = this.totalTime.milliseconds;
-    const endTime = this._startTime.milliseconds + totalTimeMillis;
-
-    if (endTime <= currTime.milliseconds) {
-      this.moveToTime(totalTimeMillis);
-      return true;
-    }
-
-    let done = false;
-    let index = currTime.milliseconds - this._startTime.milliseconds;
-    if (index > totalTimeMillis) {
-      done = true;
-      index = totalTimeMillis;
-    }
-
-    this.moveToTime(index);
-    return done;
+    return this.moveToFraction((currTime.milliseconds - this._startTime.milliseconds) / this.totalTime.milliseconds);
   }
 
-  /** Abort this animation, moving immediately to the final frame. */
-  public interrupt(): void {
-    this.moveToTime(this.totalTime.milliseconds); // We've been interrupted after animation began. Skip to the final animation state
+  public interrupt() {
+    this.moveToFraction(1.0); // Skip to final frustum
   }
 }
 
@@ -512,8 +480,10 @@ export class ViewFrustum {
   private readonly _aspectRatioLocked: boolean;
   /** @internal */
   public frustFraction: number = 1.0;
-  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer */
-  public static nearScale24 = 0.0003;
+  /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
+  public static nearScaleNonLog24 = 0.0003;
+  /** Maximum fration of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  public static nearScaleLog24 = 1.0E-8;
 
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
@@ -546,7 +516,7 @@ export class ViewFrustum {
   private readonly _clientWidth: number;
   private readonly _clientHeight: number;
 
-  private readonly _displayedPlane: Plane3dByOriginAndUnitNormal | undefined;
+  private readonly _displayedPlanes: Plane3dByOriginAndUnitNormal[] = [];
 
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
@@ -630,7 +600,7 @@ export class ViewFrustum {
 
     let extents = view.getViewedExtents();
 
-    this.extendRangeForDisplayedPlane(extents);
+    this.extendRangeForDisplayedPlanes(extents);
 
     if (extents.isNull)
       return;
@@ -668,46 +638,45 @@ export class ViewFrustum {
       delta.z = eyeOrg.z;
   }
 
-  private extendRangeForDisplayedPlane(extents: Range3d) {
+  private extendRangeForDisplayedPlanes(extents: Range3d) {
     const view = this.view;
     if (!view.is3d()) // only necessary for 3d views
       return;
 
-    if (this._displayedPlane === undefined)
-      return;
+    for (const displayedPlane of this._displayedPlanes) {
+      const planeNormal = displayedPlane.getNormalRef();
+      const viewZ = this.rotation.getRow(2);
+      const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
+      if (onPlane.magnitude() > 1.0E-8) {
+        const intersect = new Point3d();
+        const frustum = new Frustum();
+        let includeHorizon = false;
+        const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
+        const minimumEyeDistance = 10.0;
+        const horizonDistance = 10000;
+        worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
 
-    const planeNormal = this._displayedPlane.getNormalRef();
-    const viewZ = this.rotation.getRow(2);
-    const onPlane = viewZ.crossProduct(planeNormal);   // vector on display plane.
-    if (onPlane.magnitude() > 1.0E-8) {
-      const intersect = new Point3d();
-      const frustum = new Frustum();
-      let includeHorizon = false;
-      const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
-      const minimumEyeDistance = 10.0;
-      const horizonDistance = 10000;
-      worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+        for (let i = 0; i < 4; i++) {
+          const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
+          const intersectDistance = frustumRay.intersectionWithPlane(displayedPlane, intersect);
+          if (intersectDistance !== undefined && (!view.isCameraOn || intersectDistance > 0.0))
+            extents.extend(intersect);
+          else includeHorizon = true;
+        }
+        if (includeHorizon) {
+          const rangeCenter = extents.fractionToPoint(.5, .5, .5);
+          const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
+          extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
+        }
+        if (view.isCameraOn) {
+          extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
+        }
 
-      for (let i = 0; i < 4; i++) {
-        const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
-        const intersectDistance = frustumRay.intersectionWithPlane(this._displayedPlane, intersect);
-        if (intersectDistance !== undefined && (!view.isCameraOn || intersectDistance > 0.0))
-          extents.extend(intersect);
-        else includeHorizon = true;
+      } else {
+        // display plane parallel to view....
+        extents.extend(displayedPlane.getOriginRef().plusScaled(planeNormal, -1.0));
+        extents.extend(displayedPlane.getOriginRef().plusScaled(planeNormal, 1.0));
       }
-      if (includeHorizon) {
-        const rangeCenter = extents.fractionToPoint(.5, .5, .5);
-        const normal = onPlane.unitCrossProduct(planeNormal) as Vector3d; // on plane and parallel to view Z.
-        extents.extend(rangeCenter.plusScaled(normal, horizonDistance));
-      }
-      if (view.isCameraOn) {
-        extents.extend(view.getEyePoint().plusScaled(viewZ, -minimumEyeDistance));
-      }
-
-    } else {
-      // display plane parallel to view....
-      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, -1.0));
-      extents.extend(this._displayedPlane.getOriginRef().plusScaled(planeNormal, 1.0));
     }
   }
   private calcNpcToView(): Map4d {
@@ -730,11 +699,11 @@ export class ViewFrustum {
     return corners;
   }
 
-  private constructor(view: ViewState, clientWidth: number, clientHeight: number, aspectRatioLocked: boolean, displayedPlane?: Plane3dByOriginAndUnitNormal) {
+  private constructor(view: ViewState, clientWidth: number, clientHeight: number, aspectRatioLocked: boolean, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
     this._view = view;
     this._clientWidth = clientWidth;
     this._clientHeight = clientHeight;
-    this._displayedPlane = displayedPlane;
+    this._displayedPlanes = displayedPlanes;
     this._aspectRatioLocked = aspectRatioLocked;
 
     const origin = this.view.getOrigin().clone();
@@ -810,7 +779,7 @@ export class ViewFrustum {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, undefined === displayedPlane /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
+    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, 0 === displayedPlanes.length /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
     if (newRootToNpc.map === undefined) { // invalid frustum
       this.invalidFrustum = true;
       return;
@@ -822,13 +791,15 @@ export class ViewFrustum {
   }
 
   /** @internal */
-  public static createFromViewport(vp: Viewport, view?: ViewState): ViewFrustum | undefined {
-    return new ViewFrustum(view !== undefined ? view : vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked);
+  public static createFromViewport(vp: Viewport): ViewFrustum | undefined {
+    return new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, vp.getDisplayedPlanes());
   }
 
   /** @internal */
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewFrustum | undefined {
-    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, plane);
+    const planes = vp.getDisplayedPlanes();
+    planes.push(plane);
+    const vf = new ViewFrustum(vp.view, vp.viewRect.width, vp.viewRect.height, vp.isAspectRatioLocked, planes);
     return vf.invalidFrustum ? undefined : vf;
   }
 
@@ -1236,6 +1207,7 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
+  private _view: ViewState;
   private readonly _viewportId: number;
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
@@ -1269,10 +1241,6 @@ export abstract class Viewport implements IDisposable {
    * @internal
    */
   public lastFlashedElem?: string;
-  /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer.
-   * @internal
-   */
-  public static nearScale24 = 0.0003;
 
   /** The number of tiles selected for display in the view as of the most recently-drawn frame.
    * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
@@ -1696,7 +1664,7 @@ export abstract class Viewport implements IDisposable {
   public getToolTip(hit: HitDetail): HTMLElement | string {
     let toolTip: string | HTMLElement = "";
     if (this.displayStyle) {
-      this.displayStyle.forEachRealityTileTreeRef((model) => {
+      this.displayStyle.forEachTileTreeRef((model) => {
         const thisToolTip = model.getToolTip(hit);
         if (thisToolTip !== undefined)
           toolTip = thisToolTip;
@@ -1707,9 +1675,10 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  protected constructor(target: RenderTarget) {
+  protected constructor(target: RenderTarget, view: ViewState) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
+    this._view = view; // NB: Caller must invoke changeView().
   }
 
   public dispose(): void {
@@ -1737,7 +1706,7 @@ export abstract class Viewport implements IDisposable {
   public get viewportId(): number { return this._viewportId; }
 
   /** The ViewState for this Viewport */
-  public get view(): ViewState { return this._viewFrustum.view; }
+  public get view(): ViewState { return this._view; }
   /** @internal */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   /** @internal */
@@ -1874,6 +1843,13 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean {
     return this._tiledGraphicsProviders.has(provider);
+  }
+
+  /** @internal */
+  public getDisplayedPlanes(): Plane3dByOriginAndUnitNormal[] {
+    const planes: Plane3dByOriginAndUnitNormal[] = [];
+    this.forEachTileTreeRef((ref) => ref.addPlanes(planes));
+    return planes;
   }
 
   /** @internal */
@@ -2056,7 +2032,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   private doSetupFromView(view: ViewState) {
-    const vf = ViewFrustum.createFromViewport(this, view);
+    this._view = view;
+
+    const vf = ViewFrustum.createFromViewport(this);
     if (undefined === vf)
       return ViewStatus.InvalidViewport;
 
@@ -2361,6 +2339,7 @@ export abstract class Viewport implements IDisposable {
    * @internal
    */
   public applyViewState(val: ViewState) {
+    this._view = val;
     this.updateChangeFlags(val);
     this._viewFrustum.view = val;
     this.synchWithView(false);
@@ -2624,6 +2603,7 @@ export abstract class Viewport implements IDisposable {
 
         target.changeScene(context.graphics);
         target.changeBackgroundMap(context.backgroundGraphics);
+        target.changeOverlayGraphics(context.overlayGraphics);
         target.changePlanarClassifiers(context.planarClassifiers);
         target.changeSolarShadowMap(context.solarShadowMap);
         target.changeTextureDrapes(context.textureDrapes);
@@ -2825,7 +2805,7 @@ export class ScreenViewport extends Viewport {
       throw new Error("viewport cannot be created from a div with zero width or height");
 
     const canvas = document.createElement("canvas");
-    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
+    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas), view);
     vp.changeView(view);
     return vp;
   }
@@ -2866,8 +2846,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
-    super(target);
+  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, view: ViewState) {
+    super(target, view);
     this.canvas = canvas;
     this.parentDiv = parentDiv;
 
@@ -2920,8 +2900,10 @@ export class ScreenViewport extends Viewport {
       result.setFrom(picker.getHit(0)!.getPoint());
       return result;
     }
-    if (undefined === this.backgroundMapPlane)
-      return undefined;
+    // If no background map is displayed, use ACS xy plane as this is where unsnapped points would be projected to.
+    let plane = this.backgroundMapPlane;
+    if (undefined === plane)
+      plane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2))!;
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
     const direction = Vector3d.createFrom(eyePoint);
@@ -2933,12 +2915,12 @@ export class ScreenViewport extends Viewport {
     direction.scaleToLength(-1.0, direction);
     const rayToEye = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
-    if (undefined === rayToEye.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+    if (undefined === rayToEye.intersectionWithPlane(plane, projectedPt))
       return undefined;
 
-    const mapResult = undefined !== out ? out : new Point3d();
-    mapResult.setFrom(projectedPt);
-    return mapResult;
+    const planeResult = undefined !== out ? out : new Point3d();
+    planeResult.setFrom(projectedPt);
+    return planeResult;
   }
   /** @internal */
   public animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo) {
@@ -3169,7 +3151,8 @@ export class TwoWayViewportSync {
   public connect(view1: Viewport, view2: Viewport) {
     this.disconnect();
 
-    view2.applyViewState(view1.view.clone(view2.iModel)); // use view1 as the starting point
+    const viewState2 = view1.view.clone(view2.iModel); // use view1 as the starting point
+    view2.applyViewState(viewState2);
 
     // listen to the onViewChanged events from both views
     this._removals.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));
@@ -3190,7 +3173,7 @@ export class OffScreenViewport extends Viewport {
     if (undefined !== viewRect)
       rect.setFrom(viewRect);
 
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
+    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect), view);
     vp.changeView(view);
     vp.sync.setValidDecorations();  // decorations are not used offscreen
     return vp;

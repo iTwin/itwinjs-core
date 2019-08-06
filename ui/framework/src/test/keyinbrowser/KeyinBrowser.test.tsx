@@ -120,6 +120,34 @@ describe("<KeyinBrowser>", () => {
     expect(argInput.value).to.be.eq("marker.js|blue");
   });
 
+  it("Enter key should process Execute Button processing", async () => {
+    const renderedComponent = render(<KeyinBrowser />);
+    expect(renderedComponent).not.to.be.undefined;
+
+    // simulate selecting toolId
+    const selectInput = renderedComponent.getByTestId("uif-keyin-select") as HTMLSelectElement;
+    fireEvent.change(selectInput, { target: { value: "Select" } });
+
+    window.localStorage.setItem("keyinbrowser:keyin", "");
+    // simulate specifying args
+    const argInput = renderedComponent.getByTestId("uif-keyin-arguments") as HTMLInputElement;
+    fireEvent.change(argInput, { target: { value: "marker.js|blue" } });
+    expect(argInput.value).to.be.eq("marker.js|blue");
+
+    // hitting enter should trigger execute button
+    argInput.focus();
+    fireEvent.keyDown(argInput, { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
+
+    const savedToolId = window.localStorage.getItem("keyinbrowser:keyin");
+    expect(savedToolId).to.eq("Select");
+
+    const savedArgs = window.localStorage.getItem(`keyinbrowser:${savedToolId}`);
+    expect(savedArgs).to.eq(`["marker.js","blue"]`);
+
+    cleanup();
+  });
+
   it("should invoke onExecute handler when execute button is clicked", async () => {
     const spy = sinon.spy();
     const sut = mount(<KeyinBrowser onExecute={spy} />);

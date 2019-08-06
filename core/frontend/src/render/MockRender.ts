@@ -49,6 +49,8 @@ export namespace MockRender {
     public get animationFraction() { return 0; }
     public set animationFraction(_fraction: number) { }
     public changeScene(_scene: GraphicList) { }
+    public changeBackgroundMap(_backgroundMap: GraphicList) { }
+    public changeOverlayGraphics(_overlayGraphics: GraphicList) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }
     public changeRenderPlan(_plan: RenderPlan) { }

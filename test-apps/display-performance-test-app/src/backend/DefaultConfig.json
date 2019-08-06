@@ -15,6 +15,68 @@
   },
   "testSet": [
     {
+      "testName": "Logarithmic Depth Buffer",
+      "testType": "both",
+      "tests": [
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V0",
+          "renderOptions": {
+            "logarithmicZBuffer": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V3",
+          "renderOptions": {
+            "logarithmicZBuffer": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyOne.bim",
+          "viewName": "W0",
+          "renderOptions": {
+            "logarithmicZBuffer": true
+          }
+        },
+        {
+          "iModelName": "DepthTest-50k.bim",
+          "viewName": "W1A",
+          "renderOptions": {
+            "logarithmicZBuffer": true
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V0",
+          "renderOptions": {
+            "logarithmicZBuffer": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_01.bim",
+          "viewName": "V3",
+          "renderOptions": {
+            "logarithmicZBuffer": false
+          }
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyOne.bim",
+          "viewName": "W0",
+          "renderOptions": {
+            "logarithmicZBuffer": false
+          }
+        },
+        {
+          "iModelName": "DepthTest-50k.bim",
+          "viewName": "W1A",
+          "renderOptions": {
+            "logarithmicZBuffer": false
+          }
+        }
+      ]
+    },
+    {
       "iModelName": "TimingTest_01.bim",
       "testName": "Render Mode Images",
       "testType": "both",

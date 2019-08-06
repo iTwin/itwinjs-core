@@ -27,6 +27,7 @@ function createSchemaJson(koq: any) {
         {
           name: "Formats",
           version: "1.0.0",
+          alias: "f"
         },
       ],
     });
@@ -313,7 +314,7 @@ describe("KindOfQuantity", () => {
     }
 
     // The regex doesn't properly catch this case and just ignores the ().
-    // testInvalidFormatStrings("should throw for invalid override string without any overrides", "Formats.DefaultReal()", "");
+    // testInvalidFormatStrings("should throw for invalid override string without any overrides", "Formats.DefaultReal()", "The foramt string 'Formats.Default'");
     // testInvalidFormatStrings("should throw for invalid override string with empty unit brackets", "Formats.DefaultReal[]", "");
     // testInvalidFormatStrings("should throw for invalid override string with only vertical bar in unit brackets", "Formats.DefaultReal[|]", "");
     // testInvalidFormatStrings("should throw for invalid override string with an empty string for unit", "Formats.DefaultReal[|label]", "Unable to locate SchemaItem .");
@@ -397,8 +398,7 @@ describe("KindOfQuantity", () => {
       expect(serialized.getAttribute("typeName")).to.eq("TestKindOfQuantity");
       expect(serialized.getAttribute("relativeError")).to.eq("1.234");
       expect(serialized.getAttribute("persistenceUnit")).to.eq("Formats:DefaultReal");
-      expect(serialized.getAttribute("presentationUnits")).to.eq(
-        "f:DoubleUnitFormat(6)[f:YRD|yard(s)][f:FT|feet];f:QuadUnitFormat(6)[f:MILE|mile(s)][f:YRD|yard(s)][f:FT|feet][f:IN|inch(es)]");
+      expect(serialized.getAttribute("presentationUnits")).to.eq("Formats:DoubleUnitFormat;Formats:QuadUnitFormat");
     });
   });
 });

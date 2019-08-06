@@ -63,6 +63,7 @@ export class TechniqueFlags {
   public isClassified: IsClassified = IsClassified.No;
   public isShadowable: IsShadowable = IsShadowable.No;
   public hasMaterialAtlas: HasMaterialAtlas = HasMaterialAtlas.No;
+  public usesLogZ = false;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -78,11 +79,12 @@ export class TechniqueFlags {
       this._isHilite = false;
       this.isTranslucent = RenderPass.Translucent === pass;
       this.clip = target.clipDef;
-      this.isAnimated = shadowable ? IsAnimated.No : animated;    // no animation with shadows (they share texture unit).
+      this.isAnimated = animated;
       this.isInstanced = instanced;
       this.isClassified = classified;
       this.isShadowable = shadowable;
       this.hasMaterialAtlas = hasMaterialAtlas;
+      this.usesLogZ = target.wantLogZ;
 
       if (undefined !== target.currentOverrides)
         this.featureMode = FeatureMode.Overrides;
@@ -125,6 +127,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
     this.hasMaterialAtlas = HasMaterialAtlas.No;
+    this.usesLogZ = false;
     this.clip.type = ClippingType.None;
     this.clip.numberOfPlanes = 0;
   }
@@ -148,6 +151,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isClassified = classified;
     this.hasMaterialAtlas = HasMaterialAtlas.No;
+    this.usesLogZ = false;
     this.clip = clip;
   }
 
@@ -162,6 +166,7 @@ export class TechniqueFlags {
     if (this.isShadowable) parts.push("shadowable");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "pick" : "overrides");
     if (this.hasMaterialAtlas) parts.push("materialAtlas");
+    if (this.usesLogZ) parts.push("logZ");
     return parts.join("; ");
   }
 
