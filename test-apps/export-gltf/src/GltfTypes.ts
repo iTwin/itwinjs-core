@@ -7,7 +7,10 @@ interface Gltf {
   asset: GltfAsset;
   buffers: GltfBuffer[];
   bufferViews: GltfBufferView[];
+  textures?: GltfTexture[];
+  images?: GltfImage[];
   materials: GltfMaterial[];
+  samplers?: any[]; // Just use default sampler values
   meshes: GltfMesh[];
   nodes: GltfNode[];
   scenes: GltfScene[];
@@ -51,17 +54,30 @@ interface GltfBufferView {
   target: BufferViewTarget;
 }
 
+interface GltfTexture {
+  source: number;
+  sampler: 0; // only one sampler for the whole model
+}
+
+interface GltfImage {
+  uri: string;
+}
+
 interface GltfMaterial {
   alphaMode?: "BLEND";
-  doubleSided: boolean;
-  name?: string;
+  doubleSided: true;
   pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness;
 }
 
 interface GltfMaterialPbrMetallicRoughness {
+  baseColorTexture?: GltfBaseColorTexture;
   baseColorFactor: number[];
-  metallicFactor: number;
-  roughnessFactor: number;
+  metallicFactor: 0;  // Completely diffuse for now
+  roughnessFactor: 1;
+}
+
+interface GltfBaseColorTexture {
+  index: number;
 }
 
 interface GltfMesh {

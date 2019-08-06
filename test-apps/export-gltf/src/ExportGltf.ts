@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   IModelHost, IModelDb, ECSqlStatement, ExportGraphicsInfo, ExportGraphicsMesh, ExportPartInstanceProps,
-  ExportPartInfo, ExportGraphics, ExportLinesInfo, ExportGraphicsLines, ExportPartLinesInfo,
+  ExportPartInfo, ExportGraphics, ExportLinesInfo, ExportGraphicsLines, ExportPartLinesInfo, Texture,
 } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Logger, LogLevel, Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { Matrix3d, Angle, Geometry } from "@bentley/geometry-core";
 import * as fs from "fs";
 import * as path from "path";
@@ -20,8 +20,10 @@ class GltfGlobals {
   public static iModel: IModelDb;
   public static gltf: Gltf;
   public static binFile: number;
+  public static texturesDir: string;
   public static binBytesWritten: number;
   public static colorToMaterialMap: Map<number, number>;
+  public static textureToMaterialMap: Map<Id64String, number>;
 
   public static initialize(iModelName: string, gltfName: string) {
     GltfGlobals.iModel = IModelDb.openSnapshot(iModelName);
@@ -30,6 +32,7 @@ class GltfGlobals {
     const gltfPathParts = path.parse(gltfName);
     const binName = gltfPathParts.name + ".bin";
     GltfGlobals.binFile = fs.openSync(path.join(gltfPathParts.dir, binName), "w");
+    GltfGlobals.texturesDir = gltfPathParts.dir;
     process.stdout.write(`Writing to ${gltfName} and ${binName}...\n`);
 
     GltfGlobals.gltf = {
@@ -47,16 +50,54 @@ class GltfGlobals {
     };
     GltfGlobals.binBytesWritten = 0;
     GltfGlobals.colorToMaterialMap = new Map<number, number>();
+    GltfGlobals.textureToMaterialMap = new Map<Id64String, number>();
   }
 }
 
-function findOrAddMaterialIndex(color: number): number {
+function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
+  let result = GltfGlobals.textureToMaterialMap.get(textureId);
+  if (result !== undefined) return result;
+
+  // glTF-Validator complains if textures/images are defined but empty - wait for texture to define.
+  if (GltfGlobals.gltf.textures === undefined) {
+    GltfGlobals.gltf.textures = [];
+    GltfGlobals.gltf.images = [];
+    GltfGlobals.gltf.samplers = [{}]; // Just use default sampler values
+  }
+
+  const textureInfo = GltfGlobals.iModel.elements.getElement(textureId) as Texture;
+  const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
+  const texturePath = path.join(GltfGlobals.texturesDir, textureName);
+  fs.writeFile(texturePath, Buffer.from(textureInfo.data, "base64"), () => { }); // async is fine
+
+  const texture: GltfTexture = { source: GltfGlobals.gltf.images!.length, sampler: 0 };
+  GltfGlobals.gltf.textures.push(texture);
+  GltfGlobals.gltf.images!.push({ uri: textureName });
+
+  const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
+    baseColorTexture: { index: GltfGlobals.gltf.textures.length - 1 },
+    baseColorFactor: [1, 1, 1, 1],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+  };
+  const material: GltfMaterial = ({ pbrMetallicRoughness, doubleSided: true });
+
+  result = GltfGlobals.gltf.materials.length;
+  GltfGlobals.gltf.materials.push(material);
+  GltfGlobals.textureToMaterialMap.set(textureId, result);
+  return result;
+}
+
+function findOrAddMaterialIndexForColor(color: number): number {
   let result = GltfGlobals.colorToMaterialMap.get(color);
   if (result !== undefined) return result;
 
   const rgb = new ColorDef(color).colors;
-  const baseColorFactor = [rgb.r / 255, rgb.g / 255, rgb.b / 255, (255 - rgb.t) / 255];
-  const pbrMetallicRoughness = { baseColorFactor, metallicFactor: 0, roughnessFactor: 1 };
+  const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
+    baseColorFactor: [rgb.r / 255, rgb.g / 255, rgb.b / 255, (255 - rgb.t) / 255],
+    metallicFactor: 0,
+    roughnessFactor: 1,
+  };
   const material: GltfMaterial = ({ pbrMetallicRoughness, doubleSided: true });
   if (rgb.t > 10) material.alphaMode = "BLEND";
 
@@ -136,19 +177,53 @@ function addMeshPointsAndNormals(points: Float64Array, normals: Float32Array) {
   });
 }
 
-function addMesh(mesh: ExportGraphicsMesh, color: number) {
+function addMeshParams(params: Float32Array) {
+  const outParams = new Float32Array(params.length);
+  for (let i = 0; i < params.length; i += 2) {
+    outParams[i] = params[i];
+    outParams[i + 1] = 1 - params[i + 1]; // Flip to match GLTF spec
+  }
+
+  GltfGlobals.gltf.bufferViews.push({
+    buffer: 0,
+    target: BufferViewTarget.ArrayBuffer,
+    byteOffset: GltfGlobals.binBytesWritten,
+    byteLength: outParams.byteLength,
+    byteStride: 8,
+  });
+
+  fs.writeSync(GltfGlobals.binFile, outParams);
+  GltfGlobals.binBytesWritten += outParams.byteLength;
+
+  GltfGlobals.gltf.accessors.push({
+    bufferView: GltfGlobals.gltf.bufferViews.length - 1,
+    byteOffset: 0,
+    componentType: AccessorComponentType.Float,
+    count: outParams.length / 2,
+    type: "VEC2",
+  });
+}
+
+function addMesh(mesh: ExportGraphicsMesh, color: number, textureId?: Id64String) {
+  const material = textureId !== undefined ? findOrAddMaterialIndexForTexture(textureId) :
+    findOrAddMaterialIndexForColor(color);
+
   const primitive: GltfMeshPrimitive = {
     mode: MeshPrimitiveMode.GlTriangles,
-    material: findOrAddMaterialIndex(color),
+    material,
     indices: GltfGlobals.gltf.accessors.length,
     attributes: {
       POSITION: GltfGlobals.gltf.accessors.length + 1,
       NORMAL: GltfGlobals.gltf.accessors.length + 2,
     },
   };
+  if (textureId !== undefined)
+    primitive.attributes.TEXCOORD_0 = GltfGlobals.gltf.accessors.length + 3;
   GltfGlobals.gltf.meshes.push({ primitives: [primitive] });
+
   addMeshIndices(mesh.indices);
   addMeshPointsAndNormals(mesh.points, mesh.normals);
+  if (textureId !== undefined) addMeshParams(mesh.params);
 }
 
 function addMeshNode(name: string) {
@@ -159,7 +234,7 @@ function addMeshNode(name: string) {
 function addLines(lines: ExportGraphicsLines, color: number) {
   const primitive: GltfMeshPrimitive = {
     mode: MeshPrimitiveMode.GlLines,
-    material: findOrAddMaterialIndex(color),
+    material: findOrAddMaterialIndexForColor(color),
     indices: GltfGlobals.gltf.accessors.length,
     attributes: {
       POSITION: GltfGlobals.gltf.accessors.length + 1,
@@ -210,7 +285,7 @@ function addLines(lines: ExportGraphicsLines, color: number) {
 function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPartInstanceProps[]) {
   const onGraphics = (info: ExportGraphicsInfo) => {
     addMeshNode(info.elementId);
-    addMesh(info.mesh, info.color);
+    addMesh(info.mesh, info.color, info.textureId);
   };
   const onLineGraphics = (info: ExportLinesInfo) => {
     addMeshNode(info.elementId);
@@ -275,7 +350,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceProps[]) {
   };
   const onPartGraphics = (meshIndices: number[]) => (info: ExportPartInfo) => {
     meshIndices.push(GltfGlobals.gltf.meshes.length);
-    addMesh(info.mesh, info.color);
+    addMesh(info.mesh, info.color, info.textureId);
   };
   const nodes: GltfNode[] = GltfGlobals.gltf.nodes;
   const nodeIndices: number[] = GltfGlobals.gltf.scenes[0].nodes;
