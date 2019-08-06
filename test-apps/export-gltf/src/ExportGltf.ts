@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
-  IModelHost, IModelDb, ECSqlStatement, ExportGraphicsInfo, ExportGraphicsMesh, ExportPartInstanceProps,
+  IModelHost, IModelDb, ECSqlStatement, ExportGraphicsInfo, ExportGraphicsMesh, ExportPartInstanceInfo,
   ExportPartInfo, ExportGraphics, ExportLinesInfo, ExportGraphicsLines, ExportPartLinesInfo, Texture,
 } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Logger, LogLevel, Id64String } from "@bentley/bentleyjs-core";
@@ -282,7 +282,7 @@ function addLines(lines: ExportGraphicsLines, color: number) {
   });
 }
 
-function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPartInstanceProps[]) {
+function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPartInstanceInfo[]) {
   const onGraphics = (info: ExportGraphicsInfo) => {
     addMeshNode(info.elementId);
     addMesh(info.mesh, info.color, info.textureId);
@@ -296,8 +296,8 @@ function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPart
   });
 }
 
-function getInstancesByPart(instances: ExportPartInstanceProps[]): Map<Id64String, ExportPartInstanceProps[]> {
-  const partMap = new Map<Id64String, ExportPartInstanceProps[]>();
+function getInstancesByPart(instances: ExportPartInstanceInfo[]): Map<Id64String, ExportPartInstanceInfo[]> {
+  const partMap = new Map<Id64String, ExportPartInstanceInfo[]>();
   for (const instance of instances) {
     const instancesForThisPart = partMap.get(instance.partId);
     if (instancesForThisPart !== undefined) instancesForThisPart.push(instance);
@@ -340,8 +340,8 @@ class TranslationRotationScale {
   }
 }
 
-function exportInstances(partInstanceArray: ExportPartInstanceProps[]) {
-  const partMap: Map<Id64String, ExportPartInstanceProps[]> = getInstancesByPart(partInstanceArray);
+function exportInstances(partInstanceArray: ExportPartInstanceInfo[]) {
+  const partMap: Map<Id64String, ExportPartInstanceInfo[]> = getInstancesByPart(partInstanceArray);
   process.stdout.write(`Found ${partInstanceArray.length} instances for ${partMap.size} parts...\n`);
 
   const onPartLineGraphics = (meshIndices: number[]) => (info: ExportPartLinesInfo) => {
@@ -371,7 +371,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceProps[]) {
       // display properties. This can lead to different colors, materials or textures so an exporter
       // that is concerned about matching the appearance of the original iModel should not reuse a
       // GeometryPart exported with different display properties.
-      if (!ExportGraphics.areDisplayPropsEqual(baseDisplayProps, instance.displayProps))
+      if (!ExportGraphics.arePartDisplayInfosEqual(baseDisplayProps, instance.displayProps))
         process.stdout.write("Warning: GeometryPartInstances found using different display properties.\n");
 
       const trs = new TranslationRotationScale(instance.transform);
@@ -404,7 +404,7 @@ function doExport(iModelName: string, gltfName: string) {
   process.stdout.write(`Found ${elementIdArray.length} 3D elements...\n`);
   if (elementIdArray.length === 0) return;
 
-  const partInstanceArray: ExportPartInstanceProps[] = [];
+  const partInstanceArray: ExportPartInstanceInfo[] = [];
   exportElements(elementIdArray, partInstanceArray);
   exportInstances(partInstanceArray);
 

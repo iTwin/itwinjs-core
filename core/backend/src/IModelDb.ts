@@ -25,7 +25,7 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
-import { ExportGraphicsProps, ExportPartGraphicsProps } from "./ExportGraphics";
+import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1193,7 +1193,7 @@ export class IModelDb extends IModel {
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
    *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
-   *  * The results of changing [ExportGraphicsProps]($imodeljs-backend) during the [ExportGraphicsProps.onGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
    *
    * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
    * ```ts
@@ -1219,9 +1219,9 @@ export class IModelDb extends IModel {
    * iModel.exportGraphics(({ onGraphics, elementIdArray: ["0x1"] }));
    * ```
    * @returns 0 if successful, status otherwise
-   * @beta Waiting for feedback from community before finalizing.
+   * @public
    */
-  public exportGraphics(exportProps: ExportGraphicsProps): DbResult {
+  public exportGraphics(exportProps: ExportGraphicsOptions): DbResult {
     return this.nativeDb.exportGraphics(exportProps);
   }
 
@@ -1231,13 +1231,13 @@ export class IModelDb extends IModel {
    * The expected use case is to call [IModelDb.exportGraphics]($imodeljs-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
    * that list.
-   *  * The results of changing [ExportPartGraphicsProps]($imodeljs-backend) during the
-   *    [ExportPartGraphicsProps.onPartGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportPartGraphicsOptions]($imodeljs-backend) during the
+   *    [ExportPartGraphicsOptions.onPartGraphics]($imodeljs-backend) callback are not defined.
    *  * See export-gltf under test-apps in the iModel.js monorepo for a working reference.
    * @returns 0 is successful, status otherwise
-   * @beta Waiting for feedback from community before finalizing.
+   * @public
    */
-  public exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult {
+  public exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult {
     return this.nativeDb.exportPartGraphics(exportProps);
   }
 }
