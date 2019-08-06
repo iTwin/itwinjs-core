@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed OnPropertyLinkClick event handler assignment for nested properties in PropertyGrid. Fixed OnPropertyLinkClick signature for PropertyGrid.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Laurynas.Vaisys@bentley.com"
+}

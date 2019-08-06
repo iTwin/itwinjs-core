@@ -13,7 +13,7 @@ import ResizeObserver from "resize-observer-polyfill";
 
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -49,7 +49,7 @@ export interface PropertyGridProps extends CommonProps {
   /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
   /** Callback for when links in properties are being clicked @beta */
-  onPropertyLinkClick?: (property: PropertyRecord) => void;
+  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
   /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
   /** Custom property value renderer manager */
@@ -233,13 +233,21 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         propertyCount: propertyData.records[category.name].length,
         properties: propertyData.records[category.name],
       };
-      propertyData.records[category.name].forEach((record: PropertyRecord) => {
-        if (record.links)
-          record.links.onClick = this.props.onPropertyLinkClick ? this.props.onPropertyLinkClick : this.handleLinkClick;
-      });
+      this.assignRecordClickHandlers(propertyData.records[category.name]);
       categories.push(gridCategory);
     });
     this.setState({ categories, loadStart: undefined });
+  }
+
+  private assignRecordClickHandlers(records: PropertyRecord[]) {
+    records.forEach((record: PropertyRecord) => {
+      if (record.links)
+        record.links.onClick = this.props.onPropertyLinkClick ? this.props.onPropertyLinkClick : this.handleLinkClick;
+      if (record.value.valueFormat === PropertyValueFormat.Array)
+        this.assignRecordClickHandlers((record.value as ArrayValue).items);
+      if (record.value.valueFormat === PropertyValueFormat.Struct)
+        this.assignRecordClickHandlers(Object.values((record.value as StructValue).members));
+    });
   }
 
   private _onExpansionToggled = (categoryName: string) => {
