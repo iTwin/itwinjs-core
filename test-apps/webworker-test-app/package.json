@@ -23,8 +23,9 @@
       },
       "subModules": [
         {
-          "dest": "./lib/webresources",
-          "entry": "./lib/plugin/startWebWorker.js",
+          "build": "./lib/build",
+          "dest": "./lib/plugin",
+          "entry": "./lib/wwplugin/startWebWorker.js",
           "bundleName": "startWebWorkerPlugin",
           "type": "plugin"
         }

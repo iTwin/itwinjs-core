@@ -172,7 +172,21 @@ Webpacking consolidates the source files that make up a module into a single fil
    }
 ```
 
-In this case, there are two optional properties.  "styleSheets" is a boolean property that is usable for all module types. If true, it indicates that webpack should add processing for .scss files.  "htmlTemplate" is a property used only by application modules. It must point to the source for an html template file that is processed by webpack to encode the system modules required for the application and their versions (information that is used at runtime to load those system modules). For example, here is a typical index.html file:
+The "styleSheets" property is optional for all module types. It is a boolean that, if true, indicates that webpack should add processing for .scss files
+
+When building a Plugin module, there is one required property "build", and one optional property, "sign". In the application module case, there is an optional property, "htmlTemplate". These are described below.
+
+#### The "webpack.build"  property
+
+The "webpack.build" property applies only to Plugin modules. Building Plugin modules invokes an extra step that packages all the files required by the Plugin into a [tar file](https://en.wikipedia.org/wiki/Tar_(computing)). The files that are to be "tarred" are assembled into the directory specified in the webpack.build property. The output from [copying the source resource files](#copying-source-resources) should be put into that directory. The contents of the build directory are tarred into a file with the base name of "webpack.bundleName" and the extension ".plugin.tar".
+
+#### The "webpack.sign"  property
+
+The "webpack.sign" property applies only to Plugin modules. If present and correct, it directs the script to digitally sign the plugin. The "sign" property contains two required properties, "publicKey" and "privateKey". The "publicKey" property is set to an environment variable that is a file that contains a public key ".pem" file. Similarly, the "privateKey" property is set to an environment variable that is a file that contains the corresponding private key ".pem" file. The private key is used to sign the file, and the public key is incorporated into the plugin's tar file and used to verify the signature.
+
+#### The "webpack.htmlTemplate" property
+
+The third optional property, "htmlTemplate" is used only by application modules. It must point to the source for an html template file that is processed by webpack to encode the system modules required for the application and their versions (information that is used at runtime to load those system modules). For example, here is a typical index.html file:
 
 ```html
 index.html
@@ -225,11 +239,24 @@ As you can see from the comments in the file, the script tag that invokes IModel
 
 ### Copying External Modules to the Web resources directory
 
-For application modules only, buildIModelJsModule copies or symlinks all the external modules that are needed into the "dest" directory of the webpack property. No specific buildModule properties are needed for this step.
+For application modules only, buildIModelJsModule copies or symlinks all the external modules that are needed into the "dest" directory of the webpack property. In some cases, an application itself doesn't use any exports from certain external modules (e.g., imodeljs-markup), but it might want to allow Plugins to access such modules. Those modules should be specified in an "extraSystemModules" property of iModelJs.buildModule, in the same format as the "dependencies" property:
+
+```json
+   "iModelJs": {
+    "buildModule": {
+      "type": "application",
+      ...
+      "extraSystemModules": {
+        "@bentley/imodeljs-markup": "1.2.0-dev.26"
+      },
+    ...
+    }
+   }
+```
 
 ### Building Submodules in the same package
 
-Sometimes, it might be desirable to put certain submodules, such as Plugins or Webworkers, in the same package as the application itself. The buildImodelJsModule script addresses this requirement through the use of a subModules property. It is an array of objects, each of which has "dest", "entry",  and "bundleName" properties. Optionally, there can be a "type" property that can have the value "plugin" (the default), "webworker", or "system". Another optional property, "styleSheets", can appear as in the "webpack" property above. For example, the following plugins property specifies that a MeasurePoints plugin is built alongside the application.
+Sometimes, it might be desirable to put certain submodules, such as Plugins or Webworkers, in the same package as the application itself. The buildImodelJsModule script addresses this requirement through the use of a subModules property. It is an array of objects, each of which has "dest", "entry",  and "bundleName" properties. Optionally, there can be a "type" property that can have the value "plugin" (the default), "webworker", or "system". Another optional property, "styleSheets", can appear as in the "webpack" property above. For example, the following plugins property specifies that a MeasurePoints plugin is built alongside the application. There can also be a "sign" property, as documented above in the [Webpacking](#Webpacking) section
 
 ```json
   "iModelJs": {
@@ -319,7 +346,7 @@ usage: rush build [-h] [-p COUNT] [-t PROJECT1]
 
 This command is similar to "rush rebuild", except that "rush build" performs an incremental build. In other words, it only builds projects whose source files have changed since the last successful build. The analysis requires a Git working tree, and only considers source files that are tracked by Git and whose path is under the project folder. (For more details about this algorithm, see the documentation for the "package-deps-hash" NPM package.)
 
-The incremental build state is tracked in a file "package-deps.json" whichshould NOT be added to Git. The build command is tracked by the "arguments" field in this JSON file; a full rebuild is forced whenever the command has changed (e.g. "--production" or not).
+The incremental build state is tracked in a file "package-deps.json" which should NOT be added to Git. The build command is tracked by the "arguments" field in this JSON file; a full rebuild is forced whenever the command has changed (e.g. "--production" or not).
 
 Optional arguments:
   -h, --help            Show this help message and exit.

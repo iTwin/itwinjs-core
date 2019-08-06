@@ -119,6 +119,7 @@ class ScriptLoader {
 }
 
 // Load Options. Loading the UiComponents and UiFramework are optional.
+
 class IModelJsLoadOptions {
   private _iModelJsCDN: string;
 

@@ -74,7 +74,7 @@ class DebugTools extends ToolBarDropDown {
 
     this._element.appendChild(createImageButton({
       src: "cold.svg",
-      click: () => IModelApp.tools.run("Plugin", ["wmsPlugin.js"]),
+      click: () => IModelApp.tools.run("Plugin", ["wmsPlugin"]),
       tooltip: "Test WMS Weather Maps",
     }));
     this._element.appendChild(createToolButton({

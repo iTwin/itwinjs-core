@@ -168,7 +168,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "bunyan",
@@ -245,6 +245,10 @@
     {
       "name": "concurrently",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cors",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cpx",
@@ -421,6 +425,10 @@
     {
       "name": "js-base64",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "js-untar",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "jsdom",
@@ -757,6 +765,10 @@
     {
       "name": "sw-precache-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "tar",
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "tooltip.js",

@@ -1,8 +1,8 @@
 # iModel.js Plugins
 
-A [Plugin]($frontend) is a separately webpacked JavaScript module that is loaded on demand into a browser (or Electron) running the the frontend iModel.js environment.
+A [Plugin]($frontend) is a separately webpacked JavaScript module that is loaded on demand into a browser (or Electron) running the the frontend iModel.js environment. It is compiled and webpacked using the [buildIModelJsModule](./BuildingIModelJsModules.md) script. The build process creates a tar file that includes a manifest, the webpacked plugin, and the associated resources.
 
-A [Plugin]($frontend) is typically written in Typescript. It has access to all classes in the iModel.js host environment. In all iModel.js hosts, that will always include the members of bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface classes, it will also include the members of ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common, presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
+A [Plugin]($frontend) is written in Typescript. It has access to all exported classes in the iModel.js host environment. In all iModel.js hosts, that will include the exports of bentleyjs-core, geometry-core, imodeljs-i18n, imodeljs-clients, imodeljs-common, imodeljs-quantity, and imodeljs-frontend. In hosts that use the iModel.js user interface classes, it will also include the exports of ui-core, ui-components, ui-ninezone, and ui-framework. In hosts that are designed to format and display EC data, the presentation-common, presentation-components, and presentation-frontend modules will be available as well. An example host is Design Review, which includes all of the modules above.
 
 ## Loading Plugins
 
@@ -11,24 +11,23 @@ A [Plugin]($frontend) can be loaded by calling the `loadPlugin` static method of
 When the [PluginAdmin]($frontend) loadPlugin method is called, it initiates loading of the designated [Plugin]($frontend). The [Plugin]($frontend) is loaded as a typical JavaScript script, so any code that is outside the definition of a function or class is immediately executed. By convention, a [Plugin]($frontend) defines a "main" function and executes that main function as the last line in the script. Generally, the only responsibility of the main function is to instantiate the subclass of [Plugin]($frontend) defined therein and register it with the [PluginAdmin]($frontend). Here is an example:
 
 ```ts
-declare var IMODELJS_VERSIONS_REQUIRED: string;
 declare var PLUGIN_NAME: string;
 
 // define and run the entry point
 function main() {
-  PluginAdmin.register(new MeasurePointsPlugin(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED));
+  PluginAdmin.register(new MeasurePointsPlugin(PLUGIN_NAME));
 }
 
 main();
 ```
 
-In the code above, note the declaration of IMODELJS_VERSIONS_REQUIRED and PLUGIN_NAME. These variables are converted to actual strings when your [Plugin]($frontend) is webpack'ed as described below. PLUGIN_NAME is used by the [PluginAdmin]($frontend) to keep track of loaded Plugins, and IMODELJS_VERSIONS_REQUIRED is used to validate that the runtime environment includes the iModel.js modules that the [Plugin]($frontend) needs and that the versions loaded are compatible with those required by the [Plugin]($frontend).
+In the code above, note the declaration of PLUGIN_NAME. This variable is converted to an actual string when your [Plugin]($frontend) is webpack'ed as described below. PLUGIN_NAME is used by the [PluginAdmin]($frontend) to keep track of currently loaded Plugins.
 
 ## Building Plugins
 
-The code for the [Plugin]($frontend) is typically transpiled to JavaScript and then converted to a loadable module with [webpack](https://webpack.js.org). Those steps (and others that might be required), are sequenced by the buildIModelJsModule script. See [Building iModel.js Modules](./BuildingIModelJsModules.md) for a full description of building a [Plugin]($frontend).
+The code for the [Plugin]($frontend) is typically transpiled to JavaScript and then converted to a loadable module with [webpack](https://webpack.js.org). It is then packaged into a tar file, along with a manifest and all the resources that it needs. The manifest records the required versions of iModelJs system modules as well as other information needed by the Plugin loader. Those steps (and others that might be required), are sequenced by the buildIModelJsModule script. See [Building iModel.js Modules](./BuildingIModelJsModules.md) for a full description of building a [Plugin]($frontend).
 
-The versions of iModel.js packages that are required by the [Plugin](%frontend) are extracted from the "dependencies" key in the package.json file that is in the root directory of the package that contains the Plugin source. Each iModel.js module from which classes or functions are imported should appear in that dependencies key, along with the version number as is required by [npm](https://docs.npmjs.org). A string that contains each such dependency is generated by webpack and replaces every occurrence of IMODELJS_VERSIONS_REQUIRED in the output JavaScript module.
+The versions of iModel.js packages that are required by the [Plugin](%frontend) are extracted from the "dependencies" key in the package.json file that is in the root directory of the package that contains the Plugin source. Each iModel.js module from which classes or functions are imported should appear in that dependencies key, along with the version number as is required by [npm](https://docs.npmjs.org).
 
 ## Plugin startup
 
@@ -38,8 +37,8 @@ Plugins are loaded by the PluginAdmin class. The "main" function in the [Plugin]
 class MeasurePointsPlugin extends Plugin {
   private _measureNamespace: I18NNamespace | undefined;
 
-  public constructor(name: string, versionsRequired: string) {
-    super(name, versionsRequired);
+  public constructor(name: string) {
+    super(name);
     this._measureNamespace = undefined;
   }
 

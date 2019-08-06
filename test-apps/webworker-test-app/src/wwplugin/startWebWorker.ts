@@ -180,8 +180,8 @@ class IMJsWorker {
 class StartWebWorker extends Plugin {
   private _testWorker: IMJsWorker | undefined;
 
-  constructor(name: string, versionsRequired: string) {
-    super(name, versionsRequired);
+  constructor(name: string) {
+    super(name);
   }
 
   public async onExecute(_args: string[]) {
@@ -223,7 +223,6 @@ class StartWebWorker extends Plugin {
 }
 
 // boilerplate plugin code that is executed when the module is loaded.
-declare var IMODELJS_VERSIONS_REQUIRED: string;
 declare var PLUGIN_NAME: string;
-export const startWebWorker = new StartWebWorker(PLUGIN_NAME, IMODELJS_VERSIONS_REQUIRED);
+export const startWebWorker = new StartWebWorker(PLUGIN_NAME);
 PluginAdmin.register(startWebWorker);

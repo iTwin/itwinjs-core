@@ -270,6 +270,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@bentley/wms-plugin-example",
+      "projectFolder": "plugins/wms",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",

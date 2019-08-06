@@ -388,9 +388,6 @@ export class SampleAppViewer extends React.Component<any> {
 
     AppUi.initialize();
 
-    // tslint:disable-next-line:no-console
-    console.log("Versions:", (window as any).iModelJsVersions);
-
     if (UiFramework.oidcClient.hasSignedIn) {
       SampleAppIModelApp.onSignedIn(); // tslint:disable-line:no-floating-promises
     } else {

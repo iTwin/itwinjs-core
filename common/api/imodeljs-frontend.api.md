@@ -4646,23 +4646,34 @@ export class PlanarClassifiers {
     push(texture: PlanarClassifier): void;
 }
 
-// @public
+// @beta
 export abstract class Plugin {
-    constructor(name: string, versionsRequired: string);
+    constructor(name: string);
+    readonly i18n: I18N;
+    // @internal (undocumented)
+    loader: PluginLoader | undefined;
     // (undocumented)
     name: string;
     abstract onExecute(_args: string[]): void;
     onLoad(_args: string[]): void;
-    // (undocumented)
-    versionsRequired: string;
+    resolveResourceUrl(relativeUrl: string): string;
+    setI18n(defaultNamespace?: string, options?: I18NOptions): void;
 }
 
-// @public
+// @beta
 export class PluginAdmin {
-    static getPlugin(pluginName: string): Promise<Plugin> | undefined;
-    static loadPlugin(packageName: string, args?: string[]): Promise<Plugin>;
+    // (undocumented)
+    static addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
+    // (undocumented)
+    static getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
+    // (undocumented)
+    static getTarFileName(pluginRootName: string): string;
+    static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
     static register(plugin: Plugin): string[] | undefined;
     }
+
+// @beta
+export type PluginLoadResults = Plugin | undefined | string | string[];
 
 // @alpha
 export class PluginUiManager {

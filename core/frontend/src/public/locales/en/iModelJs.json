@@ -45,14 +45,18 @@
     "CesiumWorldTerrainAttribution": "Cesium World Terrain: Data available from the U.S. Geological Survey, © CGIAR-CSI, Produced using Copernicus data and information funded by the European Union - EU-DEM layers, Data available from Land Information New Zealand, Data available from data.gov.uk, Data courtesy Geoscience Australia"
   },
   "PluginErrors": {
-    "Success": "Plugin '{{pluginName}}' loaded",
-    "VersionErrors": "Plugin '{{pluginName}}' version problems encountered",
+    "Success": "Plugin {{pluginName}} loaded",
+    "CantLoad": "Cannot load Plugin {{pluginName}}",
+    "CantFind": "Cannot find Plugin '{{pluginUrl}}' on server",
+    "CantUntar": "Error reading the Plugin tar file '{{pluginUrl}}",
+    "SignatureNoMatch": "Plugin '{{pluginUrl}}' contains a digital signature that does not match its contents",
+    "NoManifest": "Plugin does not contain required manifest file",
+    "ManifestMember": "Plugin Manifest is missing the '{{propertyName}}' required property",
     "FrontendOnly": "Plugins can be loaded in a browser or Electron only",
     "NoVersionsLoaded": "iModel.js versions loaded not found",
-    "ModuleNotLoaded": "Module {{moduleName}} is not loaded",
-    "WebpackedIncorrectly": "The Plugin has not been webpacked correctly",
+    "ModuleNotLoaded": "Required module {{moduleName}} is not loaded",
+    "PackagedIncorrectly": "The Plugin has not been packaged correctly",
     "NoVersionSpecified": "No version specified for module {{moduleName}}",
-    "NotLoaded": "Required module {{moduleName}} is not loaded",
     "VersionMismatch": "Version {{versionLoaded}} of {{moduleName}} is not compatible with {{versionRequired}}",
     "UnableToLoad": "Unable to load Plugin {{pluginName}}"
   },

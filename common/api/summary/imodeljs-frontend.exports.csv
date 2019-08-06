@@ -238,8 +238,9 @@ internal;PingTestResult
 beta;Pixel
 beta;PlanarClassifierMap = Map
 internal;PlanarClassifiers
-public;class Plugin
-public;PluginAdmin
+beta;class Plugin
+beta;PluginAdmin
+beta;PluginLoadResults = Plugin | undefined | string | string[]
 alpha;PluginUiManager
 alpha;PluginUiProvider
 beta;Primitives

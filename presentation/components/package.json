@@ -62,7 +62,7 @@
       },
       "pseudoLocalize": {
         "source": "./lib/public/locales/en",
-        "dest": "./lib/public/locales/en-pseudo"
+        "dest": "./lib/public/locales/en-PSEUDO"
       }
     }
   },

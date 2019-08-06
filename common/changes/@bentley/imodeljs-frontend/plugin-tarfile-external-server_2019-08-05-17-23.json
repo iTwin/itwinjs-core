@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Plugin changes to support building to tar files and hosting by external web servers.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}
