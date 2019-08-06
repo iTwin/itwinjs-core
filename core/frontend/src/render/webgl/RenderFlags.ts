@@ -132,6 +132,14 @@ export const enum SurfaceFlags {
   // For textured meshes, the color index in the vertex LUT is unused - we place the normal there instead.
   // For untextured lit meshes, the normal is placed after the feature ID.
   HasColorAndNormal = 1 << 6,
+
+  // For textured meshes, use alpha from v_color instead of from texture. Takes precedence over MultiplyAlpha if both are set.
+  OverrideAlpha = 1 << 7,
+  // For textured meshes, use rgb from v_color instead of from texture.
+  OverrideRgb = 1 << 8,
+
+  // For textured meshes, multiplied the texture alpha by v_color's alpha. OverrideAlpha takes precedence if both are set.
+  MultiplyAlpha = 1 << 9,
 }
 
 /** @internal */

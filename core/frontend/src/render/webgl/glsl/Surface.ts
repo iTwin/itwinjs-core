@@ -50,11 +50,16 @@ const applyMaterialColor = `
 `;
 
 // if this is a raster glyph, the sampled color has already been modified - do not modify further.
+// Mix diffuse color with texel based on texture weight.
+// Replace with diffuse RGB if RGB overridden.
+// Replace with diffuse alpha if alpha overridden.
+// Multiply texel alpha with diffuse alpha if specified.
 const applyTextureWeight = `
   float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
   vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
   rgba.rgb = mix(rgba.rgb, v_color.rgb, extractSurfaceBit(kSurfaceBit_OverrideRgb));
   rgba.a = mix(rgba.a, v_color.a, extractSurfaceBit(kSurfaceBit_OverrideAlpha));
+  rgba.a = mix(rgba.a, v_color.a * rgba.a, extractSurfaceBit(kSurfaceBit_MultiplyAlpha));
   return rgba;
 `;
 
@@ -240,7 +245,8 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_BackgroundFill", VariableType.Float, "5.0");
   builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
   builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
-  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.");
+  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.0");
+  builder.addConstant("kSurfaceBit_MultiplyAlpha", VariableType.Float, "9.0");
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceMask_HasTexture", VariableType.Float, "1.0");
@@ -252,6 +258,7 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_HasColorAndNormal", VariableType.Float, "64.0");
   builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
   builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
+  builder.addConstant("kSurfaceMask_MultiplyAlpha", VariableType.Float, "512.0");
 
   builder.addFunction(extractNthBit);
   builder.addFunction(extractSurfaceBit);
@@ -264,8 +271,11 @@ const computeBaseSurfaceFlags = `
   float flags = u_surfaceFlags;
   if (feature_ignore_material) {
     bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
-    if (hasTexture)
+    if (hasTexture) {
       flags -= kSurfaceMask_HasTexture;
+      if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
+        flags -= kSurfaceMask_MultiplyAlpha;
+    }
 
     flags += kSurfaceMask_IgnoreMaterial;
   }
@@ -275,8 +285,11 @@ const computeColorSurfaceFlags = `
   if (feature_rgb.r >= 0.0)
     flags += kSurfaceMask_OverrideRgb;
 
-  if (feature_alpha >= 0.0)
+  if (feature_alpha >= 0.0) {
     flags += kSurfaceMask_OverrideAlpha;
+    if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
+      flags -= kSurfaceMask_MultiplyAlpha;
+  }
 `;
 
 const returnSurfaceFlags = `
