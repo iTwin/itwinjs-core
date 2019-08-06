@@ -55,7 +55,7 @@
     "@bentley/geometry-core": "1.3.0-dev.18",
     "@bentley/electron-manager": "1.3.0-dev.18",
     "@bentley/express-server": "1.3.0-dev.18",
-    "@bentley/icons-generic-webfont": "^0.0.26",
+    "@bentley/icons-generic-webfont": "^0.0.29",
     "@bentley/imodeljs-clients": "1.3.0-dev.18",
     "@bentley/imodeljs-common": "1.3.0-dev.18",
     "@bentley/imodeljs-backend": "1.3.0-dev.18",

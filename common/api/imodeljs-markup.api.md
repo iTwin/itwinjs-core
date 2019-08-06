@@ -35,6 +35,8 @@ export class ArrowTool extends RedlineTool {
     // (undocumented)
     protected getOrCreateArrowMarker(color: string): Marker;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
@@ -44,6 +46,8 @@ export class ArrowTool extends RedlineTool {
 export class CircleTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -59,6 +63,8 @@ export class CloudTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
     static toolId: string;
@@ -70,6 +76,8 @@ export class DistanceTool extends ArrowTool {
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
     protected getFormattedDistance(distance: number): string | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -111,6 +119,8 @@ export class EditTextTool extends MarkupTool {
 export class EllipseTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -163,6 +173,8 @@ export function initSvgExt(): void;
 export class LineTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -523,6 +535,8 @@ export class PolygonTool extends RedlineTool {
     // (undocumented)
     protected getPoints(points: number[], center: Point3d, edge: Point3d, numSides: number, inscribe: boolean): boolean;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     protected _numSides?: number | undefined;
     // (undocumented)
     protected showPrompt(): void;
@@ -537,6 +551,8 @@ export class RectangleTool extends RedlineTool {
     protected _cornerRadius?: number | undefined;
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -616,6 +632,8 @@ export class SketchTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     protected _minDistSquared: number;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
@@ -634,6 +652,8 @@ export class SymbolTool extends RedlineTool {
     protected clearDynamicsMarkup(isDynamics: boolean): void;
     // (undocumented)
     protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)

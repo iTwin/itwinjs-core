@@ -72,7 +72,7 @@
     "@bentley/build-tools": "1.3.0-dev.18",
     "@bentley/imodeljs-markup": "1.3.0-dev.18",
     "@bentley/imodeljs-webserver": "1.3.0-dev.18",
-    "@bentley/icons-generic-webfont": "^0.0.26",
+    "@bentley/icons-generic-webfont": "^0.0.29",
     "@types/classnames": "^2.2.3",
     "@types/node": "10.14.1",
     "@types/react": "^16.8.0",
