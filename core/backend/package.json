@@ -88,7 +88,7 @@
     "webpack": "^4.20.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.153.0",
+    "@bentley/imodeljs-native": "~0.154.1",
     "azure-storage": "^2.10.2",
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
