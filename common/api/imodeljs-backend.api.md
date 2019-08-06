@@ -2108,7 +2108,9 @@ export class IModelJsFsStats {
 // @alpha
 export class IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
+    detectElementDeletes(): void;
     dispose(): void;
     excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
@@ -2156,6 +2158,7 @@ export class IModelTransformer {
     protected onElementAspectExcluded(_sourceElementAspect: ElementAspect): void;
     protected onElementAspectInserted(_targetElementAspect: ElementAspectProps): void;
     protected onElementAspectUpdated(_targetElementAspect: ElementAspectProps): void;
+    protected onElementDeleted(_targetElement: Element): void;
     protected onElementExcluded(_sourceElement: Element): void;
     protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onElementSkipped(_sourceElement: Element): void;
@@ -2169,6 +2172,7 @@ export class IModelTransformer {
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected shouldDeleteElement(_targetElement: Element): boolean;
     protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
     protected shouldExcludeElement(sourceElement: Element): boolean;
     protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean;

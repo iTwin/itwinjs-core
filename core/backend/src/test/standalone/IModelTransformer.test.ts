@@ -34,6 +34,7 @@ class TestIModelTransformer extends IModelTransformer {
   public numModelsUpdated = 0;
   public numElementsInserted = 0;
   public numElementsUpdated = 0;
+  public numElementsDeleted = 0;
   public numElementsExcluded = 0;
 
   public numRelationshipsExcluded = 0;
@@ -143,6 +144,13 @@ class TestIModelTransformer extends IModelTransformer {
     this.numElementsUpdated++;
     assert.isTrue(Id64.isValidId64(targetElementProps.id!));
     super.onElementUpdated(sourceElement, targetElementProps);
+  }
+
+  /** Count the number of Elements deleted in this callback */
+  protected onElementDeleted(targetElement: Element): void {
+    this.numElementsDeleted++;
+    assert.isTrue(Id64.isValidId64(targetElement.id));
+    super.onElementDeleted(targetElement);
   }
 
   /** Count the number of Elements excluded in this callback */
@@ -363,6 +371,15 @@ class TestDataManager {
     };
     const physicalObjectId2: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps2);
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
+    const physicalObjectProps3: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject3",
+    };
+    const physicalObjectId3: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps3);
+    assert.isTrue(Id64.isValidId64(physicalObjectId3));
     const sourcePhysicalElementProps: GeometricElement3dProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
@@ -584,9 +601,11 @@ class TestDataManager {
     // PhysicalElement
     const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject2");
+    const physicalObjectId3: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject3");
     const physicalElementId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalElement1");
     this.assertTargetElement(physicalObjectId1);
     this.assertTargetElement(physicalObjectId2);
+    this.assertTargetElement(physicalObjectId3);
     this.assertTargetElement(physicalElementId1);
     const physicalObject1: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
     const physicalObject2: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
@@ -708,6 +727,11 @@ class TestDataManager {
     sourceMultiAspects[1].sourceString += "-Updated";
     this.sourceDb.elements.updateAspect(sourceMultiAspects[1]);
     this.sourceDb.saveChanges();
+    // delete PhysicalObject3
+    const physicalObjectId3: Id64String = TestDataManager.queryByUserLabel(this.sourceDb, "PhysicalObject3");
+    assert.isTrue(Id64.isValidId64(physicalObjectId3));
+    this.sourceDb.elements.deleteElement(physicalObjectId3);
+    assert.equal(Id64.invalid, TestDataManager.queryByUserLabel(this.sourceDb, "PhysicalObject3"));
   }
 
   public assertUpdatesInTargetDb(): void {
@@ -758,6 +782,8 @@ class TestDataManager {
     assert.equal(targetMultiAspects[1].targetDouble, 33.3);
     assert.equal(targetMultiAspects[1].targetString, "MultiAspect-Updated");
     assert.equal(targetMultiAspects[1].targetLong, physicalObjectId1);
+    // assert PhysicalObject3 was deleted
+    assert.equal(Id64.invalid, TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject3"));
   }
 }
 
@@ -877,7 +903,6 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
       assert.isAbove(transformer.numModelsInserted, 0);
@@ -886,6 +911,7 @@ describe("IModelTransformer", () => {
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
       assert.isAbove(transformer.numElementsUpdated, 0);
       assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
+      assert.equal(transformer.numElementsDeleted, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
       assert.isAbove(transformer.numElementAspectsExcluded, 0);
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
@@ -897,6 +923,7 @@ describe("IModelTransformer", () => {
       numRelationshipExcluded = transformer.numRelationshipsExcluded;
       testDataManager.targetDb.saveChanges();
       testDataManager.assertTargetDbContents();
+      transformer.dispose();
     }
 
     const numTargetElements: number = count(testDataManager.targetDb, Element.classFullName);
@@ -916,11 +943,11 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
       assert.equal(transformer.numModelsInserted, 0);
       assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 0);
+      assert.equal(transformer.numElementsDeleted, 0);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       assert.equal(transformer.numInsertElementCalls, 0);
       assert.equal(transformer.numInsertElementProvenanceCalls, 0);
@@ -930,6 +957,7 @@ describe("IModelTransformer", () => {
       assert.equal(numTargetElements, count(testDataManager.targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
       assert.equal(numTargetRelationships, count(testDataManager.targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
+      transformer.dispose();
     }
 
     if (true) { // update source db, then import again
@@ -940,19 +968,22 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
       assert.equal(transformer.numModelsInserted, 0);
       assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
       assert.equal(transformer.numElementsUpdated, 3);
       assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
+      assert.equal(transformer.numElementsDeleted, 1);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       testDataManager.targetDb.saveChanges();
       testDataManager.assertUpdatesInTargetDb();
-      assert.equal(numTargetElements, count(testDataManager.targetDb, Element.classFullName), "Third import should not add elements");
-      assert.equal(numTargetExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Third import should not add aspects");
+      const expectedNumTargetElements: number = numTargetElements + transformer.numElementsInserted - transformer.numElementsDeleted;
+      const expectedNumExternalSourceAspects: number = numTargetExternalSourceAspects + transformer.numElementsInserted - transformer.numElementsDeleted;
+      assert.equal(expectedNumTargetElements, count(testDataManager.targetDb, Element.classFullName), "Third import should not add elements");
+      assert.equal(expectedNumExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Third import should not add aspects");
       assert.equal(numTargetRelationships, count(testDataManager.targetDb, ElementRefersToElements.classFullName), "Third import should not add relationships");
+      transformer.dispose();
     }
   });
 });

@@ -151,17 +151,38 @@ export class IModelTransformer {
     return subjectId;
   }
 
+  /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
+  private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
+    const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
+    this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("scopeId", this.getTargetScopeElementId());
+      statement.bindString("kind", Element.className);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const sourceElementId: Id64String = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
+        const targetElementId: Id64String = statement.getValue(1).getId();
+        fn(sourceElementId, targetElementId);
+      }
+    });
+  }
+
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel. */
   public initFromExternalSourceAspects(): void {
-    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
-    const sql = `SELECT Element.Id FROM ${ExternalSourceAspect.classFullName}`;
-    this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        const elementId: Id64String = statement.getValue(0).getId();
-        const aspects: ElementAspect[] = this._targetDb.elements.getAspects(elementId, ExternalSourceAspect.classFullName);
-        for (const aspect of aspects) {
-          if ((aspect.scope.id === targetScopeElementId) && (aspect.kind === Element.className)) {
-            this._importContext.addElementId(aspect.identifier, elementId);
+    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+      this._importContext.addElementId(sourceElementId, targetElementId);
+    });
+  }
+
+  /** Detect source element deletes from unmatched ExternalSourceAspects in the target iModel. */
+  public detectElementDeletes(): void {
+    this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
+      try {
+        this._sourceDb.elements.getElementProps(sourceElementId);
+      } catch (error) {
+        if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
+          const targetElement: Element = this._targetDb.elements.getElement(targetElementId);
+          if (this.shouldDeleteElement(targetElement)) {
+            this.deleteElement(targetElement);
+            this.onElementDeleted(targetElement);
           }
         }
       }
@@ -215,12 +236,18 @@ export class IModelTransformer {
    */
   protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void { }
 
-  /** Called after processing a source Element when it caused an Element or Elements to be updated in the target iModel.
+  /** Called after processing a source Element when it caused an Element to be updated in the target iModel.
    * @param _sourceElement The sourceElement that was processed
    * @param _targetElementProps The ElementProps that were updated in the target iModel because of processing the source Element.
    * @note A subclass can override this method to be notified after Elements have been updated. This can be used to establish relationships or for other operations that require knowing ElementIds.
    */
   protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void { }
+
+  /** Called after a delete within the source iModel was detected and propagated to the target iModel.
+   * @param _targetElement The Element that was deleted from the target iModel.
+   * @note A subclass can override this method to be notified after Elements have been deleted.
+   */
+  protected onElementDeleted(_targetElement: Element): void { }
 
   /** Called after it was determined that it was not possible to import a source Element. This is usually because one or more required predecessors has not been imported yet.
    * @param _sourceElement The source Element that was skipped.
@@ -356,6 +383,24 @@ export class IModelTransformer {
     }
     this._targetDb.elements.updateElement(targetElementProps);
     Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementForLogger(targetElementProps)}`);
+  }
+
+  /** Delete the specified Element from the target iModel.
+   * @param targetElement The Element in the target iModel to delete
+   * @note A subclass can override this method to provide custom delete behavior.
+   */
+  protected deleteElement(targetElement: Element): void {
+    this._targetDb.elements.deleteElement(targetElement.id);
+    Logger.logInfo(loggerCategory, `(Target) Deleted element ${this.formatElementForLogger(targetElement)}`);
+  }
+
+  /** Returns true if the detected potential delete of the specified target Element should happen.
+   * @param targetElement The Element from the target iModel to consider
+   * @returns `true` if target Element should be deleted from the target iModel or `false` if not.
+   * @note A subclass can override this method to provide custom Element delete behavior.
+   */
+  protected shouldDeleteElement(_targetElement: Element): boolean {
+    return true;
   }
 
   /** Returns true if a change within sourceElement is detected.
@@ -981,5 +1026,6 @@ export class IModelTransformer {
     this.importModels(InformationPartitionElement.classFullName);
     this.importSkippedElements();
     this.importRelationships(ElementRefersToElements.classFullName);
+    this.detectElementDeletes();
   }
 }
