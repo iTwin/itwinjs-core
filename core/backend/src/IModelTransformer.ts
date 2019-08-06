@@ -174,17 +174,21 @@ export class IModelTransformer {
 
   /** Detect source element deletes from unmatched ExternalSourceAspects in the target iModel. */
   public detectElementDeletes(): void {
+    const targetElementIds: Id64String[] = [];
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
       try {
         this._sourceDb.elements.getElementProps(sourceElementId);
       } catch (error) {
         if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-          const targetElement: Element = this._targetDb.elements.getElement(targetElementId);
-          if (this.shouldDeleteElement(targetElement)) {
-            this.deleteElement(targetElement);
-            this.onElementDeleted(targetElement);
-          }
+          targetElementIds.push(targetElementId);
         }
+      }
+    });
+    targetElementIds.forEach((targetElementId: Id64String) => {
+      const targetElement: Element = this._targetDb.elements.getElement(targetElementId);
+      if (this.shouldDeleteElement(targetElement)) {
+        this.deleteElement(targetElement);
+        this.onElementDeleted(targetElement);
       }
     });
   }
