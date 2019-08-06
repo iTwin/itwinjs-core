@@ -167,7 +167,9 @@ describe("ToolAssistanceField", () => {
     const instruction21 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "xyz");
     const instruction22 = ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, "xyz");
     const instruction23 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "xyz");
-    const section2 = ToolAssistance.createSection([instruction21, instruction22, instruction23], "More Inputs");
+    const instruction24 = ToolAssistance.createInstruction(ToolAssistanceImage.RightClickDrag, "xyz");
+    const instruction25 = ToolAssistance.createInstruction(ToolAssistanceImage.MouseWheelClickDrag, "xyz");
+    const section2 = ToolAssistance.createSection([instruction21, instruction22, instruction23, instruction24, instruction25], "More Inputs");
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2]);
 
@@ -181,7 +183,7 @@ describe("ToolAssistanceField", () => {
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
     expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(3);
-    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(6);
+    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(8);
 
     wrapper.unmount();
   });

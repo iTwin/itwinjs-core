@@ -7358,7 +7358,9 @@ export enum ToolAssistanceImage {
     LeftClick = 3,
     LeftClickDrag = 6,
     MouseWheel = 5,
-    RightClick = 4
+    MouseWheelClickDrag = 8,
+    RightClick = 4,
+    RightClickDrag = 7
 }
 
 // @alpha
