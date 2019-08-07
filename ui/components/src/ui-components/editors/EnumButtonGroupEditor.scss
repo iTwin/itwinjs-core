@@ -88,6 +88,7 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
     display: grid;
     align-content: center;
     justify-content: center;
+    margin: 0;
     color: $icon-color;
     filter: $icon-shadow;
     transition: all 500ms ease;
