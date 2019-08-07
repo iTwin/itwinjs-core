@@ -7180,11 +7180,11 @@ export class Tool {
     constructor(..._args: any[]);
     readonly description: string;
     static readonly description: string;
-    readonly flyover: string;
     static readonly flyover: string;
+    readonly flyover: string;
     static hidden: boolean;
-    readonly iconSpec: string;
     static iconSpec: string;
+    readonly iconSpec: string;
     static readonly keyin: string;
     readonly keyin: string;
     static namespace: I18NNamespace;

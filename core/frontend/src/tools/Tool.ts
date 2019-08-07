@@ -368,32 +368,25 @@ export class Tool {
   public static namespace: I18NNamespace;
   public constructor(..._args: any[]) { }
 
-  private static _keyin?: string;
-  private static _flyover?: string;
-  private static _description?: string;
-  private static get _localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
-  private static get _keyinKey() { return this._localizeBase + ".keyin"; }
-  private static get _flyoverKey() { return this._localizeBase + ".flyover"; }
-  private static get _descriptionKey() { return this._localizeBase + ".description"; }
-
   /**
    * Register this Tool class with the ToolRegistry.
    * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
    */
   public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
 
+  private static getLocalizedKey(name: string): string | undefined {
+    const key = "tools." + this.toolId + "." + name;
+    const val = IModelApp.i18n.translateWithNamespace(this.namespace.name, key);
+    return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
+  }
+
   /**
    * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
    */
   public static get keyin(): string {
-    if (!this.hasOwnProperty("_keyin"))
-      this._keyin = IModelApp.i18n.translate(this._keyinKey);
-
-    if (undefined === this._keyin)
-      throw new IModelError(-1, "Every tool must have a unique keyin");
-
-    return this._keyin!;
+    const keyin = this.getLocalizedKey("keyin");
+    return (undefined !== keyin) ? keyin : ""; // default to empty string
   }
 
   /**
@@ -401,14 +394,20 @@ export class Tool {
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the keyin property is returned.
    */
-  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n && IModelApp.i18n.translate([this._flyoverKey, this._keyinKey])); }
+  public static get flyover(): string {
+    const flyover = this.getLocalizedKey("flyover");
+    return (undefined !== flyover) ? flyover : this.keyin; // default to keyin
+  }
 
   /**
    * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
    * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
    * the flyover property is returned.
    */
-  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n && IModelApp.i18n.translate([this._descriptionKey, this._flyoverKey, this._keyinKey])); }
+  public static get description(): string {
+    const description = this.getLocalizedKey("description");
+    return (undefined !== description) ? description : this.flyover; // default to flyover
+  }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize

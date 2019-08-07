@@ -206,7 +206,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     hlDiv.appendChild(transDiv);
@@ -231,7 +231,7 @@ export class ViewAttributes {
         this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
           colorCb.checked ? new ColorDef(value) : undefined,
           parseInt(patternCb.select.value, 10),
-          lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+          lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
           hiddenEdge);
       },
     };
@@ -240,7 +240,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     colorCb.checked = false;
