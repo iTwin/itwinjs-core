@@ -1572,8 +1572,6 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     resizable: boolean;
     // (undocumented)
-    size?: number;
-    // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
     widgetCount: number;
@@ -3856,7 +3854,7 @@ export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProp
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
-    }
+}
 
 // @internal
 export interface ToolSettingsZoneProps extends CommonProps {
