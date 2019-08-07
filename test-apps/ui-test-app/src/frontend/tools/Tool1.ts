@@ -51,8 +51,10 @@ export class Tool1 extends PrimitiveTool {
 
     const instruction21 = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "Accept result");
     const instruction22 = ToolAssistance.createInstruction(ToolAssistanceImage.MouseWheel, "Use mouse wheel");
-    const instruction23 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Left click");
-    const instruction24 = ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, "Right click");
+    // cSpell:disable
+    const instruction23 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Left click. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.");
+    const instruction24 = ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, "Right click. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+    // cSpell:enable
     const section2 = ToolAssistance.createSection([instruction21, instruction22, instruction23, instruction24], "More Inputs");
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2]);
