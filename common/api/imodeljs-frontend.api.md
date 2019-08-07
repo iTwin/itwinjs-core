@@ -1854,8 +1854,11 @@ export interface Decorator {
 }
 
 // @internal (undocumented)
-export class DefaultViewTouchTool extends ViewManip {
+export class DefaultViewTouchTool extends ViewManip implements Animator {
     constructor(startEv: BeTouchEvent, _ev: BeTouchEvent);
+    animate(): boolean;
+    // (undocumented)
+    interrupt(): void;
     // (undocumented)
     onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
