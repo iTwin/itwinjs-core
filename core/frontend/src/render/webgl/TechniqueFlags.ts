@@ -48,7 +48,7 @@ export const enum IsEdgeTestNeeded { No, Yes }
 export const enum IsShadowable { No, Yes }
 
 /** @internal */
-export const enum HasMaterialAtlas { No, Yes}
+export const enum HasMaterialAtlas { No, Yes }
 
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
@@ -104,7 +104,7 @@ export class TechniqueFlags {
             this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
             break;
           case RenderMode.SmoothShade:
-            if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion) {
+            if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion && pass !== RenderPass.PlanarClassification) {
               // We're only displaying surfaces (ignoring filled planar regions). NB: Filled text with outline is handled by gl.polygonOffset().
               this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
             }
