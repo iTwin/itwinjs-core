@@ -89,7 +89,7 @@
   },
   "dependencies": {
     "@bentley/imodeljs-native": "~0.154.1",
-    "azure-storage": "^2.10.2",
+    "@azure/storage-blob": "^10.4.0",
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",

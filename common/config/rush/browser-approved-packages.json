@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@azure/storage-blob",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
