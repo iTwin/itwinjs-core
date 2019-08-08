@@ -1162,8 +1162,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const contourA = surface.getSweepContourRef();
       contourA.purgeFacets();
 
-      contourA.emitFacets(this, false, undefined);
-      contourA.emitFacets(this, true, sweepTransform);
+      contourA.emitFacets(this, true, undefined);
+      contourA.emitFacets(this, false, sweepTransform);
     }
   }
 

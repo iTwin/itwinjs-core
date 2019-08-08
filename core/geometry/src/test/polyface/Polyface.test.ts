@@ -31,6 +31,7 @@ import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVe
 import { Angle } from "../../geometry3d/Angle";
 import { Cone } from "../../solid/Cone";
 import { Sphere } from "../../solid/Sphere";
+import { Box } from "../../solid/Box";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -342,6 +343,11 @@ function writeMeshes(geometry: GeometryQuery[], fileName: string, options?: Stro
     }
     if (g instanceof SolidPrimitive) {
       const isClosedMesh = PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface);
+      if (!isClosedMesh) {
+        const boundary = PolyfaceQuery.boundaryEdges(polyface);
+        if (boundary !== undefined)
+          allMesh.push(boundary);
+      }
       const isClosedSolid = g.isClosedVolume;
       if (polyface.isEmpty) {
         console.log(fileName1, gCount + " of " + geometry.length + "is empty polyface");
@@ -463,6 +469,56 @@ describe("Polyface.Facets", () => {
     writeAllMeshes(openSweeps, "OpenSweeps", allOptions, y0OpenSweeps, optionYStep);
     const closedSolids = Sample.createClosedSolidSampler(true);
     writeAllMeshes(closedSolids, "ClosedSweeps", allOptions, y0ClosedSampler, optionYStep);
+  });
+
+  it("Moments", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const closedSweeps = Sample.createClosedSolidSampler(true);
+    const dx = 20.0;
+    const dy = 20.0;
+    let x0 = 0;
+    const y0 = 0;
+    for (const s of closedSweeps) {
+      const builder = PolyfaceBuilder.create();
+      builder.addGeometryQuery(s);
+      const mesh = builder.claimPolyface();
+      const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh);
+      const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh);
+      GeometryCoreTestIO.captureGeometry(allGeometry, s, x0, y0);
+      GeometryCoreTestIO.showMomentData(allGeometry, areaMoments, false, x0, y0 + dy);
+      GeometryCoreTestIO.showMomentData(allGeometry, volumeMoments, false, x0, y0 + 2 * dy);
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "Moments");
+  });
+
+  it("ExactMoments", () => {
+    const ck = new Checker();
+    // const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    const a = 5;
+    const b = 3;
+    const c = 2;
+    const volume = a * b * c;
+    const iX = volume * (b * b + c * c) / 12.0;
+    const iY = volume * (a * a + c * c) / 12.0;
+    const iZ = volume * (b * b + a * a) / 12.0;
+    const s = Box.createRange(Range3d.createXYZXYZ(0, 0, 0, a, b, c), true)!;
+    builder.addGeometryQuery(s);
+    const mesh = builder.claimPolyface();
+    const areaMoments = PolyfaceQuery.computePrincipalAreaMoments(mesh)!;
+    const volumeMoments = PolyfaceQuery.computePrincipalVolumeMoments(mesh)!;
+    ck.testCoordinate(2.0 * (a * b + b * c + c * a), areaMoments.quantitySum, "Known box area");
+    ck.testCoordinate(volume, volumeMoments.quantitySum, "Known box volume");
+    const volumeB = volumeMoments.quantitySum;
+    const rxB = volumeMoments.radiusOfGyration.x;
+    const ryB = volumeMoments.radiusOfGyration.y;
+    const rzB = volumeMoments.radiusOfGyration.z;
+    ck.testCoordinate(iX, rxB * rxB * volumeB, "box X moment");
+    ck.testCoordinate(iY, ryB * ryB * volumeB, "box Y moment");
+    ck.testCoordinate(iZ, rzB * rzB * volumeB, "box Z moment");
+
+    expect(ck.getNumErrors()).equals(0);
   });
 
 });
@@ -954,6 +1010,7 @@ it("EmptyPolyface", () => {
   ck.testFalse(emptyPolyface.isSameGeometryClass(undefined));
   ck.testTrue(emptyPolyface.isSameGeometryClass(emptyPolyface));
   ck.testUndefined(PolyfaceQuery.computePrincipalAreaMoments(emptyPolyface), "Expect moment failure in empty polyface");
+  ck.testUndefined(PolyfaceQuery.computePrincipalVolumeMoments(emptyPolyface), "Expect moment failure in empty polyface");
   expect(ck.getNumErrors()).equals(0);
 });
 

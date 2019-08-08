@@ -122,4 +122,21 @@ describe("CurveOffset", () => {
     testCurveOffset(paths, "FractalPaths" + counter++, offsetDistances, 1.0);
 
   });
+  // cspell:word Daumantas
+  it("Daumantas", () => {
+    let counter = 0;
+    const y0 = 6.7;
+    const x0 = -5.0;
+    const x3 = 2.0;
+    const y3 = 1.078;
+    const x4 = 8.0;
+    const y4 = 8.0;
+    const path0 = Path.create(LineString3d.create([[x0, y0], [0, y0], [0, 0], [x3, y3], [x4, y4]]));
+    const a = 0.56;
+    const offsetDistances = [a, -a];
+    // const offsetDistances = [a];
+    testCurveOffset([path0], "Daumantas" + counter++, offsetDistances, 1.0);
+
+  });
+
 });

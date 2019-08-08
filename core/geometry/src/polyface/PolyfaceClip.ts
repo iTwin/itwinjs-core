@@ -17,6 +17,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { LineString3d } from "../curve/LineString3d";
 import { SweepContour } from "../solid/SweepContour";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 /** PolyfaceClip is a static class gathering operations using Polyfaces and clippers.
  * @public
@@ -42,11 +43,13 @@ export class PolyfaceClip {
     }
     // SweepContour is your friend .. but maybe it doesn't do holes and multi-loops yet?
     if (buildClosureFace) {
+      const outwardNormal = clipper.getPlane3d().getNormalRef().scale(-1.0);
       chainContext.clusterAndMergeVerticesXYZ();
       const loops = chainContext.collectMaximalGrowableXYZArrays();
-      const contour = SweepContour.createForPolygon(loops);
+      PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loops, outwardNormal);
+      const contour = SweepContour.createForPolygon(loops, outwardNormal);
       if (contour !== undefined) {
-        contour.emitFacets(builder, false);
+        contour.emitFacets(builder, insideClip);
       }
     }
     return builder.claimPolyface(true);

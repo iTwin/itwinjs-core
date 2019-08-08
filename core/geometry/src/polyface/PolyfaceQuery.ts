@@ -11,12 +11,12 @@
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Polyface, PolyfaceVisitor } from "./Polyface";
 import { Matrix4d } from "../geometry4d/Matrix4d";
-import { BagOfCurves } from "../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { Loop } from "../curve/Loop";
 import { LineString3d } from "../curve/LineString3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { MomentData } from "../geometry4d/MomentData";
-import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
+import { IndexedEdgeMatcher, SortableEdgeCluster, SortableEdge } from "./IndexedEdgeMatcher";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Transform } from "../geometry3d/Transform";
 import { Segment1d } from "../geometry3d/Segment1d";
@@ -85,7 +85,7 @@ export class PolyfaceQuery {
     }
     return s / 6.0;
   }
-  /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all facets. */
+  /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all all facets, as viewed from origin. */
   public static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
     if (source instanceof Polyface)
       return PolyfaceQuery.sumFacetSecondAreaMomentProducts(source.createVisitor(0), origin);
@@ -97,6 +97,19 @@ export class PolyfaceQuery {
     }
     return products;
   }
+  /** Return the inertia products [xx,xy,xz,xw, yw, etc] integrated over all tetrahedral volumes from origin */
+  public static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d {
+    if (source instanceof Polyface)
+      return PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source.createVisitor(0), origin);
+    const products = Matrix4d.createZero();
+    const visitor = source as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      PolygonOps.addSecondMomentVolumeProducts(visitor.point, origin, products);
+    }
+    return products;
+  }
+
   /** Compute area moments for the mesh. In the returned MomentData:
    * * origin is the centroid.
    * * localToWorldMap has the origin and principal directions
@@ -108,6 +121,20 @@ export class PolyfaceQuery {
     const inertiaProducts = PolyfaceQuery.sumFacetSecondAreaMomentProducts(source, origin);
     return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
   }
+  /** Compute area moments for the mesh. In the returned MomentData:
+   * * origin is the centroid.
+   * * localToWorldMap has the origin and principal directions
+   * * radiiOfGyration radii for rotation around the x,y,z axes.
+   * * The result is only valid if the mesh is closed.
+   * * There is no test for closure.  Use `PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface)` to test for closure.
+   */
+  public static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined {
+    const origin = source.data.getPoint(0);
+    if (!origin) return undefined;
+    const inertiaProducts = PolyfaceQuery.sumFacetSecondVolumeMomentProducts(source, origin);
+    return MomentData.inertiaProductsToPrincipalAxes(origin, inertiaProducts);
+  }
+
   /**
    * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
    * @param source
@@ -126,6 +153,49 @@ export class PolyfaceQuery {
     edges.sortAndCollectClusters(undefined, badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
+  /**
+  * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
+  * If not, extract the boundary edges as lines.
+  * @param source
+  */
+  public static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+    const edges = new IndexedEdgeMatcher();
+    const visitor = source.createVisitor(1) as PolyfaceVisitor;
+    visitor.reset();
+    while (visitor.moveToNextFacet()) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+      }
+    }
+    const bad1: SortableEdgeCluster[] = [];
+    const bad2: SortableEdgeCluster[] = [];
+    const bad0: SortableEdgeCluster[] = [];
+    edges.sortAndCollectClusters(undefined, bad1, bad0, bad2);
+    const badList = [];
+    if (includeDanglers && bad1.length > 0)
+      badList.push(bad1);
+    if (includeMismatch && bad2.length > 0)
+      badList.push(bad2);
+    if (includeNull && bad0.length > 0)
+      badList.push(bad0);
+    if (badList.length === 0)
+      return undefined;
+    const result = new BagOfCurves();
+    for (const list of badList) {
+      for (const e of list) {
+        const e1 = e instanceof SortableEdge ? e : e[0];
+        const indexA = e1.vertexIndexA;
+        const indexB = e1.vertexIndexB;
+        const pointA = source.data.getPoint(indexA);
+        const pointB = source.data.getPoint(indexB);
+        if (pointA && pointB)
+          result.tryAddChild(LineSegment3d.create(pointA, pointB));
+      }
+    }
+    return result;
+  }
+
   /** Find segments (within the linestring) which project to facets.
    * * Announce each pair of linestring segment and on-facet segment through a callback.
    * * Facets are ASSUMED to be convex and planar.
