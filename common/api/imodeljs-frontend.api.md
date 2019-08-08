@@ -3770,6 +3770,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected acceptNewSegments(): Promise<void>;
     // (undocumented)
+    protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
+    // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
     decorateSuspended(context: DecorateContext): void;
@@ -7673,8 +7675,6 @@ export class ViewClipByRangeTool extends ViewClipTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
-    decorateSuspended(context: DecorateContext): void;
-    // (undocumented)
     protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
@@ -7696,8 +7696,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
-    decorateSuspended(context: DecorateContext): void;
     // (undocumented)
     protected getClipPoints(ev: BeButtonEvent): Point3d[];
     // (undocumented)

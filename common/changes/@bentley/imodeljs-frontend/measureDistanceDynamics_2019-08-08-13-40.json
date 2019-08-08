@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Measure distance, don't use cursor location in decorate while suspended.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
