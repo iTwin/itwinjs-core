@@ -1497,6 +1497,7 @@ export class Geometry {
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
     static clampToStartEnd(x: number, a: number, b: number): number;
+    static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
     static correctSmallMetricDistance(distance: number, replacement?: number): number;
     static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
@@ -1542,6 +1543,7 @@ export class Geometry {
     static isSmallMetricDistance(distance: number): boolean;
     static isSmallMetricDistanceSquared(distanceSquared: number): boolean;
     static isSmallRelative(value: number): boolean;
+    static readonly largeCoordinateResult = 10000000000000;
     static readonly largeFractionResult = 10000000000;
     static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1;
     static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1;
