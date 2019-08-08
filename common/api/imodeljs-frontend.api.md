@@ -7183,16 +7183,22 @@ export class Tool {
     constructor(..._args: any[]);
     readonly description: string;
     static readonly description: string;
-    static readonly flyover: string;
     readonly flyover: string;
+    static readonly flyover: string;
     static hidden: boolean;
     static iconSpec: string;
     readonly iconSpec: string;
-    static readonly keyin: string;
     readonly keyin: string;
+    static readonly keyin: string;
+    // @beta
+    static readonly maxArgs: number | undefined;
+    // @beta
+    static readonly minArgs: number;
     static namespace: I18NNamespace;
+    // @beta
+    parseAndRun(..._args: string[]): boolean;
     static register(namespace?: I18NNamespace): void;
-    run(..._arg: any[]): boolean;
+    run(..._args: any[]): boolean;
     static toolId: string;
     readonly toolId: string;
 }
@@ -7412,8 +7418,6 @@ export type ToolList = ToolType[];
 // @public
 export class ToolRegistry {
     create(toolId: string, ...args: any[]): Tool | undefined;
-    // @internal
-    executeExactMatch(keyin: string, ...args: any[]): boolean;
     find(toolId: string): ToolType | undefined;
     // @internal
     findExactMatch(keyin: string): ToolType | undefined;

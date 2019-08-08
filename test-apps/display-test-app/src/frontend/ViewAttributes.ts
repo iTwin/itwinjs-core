@@ -37,7 +37,6 @@ import {
 } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
-import { isString } from "util";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 
@@ -280,7 +279,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     lbCb.checked = false;
@@ -291,7 +290,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     parent.appendChild(hlDiv);
