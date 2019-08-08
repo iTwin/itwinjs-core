@@ -6,6 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 
 import { Panel } from "../../../../../ui-ninezone";
+import { expect } from "chai";
 
 describe("<Panel />", () => {
   it("should render", () => {
@@ -15,4 +16,16 @@ describe("<Panel />", () => {
   it("renders correctly", () => {
     shallow(<Panel />).should.matchSnapshot();
   });
+
+  it("isPanelOpen should return false", () => {
+    expect(Panel.isPanelOpen).to.be.false;
+  });
+
+  it("isPanelOpen should return true", () => {
+    const wrapper = mount(<Panel />, { attachTo: document.body });
+    expect(Panel.isPanelOpen).to.be.true;
+    wrapper.detach();
+    wrapper.unmount();
+  });
+
 });
