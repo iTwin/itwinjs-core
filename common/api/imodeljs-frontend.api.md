@@ -1429,7 +1429,7 @@ export class CategorySelectorState extends ElementState {
 
 // @internal (undocumented)
 export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
-    constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, gcsConverterAvailable: boolean, _requestContext: ClientRequestContext, _accessToken: string, _tileUrlTemplate: string, _maxDepth: number, heightRange: Range1d);
+    constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, _requestContext: ClientRequestContext, _accessToken: string, _tileUrlTemplate: string, _maxDepth: number, heightRange: Range1d);
     // (undocumented)
     readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
@@ -1615,6 +1615,9 @@ export enum CompassMode {
     // (undocumented)
     Rectangular = 1
 }
+
+// @internal (undocumented)
+export function computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform;
 
 // @alpha
 export interface ConditionalDisplaySpecification {
@@ -2711,7 +2714,7 @@ export class GeoServices {
     }
 
 // @internal (undocumented)
-export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, gcsConverterAvailable: boolean): Promise<TerrainTileLoaderBase | undefined>;
+export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise<TerrainTileLoaderBase | undefined>;
 
 // @internal
 export function getGcsConverterAvailable(iModel: IModelConnection): Promise<boolean>;
@@ -3606,17 +3609,13 @@ export interface MapTileGeometryAttributionProvider {
 
 // @internal (undocumented)
 export abstract class MapTileLoaderBase extends TileLoader {
-    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, gcsConverterAvailable: boolean, _mapTilingScheme: MapTilingScheme, _heightRange?: Range1d | undefined);
+    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, _heightRange?: Range1d | undefined);
     // (undocumented)
     protected _applyLights: boolean;
     // (undocumented)
-    protected _childTileCreator: ChildCreator;
-    // (undocumented)
-    compareTilePriorities(lhs: Tile, rhs: Tile): number;
-    // (undocumented)
     protected _featureTable: PackedFeatureTable;
     // (undocumented)
-    getChildrenProps(parent: Tile): Promise<TileProps[]>;
+    getChildrenProps(_parent: Tile): Promise<TileProps[]>;
     // (undocumented)
     protected _groundBias: number;
     // (undocumented)
@@ -4873,9 +4872,13 @@ export enum PropertyValueFormat {
 
 // @internal (undocumented)
 export class QuadId {
-    constructor(stringId: string);
+    constructor(level: number, column: number, row: number);
     // (undocumented)
     column: number;
+    // (undocumented)
+    readonly contentId: string;
+    // (undocumented)
+    static createFromContentId(stringId: string): QuadId;
     // (undocumented)
     getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d;
     // (undocumented)
@@ -5186,8 +5189,6 @@ export class RenderPlan {
     // (undocumented)
     static createFromViewport(vp: Viewport): RenderPlan;
     // (undocumented)
-    readonly expandedFrustum: ViewFrustum | undefined;
-    // (undocumented)
     readonly fraction: number;
     // (undocumented)
     readonly frustum: Frustum;
@@ -5203,8 +5204,6 @@ export class RenderPlan {
     readonly lights?: SceneLights;
     // (undocumented)
     readonly monoColor: ColorDef;
-    // (undocumented)
-    selectExpandedFrustum(): void;
     // (undocumented)
     selectViewFrustum(): void;
     // (undocumented)
@@ -9063,7 +9062,7 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
 
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {
-    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, gcsConverterAvailable: boolean, mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
+    constructor(_imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
     // (undocumented)
     geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
@@ -9075,6 +9074,23 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     // (undocumented)
     requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
 }
+
+// @internal (undocumented)
+export class WebMapTileProps implements TileProps {
+    constructor(thisId: string, level: number, corners: Point3d[], zLow: number, zHigh: number);
+    // (undocumented)
+    readonly contentId: string;
+    // (undocumented)
+    readonly contentRange?: Range3dProps;
+    // (undocumented)
+    readonly corners: Point3d[];
+    // (undocumented)
+    readonly isLeaf: boolean;
+    // (undocumented)
+    readonly maximumSize: number;
+    // (undocumented)
+    readonly range: Range3dProps;
+    }
 
 // @internal (undocumented)
 export class WebMapTileTreeProps implements TileTreeProps {

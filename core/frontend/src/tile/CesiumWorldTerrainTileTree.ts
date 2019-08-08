@@ -20,6 +20,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
 import { GeographicTilingScheme } from "./MapTilingScheme";
 import { ScreenViewport } from "../Viewport";
+import { MapTile } from "./MapTileTree";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -29,7 +30,7 @@ enum QuantizedMeshExtensionIds {
 }
 
 /** @internal */
-export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, gcsConverterAvailable: boolean): Promise<TerrainTileLoaderBase | undefined> {
+export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise<TerrainTileLoaderBase | undefined> {
   const _requestContext = new ClientRequestContext("");
   const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
   // TBD... this key is generated for RBB personal account - change to enterprise license from Cesium.
@@ -72,7 +73,7 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, gcsConverterAvailable, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange);
+  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange);
 }
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
@@ -117,8 +118,8 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchTriangle = new Triangle();
   private static _scratchNormal = Vector3d.createZero();
-  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, gcsConverterAvailable: boolean, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d) {
-    super(iModel, modelId, groundBias, gcsConverterAvailable, new GeographicTilingScheme(), heightRange);
+  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d) {
+    super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
   }
   public getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string {
     return (IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution"));
@@ -134,13 +135,18 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     const blob = data as Uint8Array;
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     const center = streamBuffer.nextPoint3d64;
-    const quadId = new QuadId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 5.0;
+    const quadId = QuadId.createFromContentId(tile.contentId);
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
     const minHeight = this._groundBias + streamBuffer.nextFloat32;
     const maxHeight = this._groundBias + streamBuffer.nextFloat32;
     const boundCenter = streamBuffer.nextPoint3d64;
     const boundRadius = streamBuffer.nextFloat64;
     const horizonOcclusion = streamBuffer.nextPoint3d64;
+    const mapTile = tile as MapTile;
+    if (undefined !== mapTile) {
+      await mapTile.reprojectCorners();
+      mapTile.adjustHeights(minHeight, maxHeight);
+    }
 
     if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
     const vertexCount = streamBuffer.nextUint32;
@@ -252,6 +258,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
         const normalIndex = i * 2;
         OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], CesiumWorldTerrainTileLoader._scratchNormal);
         worldToEcef.multiplyTransposeVector(CesiumWorldTerrainTileLoader._scratchNormal, CesiumWorldTerrainTileLoader._scratchNormal);
+        CesiumWorldTerrainTileLoader._scratchNormal.negate(CesiumWorldTerrainTileLoader._scratchNormal);
         mesh.addVertex({ position: CesiumWorldTerrainTileLoader._scratchQPoint, fillColor, normal: OctEncodedNormal.fromVector(CesiumWorldTerrainTileLoader._scratchNormal) });
       } else {
         mesh.addVertex({ position: CesiumWorldTerrainTileLoader._scratchQPoint, fillColor });
@@ -269,6 +276,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     CesiumWorldTerrainTileLoader._scratchMeshArgs.init(mesh);
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.featureID = 0;
     CesiumWorldTerrainTileLoader._scratchMeshArgs.features.type = FeatureIndexType.Uniform;
+    CesiumWorldTerrainTileLoader._scratchMeshArgs.hasFixedNormals = true;
     let graphic = system.createMesh(MeshParams.create(CesiumWorldTerrainTileLoader._scratchMeshArgs));
     if (graphic)
       graphic = system.createBatch(graphic, this._featureTable, Range3d.createNull());
@@ -297,7 +305,7 @@ export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   }
 
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const quadId = new QuadId(tile.contentId);
+    const quadId = QuadId.createFromContentId(tile.contentId);
     const terrainLevel = quadId.level - 1;
     if (terrainLevel < 0) return undefined;     // Root...
 

@@ -39,6 +39,7 @@ export class MeshData implements IDisposable {
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
+  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
 
   private constructor(lut: VertexLUT, params: MeshParams) {
@@ -55,6 +56,7 @@ export class MeshData implements IDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
+    this.hasFixedNormals = params.surface.hasFixedNormals;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
@@ -159,6 +161,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get lut() { return this.mesh.lut; }
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
 
@@ -376,6 +379,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -465,6 +469,8 @@ export class SurfaceGeometry extends MeshGeometry {
       flags |= SurfaceFlags.HasNormals;
       if (wantLighting(vf)) {
         flags |= SurfaceFlags.ApplyLighting;
+        if (this.hasFixedNormals)
+          flags |= SurfaceFlags.NoFaceFront;
       }
 
       // Textured meshes store normal in place of color index.

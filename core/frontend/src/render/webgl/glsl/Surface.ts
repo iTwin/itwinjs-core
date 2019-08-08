@@ -246,7 +246,9 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
   builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
   builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.0");
-  builder.addConstant("kSurfaceBit_MultiplyAlpha", VariableType.Float, "9.0");
+  builder.addConstant("kSurfaceBit_NoFaceFront", VariableType.Float, "9.0");
+  builder.addConstant("kSurfaceBit_MultiplyAlpha", VariableType.Float, "10.0");
+  // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceMask_HasTexture", VariableType.Float, "1.0");
@@ -258,7 +260,9 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_HasColorAndNormal", VariableType.Float, "64.0");
   builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
   builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
-  builder.addConstant("kSurfaceMask_MultiplyAlpha", VariableType.Float, "512.0");
+  builder.addConstant("kSurfaceMask_NoFaceFront", VariableType.Float, "512.0");
+  builder.addConstant("kSurfaceMask_MultiplyAlpha", VariableType.Float, "1024.0");
+  // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   builder.addFunction(extractNthBit);
   builder.addFunction(extractSurfaceBit);

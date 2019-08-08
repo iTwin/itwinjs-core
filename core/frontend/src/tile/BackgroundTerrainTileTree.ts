@@ -17,11 +17,13 @@ import {
 import { getCesiumWorldTerrainLoader } from "./CesiumWorldTerrainTileTree";
 import { WebMapTileLoader, WebMapTileTreeProps, MapTileTreeReference, MapTileLoaderBase, getGcsConverterAvailable, TerrainTileLoaderBase } from "./WebMapTileTree";
 import { SceneContext, DecorateContext } from "../ViewContext";
-import { Point3d, Range3d, Plane3dByOriginAndUnitNormal, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
+import { Point3d, Range3d, Plane3dByOriginAndUnitNormal, Transform, Matrix3d, Angle, Range1d } from "@bentley/geometry-core";
 import { BingElevationProvider } from "./BingElevation";
 import { RenderClipVolume } from "../render/System";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { MapTilingScheme, GeographicTilingScheme } from "./MapTilingScheme";
+import { MapTileTree } from "./MapTileTree";
 
 interface BackgroundTerrainTreeId {
   providerName: TerrainProviderName;
@@ -41,16 +43,13 @@ class BackgroundTerrainDrawArgs extends Tile.DrawArgs {
   }
 }
 
-class BackgroundTerrainTileTree extends TileTree {
-  constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number) {
-    super(params);
-    this._groundBias = groundBias;
+class BackgroundTerrainTileTree extends MapTileTree {
+  constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
+    super(params, groundBias, gcsConverterAvailable, tilingScheme, heightRange);
     this._fixedPoint = Point3d.create(0, 0, 0);   // Exaggerate about IModel zero.
   }
-  private _groundBias: number;
   private _fixedPoint: Point3d;
   public settings?: TerrainSettings;
-  public get groundBias(): number { return this._groundBias; }
   public getLocationTransform(settings?: TerrainSettings): Transform {
     if (settings === undefined)
       return Transform.createIdentity();
@@ -96,9 +95,9 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
   public async createTileTree(id: BackgroundTerrainTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     assert(id.providerName === "CesiumWorldTerrain");
     // ###TODO: Doesn't seem like each tile tree should need its own imagery provider instance...
-    const haveConverter = await getGcsConverterAvailable(iModel);
     const elevationProvider = new BingElevationProvider();
     const heightRange = await elevationProvider.getHeightRange(iModel);
+    const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
     heightRange.scaleAboutCenterInPlace(1.1);    // Add some margin to avoid clipping, particularly in top view.
 
@@ -108,14 +107,14 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
     heightRange.high += heightBias;
     const modelId = iModel.transientIds.next;
     const seaLevelOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-    const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange, haveConverter);
+    const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange);
     const treeProps = new WebMapTileTreeProps(heightBias, modelId, heightRange, 12);
 
     if (undefined === loader || undefined === treeProps) {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }
-    return new BackgroundTerrainTileTree(TileTree.paramsFromJSON(treeProps, iModel, true, loader, modelId), heightBias, seaLevelOffset);
+    return new BackgroundTerrainTileTree(TileTree.paramsFromJSON(treeProps, iModel, true, loader, modelId), heightBias, seaLevelOffset, gcsConverterAvailable, new GeographicTilingScheme(), heightRange);
   }
 }
 
