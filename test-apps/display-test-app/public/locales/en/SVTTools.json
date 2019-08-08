@@ -1,38 +1,17 @@
 {
   "tools": {
-    "LoseContext": {
-      "keyin": "debug lose context",
-      "description": "",
-      "flyover": ""
-    },
-    "ToggleReadPixels": {
-      "keyin": "debug toggle readpixels",
-      "description": "",
-      "flyover": ""
-    },
-    "ToggleUseLogZ": {
-      "keyin": "debug toggle logz",
-      "description": "",
-      "flyover": ""
-    },
     "DrawingAidTest": {
       "Points": {
-        "keyin": "svt drawing aid points",
-        "description": "",
-        "flyover": ""
+        "keyin": "svt drawing aid points"
       }
     },
     "Markup": {
       "TestSelect": {
-      "keyin": "svt markup select",
-      "description": "",
-      "flyover": ""
+      "keyin": "svt markup select"
       }
     },
     "SVTSelect": {
-      "keyin": "svt select",
-      "description": "",
-      "flyover": ""
+      "keyin": "svt select"
     }
   }
 }

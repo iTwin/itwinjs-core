@@ -24,13 +24,14 @@ alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInpu
 alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
-alpha;DiagnosticsPanel
-alpha;FpsTracker
-alpha;FrustumDecorator 
-alpha;KeyinHandler
+beta;DiagnosticsPanel
+beta;FpsTracker
+beta;FrontendDevTools
+beta;FrustumDecorator 
+beta;KeyinField
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
-alpha;MemoryTracker
+beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
@@ -42,13 +43,14 @@ alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
+beta;ReportWebGLCompatibilityTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
-alpha;StatsTracker
 alpha;TextBox
 alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
-alpha;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
+beta;TileStatisticsTracker
+beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
 alpha;ToolSettingsTracker

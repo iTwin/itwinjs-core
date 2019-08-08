@@ -5387,7 +5387,7 @@ export abstract class RenderTarget implements IDisposable {
     abstract readonly wantInvertBlackBackground: boolean;
 }
 
-// @internal
+// @beta
 export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
     loseContext(): boolean;

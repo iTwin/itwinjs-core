@@ -8,9 +8,9 @@ import {
   TileAdmin,
   Viewport,
 } from "@bentley/imodeljs-frontend";
-import { createCheckBox } from "./CheckBox";
-import { createNumericInput } from "./NumericInput";
-import { createButton } from "./Button";
+import { createCheckBox } from "../ui/CheckBox";
+import { createNumericInput } from "../ui/NumericInput";
+import { createButton } from "../ui/Button";
 
 type GetStatValue = (stats: TileAdmin.Statistics, vp: Viewport) => number;
 interface StatEntry {
@@ -44,8 +44,10 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
 ];
 
-/** @alpha */
-export class StatsTracker {
+/** Outputs statistics related to tile requests including the current number of active, pending, selected, and ready tile requests; as well as cumulative statistics for the session including the number of failed, timed-out, empty, and elided tile requests.
+ * @beta
+ */
+export class TileStatisticsTracker {
   private readonly _statElements: HTMLElement[] = [];
   private readonly _div: HTMLDivElement;
   private readonly _vp: Viewport;

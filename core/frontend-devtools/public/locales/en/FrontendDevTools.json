@@ -1,0 +1,16 @@
+{
+  "tools": {
+    "LoseWebGLContext": {
+      "keyin": "fdt webgl lose context"
+    },
+    "ToggleReadPixels": {
+      "keyin": "fdt toggle readpixels"
+    },
+    "ToggleLogZ": {
+      "keyin": "fdt toggle logz"
+    },
+    "ReportWebGLCompatibility": {
+      "keyin": "fdt webgl report compatibility"
+    }
+  }
+}

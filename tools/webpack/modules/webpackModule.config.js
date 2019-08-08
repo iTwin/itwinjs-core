@@ -164,6 +164,7 @@ function getConfig(env) {
       '@bentley/imodeljs-quantity': 'imodeljs_quantity',
       '@bentley/imodeljs-frontend': 'imodeljs_frontend',
       '@bentley/imodeljs-markup': 'imodeljs_markup',
+      '@bentley/frontend-devtools': 'frontend_devtools',
       '@bentley/ui-core': 'ui_core',
       '@bentley/ui-components': 'ui_components',
       '@bentley/ui-framework': 'ui_framework',

@@ -6,13 +6,13 @@
 import { ToolSettingsTracker } from "./ToolSettingsTracker";
 import { FpsTracker } from "./FpsTracker";
 import { MemoryTracker } from "./MemoryTracker";
-import { StatsTracker } from "./TileStatisticsTracker";
-import { createCheckBox, CheckBox } from "./CheckBox";
-import { createComboBox } from "./ComboBox";
+import { TileStatisticsTracker } from "./TileStatisticsTracker";
+import { createCheckBox, CheckBox } from "../ui/CheckBox";
+import { createComboBox } from "../ui/ComboBox";
 import { ChangeFlag, ChangeFlags, PrimitiveVisibility, Target, Tile, Viewport } from "@bentley/imodeljs-frontend";
-import { FrustumDecorator } from "./FrustumDecoration";
-import { toggleProjectExtents } from "./ProjectExtents";
-import { KeyinHandler } from "./KeyinHandler";
+import { FrustumDecorator } from "../tools/FrustumDecoration";
+import { toggleProjectExtents } from "../tools/ProjectExtents";
+import { KeyinField } from "./KeyinField";
 
 const flagNames: Array<[ChangeFlag, string]> = [
   [ChangeFlag.AlwaysDrawn, "Always Drawn"],
@@ -40,16 +40,18 @@ function onViewportChanged(_vp: Viewport, flags: ChangeFlags): void {
   console.log(msg); // tslint:disable-line
 }
 
-/** @alpha */
+/** Consolidates many other widgets into a single panel, along with controls for freezing the scene, displaying tile bounding boxes, and toggling the frustum and project extents decorations.
+ * @beta
+ */
 export class DiagnosticsPanel {
   private readonly _viewport: Viewport;
   private readonly _element: HTMLElement;
   private readonly _parentElement?: HTMLElement;
   private readonly _fpsTracker: FpsTracker;
   private readonly _memoryTracker: MemoryTracker;
-  private readonly _statsTracker: StatsTracker;
+  private readonly _statsTracker: TileStatisticsTracker;
   private readonly _toolSettingsTracker: ToolSettingsTracker;
-  public readonly keyinHandler: KeyinHandler;
+  public readonly keyinField: KeyinField;
   private readonly _frustumCheckbox: CheckBox;
   private readonly _projectExtentsCheckbox: CheckBox;
   private readonly _removeEventListener: () => void;
@@ -103,7 +105,7 @@ export class DiagnosticsPanel {
     this.addVisibilityDropdown(this._element);
 
     this.addSeparator();
-    this._statsTracker = new StatsTracker(this._element, vp);
+    this._statsTracker = new TileStatisticsTracker(this._element, vp);
 
     this.addSeparator();
     this._memoryTracker = new MemoryTracker(this._element, vp);
@@ -112,7 +114,7 @@ export class DiagnosticsPanel {
     this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
 
     this.addSeparator();
-    this.keyinHandler = new KeyinHandler(this._element, vp);
+    this.keyinField = new KeyinField(this._element, vp);
 
     this._removeEventListener = vp.onChangeView.addListener(() => this.onViewChanged());
   }
@@ -127,7 +129,6 @@ export class DiagnosticsPanel {
     this._memoryTracker.dispose();
     this._statsTracker.dispose();
     this._toolSettingsTracker.dispose();
-    this.keyinHandler.dispose();
 
     this._viewport.debugBoundingBoxes = Tile.DebugBoundingBoxes.None;
     this._viewport.freezeScene = false;

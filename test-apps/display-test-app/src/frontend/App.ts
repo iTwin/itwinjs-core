@@ -13,14 +13,12 @@ import {
   MessageBoxValue,
   NotificationManager,
   NotifyMessageDetails,
-  RenderTargetDebugControl,
-  ScreenViewport,
   SelectionTool,
   SnapMode,
   TileAdmin,
-  Tool,
   ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
@@ -136,52 +134,13 @@ class SVTSelectionTool extends SelectionTool {
   }
 }
 
-/** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
- * ###TODO: Move to frontend-devtools package.
- */
-abstract class DebugControlTool extends Tool {
-  public run(_args: any[]): boolean {
-    const view = IModelApp.viewManager.selectedView;
-    const control = undefined !== view ? view.target.debugControl : undefined;
-    if (undefined !== control)
-      this.execute(control, view!);
-
-    return true;
-  }
-
-  protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
-}
-
-class LoseContextTool extends DebugControlTool {
-  public static toolId = "LoseContext";
-  public execute(control: RenderTargetDebugControl, _vp: ScreenViewport): void {
-    control.loseContext();
-  }
-}
-
-class ToggleReadPixelsTool extends DebugControlTool {
-  public static toolId = "ToggleReadPixels";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.drawForReadPixels = !control.drawForReadPixels;
-    vp.invalidateScene();
-  }
-}
-
-class ToggleUseLogZTool extends DebugControlTool {
-  public static toolId = "ToggleUseLogZ";
-  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
-    control.useLogZ = !control.useLogZ;
-    vp.invalidateRenderPlan();
-  }
-}
-
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
   };
 
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
@@ -193,11 +152,9 @@ export class DisplayTestApp {
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
 
-    LoseContextTool.register(svtToolNamespace);
-    ToggleReadPixelsTool.register(svtToolNamespace);
-    ToggleUseLogZTool.register(svtToolNamespace);
-
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+
+    return FrontendDevTools.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

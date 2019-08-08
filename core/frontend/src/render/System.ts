@@ -750,7 +750,7 @@ export class PackedFeatureTable {
 }
 
 /** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
- * @internal
+ * @beta
  */
 export interface RenderTargetDebugControl {
   /** Destroy this target's webgl context. Returns false if this behavior is not supported. */
