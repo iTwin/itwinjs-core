@@ -2,16 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "./style/index";
+/** @module Tiles */
 
-@import "./_scrollbar";
-@import "./_z-index";
+import * as React from "react";
+import { Tile, TileProps } from "./Tile";
 
-@import "./base/index";
-@import "./inputs/index";
-@import "./button/index";
-@import "./expandable/index";
-@import "./icons/index";
-@import "./tabs/index";
-@import "./text/index";
-@import "./tiles/index";
+/** @alpha */
+// tslint:disable-next-line:variable-name
+export const MinimalFeaturedTile: React.FunctionComponent<TileProps> = (props: TileProps) => {
+  return <Tile {...props} minimal={true} featured={true} />;
+};

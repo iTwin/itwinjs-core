@@ -19,8 +19,8 @@ describe("<BodyText />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<BodyText />);
-    wrapper.find(".uicore-text-body").should.exist;
+    const wrapper = mount(<BodyText />);
+    wrapper.find(".uicore-text-body").length.should.eq(1);
   });
 
   it("has correct text", () => {

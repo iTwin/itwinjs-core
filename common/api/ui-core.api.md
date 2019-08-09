@@ -573,6 +573,9 @@ export enum Face {
     Top = "top"
 }
 
+// @alpha (undocumented)
+export const FeaturedTile: React.FunctionComponent<TileProps>;
+
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
@@ -900,6 +903,12 @@ export enum MessageSeverity {
     // (undocumented)
     Warning = 3
 }
+
+// @alpha (undocumented)
+export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
+
+// @alpha (undocumented)
+export const MinimalTile: React.FunctionComponent<TileProps>;
 
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
@@ -1464,6 +1473,37 @@ export class TildeFinder {
         character: string | undefined;
         node: React.ReactNode;
     };
+}
+
+// @alpha (undocumented)
+export class Tile extends React.Component<TileProps> {
+    // @internal (undocumented)
+    static readonly defaultProps: TileDefaultProps;
+    // @internal (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal (undocumented)
+export type TileDefaultProps = Pick<TileProps, "stepNum">;
+
+// @alpha (undocumented)
+export interface TileProps extends CommonDivProps {
+    // (undocumented)
+    featured?: boolean;
+    // (undocumented)
+    href?: string;
+    // (undocumented)
+    icon: React.ReactNode;
+    // (undocumented)
+    minimal?: boolean;
+    // (undocumented)
+    onClick?: (e: any) => any;
+    // (undocumented)
+    stepCount?: number;
+    // (undocumented)
+    stepNum?: number;
+    // (undocumented)
+    title: string;
 }
 
 // @public

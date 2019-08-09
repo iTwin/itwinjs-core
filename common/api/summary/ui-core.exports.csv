@@ -54,6 +54,7 @@ public;ExpandableListProps
 public;ExpansionToggle 
 public;ExpansionToggleProps 
 beta;Face
+alpha;FeaturedTile: React.FunctionComponent
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
@@ -100,6 +101,8 @@ public;MessageContainer
 public;MessageContainerProps 
 public;MessagedComponentProps
 public;MessageSeverity
+alpha;MinimalFeaturedTile: React.FunctionComponent
+alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
@@ -157,6 +160,9 @@ public;Textarea
 public;TextareaProps 
 public;TextProps 
 internal;TildeFinder
+alpha;Tile 
+internal;TileDefaultProps = Pick
+alpha;TileProps 
 public;TimeFormat
 public;Timer
 public;Title: React.FunctionComponent

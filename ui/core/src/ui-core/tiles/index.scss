@@ -2,16 +2,4 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "./style/index";
-
-@import "./_scrollbar";
-@import "./_z-index";
-
-@import "./base/index";
-@import "./inputs/index";
-@import "./button/index";
-@import "./expandable/index";
-@import "./icons/index";
-@import "./tabs/index";
-@import "./text/index";
-@import "./tiles/index";
+@import "./tile";

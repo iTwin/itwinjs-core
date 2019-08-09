@@ -121,6 +121,11 @@ export * from "./ui-core/text/TextProps";
 export * from "./ui-core/text/Title";
 export * from "./ui-core/text/Title2";
 
+export * from "./ui-core/tiles/FeaturedTile";
+export * from "./ui-core/tiles/MinimalFeaturedTile";
+export * from "./ui-core/tiles/MinimalTile";
+export * from "./ui-core/tiles/Tile";
+
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
 // istanbul ignore next
