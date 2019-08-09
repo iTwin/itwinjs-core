@@ -20,6 +20,9 @@
     },
     "ClearIsolatedElements": {
       "keyin": "fdt clear isolate"
+    },
+    "ChangeViewFlags": {
+      "keyin": "fdt change viewflags"
     }
   }
 }
