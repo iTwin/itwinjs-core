@@ -867,7 +867,6 @@ export abstract class MapTileTreeReference extends TileTree.Reference {
       return;
 
     const args = tree.createDrawArgs(context);
-    args.parentsAndChildrenExclusive = undefined !== this._transparency;
     args.graphics.symbologyOverrides = this._symbologyOverrides;
 
     context.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tree.draw(args));
