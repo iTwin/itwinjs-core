@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix element locate occassionally locating transparent areas of textured surfaces.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

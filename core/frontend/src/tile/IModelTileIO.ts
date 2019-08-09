@@ -686,6 +686,7 @@ export namespace IModelTileIO {
         indices,
         fillFlags: displayParams.fillFlags,
         hasBakedLighting: false,
+        hasFixedNormals: false,
         material,
         texture,
       };

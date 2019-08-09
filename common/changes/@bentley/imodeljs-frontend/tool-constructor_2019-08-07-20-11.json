@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added Tool.parseAndRun to make executing Tools from keyins easier.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

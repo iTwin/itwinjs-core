@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Viewport, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
-import { createButton } from "./Button";
-import { createTextBox } from "./TextBox";
-import { createDataList, DataList, DataListEntry, appendDataListEntries } from "./DataList";
+import { createButton } from "../ui/Button";
+import { createTextBox } from "../ui/TextBox";
+import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
 
 async function submitKeyin(textBox: HTMLInputElement) {
   textBox.setSelectionRange(0, textBox.value.length);
@@ -44,17 +44,17 @@ async function maybeSubmitKeyin(textBox: HTMLInputElement, ev: KeyboardEvent) {
     await submitKeyin(textBox);
 }
 
-function respondToKeyinFocus(keyinHandler: KeyinHandler) {
+function respondToKeyinFocus(keyinField: KeyinField) {
   const keyins = findKeyins();
-  if (keyins.length > keyinHandler.keyins.length) {
+  if (keyins.length > keyinField.keyins.length) {
     const newKeyins: string[] = [];
     for (const keyin of keyins) {
-      if (!keyinHandler.keyins.includes(keyin)) {
+      if (!keyinField.keyins.includes(keyin)) {
         newKeyins.push(keyin);
       }
     }
     if (newKeyins.length > 0) {
-      appendDataListEntries(keyinHandler.autoCompleteList, keyinsToDataListEntries(newKeyins));
+      appendDataListEntries(keyinField.autoCompleteList, keyinsToDataListEntries(newKeyins));
     }
   }
 }
@@ -80,10 +80,14 @@ function keyinChanged(textBox: HTMLInputElement) {
   textBox.setSelectionRange(0, textBox.value.length);
 }
 
-/** @alpha */
-export class KeyinHandler {
+/** A textbox allowing input of key-ins (localized tool names) combined with a drop-down that lists all registered key-ins, filtered by substring match on the current input.
+ * Press `enter` or click the Enter button to run the key-in.
+ * @beta
+ */
+export class KeyinField {
   public readonly autoCompleteList: DataList;
   public readonly keyins: string[];
+  public readonly focus: () => void;
 
   public constructor(parent: HTMLElement, _vp: Viewport) {
     this.keyins = findKeyins();
@@ -114,7 +118,9 @@ export class KeyinHandler {
       inline: true,
       tooltip: "Click here to execute the key-in",
     });
-  }
 
-  public dispose(): void { }
+    this.focus = () => {
+      keyinTextBox.textbox.focus();
+    };
+  }
 }

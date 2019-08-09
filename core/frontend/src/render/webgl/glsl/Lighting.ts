@@ -25,7 +25,7 @@ const applyLighting = `
   if (isSurfaceBitSet(kSurfaceBit_ApplyLighting) && baseColor.a > 0.0) {
     // negate normal if not front-facing
     vec3 normal = normalize(v_n.xyz);
-    normal *= 2.0 * float(gl_FrontFacing) - 1.0;
+    normal *= 2.0 * float(!isSurfaceBitSet(kSurfaceBit_NoFaceFront) &&  gl_FrontFacing) - 1.0;
     vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace.xyz), float(kFrustumType_Perspective == u_frustum.z));
 
     vec3 specularColor = mat_specular.rgb;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added icons and fixed prompt issue",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "joe.zbuchalski@bentley.com"
+}

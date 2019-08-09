@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter } from "@bentley/imodeljs-common";
+import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
@@ -15,7 +16,6 @@ import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
-import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -2058,15 +2058,44 @@ export class WindowAreaTool extends ViewTool {
 }
 
 /** @internal */
-export class DefaultViewTouchTool extends ViewManip {
+export class DefaultViewTouchTool extends ViewManip implements Animator {
   public static toolId = ""; // touch tools installed by IdleTool are never registered
-  private _lastPtView = new Point3d();
-  private _startPtWorld = new Point3d();
-  private _startPtView = new Point3d();
-  private _startDirection = new Vector2d();
+  private readonly _lastPtView = new Point3d();
+  private readonly _startPtWorld = new Point3d();
+  private readonly _startPtView = new Point3d();
+  private readonly _frustum = new Frustum();
+  private _startDirection!: Vector2d;
   private _startDistance = 0.0;
   private _startTouchCount = 0;
-  private _frustum = new Frustum();
+  private _inertiaVec?: Vector3d;
+  private _singleTouch = false;
+  private _duration!: BeDuration;
+  private _end!: BeTimePoint;
+
+  /** Move this handle during the inertia duration */
+  public animate(): boolean {
+    if (undefined === this._inertiaVec)
+      return true; // handle was removed
+
+    // get the fraction of the inertia duration that remains. The decay is a combination of the number of iterations (see damping below)
+    // and time. That way the handle slows down even if the framerate is lower.
+    const remaining = ((this._end.milliseconds - BeTimePoint.now().milliseconds) / this._duration.milliseconds);
+    const pt = this._lastPtView.plusScaled(this._inertiaVec, remaining);
+    const vec = this._lastPtView.minus(pt);
+
+    // if we're not moving any more, or if the duration has elapsed, we're done
+    if (remaining <= 0 || (vec.magnitudeSquared() < .000001)) {
+      this.viewport!.saveViewUndo();
+      return true; // remove this as the animator
+    }
+
+    this._lastPtView.setFrom(pt);
+    this.perform();
+    this._inertiaVec.scaleInPlace(ToolSettings.viewingInertia.damping); // dampen the inertia vector
+    return false;
+  }
+
+  public interrupt() { }
 
   constructor(startEv: BeTouchEvent, _ev: BeTouchEvent) {
     super(startEv.viewport!, 0, true, false);
@@ -2076,6 +2105,8 @@ export class DefaultViewTouchTool extends ViewManip {
   public onStart(ev: BeTouchEvent): void {
     const vp = this.viewport!;
     vp.getWorldFrustum(this._frustum);
+    this._inertiaVec = undefined;
+
     const visiblePoint = vp.pickNearestVisibleGeometry(ev.rawPoint, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
     if (undefined !== visiblePoint) {
       this._startPtWorld.setFrom(visiblePoint);
@@ -2091,30 +2122,21 @@ export class DefaultViewTouchTool extends ViewManip {
     this._startDistance = (2 === ev.touchCount ? this._startDirection.magnitude() : 0.0);
   }
 
-  private computeZoomRatio(ev: BeTouchEvent): number {
-    if (0.0 === this._startDistance)
+  private computeZoomRatio(ev?: BeTouchEvent): number {
+    if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
     const vp = this.viewport!;
     const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
 
-    if (0.0 === distance)
+    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
       return 1.0;
 
-    if (Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(0.2))
-      return 1.0;
-
-    let zoomRatio = this._startDistance / distance;
-    if (zoomRatio < 0.1)
-      zoomRatio = 0.1;
-    else if (zoomRatio > 10.0)
-      zoomRatio = 10.0;
-
-    return zoomRatio;
+    return Geometry.clamp(this._startDistance / distance, .1, 10);
   }
 
-  private computeRotation(ev: BeTouchEvent): Angle {
-    if (ev.touchCount < 2)
+  private computeRotation(ev?: BeTouchEvent): Angle {
+    if (undefined === ev || ev.touchCount < 2)
       return Angle.createDegrees(0.0);
 
     const vp = this.viewport!;
@@ -2135,13 +2157,12 @@ export class DefaultViewTouchTool extends ViewManip {
     return Angle.createDegrees(0.0);
   }
 
-  private handle2dPan(_ev: BeTouchEvent): void {
-    const vp = this.viewport!;
+  private handle2dPan() {
     const screenDist = Point2d.create(this._startPtView.x - this._lastPtView.x, this._startPtView.y - this._lastPtView.y);
-    vp.scroll(screenDist, { saveInUndo: false, animateFrustumChange: false });
+    this.viewport!.scroll(screenDist, { saveInUndo: false, animateFrustumChange: false });
   }
 
-  private handle2dRotateZoom(ev: BeTouchEvent): void {
+  private handle2dRotateZoom(ev?: BeTouchEvent): void {
     const vp = this.viewport!;
     const rotation = this.computeRotation(ev);
     const zoomRatio = this.computeZoomRatio(ev);
@@ -2156,7 +2177,7 @@ export class DefaultViewTouchTool extends ViewManip {
     vp.setupViewFromFrustum(frustum);
   }
 
-  private handle3dRotate(_ev: BeTouchEvent): void {
+  private handle3dRotate(): void {
     const vp = this.viewport!;
     const viewRect = vp.viewRect;
     const xExtent = viewRect.width;
@@ -2175,7 +2196,7 @@ export class DefaultViewTouchTool extends ViewManip {
     const worldAxis = result.axis;
 
     const rotationMatrix = Matrix3d.createRotationAroundVector(worldAxis, radians);
-    if (!rotationMatrix)
+    if (undefined === rotationMatrix)
       return;
 
     const worldTransform = Transform.createFixedPointAndMatrix(this._startPtWorld, rotationMatrix);
@@ -2183,7 +2204,7 @@ export class DefaultViewTouchTool extends ViewManip {
     vp.setupViewFromFrustum(frustum);
   }
 
-  private handle3dPanZoom(ev: BeTouchEvent): void {
+  private handle3dPanZoom(ev?: BeTouchEvent): void {
     const vp = this.viewport!;
     const zoomRatio = this.computeZoomRatio(ev);
 
@@ -2229,39 +2250,53 @@ export class DefaultViewTouchTool extends ViewManip {
       return;
     }
 
-    const smallDistance = this.viewport.pixelsFromInches(0.05);
-    if (this._lastPtView.isAlmostEqualXY(ev.viewPoint, smallDistance))
+    this._inertiaVec = undefined;
+    const vp = this.viewport;
+    const thisPt = ev.viewPoint;
+    const smallDistance = vp.pixelsFromInches(0.05);
+    if (this._lastPtView.isAlmostEqualXY(thisPt, smallDistance))
       return;
 
-    if (this._startPtView.isAlmostEqualXY(ev.viewPoint, smallDistance)) {
+    if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      this._lastPtView.setFrom(ev.viewPoint); this._lastPtView.z = this._startPtView.z;
+      this._inertiaVec = this._lastPtView.vectorTo(thisPt);
+      this._inertiaVec.z = 0;
+      this._singleTouch = ev.isSingleTouch;
+      this._lastPtView.setFrom(thisPt);
+      this._lastPtView.z = this._startPtView.z;
     }
-
-    if (!this.viewport.setupViewFromFrustum(this._frustum))
-      return;
-
-    if (this.viewport.view.allow3dManipulations()) {
-      if (ev.isSingleTouch)
-        return this.handle3dRotate(ev);
-
-      return this.handle3dPanZoom(ev);
-    }
-
-    if (ev.isSingleTouch)
-      return this.handle2dPan(ev);
-
-    return this.handle2dRotateZoom(ev);
+    this.perform(ev);
   }
 
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { this.handleEvent(ev); }
-  public async onTouchComplete(_ev: BeTouchEvent): Promise<void> { this.exitTool(); }
-  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { this.exitTool(); }
+  private perform(ev?: BeTouchEvent) {
+    const vp = this.viewport!;
+    vp.setupViewFromFrustum(this._frustum);
+
+    const singleTouch = this._singleTouch;
+    return vp.view.allow3dManipulations() ?
+      singleTouch ? this.handle3dRotate() : this.handle3dPanZoom(ev) :
+      singleTouch ? this.handle2dPan() : this.handle2dRotateZoom(ev);
+  }
 
   public async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
   public async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> {
+    this.handleEvent(ev);
+  }
+  public async onTouchCancel(_ev: BeTouchEvent): Promise<void> { this.exitTool(); }
+  public async onTouchComplete(_ev: BeTouchEvent): Promise<void> {
+    // if we were moving when the touch ended, add inertia to the viewing operation
+    if (this._inertiaVec) {
+      this._duration = ToolSettings.viewingInertia.duration;
+      if (this._duration.isTowardsFuture) { // ensure duration is towards future. Otherwise, don't start animation
+        this._end = BeTimePoint.fromNow(this._duration);
+        this.viewport!.setAnimator(this);
+      }
+    }
 
+    this.exitTool();
+  }
 }
 
 /** A tool that performs view undo operation. An application could also just call Viewport.doUndo directly, creating a ViewTool isn't required.

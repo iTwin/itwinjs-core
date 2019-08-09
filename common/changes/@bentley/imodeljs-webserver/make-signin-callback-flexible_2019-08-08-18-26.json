@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Redirect any signin-* to index.html, not just signin-callback",
+      "packageName": "@bentley/imodeljs-webserver",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "Barry.Bentley@bentley.com"
+}

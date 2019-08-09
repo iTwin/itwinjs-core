@@ -5,9 +5,20 @@
 
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AccuSnap, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
-  SnapMode, ToolTipOptions, TileAdmin, IModelAppOptions, SelectionTool,
+  AccuSnap,
+  IModelApp,
+  IModelAppOptions,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
+  SelectionTool,
+  SnapMode,
+  TileAdmin,
+  ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
+import { FrontendDevTools } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
@@ -113,7 +124,7 @@ class Notifications extends NotificationManager {
   }
 }
 
-export class SVTSelectionTool extends SelectionTool {
+class SVTSelectionTool extends SelectionTool {
   public static toolId = "SVTSelect";
   protected initSelectTool() {
     super.initSelectTool();
@@ -129,7 +140,7 @@ export class DisplayTestApp {
     enableInstancing: true,
   };
 
-  public static startup(opts?: IModelAppOptions): void {
+  public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuSnap = new DisplayTestAppAccuSnap();
     opts.notifications = new Notifications();
@@ -142,6 +153,8 @@ export class DisplayTestApp {
     SVTSelectionTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+
+    return FrontendDevTools.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

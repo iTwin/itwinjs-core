@@ -91,9 +91,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   private _toggleIsExpanded = () => {
     const isPressed = !this.state.isPressed;
 
-    this.setState((_prevState, _props) => {
+    this.setState((prevState) => {
       return {
-        ..._prevState,
+        ...prevState,
         isPressed,
       };
     });
@@ -104,9 +104,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   /** Minimizes the expandable component. */
   public minimize = () => {
-    this.setState((_prevState, _props) => {
+    this.setState((prevState) => {
       return {
-        ..._prevState,
+        ...prevState,
         isPressed: false,
       };
     });

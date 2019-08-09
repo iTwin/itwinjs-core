@@ -40,6 +40,7 @@ export class DebugPanel extends ToolBarDropDown {
     togglePinnedButton.div.style.cssFloat = "right";
 
     parentElement.appendChild(this._element);
+    this._panel.keyinField.focus();
   }
 
   public dispose(): void {
@@ -48,6 +49,10 @@ export class DebugPanel extends ToolBarDropDown {
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  protected _open(): void { this._element.style.display = "block"; }
+  protected _open(): void {
+    this._element.style.display = "block";
+    this._panel.keyinField.focus();
+  }
+
   protected _close(): void { this._element.style.display = "none"; }
 }

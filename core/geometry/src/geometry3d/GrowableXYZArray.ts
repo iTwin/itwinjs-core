@@ -443,6 +443,25 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
   }
 
+  /** reverse the order of points. */
+  public reverseInPlace() {
+    const n = this.length;
+    let j0, j1;
+    let a;
+    const data = this._data;
+    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++ , i1--) {
+      j0 = 3 * i0;
+      j1 = 3 * i1;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      j0++;
+      j1++;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      j0++;
+      j1++;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+    }
+  }
+
   /** multiply each xyz (as a vector) by matrix, replace values. */
   public multiplyMatrix3dInPlace(matrix: Matrix3d) {
     const data = this._data;

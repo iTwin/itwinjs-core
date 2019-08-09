@@ -7,11 +7,13 @@ import {
   Viewport, ToolSettings, IModelApp,
 } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { createCheckBox } from "./CheckBox";
-import { createNumericInput, createLabeledNumericInput } from "./NumericInput";
-import { createNestedMenu } from "./NestedMenu";
+import { createCheckBox } from "../ui/CheckBox";
+import { createNumericInput, createLabeledNumericInput } from "../ui/NumericInput";
+import { createNestedMenu } from "../ui/NestedMenu";
 
-/** @alpha */
+/** Allows the global settings controlling the behavior of viewing tools to be customized.
+ * @alpha
+ */
 export class ToolSettingsTracker {
   private static _expandToolSettings = false;
 

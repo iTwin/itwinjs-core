@@ -8,6 +8,7 @@ Topics:
 * [Sample create methods and IModelJson form](./IModelJsonGeometrySchema.md)
 * [Surface Normals](./FacetNormals.md)
 * [Polyface Analytical Data Visualization](./PolyfaceAuxData.md)
+* [Polyface Index Pairing](./PolyfaceIndexPairing.md)
 * [PolyfaceBuilder](./PolyfaceBuilder.md)
 * [StrokeOptions](./StrokeOptions.md)
 

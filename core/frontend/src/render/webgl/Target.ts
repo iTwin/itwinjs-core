@@ -4,10 +4,55 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { ClipUtilities, ClipVector, ClipPlaneContainment, Transform, Vector3d, Point3d, Matrix4d, Point2d, Range3d, XAndY } from "@bentley/geometry-core";
-import { assert, BeTimePoint, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates, PlanarClassifierMap, RenderSolarShadowMap, TextureDrapeMap } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
+import {
+  ClipPlaneContainment,
+  ClipUtilities,
+  ClipVector,
+  Matrix4d,
+  Point2d,
+  Point3d,
+  Range3d,
+  Transform,
+  Vector3d,
+  XAndY,
+  } from "@bentley/geometry-core";
+import {
+  BeTimePoint,
+  Id64,
+  Id64String,
+  StopWatch,
+  assert,
+  dispose,
+  disposeArray,
+} from "@bentley/bentleyjs-core";
+import {
+  AnimationBranchStates,
+  CanvasDecoration,
+  ClippingType,
+  Decorations,
+  GraphicList,
+  Pixel,
+  PlanarClassifierMap,
+  RenderPlan,
+  RenderSolarShadowMap,
+  RenderSystem,
+  RenderTarget,
+  RenderTargetDebugControl,
+  TextureDrapeMap,
+} from "../System";
+import {
+  AmbientOcclusion,
+  AnalysisStyle,
+  ColorDef,
+  Frustum,
+  Hilite,
+  ImageBuffer,
+  ImageBufferFormat,
+  Npc,
+  RenderMode,
+  RenderTexture,
+  ViewFlags,
+} from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -246,7 +291,7 @@ class EmptyHiliteSet {
 }
 
 /** @internal */
-export abstract class Target extends RenderTarget {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
   private _batchState = new BatchState(this._stack);
@@ -307,7 +352,12 @@ export abstract class Target extends RenderTarget {
   public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
   private _solarShadowMap?: SolarShadowMap;
   private _backgroundMapDrape?: BackgroundMapDrape;
-  public debugUseLogZ = true; // Used strictly by display-test-app to allow log-z to be toggled interactively
+
+  // RenderTargetDebugControl
+  public useLogZ = true;
+  public drawForReadPixels = false;
+  public loseContext(): boolean { return System.instance.loseContext(); }
+  public get debugControl(): RenderTargetDebugControl { return this; }
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -675,7 +725,7 @@ export abstract class Target extends RenderTarget {
       this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
 
       this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.debugUseLogZ);
+      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.useLogZ);
     }
   }
 
@@ -883,23 +933,12 @@ export abstract class Target extends RenderTarget {
     gl.viewport(0, 0, rect.width, rect.height);
 
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
-    const drawForReadPixels = false;
-    if (drawForReadPixels) {
+    if (this.drawForReadPixels) {
       this._isReadPixelsInProgress = true;
       this._readPixelsSelector = Pixel.Selector.Feature;
 
       this.recordPerformanceMetric("Begin Paint");
-      const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-      vf.transparency = false;
-      vf.textures = false;
-      vf.lighting = false;
-      vf.shadows = false;
-      vf.noGeometryMap = true;
-      vf.acsTriad = false;
-      vf.grid = false;
-      vf.monochrome = false;
-      vf.materials = false;
-
+      const vf = this.getViewFlagsForReadPixels();
       const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
       this.pushState(state);
 
@@ -1024,6 +1063,20 @@ export abstract class Target extends RenderTarget {
     this._batchState.reset();
   }
 
+  private getViewFlagsForReadPixels(): ViewFlags {
+    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
+    vf.transparency = false;
+    vf.lighting = false;
+    vf.shadows = false;
+    vf.noGeometryMap = true;
+    vf.acsTriad = false;
+    vf.grid = false;
+    vf.monochrome = false;
+    vf.materials = false;
+    vf.ambientOcclusion = false;
+    return vf;
+  }
+
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
@@ -1033,18 +1086,7 @@ export abstract class Target extends RenderTarget {
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = false;
-    vf.textures = true; // false;
-    vf.lighting = false;
-    vf.shadows = false;
-    vf.noGeometryMap = true;
-    vf.acsTriad = false;
-    vf.grid = false;
-    vf.monochrome = false;
-    vf.materials = false;
-    vf.ambientOcclusion = false;
-
+    const vf = this.getViewFlagsForReadPixels();
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
 

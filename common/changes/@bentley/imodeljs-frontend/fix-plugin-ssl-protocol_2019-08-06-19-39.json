@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use https: to download Plugin files, unless server is localhost",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

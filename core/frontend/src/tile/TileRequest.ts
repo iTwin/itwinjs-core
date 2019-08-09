@@ -32,7 +32,18 @@ export class TileRequest {
 
   public get state(): TileRequest.State { return this._state; }
   public get isQueued() { return TileRequest.State.Queued === this._state; }
-  public get isCanceled(): boolean { return this.viewports.isEmpty; } // ###TODO: check if IModelConnection closed etc.
+  public get isCanceled(): boolean {
+    // If iModel was closed, cancel immediately
+    if (!this.tile.iModel.isOpen)
+      return true;
+
+    // After we've received the raw tile data, always finish processing it - otherwise tile may end up in limbo (and producing tile content should be faster than re-requesting raw data).
+    if (TileRequest.State.Loading === this._state)
+      return false;
+
+    // If no viewport cares about this tile any more, we're canceled.
+    return this.viewports.isEmpty;
+  }
 
   public get tree(): TileTree { return this.tile.root; }
   public get loader(): TileLoader { return this.tree.loader; }
@@ -125,7 +136,7 @@ export class TileRequest {
     this._state = TileRequest.State.Loading;
 
     try {
-      const content = await this.loader.loadTileContent(this.tile, data);
+      const content = await this.loader.loadTileContent(this.tile, data, () => this.isCanceled);
       if (this.isCanceled)
         return Promise.resolve();
 

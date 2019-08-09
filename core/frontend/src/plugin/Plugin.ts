@@ -168,7 +168,8 @@ class ExternalServerPluginLoader implements PluginLoader {
       this.serverName = "imjs_plugins/".concat(this._pluginRootName, "/");
     } else {
       this._pluginRootName = fullPluginName.slice(slashPos + 1);
-      this.serverName = "http://".concat(fullPluginName.slice(0, slashPos), "/imjs_plugins/", this._pluginRootName, "/");
+      const protocol: string = (fullPluginName.startsWith("localhost") || fullPluginName.startsWith("127.0.0.1")) ? "http://" : "https://";
+      this.serverName = protocol.concat(fullPluginName.slice(0, slashPos), "/imjs_plugins/", this._pluginRootName, "/");
     }
     return Promise.resolve(undefined);
   }

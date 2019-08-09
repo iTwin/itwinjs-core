@@ -37,7 +37,6 @@ import {
 } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { Settings } from "./FeatureOverrides";
-import { isString } from "util";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 
@@ -106,14 +105,6 @@ export class ViewAttributes {
     this.addShadowsToggle(flagsDiv);
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
-
-    const logZ = this.addCheckbox("Logarithmic Depth", (enabled: boolean) => {
-      (this._vp.target as any).debugUseLogZ = enabled;
-      this.sync();
-    }, flagsDiv).checkbox;
-    this._updates.push((_view: ViewState) => {
-      logZ.checked = (this._vp.target as any).debugUseLogZ;
-    });
 
     this.addEdgeDisplay();
 
@@ -214,7 +205,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     hlDiv.appendChild(transDiv);
@@ -239,7 +230,7 @@ export class ViewAttributes {
         this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
           colorCb.checked ? new ColorDef(value) : undefined,
           parseInt(patternCb.select.value, 10),
-          lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+          lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
           hiddenEdge);
       },
     };
@@ -248,7 +239,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     colorCb.checked = false;
@@ -288,7 +279,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(patternCb.select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     lbCb.checked = false;
@@ -299,7 +290,7 @@ export class ViewAttributes {
       this.updateEdgeDisplay(hlDiv, parseFloat(slider.value),
         colorCb.checked ? new ColorDef(colorInput.value) : undefined,
         parseInt(select.value, 10),
-        lbCb.checked ? (isString(num.value) ? parseInt(num.value, 10) : num.value) : undefined,
+        lbCb.checked ? (typeof num.value === "string" ? parseInt(num.value, 10) : num.value) : undefined,
         hiddenEdge);
     });
     parent.appendChild(hlDiv);

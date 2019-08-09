@@ -50,6 +50,7 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
   * Bilinear Patch ray intersection
   * polyline small feature filtering
   * compute WireMoment on curves
+  * compute volume moments on meshes.
 
 * When clipping a polyface with a plane, new method optionally outputs triangulation of the cut plane face.
   * (static) `clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFace?: boolean): Polyface;`
@@ -70,6 +71,9 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
 * (static) `FrameBuilder.createFrameWithCCWPolygon (points: Point3d[])`
   * Create a transform in the plane of points.
   * flip Z directed so the polygon has CCW orientation.
+* (static) `orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number`
+  * reverse order of loops (individually, no hole analysis) so all are CCW orientation for given outward normal.
+  * Return number reversed.
 * `Arc3d` methods
   * (static) `Arc3d.cloneAtZ(z?: number): Arc3d`
   Return projection to plane at `z`
@@ -122,5 +126,10 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
     * Create a path or loop offset by distance (positive to left)
   * (static) `RegionOps.createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean): CurveCollection | undefined;`
     * Create a curve structure, choosing type `Loop`, `Path`, or `BagOfCurves` appropriate to how the inputs join.
+* `PolyfaceQuery` new methods
+  * (static) `momentData = computePrincipalVolumeMoments(source: Polyface): MomentData | undefined`
+    * Returns momentData structure with centroid, volume, radii of gyration.
+  * (static) `static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined`
+    * Within a polyface, find edges that have unusual adjacency and hence qualify as "boundary" edges.
 
 

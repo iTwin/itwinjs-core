@@ -135,7 +135,7 @@ async function main() {
 
   DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 
-  DisplayTestApp.startup({ renderSys: renderSystemOptions });
+  await DisplayTestApp.startup({ renderSys: renderSystemOptions });
   if (configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

@@ -316,6 +316,7 @@ class DependentTracker {
       new ModuleInfo(_isDevelopment, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
       new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
+      new ModuleInfo(_isDevelopment, "@bentley/frontend-devtools", "frontend-devtools.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
@@ -1087,18 +1088,18 @@ class IModelJsModuleBuilder {
     if (!webpack.dest || !webpack.entry || !webpack.bundleName) {
       return Promise.resolve(new Result("Webpack", 1, undefined, undefined, 'IModelJs.buildModule.webpack must have "dest", "entry", and "bundleName" properties'));
     }
-
+    
+    const styleSheets: boolean = webpack.styleSheets ? true : false;
     let outputPath = path.resolve(process.cwd(), webpack.dest);
 
     if (this._moduleDescription.type === "plugin") {
-      return this.buildPlugin(webpack, outputPath, this._moduleDescription.stylesheets, 0)
+      return this.buildPlugin(webpack, outputPath, styleSheets, 0)
     } else {
       if (this._moduleDescription.type === "system") {
         outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
       }
 
       // start the webpack process according to the arguments.
-      const styleSheets: boolean = webpack.styleSheets ? true : false;
       if (this._detail > 0)
         console.log("Starting Webpack Module");
       return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._version, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);

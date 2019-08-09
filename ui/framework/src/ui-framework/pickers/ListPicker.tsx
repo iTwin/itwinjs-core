@@ -13,7 +13,7 @@ import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/
 import "./ListPicker.scss";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = withOnOutsideClick(withContainIn(Group));
+const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
 
 /** Enum for the list picker item type
  * @beta

@@ -79,8 +79,9 @@ export abstract class RedlineTool extends MarkupTool {
  */
 export class LineTool extends RedlineTool {
   public static toolId = "Markup.Line";
+  public static iconSpec = "icon-line";
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Line.Prompts.FirstPoint" : "Line.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Line.Prompts.FirstPoint" : "Markup.Line.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -99,10 +100,11 @@ export class LineTool extends RedlineTool {
  */
 export class RectangleTool extends RedlineTool {
   public static toolId = "Markup.Rectangle";
+  public static iconSpec = "icon-rectangle";
 
   constructor(protected _cornerRadius?: number) { super(); } // Specify radius to create a rectangle with rounded corners.
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Rectangle.Prompts.FirstPoint" : "Rectangle.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Rectangle.Prompts.FirstPoint" : "Markup.Rectangle.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -129,10 +131,11 @@ export class RectangleTool extends RedlineTool {
  */
 export class PolygonTool extends RedlineTool {
   public static toolId = "Markup.Polygon";
+  public static iconSpec = "icon-polygon";
 
   constructor(protected _numSides?: number) { super(); } // Specify number of polygon sides. Default if undefined is 5.
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Polygon.Prompts.FirstPoint" : "Polygon.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Polygon.Prompts.FirstPoint" : "Markup.Polygon.Prompts.NextPoint"); }
 
   protected getPoints(points: number[], center: Point3d, edge: Point3d, numSides: number, inscribe: boolean): boolean {
     if (numSides < 3 || numSides > 100)
@@ -177,9 +180,10 @@ export class PolygonTool extends RedlineTool {
  */
 export class CloudTool extends RedlineTool {
   public static toolId = "Markup.Cloud";
+  public static iconSpec = "icon-cloud";
   protected _cloud?: MarkupElement;
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Cloud.Prompts.FirstPoint" : "Cloud.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Cloud.Prompts.FirstPoint" : "Markup.Cloud.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -216,8 +220,9 @@ export class CloudTool extends RedlineTool {
  */
 export class CircleTool extends RedlineTool {
   public static toolId = "Markup.Circle";
+  public static iconSpec = "icon-ellipse";
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Circle.Prompts.FirstPoint" : "Circle.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Circle.Prompts.FirstPoint" : "Markup.Circle.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -239,8 +244,9 @@ export class CircleTool extends RedlineTool {
  */
 export class EllipseTool extends RedlineTool {
   public static toolId = "Markup.Ellipse";
+  public static iconSpec = "icon-ellipse";
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Ellipse.Prompts.FirstPoint" : "Ellipse.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Ellipse.Prompts.FirstPoint" : "Markup.Ellipse.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -265,13 +271,14 @@ export class EllipseTool extends RedlineTool {
  */
 export class ArrowTool extends RedlineTool {
   public static toolId = "Markup.Arrow";
+  public static iconSpec = "icon-callout";
 
   /** ctor for ArrowTool
    * @param _arrowPos "start", "end", or "both". If undefined = "end".
    */
   constructor(protected _arrowPos?: string) { super(); }
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Arrow.Prompts.FirstPoint" : "Arrow.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Arrow.Prompts.FirstPoint" : "Markup.Arrow.Prompts.NextPoint"); }
 
   protected getOrCreateArrowMarker(color: string): Marker {
     // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
@@ -318,9 +325,10 @@ export class ArrowTool extends RedlineTool {
  */
 export class DistanceTool extends ArrowTool {
   public static toolId = "Markup.Distance";
+  public static iconSpec = "icon-distance";
   protected readonly _startPointWorld = new Point3d();
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Distance.Prompts.FirstPoint" : "Distance.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Distance.Prompts.FirstPoint" : "Markup.Distance.Prompts.NextPoint"); }
   protected setupAndPromptForNextAction(): void { super.setupAndPromptForNextAction(); IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; }
 
   protected getFormattedDistance(distance: number): string | undefined {
@@ -378,9 +386,10 @@ export class DistanceTool extends ArrowTool {
  */
 export class SketchTool extends RedlineTool {
   public static toolId = "Markup.Sketch";
+  public static iconSpec = "icon-draw";
   protected _minDistSquared = 100;
 
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Sketch.Prompts.FirstPoint" : "Sketch.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Sketch.Prompts.FirstPoint" : "Markup.Sketch.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -409,12 +418,13 @@ export class SketchTool extends RedlineTool {
  */
 export class SymbolTool extends RedlineTool {
   public static toolId = "Markup.Symbol";
+  public static iconSpec = "icon-symbol";
   protected _symbol?: MarkupElement;
 
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
   public onInstall(): boolean { if (undefined === this._symbolData) return false; return super.onInstall(); }
-  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Symbol.Prompts.FirstPoint" : "Symbol.Prompts.NextPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt(0 === this._points.length ? "Markup.Symbol.Prompts.FirstPoint" : "Markup.Symbol.Prompts.NextPoint"); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (undefined === this._symbolData)

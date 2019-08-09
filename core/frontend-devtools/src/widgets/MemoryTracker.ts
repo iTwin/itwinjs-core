@@ -11,7 +11,7 @@ import {
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { createComboBox, ComboBoxEntry } from "./ComboBox";
+import { createComboBox, ComboBoxEntry } from "../ui/ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.Owner): void {
   const tree = owner.tileTree;
@@ -127,7 +127,9 @@ class MemoryPanel {
   }
 }
 
-/** @alpha */
+/** Displays GPU memory allocated to tile trees - either all tile trees in the system, or only those associated with a specific Viewport.
+ * @beta
+ */
 export class MemoryTracker {
   private readonly _stats = new RenderMemory.Statistics();
   private readonly _vp: Viewport;

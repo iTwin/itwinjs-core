@@ -115,7 +115,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
   }
 
   public render(): React.ReactNode {
-    const { runtimeProps, applicationData, defaultState, ...props } = this.props;
+    const { applicationData, defaultState, runtimeProps, size, ...props } = this.props;
     if (!runtimeProps)
       return null;
 
@@ -123,6 +123,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
     return (
       <FrameworkStagePanel
         changeHandler={stagePanelChangeHandler}
+        initialSize={size}
         location={panelDef.location}
         renderPane={this._handleRenderPane}
         widgetCount={panelDef.widgetCount}

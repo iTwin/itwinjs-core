@@ -12,7 +12,6 @@ import {
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
-  GeoConverter,
   OffScreenViewport,
   SpatialViewState,
   Viewport,
@@ -545,11 +544,6 @@ describe("Render mirukuru", () => {
       const mapTreeRef = vp.displayStyle.backgroundMap;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
-
-      const loader = mapTree.loader; // instance of non-exported class WebMapTileLoader;
-      const childCreator = (loader as any)._childTileCreator; // instance of non-exported class GeoTransformChildCreator
-      const converter = childCreator._converter;
-      expect(converter).instanceof(GeoConverter);
     });
   });
 });

@@ -153,6 +153,10 @@ export class DecorateContext extends RenderContext {
           this._decorations.viewOverlay = [];
         this._decorations.viewOverlay.push(decoration);
         break;
+
+      case GraphicType.ViewBackground:
+        this.setViewBackground(decoration);
+        break;
     }
   }
 

@@ -45,9 +45,11 @@ export class PlanarTextureProjection {
     const viewMap = viewFrustumFrustum.toMap4d()!;
     const viewPlanes = new FrustumPlanes(viewFrustumFrustum);
 
-    const tileRange = Range3d.createNull();
-    tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
-    npcRange = npcRange.intersect(tileRange);
+    if (!tileTree.isBackgroundMap) {
+      const tileRange = Range3d.createNull();
+      tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
+      npcRange = npcRange.intersect(tileRange);
+    }
 
     PlanarTextureProjection._scratchFrustum.initFromRange(npcRange);
     viewMap.transform1.multiplyPoint3dArrayQuietNormalize(PlanarTextureProjection._scratchFrustum.points);
@@ -63,7 +65,7 @@ export class PlanarTextureProjection {
         const eyePoint = textureTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
         const near = Math.max(.01, eyePoint.z - range.high.z);
         const far = eyePoint.z - range.low.z;
-        const minFraction = 1.0 / 50.0;
+        const minFraction = 1.0 / 10.0;
         const fraction = Math.max(minFraction, near / far);
         for (let i = Npc.LeftBottomFront; i <= Npc.RightTopFront; i++) {
           const frustumPoint = textureFrustum.points[i];
