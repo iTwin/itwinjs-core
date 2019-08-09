@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Mobile build import exclusions.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "steve.wilson@bentley.com"
+}
