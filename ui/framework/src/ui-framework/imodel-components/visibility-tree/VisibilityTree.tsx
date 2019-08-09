@@ -85,7 +85,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     if (props.visibilityHandler) {
       this._visibilityHandler = props.visibilityHandler;
       this._visibilityHandler.onVisibilityChange = this.onVisibilityChange;
-    } else if (props.activeView) {
+    } else /* istanbul ignore next */ if (props.activeView) {
       this._visibilityHandler = this.createVisibilityHandler(props.activeView);
     }
     this.registerRuleset(); // tslint:disable-line:no-floating-promises
@@ -93,12 +93,14 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
   public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null {
     const base = { ...state, prevProps: nextProps };
+    // stanbul ignore next
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.dataProvider !== state.prevProps.dataProvider)
       return { ...base, dataProvider: nextProps.dataProvider ? nextProps.dataProvider : createDataProvider(nextProps.imodel) };
     return base;
   }
 
   public componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState) {
+    // stanbul ignore next
     if (!this.props.visibilityHandler && this.props.activeView !== prevProps.activeView) {
       if (this._visibilityHandler) {
         this._visibilityHandler.dispose();
@@ -130,6 +132,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
   private async registerRuleset() {
     if (rulesetRegistered++ === 0 && !this.props.dataProvider) {
       const result = await Presentation.presentation.rulesets().add(RULESET);
+      // istanbul ignore else
       if (rulesetRegistered > 0) {
         // still more than 0, save the registration
         this._rulesetRegistration = result;
@@ -176,6 +179,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
   // tslint:disable-next-line: naming-convention
   private onCheckboxStateChange = async (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
+    // istanbul ignore next
     if (!this._visibilityHandler)
       return;
 

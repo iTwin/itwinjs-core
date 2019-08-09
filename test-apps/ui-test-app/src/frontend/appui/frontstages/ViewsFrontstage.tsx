@@ -57,6 +57,7 @@ import {
   PopupButton,
   CursorPopupManager,
   CursorPopupContent,
+  VisibilityWidget,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -173,7 +174,9 @@ export class ViewsFrontstage extends FrontstageProvider {
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.RealityData" control={RealityDataPickerControl}
+              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
           />

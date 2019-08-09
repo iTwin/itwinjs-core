@@ -23,6 +23,8 @@ import { ModalDialogManager } from "../../dialog/ModalDialogManager";
 import { WidgetControl } from "../../widgets/WidgetControl";
 import { UiFramework } from "../../UiFramework";
 
+import widgetIconSvg from "@bentley/icons-generic/icons/network.svg";
+
 /** Properties for the [[RealityDataPickerControl]] component */
 interface RealityDataPickerProps {
   iModelConnection: IModelConnection;
@@ -46,6 +48,14 @@ interface RealityDataPickerState {
  */
 // istanbul ignore next
 export class RealityDataPickerControl extends WidgetControl {
+  public static get iconSpec() {
+    return `svg:${widgetIconSvg}`;
+  }
+
+  public static get label() {
+    return UiFramework.translate("realityData.title");
+  }
+
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);

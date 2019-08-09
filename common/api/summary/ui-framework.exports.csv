@@ -41,6 +41,9 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
+alpha;CategoryTree 
+alpha;CategoryTreeProps
+alpha;CategoryTreeState
 internal;ChangeSetInfo
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
@@ -143,6 +146,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;FaceCell 
 internal;FaceCellProps 
+alpha;FilterInfo
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
@@ -298,6 +302,9 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
+alpha;SpatialContainmentTree 
+alpha;SpatialContainmentTreeProps
+alpha;SpatialContainmentTreeState
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
@@ -389,11 +396,13 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityComponent 
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus
 public;VisibilityTree 
 public;VisibilityTreeProps
+alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler

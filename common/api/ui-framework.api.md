@@ -63,6 +63,7 @@ import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
+import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-core';
@@ -481,6 +482,47 @@ export interface CardSelectedEventArgs {
     id: any;
     // (undocumented)
     index: number;
+}
+
+// @alpha
+export class CategoryTree extends React_2.Component<CategoryTreeProps, CategoryTreeState> {
+    constructor(props: CategoryTreeProps);
+    // @internal (undocumented)
+    componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(prevProps: CategoryTreeProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface CategoryTreeProps {
+    activeView?: Viewport;
+    allViewports?: boolean;
+    clearAll?: boolean;
+    iModel: IModelConnection;
+    selectAll?: boolean;
+    showSearchBox?: boolean;
+}
+
+// @alpha
+export interface CategoryTreeState {
+    // (undocumented)
+    activeView?: Viewport;
+    // (undocumented)
+    categories: Category[];
+    // (undocumented)
+    checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    // (undocumented)
+    dataProvider?: PresentationTreeDataProvider;
+    // (undocumented)
+    filterInfo?: FilterInfo;
+    // (undocumented)
+    isLoading: boolean;
+    // (undocumented)
+    selectedNodes: string[];
 }
 
 // @internal
@@ -1528,6 +1570,18 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
     onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
     // (undocumented)
     vector: Vector3d;
+}
+
+// @alpha
+export interface FilterInfo {
+    // (undocumented)
+    activeMatchIndex?: number;
+    // (undocumented)
+    filter?: string;
+    // (undocumented)
+    filtering?: boolean;
+    // (undocumented)
+    matchesCount?: number;
 }
 
 // @beta
@@ -2948,6 +3002,10 @@ export class RealityDataPicker extends React_2.Component<RealityDataPickerProps,
 // @alpha
 export class RealityDataPickerControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static readonly iconSpec: string;
+    // (undocumented)
+    static readonly label: string;
 }
 
 // @public
@@ -3209,6 +3267,31 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     readonly shouldShowTimeline: boolean;
     // (undocumented)
     protected _viewState: ViewState;
+}
+
+// @alpha
+export class SpatialContainmentTree extends React_2.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
+    constructor(props: SpatialContainmentTreeProps);
+    // @internal (undocumented)
+    componentDidMount(): Promise<void>;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface SpatialContainmentTreeProps {
+    // (undocumented)
+    iModel: IModelConnection;
+}
+
+// @alpha
+export interface SpatialContainmentTreeState {
+    // (undocumented)
+    dataProvider?: IPresentationTreeDataProvider;
+    // (undocumented)
+    initialized: false;
 }
 
 // @public
@@ -4183,6 +4266,16 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
+// @alpha
+export class VisibilityComponent extends React_2.Component<any, VisibilityTreeState_2> {
+    constructor(props: any);
+    // (undocumented)
+    componentDidMount(): Promise<void>;
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
     constructor(props: VisibilityHandlerProps);
@@ -4238,6 +4331,15 @@ export interface VisibilityTreeProps {
     selectionMode?: SelectionMode;
     // @internal
     visibilityHandler?: VisibilityHandler;
+}
+
+// @alpha
+export class VisibilityWidget extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static readonly iconSpec: string;
+    // (undocumented)
+    static readonly label: string;
 }
 
 // @public

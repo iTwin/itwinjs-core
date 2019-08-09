@@ -1,0 +1,47 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-visibility-tree {
+  padding: 4px 4px 5px 5px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  .uifw-visibility-tree-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+
+    .uifw-visibility-tree-select {
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ccc;
+      width: 50%;
+      margin-right: 10px;
+    }
+
+    .icon-search {
+      margin-left: auto;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .uifw-visibility-tree-options {
+      padding: 4px;
+      font-size: 14px;
+      margin-right: 6px;
+      cursor: pointer;
+    }
+  }
+
+  .uifw-visibility-tree-wrapper {
+    border: 1px solid #ccc;
+    flex: 1;
+    margin-top: 4px;
+  }
+}
