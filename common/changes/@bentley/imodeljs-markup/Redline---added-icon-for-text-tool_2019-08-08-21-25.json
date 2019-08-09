@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added icon for redline text tool",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "joe.zbuchalski@bentley.com"
+}

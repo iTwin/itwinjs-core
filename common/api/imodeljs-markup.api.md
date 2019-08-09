@@ -510,6 +510,8 @@ export class PlaceTextTool extends RedlineTool {
     // (undocumented)
     protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     protected _minPoints: number;
     // (undocumented)
     protected _nRequiredPoints: number;
