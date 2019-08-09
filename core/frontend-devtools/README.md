@@ -35,4 +35,4 @@ You can then integrate the panel into your UI by appending its `element` HTMLEle
 
 Alternatively, you can embed any configuration of the widgets into your DOM as you like.
 
-Even if you use none of the widgets, initializing the package will make all of its tools available for use, ready to be associated with your own UI entry points or to be executed via key-in.
+Even if you use none of the widgets, initializing the package will make all of its tools available for use, ready to be associated with your own UI entry points or to be executed via key-in. The set of available key-ins can be found in /public/locales/en/FrontendDevTools.json.

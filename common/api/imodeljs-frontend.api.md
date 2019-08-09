@@ -843,7 +843,7 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface AppearanceOverrideProps {
     // (undocumented)
     color?: ColorDefProps;
@@ -2213,7 +2213,7 @@ export enum ElemSource {
     SelectionSet = 2
 }
 
-// @internal
+// @beta
 export class EmphasizeElements implements FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void;
     static clear(vp: Viewport, inactiveOnly?: boolean): void;
@@ -2224,7 +2224,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     clearIsolatedElements(vp: Viewport): boolean;
     clearNeverDrawnElements(vp: Viewport): boolean;
     clearOverriddenElements(vp: Viewport, key?: number): boolean;
-    // (undocumented)
+    // @internal (undocumented)
     protected createAppearanceFromKey(key: number): FeatureSymbology.Appearance;
     createDefaultAppearance(): FeatureSymbology.Appearance;
     createOverrideKey(color: ColorDef, override: FeatureOverrideType): number | undefined;
@@ -2251,15 +2251,17 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     isolateSelectedElements(vp: Viewport, replace?: boolean, clearSelection?: boolean): boolean;
     overrideElements(ids: Id64Arg, vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean): boolean;
     overrideSelectedElements(vp: Viewport, color: ColorDef, override?: FeatureOverrideType, replace?: boolean, clearSelection?: boolean): boolean;
+    // @internal
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
+    // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
     // (undocumented)
     toJSON(vp: Viewport): EmphasizeElementsProps;
-    // (undocumented)
+    // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export interface EmphasizeElementsProps {
     // (undocumented)
     alwaysDrawn?: Id64Set;
@@ -2363,7 +2365,7 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-// @internal
+// @beta
 export enum FeatureOverrideType {
     // (undocumented)
     AlphaOnly = 1,
