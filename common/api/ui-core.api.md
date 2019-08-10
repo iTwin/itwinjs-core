@@ -1493,7 +1493,7 @@ export interface TileProps extends CommonDivProps {
     // (undocumented)
     href?: string;
     // (undocumented)
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     // (undocumented)
     minimal?: boolean;
     // (undocumented)

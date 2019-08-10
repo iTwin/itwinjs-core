@@ -11,7 +11,7 @@ import { CommonDivProps } from "../utils/Props";
 /** @alpha */
 export interface TileProps extends CommonDivProps {
   title: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   featured?: boolean;
   minimal?: boolean;
   href?: string;
