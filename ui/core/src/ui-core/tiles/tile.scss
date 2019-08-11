@@ -99,22 +99,22 @@
     }
 
     $step-colors: (
-        step-0:     $uicore-green,
-        step-1:     $uicore-teal-1,
-        step-2:     $uicore-teal-2,
-        step-3:     $uicore-teal-3,
-        step-4:     $uicore-teal-4,
-        step-5:     $uicore-teal-5,
-        step-6:     $uicore-teal-6,
-        step-7:     $uicore-teal-7,
-        step-8:     $uicore-teal-8,
-        step-9:     $uicore-teal-9,
-        step-10:    $uicore-teal-a,
-        step-11:    $uicore-teal-b,
-        step-12:    $uicore-blue,
-        step-13:    $uicore-blue-5,
-        step-14:    $uicore-blue-4,
-        step-15:    $uicore-blue-3
+        uicore-step-0:     $uicore-green,
+        uicore-step-1:     $uicore-teal-1,
+        uicore-step-2:     $uicore-teal-2,
+        uicore-step-3:     $uicore-teal-3,
+        uicore-step-4:     $uicore-teal-4,
+        uicore-step-5:     $uicore-teal-5,
+        uicore-step-6:     $uicore-teal-6,
+        uicore-step-7:     $uicore-teal-7,
+        uicore-step-8:     $uicore-teal-8,
+        uicore-step-9:     $uicore-teal-9,
+        uicore-step-10:    $uicore-teal-a,
+        uicore-step-11:    $uicore-teal-b,
+        uicore-step-12:    $uicore-blue,
+        uicore-step-13:    $uicore-blue-5,
+        uicore-step-14:    $uicore-blue-4,
+        uicore-step-15:    $uicore-blue-3
     );
 
     @each $step, $color in $step-colors {
