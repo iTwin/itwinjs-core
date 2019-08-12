@@ -206,9 +206,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Top).collapseOffset = 0;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).minSize = 20;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).collapseOffset = 0;
+
     widgetZoneIds.forEach((zoneId: WidgetZoneId) => {
       const zoneDef = this.getZoneDef(zoneId);
-      if (!zoneDef || zoneDef.zoneState !== ZoneState.Open)
+      if (!zoneDef || zoneDef.zoneState === ZoneState.Off)
         return;
 
       if (!zoneDef.allowsMerging)

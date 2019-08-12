@@ -58,6 +58,7 @@ import {
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
+  ZoneLocation,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -199,7 +200,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={[
               <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                 control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
