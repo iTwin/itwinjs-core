@@ -7,7 +7,7 @@ ignore: true
 
 ### Improved drawing grid appearance and performance
 
-![grid example](./grid.png "Example showing drawing grid")
+![grid example](./assets/grid.png "Example showing drawing grid")
 
 ### Map depth, transparency, and elevation
 
@@ -131,5 +131,3 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
     * Returns momentData structure with centroid, volume, radii of gyration.
   * (static) `static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined`
     * Within a polyface, find edges that have unusual adjacency and hence qualify as "boundary" edges.
-
-
