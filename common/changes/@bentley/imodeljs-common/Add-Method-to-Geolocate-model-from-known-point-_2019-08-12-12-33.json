@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add optional arguments to EcefLocation.createFromCartographicOrigin",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

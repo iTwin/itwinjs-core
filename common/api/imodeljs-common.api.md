@@ -1301,7 +1301,7 @@ export type DPoint2dProps = number[];
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
-    static createFromCartographicOrigin(origin: Cartographic): EcefLocation;
+    static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
