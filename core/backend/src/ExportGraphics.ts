@@ -6,10 +6,34 @@
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
 
+/**
+ * @deprecated Use [[ExportPartDisplayInfo]] instead.
+ * @beta
+ */
+export type ExportPartDisplayProps = ExportPartDisplayInfo;
+
+/**
+ * @deprecated Use [[ExportPartInstanceInfo]] instead.
+ * @beta
+ */
+export type ExportPartInstanceProps = ExportPartInstanceInfo;
+
+/**
+ * @deprecated Use [[ExportGraphicsOptions]] instead.
+ * @beta
+ */
+export type ExportGraphicsProps = ExportGraphicsOptions;
+
+/**
+ * @deprecated Use [[ExportPartGraphicsOptions]] instead.
+ * @beta
+ */
+export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
+
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportGraphicsLines {
   /** Zero-based vertex indices, every two indices represent a line segment */
@@ -20,7 +44,7 @@ export interface ExportGraphicsLines {
 
 /** Info provided to ExportLinesFunction about linework graphics.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportLinesInfo {
   /** The element ID for the element the graphics originated from */
@@ -35,13 +59,13 @@ export interface ExportLinesInfo {
 
 /** A callback function that receives generated line graphics.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 /** A triangulated mesh with unified indices, suitable for direct use with graphics APIs.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportGraphicsMesh {
   /** Zero-based vertex indices, every three indices represent a triangle */
@@ -56,7 +80,7 @@ export interface ExportGraphicsMesh {
 
 /** Info provided to ExportGraphicsFunction about graphics.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportGraphicsInfo {
   /** The element ID for the element the graphics originated from */
@@ -75,13 +99,13 @@ export interface ExportGraphicsInfo {
 
 /** Information about the base display properties when a [GeometryPart]($imodeljs-backend) was
  * referenced. This is intended to be used with [IModelDb.exportPartGraphics]($imodeljs-backend).
- *  * If two ExportPartInstanceProps have the same ExportPartDisplayProps, they will result in the
+ *  * If two ExportPartInstanceInfo have the same ExportPartDisplayInfos, they will result in the
  *    same graphics (with a different transform).
- *  * If two ExportPartInstanceProps have different ExportPartDisplays, they may result in different
+ *  * If two ExportPartInstanceInfo have different ExportPartDisplayInfos, they may result in different
  *    graphics.
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
-export interface ExportPartDisplayProps {
+export interface ExportPartDisplayInfo {
   categoryId: Id64String;
   subCategoryId: Id64String;
   materialId: Id64String;
@@ -92,15 +116,15 @@ export interface ExportPartDisplayProps {
 /** Information about references to [GeometryPart]($imodeljs-backend) elements found during
  * a call to [IModelDb.exportGraphics]($imodeljs-backend).
  * See [IModelDb.exportPartGraphics]($imodeljs-backend) for the intended use case.
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
-export interface ExportPartInstanceProps {
+export interface ExportPartInstanceInfo {
   /** ID for the [GeometryPart]($imodeljs-backend) */
   partId: Id64String;
   /** ID for the element that contained the reference to the [GeometryPart]($imodeljs-backend) */
   partInstanceId: Id64String;
   /** The base display properties when the [GeometryPart]($imodeljs-backend) was referenced. */
-  displayProps: ExportPartDisplayProps;
+  displayProps: ExportPartDisplayInfo;
   /** A row-major storage 4x3 transform for this instance.
    *  See export-gltf under test-apps in the iModel.js monorepo for a working reference.
    */
@@ -109,14 +133,14 @@ export interface ExportPartInstanceProps {
 
 /** A callback function that receives generated graphics.
  * See [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 /** Parameters for [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
-export interface ExportGraphicsProps {
+export interface ExportGraphicsOptions {
   /** The source elements for the exported graphics */
   elementIdArray: Id64Array;
   /** A function to call for each unique element ID, color and texture combination */
@@ -127,7 +151,7 @@ export interface ExportGraphicsProps {
    * recorded in this array. In this case, graphics that would result from the GeometryPart
    * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($imodeljs-backend)
    */
-  partInstanceArray?: ExportPartInstanceProps[];
+  partInstanceArray?: ExportPartInstanceInfo[];
   /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
   chordTol?: number;
   /** Max angle difference in approximated face, see [StrokeOptions]($geometry-core) */
@@ -138,7 +162,7 @@ export interface ExportGraphicsProps {
 
 /** Info provided to ExportPartFunction about graphics.
  * See [IModelDb.exportPartGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportPartInfo {
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
@@ -153,13 +177,13 @@ export interface ExportPartInfo {
 
 /** A callback function that receives generated graphics for a [GeometryPart]($imodeljs-backend).
  * See [IModelDb.exportPartGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
 /** Info provided to ExportPartFunction about line graphics.
  * See [IModelDb.exportPartGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export interface ExportPartLinesInfo {
   /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
@@ -170,20 +194,20 @@ export interface ExportPartLinesInfo {
 
 /** A callback function that receives generated line graphics for a [GeometryPart]($imodeljs-backend).
  * See [IModelDb.exportPartGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
 /** Parameters for [IModelDb.exportPartGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing.
+ * @public
  */
-export interface ExportPartGraphicsProps {
+export interface ExportPartGraphicsOptions {
   /** The ID for the source [GeometryPart]($imodeljs-backend) */
   elementId: Id64String;
   /** The base display properties to use for generating the graphics. This should come from an
    * ExportPartInstanceProps generated by [IModelDb.exportGraphics]($imodeljs-backend)
    */
-  displayProps: ExportPartDisplayProps;
+  displayProps: ExportPartDisplayInfo;
   /** A function to call for each unique color and texture combination. */
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
@@ -197,13 +221,21 @@ export interface ExportPartGraphicsProps {
 }
 
 /** Provides utility functions for working with data generated by [IModelDb.exportGraphics]($imodeljs-backend)
- * @beta Waiting for feedback from community before finalizing
+ * @public
  */
 export namespace ExportGraphics {
   /** Test if ExportPartDisplayProps have exactly the same values.
-   * @beta Waiting for feedback from community before finalizing.
+   * @deprecated Use [[ExportGraphics.arePartDisplayInfosEqual]] instead.
+   * @beta
    */
   export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean {
+    return arePartDisplayInfosEqual(lhs, rhs);
+  }
+
+  /** Test if ExportPartDisplayInfos have exactly the same values.
+   * @public
+   */
+  export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean {
     if (lhs.categoryId !== rhs.categoryId) return false;
     if (lhs.subCategoryId !== rhs.subCategoryId) return false;
     if (lhs.materialId !== rhs.materialId) return false;

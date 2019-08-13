@@ -3,23 +3,28 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Button";
-export * from "./CheckBox";
-export * from "./ColorInput";
-export * from "./ComboBox";
-export * from "./NestedMenu";
-export * from "./NumericInput";
-export * from "./RadioBox";
-export * from "./Slider";
-export * from "./TextBox";
-export * from "./DiagnosticsPanel";
-export * from "./FpsTracker";
-export * from "./FrustumDecoration";
-export * from "./MemoryTracker";
-export * from "./ProjectExtents";
-export * from "./TileStatisticsTracker";
-export * from "./ToolSettingsTracker";
-export * from "./KeyinHandler";
+export * from "./FrontEndDevTools";
+
+export * from "./tools/FrustumDecoration";
+export * from "./tools/ProjectExtents";
+export * from "./tools/ReportWebGLCompatibilityTool";
+
+export * from "./ui/Button";
+export * from "./ui/CheckBox";
+export * from "./ui/ColorInput";
+export * from "./ui/ComboBox";
+export * from "./ui/NestedMenu";
+export * from "./ui/NumericInput";
+export * from "./ui/RadioBox";
+export * from "./ui/Slider";
+export * from "./ui/TextBox";
+
+export * from "./widgets/DiagnosticsPanel";
+export * from "./widgets/FpsTracker";
+export * from "./widgets/KeyinField";
+export * from "./widgets/MemoryTracker";
+export * from "./widgets/TileStatisticsTracker";
+export * from "./widgets/ToolSettingsTracker";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

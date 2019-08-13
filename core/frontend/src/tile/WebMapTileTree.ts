@@ -12,14 +12,13 @@ import {
   compareStrings,
   compareBooleans,
   IModelStatus,
-  SortedArray,
   Id64String,
 } from "@bentley/bentleyjs-core";
 import {
   TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
   BackgroundMapSettings, BackgroundMapType, BackgroundMapProviderName, GeoCoordStatus, Feature, FeatureTable,
 } from "@bentley/imodeljs-common";
-import { Range3dProps, Range3d, Range1d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Range3dProps, Range3d, Range1d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYZProps } from "@bentley/geometry-core";
 import { TileLoader, TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
@@ -31,233 +30,28 @@ import { IModelConnection } from "../IModelConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { GeoConverter } from "../GeoServices";
 import { RenderSystem, PackedFeatureTable } from "../render/System";
 import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
+import { MapTileTree, MapTile } from "./MapTileTree";
 
-// this interface is implemented in two ways:
-// LinearTransformChildCreator is used when the range of the iModel is small, such as a building, when an approximation will work.
-// GeoTransformChildCreator is used when the range is larger, as in a map. Then you must calculate the iModel coordinates more precisely from the lat/longs of the tile corners.
-interface ChildCreator {
-  getChildren(quadId: QuadId, parent: Tile): Promise<WebMapTileProps[]>;
-  onTilesSelected(): void;
-}
+/** @internal */
+export function computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform {
+  const ecefLocation: EcefLocation = iModel.ecefLocation!;
+  const dbToEcef = ecefLocation.getTransform();
 
-// this is the simple version that is appropriate when the iModel covers a small area.
-class LinearTransformChildCreator implements ChildCreator {
-  public mercatorToDb: Transform;
+  const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, groundBias);
+  const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
+  const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
 
-  constructor(_iModel: IModelConnection, groundBias: number, private _mapTilingScheme: MapTilingScheme) {
-    // calculate mercatorToDb.
-    const ecefLocation: EcefLocation = _iModel.ecefLocation!;
-    const dbToEcef = ecefLocation.getTransform();
+  const mercatorOrigin = tilingScheme.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter));
+  const mercatorX = tilingScheme.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast));
+  const mercatorY = tilingScheme.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth));
 
-    const projectCenter = Point3d.create(_iModel.projectExtents.center.x, _iModel.projectExtents.center.y, groundBias);
-    const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
-    const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
+  const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
+  const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
 
-    const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter));
-    const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast));
-    const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth));
-
-    const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
-    const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
-
-    const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
-    this.mercatorToDb = dbToMercator.inverse() as Transform;
-  }
-
-  // gets longitude in a number between 0 and 1, corresponding to the coordinate system of the tiles.
-  private longitudeToPixelFraction(longitude: number) {
-    return this._mapTilingScheme.longitudeToXFraction(longitude);
-  }
-
-  // gets latitude in a number between 0 and 1, corresponding to the coordinate system of the tiles.
-  private latitudeToPixelFraction(latitude: number) {
-    return this._mapTilingScheme.latitudeToYFraction(latitude);
-  }
-
-  // gets the longitude and latitude into a point with coordinates between 0 and 1
-  private ecefToPixelFraction(point: Point3d) {
-    const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToPixelFraction(cartoGraphic.longitude), this.latitudeToPixelFraction(cartoGraphic.latitude), 0.0);
-  }
-
-  // gets the corners of the tile in a number between 0 and 1.
-  private getTileCorners(level: number, column: number, row: number): Point3d[] {
-    const corners: Point3d[] = [];             //    ----x----->
-
-    corners.push(Point3d.create(this._mapTilingScheme.tileXToFraction(column, level), this._mapTilingScheme.tileYToFraction(row, level), 0.0));
-    corners.push(Point3d.create(this._mapTilingScheme.tileXToFraction(column + 1, level), this._mapTilingScheme.tileYToFraction(row, level), 0.0));
-    corners.push(Point3d.create(this._mapTilingScheme.tileXToFraction(column, level), this._mapTilingScheme.tileYToFraction(row + 1, level), 0.0));
-    corners.push(Point3d.create(this._mapTilingScheme.tileXToFraction(column + 1, level), this._mapTilingScheme.tileYToFraction(row + 1, level), 0.0));
-
-    return corners;
-  }
-
-  // Note: although there are only nine unique points, we don't bother with the optimization used in the
-  // GeoTransformChildCreator because the calculation for each point is fast.
-  public async getChildren(quadId: QuadId, parent: Tile): Promise<WebMapTileProps[]> {
-    const level = quadId.level + 1;
-    const column = quadId.column * 2;
-    const row = quadId.row * 2;
-
-    const tileProps: WebMapTileProps[] = [];
-    const rowMax = (quadId.level === 0) ? this._mapTilingScheme.numberOfLevelZeroTilesY : 2;
-    const columnMax = (quadId.level === 0) ? this._mapTilingScheme.numberOfLevelZeroTilesX : 2;
-
-    for (let i = 0; i < columnMax; i++) {
-      for (let j = 0; j < rowMax; j++) {
-        // get them as LatLong
-        const corners: Point3d[] = this.getTileCorners(level, column + i, row + j);
-
-        // use the linear transform to get them into iModel Coordinates.
-        this.mercatorToDb.multiplyPoint3dArrayInPlace(corners);
-
-        const childId: string = level + "_" + (column + i) + "_" + (row + j);
-        tileProps.push(new WebMapTileProps(childId, level, corners, parent.range.low.z, parent.range.high.z));
-      }
-    }
-    return Promise.resolve(tileProps);
-  }
-
-  public onTilesSelected() { }
-}
-
-function compareXYZ(lhs: XYAndZ, rhs: XYAndZ): number {
-  let cmp = compareNumbers(lhs.x, rhs.x);
-  if (0 === cmp) {
-    cmp = compareNumbers(lhs.y, rhs.y);
-    if (0 === cmp)
-      cmp = compareNumbers(lhs.z, rhs.z);
-  }
-
-  return cmp;
-}
-
-// this is the simple version that is appropriate when the iModel covers a small area.
-class GeoTransformChildCreator implements ChildCreator {
-  // we are creating four children, so 16 corners, but only nine are unique:
-  //   0       1       2
-  //   +-------+-------+
-  //   |      4|       |
-  //  3+-------+-------+5
-  //   |       |       |
-  //   +-------+-------+
-  //   6       7       8
-  // (Also, we probably already have 0,2,6, and 8 in the cache.)
-  private static _cornerList: number[][][] = [[[0, 1, 3, 4], [3, 4, 6, 7]], [[1, 2, 4, 5], [4, 5, 7, 8]]];
-  private static _uniquePointPixels: number[][] = [[0, 0], [128, 0], [256, 0], [0, 128], [128, 128], [256, 128], [0, 256], [128, 256], [256, 256]];
-
-  private _converter: GeoConverter;
-  private _groundBias: number;
-  private _linearChildCreator: LinearTransformChildCreator;
-  // An array of points which need to be converted from geocoords to cartesian coords for loading of child tiles.
-  // This is initialized by the first call to getChildrenProps() requiring geopoint conversion during selectTiles(), and reset to undefined after selectTiles() completes.
-  private _request?: SortedArray<XYAndZ>;
-  // A deferred Promise dispatched once tile selection completes, resolving when all geocoord conversion is complete.
-  private _promise?: Promise<void>;
-
-  constructor(_iModel: IModelConnection, groundBias: number, private _mapTilingScheme: MapTilingScheme) {
-    this._converter = _iModel.geoServices.getConverter("WGS84");
-    this._groundBias = groundBias;
-
-    // a geographic transform doesn't work well outside a reasonable range, so use the linearChildCreator for the large-range tiles.
-    this._linearChildCreator = new LinearTransformChildCreator(_iModel, groundBias, this._mapTilingScheme);
-  }
-
-  public async getChildren(parentQuad: QuadId, parent: Tile): Promise<WebMapTileProps[]> {
-    const parentLevel = parentQuad.level;
-    const parentColumn = parentQuad.column;
-    const parentRow = parentQuad.row;
-
-    // calculate the lat/long of the nine unique points:
-    if (parentLevel < 6)
-      return this._linearChildCreator.getChildren(parentQuad, parent);
-
-    const requestProps = new Array<XYZProps>(9);
-
-    // we are passed the child level, and the top left corner column and row.
-    const scaleX = 1.0 / (256 * this._mapTilingScheme.getNumberOfXTilesAtLevel(parentLevel));
-    const scaleY = 1.0 / (256 * this._mapTilingScheme.getNumberOfYTilesAtLevel(parentLevel));
-    const left = 256 * parentColumn;
-    const top = 256 * parentRow;
-    for (let iPoint = 0; iPoint < GeoTransformChildCreator._uniquePointPixels.length; ++iPoint) {
-      const x = ((left + GeoTransformChildCreator._uniquePointPixels[iPoint][0]) * scaleX);
-      const y = ((top + GeoTransformChildCreator._uniquePointPixels[iPoint][1]) * scaleY);
-
-      requestProps[iPoint] = [
-        this._mapTilingScheme.xFractionToLongitude(x) * Angle.degreesPerRadian,
-        this._mapTilingScheme.yFractionToLatitude(y) * Angle.degreesPerRadian,
-        this._groundBias,
-      ];
-    }
-
-    let cached = this._converter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
-    if (undefined !== cached.missing) {
-      // Batch our missing points in with any others which may be needed during tile selection.
-      // This promise will request the points needed by all tiles simultaneously and resolve when they are all available in the cache.
-      await this.getPromise(cached.missing);
-
-      // The points we need should all now be available in the cache.
-      // ###TODO this is lazy - use the cached results from above; only query the converter for missing points
-      cached = this._converter.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
-      assert(undefined === cached.missing);
-    }
-
-    const iModelCoords = cached.result;
-
-    // get the tileProps now that we have their geoCoords.
-    const tileProps: WebMapTileProps[] = [];
-    const level = parentLevel + 1;
-    const column = parentColumn * 2;
-    const row = parentRow * 2;
-    const rowMax = (parentQuad.level === 0) ? this._mapTilingScheme.numberOfLevelZeroTilesY : 2;
-    const columnMax = (parentQuad.level === 0) ? this._mapTilingScheme.numberOfLevelZeroTilesX : 2;
-    for (let iCol = 0; iCol < columnMax; ++iCol) {
-      for (let iRow = 0; iRow < rowMax; ++iRow) {
-        const corners: Point3d[] = new Array<Point3d>(4);
-        for (let iPoint = 0; iPoint < 4; ++iPoint) {
-          const pointNum = GeoTransformChildCreator._cornerList[iCol][iRow][iPoint];
-          const iModelCoord = iModelCoords[pointNum]!;
-          assert(undefined !== iModelCoord);
-          corners[iPoint] = Point3d.fromJSON(iModelCoord.p);
-        }
-
-        const childId: string = level + "_" + (column + iCol) + "_" + (row + iRow);
-        tileProps.push(new WebMapTileProps(childId, level, corners, parent.range.low.z, parent.range.high.z));
-      }
-    }
-
-    return tileProps;
-  }
-
-  private async getPromise(geoPoints: XYZProps[]): Promise<void> {
-    if (undefined === this._promise) {
-      assert(undefined === this._request);
-      const req = new SortedArray<XYAndZ>(compareXYZ);
-      this._request = req;
-      this._promise = Promise.resolve().then(async () => {
-        // NB: At this point this._request and this._promise are undefined, or possibly pointing to different objects.
-        await this._converter.getIModelCoordinatesFromGeoCoordinates(req.extractArray());
-      });
-    }
-
-    assert(undefined !== this._request);
-    for (const point of geoPoints)
-      this._request!.insert(Point3d.fromJSON(point));
-
-    return this._promise;
-  }
-
-  public onTilesSelected(): void {
-    if (undefined === this._promise)
-      return;
-
-    assert(undefined !== this._request);
-    this._promise = undefined;
-    this._request = undefined;
-  }
+  const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
+  return dbToMercator.inverse() as Transform;
 }
 
 /** @internal */
@@ -267,18 +61,20 @@ export class QuadId {
   public row: number;
   public get isValid() { return this.level >= 0; }
   private static _scratchCartographic = new Cartographic();
-
-  public constructor(stringId: string) {
+  public static createFromContentId(stringId: string) {
     const idParts = stringId.split("_");
     if (3 !== idParts.length) {
       assert(false, "Invalid quadtree ID");
-      this.level = this.row = this.column = -1;
-      return;
+      return new QuadId(-1, -1, -1);
     }
+    return new QuadId(parseInt(idParts[0], 10), parseInt(idParts[1], 10), parseInt(idParts[2], 10));
+  }
+  public get contentId(): string { return this.level + "_" + this.column + "_" + this.row; }
 
-    this.level = parseInt(idParts[0], 10);
-    this.column = parseInt(idParts[1], 10);
-    this.row = parseInt(idParts[2], 10);
+  public constructor(level: number, column: number, row: number) {
+    this.level = level;
+    this.column = column;
+    this.row = row;
   }
   // Not used in display - used only to tell whether this tile overlaps the range provided by a tile provider for attribution.
   public getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d {
@@ -318,7 +114,8 @@ export class WebMapTileTreeProps implements TileTreeProps {
   }
 }
 
-class WebMapTileProps implements TileProps {
+/** @internal */
+export class WebMapTileProps implements TileProps {
   public readonly contentId: string;
   public readonly range: Range3dProps;
   public readonly contentRange?: Range3dProps;  // not used for WebMap tiles.
@@ -348,32 +145,16 @@ export interface MapTileGeometryAttributionProvider {
 
 /** @internal */
 export abstract class MapTileLoaderBase extends TileLoader {
-  protected _childTileCreator: ChildCreator;
   protected _applyLights = false;
   protected _featureTable: PackedFeatureTable;
   public get heightRange(): Range1d | undefined { return this._heightRange; }
-  private static selectLinearChildCreator(_iModel: IModelConnection) {
-    const linearRangeSquared: number = _iModel.projectExtents.diagonal().magnitudeSquared();
-    return linearRangeSquared < 1000.0 * 1000.00;  // if the range is greater than a kilometer, use the more exact but slower GCS method of generating the WebMap tile corners.
-  }
 
-  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, gcsConverterAvailable: boolean, protected _mapTilingScheme: MapTilingScheme, private _heightRange?: Range1d) {
+  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, private _heightRange?: Range1d) {
     super();
     const featureTable = new FeatureTable(1, this._modelId);
     const feature = new Feature(this._modelId);
     featureTable.insert(feature);
     this._featureTable = PackedFeatureTable.pack(featureTable);
-
-    const useLinearTransform: boolean = !gcsConverterAvailable || WebMapTileLoader.selectLinearChildCreator(_iModel);
-    if (useLinearTransform) {
-      this._childTileCreator = new LinearTransformChildCreator(_iModel, _groundBias, _mapTilingScheme);
-    } else {
-      this._childTileCreator = new GeoTransformChildCreator(_iModel, _groundBias, _mapTilingScheme);
-    }
-  }
-  public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
-    const quadId = new QuadId(parent.contentId);
-    return this._childTileCreator.getChildren(quadId, parent);
   }
 
   public get parentsAndChildrenExclusive(): boolean { return false; }
@@ -381,17 +162,7 @@ export abstract class MapTileLoaderBase extends TileLoader {
   public tileRequiresLoading(params: Tile.Params): boolean {
     return 0.0 !== params.maximumSize;
   }
-  public compareTilePriorities(lhs: Tile, rhs: Tile): number {
-    // The default implementation prioritizes lower-resolution tiles. For maps, we want tiles closest to the camera to load first.
-    // When the camera is ON, those will be the higher-resolution tiles - so invert the default behavior.
-    // ###TODO: Compute actual distance from camera when camera is OFF.
-    // NB: We never load higher-res children until the first displayable lowest-res tile is available - so we always have *something* to draw while awaiting hi-res tiles.
-    return rhs.depth - lhs.depth;
-  }
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
-    // Dispatch any requests for child tiles props (geo-coordination)
-    this._childTileCreator.onTilesSelected();
-
     // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
     // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
     return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
@@ -399,6 +170,10 @@ export abstract class MapTileLoaderBase extends TileLoader {
   public abstract async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
   public abstract get maxDepth(): number;
   public abstract async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public async getChildrenProps(_parent: Tile): Promise<TileProps[]> {
+    assert(false);      // children are generated synchronously in MapTile....
+    return [];
+  }
 }
 
 /** @internal */
@@ -408,12 +183,12 @@ export class WebMapTileLoader extends MapTileLoaderBase {
     return this._imageryProvider;
   }
 
-  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, gcsConverterAvailable: boolean, mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
-    super(iModel, modelId, groundBias, gcsConverterAvailable, mapTilingScheme, heightRange);
+  constructor(private _imageryProvider: ImageryProvider, iModel: IModelConnection, modelId: Id64String, groundBias: number, mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
+    super(iModel, modelId, groundBias, mapTilingScheme, heightRange);
   }
 
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const quadId = new QuadId(tile.contentId);
+    const quadId = QuadId.createFromContentId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
 
@@ -422,6 +197,8 @@ export class WebMapTileLoader extends MapTileLoaderBase {
       isCanceled = () => !tile.isLoading;
 
     assert(data instanceof ImageSource);
+    assert(tile instanceof MapTile);
+    await (tile as MapTile).reprojectCorners();
     const content: Tile.Content = {};
     const system = IModelApp.renderSystem;
     const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
@@ -613,7 +390,7 @@ class BingAttribution {
   constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
 
   public matchesTile(tile: Tile, tilingScheme: MapTilingScheme): boolean {
-    const quadId = new QuadId(tile.contentId);
+    const quadId = QuadId.createFromContentId(tile.contentId);
     for (const coverage of this._coverages) {
       if (coverage.overlaps(quadId, tilingScheme))
         return true;
@@ -1001,6 +778,11 @@ export async function getGcsConverterAvailable(iModel: IModelConnection) {
   return haveConverter;
 }
 
+class BackgroundMapTileTree extends MapTileTree {
+  constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
+    super(params, groundBias, gcsConverterAvailable, tilingScheme, heightRange);
+  }
+}
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */
@@ -1011,10 +793,12 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   await imageryProvider.initialize();
 
   const modelId = iModel.transientIds.next;
+  const tilingScheme = new WebMercatorTilingScheme();
+  const heightRange = Range1d.createXX(groundBias, groundBias);
   const haveConverter = await getGcsConverterAvailable(iModel);
-  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, haveConverter, new WebMercatorTilingScheme());
+  const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme);
   const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
-  return new TileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId));
+  return new BackgroundMapTileTree(TileTree.paramsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, 0.0, haveConverter, tilingScheme, heightRange);
 }
 
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.

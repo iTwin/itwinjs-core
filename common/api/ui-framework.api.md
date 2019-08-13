@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
+import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -1571,8 +1572,6 @@ export interface FrameworkStagePanelProps {
     // (undocumented)
     resizable: boolean;
     // (undocumented)
-    size?: number;
-    // (undocumented)
     widgetChangeHandler: WidgetChangeHandler;
     // (undocumented)
     widgetCount: number;
@@ -2935,6 +2934,22 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
+// @alpha
+export class RealityDataPicker extends React_2.Component<RealityDataPickerProps, RealityDataPickerState> {
+    constructor(props: RealityDataPickerProps);
+    // (undocumented)
+    readonly attachedModels: AttachedRealityModel[];
+    componentDidMount(): Promise<void>;
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export class RealityDataPickerControl extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any);
+}
+
 // @public
 export type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -3839,7 +3854,7 @@ export class ToolSettingsZone extends React_2.PureComponent<ToolSettingsZoneProp
     render(): React_2.ReactNode;
     // (undocumented)
     readonly state: Readonly<ToolSettingsZoneState>;
-    }
+}
 
 // @internal
 export interface ToolSettingsZoneProps extends CommonProps {

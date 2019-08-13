@@ -304,7 +304,7 @@ class WebServer {
 
     this._app.use(express.static(this._resourceRoot));
     this._app.use("/*", this._handlePluginResources.bind(this));
-    this._app.get("/signin-callback", (_req, resp) => {
+    this._app.get("/signin-*", (_req, resp) => {
       resp.sendFile(path.resolve(this._resourceRoot, "index.html"));
     });
 

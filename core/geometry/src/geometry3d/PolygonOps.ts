@@ -77,11 +77,20 @@ export class PolygonOps {
    * for a right triangle in the first quadrant at the origin -- (0,0),(1,0),(0,1)
    */
   private static readonly _triangleMomentWeights = Matrix4d.createRowValues(2.0 / 24.0, 1.0 / 24.0, 0, 4.0 / 24.0, 1.0 / 24.0, 2.0 / 24.0, 0, 4.0 / 24.0, 0, 0, 0, 0, 4.0 / 24.0, 4.0 / 24.0, 0, 12.0 / 24.0);
+  /** These values are the integrated volume moment products [xx,xy,xz, x, yx,yy,yz,y, zx,zy,zz,z,x,y,z,1]
+   * for a tetrahedron in the first quadrant at the origin -- (0,00),(1,0,0),(0,1,0),(0,0,1)
+   */
+  private static readonly _tetrahedralMomentWeights = Matrix4d.createRowValues(
+    1.0 / 60.0, 1.0 / 120, 1.0 / 120, 1.0 / 24.0,
+    1.0 / 120, 1.0 / 60.0, 1.0 / 120, 1.0 / 24.0,
+    1.0 / 120, 1.0 / 120, 1.0 / 60.0, 1.0 / 24.0,
+    1.0 / 24.0, 1.0 / 24.0, 1.0 / 24.0, 1.0 / 6.0);
   // statics for shared reuse.
   // many methods use these.
   // only use them in "leaf" methods that are certain not to call other users . . .
   private static _vector0 = Vector3d.create();
   private static _vector1 = Vector3d.create();
+  private static _vector2 = Vector3d.create();
   private static _vectorOrigin = Vector3d.create();
   private static _normal = Vector3d.create();
   private static _matrixA = Matrix4d.createIdentity();
@@ -222,16 +231,46 @@ export class PolygonOps {
     PolygonOps.areaNormalGo(points, result);
     return result.normalizeInPlace();
   }
-  /** Return the matrix of area products of a polygon with respect to an origin.
+  /** Accumulate to the matrix of area products of a polygon with respect to an origin.
    * The polygon is assumed to be planar and non-self-intersecting.
    */
+  /** Accumulate to the matrix of area products of a polygon with respect to an origin.
+   * * The polygon is assumed to be planar and non-self-intersecting.
+   * * Accumulated values are integrals over triangles from point 0 of the polygon to other edges of the polygon.
+   * * Integral over each triangle is transformed to integrals from the given origin.
+   * @param points array of points around the polygon.   Final closure point is not needed.
+   * @param origin origin for global accumulation.
+   * @param moments 4x4 matrix where products are accumulated.
+   */
   public static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
+    this.addSecondMomentTransformedProducts(PolygonOps._triangleMomentWeights, points, origin, 2, moments);
+  }
+
+  /** Accumulate to the matrix of volume products of a polygon with respect to an origin.
+   * * The polygon is assumed to be planar and non-self-intersecting.
+   * * Accumulated values are integrals over tetrahedra from the origin to triangles on the polygon.
+   * @param points array of points around the polygon.   Final closure point is not needed.
+   * @param origin origin for tetrahedra
+   * @param moments 4x4 matrix where products are accumulated.
+   */
+  public static addSecondMomentVolumeProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
+    this.addSecondMomentTransformedProducts(PolygonOps._tetrahedralMomentWeights, points, origin, 3, moments);
+  }
+  /** Return the matrix of area products of a polygon with respect to an origin.
+   * The polygon is assumed to be planar and non-self-intersecting.
+   * * `frameType===2` has xy vectors in the plane of the polygon, plus a unit normal z. (Used for area integrals)
+   * * `frameType===3` has vectors from origin to 3 points in the triangle. (Used for volume integrals)
+   */
+  private static addSecondMomentTransformedProducts(firstQuadrantMoments: Matrix4d, points: IndexedXYZCollection, origin: Point3d,
+    frameType: 2 | 3,
+    moments: Matrix4d) {
     const unitNormal = PolygonOps._normal;
     if (PolygonOps.unitNormal(points, unitNormal)) {
       // The direction of the normal makes the various detJ values positive or negative so that non-convex polygons
       // sum correctly.
       const vector01 = PolygonOps._vector0;
       const vector02 = PolygonOps._vector1;
+      const vector03 = PolygonOps._vector2;
       const placement = PolygonOps._matrixA;
       const matrixAB = PolygonOps._matrixB;
       const matrixABC = PolygonOps._matrixC;
@@ -239,16 +278,28 @@ export class PolygonOps {
       const numPoints = points.length;
       let detJ = 0;
       for (let i2 = 2; i2 < numPoints; i2++) {
-        points.vectorIndexIndex(0, i2 - 1, vector01);
-        points.vectorIndexIndex(0, i2, vector02);
-        detJ = unitNormal.tripleProduct(vector01, vector02);
-        placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
-        placement.multiplyMatrixMatrix(PolygonOps._triangleMomentWeights, matrixAB);
-        matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
-        moments.addScaledInPlace(matrixABC, detJ);
+        if (frameType === 2) {
+          points.vectorIndexIndex(0, i2 - 1, vector01);
+          points.vectorIndexIndex(0, i2, vector02);
+          detJ = unitNormal.tripleProduct(vector01, vector02);
+          placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
+          placement.multiplyMatrixMatrix(firstQuadrantMoments, matrixAB);
+          matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
+          moments.addScaledInPlace(matrixABC, detJ);
+        } else if (frameType === 3) {
+          points.vectorXYAndZIndex(origin, 0, vector01);
+          points.vectorXYAndZIndex(origin, i2 - 1, vector02);
+          points.vectorXYAndZIndex(origin, i2, vector03);
+          detJ = vector01.tripleProduct(vector02, vector03);
+          placement.setOriginAndVectors(origin, vector01, vector02, vector03);
+          placement.multiplyMatrixMatrix(firstQuadrantMoments, matrixAB);
+          matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
+          moments.addScaledInPlace(matrixABC, detJ);
+        }
       }
     }
   }
+
   /** Test the direction of turn at the vertices of the polygon, ignoring z-coordinates.
    *
    * *  For a polygon without self intersections, this is a convexity and orientation test: all positive is convex and counterclockwise,
@@ -315,5 +366,31 @@ export class PolygonOps {
         return context.classifyCounts();
     }
     return context.classifyCounts();
+  }
+  /**
+   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * @param loops
+   * @param outwardNormal
+   * @return the number of loops reversed.
+   */
+  public static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number {
+    if (loops instanceof IndexedXYZCollection)
+      return this.orientLoopsCCWForOutwardNormalInPlace([loops], outwardNormal);
+    const orientations: number[] = [];
+    const unitNormal = Vector3d.create();
+    // orient individually ... (no hole analysis)
+    let numReverse = 0;
+    for (const loop of loops) {
+      if (this.unitNormal(loop, unitNormal)) {
+        const q = unitNormal.dotProduct(outwardNormal);
+        orientations.push(q);
+        if (q <= 0.0)
+          loop.reverseInPlace();
+        numReverse++;
+      } else {
+        orientations.push(0.0);
+      }
+    }
+    return numReverse;
   }
 }

@@ -17,6 +17,7 @@ import { Marker } from '@bentley/imodeljs-frontend';
 import { Point3d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { Tool } from '@bentley/imodeljs-frontend';
 import { Vector3d } from '@bentley/geometry-core';
 import { Viewport } from '@bentley/imodeljs-frontend';
 
@@ -183,39 +184,44 @@ export function createSlider(props: SliderProps): Slider;
 // @alpha (undocumented)
 export function createTextBox(props: TextBoxProps): TextBox;
 
-// @alpha (undocumented)
+// @beta
 export class DiagnosticsPanel {
     constructor(vp: Viewport);
     // (undocumented)
     dispose(): void;
     // (undocumented)
     readonly element: HTMLElement;
+    // (undocumented)
+    readonly keyinField: KeyinField;
     }
 
-// @alpha (undocumented)
+// @beta
 export class FpsTracker {
     constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
     dispose(): void;
     }
 
-// @alpha (undocumented)
+// @beta
+export class FrontendDevTools {
+    static initialize(): Promise<void>;
+    }
+
+// @beta
 export class FrustumDecorator implements Decorator {
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
     static disable(): void;
-    // (undocumented)
     static enable(vp: Viewport): void;
     }
 
-// @alpha (undocumented)
-export class KeyinHandler {
+// @beta
+export class KeyinField {
     constructor(parent: HTMLElement, _vp: Viewport);
     // (undocumented)
     readonly autoCompleteList: DataList;
     // (undocumented)
-    dispose(): void;
+    readonly focus: () => void;
     // (undocumented)
     readonly keyins: string[];
 }
@@ -238,7 +244,7 @@ export interface LabeledNumericInputProps extends NumericInputProps {
     name: string;
 }
 
-// @alpha (undocumented)
+// @beta
 export class MemoryTracker {
     constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
@@ -400,6 +406,14 @@ export interface RadioBoxProps {
     vertical?: boolean;
 }
 
+// @beta
+export class ReportWebGLCompatibilityTool extends Tool {
+    // (undocumented)
+    run(_args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface Slider {
     // (undocumented)
@@ -432,13 +446,6 @@ export interface SliderProps {
     // (undocumented)
     value: string;
 }
-
-// @alpha (undocumented)
-export class StatsTracker {
-    constructor(parent: HTMLElement, vp: Viewport);
-    // (undocumented)
-    dispose(): void;
-    }
 
 // @alpha (undocumented)
 export interface TextBox {
@@ -478,10 +485,17 @@ export interface TextBoxProps {
     tooltip?: string;
 }
 
-// @alpha
+// @beta
+export class TileStatisticsTracker {
+    constructor(parent: HTMLElement, vp: Viewport);
+    // (undocumented)
+    dispose(): void;
+    }
+
+// @beta
 export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void;
 
-// @alpha (undocumented)
+// @alpha
 export class ToolSettingsTracker {
     constructor(parent: HTMLElement, _vp: Viewport);
     // (undocumented)

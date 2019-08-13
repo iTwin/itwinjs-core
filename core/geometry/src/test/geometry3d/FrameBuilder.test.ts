@@ -21,6 +21,7 @@ import { prettyPrint } from "../testFunctions";
 import { MomentData } from "../../geometry4d/MomentData";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 /* tslint:disable:no-console */
 describe("FrameBuilder", () => {
 
@@ -82,6 +83,40 @@ describe("FrameBuilder", () => {
     ck.checkpoint("FrameBuilder");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("BsplineCurve", () => {
+    const ck = new Checker();
+    const builder = new FrameBuilder();
+
+    for (const points of [
+      [Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(0, 1, 0)],
+      [Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(2, 1, 0)],
+      [Point3d.create(1, 2, -1),
+      Point3d.create(1, 3, 5),
+      Point3d.create(2, 4, 3),
+      Point3d.create(-2, 1, 7)],
+    ]) {
+      builder.clear();
+      const linestring = LineString3d.create(points);
+      const bcurve = BSplineCurve3d.createUniformKnots(points, 3);
+      builder.clear();
+      builder.announce(linestring);
+      const frameA = builder.getValidatedFrame();
+      builder.clear();
+      builder.announce(bcurve);
+      const frameB = builder.getValidatedFrame();
+      if (ck.testDefined(frameA) && frameA && ck.testDefined(frameB) && frameB) {
+        ck.testTransform(frameA, frameB, "Frame from linestring versus bspline");
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("HelloVectors", () => {
     const ck = new Checker();
     const builder = new FrameBuilder();

@@ -350,7 +350,8 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
   }
 }
 
-/** Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
+/** A Tool that performs an action. It has a *toolId* that uniquely identifies it, so it can be found via a lookup in the [[ToolRegistry]].
+ * Every time a tools run, a new instance of (a subclass of) this class is created and its [[run]] method is invoked.
  * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
  * @public
@@ -360,47 +361,69 @@ export class Tool {
   public static hidden = false;
   /** The unique string that identifies this tool. This must be overridden in every subclass. */
   public static toolId = "";
-  /** The icon for the tool. This should be overridden in subclasses to provide a standard tool icon.
-   * The value is the name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
+  /** The icon for this Tool. This may be overridden in subclasses to provide a tool icon.
+   * The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix.
    */
   public static iconSpec = "";
   /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: I18NNamespace;
+
   public constructor(..._args: any[]) { }
 
-  private static _keyin?: string;
-  private static _flyover?: string;
-  private static _description?: string;
-  private static get _localizeBase() { return this.namespace.name + ":tools." + this.toolId; }
-  private static get _keyinKey() { return this._localizeBase + ".keyin"; }
-  private static get _flyoverKey() { return this._localizeBase + ".flyover"; }
-  private static get _descriptionKey() { return this._localizeBase + ".description"; }
+  /** The minimum number of arguments allowed by [[parseAndRun]]. If subclasses override [[parseAndRun]], they should also
+   * override this method to indicate the minimum number of arguments their implementation expects. UI controls can use
+   * this information to ensure the tool has enough information to execute.
+   * @beta
+   */
+  public static get minArgs(): number { return 0; }
+
+  /** The maximum number of arguments allowed by [[parseAndRun]], or undefined if there is no maximum.
+   * If subclasses override [[parseAndRun]], they should also override this method to indicate the maximum
+   * number of arguments their implementation expects.
+   * @beta
+   */
+  public static get maxArgs(): number | undefined { return 0; }
 
   /**
-   * Register this Tool class with the ToolRegistry.
-   * @param namespace optional namespace to supply to ToolRegistry.register. If undefined, use namespace from superclass.
+   * Register this Tool class with the [[ToolRegistry]].
+   * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
    */
   public static register(namespace?: I18NNamespace) { IModelApp.tools.register(this, namespace); }
 
-  /**
-   * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from the
-   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json")
-   */
-  public static get keyin(): string { return this._keyin ? this._keyin : (this._keyin = IModelApp.i18n && IModelApp.i18n.translate(this._keyinKey)); }
+  private static getLocalizedKey(name: string): string | undefined {
+    const key = "tools." + this.toolId + "." + name;
+    const val = IModelApp.i18n.translateWithNamespace(this.namespace.name, key);
+    return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
+  }
 
   /**
-   * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from the
-   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
-   * the keyin property is returned.
+   * Get the localized keyin string for this Tool class. This returns the value of "tools." + this.toolId + ".keyin" from
+   * its registered Namespace (e.g. "en/MyApp.json").
    */
-  public static get flyover(): string { return this._flyover ? this._flyover : (this._flyover = IModelApp.i18n && IModelApp.i18n.translate([this._flyoverKey, this._keyinKey])); }
+  public static get keyin(): string {
+    const keyin = this.getLocalizedKey("keyin");
+    return (undefined !== keyin) ? keyin : ""; // default to empty string
+  }
 
   /**
-   * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from the
-   * .json file for the current locale of its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
-   * the flyover property is returned.
+   * Get the localized flyover for this Tool class. This returns the value of "tools." + this.toolId + ".flyover" from
+   * its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
+   * [[keyin]] is returned.
    */
-  public static get description(): string { return this._description ? this._description : (this._description = IModelApp.i18n && IModelApp.i18n.translate([this._descriptionKey, this._flyoverKey, this._keyinKey])); }
+  public static get flyover(): string {
+    const flyover = this.getLocalizedKey("flyover");
+    return (undefined !== flyover) ? flyover : this.keyin; // default to keyin
+  }
+
+  /**
+   * Get the localized description for this Tool class. This returns the value of "tools." + this.toolId + ".description" from
+   * its registered Namespace (e.g. "en/MyApp.json"). If that key is not in the localization namespace,
+   * [[flyover]] is returned.
+   */
+  public static get description(): string {
+    const description = this.getLocalizedKey("description");
+    return (undefined !== description) ? description : this.flyover; // default to flyover
+  }
 
   /**
    * Get the toolId string for this Tool class. This string is used to identify the Tool in the ToolRegistry and is used to localize
@@ -408,23 +431,42 @@ export class Tool {
    */
   public get toolId(): string { return (this.constructor as ToolType).toolId; }
 
-  /** Get the localized keyin string from this Tool's class */
+  /** Get the localized keyin string from this Tool's class
+   * @see `static get keyin()`
+   */
   public get keyin(): string { return (this.constructor as ToolType).keyin; }
 
-  /** Get the localized flyover string from this Tool's class */
+  /** Get the localized flyover string from this Tool's class
+   * @see `static get flyover()`
+   */
   public get flyover(): string { return (this.constructor as ToolType).flyover; }
 
-  /** Get the localized description string from this Tool's class */
+  /** Get the localized description string from this Tool's class
+   * @see `static get description()`
+   */
   public get description(): string { return (this.constructor as ToolType).description; }
 
-  /** Get the iconSpec from this Tool's class. */
+  /** Get the iconSpec from this Tool's class.
+   * @see `static iconSpec`
+   */
   public get iconSpec(): string { return (this.constructor as ToolType).iconSpec; }
 
   /**
    * Run this instance of a Tool. Subclasses should override to perform some action.
    * @returns `true` if the tool executed successfully.
    */
-  public run(..._arg: any[]): boolean { return true; }
+  public run(..._args: any[]): boolean { return true; }
+
+  /** Run this instance of a tool using a series of string arguments. Override this method to parse the arguments, and if they're
+   * acceptable, execute your [[run]] method. If the arguments aren't valid, return `false`.
+   * @note if you override this method, you must also override the static [[minArgs]] and [[maxArgs]] getters.
+   * @note Generally, implementers of this method are **not** expected to call `super.parseAndRun(...)`. Instead, call your
+   * [[run]] method with the appropriate (parsed) arguments directly.
+   * @beta
+   */
+  public parseAndRun(..._args: string[]): boolean {
+    return this.run();
+  }
 }
 
 /** @public */
@@ -693,11 +735,16 @@ export abstract class InputCollector extends InteractiveTool {
     return true;
   }
 
-  public exitTool(): void { IModelApp.toolAdmin.exitInputCollector(); }
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { this.exitTool(); return EventHandled.Yes; }
+  public exitTool(): void {
+    IModelApp.toolAdmin.exitInputCollector();
+  }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.exitTool();
+    return EventHandled.Yes;
+  }
 }
 
-/** The ToolRegistry holds a mapping between toolIds and their corresponding Tool class. This provides the mechanism to
+/** The ToolRegistry holds a mapping between toolIds and their corresponding [[Tool]] class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the set of Tools available.
  * @public
  */
@@ -747,7 +794,9 @@ export class ToolRegistry {
   }
 
   /** Look up a tool by toolId */
-  public find(toolId: string): ToolType | undefined { return this.tools.get(toolId); }
+  public find(toolId: string): ToolType | undefined {
+    return this.tools.get(toolId);
+  }
 
   /**
    * Look up a tool by toolId and, if found, create an instance with the supplied arguments.
@@ -791,23 +840,13 @@ export class ToolRegistry {
   }
 
   /**
-   * Find a tool by its localized keyin. If found (via exact match), execute the tool with the supplied arguments.
-   * @param keyin the localized keyin string of the Tool to run.
-   * @param args the arguments for the tool. Note: these argument are passed to both the constructor and the tools' run method.
-   * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
-   * @internal
-   */
-  public executeExactMatch(keyin: string, ...args: any[]): boolean {
-    const foundClass = this.findExactMatch(keyin);
-    return foundClass ? new foundClass(...args).run(...args) : false;
-  }
-
-  /**
    * Find a tool by its localized keyin.
    * @param keyin the localized keyin string of the Tool.
    * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
    * @internal
    */
-  public findExactMatch(keyin: string): ToolType | undefined { return this.getToolList().find((thisTool) => thisTool.keyin === keyin); }
+  public findExactMatch(keyin: string): ToolType | undefined {
+    return this.getToolList().find((thisTool) => thisTool.keyin === keyin);
+  }
 }

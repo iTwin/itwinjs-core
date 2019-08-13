@@ -9,7 +9,7 @@ import classnames = require("classnames");
 
 import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
 import {
-  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
+  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
 } from "@bentley/ui-ninezone";
 
@@ -357,7 +357,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
         {...props}
         className={classNames}
         key={this.state.groupItemDef.id}
-        onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended)}
+        onIsHistoryExtendedChange={(isExtended: boolean) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
@@ -396,6 +396,10 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
   }
 
   private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+    // If any popups are open, don't show history
+    if (Panel.isPanelOpen)
+      return;
+
     this.setState({ isExtended });
   }
 

@@ -1,0 +1,17 @@
+{
+  "tools": {
+    "DrawingAidTest": {
+      "Points": {
+        "keyin": "svt drawing aid points"
+      }
+    },
+    "Markup": {
+      "TestSelect": {
+      "keyin": "svt markup select"
+      }
+    },
+    "SVTSelect": {
+      "keyin": "svt select"
+    }
+  }
+}

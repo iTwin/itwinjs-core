@@ -914,6 +914,7 @@ export interface OverflowProps extends ExpandableItemProps {
 
 // @alpha
 export class Panel extends React.PureComponent<PanelProps> {
+    static readonly isPanelOpen: boolean;
     // (undocumented)
     render(): JSX.Element;
 }

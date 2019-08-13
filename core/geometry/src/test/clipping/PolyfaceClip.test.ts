@@ -21,6 +21,8 @@ import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { RFunctions } from "../polyface/PolyfaceQuery.test";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Box } from "../../solid/Box";
+import { Range3d } from "../../geometry3d/Range";
 
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
@@ -167,8 +169,51 @@ describe("PolyfaceClip", () => {
       ClipPlane.createNormalAndPointXYZXYZ(1, 0.5, 0.2, 0, 1, 1)!,
       ClipPlane.createNormalAndPointXYZXYZ(0, 1, 1, 1, 1, 2)!,
       ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 2)!]) {
+      for (const insideClip of [true, false]) {
+        const clipPlanePoints = clipPlane.intersectRange(range)!;
+        const frame = clipPlane.getFrame();
+        const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
+        const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip, true);
+        const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutPlane, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolyface, x0, y3, 0);
+        for (const s of section) {
+          if (s.isPhysicallyClosed) {
+            const region = PolyfaceBuilder.polygonToTriangulatedPolyface(s.packedPoints.getPoint3dArray(), frame);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x0, y2, 0);
+          }
+        }
+        x0 += 10.0;
+      }
+      x0 += 30.0;
+    }
+    ck.testUndefined(PolyfaceBuilder.polygonToTriangulatedPolyface(
+      [Point3d.create(0, 0), Point3d.create(0, 1)]), "should fail triangulating less than 3 points");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClosedSection");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Box", () => {
+    const ck = new Checker();
+    const builder = PolyfaceBuilder.create();
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)), true)!);
+    const facets = builder.claimPolyface();
+    const range = facets.range();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    for (const clipPlane of [
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 2, 1, 0, 0, 0)!,
+      ClipPlane.createNormalAndPointXYZXYZ(0, 2, -1, 0, 0, 0)!]) {
       const clipPlanePoints = clipPlane.intersectRange(range)!;
       const frame = clipPlane.getFrame();
+      const dy = 2.0 * range.yLength();
+      const y1 = y0 + dy;
+      const y2 = y1 + dy;
+      const y3 = y2 + dy;
       const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
       const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, true, true);
       const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
@@ -184,9 +229,8 @@ describe("PolyfaceClip", () => {
       }
       x0 += 10.0;
     }
-    ck.testUndefined(PolyfaceBuilder.polygonToTriangulatedPolyface(
-      [Point3d.create(0, 0), Point3d.create(0, 1)]), "should fail triangulating less than 3 points");
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ClosedSection");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "Box");
     expect(ck.getNumErrors()).equals(0);
   });
+
 });

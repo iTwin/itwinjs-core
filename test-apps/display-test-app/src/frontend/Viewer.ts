@@ -90,18 +90,11 @@ class DebugTools extends ToolBarDropDown {
     }));
 
     const wantEmphasize = false;
-    const wantLoseContext = false;
     if (wantEmphasize) {
       this._element.appendChild(createToolButton({
         className: "bim-icon-cancel",
         click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
         tooltip: "Emphasize selected elements",
-      }));
-    } else if (wantLoseContext) {
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-cancel",
-        click: () => IModelApp.renderSystem.loseContext(),
-        tooltip: "Lose webgl context",
       }));
     } else {
       this._element.appendChild(createImageButton({

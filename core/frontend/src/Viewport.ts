@@ -652,6 +652,10 @@ export class ViewFrustum {
         const frustum = new Frustum();
         let includeHorizon = false;
         const worldToNpc = this.view.computeWorldToNpc(this.rotation, this.viewOrigin, this.viewDelta, false /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */).map as Map4d;
+
+        if (worldToNpc === undefined)
+          return;
+
         const minimumEyeDistance = 10.0;
         const horizonDistance = 10000;
         worldToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);

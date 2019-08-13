@@ -205,34 +205,36 @@ export class MeasureDistanceTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderAxes);
   }
 
-  public decorate(context: DecorateContext): void {
+  protected createDecorations(context: DecorateContext, isSuspended: boolean): void {
     if (!context.viewport.view.isSpatialView())
       return;
 
-    if (this._locationData.length > 0) {
+    if (!isSuspended && this._locationData.length > 0) {
       const ev = new BeButtonEvent();
       IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
-      const tmpPoints: Point3d[] = [];
-      for (const loc of this._locationData)
-        tmpPoints.push(loc.point); // Deep copy not necessary...
-      tmpPoints.push(ev.point);
+      if (undefined !== ev.viewport) {
+        const tmpPoints: Point3d[] = [];
+        for (const loc of this._locationData)
+          tmpPoints.push(loc.point); // Deep copy not necessary...
+        tmpPoints.push(ev.point);
 
-      const builderDynVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
-      const colorDynVis = context.viewport.hilite.color;
+        const builderDynVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
+        const colorDynVis = context.viewport.hilite.color;
 
-      builderDynVis.setSymbology(colorDynVis, ColorDef.black, 3);
-      builderDynVis.addLineString(tmpPoints);
+        builderDynVis.setSymbology(colorDynVis, ColorDef.black, 3);
+        builderDynVis.addLineString(tmpPoints);
 
-      context.addDecorationFromBuilder(builderDynVis);
+        context.addDecorationFromBuilder(builderDynVis);
 
-      const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
-      const colorDynHid = colorDynVis.clone(); colorDynHid.setAlpha(100);
+        const builderDynHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+        const colorDynHid = colorDynVis.clone(); colorDynHid.setAlpha(100);
 
-      builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1);
-      builderDynHid.addLineString(tmpPoints);
+        builderDynHid.setSymbology(colorDynHid, ColorDef.black, 1);
+        builderDynHid.addLineString(tmpPoints);
 
-      context.addDecorationFromBuilder(builderDynHid);
-      this.displayDynamicDistance(context, tmpPoints);
+        context.addDecorationFromBuilder(builderDynHid);
+        this.displayDynamicDistance(context, tmpPoints);
+      }
     }
 
     if (this._acceptedSegments.length > 0) {
@@ -275,7 +277,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderSnapPts);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+  public decorate(context: DecorateContext): void { this.createDecorations(context, false); }
+  public decorateSuspended(context: DecorateContext): void { this.createDecorations(context, true); }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._locationData.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 

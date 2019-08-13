@@ -39,6 +39,7 @@ export class MeshData implements IDisposable {
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
+  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
 
   private constructor(lut: VertexLUT, params: MeshParams) {
@@ -55,6 +56,7 @@ export class MeshData implements IDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
+    this.hasFixedNormals = params.surface.hasFixedNormals;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
@@ -159,6 +161,7 @@ export abstract class MeshGeometry extends LUTGeometry {
   public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get lut() { return this.mesh.lut; }
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
 
@@ -376,6 +379,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -391,43 +395,44 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public getRenderPass(target: Target): RenderPass {
+    // Classifiers have a dedicated pass
     if (this.isClassifier)
       return RenderPass.Classification;
 
-    const mat = this.isLit ? this.mesh.materialInfo : undefined;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
-    const fillFlags = this.fillFlags;
 
-    if (this.isGlyph && target.isReadPixelsInProgress)
-      return opaquePass;
+    // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
+    if (this.isGlyph)
+      return target.isReadPixelsInProgress ? opaquePass : RenderPass.Translucent;
 
     const vf = target.currentViewFlags;
+
+    // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode) {
+      const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
-      if (!showFill) {
+      if (!showFill)
         return RenderPass.None;
-      }
     }
 
-    if (!this.isGlyph) {
-      if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
-        return opaquePass;
-      }
-    }
+    // If transparency disabled by render mode or view flag, always draw opaque.
+    if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
+      return opaquePass;
 
-    if (undefined !== this.texture && this.wantTextures(target, true)) {
-      if (this.texture.hasTranslucency)
-        return RenderPass.Translucent;
+    let hasAlpha = false;
 
-      // material may have texture weight < 1 - if so must account for material or element alpha below
-      if (undefined === mat || mat.isAtlas || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
-        return opaquePass;
-    }
-
-    let hasAlpha;
-    if (undefined !== mat && wantMaterials(vf) && mat.overridesAlpha)
+    // If the material overrides alpha (currently, everything except the default - aka "no" - material), alpha comes from the material
+    const mat = this.isLit && wantMaterials(vf) ? this.mesh.materialInfo : undefined;
+    if (undefined !== mat && mat.overridesAlpha)
       hasAlpha = mat.hasTranslucency;
-    else
+
+    // A texture can contain translucent pixels. Its alpha is also always multiplied by the material's alpha
+    const tex = this.wantTextures(target, true) ? this.texture : undefined;
+    if (!hasAlpha && undefined !== tex)
+      hasAlpha = tex.hasTranslucency;
+
+    // If we have a material overriding transparency, OR a texture, transparency comes solely from them. Otherwise, use element transparency.
+    if (undefined === tex && (undefined === mat || !mat.overridesAlpha))
       hasAlpha = this.getColor(target).hasTranslucency;
 
     return hasAlpha ? RenderPass.Translucent : opaquePass;
@@ -458,11 +463,14 @@ export class SurfaceGeometry extends MeshGeometry {
     const target = params.target;
     const vf = target.currentViewFlags;
 
-    let flags = wantMaterials(vf) ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
+    const useMaterial = wantMaterials(vf);
+    let flags = useMaterial ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
     if (this.isLit) {
       flags |= SurfaceFlags.HasNormals;
       if (wantLighting(vf)) {
         flags |= SurfaceFlags.ApplyLighting;
+        if (this.hasFixedNormals)
+          flags |= SurfaceFlags.NoFaceFront;
       }
 
       // Textured meshes store normal in place of color index.
@@ -475,6 +483,8 @@ export class SurfaceGeometry extends MeshGeometry {
 
     if (this.wantTextures(target, this.isTextured)) {
       flags |= SurfaceFlags.HasTexture;
+      if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
+        flags |= SurfaceFlags.MultiplyAlpha;
     }
 
     switch (params.renderPass) {
@@ -514,17 +524,20 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!surfaceTextureExists)
       return false;
 
-    if (this.isGlyph) {
+    if (this.isGlyph)
       return true;
-    }
+
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;
 
     // ###TODO need to distinguish between gradient fill and actual textures...
     switch (flags.renderMode) {
-      case RenderMode.SmoothShade: return flags.textures;
-      case RenderMode.Wireframe: return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
-      default: return FillFlags.Always === (fill & FillFlags.Always);
+      case RenderMode.SmoothShade:
+        return flags.textures;
+      case RenderMode.Wireframe:
+        return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
+      default:
+        return FillFlags.Always === (fill & FillFlags.Always);
     }
   }
 }

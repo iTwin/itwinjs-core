@@ -501,6 +501,7 @@ export interface SurfaceParams {
   readonly indices: VertexIndices;
   readonly fillFlags: FillFlags;
   readonly hasBakedLighting: boolean;
+  readonly hasFixedNormals: boolean;
   readonly texture?: RenderTexture;
   readonly material?: SurfaceMaterial;
 }
@@ -702,6 +703,7 @@ export class MeshParams {
       indices: surfaceIndices,
       fillFlags: args.fillFlags,
       hasBakedLighting: args.hasBakedLighting,
+      hasFixedNormals: args.hasFixedNormals,
       texture: args.texture,
       material: createSurfaceMaterial(args.material),
     };

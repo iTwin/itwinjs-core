@@ -1497,6 +1497,7 @@ export class Geometry {
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
     static clampToStartEnd(x: number, a: number, b: number): number;
+    static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;
     static conditionalDivideFraction(numerator: number, denominator: number): number | undefined;
     static correctSmallMetricDistance(distance: number, replacement?: number): number;
     static crossProductMagnitude(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
@@ -1542,6 +1543,7 @@ export class Geometry {
     static isSmallMetricDistance(distance: number): boolean;
     static isSmallMetricDistanceSquared(distanceSquared: number): boolean;
     static isSmallRelative(value: number): boolean;
+    static readonly largeCoordinateResult = 10000000000000;
     static readonly largeFractionResult = 10000000000;
     static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1;
     static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1;
@@ -1778,6 +1780,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     pushWrap(numWrap: number): void;
     pushXYZ(x: number, y: number, z: number): void;
     resize(pointCount: number): void;
+    reverseInPlace(): void;
     scaleInPlace(factor: number): void;
     setAtCheckedPointIndex(pointIndex: number, value: XYAndZ): boolean;
     setXYZAtCheckedPointIndex(pointIndex: number, x: number, y: number, z: number): boolean;
@@ -3428,11 +3431,14 @@ export class PolyfaceData {
 // @public
 export class PolyfaceQuery {
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
+    static boundaryEdges(source: Polyface, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
+    static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static sumFacetAreas(source: Polyface | PolyfaceVisitor): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
+    static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
     static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[];
     static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[];
@@ -3456,6 +3462,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
 // @public
 export class PolygonOps {
     static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d): void;
+    static addSecondMomentVolumeProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d): void;
     static area(points: Point3d[]): number;
     static areaNormal(points: Point3d[], result?: Vector3d): Vector3d;
     static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined;
@@ -3463,6 +3470,7 @@ export class PolygonOps {
     static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined;
     static centroidAreaNormal(points: Point3d[]): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
+    static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;

@@ -10,17 +10,24 @@ import { MockRender } from "../render/MockRender";
 import { Tool } from "../tools/Tool";
 
 // these are later set by executing the TestImmediate tool.
-let testVal1: string;
-let testVal2: string;
+let testVal1: number;
+let testVal2: number;
 let lastCommand: string;
 
 /** class to test immediate tool */
 class TestImmediate extends Tool {
   public static toolId = "Test.Immediate";
-  public run(): boolean {
-    testVal1 = "test1";
-    testVal2 = "test2";
+  public run(v1: number, v2: number): boolean {
+    testVal1 = v1;
+    testVal2 = v2;
     return true;
+  }
+  public static get minArgs() { return 2; }
+  public static get maxArgs() { return 2; }
+  public parseAndRun(v1: string, v2: string): boolean {
+    if (arguments.length !== 2)
+      return false;
+    return this.run(parseInt(v1, 10), parseInt(v2, 10));
   }
 }
 
@@ -54,7 +61,7 @@ describe("ToolRegistry", () => {
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
-    const command: typeof Tool | undefined = IModelApp.tools.findExactMatch("Select Elements");
+    const command = IModelApp.tools.findExactMatch("Select Elements");
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
@@ -62,14 +69,24 @@ describe("ToolRegistry", () => {
   });
 
   it("Should execute the TestImmediate command", async () => {
-    const cmdReturn: boolean = IModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
+    const command = IModelApp.tools.findExactMatch("Localized TestImmediate Keyin")!;
+    assert.equal(command, TestImmediate, "Found TestImmediate");
+    assert.equal(command.minArgs, 2);
+    assert.equal(command.maxArgs, 2);
+    let cmdReturn = new command().run(4, 22);
     assert.isTrue(cmdReturn);
-    assert.equal(testVal1, "test1", "TestImmediate tool set values");
-    assert.equal(testVal2, "test2");
+    assert.equal(testVal1, 4, "TestImmediate tool set values");
+    assert.equal(testVal2, 22);
+    cmdReturn = new TestImmediate().parseAndRun("5", "33");
+    assert.isTrue(cmdReturn);
+    assert.equal(testVal1, 5, "From parseAndRun");
+    assert.equal(testVal2, 33);
+    cmdReturn = new command().parseAndRun("125");
+    assert.isFalse(cmdReturn);
   });
 
   it("Should find the MicroStation inputmanager training command", async () => {
-    const command: typeof Tool | undefined = IModelApp.tools.findExactMatch("inputmanager training");
+    const command = IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
       assert.isTrue(IModelApp.tools.run(command.toolId));

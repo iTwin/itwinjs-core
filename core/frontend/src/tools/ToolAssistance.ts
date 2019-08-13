@@ -25,6 +25,10 @@ export enum ToolAssistanceImage {
   MouseWheel,
   /** Mouse image with darkened left button and left/right arrows */
   LeftClickDrag,
+  /** Mouse image with darkened right button and left/right arrows */
+  RightClickDrag,
+  /** Mouse image with darkened scroll wheel and left/right arrows */
+  MouseWheelClickDrag,
 }
 
 /** Tool Assistance image keyboard keys

@@ -143,6 +143,8 @@
     "saveContentLayout": "Save Content Layout",
     "restoreContentLayout": "Restore Content Layout",
     "startCursorPopup": "Start Cursor Popup",
+    "addCursorPopups": "Add Cursor Popups",
+    "moreCursorPopups": "More Cursor Popups",
     "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog"
@@ -237,6 +239,7 @@
   "widgets": {
     "NavigationTree": "Navigation Tree",
     "VisibilityTree": "Visibility Tree",
+    "RealityData": "Reality Data",
     "BreadcrumbDemo": "Breadcrumb Demo",
     "ModelSelector": "Model Selector",
     "StatusBar": "Status Bar",

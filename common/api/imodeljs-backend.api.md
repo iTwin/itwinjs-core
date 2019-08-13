@@ -1394,15 +1394,17 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @beta
+// @public
 export namespace ExportGraphics {
+    // @beta @deprecated
     export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
+    export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
 }
 
-// @beta
+// @public
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
-// @beta
+// @public
 export interface ExportGraphicsInfo {
     color: number;
     elementId: Id64String;
@@ -1412,13 +1414,13 @@ export interface ExportGraphicsInfo {
     textureId?: Id64String;
 }
 
-// @beta
+// @public
 export interface ExportGraphicsLines {
     indices: Int32Array;
     points: Float64Array;
 }
 
-// @beta
+// @public
 export interface ExportGraphicsMesh {
     indices: Int32Array;
     normals: Float32Array;
@@ -1426,21 +1428,24 @@ export interface ExportGraphicsMesh {
     points: Float64Array;
 }
 
-// @beta
-export interface ExportGraphicsProps {
+// @public
+export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
-    partInstanceArray?: ExportPartInstanceProps[];
+    partInstanceArray?: ExportPartInstanceInfo[];
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportGraphicsProps = ExportGraphicsOptions;
+
+// @public
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
-// @beta
+// @public
 export interface ExportLinesInfo {
     color: number;
     elementId: Id64String;
@@ -1448,8 +1453,8 @@ export interface ExportLinesInfo {
     subCategory: Id64String;
 }
 
-// @beta
-export interface ExportPartDisplayProps {
+// @public
+export interface ExportPartDisplayInfo {
     // (undocumented)
     categoryId: Id64String;
     // (undocumented)
@@ -1462,21 +1467,27 @@ export interface ExportPartDisplayProps {
     subCategoryId: Id64String;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartDisplayProps = ExportPartDisplayInfo;
+
+// @public
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
-// @beta
-export interface ExportPartGraphicsProps {
+// @public
+export interface ExportPartGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
-    displayProps: ExportPartDisplayProps;
+    displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
+
+// @public
 export interface ExportPartInfo {
     color: number;
     materialId?: Id64String;
@@ -1484,18 +1495,21 @@ export interface ExportPartInfo {
     textureId?: Id64String;
 }
 
-// @beta
-export interface ExportPartInstanceProps {
-    displayProps: ExportPartDisplayProps;
+// @public
+export interface ExportPartInstanceInfo {
+    displayProps: ExportPartDisplayInfo;
     partId: Id64String;
     partInstanceId: Id64String;
     transform?: Float64Array;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartInstanceProps = ExportPartInstanceInfo;
+
+// @public
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
-// @beta
+// @public
 export interface ExportPartLinesInfo {
     color: number;
     lines: ExportGraphicsLines;
@@ -1845,10 +1859,8 @@ export class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
-    // @beta
-    exportGraphics(exportProps: ExportGraphicsProps): DbResult;
-    // @beta
-    exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+    exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
+    exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
     // (undocumented)
     readonly fontMap: FontMap;

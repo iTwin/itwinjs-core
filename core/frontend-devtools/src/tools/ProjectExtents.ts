@@ -302,7 +302,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 /** Enable or disable the project extents decoration. This decoration draws a box coinciding with the iModel's project extents.
  * @param imodel The iModel from which to obtain the extents.
  * @param enable If undefined, the current enabled state of the decoration will be inverted; otherwise it will be enabled if true, or disabled if false.
- * @alpha
+ * @beta
  */
 export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void {
   ProjectExtentsDecoration.toggle(imodel, enabled);

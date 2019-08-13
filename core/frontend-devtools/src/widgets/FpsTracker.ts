@@ -8,9 +8,12 @@ import {
   Target,
   Viewport,
 } from "@bentley/imodeljs-frontend";
-import { createCheckBox } from "./CheckBox";
+import { createCheckBox } from "../ui/CheckBox";
 
-/** @alpha */
+/** Displays average frames-per-second.
+ * NOTE: Enabling fps tracking causes a new frame to render on every tick of the render loop, which may negatively impact battery life.
+ * @beta
+ */
 export class FpsTracker {
   private readonly _label: HTMLLabelElement;
   private _metrics?: PerformanceMetrics;

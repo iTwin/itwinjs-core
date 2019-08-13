@@ -51,7 +51,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   const endTime3 = new Date().getTime();
   assert.exists(imodeldb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
@@ -60,7 +60,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
+  const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.named("test"));
   assert.exists(iModelPullAndPush);
 
   // get the time of applying a meta data change on an imodel
@@ -166,7 +166,7 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   assert.exists(imodeldb);
   const startTime = new Date().getTime();
   const stat = imodeldb.executeQuery("SELECT * FROM BisCore.LineStyle");

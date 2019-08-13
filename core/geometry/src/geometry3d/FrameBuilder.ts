@@ -194,8 +194,13 @@ export class FrameBuilder {
       builder.announce(data);
       builder.applyDefaultUpVector(defaultUpVector);
       const result = builder.getValidatedFrame(false);
-      if (result !== undefined)
+      if (result !== undefined) {
+        if (defaultUpVector) {
+          if (result.matrix.dotColumnZ(defaultUpVector) < 0.0)
+            result.matrix.scaleColumnsInPlace(1, -1, -1);
+        }
         return result;
+      }
     }
     // try direct evaluation of curve primitives?
     for (const data of params) {

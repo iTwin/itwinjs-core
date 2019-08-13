@@ -159,7 +159,14 @@ class FrustumDecoration {
   */
 }
 
-/** @alpha */
+/**
+ * Decorates the viewport with a graphical depiction of a Frustum.
+ * This is obviously only useful when drawn inside a viewport using a *different* Frustum.
+ * Options for doing so include:
+ *  - Having more than one viewport, and drawing the frustum of one viewport inside the other viewports; and
+ *  - Allowing the user to take a snapshot of the current frustum, then navigate the view to inspect it within the same viewport.
+ *  @beta
+ */
 export class FrustumDecorator implements Decorator {
   private readonly _decoration?: FrustumDecoration;
 
@@ -174,12 +181,14 @@ export class FrustumDecorator implements Decorator {
 
   private static _instance?: FrustumDecorator;
 
+  /** Add the decoration to the specified viewport. */
   public static enable(vp: Viewport): void {
     FrustumDecorator.disable();
     FrustumDecorator._instance = new FrustumDecorator(vp);
     IModelApp.viewManager.addDecorator(FrustumDecorator._instance);
   }
 
+  /** Remove the decoration from the specified viewport. */
   public static disable(): void {
     const instance = FrustumDecorator._instance;
     if (undefined !== instance) {

@@ -236,6 +236,11 @@
         "IdentifyElementRemove": "Identify element to remove",
         "IdentifyLineRemove": "Identify elements to remove by crossing line",
         "IdentifyBoxRemove": "Identify elements to remove by box corner points",
+        "DragSelectLine": "Click then drag to select elements by crossing line",
+        "DragSelectBox": "Click then drag to select elements by box corner points",
+        "InvertSelection": "Press to invert selection instead of replace selection",
+        "OverlapSelection": "Press during box selection to change inside/overlap from left/right to right/left",
+        "ClearSelection": "Click without identifying an element to clear selection",
         "AcceptSelection": "Accept/Reject Selection",
         "AcceptFence": "Accept/Reject Fence Contents",
         "Mode": "Mode"

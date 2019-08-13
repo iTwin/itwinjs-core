@@ -528,6 +528,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
     const points = this.getClipPoints(ev);
     if (points.length < 2)
       return;
@@ -551,7 +553,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -640,6 +641,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
     const range = Range3d.create();
     const transform = Transform.createIdentity();
     if (!this.getClipRange(range, transform, ev))
@@ -660,7 +663,6 @@ export class ViewClipByRangeTool extends ViewClipTool {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (undefined !== this._corner && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {

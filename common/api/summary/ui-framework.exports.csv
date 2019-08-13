@@ -266,6 +266,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: any
 public;PropsHelper
+alpha;RealityDataPicker 
+alpha;RealityDataPickerControl 
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions

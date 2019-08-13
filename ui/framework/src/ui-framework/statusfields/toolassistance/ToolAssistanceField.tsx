@@ -27,6 +27,8 @@ import clickLeftIcon from "./mouse-click-left.svg";
 import clickRightIcon from "./mouse-click-right.svg";
 import mouseWheelClickIcon from "./mouse-click-wheel.svg";
 import clickLeftDragIcon from "./mouse-click-left-drag.svg";
+import clickRightDragIcon from "./mouse-click-right-drag.svg";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
 import { Logger } from "@bentley/bentleyjs-core";
 
 /** Properties of [[ToolAssistanceField]] component.
@@ -306,6 +308,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.LeftClickDrag:
           svgImage = clickLeftDragIcon;
+          className = "uifw-toolassistance-svg-wide";
+          break;
+        case ToolAssistanceImage.RightClickDrag:
+          svgImage = clickRightDragIcon;
+          className = "uifw-toolassistance-svg-wide";
+          break;
+        case ToolAssistanceImage.MouseWheelClickDrag:
+          svgImage = clickMouseWheelDragIcon;
           className = "uifw-toolassistance-svg-wide";
           break;
       }

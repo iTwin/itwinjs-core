@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { Cartographic } from "@bentley/imodeljs-common";
-import { Point2d, Angle } from "@bentley/geometry-core";
+import { Point2d, Point3d, Angle } from "@bentley/geometry-core";
 
 /** @internal */
 export abstract class MapTilingScheme {
@@ -38,17 +38,18 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the X direction at the given level.
    */
   public getNumberOfXTilesAtLevel(level: number) {
-    return this.numberOfLevelZeroTilesX << (level - 1);
+    return 0 === level ? 1 : this.numberOfLevelZeroTilesX << (level - 1);
   }
 
   /**
    * Gets the total number of tiles in the Y direction at a specified level-of-detail.
    *
+   *
    * @param {Number} level The level-of-detail.  Level 0 is the root tile.
    * @returns {Number} The number of tiles in the Y direction at the given level.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return this.numberOfLevelZeroTilesY << (level - 1);
+    return (0 === level) ? 1 : this.numberOfLevelZeroTilesY << (level - 1);
   }
   public tileXToFraction(x: number, level: number): number {
     return x / this.getNumberOfXTilesAtLevel(level);
@@ -109,6 +110,11 @@ export abstract class MapTilingScheme {
     result.x = this.longitudeToXFraction(longitudeRadians);
     result.y = this.latitudeToYFraction(latitudeRadians);
     return result;
+  }
+  // gets the longitude and latitude into a point with coordinates between 0 and 1
+  public ecefToPixelFraction(point: Point3d): Point3d {
+    const cartoGraphic = Cartographic.fromEcef(point)!;
+    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), 0.0);
   }
 }
 /** @internal */

@@ -88,6 +88,7 @@ export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
+export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
