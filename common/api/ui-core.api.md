@@ -655,17 +655,9 @@ export enum HorizontalAlignment {
 }
 
 // @beta
-export class HorizontalTabs extends React.PureComponent<HorizontalTabsProps> {
+export class HorizontalTabs extends React.PureComponent<TabsProps> {
     // (undocumented)
     render(): JSX.Element;
-}
-
-// @beta
-export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
-    activeIndex?: number;
-    green?: boolean;
-    labels: string[];
-    onClickLabel?: (id: number) => any;
 }
 
 // @beta
@@ -840,6 +832,11 @@ export class LocalUiSettings implements UiSettings {
     saveSetting: (settingNamespace: string, settingName: string, setting: any) => UiSettingsResult;
     // (undocumented)
     w: Window;
+}
+
+// @beta
+export interface MainTabsProps extends TabsProps {
+    mainClassName: string;
 }
 
 // @public
@@ -1450,6 +1447,20 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
+// @beta
+export class Tabs extends React.PureComponent<MainTabsProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
+    activeIndex?: number;
+    green?: boolean;
+    labels: string[];
+    onClickLabel?: (id: number) => any;
+}
+
 // @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
@@ -1730,6 +1741,12 @@ export enum VerticalAlignment {
     Middle = 2,
     // (undocumented)
     Top = 1
+}
+
+// @beta
+export class VerticalTabs extends React.PureComponent<TabsProps> {
+    // (undocumented)
+    render(): JSX.Element;
 }
 
 // @public

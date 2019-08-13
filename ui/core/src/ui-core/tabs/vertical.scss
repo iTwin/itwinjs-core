@@ -5,46 +5,38 @@
 @import "../style/index";
 @import "./tabs";
 
-@mixin uicore-tabs-horizontal {
+@mixin uicore-tabs-vertical {
 
     @include uicore-tabs;
 
     > li {
 
-        display:        inline-block;
-        margin:         0 -1px 0 0;
+        display:        block;
+        margin:         0;
         padding:        0;
+        width:          100%;
 
         > a {
 
             line-height:            $uicore-line-height;
-            padding:                7px 14px;
-            margin:                 6px 0 0;
-            border:                 1px solid $buic-text-color-muted;
-            border-bottom:          0 none transparent;
+            padding:                14px 20px;
             background:             $buic-background-tab-inactive;
+            border-width:           0;
 
             &::after {
 
-                width:              100%;
-                height:             2px;
+                height:             100%;
+                width:              2px;
             }
         }
 
         &.active {
             > a {
 
-                border-bottom:      1px solid $buic-background-tab-active;
-                color:              $buic-foreground-primary;
-                background:         $buic-background-tab-active;
+              color:              $buic-foreground-primary;
+              background:         $buic-background-tab-active;
             }
         }
-
-        &:last-child > a {
-
-          border-bottom:  1px solid $buic-text-color-muted;
-        }
-
     }
 
     &.uicore-tabs-green > li > a::after {

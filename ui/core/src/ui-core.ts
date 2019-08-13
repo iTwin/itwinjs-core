@@ -106,6 +106,8 @@ export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
 
 export * from "./ui-core/tabs/HorizontalTabs";
+export * from "./ui-core/tabs/VerticalTabs";
+export * from "./ui-core/tabs/Tabs";
 
 export * from "./ui-core/text/BodyText";
 export * from "./ui-core/text/BlockText";

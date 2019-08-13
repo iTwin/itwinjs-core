@@ -69,7 +69,6 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
-beta;HorizontalTabsProps 
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -95,6 +94,7 @@ beta;LoadingSpinnerProps
 beta;LoadingStatus 
 beta;LoadingStatusProps 
 beta;LocalUiSettings 
+beta;MainTabsProps 
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
@@ -156,6 +156,8 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
+beta;Tabs 
+beta;TabsProps 
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
@@ -187,6 +189,7 @@ beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;VerticalAlignment
+beta;VerticalTabs 
 public;WebFontIcon: React.FunctionComponent
 public;WebFontIconProps 
 public;withIsPressed: 
