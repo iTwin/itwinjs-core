@@ -24,6 +24,7 @@ import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
+import { PointInOnOutContext } from "./Query/InOutTests";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -392,6 +393,16 @@ export class RegionOps {
   public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
     const options = JointOptions.create(offsetDistanceOrOptions);
     return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  }
+  /**
+   * Test if point (x,y) is IN, OUT or ON a polygon.
+   * @return (1) for in, (-1) for OUT, (0) for ON
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param points array of xy coordinates.
+   */
+  public static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number {
+    return PointInOnOutContext.testPointInOnOutRegionXY(curves, x, y);
   }
   /** Create curve collection of subtype determined by gaps between the input curves.
    * * If (a) wrap is requested and (b) all curves connect head-to-tail (including wraparound), assemble as a `loop`.

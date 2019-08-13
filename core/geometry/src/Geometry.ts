@@ -367,6 +367,19 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
+  /** Examine the value (particularly sign) of x.
+   * * If x is negative, return outNegative.
+   * * If x is true zero, return outZero
+   * * If x is positive, return outPositive
+   */
+  public static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number {
+    if (x < 0)
+      return outNegative;
+    if (x > 0.0)
+      return outPositive;
+    return outZero;
+  }
+
   /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;

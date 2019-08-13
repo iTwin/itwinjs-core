@@ -51,6 +51,7 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
   * polyline small feature filtering
   * compute WireMoment on curves
   * compute volume moments on meshes.
+  * in/on/out test for x,y point in loop, parity region, or union region.
 
 * When clipping a polyface with a plane, new method optionally outputs triangulation of the cut plane face.
   * (static) `clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFace?: boolean): Polyface;`
@@ -76,31 +77,34 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
   * Return number reversed.
 * `Arc3d` methods
   * (static) `Arc3d.cloneAtZ(z?: number): Arc3d`
-  Return projection to plane at `z`
+  * `myArc.cloneInRotatedBasis (angle: Angle): Arc3d`
+    * Return projection to plane at `z`
   * (static) `Arc3d.createXYZXYZXYZ(cx: number, cy: number, cz: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, sweep?:     * AngleSweep, result?: Arc3d): Arc3d;`
     * create an arc with center, vector to 0 degree point, and vector to 90 degree point.
   * (static) `Arc3d.fractionAndRadialFractionToPoint(arcFraction: number, radialFraction: number, result?: Point3d): Point3d;`
     * evaluate a point at fraction position "along" the arc and at multiple of the radius.
-* `GrowableXYZArray` instance methods to access individual x,y,z by point index without creating Point3d object:
-  * `myGrowableXYZArray.getXAtUncheckedPointIndex (pointIndex: number) : number;`
-  * `myGrowableXYZArray.getYAtUncheckedPointIndex (pointIndex: number) : number;`
-  * `myGrowableXYZArray.getZAtUncheckedPointIndex (pointIndex: number) : number;`
-  * `myGrowableXYZArray.length`
+* `LineString3d` methods
+  * method to create capture a GrowableXYZArray as the packed points of a LineString3d:
+    * (static) `createCapture(points: GrowableXYZArray): LineString3d;`
+* `LineSegment3d` methods
+  * (static) `LineSegment3d.createCapture(point0: Point3d, point1: Point3d): LineSegment3d;`
+* `GrowableXYZArray`, `IndexedXYZCollection`, and `Point3dArrayCarrier` instance methods to access individual x,y,z by point index without creating Point3d object:
+  * `instance.getXAtUncheckedPointIndex (pointIndex: number) : number;`
+  * `instance.getYAtUncheckedPointIndex (pointIndex: number) : number;`
+  * `instance.getZAtUncheckedPointIndex (pointIndex: number) : number;`
   * `GrowableXYZArray.moveIndexToIndex (fromIndex, toIndex)`
+  * `myGrowableXYZArray.accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;`
+    * Accumulate scaled data at `index` into evolving `sum`
+* `CurveCollection` methods
+  * `myCollection.collectCurvePrimitives(): CurvePrimitive[]`
+    * Return an array with only the (leaf level) curve primitives.
+  * `myCollection.cloneWithExpandedLineStrings(): CurveCollection | undefined`
+    * Clone the collection, replacing all linestrings by (multiple) `LineSegment3d`
 * `ParityRegion` methods to facilitate adding or creating with (strongly typed) loop objects
   * For both `create` or `add`, data presented as possibly deep arrays of arrays of loops is flattened to the ParityRegion form of a single array of Loops.
   * `(static) createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion;`
     * Note that in the single-loop case this returns a Loop object rather than ParityRegion.
   * `myParityRegion.addLoops(data?: Loop | Loop[] | Loop[][]): void;`
-* `BilinearPatch` methods
-  * Method to compute points of intersection with a ray:
-    * intersectRay(ray: Ray3d): CurveAndSurfaceLocationDetail[] | undefined;
-* `LineString3d` methods
-  * method to create capture a GrowableXYZArray as the packed points of a LineString3d:
-    * (static) `createCapture(points: GrowableXYZArray): LineString3d;`
-* `NumberArray` methods
-  * In existing static method `NumberArray.maxAbsDiff`, allow both `number[]` and `Float64Array`, viz
-    * (static) `NumberArray.maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number;`
 * `PolyfaceBuilder` methods
   * convert a single loop polygon to triangulated facets.
     * (static) `PolyfaceBuilder.polygonToTriangulatedPolyface(points: Point3d[], localToWorld?: Transform): IndexedPolyface | undefined;`
@@ -110,24 +114,44 @@ Shadows can now be displayed in 3d views. The implementation uses exponential va
   * Existing methods with input type `Point3d[]` allow `GrowableXYZArray` with packed x,y,z content
     * (static) `Range3d.createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T;`
     * (static) `Range3d.createTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T;`
+  * `myRange.containsXY(x: number, y: number): boolean;`
 * `XYZ` methods (become visible in both Point3d and Vector3d)
   * `myPoint.subtractInPlace (vector: XYAndZ);
 * Numerics
   * Gaussian elimination step for inplace updated of subset of a row `rowB[i] += a * rowA[i]` for `i > pivotIndex`
   * Solve up to 4 roots of a pair of bilinear equations
     * (static) `solveBilinearPair(a0: number, b0: number, c0: number, d0: number, a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined;`
+  * (static) `Geometry.split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number;`
+    * Select `outNegative`, `outZero`, or `outPositive` according to sign of `x`
 * `PolylineOps` new methods
   * (static) `PolylineOps.compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[]`
   * (static) `PolylineOps,compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[]]`
   * (static) `PolylineOps.compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[]`
-* `RegionOps` new methods
-  * (static) `RegionOps.computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined`
+* `RegionOps` and `PolygonOps` new methods
+  * Various property computations
+    * (static) `RegionOps.computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined`
+    * (static) `PolygonOps.areaXY(points: Point3d[] | IndexedXYZCollection): number;`
+    * (static) `PolygonOps.centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;`
+  * Containment tests and sorting
+    * (static) `PolygonOps.sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];`
+      * Find true "outer" loops and their immediate holes
+    * (static) `PolygonOps.classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;`
   * (static) `RegionOps.constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined;`
     * Create a path or loop offset by distance (positive to left)
   * (static) `RegionOps.createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean): CurveCollection | undefined;`
     * Create a curve structure, choosing type `Loop`, `Path`, or `BagOfCurves` appropriate to how the inputs join.
+  * (static) `RegionOps.testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;`
+    * test if (x,y) is in, on or outside a `Loop`, `ParityRegion`, or `UnionRegion`.
 * `PolyfaceQuery` new methods
   * (static) `momentData = computePrincipalVolumeMoments(source: Polyface): MomentData | undefined`
     * Returns momentData structure with centroid, volume, radii of gyration.
   * (static) `static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined`
     * Within a polyface, find edges that have unusual adjacency and hence qualify as "boundary" edges.
+* `BilinearPatch` methods
+  * Method to compute points of intersection with a ray:
+    * intersectRay(ray: Ray3d): CurveAndSurfaceLocationDetail[] | undefined;
+* `NumberArray` methods
+  * In existing static method `NumberArray.maxAbsDiff`, allow both `number[]` and `Float64Array`, viz
+    * (static) `NumberArray.maxAbsDiff(dataA: number[] | Float64Array, dataB: number[] | Float64Array): number;`
+* `Plane3dByOriginAndUnitNormal` methods
+  * (static) `static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal;`

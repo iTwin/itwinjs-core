@@ -100,6 +100,20 @@ export abstract class IndexedXYZCollection {
   public cyclicIndex(i: number): number {
     return (i % this.length);
   }
+
+  /** Accumulate scale times the x,y,z values at index.
+   * * No action if index is out of bounds.
+   */
+  public abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
+
+  /** access x of indexed point */
+  public abstract getXAtUncheckedPointIndex(pointIndex: number): number;
+
+  /** access y of indexed point */
+  public abstract getYAtUncheckedPointIndex(pointIndex: number): number;
+
+  /** access z of indexed point */
+  public abstract getZAtUncheckedPointIndex(pointIndex: number): number;
 }
 /**
  * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
@@ -125,5 +139,6 @@ export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection
   public abstract pop(): void;
   /**  clear all entries */
   public abstract clear(): void;
-
+  /** reverse the points in place. */
+  public abstract reverseInPlace(): void;
 }

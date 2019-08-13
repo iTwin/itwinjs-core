@@ -541,6 +541,13 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       && z <= this.high.z;
   }
 
+  /** Test if a point given as x,y is within the range.  (Ignoring z of range) */
+  public containsXY(x: number, y: number): boolean {
+    return x >= this.low.x
+      && y >= this.low.y
+      && x <= this.high.x
+      && y <= this.high.y;
+  }
   /** Test if a point is within the range. */
   public containsPoint(point: Point3d): boolean { return this.containsXYZ(point.x, point.y, point.z); }
 

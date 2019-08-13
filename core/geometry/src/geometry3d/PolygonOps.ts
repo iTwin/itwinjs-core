@@ -10,11 +10,11 @@ import { XAndY } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Ray3d } from "./Ray3d";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Point3dArray } from "./PointHelpers";
+import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
+import { Range3d } from "./Range";
 /** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
  * Various (static method) computations for arrays of points interpreted as a polygon.
@@ -121,15 +121,33 @@ export class PolygonOps {
     PolygonOps.areaNormalGo(new Point3dArrayCarrier(points), result);
     return result;
   }
-  /** return the area of the polygon (assuming planar) */
+  /** return the area of the polygon.
+   * * This assumes the polygon is planar
+   * * This does NOT assume the polygon is on the xy plane.
+   */
   public static area(points: Point3d[]): number {
     return PolygonOps.areaNormal(points).magnitude();
   }
-  /** return the projected XY area of the polygon (assuming planar) */
-  public static areaXY(points: Point3d[]): number {
+  /** return the projected XY area of the polygon. */
+  public static areaXY(points: Point3d[] | IndexedXYZCollection): number {
     let area = 0.0;
-    for (let i = 1; i + 1 < points.length; i++)
-      area += points[0].crossProductToPointsXY(points[i], points[i + 1]);
+    if (points instanceof IndexedXYZCollection) {
+      if (points.length > 2) {
+        const x0 = points.getXAtUncheckedPointIndex(0);
+        const y0 = points.getYAtUncheckedPointIndex(0);
+        let u1 = points.getXAtUncheckedPointIndex(1) - x0;
+        let v1 = points.getYAtUncheckedPointIndex(1) - y0;
+        let u2, v2;
+        for (let i = 1; i + 1 < points.length; i++ , u1 = u2, v1 = v2) {
+          u2 = points.getXAtUncheckedPointIndex(i) - x0;
+          v2 = points.getYAtUncheckedPointIndex(i) - y0;
+          area += Geometry.crossProductXYXY(u1, v1, u2, v2);
+        }
+      }
+    } else {
+      for (let i = 1; i + 1 < points.length; i++)
+        area += points[0].crossProductToPointsXY(points[i], points[i + 1]);
+    }
     return 0.5 * area;
   }
   /**
@@ -139,31 +157,62 @@ export class PolygonOps {
    * * 'a' member is the area.
    * @param points
    */
-  public static centroidAreaNormal(points: Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+    if (Array.isArray(points)) {
+      const carrier = new Point3dArrayCarrier(points);
+      return this.centroidAreaNormal(carrier);
+    } else if (points instanceof IndexedXYZCollection) {
+      return this.centroidAreaNormalGo(points);
+    }
+    return undefined;
+  }
+  /**
+   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
+   * * origin at the centroid of the (3D) polygon
+   * * normal is a unit vector perpendicular to the plane
+   * * 'a' member is the area.
+   * @param points
+   */
+  private static centroidAreaNormalGo(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+    if (Array.isArray(points)) {
+      const carrier = new Point3dArrayCarrier(points);
+      return this.centroidAreaNormal(carrier);
+    }
     const n = points.length;
     if (n === 3) {
-      const normal = points[0].crossProductToPoints(points[1], points[2]);
+      const normal = points.crossProductIndexIndexIndex(0, 1, 2)!;
       const a = 0.5 * normal.magnitude();
-      const result = Ray3d.createCapture(Point3dArray.centroid(new Point3dArrayCarrier(points)), normal);
+      const centroid = points.getPoint3dAtCheckedPointIndex(0)!;
+      points.accumulateScaledXYZ(1, 1.0, centroid);
+      points.accumulateScaledXYZ(2, 1.0, centroid);
+      centroid.scaleInPlace(1.0 / 3.0);
+      const result = Ray3d.createCapture(centroid, normal);
       if (result.tryNormalizeInPlaceWithAreaWeight(a))
         return result;
       return undefined;
     }
     if (n >= 3) {
-      const origin = points[0].clone();
-      const normal = PolygonOps.areaNormal(points);
-      normal.normalizeInPlace();
-      const vector0 = origin.vectorTo(points[1]);
-      let vector1 = Vector3d.create();
+
+      const areaNormal = Vector3d.createZero();
+      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      for (let i = 2; i < n; i++) {
+        points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
+      }
+      areaNormal.normalizeInPlace();
+
+      const origin = points.getPoint3dAtCheckedPointIndex(0)!;
+      const vector0 = Vector3d.create();
+      const vector1 = Vector3d.create();
+      points.vectorXYAndZIndex(origin, 1, vector0);
       let cross = Vector3d.create();
       const centroidSum = Vector3d.createZero();
       const normalSum = Vector3d.createZero();
       let signedTriangleArea;
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
-        vector1 = origin.vectorTo(points[i], vector1);
+        points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = normal.dotProduct(cross);    // well, actually twice the area.
+        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
         normalSum.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
@@ -368,7 +417,42 @@ export class PolygonOps {
     return context.classifyCounts();
   }
   /**
-   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * Test if point (x,y) is IN, OUT or ON a polygon.
+   * @return (1) for in, (-1) for OUT, (0) for ON
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param points array of xy coordinates.
+   */
+  public static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined {
+    const context = new XYParitySearchContext(x, y);
+    let i0 = 0;
+    const n = points.length;
+    let i1;
+    let iLast = -1;
+    // walk to an acceptable start index ...
+    for (i0 = 0; i0 < n; i0 = i1) {
+      i1 = i0 + 1;
+      if (i1 >= n)
+        i1 = 0;
+      if (context.tryStartEdge(points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1))) {
+        iLast = i1;
+        break;
+      }
+    }
+    if (iLast < 0)
+      return undefined;
+    for (let i = 1; i <= n; i++) {
+      i1 = iLast + i;
+      if (i1 >= n)
+        i1 -= n;
+      if (!context.advance(points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1)))
+        return context.classifyCounts();
+    }
+    return context.classifyCounts();
+  }
+
+  /**
+   * Reverse loops as necessary to make them all have CCW orientation for given outward normal.
    * @param loops
    * @param outwardNormal
    * @return the number of loops reversed.
@@ -392,5 +476,111 @@ export class PolygonOps {
       }
     }
     return numReverse;
+  }
+  /**
+   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * * Return an array of arrays which capture the input pointers.
+   * * In each first level array:
+   *    * The first loop is an outer loop.
+   *    * all subsequent loops are holes
+   *    * The outer loop is CCW
+   *    * The holes are CW.
+   *
+   * @param loops multiple loops to sort and reverse.
+   */
+  public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
+    const loopAndArea: SortablePolygon[] = [];
+    for (const loop of loops) {
+      SortablePolygon.pushLoop(loopAndArea, loop);
+    }
+    return SortablePolygon.assignParentsAndDepth(loopAndArea);
+  }
+
+}
+/**
+ * A `SortablePolygon` carries a (single) loop with data useful for sorting for inner-outer structure.
+ * @internal
+ */
+class SortablePolygon {
+  public loop: IndexedReadWriteXYZCollection;
+  public sortKey: number;
+  public signedArea: number;
+  public range: Range3d;
+  public parentIndex?: number;
+  public isHole: boolean;
+  public outputSetIndex?: number;
+  /**
+   *
+   * @param loop Loop to capture.
+   */
+  public constructor(loop: IndexedReadWriteXYZCollection, range: Range3d, signedArea: number) {
+    this.loop = loop;
+    this.range = range;
+    this.signedArea = signedArea;
+    this.sortKey = Math.abs(this.signedArea);
+    this.isHole = false;
+  }
+  /** Push loop with sort data onto the array.
+   * * No action if no clear normal.
+   * * return true if pushed.
+   */
+  public static pushLoop(loops: SortablePolygon[], loop: IndexedReadWriteXYZCollection): boolean {
+    const areaXY = PolygonOps.areaXY(loop);
+    if (areaXY > 0.0) {
+      loops.push(new SortablePolygon(loop, Range3d.createFromVariantData(loop), areaXY));
+      return true;
+    }
+    return true;
+  }
+  /** Push loop with sort data onto the array.
+   * * No action if no clear normal.
+   * * return true if pushed.
+   */
+  public static assignParentsAndDepth(loops: SortablePolygon[]): IndexedReadWriteXYZCollection[][] {
+    const outputSets: IndexedReadWriteXYZCollection[][] = [];
+    // Sort largest to smallest ...
+    loops.sort((loopA: SortablePolygon, loopB: SortablePolygon) => (loopB.sortKey - loopA.sortKey));
+    outputSets.length = 0;
+    // starting with smallest loop, point each loop to smallest containing parent.
+    for (let i = loops.length; i-- > 0;) {
+      const searchX = loops[i].loop.getXAtUncheckedPointIndex(0);
+      const searchY = loops[i].loop.getYAtUncheckedPointIndex(0);
+      // find smallest containing parent (search forward only to hit)
+      loops[i].parentIndex = undefined;
+      loops[i].outputSetIndex = undefined;
+      for (let j = i; j-- > 0;) {
+        if (loops[j].range.containsXY(searchX, searchY)
+          && 1 === PolygonOps.classifyPointInPolygonXY(searchX, searchY, loops[j].loop)) {
+          loops[i].parentIndex = j;
+          break;
+        }
+      }
+    }
+    // In large-to-small order:
+    // If a loop has no parent or has a "hole" as parent it is outer.
+    // otherwise (i.e. it has a non-hole parent) it becomes a hole in the parent.
+    for (const loopData of loops) {
+      loopData.isHole = false;
+      const parentIndex = loopData.parentIndex;
+      if (parentIndex !== undefined)
+        loopData.isHole = !loops[parentIndex].isHole;
+      if (!loopData.isHole) {
+        loopData.reverseLoopForAreaSign(1.0);
+        loopData.outputSetIndex = outputSets.length;
+        outputSets.push([]);
+        outputSets[loopData.outputSetIndex].push(loopData.loop);
+      } else {
+        loopData.reverseLoopForAreaSign(-1.0);
+        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
+        outputSets[outputSetIndex].push(loopData.loop);
+      }
+    }
+    return outputSets;
+  }
+  private reverseLoopForAreaSign(areaSign: number) {
+    if (areaSign * this.signedArea < 0.0) {
+      this.loop.reverseInPlace();
+      this.signedArea *= -1.0;
+    }
   }
 }

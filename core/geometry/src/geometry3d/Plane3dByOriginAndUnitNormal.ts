@@ -8,6 +8,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
+import { Angle } from "./Angle";
 /**
  * A plane defined by
  *
@@ -67,6 +68,18 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
     }
     return new Plane3dByOriginAndUnitNormal(origin.clone(), normalized);
   }
+  /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
+   * * Returns undefined if the normal vector is all zeros.
+   */
+  public static createXYAngle(x: number, y: number, normalAngleFromX: Angle, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal {
+    if (result) {
+      result._origin.set(x, y, 0.0);
+      result._normal.set(normalAngleFromX.cos(), normalAngleFromX.sin(), 0.0);
+      return result;
+    }
+    return new Plane3dByOriginAndUnitNormal(Point3d.create(x, y, 0), Vector3d.create(normalAngleFromX.cos(), normalAngleFromX.sin()));
+  }
+
   /** Create a plane defined by two points and an in-plane vector.
    * @param pointA any point in the plane
    * @param pointB any other point in the plane
