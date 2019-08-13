@@ -5,7 +5,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
-/** @beta */
+/** @internal */
 export interface ChangedElements {
   elements: Id64String[];
   classIds: Id64String[];
@@ -13,11 +13,13 @@ export interface ChangedElements {
   modelIds?: Id64String[];
 }
 
+/** @internal */
 export interface ChangedModels {
   modelIds: Id64String[];
   bboxes: AxisAlignedBox3dProps[];
 }
 
+/** @internal */
 export interface ChangeData {
   changedElements: ChangedElements;
   changedModels: ChangedModels;
