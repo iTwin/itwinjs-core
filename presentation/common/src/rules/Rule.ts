@@ -71,7 +71,6 @@ export enum RuleTypes {
   Grouping = "Grouping",
   PropertySorting = "PropertySorting",
   DisabledSorting = "DisabledSorting",
-  NodeArtifacts = "NodeArtifacts",
   InstanceLabelOverride = "InstanceLabelOverride",
   LabelOverride = "LabelOverride",
   CheckBox = "CheckBox",

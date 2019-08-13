@@ -27,14 +27,3 @@ The below table lists all of them:
 
 Additionally, [Ruleset variable symbols](../ECExpressions.md#ruleset-variables-user-settings)
 are available as well.
-
-## Specification
-
-Symbols available in expressions evaluated at each node's level (e.g. `hideExpression`):
-
-| Symbol | Type | Value
-|---|---|---
-| ThisNode | [Node context](../ECExpressions.md#navnode) | NavNode expression context of the ECInstance that's currently being handled.
-| this | [ECInstance context](../ECExpressions.md#ecinstance) | ECInstance expression context of the ECInstance that's currently being handled.
-
-Additionally, [User Settings symbols](../ECExpressions.md#symbols-in-global-context) are available as well.
