@@ -18,7 +18,9 @@ import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
+import { ChangeData } from '@bentley/imodeljs-common';
 import { ChangedElements } from '@bentley/imodeljs-common';
+import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodeljs-clients';
@@ -478,7 +480,9 @@ export class ChangedElementsDb implements IDisposable {
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     readonly isOpen: boolean;
     isProcessed(changesetId: string): boolean;
     // @internal (undocumented)
