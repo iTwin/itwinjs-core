@@ -181,7 +181,7 @@ const createComparison = (type: PrimitiveTypeDescription, name: string, operator
   let compareValue = "";
   switch (typeof value) {
     case "undefined": compareValue = "NULL"; break;
-    case "string": compareValue = `"${value}"`; break;
+    case "string": compareValue = `"${value.replace(`"`, `""`)}"`; break;
     case "boolean": compareValue = value ? "TRUE" : "FALSE"; break;
     case "number": compareValue = value.toString(); break;
   }

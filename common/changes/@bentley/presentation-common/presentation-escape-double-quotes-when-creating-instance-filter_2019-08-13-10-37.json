@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Escape double quotes when creating intance filter for 'find similar' ruleset",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
