@@ -62,10 +62,14 @@ module.exports = (publicPath) => {
       modules: ["node_modules", paths.appNodeModules, paths.appSrc].concat(
         (process.env.NODE_PATH || "").split(path.delimiter).filter(Boolean)
       ),
+      // By default, webpack will prefer ES Modules over CommonJS modules.
+      // This causes trouble with importing node-fetch, so we need to explicitly prefer CommonJS over ES/Harmony.
+      // https://github.com/bitinn/node-fetch/issues/450#issuecomment-494475397
+      mainFields: ["main"],
       extensions: [
         ".ts",
-        ".mjs",
         ".js",
+        ".mjs",
         ".json",
       ],
       plugins: [
