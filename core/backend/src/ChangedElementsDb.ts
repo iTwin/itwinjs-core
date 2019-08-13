@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ChangedElementsDb */
 
-import { IModelError, IModelStatus, ChangedElements } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, ChangedElements, ChangedModels, ChangeData } from "@bentley/imodeljs-common";
 import { DbResult, OpenMode, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, ChangeSetToken, ECDbOpenMode, BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractContext } from "./imodeljs-backend";
@@ -110,10 +110,36 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   public getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined {
-    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, ChangedElements> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    if (result.error || !result.result)
+      throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed elements");
+    return (result.result.changedElements) as ChangedElements;
+  }
+
+  /** Get changed models between two changesets
+   * @param startChangesetId Start Changeset Id
+   * @param endChangesetId End Changeset Id
+   * @returns Returns the changed models between the changesets provided
+   * @throws [IModelError]($common) if the operation failed.
+   */
+  public getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
+    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
+    if (result.error || !result.result)
+      throw new IModelError(result.error ? result.error.status : -1, result.error ? result.error.message : "Problem getting changed models");
+    return (result.result.changedModels) as ChangedModels;
+  }
+
+  /** Get changed models between two changesets
+   * @param startChangesetId Start Changeset Id
+   * @param endChangesetId End Changeset Id
+   * @returns Returns the changed models between the changesets provided
+   * @throws [IModelError]($common) if the operation failed.
+   */
+  public getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined {
+    const result: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = this.nativeDb.getChangedElements(startChangesetId, endChangesetId);
     if (result.error)
       throw new IModelError(result.error.status, result.error.message);
-    return result.result;
+    return result.result as ChangeData;
   }
 
   /** Returns true if the Changed Elements Db is open */
