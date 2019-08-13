@@ -296,6 +296,7 @@ public;SelectionSetEventType
 public;SelectionTool 
 public;SelectRemoveEvent
 public;SelectReplaceEvent
+alpha;SetupCameraTool 
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry } from "@bentley/geometry-core";
-import { ColorDef, Frustum, Npc, NpcCenter } from "@bentley/imodeljs-common";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant } from "@bentley/geometry-core";
+import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";
 import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
@@ -16,6 +16,14 @@ import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
+import { AccuDrawShortcuts } from "./AccuDrawTool";
+import { PrimitiveTool } from "./PrimitiveTool";
+import { FormatterSpec, ParserSpec, QuantityStatus } from "@bentley/imodeljs-quantity";
+import { PropertyDescription } from "../properties/Description";
+import { PropertyEditorParamTypes, ParseResults } from "../properties/EditorParams";
+import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { QuantityType } from "../QuantityFormatter";
+import { PrimitiveValue } from "../properties/Value";
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -1932,7 +1940,7 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    if (undefined === this.viewport || this.viewport.view.iModel !== context.viewport!.view.iModel)
+    if (undefined === this.viewport || this.viewport.view.iModel !== context.viewport.view.iModel)
       return;
     const vp = this.viewport;
     const color = vp.getContrastToBackgroundColor();
@@ -2033,7 +2041,7 @@ export class WindowAreaTool extends ViewTool {
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(cameraView.getZVector(), focusDist);
 
-      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle, focusDist) !== ViewStatus.Success)
+      if (cameraView.lookAtUsingLensAngle(newEye, newTarget, cameraView.getYVector(), lensAngle) !== ViewStatus.Success)
         return;
     } else {
       vp.rotation.multiplyVectorArrayInPlace(corners);
@@ -2347,5 +2355,341 @@ export class ViewToggleCameraTool extends ViewTool {
       vp.animateFrustumChange(startFrustum, vp.getFrustum());
     }
     this.exitTool();
+  }
+}
+
+/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool in order to allow the view to panned and rotated while defining the points.
+ * To show tool settings in order to specify camera and target heights, make sure formatting and parsing data are cached before the tool starts
+ * by calling IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats).
+ * @alpha
+ */
+export class SetupCameraTool extends PrimitiveTool {
+  public static toolId = "View.SetupCamera";
+  public static iconSpec = "icon-camera-location";
+  public viewport?: ScreenViewport;
+  protected _haveEyePt: boolean = false;
+  protected _eyePtWorld: Point3d = Point3d.create();
+  protected _targetPtWorld: Point3d = Point3d.create();
+
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
+  public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onUnsuspend(): void { this.showPrompt(); }
+  protected showPrompt(): void { ViewTool.showPrompt(this._haveEyePt ? "SetupCamera.Prompts.NextPoint" : "SetupCamera.Prompts.FirstPoint"); }
+  protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.showPrompt(); }
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) this.onReinitialize(); else this.exitTool(); return EventHandled.Yes; }
+
+  public onRestartTool(): void {
+    const tool = new SetupCameraTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+
+  protected getAdjustedEyePoint() { return this.useCameraHeight ? this._eyePtWorld.plusScaled(Vector3d.unitZ(), this.cameraHeight) : this._eyePtWorld; }
+  protected getAdjustedTargetPoint() { return this.useTargetHeight ? this._targetPtWorld.plusScaled(Vector3d.unitZ(), this.targetHeight) : this._targetPtWorld; }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (undefined === ev.viewport) {
+      return EventHandled.Yes;
+    } else if (undefined === this.viewport) {
+      if (!ev.viewport.view.allow3dManipulations())
+        return EventHandled.Yes;
+      this.viewport = ev.viewport;
+    } else if (this.viewport.view.iModel !== ev.viewport.view.iModel) {
+      if (this._haveEyePt)
+        return EventHandled.Yes;
+      this.viewport = ev.viewport;
+      return EventHandled.Yes;
+    }
+
+    if (this._haveEyePt) {
+      this._targetPtWorld.setFrom(ev.point);
+      this.doManipulation();
+      this.onReinitialize();
+    } else {
+      this._eyePtWorld.setFrom(ev.point);
+      this._targetPtWorld.setFrom(this._eyePtWorld);
+      this._haveEyePt = true;
+      this.setupAndPromptForNextAction();
+    }
+
+    return EventHandled.Yes;
+  }
+
+  public async onMouseMotion(ev: BeButtonEvent) {
+    if (!this._haveEyePt)
+      return;
+    this._targetPtWorld.setFrom(ev.point);
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
+      return EventHandled.Yes;
+    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (!this._haveEyePt || undefined === this.viewport || !this.viewport.view.is3d() || this.viewport.view.iModel !== context.viewport.view.iModel)
+      return;
+
+    const eyePtWorld = this.getAdjustedEyePoint();
+    const targetPtWorld = this.getAdjustedTargetPoint();
+    const zVec = Vector3d.createStartEnd(eyePtWorld, targetPtWorld);
+    const focusDist = zVec.normalizeWithLength(zVec).mag;
+    if (focusDist <= Constant.oneMillimeter) // eye and target are too close together
+      return;
+
+    const xVec = new Vector3d();
+    const yVec = Vector3d.unitZ();
+    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
+      return;
+    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
+      return;
+
+    const lensAngle = ToolSettings.walkCameraAngle;
+    const extentX = Math.tan(lensAngle.radians / 2.0) * focusDist;
+    const extentY = extentX * (this.viewport.view.extents.y / this.viewport.view.extents.x);
+
+    const pt1 = targetPtWorld.plusScaled(xVec, -extentX); pt1.plusScaled(yVec, extentY, pt1);
+    const pt2 = targetPtWorld.plusScaled(xVec, extentX); pt2.plusScaled(yVec, extentY, pt2);
+    const pt3 = targetPtWorld.plusScaled(xVec, extentX); pt3.plusScaled(yVec, -extentY, pt3);
+    const pt4 = targetPtWorld.plusScaled(xVec, -extentX); pt4.plusScaled(yVec, -extentY, pt4);
+
+    const color = this.viewport.getContrastToBackgroundColor();
+    const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+
+    builderHid.setSymbology(color, color, ViewHandleWeight.Bold);
+    builderHid.addLineString([eyePtWorld, targetPtWorld]);
+
+    builderHid.setSymbology(color, color, ViewHandleWeight.Thin, LinePixels.Code2);
+    builderHid.addLineString([eyePtWorld, pt1]);
+    builderHid.addLineString([eyePtWorld, pt2]);
+    builderHid.addLineString([eyePtWorld, pt3]);
+    builderHid.addLineString([eyePtWorld, pt4]);
+    builderHid.addLineString([pt1, pt2, pt3, pt4, pt1]);
+
+    if (this.useCameraHeight)
+      builderHid.addLineString([this._eyePtWorld, eyePtWorld]);
+    if (this.useTargetHeight)
+      builderHid.addLineString([this._targetPtWorld, targetPtWorld]);
+
+    builderHid.setSymbology(color, color, ViewHandleWeight.FatDot);
+    builderHid.addPointString([eyePtWorld, targetPtWorld]);
+
+    if (this.useCameraHeight)
+      builderHid.addPointString([this._eyePtWorld]);
+    if (this.useTargetHeight)
+      builderHid.addPointString([this._targetPtWorld]);
+
+    context.addDecorationFromBuilder(builderHid);
+
+    const backColor = ColorDef.from(0, 0, 255, 200);
+    const sideColor = context.viewport.hilite.color.clone(); sideColor.setAlpha(25);
+    const builderVis = context.createGraphicBuilder(GraphicType.WorldDecoration);
+
+    builderVis.setSymbology(color, color, ViewHandleWeight.Normal);
+    builderVis.addLineString([eyePtWorld, pt1]);
+    builderVis.addLineString([eyePtWorld, pt2]);
+    builderVis.addLineString([eyePtWorld, pt3]);
+    builderVis.addLineString([eyePtWorld, pt4]);
+    builderVis.addLineString([pt1, pt2, pt3, pt4, pt1]);
+
+    builderVis.setSymbology(color, backColor, ViewHandleWeight.Thin);
+    builderVis.addShape([pt1, pt2, pt3, pt4]);
+
+    builderVis.setSymbology(color, sideColor, ViewHandleWeight.Thin);
+    builderVis.addShape([eyePtWorld, pt1, pt2]);
+    builderVis.addShape([eyePtWorld, pt2, pt3]);
+    builderVis.addShape([eyePtWorld, pt3, pt4]);
+    builderVis.addShape([eyePtWorld, pt4, pt1]);
+
+    context.addDecorationFromBuilder(builderVis);
+  }
+
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  private doManipulation(): void {
+    const vp = this.viewport;
+    if (undefined === vp)
+      return;
+
+    const view = vp.view;
+    if (!view.is3d() || !view.allow3dManipulations())
+      return;
+
+    const eyePtWorld = this.getAdjustedEyePoint();
+    const targetPtWorld = this.getAdjustedTargetPoint();
+    const lensAngle = ToolSettings.walkCameraAngle;
+    const startFrust = vp.getWorldFrustum();
+    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+      return;
+
+    vp.synchWithView(true);
+    vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(500));
+  }
+
+  private _lengthFormatterSpec?: FormatterSpec;
+  private _lengthParserSpec?: ParserSpec;
+
+  public get lengthFormatterSpec(): FormatterSpec | undefined {
+    if (undefined === this._lengthFormatterSpec)
+      this._lengthFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    return this._lengthFormatterSpec;
+  }
+
+  public get lengthParserSpec(): ParserSpec | undefined {
+    if (undefined === this._lengthParserSpec)
+      this._lengthParserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
+    return this._lengthParserSpec;
+  }
+
+  private _formatLength = (numberValue: number): string => {
+    if (this.lengthFormatterSpec)
+      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.lengthFormatterSpec);
+    return numberValue.toFixed(2);
+  }
+
+  private _parseLength = (userInput: string): ParseResults => {
+    if (this.lengthParserSpec) {
+      const parseResult = IModelApp.quantityFormatter.parseIntoQuantityValue(userInput, this.lengthParserSpec);
+      return (QuantityStatus.Success === parseResult.status ? { value: parseResult.value } : {});
+    }
+    const rtnValue = Number.parseFloat(userInput);
+    return (Number.isNaN(rtnValue) ? {} : { value: rtnValue });
+  }
+
+  private _useCameraHeightValue = new ToolSettingsValue(false);
+  public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
+  public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
+  private static _useCameraHeightName = "useCameraHeight";
+  private static _getUseCameraHeightDescription = (): PropertyDescription => {
+    return {
+      name: SetupCameraTool._useCameraHeightName,
+      displayLabel: "",
+      typename: "boolean",
+      editor: {
+        params: [
+          {
+            type: PropertyEditorParamTypes.SuppressEditorLabel,
+            suppressLabelPlaceholder: true,
+          },
+        ],
+      },
+    };
+  }
+
+  private _useTargetHeightValue = new ToolSettingsValue(false);
+  public get useTargetHeight(): boolean { return this._useTargetHeightValue.value as boolean; }
+  public set useTargetHeight(option: boolean) { this._useTargetHeightValue.value = option; }
+  private static _useTargetHeightName = "useTargetHeight";
+  private static _getUseTargetHeightDescription = (): PropertyDescription => {
+    return {
+      name: SetupCameraTool._useTargetHeightName,
+      displayLabel: "",
+      typename: "boolean",
+      editor: {
+        params: [
+          {
+            type: PropertyEditorParamTypes.SuppressEditorLabel,
+            suppressLabelPlaceholder: true,
+          },
+        ],
+      },
+    };
+  }
+
+  private _cameraHeightValue = new ToolSettingsValue(0.0);
+  public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
+  public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
+  private static _cameraHeightName = "cameraHeight";
+  private _getCameraHeightDescription = (): PropertyDescription => {
+    return {
+      name: SetupCameraTool._cameraHeightName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.CameraHeight"),
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: this._formatLength,
+            parseFunction: this._parseLength,
+          },
+        ],
+      },
+    };
+  }
+
+  private _targetHeightValue = new ToolSettingsValue(0.0);
+  public get targetHeight(): number { return this._targetHeightValue.value as number; }
+  public set targetHeight(option: number) { this._targetHeightValue.value = option; }
+  private static _targetHeightName = "targetHeight";
+  private _getTargetHeightDescription = (): PropertyDescription => {
+    return {
+      name: SetupCameraTool._targetHeightName,
+      displayLabel: IModelApp.i18n.translate("CoreTools:tools.View.SetupCamera.Labels.TargetHeight"),
+      typename: "number",
+      editor: {
+        name: "number-custom",
+        params: [
+          {
+            type: PropertyEditorParamTypes.CustomFormattedNumber,
+            formatFunction: this._formatLength,
+            parseFunction: this._parseLength,
+          },
+        ],
+      },
+    };
+  }
+
+  private syncCameraHeightState(): void {
+    const cameraHeightValue = new ToolSettingsValue(this.cameraHeight);
+    cameraHeightValue.displayValue = this._formatLength(cameraHeightValue.value as number);
+    const syncItem: ToolSettingsPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
+    this.syncToolSettingsProperties([syncItem]);
+  }
+
+  private syncTargetHeightState(): void {
+    const targetHeightValue = new ToolSettingsValue(this.targetHeight);
+    targetHeightValue.displayValue = this._formatLength(targetHeightValue.value as number);
+    const syncItem: ToolSettingsPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
+    this.syncToolSettingsProperties([syncItem]);
+  }
+
+  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+    if (updatedValue.propertyName === SetupCameraTool._useCameraHeightName) {
+      this.useCameraHeight = updatedValue.value.value as boolean;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue });
+      this.syncCameraHeightState();
+    } else if (updatedValue.propertyName === SetupCameraTool._useTargetHeightName) {
+      this.useTargetHeight = updatedValue.value.value as boolean;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useTargetHeightName, value: this._useTargetHeightValue });
+      this.syncTargetHeightState();
+    } else if (updatedValue.propertyName === SetupCameraTool._cameraHeightName) {
+      this.cameraHeight = updatedValue.value.value as number;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue });
+    } else if (updatedValue.propertyName === SetupCameraTool._targetHeightName) {
+      this.targetHeight = updatedValue.value.value as number;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue });
+    }
+    return true;
+  }
+
+  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+    IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
+      { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue },
+      { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue },
+      { propertyName: SetupCameraTool._useTargetHeightName, value: this._useTargetHeightValue },
+      { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
+    ]);
+
+    const toolSettings = new Array<ToolSettingsPropertyRecord>();
+    toolSettings.push(new ToolSettingsPropertyRecord(this._useCameraHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseCameraHeightDescription(), { rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._cameraHeightValue.clone() as PrimitiveValue, this._getCameraHeightDescription(), { rowPriority: 1, columnIndex: 2 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._useTargetHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseTargetHeightDescription(), { rowPriority: 2, columnIndex: 0 }));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._targetHeightValue.clone() as PrimitiveValue, this._getTargetHeightDescription(), { rowPriority: 2, columnIndex: 2 }));
+    return toolSettings;
   }
 }

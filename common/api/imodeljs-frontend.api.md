@@ -5779,6 +5779,70 @@ export interface SelectReplaceEvent {
     type: SelectionSetEventType.Replace;
 }
 
+// @alpha
+export class SetupCameraTool extends PrimitiveTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    // (undocumented)
+    cameraHeight: number;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
+    // (undocumented)
+    protected _eyePtWorld: Point3d;
+    // (undocumented)
+    protected getAdjustedEyePoint(): Point3d;
+    // (undocumented)
+    protected getAdjustedTargetPoint(): Point3d;
+    // (undocumented)
+    protected _haveEyePt: boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    readonly lengthFormatterSpec: FormatterSpec | undefined;
+    // (undocumented)
+    readonly lengthParserSpec: ParserSpec | undefined;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    protected showPrompt(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    // (undocumented)
+    targetHeight: number;
+    // (undocumented)
+    protected _targetPtWorld: Point3d;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    useCameraHeight: boolean;
+    // (undocumented)
+    useTargetHeight: boolean;
+    // (undocumented)
+    viewport?: ScreenViewport;
+}
+
 // @internal
 export class SheetBorder {
     addToBuilder(builder: GraphicBuilder): void;
