@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState, IModelApp } from "@bentley/imodeljs-frontend";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 
@@ -51,7 +51,6 @@ export interface ViewSelectorProps {
  */
 interface ViewSelectorState {
   items: ListItem[];
-  selectedViewId: string | null;
   title: string;
   initialized: boolean;
   showSpatials: boolean;
@@ -109,7 +108,6 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     this.state = {
       items: new Array<ListItem>(),
-      selectedViewId: null,
       title: UiFramework.translate("savedViews.views"),
       initialized: false,
       showSpatials: props.showSpatials,
@@ -188,7 +186,6 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     this.setState({
       items: containers,
-      selectedViewId: null,
       title: UiFramework.translate("savedViews.views"),
       initialized: true,
     });
@@ -312,8 +309,9 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   }
 
   // Hook on the category selector being expanded so that we may initialize if needed
-  private _onExpanded = (_expand: boolean) => {
-    this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
+  private _onExpanded = (expand: boolean) => {
+    if (expand)
+      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -321,7 +319,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
    */
   public render() {
     if (!this.state.initialized)
-      this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
+      this.updateState(IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.view.id : undefined); // tslint:disable-line:no-floating-promises
 
     const { imodel, ...props } = this.props;
 

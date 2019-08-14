@@ -6,11 +6,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 import { PointerCaptor } from "../../../base/PointerCaptor";
-import { PointProps, Point } from "../../../utilities/Point";
-import { Rectangle, RectangleProps } from "../../../utilities/Rectangle";
 
 import "./Tab.scss";
 

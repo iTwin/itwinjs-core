@@ -8,7 +8,7 @@ import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
@@ -140,11 +140,12 @@ export abstract class DrawCommand {
   public get pushOrPop(): PushOrPop | undefined { return undefined; }
 
   public get isPrimitiveCommand(): boolean { return undefined !== this.primitive; }
-  public get featureIndexType(): FeatureIndexType { return undefined !== this.primitive ? this.primitive.featureIndexType : FeatureIndexType.Empty; }
-  public get hasFeatureOverrides(): boolean { return FeatureIndexType.Empty !== this.featureIndexType; }
+  public get hasFeatures(): boolean { return undefined !== this.primitive && this.primitive.hasFeatures; }
   public get renderOrder(): RenderOrder { return undefined !== this.primitive ? this.primitive.renderOrder : RenderOrder.BlankingRegion; }
   public get hasAnimation(): boolean { return undefined !== this.primitive ? this.primitive.hasAnimation : false; }
   public get isInstanced(): boolean { return undefined !== this.primitive ? this.primitive.isInstanced : false; }
+  public get hasMaterialAtlas(): boolean { return undefined !== this.primitive ? this.primitive.hasMaterialAtlas : false; }
+
   public getRenderPass(target: Target): RenderPass { return undefined !== this.primitive ? this.primitive.getRenderPass(target) : RenderPass.None; }
   public get techniqueId(): TechniqueId { return undefined !== this.primitive ? this.primitive.techniqueId : TechniqueId.Invalid; }
   public getOmitStatus(_target: Target) { return OmitStatus.Neutral; }
@@ -246,8 +247,8 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   public computeIsFlashed(flashedId: Id64String): boolean {
     // ###TODO Can this be done in a less-ugly way? It's trying to determine if the batch's graphic is a classification primitive.
     const sp = this.primitive.cachedGeometry.asSurface;
-    if (undefined !== sp && undefined !== sp.mesh.features && sp.mesh.features.isUniform) {
-      const fi = sp.mesh.features.uniform!;
+    if (undefined !== sp && undefined !== sp.mesh.uniformFeatureId) {
+      const fi = sp.mesh.uniformFeatureId;
       const featureElementId = this._batch.featureTable.findElementId(fi);
       if (undefined !== featureElementId)
         return featureElementId.toString() === flashedId.toString();
@@ -270,13 +271,14 @@ export class RenderCommands {
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
   private readonly _commands: DrawCommands[];
-  private readonly _stack: BranchStack; // refers to the Target's BranchStack
-  private readonly _batchState: BatchState; // refers to the Target's BatchState
+  private _target: Target;
+  private _stack: BranchStack; // refers to the Target's BranchStack
+  private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
   private _addTranslucentAsOpaque: boolean = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
-  public readonly target: Target;
+  public get target(): Target { return this._target; }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -307,12 +309,19 @@ export class RenderCommands {
   public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
 
   constructor(target: Target, stack: BranchStack, batchState: BatchState) {
-    this.target = target;
+    this._target = target;
     this._stack = stack;
     this._batchState = batchState;
     this._commands = Array<DrawCommands>(RenderPass.COUNT);
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
+  }
+
+  public reset(target: Target, stack: BranchStack, batchState: BatchState): void {
+    this._target = target;
+    this._stack = stack;
+    this._batchState = batchState;
+    this.clear();
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
@@ -325,6 +334,12 @@ export class RenderCommands {
   public addBackgroundMapGraphics(backgroundMapGraphics: GraphicList): void {
     this._forcedRenderPass = RenderPass.BackgroundMap;
     backgroundMapGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+  /** Add overlay graphics to the world overlay pass */
+  public addOverlayGraphics(overlayGraphics: GraphicList): void {
+    this._forcedRenderPass = RenderPass.WorldOverlay;
+    overlayGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -405,11 +420,7 @@ export class RenderCommands {
       return;
     }
 
-    let ovrType = FeatureIndexType.Empty;
-    if (this._opaqueOverrides || this._translucentOverrides)
-      ovrType = command.featureIndexType;
-
-    const haveFeatureOverrides = FeatureIndexType.Empty !== ovrType;
+    const haveFeatureOverrides = (this._opaqueOverrides || this._translucentOverrides) && command.hasFeatures;
 
     if (RenderPass.Translucent === pass && this._addTranslucentAsOpaque) {
       switch (command.renderOrder) {
@@ -449,7 +460,7 @@ export class RenderCommands {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
         // Want these items to draw in general opaque pass so they are not in pick data.
-        if (FeatureIndexType.Empty === command.featureIndexType)
+        if (!command.hasFeatures)
           pass = RenderPass.OpaqueGeneral;
       /* falls through */
       case RenderPass.OpaqueGeneral:
@@ -549,7 +560,7 @@ export class RenderCommands {
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, backgroundMap: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, backgroundMap: GraphicList, overlayGraphics?: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -569,6 +580,8 @@ export class RenderCommands {
 
     this.addGraphics(scene);
     this.addBackgroundMapGraphics(backgroundMap);
+    if (undefined !== overlayGraphics)
+      this.addOverlayGraphics(overlayGraphics);
 
     if (undefined !== dynamics && 0 < dynamics.length) {
       this.addDecorations(dynamics);

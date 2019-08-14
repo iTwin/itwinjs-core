@@ -1,6 +1,39 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Add markupTool definitions. Update to use latest icon library
+- Add support for BackstageComposer so Plugins can add backstage items.
+- Fix dragged widget offset.
+- Widget with isToolSettings honors defaultState
+- Move MarkupTool definitions to their own class.
+- Fixed location of ContentLayout within 9-zone area and Stage Panels
+- Added CursorPopupRenderer to render multiple CursorPopups per RelativePosition.
+- Added CursorPrompt, improved Pointer messages
+- Added @bentley/icons-generic to dependencies which was wrongly set in devDependencies.
+- #159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button
+- Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement
+- Added icons to markup/redline
+- Fixed Zone mergeWithZone processing
+- Port RealityData widget from Design Review.
+- Added icon for redline text tool
+- Update FilteringInput to use updated search box design from UX. Also updated ModelSelectorTree to work with changes and marked ModelSelector as deprecated.
+- Add tool assistance for SelectTool.
+- Update SelectTool to display tool setting by default.
+- Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone
+- Improved ToolAssistance item spacing. ViewSelector shows current view.
+- Made Tool Settings tab tooltip more concise & clearer
+- Close ListPicker popup when clicking the button.
+- Initialize stage panel size from size prop.
+- VisibilityTree: Fix not all models' visibility being changed when changing visibility of parent subject
+- Visibility Tree: Handle `Viewport.isAlwaysDrawnExclusive` flag when determining and handling Element display states
+- Backport Visibility Widget from Design Review
+- Update to latest icon package version.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

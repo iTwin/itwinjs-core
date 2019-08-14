@@ -6,10 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { RectangleProps, Rectangle } from "../utilities/Rectangle";
+import { CommonProps, NoChildrenProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
-import { PointProps, Point } from "../utilities/Point";
 import "./Stacked.scss";
 
 /** Available [[Stacked]] widget horizontal anchors.

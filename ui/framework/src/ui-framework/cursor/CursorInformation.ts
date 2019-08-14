@@ -5,8 +5,7 @@
 /** @module Cursor */
 
 import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
-import { Point } from "@bentley/ui-ninezone";
+import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
 /** @alpha */
 export enum CursorDirectionParts {
@@ -33,8 +32,8 @@ export enum CursorDirection {
  * @alpha
  */
 export interface CursorUpdatedEventArgs {
-  oldPt: Point;
-  newPt: Point;
+  oldPt: PointProps;
+  newPt: PointProps;
   direction: CursorDirection;
 }
 
@@ -43,7 +42,7 @@ export interface CursorUpdatedEventArgs {
  */
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> { }
 
-/** Cursor CursorInformation
+/** Cursor Information class
  * @alpha
  */
 export class CursorInformation {
@@ -52,18 +51,25 @@ export class CursorInformation {
 
   private static _cursorDirections = new Array<CursorDirection>();
 
-  public static set cursorPosition(pt: Point) { this._cursorPosition = pt; }
-  public static get cursorPosition(): Point { return this._cursorPosition; }
+  /** Sets the cursor position. */
+  public static set cursorPosition(pt: PointProps) { this._cursorPosition = Point.create(pt); }
+  /** Gets the cursor position. */
+  public static get cursorPosition(): PointProps { return this._cursorPosition; }
+  /** Gets the cursor X position. */
   public static get cursorX(): number { return this._cursorPosition.x; }
+  /** Gets the cursor Y position. */
   public static get cursorY(): number { return this._cursorPosition.y; }
 
+  /** Gets the general cursor movement direction. */
   public static get cursorDirection(): CursorDirection { return this._cursorDirection; }
 
+  /** Gets the [[CursorUpdatedEvent]]. */
   public static readonly onCursorUpdatedEvent = new CursorUpdatedEvent();
 
-  public static handleMouseMove(point: Point): void {
+  /** Handles the mouse movement.  Sets the cursor position and direction and emits onCursorUpdatedEvent. */
+  public static handleMouseMove(point: PointProps): void {
     const oldPt = CursorInformation.cursorPosition;
-    const direction = this._determineMostFrequentDirection(this._cursorDirections, this.cursorPosition, point);
+    const direction = this._determineMostFrequentDirection(this._cursorDirections, this._cursorPosition, Point.create(point));
 
     this.cursorPosition = point;
     this._cursorDirection = direction;
@@ -121,6 +127,7 @@ export class CursorInformation {
     return direction;
   }
 
+  /** Gets the relative position based on the cursor direction. */
   public static getRelativePositionFromCursorDirection(cursorDirection: CursorDirection): RelativePosition {
     let relativePosition: RelativePosition = RelativePosition.BottomRight;
 

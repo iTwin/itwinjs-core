@@ -10,18 +10,18 @@ import { Id64Set, Id64Arg, Id64 } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./rendering";
 
 /** Whether override includes both color and alpha, only color, or only alpha.
- * @internal
+ * @beta
  */
 export enum FeatureOverrideType { ColorOnly, AlphaOnly, ColorAndAlpha }
 
-/** @internal */
+/** @beta */
 export interface AppearanceOverrideProps {
   overrideType?: FeatureOverrideType;
   color?: ColorDefProps;
   ids?: Id64Set;
 }
 
-/** @internal */
+/** @beta */
 export interface EmphasizeElementsProps {
   neverDrawn?: Id64Set;
   alwaysDrawn?: Id64Set;
@@ -32,7 +32,7 @@ export interface EmphasizeElementsProps {
 }
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
- * @internal
+ * @beta
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureSymbology.Appearance;

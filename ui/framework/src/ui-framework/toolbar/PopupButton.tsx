@@ -5,9 +5,10 @@
 /** @module Item */
 
 import * as React from "react";
+import classnames from "classnames";
 
-import { ExpandableItem, Item, Size } from "@bentley/ui-ninezone";
-import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
+import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import { ExpandableItem, Item } from "@bentley/ui-ninezone";
 
 import { ItemProps, StringGetter } from "../shared/ItemProps";
 import { BaseItemState } from "../shared/ItemDefBase";
@@ -15,9 +16,12 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { Icon } from "../shared/IconComponent";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
+import { BetaBadge } from "../betabadge/BetaBadge";
 
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
-import { BetaBadge } from "../betabadge/BetaBadge";
+import "./PopupButton.scss";
+
+// cSpell:ignore popupbutton
 
 // tslint:disable-next-line: variable-name
 const DivWithOnOutsideClick = withOnOutsideClick((props: React.HTMLProps<HTMLDivElement>) => (<div {...props} />), undefined, false);
@@ -40,7 +44,8 @@ export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderProp
 export interface PopupButtonProps extends ItemProps, CommonProps {
   children?: React.ReactNode | PopupButtonChildrenRenderProp;
   onExpanded?: (expand: boolean) => void;
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
+  noPadding?: boolean;
 }
 
 const isFunction = <T extends (...args: any) => any>(node: React.ReactNode): node is T => {
@@ -86,9 +91,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   private _toggleIsExpanded = () => {
     const isPressed = !this.state.isPressed;
 
-    this.setState((_prevState, _props) => {
+    this.setState((prevState) => {
       return {
-        ..._prevState,
+        ...prevState,
         isPressed,
       };
     });
@@ -99,9 +104,9 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   /** Minimizes the expandable component. */
   public minimize = () => {
-    this.setState((_prevState, _props) => {
+    this.setState((prevState) => {
       return {
-        ..._prevState,
+        ...prevState,
         isPressed: false,
       };
     });
@@ -174,9 +179,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     if (!this.state.isPressed)
       return undefined;
 
+    const classNames = classnames(
+      "nz-toolbar-item-expandable-group-panel",
+      this.props.noPadding && "uifw-popupbutton-noPadding",
+    );
+
     return (
       <DivWithOnOutsideClick
-        className="nz-toolbar-item-expandable-group-panel"
+        className={classNames}
         onOutsideClick={this.minimize}
       >
         {isFunction<PopupButtonChildrenRenderProp>(this.props.children) ? this.props.children({

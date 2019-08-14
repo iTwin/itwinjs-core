@@ -13,7 +13,7 @@ import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { Triangulator } from "../topology/Triangulation";
+import { Triangulator, MultiLineStringDataVariant } from "../topology/Triangulation";
 import { LineString3d } from "../curve/LineString3d";
 import { AnyCurve } from "../curve/CurveChain";
 import { ParityRegion } from "../curve/ParityRegion";
@@ -50,6 +50,33 @@ export class SweepContour {
     }
     return undefined;
   }
+
+  /** Create for linear sweep.
+   * * The optional default normal may be useful for guiding coordinate frame setup.
+   * * the points are captured into linestrings and Loops as needed.
+   */
+  public static createForPolygon(points: MultiLineStringDataVariant, defaultNormal?: Vector3d): SweepContour | undefined {
+    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, points);
+    if (localToWorld) {
+      if (defaultNormal !== undefined) {
+        if (localToWorld.matrix.dotColumnZ(defaultNormal))
+          localToWorld.matrix.scaleColumnsInPlace(1.0, -1.0, -1.0);
+      }
+      const linestrings = LineString3d.createArrayOfLineString3dFromVariantData(points);
+      const loops = [];
+      for (const ls of linestrings) {
+        ls.addClosurePoint();
+        loops.push(Loop.create(ls));
+      }
+      if (loops.length === 1) {
+        return new SweepContour(loops[0], localToWorld, undefined);
+      } else if (loops.length > 1) {
+        return new SweepContour(ParityRegion.createLoops(loops), localToWorld, undefined);
+      }
+    }
+    return undefined;
+  }
+
   /** Create for rotational sweep.
    * * The axis ray is retained.
    * * the contour is CAPTURED.

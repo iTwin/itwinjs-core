@@ -28,6 +28,7 @@ export enum NativePlatformRequestTypes {
 export interface NativePlatformDefinition extends IDisposable {
   forceLoadSchemas(requestContext: ClientRequestContext, db: any): Promise<void>;
   setupRulesetDirectories(directories: string[]): void;
+  setupSupplementalRulesetDirectories(directories: string[]): void;
   setupLocaleDirectories(directories: string[]): void;
   getImodelAddon(imodel: IModelDb): any;
   getRulesets(rulesetId: string): string;
@@ -82,6 +83,9 @@ export const createDefaultNativePlatform = (id?: string): new () => NativePlatfo
     }
     public setupRulesetDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
+    }
+    public setupSupplementalRulesetDirectories(directories: string[]): void {
+      this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
     }
     public setupLocaleDirectories(directories: string[]): void {
       this.handleVoidResult(this._nativeAddon.setupLocaleDirectories(directories));

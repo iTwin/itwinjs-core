@@ -114,6 +114,7 @@ export interface RequestOptions {
  */
 export interface Response {
   body: any; // Parsed body of response
+  text: string | undefined; // Returned for responseType:text
   header: any; // Parsed headers of response
   status: number; // Status code of response
 }
@@ -360,6 +361,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
             status: 201,
             header: undefined,
             body: undefined,
+            text: undefined,
           };
           resolve(retResponse);
         });
@@ -389,6 +391,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
             status: 200,
             header: undefined,
             body: undefined,
+            text: undefined,
           };
           resolve(retResponse);
         });
@@ -408,6 +411,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
     .then(async (response: sarequest.Response) => {
       const retResponse: Response = {
         body: response.body,
+        text: response.text,
         header: response.header,
         status: response.status,
       };

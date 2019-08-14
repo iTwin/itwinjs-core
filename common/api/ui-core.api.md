@@ -50,6 +50,9 @@ export class Annulus {
 }
 
 // @public
+export const BlockText: React.FunctionComponent<TextProps>;
+
+// @public
 export const BodyText: React.FunctionComponent<TextProps>;
 
 // @alpha (undocumented)
@@ -152,7 +155,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 // @beta
-export const CheckListBoxSeparator: React.StatelessComponent;
+export const CheckListBoxSeparator: React.FunctionComponent;
 
 // @internal
 export class Circle {
@@ -311,6 +314,18 @@ export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">
     label: string | JSX.Element;
     // @internal (undocumented)
     onHotKeyParsed?: (hotKey: string) => void;
+}
+
+// @internal
+export enum Corner {
+    // (undocumented)
+    BottomLeft = 3,
+    // (undocumented)
+    BottomRight = 2,
+    // (undocumented)
+    TopLeft = 0,
+    // (undocumented)
+    TopRight = 1
 }
 
 // @beta
@@ -557,6 +572,9 @@ export enum Face {
     // (undocumented)
     Top = "top"
 }
+
+// @alpha (undocumented)
+export const FeaturedTile: React.FunctionComponent<TileProps>;
 
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
@@ -886,6 +904,12 @@ export enum MessageSeverity {
     Warning = 3
 }
 
+// @alpha (undocumented)
+export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
+
+// @alpha (undocumented)
+export const MinimalTile: React.FunctionComponent<TileProps>;
+
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
 
@@ -946,14 +970,38 @@ export enum Orientation {
 }
 
 // @internal
-export class Point {
+export class Point implements PointProps {
     constructor(x?: number, y?: number);
-    distTo: (p: Point) => number;
-    equals: (point: Point) => boolean;
+    static create(pointProps: PointProps): Point;
     // (undocumented)
-    x: number;
+    equals(other: PointProps): boolean;
+    getDistanceTo(other: PointProps): number;
+    getManhattanDistanceTo(other: PointProps): number;
+    getOffsetTo(other: PointProps): Point;
     // (undocumented)
-    y: number;
+    offset(offset: PointProps): Point;
+    // (undocumented)
+    offsetX(offset: number): Point;
+    // (undocumented)
+    offsetY(offset: number): Point;
+    // (undocumented)
+    setX(x: number): Point;
+    // (undocumented)
+    setY(y: number): Point;
+    // (undocumented)
+    toProps(): PointProps;
+    // (undocumented)
+    readonly x: number;
+    // (undocumented)
+    readonly y: number;
+}
+
+// @beta
+export interface PointProps {
+    // (undocumented)
+    readonly x: number;
+    // (undocumented)
+    readonly y: number;
 }
 
 // @beta
@@ -1154,6 +1202,70 @@ export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<H
 // @internal (undocumented)
 export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
+// @internal
+export class Rectangle implements RectangleProps {
+    constructor(left?: number, top?: number, right?: number, bottom?: number);
+    // (undocumented)
+    readonly bottom: number;
+    // (undocumented)
+    center(): Point;
+    // (undocumented)
+    containHorizontallyIn(other: RectangleProps): Rectangle;
+    // (undocumented)
+    containIn(other: RectangleProps): Rectangle;
+    // (undocumented)
+    contains(other: RectangleProps): boolean;
+    containsPoint(point: PointProps): boolean;
+    // (undocumented)
+    containVerticallyIn(other: RectangleProps): Rectangle;
+    static create(props: RectangleProps): Rectangle;
+    static createFromSize(size: SizeProps): Rectangle;
+    equals(other: RectangleProps): boolean;
+    // (undocumented)
+    getCorner(corner: Corner): Point;
+    // (undocumented)
+    getHeight(): number;
+    getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
+    // (undocumented)
+    getSize(): Size;
+    getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
+    // (undocumented)
+    getWidth(): number;
+    inset(left: number, top: number, right: number, bottom: number): Rectangle;
+    // (undocumented)
+    intersects(other: RectangleProps): boolean;
+    // (undocumented)
+    readonly left: number;
+    offset(offset: PointProps): Rectangle;
+    offsetX(offset: number): Rectangle;
+    offsetY(offset: number): Rectangle;
+    outerMergeWith(other: RectangleProps): Rectangle;
+    // (undocumented)
+    readonly right: number;
+    setHeight(height: number): Rectangle;
+    setPosition(position: PointProps): Rectangle;
+    setSize(size: SizeProps): Rectangle;
+    setWidth(width: number): Rectangle;
+    // (undocumented)
+    readonly top: number;
+    // (undocumented)
+    topLeft(): Point;
+    // (undocumented)
+    toProps(): RectangleProps;
+}
+
+// @beta
+export interface RectangleProps {
+    // (undocumented)
+    readonly bottom: number;
+    // (undocumented)
+    readonly left: number;
+    // (undocumented)
+    readonly right: number;
+    // (undocumented)
+    readonly top: number;
+}
+
 // @public
 export const ScrollView: React.FunctionComponent<CommonDivProps>;
 
@@ -1213,6 +1325,25 @@ export const shallowDiffers: (a: {
 } | undefined, b: {
     [key: string]: any;
 } | undefined) => boolean;
+
+// @internal
+export class Size implements SizeProps {
+    constructor(width?: number, height?: number);
+    static create(size: SizeProps): Size;
+    equals(other: SizeProps): boolean;
+    // (undocumented)
+    readonly height: number;
+    // (undocumented)
+    readonly width: number;
+}
+
+// @beta
+export interface SizeProps {
+    // (undocumented)
+    readonly height: number;
+    // (undocumented)
+    readonly width: number;
+}
 
 // @public
 export const SmallText: React.FunctionComponent<TextProps>;
@@ -1342,6 +1473,37 @@ export class TildeFinder {
         character: string | undefined;
         node: React.ReactNode;
     };
+}
+
+// @alpha (undocumented)
+export class Tile extends React.Component<TileProps> {
+    // @internal (undocumented)
+    static readonly defaultProps: TileDefaultProps;
+    // @internal (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal (undocumented)
+export type TileDefaultProps = Pick<TileProps, "stepNum">;
+
+// @alpha (undocumented)
+export interface TileProps extends CommonDivProps {
+    // (undocumented)
+    featured?: boolean;
+    // (undocumented)
+    href?: string;
+    // (undocumented)
+    icon?: React.ReactNode;
+    // (undocumented)
+    minimal?: boolean;
+    // (undocumented)
+    onClick?: (e: any) => any;
+    // (undocumented)
+    stepCount?: number;
+    // (undocumented)
+    stepNum?: number;
+    // (undocumented)
+    title: string;
 }
 
 // @public

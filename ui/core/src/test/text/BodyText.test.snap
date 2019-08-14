@@ -2,7 +2,7 @@
 
 exports[`<BodyText /> content renders correctly 1`] = `
 <StyledText
-  mainClassName="uicore-text-block"
+  mainClassName="uicore-text-body"
 >
   Test content
 </StyledText>
@@ -10,6 +10,6 @@ exports[`<BodyText /> content renders correctly 1`] = `
 
 exports[`<BodyText /> renders correctly 1`] = `
 <StyledText
-  mainClassName="uicore-text-block"
+  mainClassName="uicore-text-body"
 />
 `;

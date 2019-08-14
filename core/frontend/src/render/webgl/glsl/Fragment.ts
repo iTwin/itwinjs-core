@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { FragmentShaderBuilder, VariableType, FragmentShaderComponent, SourceBuilder } from "../ShaderBuilder";
-import { GLSLDecode } from "./Decode";
+import { encodeDepthRgb } from "./Decode";
 import { System } from "../System";
 
 /** @internal */
@@ -50,25 +50,24 @@ export function addRenderTargetIndex(frag: FragmentShaderBuilder) {
 const reverseWhiteOnWhite = `
   const vec3 white = vec3(1.0);
   const vec3 epsilon = vec3(0.0001);
-  vec3 color = baseColor.rgb / max(0.0001, baseColor.a); // revert premultiplied alpha
+  vec3 color = baseColor.rgb;
   vec3 delta = (color + epsilon) - white;
   vec4 wowColor = vec4(baseColor.rgb * vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)), baseColor.a); // set to black if almost white
-  wowColor.rgb *= wowColor.a; // reapply premultiplied alpha
   return mix(baseColor, wowColor, floor(u_reverseWhiteOnWhite + 0.5));
 `;
 
 const computePickBufferOutputs = `
-  vec4 output0 = baseColor;
+  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
 
-  // Fix interpolation errors despite all vertices sending exact same v_feature_id...
-  ivec4 v_feature_id_i = ivec4(v_feature_id * 255.0 + 0.5);
-  vec4 output1 = vec4(v_feature_id_i) / 255.0;
+  // Fix interpolation errors despite all vertices sending exact same feature_id...
+  ivec4 feature_id_i = ivec4(feature_id * 255.0 + 0.5);
+  vec4 output1 = vec4(feature_id_i) / 255.0;
   float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
 const computeAltPickBufferOutputs = `
-  vec4 output0 = baseColor;
+  vec4 output0 = vec4(baseColor.rgb * baseColor.a, baseColor.a);
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
 `;
@@ -91,8 +90,8 @@ const reassignFeatureId = "output1 = overrideFeatureId(output1);";
 
 /** @internal */
 export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
-  frag.addFunction(GLSLDecode.encodeDepthRgb);
-  frag.addFunction(GLSLFragment.computeLinearDepth);
+  frag.addFunction(encodeDepthRgb);
+  frag.addFunction(computeLinearDepth);
 
   const prelude = new SourceBuilder();
   const overrideFeatureId = frag.get(FragmentShaderComponent.OverrideFeatureId);
@@ -127,36 +126,16 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
 }
 
 /** @internal */
-export namespace GLSLFragment {
-  export const assignFragColor = "FragColor = baseColor;";
+export const assignFragColor = "FragColor = baseColor;";
 
-  export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
+/** @internal */
+export const assignFragColorNoAlpha = "FragColor = vec4(baseColor.rgb, 1.0);";
 
-  export const revertPreMultipliedAlpha = `
-vec4 revertPreMultipliedAlpha(vec4 rgba) {
-  rgba.rgb /= max(0.0001, rgba.a);
-  return rgba;
-}
-`;
+/** @internal */
+export const assignFragColorWithPreMultipliedAlpha = "FragColor = vec4(baseColor.rgb * baseColor.a, baseColor.a);";
 
-  export const applyPreMultipliedAlpha = `
-vec4 applyPreMultipliedAlpha(vec4 rgba) {
-  rgba.rgb *= rgba.a;
-  return rgba;
-}
-`;
-
-  export const adjustPreMultipliedAlpha = `
-vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
-  float oldAlpha = rgba.a;
-  rgba.rgb /= max(0.0001, oldAlpha);
-  rgba.rgb *= newAlpha;
-  rgba.a = newAlpha;
-  return rgba;
-}
-`;
-
-  export const computeLinearDepth = `
+/** @internal */
+export const computeLinearDepth = `
 float computeLinearDepth(float eyeSpaceZ) {
   float eyeZ = -eyeSpaceZ;
   float near = u_frustum.x, far = u_frustum.y;
@@ -165,4 +144,3 @@ float computeLinearDepth(float eyeSpaceZ) {
   return 1.0 - linearDepth;
 }
 `;
-}

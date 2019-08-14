@@ -8,8 +8,8 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps } from "@bentley/ui-core";
-import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, Rectangle, widgetZoneIds } from "@bentley/ui-ninezone";
+import { CommonProps, Rectangle } from "@bentley/ui-core";
+import { Zones as NZ_Zones, WidgetZoneId, StagePanels, StagePanelsManager, widgetZoneIds } from "@bentley/ui-ninezone";
 import { ContentLayoutDef, ContentLayout } from "../content/ContentLayout";
 import { ContentGroup } from "../content/ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -453,8 +453,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        {this.doContentLayoutRender()}
-
         <NZ_Zones style={zonesStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)}
@@ -474,6 +472,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
                   position: "relative",
                 }}
               >
+                {this.doContentLayoutRender()}
                 {this.cloneZoneElements(Frontstage._zoneIds, runtimeProps)}
               </div>
             </StagePanels>

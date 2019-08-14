@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import { RectangleProps, Rectangle } from "../../utilities/Rectangle";
+import { RectangleProps, Rectangle } from "@bentley/ui-core";
 import { WidgetZoneId } from "./Zones";
 
 /** Zone properties used in [[ZonesManagerProps]].

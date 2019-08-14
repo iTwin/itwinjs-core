@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { ZonesManagerProps, ZonesManager, RectangleProps } from "../../../ui-ninezone";
+import { RectangleProps, Rectangle } from "@bentley/ui-core";
+import { ZonesManagerProps, ZonesManager } from "../../../ui-ninezone";
 import { GrowStrategy, ResizeStrategy, GrowTop, ShrinkBottom, GrowBottom, ShrinkTop, GrowLeft, ShrinkRight, GrowRight, ShrinkLeft, ShrinkStrategy, ShrinkHorizontalStrategy, ShrinkVerticalStrategy } from "../../../ui-ninezone/zones/manager/ResizeStrategy";
 import { WidgetZoneId } from "../../../ui-ninezone/zones/manager/Zones";
-import { Rectangle } from "../../../ui-ninezone/utilities/Rectangle";
 import { HorizontalAnchor } from "../../../ui-ninezone/widget/Stacked";
 import { TopZones, LeftZones, BottomZones, RightZones } from "../../../ui-ninezone/zones/manager/AdjacentZones";
 

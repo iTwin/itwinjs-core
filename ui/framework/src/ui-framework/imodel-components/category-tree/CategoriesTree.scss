@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+.uifw-categories-tree {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .filteredTree {
+    position: relative;
+    flex: 1;
+    width: unset;
+    height: unset;
+  }
+};

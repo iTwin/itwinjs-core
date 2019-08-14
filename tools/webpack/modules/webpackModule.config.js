@@ -164,6 +164,7 @@ function getConfig(env) {
       '@bentley/imodeljs-quantity': 'imodeljs_quantity',
       '@bentley/imodeljs-frontend': 'imodeljs_frontend',
       '@bentley/imodeljs-markup': 'imodeljs_markup',
+      '@bentley/frontend-devtools': 'frontend_devtools',
       '@bentley/ui-core': 'ui_core',
       '@bentley/ui-components': 'ui_components',
       '@bentley/ui-framework': 'ui_framework',
@@ -240,7 +241,8 @@ function getConfig(env) {
 
   // Set up for the DefinePlugin. We always want the BUILD_SEMVER to be available in the webpacked module, will add more definitions as needed.
   definePluginDefinitions = {
-    "BUILD_SEMVER": JSON.stringify(packageContents.version)
+    "BUILD_SEMVER": JSON.stringify(packageContents.version),
+    "BUILD_TYPE": JSON.stringify(devMode ? "dev" : "prod"),
   };
 
   webpackLib.entry = {}
@@ -302,49 +304,30 @@ function getConfig(env) {
   // env.htmltemplate is passed to webpackModule.config.js only for applications that are creating an HtmlTemplate.
   // The reason for it is to set the version of the iModelJs modules that the application requires into index.html.
   // It gets that by reading the version of imodeljs-frontend listed in package.json.
-  if (env.htmltemplate || env.plugin) {
+  if (env.htmltemplate) {
     const externalModuleVersions = getExternalModuleVersions(sourceDir, packageContents, webpackLib.externals, env.plugin);
+    const externalModulesWithCssFiles = Object.assign(externalModuleVersions);
 
-    if (env.htmltemplate) {
-      const externalModulesWithCssFiles = Object.assign(externalModuleVersions);
+    if (env.prod)
+      addExternalCssFiles(externalModulesWithCssFiles, env.stylesheets);
 
-      if (env.prod)
-        addExternalCssFiles(externalModulesWithCssFiles, env.stylesheets);
-
-      const HtmlWebpackPlugin = require("html-webpack-plugin");
-      const versionString = JSON.stringify(externalModulesWithCssFiles);
-      const imjsLoaderVersion = externalModuleVersions["imodeljs-frontend"];
-      const runtimeVersion = packageContents.version;
-      webpackLib.plugins.push(new HtmlWebpackPlugin({
-        imjsVersions: versionString,
-        loaderVersion: imjsLoaderVersion,
-        runtimeVersion: runtimeVersion,
-        template: env.htmltemplate,
-        filename: "./index.html",
-        minify: "false",
+    const HtmlWebpackPlugin = require("html-webpack-plugin");
+    const versionString = JSON.stringify(externalModulesWithCssFiles);
+    const imjsLoaderVersion = externalModuleVersions["imodeljs-frontend"];
+    const runtimeVersion = packageContents.version;
+    webpackLib.plugins.push(new HtmlWebpackPlugin({
+      imjsVersions: versionString,
+      loaderVersion: imjsLoaderVersion,
+      runtimeVersion: runtimeVersion,
+      template: env.htmltemplate,
+      filename: "./index.html",
+      minify: "false",
         chunks: [], // we don't want it to add any .js to the template, those are already in there.
-      }));
-    }
+    }));
+  }
 
-    if (env.plugin) {
-      // correct the keys with something like 0.190.0-dev.8 to something like ">=0.190.0.dev-0" otherwise the semver matching is too strict.
-      for (const key in externalModuleVersions) {
-        if (externalModuleVersions.hasOwnProperty(key)) {
-          const moduleVersion = externalModuleVersions[key];
-          const dashPosition = moduleVersion.indexOf("-");
-          if (-1 !== dashPosition) {
-            const lastNumPosition = moduleVersion.lastIndexOf('.');
-            if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
-              externalModuleVersions[key] = ">=" + moduleVersion.slice(0, lastNumPosition + 1) + "0";
-            }
-          }
-        }
-      }
-
-      const versionString = JSON.stringify(externalModuleVersions);
-      definePluginDefinitions.IMODELJS_VERSIONS_REQUIRED = JSON.stringify(versionString);
-      definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
-    }
+  if (env.plugin) {
+    definePluginDefinitions.PLUGIN_NAME = JSON.stringify(bundleName);
   }
 
   // add the DefinePlugin.

@@ -19,8 +19,8 @@ describe("<Title />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<Title />);
-    wrapper.find(".uicore-text-title").should.exist;
+    const wrapper = mount(<Title />);
+    wrapper.find(".uicore-text-title").length.should.eq(1);
   });
 
   it("has correct text", () => {

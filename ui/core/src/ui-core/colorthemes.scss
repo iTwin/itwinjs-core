@@ -42,8 +42,8 @@ html[data-theme="light"] {
   --buic-inputs-focus-boxshadow-gradient2:  rgba(000, 139, 225, 0.1);
   --buic-inputs-boxshadow:        rgba(000, 000, 000, 0.075 );
 
-  --buic-button-gradient1:        rgba(000, 000, 000, 0);
-  --buic-button-gradient2:        rgba(000, 000, 000, 0.22);
+  --buic-button-gradient1:        rgba(255, 255, 255, 0.65);
+  --buic-button-gradient2:        rgba(255, 255, 255, 0.00);
 }
 
 html[data-theme="dark"] {
@@ -79,8 +79,8 @@ html[data-theme="dark"] {
   --buic-inputs-focus-boxshadow-gradient2:  rgba(000, 139, 225, 0.1);
   --buic-inputs-boxshadow:        rgba(199, 204, 209, 0.075 );
 
-  --buic-button-gradient1:        rgba(000, 000, 000, 0);
-  --buic-button-gradient2:        rgba(000, 000, 000, 0.22);
+  --buic-button-gradient1:        rgba(0, 0, 0, 0.00);
+  --buic-button-gradient2:        rgba(0, 0, 0, 0.25);
 }
 
 html.theme-transition,

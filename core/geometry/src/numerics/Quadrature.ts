@@ -143,4 +143,41 @@ return 4;
   }
 
 }
+/**
+ * This class carries public members as needed for users to have gauss points that are used
+ * in the callers loops.
+ * @internal
+ */
+export class GaussMapper {
+  /** x values for integration */
+  public gaussX: Float64Array;
+  /** weights for integration */
+  public gaussW: Float64Array;
+  /** function to be called (at each interval) to map integration values */
+  public mapXAndWFunction: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
+  /** Execute the mapXAndWFunction to set up arrays for integration from xA to xB */
+  public mapXAndW(xA: number, xB: number): number {
+    return this.mapXAndWFunction(xA, xB, this.gaussX, this.gaussW);
+  }
+  /** setup gauss arrays.
+   * * Number of gauss points must be 1 to 5 (inclusive)
+   * @param numGauss requested number of gauss points.
+   */
+  public constructor(numGaussPoints: number) {
+    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
+    this.gaussX = new Float64Array(maxGauss);
+    this.gaussW = new Float64Array(maxGauss);
+    // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
+    if (numGaussPoints > 5 || numGaussPoints < 1)
+      numGaussPoints = 5;
+    switch (numGaussPoints) {
+      case 1: this.mapXAndWFunction = Quadrature.setupGauss1; break;
+      case 2: this.mapXAndWFunction = Quadrature.setupGauss2; break;
+      case 3: this.mapXAndWFunction = Quadrature.setupGauss3; break;
+      case 4: this.mapXAndWFunction = Quadrature.setupGauss4; break;
+      default: this.mapXAndWFunction = Quadrature.setupGauss5; break;
+    }
+
+  }
+}
 // someday .... http://www.holoborodko.com/pavel/numerical-methods/numerical-integration/overlapped-newton-cotes-quadratures/

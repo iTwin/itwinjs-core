@@ -19,8 +19,8 @@ describe("<SmallText />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<SmallText />);
-    wrapper.find(".uicore-text-small").should.exist;
+    const wrapper = mount(<SmallText />);
+    wrapper.find(".uicore-text-small").length.should.eq(1);
   });
 
   it("has correct text", () => {

@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d } from "@bentley/geometry-core";
+import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";
 import { Cartographic } from "./geometry/Cartographic";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
@@ -96,14 +96,22 @@ export class EcefLocation implements EcefLocationProps {
     this.origin.freeze(); // may not be modified
     this.orientation.freeze(); // may not be modified
   }
-  /** Construct ECEF Location from cartographic origin.   */
-  public static createFromCartographicOrigin(origin: Cartographic) {
+  /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
+  public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
     const zVector = Vector3d.createFrom(ecefOrigin).normalize();
-    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.latitude), 0.0);
-    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY);
-    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix!)! });
+    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
+    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
+    if (point !== undefined) {
+      const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
+      ecefOrigin.addInPlace(delta);
+    }
+    if (angle !== undefined)
+      matrix.multiplyMatrixMatrix(Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle), matrix);
+
+    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
   }
+
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).

@@ -51,7 +51,7 @@ export interface DistanceExpressionProps {
   distanceAlongFromReferent?: number;
 }
 
-/** Core properties of a [LinearlyReferencedAtLocationAspect]($backend)
+/** Core properties of a [LinearlyReferencedAtLocation]($backend)
  * @beta
  */
 export interface LinearlyReferencedAtLocationProps {
@@ -59,7 +59,7 @@ export interface LinearlyReferencedAtLocationProps {
   fromReferent?: RelatedElementProps;
 }
 
-/** Core properties of a [LinearlyReferencedFromToLocationAspect]($backend)
+/** Core properties of a [LinearlyReferencedFromToLocation]($backend)
  * @beta
  */
 export interface LinearlyReferencedFromToLocationProps {
@@ -69,13 +69,13 @@ export interface LinearlyReferencedFromToLocationProps {
   toPositionFromReferent?: RelatedElementProps;
 }
 
-/** Properties of a [LinearlyReferencedAtLocationAspect]($backend)
+/** Properties of a [LinearlyReferencedAtLocation]($backend)
  * @beta
  */
 export interface LinearlyReferencedAtLocationAspectProps extends LinearlyReferencedAtLocationProps, ElementAspectProps {
 }
 
-/** Properties of a [LinearlyReferencedFromToLocationAspect]($backend)
+/** Properties of a [LinearlyReferencedFromToLocation]($backend)
  * @beta
  */
 export interface LinearlyReferencedFromToLocationAspectProps extends LinearlyReferencedFromToLocationProps, ElementAspectProps {

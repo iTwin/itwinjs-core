@@ -29,8 +29,7 @@
     grid-gap: 0;
   }
 
-  &.nz-reduced-gap,
-  &.nz-no-gap {
+  &.nz-reduced-gap, &.nz-no-gap {
     grid-template-rows: auto 1fr;
   }
 
@@ -49,8 +48,7 @@
     grid-template-areas: "button htools""vtools .";
     grid-template-columns: minmax($mls-button-height, auto) 1fr;
 
-    &.nz-reduced-gap,
-    &.nz-no-gap {
+    &.nz-reduced-gap, &.nz-no-gap {
       grid-template-columns: auto 1fr;
     }
   }

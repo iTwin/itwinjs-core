@@ -20,8 +20,8 @@ describe("<ScrollView />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<ScrollView />);
-    wrapper.find(".uicore-scrollview").should.exist;
+    const wrapper = mount(<ScrollView />);
+    wrapper.find(".uicore-scrollview").length.should.eq(1);
   });
 
   it("has correct text", () => {

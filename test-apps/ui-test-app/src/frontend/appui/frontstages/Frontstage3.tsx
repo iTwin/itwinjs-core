@@ -20,6 +20,7 @@ import {
   FrontstageProps,
   ZoneLocation,
   ActionItemButton,
+  CoreTools,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -66,7 +67,7 @@ export class Frontstage3 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test3"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true}
@@ -139,10 +140,10 @@ export class Frontstage3 extends FrontstageProvider {
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
-              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
+              items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand, AppTools.noIconMessageCommand,
               AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
-              itemsInColumn={4}
+              itemsInColumn={5}
             />
           </>
         }

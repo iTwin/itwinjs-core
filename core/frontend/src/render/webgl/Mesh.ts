@@ -11,15 +11,14 @@ import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouettePa
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
 import { Graphic, Batch } from "./Graphic";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
-import { FloatPreMulRgba } from "./FloatRGBA";
+import { FloatRgba } from "./FloatRGBA";
 import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
 import { Target } from "./Target";
-import { Material } from "./Material";
+import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Texture } from "./Texture";
-import { FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
+import { FeatureIndexType, FillFlags, RenderMode, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
@@ -31,25 +30,33 @@ import { AttributeMap } from "./AttributeMap";
 /** @internal */
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
-  public features?: FeaturesInfo;
+  public readonly hasFeatures: boolean;
+  public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
-  public readonly material?: Material;
+  public readonly materialInfo?: MaterialInfo;
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
+  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
 
   private constructor(lut: VertexLUT, params: MeshParams) {
     this.lut = lut;
-    this.features = FeaturesInfo.createFromVertexTable(params.vertices);
+
+    this.hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
+    if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
+      this.uniformFeatureId = params.vertices.uniformFeatureID;
+
     this.texture = params.surface.texture as Texture;
-    this.material = params.surface.material as Material;
+    this.materialInfo = createMaterialInfo(params.surface.material);
+
     this.type = params.surface.type;
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
+    this.hasFixedNormals = params.surface.hasFixedNormals;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);
@@ -130,9 +137,6 @@ export class MeshGraphic extends Graphic {
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
   public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
 
-  public setUniformFeatureIndices(id: number): void {
-    this.meshData.features = FeaturesInfo.createUniform(id);
-  }
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
 
@@ -149,14 +153,15 @@ export abstract class MeshGeometry extends LUTGeometry {
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get featuresInfo(): FeaturesInfo | undefined { return this.mesh.features; }
+  public get hasFeatures() { return this.mesh.hasFeatures; }
   public get surfaceType() { return this.mesh.type; }
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
-  public get uniformColor(): FloatPreMulRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
+  public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get lut() { return this.mesh.lut; }
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
 
@@ -374,6 +379,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -389,38 +395,46 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public getRenderPass(target: Target): RenderPass {
+    // Classifiers have a dedicated pass
     if (this.isClassifier)
       return RenderPass.Classification;
 
-    const mat = this.isLit ? this.mesh.material : undefined;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
-    const fillFlags = this.fillFlags;
 
-    if (this.isGlyph && target.isReadPixelsInProgress)
-      return opaquePass;
+    // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
+    if (this.isGlyph)
+      return target.isReadPixelsInProgress ? opaquePass : RenderPass.Translucent;
 
     const vf = target.currentViewFlags;
+
+    // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode) {
+      const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
-      if (!showFill) {
+      if (!showFill)
         return RenderPass.None;
-      }
-    }
-    if (!this.isGlyph) {
-      if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
-        return opaquePass;
-      }
-    }
-    if (undefined !== this.texture && this.wantTextures(target, true)) {
-      if (this.texture.hasTranslucency)
-        return RenderPass.Translucent;
-
-      // material may have texture weight < 1 - if so must account for material or element alpha below
-      if (undefined === mat || (mat.textureMapping !== undefined && mat.textureMapping.params.weight >= 1))
-        return opaquePass;
     }
 
-    const hasAlpha = (undefined !== mat && wantMaterials(vf) && mat.hasTranslucency) || this.getColor(target).hasTranslucency;
+    // If transparency disabled by render mode or view flag, always draw opaque.
+    if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
+      return opaquePass;
+
+    let hasAlpha = false;
+
+    // If the material overrides alpha (currently, everything except the default - aka "no" - material), alpha comes from the material
+    const mat = this.isLit && wantMaterials(vf) ? this.mesh.materialInfo : undefined;
+    if (undefined !== mat && mat.overridesAlpha)
+      hasAlpha = mat.hasTranslucency;
+
+    // A texture can contain translucent pixels. Its alpha is also always multiplied by the material's alpha
+    const tex = this.wantTextures(target, true) ? this.texture : undefined;
+    if (!hasAlpha && undefined !== tex)
+      hasAlpha = tex.hasTranslucency;
+
+    // If we have a material overriding transparency, OR a texture, transparency comes solely from them. Otherwise, use element transparency.
+    if (undefined === tex && (undefined === mat || !mat.overridesAlpha))
+      hasAlpha = this.getColor(target).hasTranslucency;
+
     return hasAlpha ? RenderPass.Translucent : opaquePass;
   }
 
@@ -442,17 +456,21 @@ export class SurfaceGeometry extends MeshGeometry {
     // Don't invert white pixels of textures...
     return !this.wantTextures(target, this.isTextured);
   }
-  public get material(): Material | undefined { return this.mesh.material; }
+
+  public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
   public computeSurfaceFlags(params: ShaderProgramParams): SurfaceFlags {
     const target = params.target;
     const vf = target.currentViewFlags;
 
-    let flags = wantMaterials(vf) ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
+    const useMaterial = wantMaterials(vf);
+    let flags = useMaterial ? SurfaceFlags.None : SurfaceFlags.IgnoreMaterial;
     if (this.isLit) {
       flags |= SurfaceFlags.HasNormals;
       if (wantLighting(vf)) {
         flags |= SurfaceFlags.ApplyLighting;
+        if (this.hasFixedNormals)
+          flags |= SurfaceFlags.NoFaceFront;
       }
 
       // Textured meshes store normal in place of color index.
@@ -465,6 +483,8 @@ export class SurfaceGeometry extends MeshGeometry {
 
     if (this.wantTextures(target, this.isTextured)) {
       flags |= SurfaceFlags.HasTexture;
+      if (useMaterial && undefined !== this.mesh.materialInfo && this.mesh.materialInfo.overridesAlpha && RenderPass.Translucent === params.renderPass)
+        flags |= SurfaceFlags.MultiplyAlpha;
     }
 
     switch (params.renderPass) {
@@ -504,17 +524,20 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!surfaceTextureExists)
       return false;
 
-    if (this.isGlyph) {
+    if (this.isGlyph)
       return true;
-    }
+
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;
 
     // ###TODO need to distinguish between gradient fill and actual textures...
     switch (flags.renderMode) {
-      case RenderMode.SmoothShade: return flags.textures;
-      case RenderMode.Wireframe: return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
-      default: return FillFlags.Always === (fill & FillFlags.Always);
+      case RenderMode.SmoothShade:
+        return flags.textures;
+      case RenderMode.Wireframe:
+        return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
+      default:
+        return FillFlags.Always === (fill & FillFlags.Always);
     }
   }
 }

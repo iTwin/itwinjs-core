@@ -289,6 +289,10 @@ export interface BackgroundMapProps {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
+    // @alpha
+    terrainSettings?: TerrainProps;
+    transparency?: number | false;
+    useDepthBuffer?: boolean;
 }
 
 // @beta
@@ -296,7 +300,6 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 // @beta
 export class BackgroundMapSettings {
-    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number, applyTerrain?: boolean);
     readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
     // (undocumented)
@@ -306,8 +309,13 @@ export class BackgroundMapSettings {
     readonly groundBias: number;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
+    // @alpha
+    readonly terrainSettings: TerrainSettings;
     // (undocumented)
     toJSON(): BackgroundMapProps;
+    readonly transparency: number | false;
+    readonly transparencyOverride: number | undefined;
+    readonly useDepthBuffer: boolean;
 }
 
 // @public
@@ -659,7 +667,9 @@ export enum CloudStorageProvider {
     // (undocumented)
     Amazon = 1,
     // (undocumented)
-    Azure = 0
+    Azure = 0,
+    // (undocumented)
+    External = 3
 }
 
 // @beta (undocumented)
@@ -722,18 +732,22 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    // @internal @deprecated
+    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
+    static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
+    // @internal
+    static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
     id: Id64String;
     iModel: IModel;
-    // (undocumented)
+    // @beta
+    isManagedWithIModel: boolean;
     readonly isValid: boolean;
-    // (undocumented)
     name: string;
-    // (undocumented)
+    // @internal
     properties: any;
-    // (undocumented)
     scopeReq: CodeScopeSpec.ScopeRequirement;
-    // (undocumented)
+    scopeType: CodeScopeSpec.Type;
+    // @deprecated
     specScopeType: CodeScopeSpec.Type;
 }
 
@@ -1287,7 +1301,7 @@ export type DPoint2dProps = number[];
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
-    static createFromCartographicOrigin(origin: Cartographic): EcefLocation;
+    static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
@@ -3036,6 +3050,10 @@ export class OctEncodedNormal {
     // (undocumented)
     decode(): Vector3d | undefined;
     // (undocumented)
+    static decodeValue(val: number, result?: Vector3d): Vector3d;
+    // (undocumented)
+    static encode(vec: XYAndZ): number;
+    // (undocumented)
     static fromVector(val: XYAndZ): OctEncodedNormal;
     // (undocumented)
     readonly value: number;
@@ -3688,35 +3706,23 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
     export class Params {
         constructor(key?: string);
-        // (undocumented)
+        alpha: number | undefined;
         ambient: number;
         static readonly defaults: Params;
-        // (undocumented)
         diffuse: number;
-        // (undocumented)
         diffuseColor?: ColorDef;
-        // (undocumented)
         emissiveColor?: ColorDef;
         static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params;
         key?: string;
-        // (undocumented)
         reflect: number;
-        // (undocumented)
         reflectColor?: ColorDef;
-        // (undocumented)
         refract: number;
-        // (undocumented)
         shadows: boolean;
-        // (undocumented)
         specular: number;
-        // (undocumented)
         specularColor?: ColorDef;
         // (undocumented)
         specularExponent: number;
-        // (undocumented)
         textureMapping?: TextureMapping;
-        // (undocumented)
-        transparency: number;
     }
 }
 
@@ -4824,6 +4830,52 @@ export interface SubCategoryProps extends ElementProps {
 export interface SubjectProps extends ElementProps {
     // (undocumented)
     description?: string;
+}
+
+// @alpha
+export enum TerrainHeightOriginMode {
+    // (undocumented)
+    Geodetic = 0,
+    // (undocumented)
+    Geoid = 1,
+    // (undocumented)
+    Ground = 2
+}
+
+// @alpha
+export interface TerrainProps {
+    applyLighting?: boolean;
+    exaggeration?: number;
+    heightOrigin?: number;
+    heightOriginMode?: TerrainHeightOriginMode;
+    providerName?: string;
+}
+
+// @alpha
+export type TerrainProviderName = "CesiumWorldTerrain";
+
+// @alpha
+export class TerrainSettings {
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    readonly applyLighting: boolean;
+    clone(changedProps?: TerrainProps): TerrainSettings;
+    // (undocumented)
+    equals(other: TerrainSettings): boolean;
+    equalsJSON(json?: BackgroundMapProps): boolean;
+    readonly exaggeration: number;
+    // (undocumented)
+    static fromJSON(json?: TerrainProps): TerrainSettings;
+    readonly heightOrigin: number;
+    readonly heightOriginMode: TerrainHeightOriginMode;
+    readonly providerName: TerrainProviderName;
+    // (undocumented)
+    toJSON(): {
+        providerName: "CesiumWorldTerrain";
+        exaggeration: number;
+        applyLightng: boolean;
+        heightOrigin: number;
+        heightOriginMode: TerrainHeightOriginMode;
+    };
 }
 
 // @internal

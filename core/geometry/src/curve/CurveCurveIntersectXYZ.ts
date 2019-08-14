@@ -31,10 +31,13 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { CurveLocationDetailArrayPair } from "./CurveCurveIntersectXY";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 // cspell:word XYRR
-/*
- * * Handler class for XY intersections.
- * * This is local to the file (not exported)
+/**
+ * * Handler class for XYZ intersections.
  * * Instances are initialized and called from CurveCurve.
+ * * Constructor is told two geometry items A and B
+ *   * geometryB is saved for later reference
+ *   * type-specific handler methods will "see" geometry A repeatedly.
+ *   * Hence geometryA is NOT saved by the constructor.
  * @internal
  */
 export class CurveCurveIntersectXYZ extends NullGeometryHandler {
@@ -46,7 +49,13 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   private reinitialize() {
     this._results = new CurveLocationDetailArrayPair();
   }
-
+  /**
+   *
+   * @param _geometryA first curve for intersection.  This is NOT saved.
+   * @param extendA flag to enable using extension of geometryA.
+   * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
+   * @param extendB flag for extension of geometryB.
+   */
   public constructor(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
     super();
     // this.geometryA = _geometryA;
@@ -56,8 +65,8 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     this.reinitialize();
   }
   /**
+   * * Return the results structure for the intersection calculation.
    * @param reinitialize if true, a new results structure is created for use by later calls.
-   * @returns Return the results structure for the intersection calculation.
    *
    */
   public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair {
@@ -604,7 +613,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
   private static _workPointAA1 = Point3d.create();
   private static _workPointBB0 = Point3d.create();
   private static _workPointBB1 = Point3d.create();
-
+  /** low lever bspline curve -- STUB  .. */
   public dispatchLineStringBSplineCurve(_lsA: LineString3d, _extendA: boolean, _curveB: BSplineCurve3d, _extendB: boolean, _reversed: boolean): any {
     /*
     const numA = lsA.numPoints();
@@ -628,6 +637,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     */
   }
 
+  /** low lever segment intersect linestring .. */
   public computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
     const pointA0 = lsA.point0Ref;
     const pointA1 = lsA.point1Ref;
@@ -652,7 +662,8 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     return undefined;
   }
 
-  public computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
+  /** low lever arc intersect linestring .. */
+ public computeArcLineString(arcA: Arc3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any {
     const pointB0 = CurveCurveIntersectXYZ._workPointBB0;
     const pointB1 = CurveCurveIntersectXYZ._workPointBB1;
     const numB = lsB.numPoints();
@@ -674,7 +685,8 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     return undefined;
   }
 
-  public handleLineSegment3d(segmentA: LineSegment3d): any {
+  /** double dispatch handler for strongly typed segment.. */
+public handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       const segmentB = this._geometryB;
       this.dispatchSegmentSegment(
@@ -693,7 +705,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
         this._geometryB, this._extendB, false);
     }
   }
-
+/** double dispatch handler for strongly typed linestring .. */
   public handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
       const lsB = this._geometryB as LineString3d;
@@ -738,7 +750,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     }
     return undefined;
   }
-
+/** double dispatch handler for strongly typed arc .. */
   public handleArc3d(arc0: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
@@ -753,7 +765,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     }
     return undefined;
   }
-
+  /** double dispatch handler for strongly typed bspline curve.. */
   public handleBSplineCurve3d(curve: BSplineCurve3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(
@@ -768,6 +780,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     }
     return undefined;
   }
+  /** double dispatch handler for strongly typed homogeneous bspline curve. */
   public handleBSplineCurve3dH(_curve: BSplineCurve3dH): any {
     /* NEEDS WORK -- make "dispatch" methods tolerant of both 3d and 3dH ..."easy" if both present BezierCurve3dH span loaders
     if (this._geometryB instanceof LineSegment3d) {

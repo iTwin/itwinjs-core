@@ -111,6 +111,7 @@ export class ThumbnailHandler {
 
   /** Download the thumbnail.
    * @param requestContext The client request context.
+   *
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */

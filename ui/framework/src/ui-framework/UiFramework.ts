@@ -6,10 +6,10 @@
 
 import { Store } from "redux";
 
-import { OidcFrontendClientConfiguration, IOidcFrontendClient } from "@bentley/imodeljs-clients";
+import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { SnapMode, IModelApp, OidcBrowserClient } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient } from "@bentley/imodeljs-frontend";
 import { UiEvent, UiError, getClassName } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -20,7 +20,7 @@ import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { SyncUiEventDispatcher } from "./syncui/SyncUiEventDispatcher";
 import { FrameworkState } from "./FrameworkState";
 import { ConfigurableUiActionId } from "./configurableui/state";
-import { SessionStateActionId } from "./SessionState";
+import { SessionStateActionId, PresentationSelectionScope } from "./SessionState";
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 
@@ -31,14 +31,6 @@ export interface UiVisibilityEventArgs {
   visible: boolean;
 }
 
-/** PresentationSelectionScope holds the id and the localized label for a selection scope supported for a specific iModel.
- * Added to avoid an api-extract error caused by using SelectionScope.
- * @beta
- */
-export interface PresentationSelectionScope {
-  id: string;
-  label: string;
-}
 /** UiVisibility Event class.
  * @beta
  */
@@ -225,6 +217,46 @@ export class UiFramework {
 
   public static setActiveIModelId(iModelId: string): void {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetActiveIModelId, iModelId);
+  }
+
+  public static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
+  }
+
+  public static getIModelConnection(): IModelConnection | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
+  }
+
+  public static setAccessToken(accessToken: AccessToken, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
+  }
+
+  public static getAccessToken(): AccessToken | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.accessToken : /* istanbul ignore next */  undefined;
+  }
+
+  public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId, immediateSync);
+  }
+
+  public static getDefaultIModelViewportControlId(): string | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultIModelViewportControlId : /* istanbul ignore next */  undefined;
+  }
+
+  public static setDefaultViewId(viewId: string, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultViewId, viewId, immediateSync);
+  }
+
+  public static getDefaultViewId(): string | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewId : /* istanbul ignore next */  undefined;
+  }
+
+  public static setDefaultRulesetId(viewId: string, immediateSync = false) {
+    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultRulesetId, viewId, immediateSync);
+  }
+
+  public static getDefaultRulesetId(): string | undefined {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultRulesetId : /* istanbul ignore next */  undefined;
   }
 
   /** @beta */

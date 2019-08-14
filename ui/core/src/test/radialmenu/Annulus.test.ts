@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point, Line, Circle, Annulus } from "../../ui-core/radialmenu/Annulus";
+import { Line, Circle, Annulus } from "../../ui-core/radialmenu/Annulus";
+import { Point } from "../../ui-core/utils/Point";
 
 describe("Annulus", () => {
 

@@ -34,7 +34,7 @@ import "./ModelSelector.scss";
 
 /**
  * Model Selector [[WidgetControl]]
- * @alpha
+ * @internal
  */
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
@@ -49,12 +49,13 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 
 /**
  * Widget that manages category and model visibility via [[CategoryModelTree]]
- * @alpha
+ * @internal
+ * @deprecated - Use [[VisibilityTree]] instead
  */
 export class ModelSelectorWidget extends React.Component<
   ModelSelectorWidgetProps,
   ModelSelectorWidgetState
-> {
+  > {
   private _groups: ModelGroup[] = [];
   private _modelRuleset?: RegisteredRuleset;
   private _categoryRuleset?: RegisteredRuleset;

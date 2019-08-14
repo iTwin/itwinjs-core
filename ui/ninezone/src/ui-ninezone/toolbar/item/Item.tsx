@@ -8,10 +8,9 @@ import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, Size, SizeProps } from "@bentley/ui-core";
 
 import { ToolbarItem, ToolbarItemProps } from "../Toolbar";
-import { Size } from "../../utilities/Size";
 
 import "./Item.scss";
 
@@ -32,7 +31,7 @@ export interface ItemProps extends CommonProps {
   /** Title for the item. */
   title?: string;
   /** Function called when size is known. */
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
   /** A badge to draw. */
   badge?: React.ReactNode;
 }

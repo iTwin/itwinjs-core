@@ -1383,7 +1383,7 @@ export class SmallSystem {
     const ux = pointA1.x - pointA0.x;
     const uy = pointA1.y - pointA0.y;
     const uz = pointA1.z - pointA0.z;
-    const uu = ux * ux + uy * uy;
+    const uu = ux * ux + uy * uy + uz * uz;
     const vx = spacePoint.x - pointA0.x;
     const vy = spacePoint.y - pointA0.y;
     const vz = spacePoint.z - pointA0.z;
@@ -1497,5 +1497,96 @@ export class SmallSystem {
     }
     return undefined;
   }
-
+  /**
+   * * in rowB, replace `rowB[j] += a * rowB[pivot] * rowA[j] / rowA[pivot]` for `j>pivot`
+   * @param rowA row that does not change
+   * @param pivotIndex index of pivot (divisor) in rowA.
+   * @param rowB row where elimination occurs.
+   */
+  public static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean {
+    const n = rowA.length;
+    let q = Geometry.conditionalDivideFraction(rowB[pivotIndex], rowA[pivotIndex]);
+    if (q === undefined) return false;
+    q *= a;
+    for (let j = pivotIndex + 1; j < n; j++)
+      rowB[j] += q * rowA[j];
+    return true;
+  }
+  /**
+   * Solve a pair of bilinear equations
+   * * First equation: `a0 + b0 * u + c0 * v + d0 * u * v = 0`
+   * * Second equation: `a0 + b0 * u + c0 * v + d0 * u * v = 0`
+   */
+  public static solveBilinearPair(a0: number, b0: number, c0: number, d0: number,
+    a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined {
+    // constant linear, and quadratic coefficients for c0 + c1 * u + c2 * u*u = 0
+    const e0 = Geometry.crossProductXYXY(a0, a1, c0, c1);
+    const e1 = Geometry.crossProductXYXY(b0, b1, c0, c1) + Geometry.crossProductXYXY(a0, a1, d0, d1);
+    const e2 = Geometry.crossProductXYXY(b0, b1, d0, d1);
+    const uRoots = Degree2PowerPolynomial.solveQuadratic(e2, e1, e0);
+    if (uRoots === undefined)
+      return undefined;
+    const uv = [];
+    for (const u of uRoots) {
+      const v0 = Geometry.conditionalDivideFraction(-(a0 + b0 * u), c0 + d0 * u);
+      const v1 = Geometry.conditionalDivideFraction(-(a1 + b1 * u), c1 + d1 * u);
+      if (v0 !== undefined)
+        uv.push(Point2d.create(u, v0));
+      else if (v1 !== undefined)
+        uv.push(Point2d.create(u, v1));
+    }
+    return uv;
+  }
+}
+/**
+ * * bilinear expression
+ * * `f(u,v) = a + b * u * c * v + d * u * v`
+ * @internal
+ */
+export class BilinearPolynomial {
+  /** constant coefficient */
+  public a: number;
+  /** u coefficient */
+  public b: number;
+  /** v coefficient */
+  public c: number;
+  /** uv coefficient */
+  public d: number;
+  /**
+   *
+   * @param a constant coefficient
+   * @param b `u` coefficient
+   * @param c `v` coefficient
+   * @param d `u*v` coefficient
+   */
+  public constructor(a: number, b: number, c: number, d: number) {
+    this.a = a;
+    this.b = b;
+    this.c = c;
+    this.d = d;
+  }
+  /**
+   * Evaluate the bilinear expression at u,v
+   */
+  public evaluate(u: number, v: number): number {
+    return this.a + this.b * u + v * (this.c + this.d * u);
+  }
+  /** Create a bilinear polynomial z=f(u,v) given z values at 00, 10, 01, 11.
+   */
+  public static createUnitSquareValues(f00: number, f10: number, f01: number, f11: number): BilinearPolynomial {
+    return new BilinearPolynomial(f00, f10, f10, f11 - f10 - f01);
+  }
+  /**
+   * Solve the simultaneous equations
+   * * `p(u,v) = pValue`
+   * * `q(u,v) = qValue`
+   * @param p
+   * @param pValue
+   * @param q
+   * @param qValue
+   */
+  public static solvePair(p: BilinearPolynomial, pValue: number, q: BilinearPolynomial, qValue: number): Point2d[] | undefined {
+    return SmallSystem.solveBilinearPair(p.a - pValue, p.b, p.c, p.d,
+      q.a - qValue, q.b, q.c, q.d);
+  }
 }

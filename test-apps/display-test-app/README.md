@@ -91,3 +91,5 @@ rush install -c
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * SVT_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
+* SVT_DISABLE_LOG_Z
+  * If defined, the logarithmic depth buffer will not be used.

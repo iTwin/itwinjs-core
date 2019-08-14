@@ -86,9 +86,6 @@ export * from "./ui-ninezone/toolbar/Toolbar";
 export * from "./ui-ninezone/utilities/Cell";
 export * from "./ui-ninezone/utilities/Css";
 export * from "./ui-ninezone/utilities/Direction";
-export * from "./ui-ninezone/utilities/Point";
-export * from "./ui-ninezone/utilities/Rectangle";
-export * from "./ui-ninezone/utilities/Size";
 
 export * from "./ui-ninezone/widget/Stacked";
 export * from "./ui-ninezone/widget/Tools";

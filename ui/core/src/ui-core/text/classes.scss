@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "./index";
 
+.uicore-text-body { @include uicore-text-body }
 .uicore-text-block { @include uicore-text-block }
 .uicore-text-headline { @include uicore-text-headline }
 .uicore-text-leading { @include uicore-text-leading }

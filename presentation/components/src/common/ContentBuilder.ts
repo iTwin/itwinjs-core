@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+// Importing through require due to types for linkifyjs not exporting 'find' function
+const linkify = require("linkifyjs"); // tslint:disable-line: no-var-requires
+
 import { assert } from "@bentley/bentleyjs-core";
 import {
   ValuesDictionary, PresentationError, PresentationStatus,
@@ -54,6 +57,18 @@ const createStructValue = (description: StructTypeDescription, valueObj: ValuesD
     valueFormat: UiPropertyValueFormat.Struct,
     members,
   } as StructValue;
+};
+
+/**
+ * A helper method to get links from string.
+ * @internal
+ */
+export const getLinks = (value: string): Array<{ start: number, end: number }> => {
+  let startPoint = 0;
+  return linkify.find(value).map((linkInfo: { value: string; }) => {
+    startPoint += value.substr(startPoint).indexOf(linkInfo.value);
+    return { start: startPoint, end: startPoint += linkInfo.value.length };
+  });
 };
 
 const createPrimitiveValue = (value: Value, displayValue: DisplayValue): PrimitiveValue => {
@@ -107,6 +122,10 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
     record.isReadonly = true;
   if (extendedData)
     record.extendedData = extendedData;
+  if (displayValue && DisplayValue.isPrimitive(displayValue) && getLinks(displayValue).length !== 0)
+    record.links = {
+      matcher: getLinks,
+    };
   return record;
 };
 

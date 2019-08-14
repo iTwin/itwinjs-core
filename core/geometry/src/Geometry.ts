@@ -168,8 +168,14 @@ export class Geometry {
   public static readonly smallAngleRadians = 1.0e-12;
   /** square of `smallAngleRadians` */
   public static readonly smallAngleRadiansSquared = 1.0e-24;
-  /** numeric value that may considered huge for numbers expected to be 0..1 fractions. */
+  /** numeric value that may considered huge for numbers expected to be 0..1 fractions.
+   * * But note that the "allowed" result value is vastly larger than 1.
+   */
   public static readonly largeFractionResult = 1.0e10;
+  /** numeric value that may considered huge for numbers expected to be coordinates.
+   * * This allows larger results than `largeFractionResult`.
+   */
+  public static readonly largeCoordinateResult = 1.0e13;
   /** numeric value that may considered infinite for metric coordinates.
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual points at this coordinate invites numerical problems.
    */
@@ -572,6 +578,15 @@ export class Geometry {
    */
   public static conditionalDivideFraction(numerator: number, denominator: number): number | undefined {
     if (Math.abs(denominator) * Geometry.largeFractionResult > Math.abs(numerator))
+      return numerator / denominator;
+    return undefined;
+  }
+
+  /** normally, return numerator/denominator.
+   * but if the ratio would exceed Geometry.largestResult, return undefined.
+   */
+  public static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult): number | undefined {
+    if (Math.abs(denominator * largestResult) > Math.abs(numerator))
       return numerator / denominator;
     return undefined;
   }

@@ -37,8 +37,8 @@ import {
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionPartition,
-  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, Entity,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
@@ -92,7 +92,7 @@ describe("iModel", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -934,12 +934,35 @@ describe("iModel", () => {
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
     imodel4.elements.deleteElement(elid);
-    try {
-      imodel4.elements.getElement(elid);
-      assert.fail("should fail to load the element.");
-    } catch (error) {
-      // TODO: test that error is what I expect assert.equal(error.status == IModelStatus.)
-    }
+    assert.throws(() => imodel4.elements.getElement(elid), IModelError);
+  });
+
+  it("should handle parent and child deletion properly", () => {
+    const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
+    const category: SpatialCategory = imodel4.elements.getElement<SpatialCategory>(categoryId);
+    const subCategory: SubCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
+    assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
+
+    const modelId = PhysicalModel.insert(imodel4, IModel.rootSubjectId, "MyTestPhysicalModel");
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: modelId,
+      category: categoryId,
+      code: Code.createEmpty(),
+    };
+    const parentId = imodel4.elements.insertElement(elementProps);
+    elementProps.parent = new ElementOwnsChildElements(parentId);
+    const childId1 = imodel4.elements.insertElement(elementProps);
+    const childId2 = imodel4.elements.insertElement(elementProps);
+    assert.exists(imodel4.elements.getElement(parentId));
+    assert.exists(imodel4.elements.getElement(childId1));
+    assert.exists(imodel4.elements.getElement(childId2));
+    imodel4.elements.deleteElement(parentId);
+    assert.throws(() => imodel4.elements.getElement(parentId), IModelError);
+    assert.throws(() => imodel4.elements.getElement(childId1), IModelError);
+    assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
   function checkElementMetaData(obj: EntityMetaData) {
@@ -1154,42 +1177,48 @@ describe("iModel", () => {
 
   });
 
+  it("validate BisCodeSpecs", async () => {
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).scopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subCategory).scopeType, CodeScopeSpec.Type.ParentElement);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.viewDefinition).scopeType, CodeScopeSpec.Type.Model);
+    assert.equal(imodel2.codeSpecs.getByName(BisCodeSpec.subject).scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    assert.isTrue(imodel2.codeSpecs.getByName(BisCodeSpec.spatialCategory).isManagedWithIModel);
+  });
+
   it("should create and insert CodeSpecs", () => {
     const testImodel = imodel2;
-
-    const codeSpec: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
-    assert.equal(codeSpec.specScopeType, CodeScopeSpec.Type.Model);
+    assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
+    assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
-    try {
-      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
-      testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
-      assert.fail();
-    } catch (err) {
-      // We expect this to fail.
-    }
+    const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), IModelError);
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
-
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
     // make sure CodeScopeSpec.Type.Repository works
-    const codeSpec3: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec3: CodeSpec = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
     const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
     const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
+    codeSpec4.isManagedWithIModel = false;
     const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
-    assert.equal(codeSpec4.specScopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const copyOfCodeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec4Id);
+    assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
+    assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
     assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec2"));
@@ -1202,6 +1231,38 @@ describe("iModel", () => {
     assert.isTrue(testImodel.codeSpecs.hasId(codeSpec3.id));
     assert.isTrue(testImodel.codeSpecs.hasId(codeSpec4.id));
     assert.isFalse(testImodel.codeSpecs.hasId(Id64.invalid));
+  });
+
+  it("validate CodeSpec properties", async () => {
+    const iModelFileName: string = IModelTestUtils.prepareOutputFile("IModel", "ReadWriteCodeSpec.bim");
+    const codeSpecName = "CodeSpec1";
+
+    // Write new CodeSpec to iModel
+    if (true) {
+      const iModelDb: IModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+      const codeSpec: CodeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      codeSpec.isManagedWithIModel = false;
+      const codeSpecId: Id64String = iModelDb.codeSpecs.insert(codeSpec);
+      assert.isTrue(Id64.isValidId64(codeSpec.id));
+      assert.equal(codeSpec.id, codeSpecId);
+      assert.equal(codeSpec.name, codeSpecName);
+      assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
+      assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.closeSnapshot();
+    }
+
+    // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
+    if (true) {
+      const iModelDb: IModelDb = IModelDb.openSnapshot(iModelFileName);
+      const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
+      assert.isTrue(Id64.isValidId64(codeSpec.id));
+      assert.equal(codeSpec.name, codeSpecName);
+      assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
+      assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.closeSnapshot();
+    }
   });
 
   it("snapping", async () => {
@@ -1240,6 +1301,14 @@ describe("iModel", () => {
 
     // Delete the model
     testImodel.models.deleteModel(newModelId);
+
+    // Test insertModel error handling
+    assert.throws(() => {
+      testImodel.models.insertModel({
+        classFullName: DefinitionModel.classFullName,
+        modeledElement: { id: "0x10000000bad" },
+      });
+    }, IModelError);
   });
 
   it("should create model with custom relationship to modeled element", async () => {
@@ -1291,7 +1360,6 @@ describe("iModel", () => {
     // Create a couple of physical elements.
     const elementProps: GeometricElementProps = {
       classFullName: PhysicalObject.classFullName,
-      iModel: testImodel,
       model: newModelId,
       category: spatialCategoryId,
       code: Code.createEmpty(),

@@ -5,10 +5,11 @@
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createRect } from "../Utils";
 
+import { RectangleProps, Rectangle } from "@bentley/ui-core";
+
+import { createRect } from "../Utils";
 import { withContainIn } from "../../ui-ninezone";
-import { RectangleProps, Rectangle } from "../../ui-ninezone/utilities/Rectangle";
 import { containVertically, containHorizontally } from "../../ui-ninezone/base/WithContainIn";
 
 const component = () => <div></div>;

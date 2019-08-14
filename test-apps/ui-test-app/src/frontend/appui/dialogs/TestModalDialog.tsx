@@ -44,6 +44,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         ]}
         onClose={() => this._handleCancel()}
         onEscape={() => this._handleCancel()}
+        maxHeight={500}
       >
         <p>Lorem ipsum dolor sit amet, posse imperdiet ius in, mundi cotidieque ei per. Vel scripta ornatus assentior cu. Duo nonumy equidem te, per ad malis deserunt consetetur. In per invidunt conceptam. Ea pri aeque corrumpit. Eum ea ipsum perfecto vulputate, an cum oblique ornatus.</p>
         <p>Deserunt perpetua intellegam ex qui. Sanctus epicuri molestiae vim ut, vix in dolorem mnesarchum. Quas tollit malorum usu id, sea dicat congue abhorreant ex. Reque tibique cu mel. Ea vix posse consequuntur, nam dicat nostrud ne. Id mea autem viderer, minim minimum adversarium ex vis, commodo malorum sea ei.</p>

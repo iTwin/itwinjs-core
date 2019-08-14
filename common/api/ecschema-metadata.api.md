@@ -1055,7 +1055,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
 
-// @internal (undocumented)
+// @internal
 export const formatStringRgx: RegExp;
 
 // @beta
@@ -1136,9 +1136,6 @@ export enum FractionalPrecision {
     // (undocumented)
     TwoHundredFiftySix = 256
 }
-
-// @internal
-export function generateFormatString(format: Format | OverrideFormat): string;
 
 // @internal
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
@@ -1344,22 +1341,19 @@ export class KindOfQuantity extends SchemaItem {
     constructor(schema: Schema, name: string);
     // (undocumented)
     protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
-    // (undocumented)
-    protected createFormatOverride(parent: Format, name: string, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
-    // (undocumented)
-    readonly defaultPresentationFormat: undefined | Format | OverrideFormat;
+    protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
+    readonly defaultPresentationFormat: Format | OverrideFormat | undefined;
     // (undocumented)
     deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
     // (undocumented)
     deserializeSync(kindOfQuantityProps: KindOfQuantityProps): void;
     // (undocumented)
-    persistenceUnit: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined;
+    readonly persistenceUnit: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined;
     // (undocumented)
     protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
+    readonly presentationFormats: Array<Format | OverrideFormat>;
     // (undocumented)
-    readonly presentationUnits: Array<Format | OverrideFormat> | undefined;
-    // (undocumented)
-    protected _presentationUnits: Array<Format | OverrideFormat>;
+    protected _presentationFormats: Array<Format | OverrideFormat>;
     // (undocumented)
     readonly relativeError: number;
     // (undocumented)
@@ -1501,13 +1495,15 @@ export interface NoDelayedPromiseMethods {
 // @beta
 export class OverrideFormat {
     constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
-    static createOverrideFormatFullName(parent: Format, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string;
+    static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string;
     // (undocumented)
     readonly decimalSeparator: string;
     // (undocumented)
     readonly formatTraits: FormatTraits;
     // (undocumented)
     readonly fullName: string;
+    // @alpha
+    fullNameXml(koqSchema: Schema): string;
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -2251,7 +2247,7 @@ export const SchemaCompareDiagnostics: {
     };
     SchemaItemDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2263,7 +2259,7 @@ export const SchemaCompareDiagnostics: {
     };
     SchemaItemMissing: {
         new (ecDefinition: SchemaItem, messageArgs: []): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2321,7 +2317,7 @@ export const SchemaCompareDiagnostics: {
     };
     EntityMixinMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Mixin]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2333,7 +2329,7 @@ export const SchemaCompareDiagnostics: {
     };
     MixinDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2345,7 +2341,7 @@ export const SchemaCompareDiagnostics: {
     };
     RelationshipDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2360,7 +2356,7 @@ export const SchemaCompareDiagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value  */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
             messageArgs?: [string, any, any] | undefined;
@@ -2371,7 +2367,7 @@ export const SchemaCompareDiagnostics: {
             readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: property name, property A value, property B value  */
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: import("../Metadata/RelationshipClass").RelationshipConstraint;
             messageArgs?: [AnyClass] | undefined;
@@ -2379,7 +2375,7 @@ export const SchemaCompareDiagnostics: {
     };
     CustomAttributeClassDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2402,7 +2398,7 @@ export const SchemaCompareDiagnostics: {
     };
     EnumerationDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2414,7 +2410,7 @@ export const SchemaCompareDiagnostics: {
     };
     EnumeratorMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2426,7 +2422,7 @@ export const SchemaCompareDiagnostics: {
     };
     EnumeratorDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [import("../Metadata/Enumeration").Enumerator<string | number>, string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2438,7 +2434,7 @@ export const SchemaCompareDiagnostics: {
     };
     KoqDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2450,7 +2446,7 @@ export const SchemaCompareDiagnostics: {
     };
     PresentationUnitMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2462,7 +2458,7 @@ export const SchemaCompareDiagnostics: {
     };
     PropertyCategoryDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2474,7 +2470,7 @@ export const SchemaCompareDiagnostics: {
     };
     FormatDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2486,7 +2482,7 @@ export const SchemaCompareDiagnostics: {
     };
     FormatUnitMissing: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2498,7 +2494,7 @@ export const SchemaCompareDiagnostics: {
     };
     UnitLabelOverrideDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2510,7 +2506,7 @@ export const SchemaCompareDiagnostics: {
     };
     UnitDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2522,7 +2518,7 @@ export const SchemaCompareDiagnostics: {
     };
     InvertedUnitDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2534,7 +2530,7 @@ export const SchemaCompareDiagnostics: {
     };
     PhenomenonDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;
@@ -2546,7 +2542,7 @@ export const SchemaCompareDiagnostics: {
     };
     ConstantDelta: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string]): {
-            readonly code: string; /** Required message parameters: property name, property A value, property B value  */
+            readonly code: string;
             readonly category: import("./Diagnostic").DiagnosticCategory;
             readonly messageText: string;
             readonly schema: Schema;

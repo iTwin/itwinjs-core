@@ -10,7 +10,7 @@ import { ShaderProgram } from "../ShaderProgram";
 import { CompositeGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
+import { assignFragColor, addWindowToTexCoords } from "./Fragment";
 import { addHiliteSettings } from "./FeatureSymbology";
 import { assert } from "@bentley/bentleyjs-core";
 
@@ -96,7 +96,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
   frag.addFunction(wantOcclusion ? computeAmbientOcclusion : computeDefaultAmbientOcclusion);
   frag.addFunction(computeOpaqueColor);
 
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   frag.addUniform("u_opaque", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_opaque", (uniform, params) => {
       Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).opaque, TextureUnit.Zero);

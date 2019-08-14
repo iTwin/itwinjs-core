@@ -2,6 +2,36 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/geometry-core_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WireMoment computation; polyline filters for short edge, small triangle, perpendicular projection"
+          },
+          {
+            "comment": "Triangulate cut faces in polyface clip.  Variant point data parse.  Bilinear Patch ray intersection\""
+          },
+          {
+            "comment": "Construct offset from path with curves."
+          },
+          {
+            "comment": "Mesh principal axis computation."
+          },
+          {
+            "comment": "Document unit length rows/cols requirement of Matrix3d.toQuaternion"
+          },
+          {
+            "comment": "Correct point4d normalization to handle small w values (NPC)"
+          },
+          {
+            "comment": "#151464 Improved grid display performance."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/geometry-core_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

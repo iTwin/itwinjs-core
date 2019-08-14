@@ -13,9 +13,8 @@ import {
   FrontstageProps,
   NestedFrontstage,
   ContentGroup,
+  CoreTools,
 } from "@bentley/ui-framework";
-
-import { AppTools } from "../../tools/ToolSpecifications";
 
 export class NestedAnimationStage extends FrontstageProvider {
 
@@ -32,7 +31,7 @@ export class NestedAnimationStage extends FrontstageProvider {
 
     return (
       <Frontstage id="NestedAnimationStage"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}

@@ -13,7 +13,7 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
-import { Quadrature } from "../numerics/Quadrature";
+import { GaussMapper } from "../numerics/Quadrature";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
@@ -607,9 +607,7 @@ class CurveLengthContext implements IStrokeHandler {
   private _ray: Ray3d;
   private _fraction0: number;
   private _fraction1: number;
-  private _gaussX: Float64Array;
-  private _gaussW: Float64Array;
-  private _gaussMapper: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
+  private _gaussMapper: GaussMapper;
 
   private tangentMagnitude(fraction: number): number {
     this._ray = (this._curve as CurvePrimitive).fractionToPointAndDerivative(fraction, this._ray);
@@ -628,20 +626,7 @@ class CurveLengthContext implements IStrokeHandler {
       this._fraction0 = fraction1;
       this._fraction1 = fraction0;
     }
-    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
-    this._gaussX = new Float64Array(maxGauss);
-    this._gaussW = new Float64Array(maxGauss);
-    // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
-    if (numGaussPoints > 5 || numGaussPoints < 1)
-      numGaussPoints = 5;
-    switch (numGaussPoints) {
-      case 1: this._gaussMapper = Quadrature.setupGauss1; break;
-      case 2: this._gaussMapper = Quadrature.setupGauss2; break;
-      case 3: this._gaussMapper = Quadrature.setupGauss3; break;
-      case 4: this._gaussMapper = Quadrature.setupGauss4; break;
-      default: this._gaussMapper = Quadrature.setupGauss5; break;
-    }
-
+    this._gaussMapper = new GaussMapper(numGaussPoints);
   }
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;
@@ -664,9 +649,9 @@ class CurveLengthContext implements IStrokeHandler {
       for (let i = 1; i <= numStrokes; i++) {
         const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
         const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, (i) * df, fraction1);
-        const numGauss = this._gaussMapper(fractionA, fractionB, this._gaussX, this._gaussW);
+        const numGauss = this._gaussMapper.mapXAndW(fractionA, fractionB);
         for (let k = 0; k < numGauss; k++) {
-          this._summedLength += this._gaussW[k] * this.tangentMagnitude(this._gaussX[k]);
+          this._summedLength += this._gaussMapper.gaussW[k] * this.tangentMagnitude(this._gaussMapper.gaussX[k]);
         }
       }
     }

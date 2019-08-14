@@ -9,11 +9,32 @@ import { RangeBase, Range1d, Range2d, Range3d } from "../../geometry3d/Range";
 import { Checker } from "../Checker";
 import { Sample } from "../../serialization/GeometrySamples";
 import { expect, assert } from "chai";
+import { prettyPrint } from "../testFunctions";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 
 /* tslint:disable:no-console */
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
+  const transformedPoints = frame.multiplyPoint3dArray(points)!;
+  const inverseFrame = frame.inverse();
+  if (inverseFrame) {
+    const rangeQ = Range3d.createArray(points);
+    const rangeQRoundTrip = Range3d.create();
+    rangeQRoundTrip.extendInverseTransformedArray(transformedPoints, frame);
+    ck.testRange3d(rangeQ, rangeQRoundTrip, prettyPrint(frame),
+      prettyPrint(points.slice(0, 3)),
+      prettyPrint(
+        transformedPoints.slice(0, 3)));
+    // const gPoints = GrowableXYZArray.create(points);
+    const hPoints = GrowableXYZArray.create(transformedPoints);
+    const gRangeRoundTrip = Range3d.createInverseTransformedArray(frame, hPoints);
+    const gRangeInverse = Range3d.createTransformedArray(inverseFrame, hPoints);
+    ck.testRange3d(rangeQ, gRangeRoundTrip);
+    ck.testRange3d(rangeQ, gRangeInverse);
+
+  }
   const rangeA1 = Range3d.create();
   const rangeB = Range3d.create();
   rangeB.extendArray(points, frame);
@@ -571,6 +592,10 @@ describe("Range3d", () => {
     const npcToWorld = rangeA.getNpcToWorldRangeTransform();
     const centerA = npcToWorld.multiplyXYZ(0.5, 0.5, 0.5);
     ck.testPoint3d(centerA, rangeA.center);
+    // For single point range, transform (of degenerate range images) is identity . .
+    const singlePointRange = Range3d.createXYZ(1, 2, 3);
+    const singlePointNpcToWorld = singlePointRange.getNpcToWorldRangeTransform();
+    ck.testTrue(singlePointNpcToWorld.matrix.isIdentity, "npcToWorld for single point has identity scales");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -600,6 +625,40 @@ describe("Range3d", () => {
   it("ZeroCases", () => {
     const ck = new Checker();
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("DistanceToNullRange", () => {
+    const ck = new Checker();
+    const null1 = Range1d.createNull();
+    const null2 = Range2d.createNull();
+    const null3 = Range3d.createNull();
+    const q = Math.abs(null1.high); // All dimensions should use the same extreme positive
+    ck.testExactNumber(q, null1.distanceToX(100), "null Range1d distance to X");
+    ck.testExactNumber(q, null2.distanceToPoint(Point2d.create(1, 2)), "null Range1d distance to X");
+    ck.testExactNumber(q, null3.distanceToPoint(Point3d.create(1, 2, 3)), "null Range1d distance to X");
+
+    ck.testExactNumber (0, null3.maxAbs (), "Range3d.null maxAbs is 0");
+    ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Float64ArrayConstructors", () => {
+    const ck = new Checker();
+    const r2 = Range2d.createXYXY(5, 2, 4, 7);
+    const f2 = r2.toFloat64Array();
+    const r2A = Range2d.fromFloat64Array(f2);
+    const r2B = Range2d.fromArrayBuffer(f2);
+    ck.testRange2d(r2, r2A);
+    ck.testRange2d(r2, r2B);
+
+    const r3 = Range3d.createXYZXYZ(5, 3, 4, 7, 3, 1);
+    const f3 = r3.toFloat64Array();
+    const r3A = Range3d.fromFloat64Array(f3);
+    const r3B = Range3d.fromArrayBuffer(f3);
+    ck.testRange3d(r3, r3A);
+    ck.testRange3d(r3, r3B);
+
+    r2.freeze();
+    r3.freeze();
     expect(ck.getNumErrors()).equals(0);
   });
 });

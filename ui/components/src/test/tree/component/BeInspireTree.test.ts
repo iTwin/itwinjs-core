@@ -1148,6 +1148,18 @@ describe("BeInspireTree", () => {
       expect(renderedTree).to.matchSnapshot();
     });
 
+    it("auto-expands children while parent pages are loaded", async () => {
+      // set the 3rd node to be auto-expanded
+      hierarchy[2].autoExpand = true;
+      // load the second page - it contains the auto-expanded node
+      const r1 = tree.requestNodeLoad(undefined, 2);
+      // load the third page
+      const r2 = tree.requestNodeLoad(undefined, 4);
+      await Promise.all([r1, r2]);
+      // expect chilren of node "2" to be loaded
+      expect(renderedTree).to.matchSnapshot();
+    });
+
     it("fires ChangesApplied event when child node is loaded for not rendered parent", async () => {
       tree = new BeInspireTree({
         dataProvider: createDataProviderInterface(createHierarchy(2, 3)),

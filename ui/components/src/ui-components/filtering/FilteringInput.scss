@@ -33,6 +33,13 @@
   right: 8px;
   top: 1px;
   bottom: 0px;
+
+  > .icon {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    line-height: 0;
+  }
 }
 
 @mixin filtering-button-base {

@@ -17,7 +17,7 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "1.3836752176284799",
+    "description": "1.383675217628479",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Min Y",
@@ -25,13 +25,13 @@ Array [
       "typename": "double",
     },
     "value": Object {
-      "displayValue": "1.3836752176284799",
-      "value": 1.38367521762848,
+      "displayValue": "1.383675217628479",
+      "value": 1.383675217628479,
       "valueFormat": 0,
     },
   },
   PropertyRecord {
-    "description": "-2.8011031150817902",
+    "description": "-2.8011031150817867",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Min X",
@@ -39,8 +39,8 @@ Array [
       "typename": "double",
     },
     "value": Object {
-      "displayValue": "-2.8011031150817902",
-      "value": -2.80110311508179,
+      "displayValue": "-2.8011031150817867",
+      "value": -2.8011031150817867,
       "valueFormat": 0,
     },
   },
@@ -59,7 +59,7 @@ Array [
     },
   },
   PropertyRecord {
-    "description": "2.44559597969055",
+    "description": "2.4455959796905518",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Max Y",
@@ -67,13 +67,13 @@ Array [
       "typename": "double",
     },
     "value": Object {
-      "displayValue": "2.44559597969055",
-      "value": 2.44559597969055,
+      "displayValue": "2.4455959796905518",
+      "value": 2.4455959796905518,
       "valueFormat": 0,
     },
   },
   PropertyRecord {
-    "description": "-1.7391824722289999",
+    "description": "-1.7391824722290041",
     "isReadonly": true,
     "property": Object {
       "displayLabel": "Max X",
@@ -81,8 +81,8 @@ Array [
       "typename": "double",
     },
     "value": Object {
-      "displayValue": "-1.7391824722289999",
-      "value": -1.739182472229,
+      "displayValue": "-1.7391824722290041",
+      "value": -1.7391824722290041,
       "valueFormat": 0,
     },
   },

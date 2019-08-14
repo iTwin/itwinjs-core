@@ -8,14 +8,13 @@
 
 .nz-toolbar-item-item {
   border-width: 0;
-  background: $buic-background-control;
   background-origin: border-box;
   border-color: $buic-background-toolbutton-stroke;
   border-style: solid;
   cursor: pointer;
   transition: all 500ms ease;
   position: relative;
-  background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
+  background: $buic-background-window linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
 
   height: $nz-desktop-item-height;
   width: $nz-desktop-item-width;

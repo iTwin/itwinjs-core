@@ -29,7 +29,6 @@ import { prettyPrint } from "../testFunctions";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 
@@ -217,7 +216,7 @@ describe("RegionOps", () => {
       Sample.appendSawTooth([], 1, 0.5, 1, 1, 3)]) {
       const growableSplat = GrowableXYZArray.create(splat);
       const data = [growableSplat, rectangle];
-      const range = Point3dArray.createRange(data);
+      const range = Range3d.createFromVariantData (data);
       const dx = range.xLength() * 2.0;
       const dy = range.yLength() * 2.0;
       y0 = 0.0;
@@ -265,7 +264,6 @@ function testPolygonOffset(polygons: Point3d[][],
   let x0 = 0;
   let y0 = 0;
 
-  const context = new PolygonWireOffsetContext();
   for (const points of polygons) {
     const range = Range3d.createArray(points);
     const yStep = 2.0 * range.yLength();
@@ -277,7 +275,7 @@ function testPolygonOffset(polygons: Point3d[][],
         continue;
       GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0, 0);
       for (const offsetDistance of distances) {
-        const stickA = context.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
+        const stickA = RegionOps.constructPolygonWireXYOffset(points, closed, offsetDistance * distanceFactor);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, stickA!, x0, y0, 0);
       }
       y0 += yStep;
@@ -394,8 +392,8 @@ describe("PolygonOffset", () => {
 
     const offsetDistances = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5];
     //     const offsetDistances = [0.7];
-    testPolygonOffset([pointsA, points], "SpikeInside", offsetDistances, -1);
-    testPolygonOffset([pointsA, points], "SpikeOutside", offsetDistances, 1);
+    testPolygonOffset([pointsA, points], "SpikeRight", offsetDistances, -1);
+    testPolygonOffset([pointsA, points], "SpikeLeft", offsetDistances, 1);
   });
 
   it("TestGouge", () => {

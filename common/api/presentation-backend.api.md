@@ -90,6 +90,7 @@ export interface PresentationManagerProps {
     id?: string;
     localeDirectories?: string[];
     rulesetDirectories?: string[];
+    supplementalRulesetDirectories?: string[];
 }
 
 // @public

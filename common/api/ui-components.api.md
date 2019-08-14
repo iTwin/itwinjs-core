@@ -120,7 +120,7 @@ export interface AsyncValueProcessingResult {
 // @public
 export abstract class BasePointTypeConverter extends TypeConverter {
     // (undocumented)
-    protected abstract constructPoint(_values: string[]): ConvertedPrimitives.Point | undefined;
+    protected abstract constructPoint(_values: Primitives.Point): ConvertedPrimitives.Point | undefined;
     // (undocumented)
     convertFromString(value: string): ConvertedPrimitives.Point2d | ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
@@ -903,9 +903,35 @@ export interface DataRowItem extends RowItem {
 }
 
 // @public
-export class DateTimeTypeConverter extends ShortDateTypeConverter {
+export class DateTimeTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
     protected getTimeFormat(): TimeFormat;
+}
+
+// @public
+export abstract class DateTimeTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
+    // (undocumented)
+    convertFromString(value: string): Date | undefined;
+    // (undocumented)
+    convertToString(value?: Primitives.ShortDate): string;
+    // (undocumented)
+    protected abstract getTimeFormat(): TimeFormat;
+    // (undocumented)
+    isEqualTo(valueA: Date, valueB: Date): boolean;
+    // (undocumented)
+    isGreaterThan(a: Date, b: Date): boolean;
+    // (undocumented)
+    isGreaterThanOrEqualTo(a: Date, b: Date): boolean;
+    // (undocumented)
+    readonly isLessGreaterType: boolean;
+    // (undocumented)
+    isLessThan(a: Date, b: Date): boolean;
+    // (undocumented)
+    isLessThanOrEqualTo(a: Date, b: Date): boolean;
+    // (undocumented)
+    isNotEqualTo(valueA: Date, valueB: Date): boolean;
+    // (undocumented)
+    sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
 
 // @alpha
@@ -1658,7 +1684,7 @@ export interface PlayerButtonProps extends CommonProps {
 // @public
 export class Point2dTypeConverter extends BasePointTypeConverter {
     // (undocumented)
-    protected constructPoint(values: string[]): ConvertedPrimitives.Point2d | undefined;
+    protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point2d | undefined;
     // (undocumented)
     protected getVectorLength(point: Primitives.Point): number | undefined;
 }
@@ -1666,7 +1692,7 @@ export class Point2dTypeConverter extends BasePointTypeConverter {
 // @public
 export class Point3dTypeConverter extends BasePointTypeConverter {
     // (undocumented)
-    protected constructPoint(values: string[]): ConvertedPrimitives.Point3d | undefined;
+    protected constructPoint(values: Primitives.Point): ConvertedPrimitives.Point3d | undefined;
     // (undocumented)
     protected getVectorLength(point: Primitives.Point): number | undefined;
 }
@@ -1848,6 +1874,8 @@ export interface PropertyGridProps extends CommonProps {
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
+    // @beta
+    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
     onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
@@ -2074,6 +2102,7 @@ export class SelectionHandler<Item> {
 export enum SelectionMode {
     Extended = 12,
     Multiple = 6,
+    None = 16,
     Single = 1,
     SingleAllowDeselect = 5
 }
@@ -2084,6 +2113,8 @@ export enum SelectionModeFlags {
     DragEnabled = 2,
     // (undocumented)
     KeysEnabled = 8,
+    // (undocumented)
+    None = 16,
     // (undocumented)
     SelectionLimitOne = 1,
     // (undocumented)
@@ -2115,29 +2146,9 @@ export interface SharedTableNonPrimitiveValueRendererProps {
 }
 
 // @public
-export class ShortDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
-    // (undocumented)
-    convertFromString(value: string): Date | undefined;
-    // (undocumented)
-    convertToString(value?: Primitives.ShortDate): string;
+export class ShortDateTypeConverter extends DateTimeTypeConverterBase {
     // (undocumented)
     protected getTimeFormat(): TimeFormat;
-    // (undocumented)
-    isEqualTo(valueA: Date, valueB: Date): boolean;
-    // (undocumented)
-    isGreaterThan(a: Date, b: Date): boolean;
-    // (undocumented)
-    isGreaterThanOrEqualTo(a: Date, b: Date): boolean;
-    // (undocumented)
-    readonly isLessGreaterType: boolean;
-    // (undocumented)
-    isLessThan(a: Date, b: Date): boolean;
-    // (undocumented)
-    isLessThanOrEqualTo(a: Date, b: Date): boolean;
-    // (undocumented)
-    isNotEqualTo(valueA: Date, valueB: Date): boolean;
-    // (undocumented)
-    sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number;
 }
 
 // @public

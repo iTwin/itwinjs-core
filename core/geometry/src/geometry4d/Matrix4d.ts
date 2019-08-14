@@ -447,11 +447,13 @@ export class Matrix4d implements BeJSONFunctions {
     result = result ? result : Point3d.createZero();
     result.set(this._coffs[0] * x + this._coffs[1] * y + this._coffs[2] * z + this._coffs[3] * w, this._coffs[4] * x + this._coffs[5] * y + this._coffs[6] * z + this._coffs[7] * w, this._coffs[8] * x + this._coffs[9] * y + this._coffs[10] * z + this._coffs[11] * w);
     const w1 = this._coffs[12] * x + this._coffs[13] * y + this._coffs[14] * z + this._coffs[15] * w;
-    if (!Geometry.isSmallMetricDistance(w1)) {
-      const a = 1.0 / w1;
-      result.x *= a;
-      result.y *= a;
-      result.z *= a;
+    const qx = Geometry.conditionalDivideCoordinate(result.x, w1);
+    const qy = Geometry.conditionalDivideCoordinate(result.y, w1);
+    const qz = Geometry.conditionalDivideCoordinate(result.z, w1);
+    if (qx !== undefined && qy !== undefined && qz !== undefined) {
+      result.x = qx;
+      result.y = qy;
+      result.z = qz;
     }
     return result;
   }

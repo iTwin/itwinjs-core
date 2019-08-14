@@ -16,6 +16,8 @@ import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { LineString3d } from "../curve/LineString3d";
+import { SweepContour } from "../solid/SweepContour";
+import { PolygonOps } from "../geometry3d/PolygonOps";
 
 /** PolyfaceClip is a static class gathering operations using Polyfaces and clippers.
  * @public
@@ -25,16 +27,40 @@ export class PolyfaceClip {
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only".
    */
-  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true): Polyface {
+  public static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true, buildClosureFace: boolean = true): Polyface {
     const visitor = polyface.createVisitor(0);
     const builder = PolyfaceBuilder.create();
+    const chainContext = ChainMergeContext.create();
+
     const work = new GrowableXYZArray(10);
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
     for (visitor.reset(); visitor.moveToNextFacet();) {
       clipper.clipConvexPolygonInPlace(visitor.point, work, insideClip);
       if (visitor.point.length > 2)
         builder.addPolygonGrowableXYZArray(visitor.point);
+      this.collectEdgesOnPlane(visitor.point, clipper, chainContext, point0, point1);
+    }
+    // SweepContour is your friend .. but maybe it doesn't do holes and multi-loops yet?
+    if (buildClosureFace) {
+      const outwardNormal = clipper.getPlane3d().getNormalRef().scale(-1.0);
+      chainContext.clusterAndMergeVerticesXYZ();
+      const loops = chainContext.collectMaximalGrowableXYZArrays();
+      PolygonOps.orientLoopsCCWForOutwardNormalInPlace(loops, outwardNormal);
+      const contour = SweepContour.createForPolygon(loops, outwardNormal);
+      if (contour !== undefined) {
+        contour.emitFacets(builder, insideClip);
+      }
     }
     return builder.claimPolyface(true);
+  }
+
+  /** Clip each facet of polyface to the ClipPlane.
+   * * Return all surviving clip as a new mesh.
+   * * WARNING: The new mesh is "points only".
+   */
+  public static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip: boolean = true): Polyface {
+    return this.clipPolyfaceClipPlaneWithClosureFace(polyface, clipper, insideClip, false);
   }
 
   /** Clip each facet of polyface to the ClipPlane.
@@ -66,6 +92,24 @@ export class PolyfaceClip {
     return undefined;
   }
 
+  /** Find consecutive points around a polygon (with implied closure edge) that are ON a plane
+   * @param points array of points around polygon.  Closure edge is implied.
+   * @param chainContext context receiving edges
+   * @param point0 work point
+   * @param point1 work point
+  */
+  private static collectEdgesOnPlane(points: GrowableXYZArray, clipper: ClipPlane, chainContext: ChainMergeContext, point0: Point3d, point1: Point3d) {
+    const n = points.length;
+    if (n > 1) {
+      points.getPoint3dAtUncheckedPointIndex(n - 1, point0);
+      for (let i = 0; i < n; i++) {
+        points.getPoint3dAtUncheckedPointIndex(i, point1);
+        if (clipper.isPointOn(point0) && clipper.isPointOn(point1))
+          chainContext.addSegment(point0, point1);
+        point0.setFromPoint3d(point1);
+      }
+    }
+  }
   /** Intersect each facet with the clip plane. (Producing intersection edges.)
    * * Return all edges  chained as array of LineString3d.
    */
@@ -76,19 +120,9 @@ export class PolyfaceClip {
     const work = new GrowableXYZArray(10);
     const point0 = Point3d.create();
     const point1 = Point3d.create();
-    let n;
     for (visitor.reset(); visitor.moveToNextFacet();) {
       clipper.clipConvexPolygonInPlace(visitor.point, work, true);
-      n = visitor.point.length;
-      if (n > 1) {
-        visitor.point.getPoint3dAtUncheckedPointIndex(n - 1, point0);
-        for (let i = 0; i < n; i++) {
-          visitor.point.getPoint3dAtUncheckedPointIndex(i, point1);
-          if (clipper.isPointOn(point0) && clipper.isPointOn(point1))
-            chainContext.addSegment(point0, point1);
-          point0.setFromPoint3d(point1);
-        }
-      }
+      this.collectEdgesOnPlane(visitor.point, clipper, chainContext, point0, point1);
     }
     chainContext.clusterAndMergeVerticesXYZ();
     return chainContext.collectMaximalChains();

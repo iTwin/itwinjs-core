@@ -115,7 +115,7 @@ export interface PluginUiProvider {
   // ===================================================
 }
 
-/** Tool Activated Event Args interface.
+/** UIProvider Registered Event Args interface.
  * @alpha
  */
 export interface UiProviderRegisteredEventArgs {

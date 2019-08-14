@@ -1,0 +1,33 @@
+# iModel.js Presentation Library
+
+## Purpose
+
+iModel.js Presentation library helps retrieve presentation data from iModels and
+takes care of unified selection. What data to retrieve from an iModel is
+defined by consumers in a declarative way, using presentation rules - that's
+why the library is commonly called "presentation rules engine".
+
+![library purpose](./library.png "Purpose of the library")
+
+[Getting started with iModel.js Presentation](./Setup.md)
+
+## Library Contents
+
+- Content
+  - [Rules](./Content/index.md)
+  - [ECExpressions](./Content/ECExpressions.md)
+  - [Terminology](./Content/Terminology.md)
+- Hierarchies
+  - [Rules](./Hierarchies/index.md)
+  - [ECExpressions](./Hierarchies/ECExpressions.md)
+  - [Terminology](./Hierarchies/Terminology.md)
+- Customization
+  - [Rules](./Customization/index.md)
+  - [ECExpressions](./Customization/ECExpressions.md)
+- [Unified Selection](./unified-selection/index.md)
+- [ECExpressions](./ECExpressions.md)
+- [Localization](./Localization.md)
+- [Ruleset Variables](./RulesetVariables.md)
+- [Ruleset Supplementation](./RulesetSupplementation.md)
+- [Performance Tips](./Performance.md)
+- [Testing](./Testing.md)

@@ -30,6 +30,8 @@ export * from "./ui-core/enums/TimeFormat";
 export * from "./ui-core/expandable/ExpandableList";
 export * from "./ui-core/expandable/ExpandableBlock";
 
+// cSpell:ignore focustrap
+
 export * from "./ui-core/focustrap/FocusTrap";
 
 export * from "./ui-core/hocs/withIsPressed";
@@ -72,7 +74,10 @@ export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 export * from "./ui-core/uisettings/SessionUiSettings";
 
+export * from "./ui-core/utils/Point";
 export * from "./ui-core/utils/Props";
+export * from "./ui-core/utils/Rectangle";
+export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiError";
 export * from "./ui-core/utils/UiEvent";
@@ -103,6 +108,7 @@ export * from "./ui-core/inputs/Textarea";
 export * from "./ui-core/tabs/HorizontalTabs";
 
 export * from "./ui-core/text/BodyText";
+export * from "./ui-core/text/BlockText";
 export * from "./ui-core/text/Headline";
 export * from "./ui-core/text/LeadingText";
 export * from "./ui-core/text/LeadingText2";
@@ -114,6 +120,11 @@ export * from "./ui-core/text/StyledText";
 export * from "./ui-core/text/TextProps";
 export * from "./ui-core/text/Title";
 export * from "./ui-core/text/Title2";
+
+export * from "./ui-core/tiles/FeaturedTile";
+export * from "./ui-core/tiles/MinimalFeaturedTile";
+export * from "./ui-core/tiles/MinimalTile";
+export * from "./ui-core/tiles/Tile";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

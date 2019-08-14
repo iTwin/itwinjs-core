@@ -148,7 +148,7 @@ export abstract class BezierCoffs {
   /** Subdivide -- write results into caller-supplied bezier coffs (which must be of the same order) */
   public subdivide(u: number, left: BezierCoffs, right: BezierCoffs): boolean {
     const order = this.order;
-    if (left.order !== order && right.order !== order)
+    if (left.order !== order || right.order !== order)
       return false;
     const v = 1.0 - u;
     right.copyFrom(this);

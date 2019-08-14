@@ -18,10 +18,9 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { RenderMemory } from "../System";
 import { ColorInfo } from "./ColorInfo";
-import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
-import { Material } from "./Material";
+import { MaterialInfo } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
@@ -76,10 +75,14 @@ export abstract class CachedGeometry implements IDisposable, RenderMemory.Consum
   public abstract dispose(): void;
 
   // Intended to be overridden by specific subclasses
-  public get material(): Material | undefined { return undefined; }
+  public get materialInfo(): MaterialInfo | undefined { return undefined; }
+  public get hasMaterialAtlas(): boolean {
+    const mat = this.materialInfo;
+    return undefined !== mat && mat.isAtlas;
+  }
+
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
-  public set uniformFeatureIndices(_value: number) { }
-  public get featuresInfo(): FeaturesInfo | undefined { return undefined; }
+  public get hasFeatures(): boolean { return false; }
 
   public get isEdge(): boolean {
     switch (this.renderOrder) {
@@ -659,6 +662,27 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
     super(params, TechniqueId.Blur, textures);
     this.blurDir = blurDir;
+  }
+}
+
+/** @internal */
+export class EVSMGeometry extends TexturedViewportQuadGeometry {
+  public readonly stepSize = new Float32Array(2);
+
+  public static createGeometry(depthBuffer: WebGLTexture, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EVSMGeometry(params, [depthBuffer], width, height);
+  }
+
+  public get depthTexture() { return this._textures[0]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
+    super(params, TechniqueId.EVSMFromDepth, textures);
+    this.stepSize[0] = 1.0 / width;
+    this.stepSize[1] = 1.0 / height;
   }
 }
 

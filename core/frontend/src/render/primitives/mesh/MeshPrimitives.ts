@@ -140,6 +140,7 @@ export class MeshArgs {
   public is2d = false;
   public hasBakedLighting = false;
   public isVolumeClassifier = false;
+  public hasFixedNormals = false;
 
   public clear() {
     this.edges.clear();
@@ -152,7 +153,7 @@ export class MeshArgs {
     this.features.reset();
     this.material = undefined;
     this.fillFlags = FillFlags.None;
-    this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = false;
+    this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = this.hasFixedNormals = false;
   }
   public init(mesh: Mesh): boolean {
     this.clear();

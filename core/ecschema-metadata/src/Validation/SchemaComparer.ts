@@ -439,9 +439,9 @@ export class SchemaComparer {
   public async compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (koqA.presentationUnits) {
-      for (const unit of koqA.presentationUnits) {
-        if (!koqB || !koqB.presentationUnits || -1 === koqB.presentationUnits.findIndex((u) => u.fullName === unit.fullName))
+    if (koqA.presentationFormats) {
+      for (const unit of koqA.presentationFormats) {
+        if (!koqB || !koqB.presentationFormats || -1 === koqB.presentationFormats.findIndex((u) => u.fullName === unit.fullName))
           promises.push(this._reporter.reportPresentationUnitMissing(koqA, unit, this._compareDirection));
       }
     }
@@ -478,9 +478,8 @@ export class SchemaComparer {
       return;
 
     const priorityB = categoryB ? categoryB.priority : undefined;
-    if (categoryA.priority !== priorityB) {
+    if (categoryA.priority !== priorityB)
       await this._reporter.reportPropertyCategoryDelta(categoryA, "priority", categoryA.priority, priorityB, this._compareDirection);
-    }
   }
 
   /**

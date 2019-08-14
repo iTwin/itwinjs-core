@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 internal;AnnularSector
 internal;Annulus
+public;BlockText: React.FunctionComponent
 public;BodyText: React.FunctionComponent
 alpha;BoundsFunctionProp = number | (() => number | undefined)
 public;Button 
@@ -16,7 +17,7 @@ public;CheckBoxState
 beta;CheckListBox 
 beta;CheckListBoxItem 
 beta;CheckListBoxItemProps 
-beta;CheckListBoxSeparator: React.StatelessComponent
+beta;CheckListBoxSeparator: React.FunctionComponent
 internal;Circle
 public;ClassNameProps
 public;CommonDivProps 
@@ -29,6 +30,7 @@ public;ContextMenuItemProps
 public;ContextMenuProps 
 public;ContextSubMenu 
 public;ContextSubMenuProps 
+internal;Corner
 beta;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -52,6 +54,7 @@ public;ExpandableListProps
 public;ExpansionToggle 
 public;ExpansionToggleProps 
 beta;Face
+alpha;FeaturedTile: React.FunctionComponent
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
@@ -98,6 +101,8 @@ public;MessageContainer
 public;MessageContainerProps 
 public;MessagedComponentProps
 public;MessageSeverity
+alpha;MinimalFeaturedTile: React.FunctionComponent
+alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
@@ -109,7 +114,8 @@ alpha;NumericInputProps
 public;Omit
 beta;OmitChildrenProp
 public;Orientation
-internal;Point
+internal;Point 
+beta;PointProps
 beta;Popup 
 beta;PopupProps 
 beta;Position
@@ -122,6 +128,8 @@ public;RadioProps
 internal;ReactNumericInput 
 alpha;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+internal;Rectangle 
+beta;RectangleProps
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 
@@ -129,6 +137,8 @@ public;Select
 public;SelectProps 
 beta;SessionUiSettings 
 internal;shallowDiffers: (a:
+internal;Size 
+beta;SizeProps
 public;SmallText: React.FunctionComponent
 public;SortDirection
 public;Spinner 
@@ -150,6 +160,9 @@ public;Textarea
 public;TextareaProps 
 public;TextProps 
 internal;TildeFinder
+alpha;Tile 
+internal;TileDefaultProps = Pick
+alpha;TileProps 
 public;TimeFormat
 public;Timer
 public;Title: React.FunctionComponent

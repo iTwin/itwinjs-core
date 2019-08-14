@@ -16,7 +16,6 @@ import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "../tools/ToolWithSettings";
-import { AppSelectTool } from "../tools/AppSelectTool";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 
 // cSpell:ignore appui
@@ -24,16 +23,6 @@ import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
 
 export class AppTools {
-  public static get appSelectElementCommand() {
-    return new ToolItemDef({
-      toolId: AppSelectTool.toolId,
-      iconSpec: "icon-cursor",
-      labelKey: "SampleApp:tools.AppSelect.flyover",
-      tooltipKey: "SampleApp:tools.AppSelect.description",
-      execute: () => { IModelApp.tools.run(AppSelectTool.toolId); },
-    });
-  }
-
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
@@ -251,7 +240,16 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Toast)),
+    });
+  }
+
+  public static get noIconMessageCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      iconSpec: "icon-status-success-hollow",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.None, "This message has no icon", this._detailedMessage)),
     });
   }
 

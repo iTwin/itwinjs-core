@@ -12,13 +12,46 @@ import {
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
-  GeoConverter,
   OffScreenViewport,
   SpatialViewState,
   Viewport,
   ViewRect,
 } from "@bentley/imodeljs-frontend";
 import { Point2d } from "@bentley/geometry-core";
+import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
+
+describe("Test VAO creation", () => {
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    IModelApp.startup({ renderSys: renderSysOpts });
+  });
+
+  after(async () => {
+    IModelApp.shutdown();
+  });
+
+  it("should create VAO BuffersContainer object", async () => {
+    const buffers = BuffersContainer.create();
+    expect(buffers instanceof VAOContainer).to.be.true;
+  });
+});
+
+describe("Test VBO creation", () => {
+  before(async () => {
+    const renderSysOpts: RenderSystem.Options = {};
+    renderSysOpts.disabledExtensions = ["OES_vertex_array_object"];
+    IModelApp.startup({ renderSys: renderSysOpts });
+  });
+
+  after(async () => {
+    IModelApp.shutdown();
+  });
+
+  it("should create VBO BuffersContainer object", async () => {
+    const buffers = BuffersContainer.create();
+    expect(buffers instanceof VBOContainer).to.be.true;
+  });
+});
 
 describe("Render mirukuru with VAOs disabled", () => {
   let imodel: IModelConnection;
@@ -511,11 +544,6 @@ describe("Render mirukuru", () => {
       const mapTreeRef = vp.displayStyle.backgroundMap;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
-
-      const loader = mapTree.loader; // instance of non-exported class WebMapTileLoader;
-      const childCreator = (loader as any)._childTileCreator; // instance of non-exported class GeoTransformChildCreator
-      const converter = childCreator._converter;
-      expect(converter).instanceof(GeoConverter);
     });
   });
 });

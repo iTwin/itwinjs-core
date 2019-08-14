@@ -16,6 +16,7 @@ import {
   OutputMessageType,
   ToolAssistanceInstructions,
   ToolAssistance,
+  RelativePosition,
 } from "@bentley/imodeljs-frontend";
 
 import { XAndY } from "@bentley/geometry-core";
@@ -51,7 +52,7 @@ export class AppNotificationManager extends NotificationManager {
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails): void {
     if (message.msgType === OutputMessageType.Pointer) {
-      this._showPointerMessage(message);
+      PointerMessage.showMessage(message);
     } else if (message.msgType === OutputMessageType.InputField && message.inputField) {
       MessageManager.displayInputFieldMessage(message.inputField, message.briefMessage, message.detailedMessage, message.priority);
     }
@@ -106,9 +107,18 @@ export class AppNotificationManager extends NotificationManager {
 
     return result;
   }
+  /** Update message position created with [[OutputMessageType.Pointer]].
+   * @param displayPoint        Point at which to display the Pointer type message.
+   * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
+   */
+  public updatePointerMessage(displayPoint: XAndY, relativePosition: RelativePosition): void {
+    PointerMessage.updateMessage(displayPoint, relativePosition);
+  }
 
   /** Hides the Pointer message. */
-  public closePointerMessage(): void { this._hidePointerMessage(); }
+  public closePointerMessage(): void {
+    PointerMessage.hideMessage();
+  }
 
   /** Return true if _showTooltip has an implementation and will display a tooltip. */
   public get isToolTipSupported(): boolean { return true; }
@@ -131,19 +141,6 @@ export class AppNotificationManager extends NotificationManager {
    */
   protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip.showTooltip(el, message, pt, options);
-  }
-
-  /**
-   * Show a Pointer message.
-   * @param message  Text to display in message.
-   */
-  protected _showPointerMessage(message: NotifyMessageDetails): void {
-    PointerMessage.showMessage(message);
-  }
-
-  /** Hide a Pointer message. */
-  protected _hidePointerMessage(): void {
-    PointerMessage.hideMessage();
   }
 
   /** Hide a InputField message. */

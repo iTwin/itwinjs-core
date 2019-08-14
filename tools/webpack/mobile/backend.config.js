@@ -55,6 +55,14 @@ function getConfig(env) {
         {
           test: /bunyan/,
           use: 'null-loader'
+        },
+        {
+          test: /@azure/,
+          use: 'null-loader'
+        },
+        {
+          test: /core\/backend\/lib\/DevTools\.js/,
+          use: 'null-loader'
         }
       ]
     },

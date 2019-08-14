@@ -30,6 +30,11 @@ export interface PresentationManagerProps {
   rulesetDirectories?: string[];
 
   /**
+   * A list of directories containing supplemental presentation rulesets.
+   */
+  supplementalRulesetDirectories?: string[];
+
+  /**
    * A list of directories containing locale-specific localized
    * string files (in simplified i18next v3 format)
    */
@@ -89,8 +94,7 @@ export class PresentationManager {
     this._isDisposed = false;
     if (props && props.addon)
       this._nativePlatform = props.addon;
-    if (props && props.rulesetDirectories)
-      this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
+    this.setupRulesetDirectories(props);
     if (props)
       this.activeLocale = props.activeLocale;
     this.setupLocaleDirectories(props);
@@ -144,6 +148,19 @@ export class PresentationManager {
       this._nativePlatform = new nativePlatformImpl();
     }
     return this._nativePlatform!;
+  }
+
+  private setupRulesetDirectories(props?: PresentationManagerProps) {
+    const supplementalRulesetDirectories = [path.join(__dirname, "assets", "supplemental-presentation-rules")];
+    if (props && props.supplementalRulesetDirectories) {
+      props.supplementalRulesetDirectories.forEach((dir) => {
+        if (-1 === supplementalRulesetDirectories.indexOf(dir))
+          supplementalRulesetDirectories.push(dir);
+      });
+    }
+    this.getNativePlatform().setupSupplementalRulesetDirectories(supplementalRulesetDirectories);
+    if (props && props.rulesetDirectories)
+      this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
   private setupLocaleDirectories(props?: PresentationManagerProps) {

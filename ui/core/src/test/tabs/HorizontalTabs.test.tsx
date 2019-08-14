@@ -31,14 +31,12 @@ describe("<HorizontalTabs />", () => {
   });
 
   it("activeIndex sets correctly", () => {
-    const wrapper = shallow(<HorizontalTabs labels={["label 1"]} activeIndex={0} />);
-    wrapper.find(".active").should.exist;
-
+    const wrapper = mount(<HorizontalTabs labels={["label 1"]} activeIndex={0} />);
+    wrapper.find(".active").length.should.eq(1);
   });
 
   it("green sets correctly", () => {
-    const wrapper = shallow(<HorizontalTabs labels={["label 1"]} green={true} />);
-    wrapper.find(".green").should.exist;
-
+    const wrapper = mount(<HorizontalTabs labels={["label 1"]} green={true} />);
+    wrapper.find(".uicore-tabs-green").length.should.eq(1);
   });
 });

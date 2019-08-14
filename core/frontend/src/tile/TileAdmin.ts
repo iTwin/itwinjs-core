@@ -409,8 +409,8 @@ class Admin extends TileAdmin {
       if (undefined === seconds)
         return undefined;
 
-      seconds = Math.max(seconds, max);
-      seconds = Math.min(seconds, min);
+      seconds = Math.min(seconds, max);
+      seconds = Math.max(seconds, min);
       return BeDuration.fromSeconds(seconds);
     };
 

@@ -18,6 +18,7 @@ import {
   Frontstage,
   Zone,
   Widget,
+  CoreTools,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -51,7 +52,7 @@ export class Frontstage4 extends FrontstageProvider {
     return (
       <Frontstage
         id="Test4"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"

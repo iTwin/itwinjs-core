@@ -8,7 +8,7 @@ import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
   ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, ParseResults, QuantityType,
+  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, ParseResults, QuantityType, ToolAssistance, ToolAssistanceImage,
 } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
@@ -424,13 +424,30 @@ export class ToolWithSettings extends PrimitiveTool {
   // -------- end of ToolSettings ----------
 
   public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() {
-    super.onPostInstall();
-    this.setupAndPromptForNextAction();
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onUnsuspend(): void { this.provideToolAssistance(); }
+
+  /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
+   * Enable snapping or auto-locate for AccuSnap.
+   * Setup AccuDraw using AccuDrawHintBuilder.
+   * Set view cursor when default cursor isn't applicable.
+   * Provide tool assistance.
+   */
+  protected setupAndPromptForNextAction(): void {
+    this.provideToolAssistance();
   }
 
-  public setupAndPromptForNextAction(): void {
-    IModelApp.notifications.outputPromptByKey("SampleApp:tools.ToolWithSettings.Prompts.GetPoint");
+  /** A tool is responsible for providing tool assistance appropriate to the current tool state following significant events.
+   * After onPostInstall to establish instructions for the initial tool state.
+   * After onUnsuspend to reestablish instructions when no longer suspended by a ViewTool or InputCollector.
+   * After onDataButtonDown (or other tool event) advances or backs up the current tool state.
+   * After onUndoPreviousStep or onRedoPreviousStep modifies the current tool state.
+   */
+  protected provideToolAssistance(): void {
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.GetPoint"));
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+
+    IModelApp.notifications.setToolAssistance(instructions);
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -441,7 +458,8 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    IModelApp.toolAdmin.startDefaultTool();
+    /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
+    this.onReinitialize();
     return EventHandled.No;
   }
 

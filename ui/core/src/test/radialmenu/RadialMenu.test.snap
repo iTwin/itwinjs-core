@@ -24,54 +24,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 192.46407371861739,
               "y": 138.8856598041439,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 111.16267485762415,
               "y": 105.20951775601598,
             },
           },
           "endAngle": 0.39269908169872414,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 111.16267485762415,
             "y": 105.20951775601598,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 111.16267485762415,
             "y": 96.79048224398402,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 192.46407371861739,
             "y": 138.8856598041439,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 192.46407371861739,
             "y": 63.11434019585611,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -79,8 +63,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -91,14 +73,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 111.16267485762415,
               "y": 96.79048224398402,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 192.46407371861739,
               "y": 63.11434019585611,
             },
@@ -119,54 +97,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 138.8856598041439,
               "y": 192.46407371861739,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 105.20951775601598,
               "y": 111.16267485762415,
             },
           },
           "endAngle": 1.1780972450961724,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 105.20951775601598,
             "y": 111.16267485762415,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 111.16267485762415,
             "y": 105.20951775601598,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 138.8856598041439,
             "y": 192.46407371861739,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 192.46407371861739,
             "y": 138.8856598041439,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -174,8 +136,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -186,14 +146,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 111.16267485762415,
               "y": 105.20951775601598,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 192.46407371861739,
               "y": 138.8856598041439,
             },
@@ -214,54 +170,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 63.114340195856116,
               "y": 192.46407371861739,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 96.79048224398402,
               "y": 111.16267485762415,
             },
           },
           "endAngle": 1.9634954084936207,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 96.79048224398402,
             "y": 111.16267485762415,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 105.20951775601598,
             "y": 111.16267485762415,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 63.114340195856116,
             "y": 192.46407371861739,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 138.8856598041439,
             "y": 192.46407371861739,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -269,8 +209,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -281,14 +219,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 105.20951775601598,
               "y": 111.16267485762415,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 138.8856598041439,
               "y": 192.46407371861739,
             },
@@ -309,54 +243,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 9.535926281382615,
               "y": 138.8856598041439,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 90.83732514237585,
               "y": 105.20951775601598,
             },
           },
           "endAngle": 2.748893571891069,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 90.83732514237585,
             "y": 105.20951775601598,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 96.79048224398402,
             "y": 111.16267485762415,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 9.535926281382615,
             "y": 138.8856598041439,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 63.114340195856116,
             "y": 192.46407371861739,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -364,8 +282,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -376,14 +292,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 96.79048224398402,
               "y": 111.16267485762415,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 63.114340195856116,
               "y": 192.46407371861739,
             },
@@ -404,54 +316,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 9.5359262813826,
               "y": 63.11434019585612,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 90.83732514237585,
               "y": 96.79048224398402,
             },
           },
           "endAngle": 3.5342917352885173,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 90.83732514237585,
             "y": 96.79048224398402,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 90.83732514237585,
             "y": 105.20951775601598,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 9.5359262813826,
             "y": 63.11434019585612,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 9.535926281382615,
             "y": 138.8856598041439,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -459,8 +355,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -471,14 +365,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 90.83732514237585,
               "y": 105.20951775601598,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 9.535926281382615,
               "y": 138.8856598041439,
             },
@@ -499,54 +389,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 63.11434019585606,
               "y": 9.535926281382629,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 96.790482243984,
               "y": 90.83732514237585,
             },
           },
           "endAngle": 4.319689898685965,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 96.790482243984,
             "y": 90.83732514237585,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 90.83732514237585,
             "y": 96.79048224398402,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 63.11434019585606,
             "y": 9.535926281382629,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 9.5359262813826,
             "y": 63.11434019585612,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -554,8 +428,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -566,14 +438,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 90.83732514237585,
               "y": 96.79048224398402,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 9.5359262813826,
               "y": 63.11434019585612,
             },
@@ -594,54 +462,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 138.88565980414393,
               "y": 9.535926281382629,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 105.20951775601598,
               "y": 90.83732514237585,
             },
           },
           "endAngle": 5.105088062083414,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 105.20951775601598,
             "y": 90.83732514237585,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 96.790482243984,
             "y": 90.83732514237585,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 138.88565980414393,
             "y": 9.535926281382629,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 63.11434019585606,
             "y": 9.535926281382629,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -649,8 +501,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -661,14 +511,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 96.790482243984,
               "y": 90.83732514237585,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 63.11434019585606,
               "y": 9.535926281382629,
             },
@@ -689,54 +535,38 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "end": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 192.46407371861739,
               "y": 63.11434019585605,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 111.16267485762415,
               "y": 96.790482243984,
             },
           },
           "endAngle": 5.890486225480862,
           "innerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 111.16267485762415,
             "y": 96.790482243984,
           },
           "innerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 105.20951775601598,
             "y": 90.83732514237585,
           },
           "outerEnd": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 192.46407371861739,
             "y": 63.11434019585605,
           },
           "outerStart": Point {
-            "distTo": [Function],
-            "equals": [Function],
             "x": 138.88565980414393,
             "y": 9.535926281382629,
           },
           "parent": Annulus {
             "center": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 101,
               "y": 101,
             },
             "inner": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -744,8 +574,6 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
             },
             "outer": Circle {
               "center": Point {
-                "distTo": [Function],
-                "equals": [Function],
                 "x": 101,
                 "y": 101,
               },
@@ -756,14 +584,10 @@ exports[`RadialMenu <RadialButton /> renders correctly 1`] = `
           "start": Line {
             "equals": [Function],
             "p1": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 105.20951775601598,
               "y": 90.83732514237585,
             },
             "p2": Point {
-              "distTo": [Function],
-              "equals": [Function],
               "x": 138.88565980414393,
               "y": 9.535926281382629,
             },

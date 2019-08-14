@@ -1,0 +1,70 @@
+{
+  "landing-page": {
+    "docSiteId": 1,
+    "displayName": ""
+  },
+  "getting-started": {
+    "docSiteId": 2,
+    "displayName": "Getting Started"
+  },
+  "reference": {
+    "docSiteId": 3,
+    "displayName": "API Reference"
+  },
+  "bis": {
+    "docSiteId": 4,
+    "displayName": "Base Infrastructure Schema"
+  },
+  "learning": {
+    "docSiteId": 5,
+    "displayName": "Learning"
+  },
+  "changehistory": {
+    "docSiteId": 6,
+    "displayName": "Change History"
+  },
+  "metadata": {
+    "home": "landing-page",
+    "logo": "landing-page/assets/imodeljs-logo.svg",
+    "smallLogo": "landing-page/assets/imodeljs-icon.svg",
+    "sponsoredByLogo": "landing-page/assets/bentley.svg",
+    "favicon": "landing-page/assets/imodeljs_16.png",
+    "docSiteOrder": [
+      "landing-page",
+      "getting-started",
+      "learning",
+      "bis",
+      "reference",
+      "changehistory"
+    ],
+    "headerTabs": {
+      "Getting Started": "getting-started",
+      "BIS": "bis",
+      "Learning": "learning",
+      "API Reference": "reference",
+      "v1.3.0": "changehistory"
+    },
+    "packageAliases": {
+      "backend": "imodeljs-backend",
+      "bentley": "bentleyjs-core",
+      "clients-backend": "imodeljs-clients-backend",
+      "clients": "imodeljs-clients",
+      "common": "imodeljs-common",
+      "frontend": "imodeljs-frontend",
+      "geometry": "geometry-core",
+      "i18n": "imodeljs-i18n",
+      "markup": "imodeljs-markup",
+      "quantity": "imodeljs-quantity",
+      "components": "ui-components",
+      "core": "ui-core",
+      "framework": "ui-framework",
+      "ninezone": "ui-ninezone",
+      "presentation-backend": "presentation-backend",
+      "presentation-common": "presentation-common",
+      "presentation-components": "presentation-components",
+      "presentation-frontend": "presentation-frontend"
+    },
+    "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
+    "ogShareImage": "landing-page/assets/twitter-share.png"
+  }
+}

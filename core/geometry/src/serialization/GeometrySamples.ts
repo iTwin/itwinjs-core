@@ -655,9 +655,10 @@ export class Sample {
   }
   /** Assorted simple `Path` objects. */
   public static createSimplePaths(withGaps: boolean = false): Path[] {
-    const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 1), [Point3d.create(0, 10, 0)]]];
     const point0 = Point3d.create(0, 0, 0);
     const point1 = Point3d.create(10, 0, 0);
+
+    const p1 = [point1, Point3d.create(0, 10, 0), Point3d.create(6, 10, 0), Point3d.create(6, 10, 0), Point3d.create(0, 10, 0)];
     const segment1 = LineSegment3d.create(point0, point1);
     const vectorU = Vector3d.unitX(3);
     const vectorV = Vector3d.unitY(3);
@@ -667,9 +668,6 @@ export class Sample {
       Path.create(segment1, arc2),
       Path.create(
         LineSegment3d.create(point0, point1),
-        LineString3d.create(
-          Point3d.create(10, 0, 0),
-          Point3d.create(10, 5, 0)),
         LineString3d.create(p1)),
       Sample.createCappedArcPath(4, 0, 180),
     ];
@@ -681,6 +679,35 @@ export class Sample {
 
     return simplePaths;
   }
+  /** Assorted `Path` with lines and arcs.
+   * Specifically useful for offset tests.
+   */
+  public static createLineArcPaths(): Path[] {
+    const paths = [];
+    const x1 = 10.0;
+    const y2 = 5.0;
+    const y3 = 10.0;
+    for (const y0 of [0, -1, 1]) {
+      for (const x2 of [15, 11, 20, 9, 7]) {
+
+        const point0 = Point3d.create(0, y0, 0);
+        const point1 = Point3d.create(x1, 0, 0);
+        const point2 = Point3d.create(x2, y2, 0);
+        const point3 = Point3d.create(x1, y3, 0);
+        const point4 = Point3d.create(0, y3 + y0, 0);
+        const path0 = Path.create();
+        path0.tryAddChild(LineString3d.create(point0, point1, point2, point3, point4));
+        paths.push(path0);
+        const path1 = Path.create();
+        path1.tryAddChild(LineSegment3d.create(point0, point1));
+        path1.tryAddChild(Arc3d.createCircularStartMiddleEnd(point1, Point3d.create(x2, y2, 0), point3));
+        path1.tryAddChild(LineSegment3d.create(point3, point4));
+        paths.push(path1);
+      }
+    }
+    return paths;
+  }
+
   /** Assorted `PointString3d` objects. */
   public static createSimplePointStrings(): PointString3d[] {
     const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 0), [Point3d.create(6, 10, 0)]]];
@@ -760,6 +787,15 @@ export class Sample {
       this.pushMove(points, riseX, riseY, 0);
       this.pushMove(points, dxHigh, 0, 0);
       this.pushMove(points, riseX, -riseY, 0);
+    }
+    return points;
+  }
+  /** append sawtooth with x distances successively scaled by xFactor */
+  public static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[] {
+    let factor = 1.0;
+    for (let i = 0; i < numPhase; i++) {
+      this.appendSawTooth(points, factor * dxLow, factor * riseX, riseY, factor * dxHigh, 1);
+      factor *= xFactor;
     }
     return points;
   }

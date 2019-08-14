@@ -144,4 +144,12 @@ describe("<PopupButton />", async () => {
 
     (sut.state().isPressed === false).should.true;
   });
+
+  it("should render with no padding", () => {
+    const sut = shallow<PopupButton>(<PopupButton noPadding={true}>
+      <div />
+    </PopupButton>);
+    sut.setState({ isPressed: true });
+    sut.should.matchSnapshot();
+  });
 });

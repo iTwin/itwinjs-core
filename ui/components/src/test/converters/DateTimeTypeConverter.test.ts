@@ -20,19 +20,18 @@ describe("ShortDateTypeConverter", () => {
 
   describe("convertToString", () => {
     it("returns correct string", () => {
-      // NEEDSWORK: localization
       const date = new Date(2018, 0, 1);
-      const dateString = converter.convertToString(date);
-      expect(dateString).to.have.length.greaterThan(0);
-      expect(new Date(dateString).toDateString()).to.be.eq(date.toDateString());
+      expect(converter.convertToString(date)).to.be.eq(date.toLocaleDateString());
     });
 
     it("returns empty string if date is undefined", () => {
       expect(converter.convertToString(undefined)).to.be.eq("");
     });
 
-    it("returns the same string if date is a string", () => {
-      expect(converter.convertToString("2015 - 06 - 11")).to.be.eq("2015 - 06 - 11");
+    it("returns formatted date if date is a string", () => {
+      const str = "2015 - 06 - 11";
+      const date = new Date(str);
+      expect(converter.convertToString(str)).to.be.eq(date.toLocaleDateString());
     });
   });
 
@@ -109,11 +108,15 @@ describe("DateTimeTypeConverter", () => {
     converter = new DateTimeTypeConverter();
   });
 
-  it("convertFromString", () => {
+  it("convertToString", () => {
     const testDate = new Date(2018, 0, 1, 1, 15, 30);
-    const convertedDate = converter.convertFromString("1/1/2018 1:15:30 AM");
-    expect(convertedDate).to.not.be.undefined;
-    expect(convertedDate!.valueOf()).to.eq(testDate.valueOf());
+    expect(converter.convertToString(testDate)).to.eq(testDate.toLocaleString());
+  });
+
+  it("convertFromString", () => {
+    const str = "2018-01-01 01:15:30";
+    const date = new Date(2018, 0, 1, 1, 15, 30);
+    expect(converter.convertFromString(str)!.valueOf()).to.eq(date.valueOf());
   });
 
 });

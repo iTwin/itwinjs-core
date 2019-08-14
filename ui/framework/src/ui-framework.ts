@@ -8,6 +8,7 @@ export * from "./ui-framework/SessionState";
 export * from "./ui-framework/FrameworkState";
 export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
+export * from "./ui-framework/MarkupToolDefinitions";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";
@@ -23,6 +24,8 @@ export * from "./ui-framework/messages/Pointer";
 export * from "./ui-framework/oidc/SignIn";
 export * from "./ui-framework/oidc/SignOut";
 
+export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
+export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
 
 export * from "./ui-framework/pickers/ListPicker";
@@ -87,6 +90,8 @@ export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
+export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
+export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -115,7 +120,9 @@ export * from "./ui-framework/toolbar/Toolbar";
 export * from "./ui-framework/toolbar/ToolButton";
 
 export * from "./ui-framework/cursor/CursorInformation";
+export * from "./ui-framework/cursor/cursorprompt/CursorPrompt";
 export * from "./ui-framework/cursor/cursorpopup/CursorPopup";
+export * from "./ui-framework/cursor/cursorpopup/CursorPopupManager";
 
 export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
@@ -127,6 +134,8 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/BackstageComposer";
+export * from "./ui-framework/backstage/BackstageItemManager";
 
 export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/CubeNavigationAid";
@@ -263,8 +272,4 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Zone
  * Classes for working with a Zone
- */
-/**
- * @docs-group-description Item
- * Classes for working with an Item
  */

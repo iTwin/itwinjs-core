@@ -277,6 +277,83 @@ PropertyRecord {
 }
 `;
 
+exports[`ContentBuilder createPropertyRecord creates record with multiple nested content values which have links in them 1`] = `
+PropertyRecord {
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "Congolese Franc Wooden synthesizing",
+    "name": "Cambridgeshire",
+    "typename": "text",
+  },
+  "value": Object {
+    "items": Array [
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Congolese Franc Wooden synthesizing",
+          "name": "Cambridgeshire",
+          "typename": "text",
+        },
+        "value": Object {
+          "members": Object {
+            "Bedfordshire": PropertyRecord {
+              "description": "some display value 1 with link testLink.com",
+              "links": Object {
+                "matcher": [Function],
+              },
+              "property": Object {
+                "displayLabel": "overriding Fresh",
+                "name": "Bedfordshire",
+                "typename": "float",
+              },
+              "value": Object {
+                "displayValue": "some display value 1 with link testLink.com",
+                "value": "some value 1",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "isMerged": false,
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Congolese Franc Wooden synthesizing",
+          "name": "Cambridgeshire",
+          "typename": "text",
+        },
+        "value": Object {
+          "members": Object {
+            "Bedfordshire": PropertyRecord {
+              "description": "some display value 2 with link testLinkTwo.com",
+              "links": Object {
+                "matcher": [Function],
+              },
+              "property": Object {
+                "displayLabel": "overriding Fresh",
+                "name": "Bedfordshire",
+                "typename": "float",
+              },
+              "value": Object {
+                "displayValue": "some display value 2 with link testLinkTwo.com",
+                "value": "some value 2",
+                "valueFormat": 0,
+              },
+            },
+          },
+          "valueFormat": 2,
+        },
+      },
+    ],
+    "itemsTypeName": "text",
+    "valueFormat": 1,
+  },
+}
+`;
+
 exports[`ContentBuilder createPropertyRecord creates record with only properties in field path 1`] = `
 PropertyRecord {
   "isReadonly": true,

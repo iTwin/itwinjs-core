@@ -3,21 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
-import { assert } from "@bentley/bentleyjs-core";
 import { Target } from "./Target";
-import { Matrix4 } from "./Matrix";
 import { TileTree } from "../../tile/TileTree";
 import { Frustum, Npc, FrustumPlanes, RenderMode } from "@bentley/imodeljs-common";
-import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
 import { ViewState3d } from "../../ViewState";
 import { ViewFrustum } from "../../Viewport";
+import { Matrix4 } from "./Matrix";
 
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
   private static _scratchFrustum = new Frustum();
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d): { textureFrustum?: Frustum, projectionMatrix?: Matrix4 } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4 } {
     const textureZ = texturePlane.getNormalRef();
     const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -46,9 +45,11 @@ export class PlanarTextureProjection {
     const viewMap = viewFrustumFrustum.toMap4d()!;
     const viewPlanes = new FrustumPlanes(viewFrustumFrustum);
 
-    const tileRange = Range3d.createNull();
-    tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
-    npcRange = npcRange.intersect(tileRange);
+    if (!tileTree.isBackgroundMap) {
+      const tileRange = Range3d.createNull();
+      tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
+      npcRange = npcRange.intersect(tileRange);
+    }
 
     PlanarTextureProjection._scratchFrustum.initFromRange(npcRange);
     viewMap.transform1.multiplyPoint3dArrayQuietNormalize(PlanarTextureProjection._scratchFrustum.points);
@@ -64,7 +65,7 @@ export class PlanarTextureProjection {
         const eyePoint = textureTransform.multiplyPoint3d(projectionRay.fractionToPoint(projectionDistance));
         const near = Math.max(.01, eyePoint.z - range.high.z);
         const far = eyePoint.z - range.low.z;
-        const minFraction = 1.0 / 50.0;
+        const minFraction = 1.0 / 10.0;
         const fraction = Math.max(minFraction, near / far);
         for (let i = Npc.LeftBottomFront; i <= Npc.RightTopFront; i++) {
           const frustumPoint = textureFrustum.points[i];
@@ -77,13 +78,20 @@ export class PlanarTextureProjection {
     textureMatrix.multiplyVectorArrayInPlace(textureFrustum.points);
     const frustumMap = textureFrustum.toMap4d();
     if (undefined === frustumMap) {
-      assert(false);
       return {};
     }
+    const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
     const projectionMatrix = new Matrix4();
-    projectionMatrix.initFromMatrix4d(PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0));
+    projectionMatrix.initFromMatrix4d(worldToNpc);
+    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1))!;
+    const npcToWorld = worldToNpc.createInverse();
+    if (undefined === npcToWorld) {
+      return {};
+    }
+    const worldToNpcMap = Map4d.createRefs(worldToNpc, npcToWorld);
+    const worldToViewMap = npcToView.multiplyMapMap(worldToNpcMap);
 
-    return { textureFrustum, projectionMatrix };
+    return { textureFrustum, projectionMatrix, worldToViewMap };
   }
   public static getTextureDrawingParams(target: Target) {
     const state = new RenderState();

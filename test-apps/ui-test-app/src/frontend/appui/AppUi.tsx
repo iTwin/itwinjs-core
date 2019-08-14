@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
-  TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework,
+  TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework, CoreTools,
   KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager, WorkflowProps,
 } from "@bentley/ui-framework";
 
@@ -45,6 +45,7 @@ export class AppUi {
 
   public static initialize() {
     ConfigurableUiManager.initialize();
+    UiFramework.setDefaultRulesetId("Items");
 
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();
@@ -356,7 +357,7 @@ export class AppUi {
           },
           {
             key: "s",
-            item: AppTools.appSelectElementCommand,
+            item: CoreTools.selectElementCommand,
           },
         ],
       },

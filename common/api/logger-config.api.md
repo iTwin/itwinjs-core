@@ -42,7 +42,6 @@ export interface IFluentdConfig {
     fluentdPort?: number;
     fluentdTimeout?: number;
     seqApiKey?: string;
-    seqServerPort?: number;
     seqServerUrl?: string;
 }
 

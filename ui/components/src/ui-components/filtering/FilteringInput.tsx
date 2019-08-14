@@ -9,8 +9,8 @@ import classnames from "classnames";
 import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
+import { CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
-import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
 
 /** [[FilteringInput]] React Component state
  * @internal
@@ -59,12 +59,20 @@ export enum InputContext {
  * @public
  */
 export class FilteringInput extends React.PureComponent<FilteringInputProps, FilteringInputState> {
+  private _inputElement = React.createRef<HTMLInputElement>();
+
   constructor(props: FilteringInputProps) {
     super(props);
     this.state = {
       searchText: "",
       context: InputContext.ReadyToFilter,
     };
+  }
+
+  private focus() {
+    // istanbul ignore else
+    if (this._inputElement.current)
+      this._inputElement.current.focus();
   }
 
   private _onSearchButtonClick = () => {
@@ -81,11 +89,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   private _onCancelButtonClick = () => {
     this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
     this.props.onFilterCancel();
+    this.focus();
   }
 
   private _onClearButtonClick = () => {
     this.setState({ context: InputContext.ReadyToFilter, searchText: "" });
     this.props.onFilterClear();
+    this.focus();
   }
 
   private _onFilterKeyDown = (e: React.KeyboardEvent<HTMLElement>): void => {
@@ -125,35 +135,26 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       >
         <span className="components-filtering-input-input">
           <input type="text"
+            placeholder={UiComponents.translate("filteringInput:placeholder")}
             autoFocus={this.props.autoFocus}
             onKeyDown={this._onFilterKeyDown}
             value={this.state.searchText}
             onChange={this._onInputChanged} />
 
           <span className="components-filtering-input-input-components">
-            {this.state.context === InputContext.FilteringInProgress ?
-              <div className="components-filtering-input-loader">
-                <Spinner size={SpinnerSize.Medium} />
-              </div>
-              : undefined}
-
             {this.state.context === InputContext.FilteringFinished ?
               <ResultSelector {...this.props.resultSelectorProps!} /> : undefined}
+
+            {this.state.context === InputContext.ReadyToFilter ?
+              <span className="icon icon-search" onClick={this._onSearchButtonClick} /> : undefined}
+
+            {this.state.context === InputContext.FilteringInProgress ?
+              <span className="icon icon-close" onClick={this._onCancelButtonClick} /> : undefined}
+
+            {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
+              <span className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick} /> : undefined}
           </span>
         </span>
-
-        {this.state.context === InputContext.ReadyToFilter ?
-          <button className="components-filtering-input-button"
-            onClick={this._onSearchButtonClick}>{UiComponents.translate("button.label.search")}</button> : undefined}
-
-        {this.state.context === InputContext.FilteringInProgress ?
-          <button className="components-filtering-input-button"
-            onClick={this._onCancelButtonClick}>{UiComponents.translate("button.label.cancel")}</button> : undefined}
-
-        {this.state.context === InputContext.FilteringFinishedWithNoStepping || this.state.context === InputContext.FilteringFinished ?
-          <button className="components-filtering-input-clear icon icon-close" onClick={this._onClearButtonClick}></button> :
-          undefined}
-
       </div>
     );
   }

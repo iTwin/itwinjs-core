@@ -106,6 +106,15 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
+  it("calls addon's setupSupplementalRulesetDirectories", async () => {
+    addonMock
+      .setup((x) => x.setupSupplementalRulesetDirectories(moq.It.isAny()))
+      .returns(() => ({}))
+      .verifiable();
+    nativePlatform.setupSupplementalRulesetDirectories([]);
+    addonMock.verifyAll();
+  });
+
   it("calls addon's setupLocaleDirectories", async () => {
     addonMock.setup((x) => x.setupLocaleDirectories(moq.It.isAny())).returns(() => ({})).verifiable();
     nativePlatform.setupLocaleDirectories([]);

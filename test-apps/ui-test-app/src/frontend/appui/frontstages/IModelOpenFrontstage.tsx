@@ -6,7 +6,7 @@ import * as React from "react";
 import {
   CoreTools, ContentGroup, ContentControl,
   ConfigurableCreateInfo, FrontstageProvider, FrontstageProps,
-  Frontstage, IModelInfo,
+  Frontstage, IModelInfo, UiFramework,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -15,8 +15,11 @@ class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const accessToken = SampleAppIModelApp.getAccessToken()!;
-    this.reactElement = <IModelOpen accessToken={accessToken} onIModelSelected={this._onOpenIModel} />;
+    const accessToken = UiFramework.getAccessToken();
+    if (accessToken)
+      this.reactElement = <IModelOpen accessToken={accessToken} onIModelSelected={this._onOpenIModel} />;
+    else
+      this.reactElement = null;
   }
 
   // called when an imodel has been selected on the IModelOpen

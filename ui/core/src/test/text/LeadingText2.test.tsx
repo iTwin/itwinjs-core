@@ -19,8 +19,8 @@ describe("<LeadingText2 />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<LeadingText2 />);
-    wrapper.find(".uicore-text-leading-2").should.exist;
+    const wrapper = mount(<LeadingText2 />);
+    wrapper.find(".uicore-text-leading-2").length.should.eq(1);
   });
 
   it("has correct text", () => {

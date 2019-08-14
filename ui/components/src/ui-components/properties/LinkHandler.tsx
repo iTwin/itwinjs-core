@@ -16,7 +16,8 @@ function renderTag(text: string, record: PropertyRecord) {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        record.links!.onClick(record, text);
+        if (record.links!.onClick)
+          record.links!.onClick(record, text);
       }}
     >
       {text}

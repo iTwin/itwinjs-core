@@ -14,7 +14,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
@@ -130,7 +130,7 @@ export class ChangeSummaryManager {
   }
 
   /** Extracts change summaries from the specified iModel.
-   * Change summaries are extracted from the specified start version up through the version the iModel was opened with.
+   * Change summaries are extracted from the version the iModel was opened with up through the specified start version.
    * If no start version has been specified, the first version will be used.
    * @param requestContext The client request context
    * @param iModel iModel to extract change summaries for. The iModel must not be a standalone iModel.

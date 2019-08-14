@@ -7,8 +7,6 @@
 process.env.NODE_ENV = "test";
 process.env.TEST_ENV = "tsnode";
 
-const isCI = (process.env.TF_BUILD);
-
 const paths = require("./config/paths");
 const path = require("path");
 const fs = require("fs");

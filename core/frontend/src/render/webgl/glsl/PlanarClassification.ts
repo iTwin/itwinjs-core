@@ -10,8 +10,11 @@ import { addUInt32s } from "./Common";
 import { addModelMatrix } from "./Vertex";
 
 const applyPlanarClassificationColor = `
-  if (s_pClassColorParams.x > 4.0)
+  if (s_pClassColorParams.x > 4.0) {
+    if (v_pClassPos.x < 0.0 || v_pClassPos.x > 1.0 || v_pClassPos.y < 0.0 || v_pClassPos.y > 1.0)
+      discard;
     return  TEXTURE(s_pClassSampler, v_pClassPos.xy);  // Texture/terrain drape.
+  }
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, v_pClassPos.y / 2.0));
   if (colorTexel.a < .5) {
     if (s_pClassColorParams.y == 0.0)

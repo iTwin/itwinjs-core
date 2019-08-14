@@ -188,3 +188,14 @@ export function addSelectFileAccessKey(query: RequestQueryOptions) {
 
   query.$select += ",FileAccessKey-forward-AccessKey.DownloadURL";
 }
+
+/**
+ * Add select for the application data to the query.
+ * @internal
+ */
+export function addSelectApplicationData(query: RequestQueryOptions) {
+  if (!query.$select)
+    query.$select = "*";
+
+  query.$select += ",CreatedByApplication-forward-Application.*";
+}

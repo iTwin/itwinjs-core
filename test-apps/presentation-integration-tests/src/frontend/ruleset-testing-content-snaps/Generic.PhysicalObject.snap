@@ -78,6 +78,9 @@ Array [
       "members": Object {
         "firstTryElementAspect_email": PropertyRecord {
           "description": "justas.lauzadis@bentley.com",
+          "links": Object {
+            "matcher": [Function],
+          },
           "property": Object {
             "displayLabel": "email",
             "name": "firstTryElementAspect_email",
@@ -91,6 +94,9 @@ Array [
         },
         "firstTryElementAspect_full__x0020__URL": PropertyRecord {
           "description": "http://www.google.lt",
+          "links": Object {
+            "matcher": [Function],
+          },
           "property": Object {
             "displayLabel": "full URL",
             "name": "firstTryElementAspect_full__x0020__URL",
@@ -104,6 +110,9 @@ Array [
         },
         "firstTryElementAspect_mailto": PropertyRecord {
           "description": "mailto:justas.lauzadis@bentley.com",
+          "links": Object {
+            "matcher": [Function],
+          },
           "property": Object {
             "displayLabel": "mailto",
             "name": "firstTryElementAspect_mailto",
@@ -117,6 +126,9 @@ Array [
         },
         "firstTryElementAspect_without__x0020__http": PropertyRecord {
           "description": "www.bbc.co.uk",
+          "links": Object {
+            "matcher": [Function],
+          },
           "property": Object {
             "displayLabel": "without http",
             "name": "firstTryElementAspect_without__x0020__http",
@@ -130,6 +142,9 @@ Array [
         },
         "firstTryElementAspect_without__x0020__www": PropertyRecord {
           "description": "gmail.com",
+          "links": Object {
+            "matcher": [Function],
+          },
           "property": Object {
             "displayLabel": "without www",
             "name": "firstTryElementAspect_without__x0020__www",

@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Fix invalid double display values in similar instances provider description
+- Use the new `RulesetsFactory.createSimilarInstancesRulesetAsync` to produce 'similar instances' ruleset. Use type converters to calculate display values used in 'similar instances' provider description.
+- Added test for ContentBuilder to verify that links property is set for nested PropertyRecord.
+- Added checking for links in the ContentBuilder with tests for it.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

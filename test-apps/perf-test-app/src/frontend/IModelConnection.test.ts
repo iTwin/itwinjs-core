@@ -58,7 +58,7 @@ describe("IModelConnection (#integration)", () => {
 
     // time to open an imodel with latest revision
     const startTime1 = new Date().getTime();
-    const noVersionsIModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const noVersionsIModel = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named("latest"));
     const endTime1 = new Date().getTime();
     assert.isNotNull(noVersionsIModel);
     assert.exists(noVersionsIModel);
@@ -69,7 +69,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("Execute a ECSQL Query", async () => {
-    const iModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.latest());
+    const iModel: IModelConnection = await IModelConnection.open(testProjectId, testIModelId, OpenMode.Readonly, IModelVersion.named("latest"));
     assert.exists(iModel);
 
     // time to execute a query

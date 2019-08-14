@@ -5,11 +5,10 @@
 /** @module ToolSettings */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ToolSettings,
   ToolSettingsTab,
-  RectangleProps,
   Zone,
   TitleBarButton,
 } from "@bentley/ui-ninezone";
@@ -38,23 +37,25 @@ interface ToolSettingsZoneState {
 export interface ToolSettingsZoneProps extends CommonProps {
   bounds: RectangleProps;
   isHidden: boolean;
+  isClosed: boolean;
 }
 
 /** Tool Settings Zone React component.
  * @internal
  */
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
-  private _toolSettingsLabel: string;
+  private _settingsSuffix: string;
 
   /** @internal */
-  public readonly state: Readonly<ToolSettingsZoneState> = {
-    toolSettingsZoneContent: ToolSettingsZoneContent.ToolSettings,
-  };
+  public readonly state: Readonly<ToolSettingsZoneState>;
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
 
-    this._toolSettingsLabel = UiFramework.translate("general.toolSettings");
+    this._settingsSuffix = UiFramework.translate("general.settings");
+    this.state = {
+      toolSettingsZoneContent: this.props.isClosed ? ToolSettingsZoneContent.Closed : ToolSettingsZoneContent.ToolSettings,
+    };
   }
 
   public componentDidMount(): void {
@@ -115,13 +116,13 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
 
   private getToolSettingsWidget(): React.ReactNode {
     if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
-      const title = ToolUiManager.activeToolDescription + " " + this._toolSettingsLabel;
+      const tooltip = `${ToolUiManager.activeToolLabel} - ${this._settingsSuffix}`;
 
       return (
         <ToolSettingsTab
           onClick={this._processClick}
           onKeyDown={this._handleKeyDown}
-          title={title}
+          title={tooltip}
           onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >
           {this.getToolSettingsButton()}

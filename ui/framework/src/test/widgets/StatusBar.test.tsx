@@ -31,6 +31,9 @@ import {
   MessageHyperlink,
   MessageButton,
   Message,
+  MessageLayout,
+  Toast,
+  MessageProgress,
 } from "@bentley/ui-ninezone";
 
 describe("StatusBar", () => {
@@ -75,6 +78,20 @@ describe("StatusBar", () => {
     wrapper.unmount();
   });
 
+  it("StatusBar should render a Toast message", async () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const details = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message.", "A detailed message.");
+    notifications.outputMessage(details);
+    wrapper.update();
+
+    expect(wrapper.find(Toast).length).to.eq(1);
+    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(MessageLayout).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
   it("StatusBar should render a Toast message and animate out", async () => {
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
@@ -82,9 +99,10 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
+    expect(wrapper.find(Toast).length).to.eq(1);
+
     const toast = wrapper.find(".nz-toast");
     expect(toast.length).to.eq(1);
-
     toast.simulate("transitionEnd");
     wrapper.update();
 
@@ -99,7 +117,10 @@ describe("StatusBar", () => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
     wrapper.update();
+
     expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(MessageLayout).length).to.eq(1);
+    expect(wrapper.find(MessageButton).length).to.eq(1);
 
     wrapper.unmount();
   });
@@ -110,20 +131,12 @@ describe("StatusBar", () => {
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
     notifications.outputMessage(details);
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(1);
+
+    expect(wrapper.find(MessageButton).length).to.eq(1);
 
     wrapper.find(MessageButton).simulate("click");
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
-
-    wrapper.unmount();
-  });
-
-  it("StatusBar should render a Modal message", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
-
-    const details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.", "A detailed message.", OutputMessageType.Alert);
-    notifications.outputMessage(details);
 
     wrapper.unmount();
   });
@@ -135,7 +148,9 @@ describe("StatusBar", () => {
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
+
     expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(MessageProgress).length).to.eq(1);
 
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
     wrapper.update();

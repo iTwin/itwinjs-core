@@ -9,8 +9,8 @@ import { Code, ElementProps, RpcManager, GeometricElementProps, IModel, IModelRe
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
+  IModelJsNative, NativeLoggerCategory,
 } from "../imodeljs-backend";
-import { IModelJsNative, NativeLoggerCategory } from "../IModelJsNative";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
@@ -209,14 +209,11 @@ export class IModelTestUtils {
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-
     const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = testImodel.models.insertModel(newModel);
-
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
-
     return newModelId;
   }
 

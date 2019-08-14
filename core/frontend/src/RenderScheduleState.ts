@@ -221,6 +221,7 @@ export namespace RenderScheduleState {
           return undefined;
       }
 
+      direction.negate(direction);
       direction.normalizeInPlace();
       const plane = Plane3dByOriginAndUnitNormal.create(position, direction);
       const clipPlane = ClipPlane.createPlane(plane!);

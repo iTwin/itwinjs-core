@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { BeDuration, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
@@ -20,7 +20,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchema(requestContext, schemaFileName); // will throw an exception if import fails
+    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     props = {
       classFullName: "TestBim:TestPhysicalObject",
@@ -194,15 +194,10 @@ describe("TxnManager", () => {
     assert.equal(validateOutput, 0);
     assert.equal(deletedDependency, 0);
 
-    // NOTE: for this test, we're going to update the element we just inserted. The TxnManager relies on the last-modified-time of the element
-    // to recognize that something changed about that element (unless you modify one of the properties of the Element *base class*).
-    // Since the resolution of that value is milliseconds, we need to wait at least 1 millisecond
-    // before we call update on the same element we just inserted.
-    // We don't think this will be a problem in the real world.
-    await BeDuration.wait(2); // wait 2 milliseconds, just for safety
-
     const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
-    element2.update(); // since nothing really changed about this element, only the last-modified-time will change.
+    // make sure we actually change something in the element table. Otherwise update does nothing unless we wait long enough for last-mod-time to be updated.
+    element2.userLabel = "new value";
+    element2.update();
     imodel.saveChanges("step 2");
     assert.equal(commits, 2);
     assert.equal(committed, 2);

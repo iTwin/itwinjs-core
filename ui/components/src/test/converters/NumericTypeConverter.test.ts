@@ -21,6 +21,10 @@ describe("IntTypeConverter", () => {
   describe("convertToString", () => {
     it("returns correct strings", () => {
       expect(converter.convertToString(100)).to.equal("100");
+      expect(converter.convertToString("100")).to.equal("100");
+      expect(converter.convertToString(100.4)).to.equal("100");
+      expect(converter.convertToString(100.5)).to.equal("101");
+      expect(converter.convertToString(100.6)).to.equal("101");
       expect(converter.convertToString("-")).to.equal("0");
     });
 
@@ -87,6 +91,13 @@ describe("FloatTypeConverter", () => {
   describe("convertToString", () => {
     it("returns correct strings", () => {
       expect(converter.convertToString(100.0)).to.equal("100.0");
+      expect(converter.convertToString(100.01)).to.equal("100.01");
+      expect(converter.convertToString(100.004)).to.equal("100.0");
+      expect(converter.convertToString(100.095)).to.equal("100.1");
+      expect(converter.convertToString(100.006)).to.equal("100.01");
+      expect(converter.convertToString(100.123)).to.equal("100.12");
+      expect(converter.convertToString(100.456)).to.equal("100.46");
+      expect(converter.convertToString("100")).to.equal("100.0");
       expect(converter.convertToString("-")).to.equal("0.0");
       expect(converter.convertToString(0)).to.equal("0.0");
     });

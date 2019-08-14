@@ -1,6 +1,6 @@
 {
-  "rushVersion": "5.7.1",
-  "pnpmVersion": "2.25.7",
+  "rushVersion": "5.10.3",
+  "pnpmVersion": "3.5.3",
   "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
@@ -266,6 +266,12 @@
     {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/wms-plugin-example",
+      "projectFolder": "plugins/wms",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

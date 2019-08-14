@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { CurveLocationDetailArrayPair, CurveCurveIntersectXY } from "./CurveCurveIntersectXY";
@@ -35,7 +40,7 @@ export class CurveCurve {
    * Return full 3d xyz intersections of 2 curves.
    *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
    *  * Not Implemented for bspline and bezier curves.
-   * @alpha
+   * @beta
    * @param geometryA second geometry
    * @param extendA true to allow geometryA to extend
    * @param geometryB second geometry

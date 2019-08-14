@@ -38,13 +38,13 @@ describe("Functional Domain", () => {
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
-    await iModelDb.importSchema(requestContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+    await iModelDb.importSchemas(requestContext, [path.join(__dirname, "../assets/TestFunctional.ecschema.xml")]);
 
     iModelDb.saveChanges("Import TestFunctional schema");
     assert.equal(commits, 1);
     assert.equal(committed, 1);
 
-    const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
+    const codeSpec = CodeSpec.create(iModelDb, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
