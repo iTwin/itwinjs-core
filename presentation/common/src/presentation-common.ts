@@ -107,6 +107,8 @@ export {
   PropertyGroup, PropertyGroupingValue, PropertyRangeGroupSpecification,
   GroupingSpecificationBase,
 } from "./rules/customization/GroupingRule";
+export { ExtendedDataRule } from "./rules/customization/ExtendedDataRule";
+export { NodeArtifactsRule } from "./rules/hierarchy/NodeArtifactsRule";
 
 export { ContentRule } from "./rules/content/ContentRule";
 export { ContentSpecification, ContentSpecificationTypes, ContentSpecificationBase } from "./rules/content/ContentSpecification";

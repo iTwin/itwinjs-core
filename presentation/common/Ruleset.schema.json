@@ -27,6 +27,10 @@
           ],
           "type": "string"
         },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
           "type": "boolean"
@@ -93,6 +97,10 @@
             "Never",
             "Unknown"
           ],
+          "type": "string"
+        },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
           "type": "string"
         },
         "hideIfNoChildren": {
@@ -262,6 +270,9 @@
               },
               {
                 "$ref": "#/definitions/ExtendedDataRule"
+              },
+              {
+                "$ref": "#/definitions/NodeArtifactsRule"
               }
             ]
           },
@@ -668,6 +679,10 @@
           ],
           "type": "string"
         },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
           "type": "boolean"
@@ -744,6 +759,10 @@
             "Never",
             "Unknown"
           ],
+          "type": "string"
+        },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
           "type": "string"
         },
         "hideIfNoChildren": {
@@ -1270,6 +1289,10 @@
           ],
           "type": "string"
         },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
           "type": "boolean"
@@ -1374,6 +1397,43 @@
       "required": [
         "classNames",
         "schemaName"
+      ],
+      "type": "object"
+    },
+    "NodeArtifactsRule": {
+      "additionalProperties": false,
+      "description": "Rule used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should\nbe hidden or not.\n\nA typical use case:\n- The hierarchy consists of *Subject* nodes and each *Subject* may or may not have child *Model* nodes. There are 2 types\nof *Models*: *A* & *B*, we want *ModelA* nodes to be visible and *ModelB* ones to be hidden. We want *Subject* node to be\nvisible only if it has a *Model* (either *A* or *B*). In this case we can't use `hideIfNoChildren` flag on *Subjects*, because\na *Subject* node may only have a related *ModelB* which means *Subject* doesn't have children and should be displayed as a leaf node.\nThe solution is to use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* nodes. The expression can access\nartifacts created by child *ModelB* nodes: `NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsModelB)`",
+      "properties": {
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order for it to be used. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
+        "items": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "A map of items that define the values stored in the artifacts data structure.\n\nThe key part of the pair should be unique within all keys which are used for specific\npresentation object, even if they are applied using different `NodeArtifacts` definitions.\n\nThe value part of the pair is an ECExpression, which can use\na limited set of symbols and whose\nevaluated result is used as the artifact value.",
+          "type": "object"
+        },
+        "onlyIfNotHandled": {
+          "description": "Should this rule should be ignored if there is already an existing\nrule with a higher priority.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "ruleType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "NodeArtifacts"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "items",
+        "ruleType"
       ],
       "type": "object"
     },
@@ -1707,6 +1767,10 @@
           ],
           "type": "string"
         },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
         "hideIfNoChildren": {
           "description": "Hide nodes if they don't have children.",
           "type": "boolean"
@@ -1955,6 +2019,9 @@
               },
               {
                 "$ref": "#/definitions/ExtendedDataRule"
+              },
+              {
+                "$ref": "#/definitions/NodeArtifactsRule"
               }
             ]
           },
@@ -2383,6 +2450,9 @@
           },
           {
             "$ref": "#/definitions/ExtendedDataRule"
+          },
+          {
+            "$ref": "#/definitions/NodeArtifactsRule"
           },
           {
             "$ref": "#/definitions/ChildNodeRule"
