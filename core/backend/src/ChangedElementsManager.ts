@@ -8,12 +8,14 @@ import { ChangedElements, ChangedModels, ChangeData } from "@bentley/imodeljs-co
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
 
+/** @internal */
 interface ChangedElementsDbCacheEntry {
   iModelId: GuidString;
   db: ChangedElementsDb;
 }
 
 /** Utilities for querying changed elements caches */
+/** @internal */
 export class ChangedElementsManager {
   /** Maintains a single entry since we will only have a cache per iModel, which means a ChangedElementsDb per backend instance */
   private static _entry: ChangedElementsDbCacheEntry | undefined;
