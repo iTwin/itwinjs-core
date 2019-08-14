@@ -66,8 +66,8 @@
         }
     }
 
-    &.green > li > a::after {
+    &.uicore-tabs-green > li > a::after {
 
-        background:     $uicore-green;
+        background:     $buic-foreground-success;
     }
 }

@@ -13,7 +13,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../UiFramework";
 
 /** Options for the [[CursorPopupManager]] open method
- * @alpha
+ * @beta
  */
 export interface CursorPopupOptions {
   /** Title of the popup */
@@ -71,7 +71,7 @@ interface CursorPopupInfo {
 class CursorPopupsChangedEvent extends UiEvent<{}> { }
 
 /** CursorPopup component
- * @alpha
+ * @beta
  */
 export class CursorPopupManager {
   private static _popups: CursorPopupInfo[] = new Array<CursorPopupInfo>();
@@ -281,7 +281,7 @@ interface CursorPopupRendererState {
 }
 
 /** CursorPopupRenderer React component.
- * @public
+ * @beta
  */
 export class CursorPopupRenderer extends React.Component<any, CursorPopupRendererState> {
 

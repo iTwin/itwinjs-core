@@ -97,23 +97,23 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
-alpha;CursorDirection
-alpha;CursorDirectionParts
-alpha;CursorInformation
-alpha;CursorPopup 
-alpha;CursorPopupContent: React_2.FunctionComponent
+beta;CursorDirection
+beta;CursorDirectionParts
+beta;CursorInformation
+beta;CursorPopup 
+beta;CursorPopupContent: React_2.FunctionComponent
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
-alpha;CursorPopupManager
-alpha;CursorPopupOptions
-alpha;CursorPopupProps 
-public;CursorPopupRenderer 
+beta;CursorPopupManager
+beta;CursorPopupOptions
+beta;CursorPopupProps 
+beta;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
 alpha;CursorPrompt
-alpha;CursorUpdatedEvent 
-alpha;CursorUpdatedEventArgs
+beta;CursorUpdatedEvent 
+beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
 beta;CustomItemSpec 
@@ -324,8 +324,12 @@ alpha;StandardRotationNavigationAid
 alpha;StandardRotationNavigationAidControl 
 public;StateType
 public;StatusBar 
+beta;StatusBarCenterSection: React_2.FunctionComponent
 public;StatusBarFieldId = string | null
+beta;StatusBarLeftSection: React_2.FunctionComponent
 public;StatusBarProps 
+beta;StatusBarRightSection: React_2.FunctionComponent
+beta;StatusBarSpaceBetween: React_2.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 

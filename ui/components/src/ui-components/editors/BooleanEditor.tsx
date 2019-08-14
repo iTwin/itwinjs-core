@@ -10,6 +10,7 @@ import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imo
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./BooleanEditor.scss";
+import { Checkbox } from "@bentley/ui-core";
 
 /** @internal */
 interface BooleanEditorState {
@@ -20,7 +21,6 @@ interface BooleanEditorState {
  * @beta
  */
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
-  private _checkboxElement: HTMLInputElement | null = null;
   private _isMounted = false;
 
   /** @internal */
@@ -46,13 +46,6 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     }
 
     return propertyValue;
-  }
-
-  private setFocus(): void {
-    // istanbul ignore else
-    if (this._checkboxElement) {
-      this._checkboxElement.focus();
-    }
   }
 
   private _updateCheckboxValue = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,13 +104,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState(
-        { checkboxValue },
-        () => {
-          if (this.props.setFocus)
-            this.setFocus();
-        },
-      );
+      this.setState({ checkboxValue });
   }
 
   public render() {
@@ -125,16 +112,15 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
     const checked = this.state.checkboxValue;
 
     return (
-      <input
-        type="checkbox"
-        ref={(node) => this._checkboxElement = node}
+      <Checkbox
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}
         checked={checked}
         onChange={this._updateCheckboxValue}
+        setFocus={this.props.setFocus}
         data-testid="components-checkbox-editor">
-      </input>
+      </Checkbox>
     );
   }
 }

@@ -98,6 +98,8 @@ export const Centered: React.FunctionComponent<CommonDivProps>;
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
@@ -121,6 +123,7 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
     onClick?: (e: React.MouseEvent) => void;
+    setFocus?: boolean;
     status?: InputStatus;
 }
 

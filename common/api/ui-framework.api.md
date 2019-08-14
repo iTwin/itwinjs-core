@@ -1044,7 +1044,7 @@ export interface CubeNavigationAidProps extends CommonProps {
     onAnimationEnd?: () => void;
 }
 
-// @alpha (undocumented)
+// @beta
 export enum CursorDirection {
     // (undocumented)
     Bottom = 1,
@@ -1066,7 +1066,7 @@ export enum CursorDirection {
     TopRight = 4112
 }
 
-// @alpha (undocumented)
+// @beta
 export enum CursorDirectionParts {
     // (undocumented)
     Bottom = 1,
@@ -1078,7 +1078,7 @@ export enum CursorDirectionParts {
     Top = 4096
 }
 
-// @alpha
+// @beta
 export class CursorInformation {
     // @internal
     static clearCursorDirections(): void;
@@ -1091,7 +1091,7 @@ export class CursorInformation {
     static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
 }
 
-// @alpha
+// @beta
 export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
@@ -1107,7 +1107,7 @@ export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopup
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export const CursorPopupContent: React_2.FunctionComponent<CommonDivProps>;
 
 // @internal
@@ -1120,7 +1120,7 @@ export interface CursorPopupFadeOutEventArgs {
     id: string;
 }
 
-// @alpha
+// @beta
 export class CursorPopupManager {
     static close(id: string, apply: boolean, fadeOut?: boolean): void;
     // @internal (undocumented)
@@ -1138,7 +1138,7 @@ export class CursorPopupManager {
     static updatePosition(pt: PointProps): void;
     }
 
-// @alpha
+// @beta
 export interface CursorPopupOptions {
     onApply?: () => void;
     onClose?: () => void;
@@ -1146,7 +1146,7 @@ export interface CursorPopupOptions {
     title?: string;
 }
 
-// @alpha
+// @beta
 export interface CursorPopupProps extends CommonProps {
     // (undocumented)
     content: React_2.ReactNode;
@@ -1165,7 +1165,7 @@ export interface CursorPopupProps extends CommonProps {
     title?: string;
 }
 
-// @public
+// @beta
 export class CursorPopupRenderer extends React_2.Component<any, CursorPopupRendererState> {
     constructor(props: any);
     // (undocumented)
@@ -1203,11 +1203,11 @@ export class CursorPrompt {
     display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: PointProps, relativePosition?: RelativePosition): void;
     }
 
-// @alpha
+// @beta
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface CursorUpdatedEventArgs {
     // (undocumented)
     direction: CursorDirection;
@@ -3511,8 +3511,14 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     readonly state: Readonly<StatusBarState>;
     }
 
+// @beta
+export const StatusBarCenterSection: React_2.FunctionComponent<CommonDivProps>;
+
 // @public
 export type StatusBarFieldId = string | null;
+
+// @beta
+export const StatusBarLeftSection: React_2.FunctionComponent<CommonDivProps>;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -3521,6 +3527,12 @@ export interface StatusBarProps extends CommonProps {
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
 }
+
+// @beta
+export const StatusBarRightSection: React_2.FunctionComponent<CommonDivProps>;
+
+// @beta
+export const StatusBarSpaceBetween: React_2.FunctionComponent<CommonDivProps>;
 
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {

@@ -17,6 +17,10 @@ import {
   WidgetDef,
   ConfigurableUiControlType,
   StatusBarWidgetControlArgs,
+  StatusBarSpaceBetween,
+  StatusBarLeftSection,
+  StatusBarCenterSection,
+  StatusBarRightSection,
 } from "../../ui-framework";
 
 import {
@@ -188,6 +192,30 @@ describe("StatusBar", () => {
     wrapper.update();
     expect(wrapper.find(Message).length).to.eq(0);
 
+    wrapper.unmount();
+  });
+
+  it("StatusBarSpaceBetween should render correctly", () => {
+    const wrapper = mount(<StatusBarSpaceBetween>Hello</StatusBarSpaceBetween>);
+    expect(wrapper.find("div.uifw-statusbar-space-between").length).to.eq(1);
+    wrapper.unmount();
+  });
+
+  it("StatusBarLeftSection should render correctly", () => {
+    const wrapper = mount(<StatusBarLeftSection>Hello</StatusBarLeftSection>);
+    expect(wrapper.find("div.uifw-statusbar-left").length).to.eq(1);
+    wrapper.unmount();
+  });
+
+  it("StatusBarCenterSection should render correctly", () => {
+    const wrapper = mount(<StatusBarCenterSection>Hello</StatusBarCenterSection>);
+    expect(wrapper.find("div.uifw-statusbar-center").length).to.eq(1);
+    wrapper.unmount();
+  });
+
+  it("StatusBarRightSection should render correctly", () => {
+    const wrapper = mount(<StatusBarRightSection>Hello</StatusBarRightSection>);
+    expect(wrapper.find("div.uifw-statusbar-right").length).to.eq(1);
     wrapper.unmount();
   });
 
