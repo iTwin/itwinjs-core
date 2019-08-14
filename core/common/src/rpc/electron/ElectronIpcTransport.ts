@@ -163,7 +163,10 @@ class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcRequest, Rpc
       response = await RpcRequestFulfillment.forUnknownError(message, err);
     }
 
+    const raw = response.rawResult;
+    response.rawResult = undefined; // Otherwise, it will be serialized in IPC layer and large responses will then crash the app
     this.sendResponse(response, evt);
+    response.rawResult = raw;
   }
 }
 
