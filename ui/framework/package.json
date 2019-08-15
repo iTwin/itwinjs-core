@@ -170,9 +170,9 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 90.3,
-    "branches": 84.4,
-    "functions": 90.5,
-    "lines": 90.8
+    "statements": 90.5,
+    "branches": 84.8,
+    "functions": 90.6,
+    "lines": 91
   }
 }

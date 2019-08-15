@@ -2416,6 +2416,8 @@ export interface LayoutFragmentProps {
 // @public
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
     top: LayoutFragmentProps | number;
 }
 
@@ -2437,6 +2439,8 @@ export interface LayoutSplitPropsBase {
 // @public
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
     right: LayoutFragmentProps | number;
 }
 

@@ -35,7 +35,7 @@
   display: flex;
 
   .components-label-popup {
-    background: white;
+    background: $buic-background-window;
     width: max-content;
     padding: 5px;
   }
@@ -57,7 +57,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  color: $uicore-gray-3;
+  color: $buic-text-color;
   height: 100%;
   width: 100%;
   transition: transform 0.15s ease-in-out, -webkit-transform 0.15s ease-in-out;
@@ -83,6 +83,6 @@
   }
 
   &:hover {
-    color: $uicore-gray-1;
+    color: $buic-text-color-hover;
   }
 }
