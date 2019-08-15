@@ -572,14 +572,32 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
+export interface ChangeData {
+    // (undocumented)
+    changedElements: ChangedElements;
+    // (undocumented)
+    changedModels: ChangedModels;
+}
+
+// @internal (undocumented)
 export interface ChangedElements {
     // (undocumented)
     classIds: Id64String[];
     // (undocumented)
     elements: Id64String[];
     // (undocumented)
+    modelIds?: Id64String[];
+    // (undocumented)
     opcodes: number[];
+}
+
+// @internal (undocumented)
+export interface ChangedModels {
+    // (undocumented)
+    bboxes: AxisAlignedBox3dProps[];
+    // (undocumented)
+    modelIds: Id64String[];
 }
 
 // @public

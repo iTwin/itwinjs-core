@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { BriefcaseManager } from "./BriefcaseManager";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangedElements } from "@bentley/imodeljs-common";
+import { ChangedElements, ChangedModels, ChangeData } from "@bentley/imodeljs-common";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
 
+/** @internal */
 interface ChangedElementsDbCacheEntry {
   iModelId: GuidString;
   db: ChangedElementsDb;
 }
 
 /** Utilities for querying changed elements caches */
+/** @internal */
 export class ChangedElementsManager {
   /** Maintains a single entry since we will only have a cache per iModel, which means a ChangedElementsDb per backend instance */
   private static _entry: ChangedElementsDbCacheEntry | undefined;
@@ -57,6 +59,34 @@ export class ChangedElementsManager {
       return undefined;
 
     return db.getChangedElements(startChangesetId, endChangesetId);
+  }
+
+  /** Gets the changed models from the cache if found
+   * @param iModelId Id of the iModel
+   * @param startChangesetId Start changeset Id
+   * @param endChangesetId End changeset Id
+   * @returns Changed models if found
+   */
+  public static getChangedModels(iModelId: GuidString, startChangesetId: string, endChangesetId: string): ChangedModels | undefined {
+    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db)
+      return undefined;
+
+    return db.getChangedModels(startChangesetId, endChangesetId);
+  }
+
+  /** Gets the change data (models and elements) from the cache if found
+   * @param iModelId Id of the iModel
+   * @param startChangesetId Start changeset Id
+   * @param endChangesetId End changeset Id
+   * @returns Changed models if found
+   */
+  public static getChangeData(iModelId: GuidString, startChangesetId: string, endChangesetId: string): ChangeData | undefined {
+    const db: ChangedElementsDb | undefined = ChangedElementsManager.getChangedElementsDb(iModelId);
+    if (!db)
+      return undefined;
+
+    return db.getChangeData(startChangesetId, endChangesetId);
   }
 
   /** Checks if the cache contains information about the changeset

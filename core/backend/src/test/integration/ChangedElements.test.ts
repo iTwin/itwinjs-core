@@ -74,6 +74,11 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
     assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length);
+    // Try getting changed models
+    const models = cache.getChangedModels(startChangesetId, endChangesetId);
+    assert.isTrue(models !== undefined);
+    assert.isTrue(models!.modelIds.length !== 0);
+    assert.isTrue(models!.modelIds.length === models!.bboxes.length);
 
     // Destroy the cache
     cache = undefined;
@@ -88,7 +93,11 @@ describe("ChangedElements (#integration)", () => {
     changes = cache.getChangedElements(startChangesetId, endChangesetId);
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
+    // Ensure format is returned correctly
     assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length);
+    // If model Ids are returned, check that they correspond to the right length
+    if (changes!.modelIds)
+      assert.isTrue(changes!.elements.length === changes!.modelIds.length);
 
     // Test the ChangedElementsManager
     cache = undefined;
@@ -101,5 +110,15 @@ describe("ChangedElements (#integration)", () => {
     assert.isTrue(changes !== undefined);
     assert.isTrue(changes!.elements.length !== 0);
     assert.isTrue(changes!.elements.length === changes!.classIds.length && changes!.elements.length === changes!.opcodes.length);
+    if (changes!.modelIds)
+      assert.isTrue(changes!.elements.length === changes!.modelIds.length);
+
+    // Test change data full return type and ensure format is correct
+    const changeData = ChangedElementsManager.getChangeData(iModel.iModelToken.iModelId!, startChangesetId, endChangesetId);
+    assert.isTrue(changeData !== undefined);
+    assert.isTrue(changeData!.changedElements !== undefined);
+    assert.isTrue(changeData!.changedModels !== undefined);
+    assert.isTrue(changeData!.changedElements.elements.length === changeData!.changedElements.classIds.length && changeData!.changedElements.elements.length === changeData!.changedElements.opcodes.length);
+    assert.isTrue(changeData!.changedModels.modelIds.length === changeData!.changedModels.bboxes.length);
   });
 });
