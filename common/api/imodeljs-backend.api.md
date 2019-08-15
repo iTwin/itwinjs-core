@@ -473,7 +473,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     toJSON(): CategorySelectorProps;
 }
 
-// @beta
+// @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
     closeDb(): void;
@@ -485,7 +485,7 @@ export class ChangedElementsDb implements IDisposable {
     getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     readonly isOpen: boolean;
     isProcessed(changesetId: string): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
