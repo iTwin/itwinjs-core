@@ -16,6 +16,7 @@ import { LineString3d } from "./LineString3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Geometry } from "../Geometry";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 
@@ -290,7 +291,25 @@ export abstract class CurveCollection extends GeometryQuery {
       }
     }
   }
-
+  /**
+   * * Find any curve primitive in the source.
+   * * Evaluate it at a fraction (which by default is an interior fraction)
+   * @param source containing `CurvePrimitive` or `CurveCollection`
+   * @param fraction fraction to use in `curve.fractionToPoint(fraction)`
+   */
+  public static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction: number = 0.5): CurveLocationDetail | undefined {
+    if (!source)
+      return undefined;
+    if (source instanceof CurvePrimitive) {
+      return CurveLocationDetail.createCurveEvaluatedFraction(source, fraction);
+    } else if (source instanceof CurveCollection && source.children !== undefined)
+      for (const child of source.children) {
+        const detail = this.createCurveLocationDetailOnAnyCurvePrimitive(child, fraction);
+        if (detail)
+          return detail;
+      }
+    return undefined;
+  }
 }
 /** Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.

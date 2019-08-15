@@ -18,6 +18,8 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { LineString3d } from "../../curve/LineString3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { Geometry } from "../../Geometry";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 /* tslint:disable:no-console */
 
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
@@ -97,7 +99,7 @@ describe("Arc3d", () => {
     const arcB = Arc3d.createUnitCircle();
     arcB.setFromJSON(undefined);
     ck.testFalse(arcA.isAlmostEqual(CoordinateXYZ.create(Point3d.create(1, 2, 3))));
-    // high eccentricty arc .. make sure the length is bounded by rectangle and diagonal of quadrant ...
+    // high eccentricity arc .. make sure the length is bounded by rectangle and diagonal of quadrant ...
     const a = 1000.0;
     const b = a / 1.e6;
     const arcC = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), a, b);
@@ -214,7 +216,7 @@ describe("Arc3d", () => {
       if (noisy)
         console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
       if (numGauss === 5)
-        ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integraton factor");
+        ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
     ck.checkpoint("Arc3d.EccentricEllipseLengthAccuracyTable");
     expect(ck.getNumErrors()).equals(0);
@@ -263,4 +265,48 @@ describe("Arc3d", () => {
     ck.checkpoint("Arc3d.ScaledForm");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("FilletArc", () => {
+    const ck = new Checker();
+
+    const allGeometry: GeometryQuery[] = [];
+    const radius = 0.5;
+    const markerRadius = 0.04;
+    const outputStep = 10.0;
+    let x0;
+    let y0 = 0;
+    for (const qz of [0, -1, 3]) {
+      x0 = 0;
+      for (const qy of [2, 4, -4]) {
+        const point0 = Point3d.create(2, qy);
+        const point1 = Point3d.create(0, 1, qz);
+        const point2 = Point3d.create(3, 0);
+        const arcData = Arc3d.createFilletArc(point0, point1, point2, radius);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(point0, point1, point2), x0, y0);
+        if (ck.testDefined(arcData, "Fillet Arc exists") && arcData && arcData.arc) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcData.arc, x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction10, point0), markerRadius, x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, point1.interpolate(arcData.fraction12, point2), markerRadius, x0, y0);
+        }
+        x0 += outputStep;
+      }
+      y0 += outputStep;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "FilletArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("FilletArcDegenerate", () => {
+    const ck = new Checker();
+
+    const point0 = Point3d.create(1, 2, 3);
+    const point2 = Point3d.create(4, 2, -1);
+    const radius = 2.0;
+    ck.testUndefined(Arc3d.createFilletArc(point0, point0, point2, radius));
+    for (const lambda of [-0.52, 0.45, 1.2]) {
+      const point1 = point0.interpolate(lambda, point2);
+      ck.testUndefined(Arc3d.createFilletArc(point0, point1, point2, radius));
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
