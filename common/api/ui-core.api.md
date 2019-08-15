@@ -98,6 +98,8 @@ export const Centered: React.FunctionComponent<CommonDivProps>;
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
     // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
     render(): JSX.Element;
 }
 
@@ -121,6 +123,7 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
     onClick?: (e: React.MouseEvent) => void;
+    setFocus?: boolean;
     status?: InputStatus;
 }
 
@@ -573,6 +576,9 @@ export enum Face {
     Top = "top"
 }
 
+// @alpha (undocumented)
+export const FeaturedTile: React.FunctionComponent<TileProps>;
+
 // @public
 export const FillCentered: React.FunctionComponent<CommonDivProps>;
 
@@ -652,17 +658,9 @@ export enum HorizontalAlignment {
 }
 
 // @beta
-export class HorizontalTabs extends React.PureComponent<HorizontalTabsProps> {
+export class HorizontalTabs extends React.PureComponent<TabsProps> {
     // (undocumented)
     render(): JSX.Element;
-}
-
-// @beta
-export interface HorizontalTabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
-    activeIndex?: number;
-    green?: boolean;
-    labels: string[];
-    onClickLabel?: (id: number) => any;
 }
 
 // @beta
@@ -839,6 +837,11 @@ export class LocalUiSettings implements UiSettings {
     w: Window;
 }
 
+// @beta
+export interface MainTabsProps extends TabsProps {
+    mainClassName: string;
+}
+
 // @public
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
     // (undocumented)
@@ -900,6 +903,12 @@ export enum MessageSeverity {
     // (undocumented)
     Warning = 3
 }
+
+// @alpha (undocumented)
+export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
+
+// @alpha (undocumented)
+export const MinimalTile: React.FunctionComponent<TileProps>;
 
 // @public
 export const MutedText: React.FunctionComponent<TextProps>;
@@ -1441,6 +1450,20 @@ export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
 
+// @beta
+export class Tabs extends React.PureComponent<MainTabsProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @beta
+export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
+    activeIndex?: number;
+    green?: boolean;
+    labels: string[];
+    onClickLabel?: (id: number) => any;
+}
+
 // @public
 export class Textarea extends React.PureComponent<TextareaProps> {
     // (undocumented)
@@ -1464,6 +1487,37 @@ export class TildeFinder {
         character: string | undefined;
         node: React.ReactNode;
     };
+}
+
+// @alpha (undocumented)
+export class Tile extends React.Component<TileProps> {
+    // @internal (undocumented)
+    static readonly defaultProps: TileDefaultProps;
+    // @internal (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal (undocumented)
+export type TileDefaultProps = Pick<TileProps, "stepNum">;
+
+// @alpha (undocumented)
+export interface TileProps extends CommonDivProps {
+    // (undocumented)
+    featured?: boolean;
+    // (undocumented)
+    href?: string;
+    // (undocumented)
+    icon?: React.ReactNode;
+    // (undocumented)
+    minimal?: boolean;
+    // (undocumented)
+    onClick?: (e: any) => any;
+    // (undocumented)
+    stepCount?: number;
+    // (undocumented)
+    stepNum?: number;
+    // (undocumented)
+    title: string;
 }
 
 // @public
@@ -1690,6 +1744,12 @@ export enum VerticalAlignment {
     Middle = 2,
     // (undocumented)
     Top = 1
+}
+
+// @beta
+export class VerticalTabs extends React.PureComponent<TabsProps> {
+    // (undocumented)
+    render(): JSX.Element;
 }
 
 // @public

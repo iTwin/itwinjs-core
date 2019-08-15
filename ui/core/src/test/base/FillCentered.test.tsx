@@ -20,8 +20,8 @@ describe("<FillCentered />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<FillCentered />);
-    wrapper.find(".uicore-fill-centered").should.exist;
+    const wrapper = mount(<FillCentered />);
+    wrapper.find(".uicore-fill-centered").length.should.eq(1);
   });
 
   it("has correct text", () => {

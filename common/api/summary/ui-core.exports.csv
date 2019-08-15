@@ -54,6 +54,7 @@ public;ExpandableListProps
 public;ExpansionToggle 
 public;ExpansionToggleProps 
 beta;Face
+alpha;FeaturedTile: React.FunctionComponent
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
@@ -68,7 +69,6 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
-beta;HorizontalTabsProps 
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -94,12 +94,15 @@ beta;LoadingSpinnerProps
 beta;LoadingStatus 
 beta;LoadingStatusProps 
 beta;LocalUiSettings 
+beta;MainTabsProps 
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
 public;MessageContainerProps 
 public;MessagedComponentProps
 public;MessageSeverity
+alpha;MinimalFeaturedTile: React.FunctionComponent
+alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
@@ -153,10 +156,15 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
+beta;Tabs 
+beta;TabsProps 
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
 internal;TildeFinder
+alpha;Tile 
+internal;TileDefaultProps = Pick
+alpha;TileProps 
 public;TimeFormat
 public;Timer
 public;Title: React.FunctionComponent
@@ -181,6 +189,7 @@ beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;VerticalAlignment
+beta;VerticalTabs 
 public;WebFontIcon: React.FunctionComponent
 public;WebFontIconProps 
 public;withIsPressed: 

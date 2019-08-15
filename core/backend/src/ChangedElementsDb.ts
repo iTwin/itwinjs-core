@@ -13,7 +13,7 @@ import * as path from "path";
 import { IModelHost } from "./IModelHost";
 
 /** An ChangedElementsDb file
- * @beta
+ * @internal
  */
 export class ChangedElementsDb implements IDisposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;

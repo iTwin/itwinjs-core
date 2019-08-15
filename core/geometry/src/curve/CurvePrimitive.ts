@@ -17,7 +17,7 @@ import { GaussMapper } from "../numerics/Quadrature";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
-import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
@@ -359,10 +359,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract reverseInPlace(): void;
   /**
    * Compute intersections with a plane.
-   * The intersections are appended to the result array.
-   * The base class implementation emits strokes to an AppendPlaneIntersectionStrokeHandler object, which uses a Newton iteration to get
-   * high-accuracy intersection points within strokes.
-   * Derived classes should override this default implementation if there are easy analytic solutions.
+   * * The intersections are appended to the result array.
+   * * The base class implementation emits strokes to an AppendPlaneIntersectionStrokeHandler object, which uses a Newton iteration to get
+   *     high-accuracy intersection points within strokes.
+   * * Derived classes should override this default implementation if there are easy analytic solutions.
+   * * Derived classes are free to implement extended intersections (e.g. arc!!!)
    * @param plane The plane to be intersected.
    * @param result Array to receive intersections
    * @returns Return the number of CurveLocationDetail's added to the result array.
@@ -373,6 +374,82 @@ export abstract class CurvePrimitive extends GeometryQuery {
     this.emitStrokableParts(strokeHandler);
     return result.length - n0;
   }
+  /**
+   * Examine contents of an array of CurveLocationDetail.
+   * Filter the intersections according to the parameters.
+   * @param allowExtend if false, remove points on the extension.
+   * @param applySnappedCoordinates if true, change the stored fractions and coordinates to exact end values.  Otherwise
+   *     use the exact values only for purpose of updating the curveIntervalRole.
+   * @param startEndFractionTolerance if nonzero, adjust fraction to 0 or 1 with this tolerance.
+   * @param startEndXYZTolerance if nonzero, adjust to endpoint with this tolerance.
+   * @internal
+   */
+  public static snapAndRestrictDetails(
+    details: CurveLocationDetail[],
+    allowExtend: boolean = true,
+    applySnappedCoordinates: boolean = false,
+    startEndFractionTolerance = Geometry.smallAngleRadians,
+    startEndXYZTolerance = Geometry.smallMetricDistance) {
+    const n0 = details.length;
+    let acceptIndex = 0;
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
+    let snappedCoordinates: Point3d | undefined;
+    for (let candidateIndex = 0; candidateIndex < n0; candidateIndex++) {
+      snappedCoordinates = undefined;
+      const detail = details[candidateIndex];
+      let fraction = detail.fraction;
+      let accept = allowExtend || Geometry.isIn01(fraction);
+      if (detail.curve) {
+        detail.curve.startPoint(point0);
+        detail.curve.endPoint(point1);
+      }
+
+      if (startEndFractionTolerance > 0) {
+        if (Math.abs(fraction) < startEndFractionTolerance) {
+          fraction = 0.0;
+          accept = true;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point0;
+        }
+        if (Math.abs(fraction - 1.0) < startEndFractionTolerance) {
+          fraction = 1.0;
+          accept = true;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point1;
+          if (detail.curve)
+            snappedCoordinates = detail.curve.startPoint(point1);
+        }
+      }
+      if (startEndXYZTolerance > 0 && detail.curve !== undefined) {
+        // REMARK: always test both endpoints.   If there is a cyclic fraction space, an intersection marked as "after" the end might have wrapped all the way to the beginning.
+        if (detail.point.distance(point0) <= startEndXYZTolerance) {
+          fraction = 0.0;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point0;
+        } else if (detail.point.distance(point1) <= startEndXYZTolerance) {
+          fraction = 1.0;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point1;
+        }
+      }
+      if (accept) {
+        if (applySnappedCoordinates) {
+          detail.fraction = fraction;
+          if (snappedCoordinates !== undefined)
+            detail.point.setFrom(snappedCoordinates);
+        }
+        if (acceptIndex < candidateIndex)
+          details[acceptIndex] = detail;
+        acceptIndex++;
+      }
+
+    }
+    if (acceptIndex < n0)
+      details.length = acceptIndex;
+
+  }
+
   /** Ask if the curve is within tolerance of a plane.
    * @returns Returns true if the curve is completely within tolerance of the plane.
    */

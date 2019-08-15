@@ -9,28 +9,21 @@
   position: relative;
   padding: $uicore-unbordered-padding;
   width: 12em;
-  height: $uicore-line-height;
-  line-height: $uicore-line-height;
-  font-size: $uicore-font-size;
 
   .ValidationTextbox-input {
     position: absolute;
-    font-size: $uicore-font-size;
     @include uicore-inputs-input;
     width: 12em;
-    height: $uicore-line-height;
-    line-height: $uicore-line-height;
     left: 0px;
     top: 0px;
-    border-width: 1px;
   }
 
   .ValidationTextbox-invalid {
-    border: 2px solid $buic-foreground-alert;
+    border-color: $buic-foreground-alert;
   }
 
   .ValidationTextbox-invalid:focus {
-    border: 2px solid $buic-foreground-alert;
+    border-color: $buic-foreground-alert;
   }
 
   .ValidationTextbox-icon {

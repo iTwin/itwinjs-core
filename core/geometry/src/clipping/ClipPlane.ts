@@ -419,8 +419,8 @@ export class ClipPlane implements Clipper {
       xyz.length = 0;
     } else if (numNegative > 0) {
       xyz.length = 0;
-      for (const xyzi of work) {
-        xyz.push(xyzi);
+      for (const xyzI of work) {
+        xyz.push(xyzI);
       }
       work.length = 0;
     }

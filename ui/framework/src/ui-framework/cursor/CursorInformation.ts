@@ -7,7 +7,9 @@
 import { RelativePosition } from "@bentley/imodeljs-frontend";
 import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
-/** @alpha */
+/** Enum for Cursor Direction parts
+ *  @beta
+ */
 export enum CursorDirectionParts {
   Top = 0x1000,
   Left = 0x0100,
@@ -15,7 +17,9 @@ export enum CursorDirectionParts {
   Bottom = 0x0001,
 }
 
-/** @alpha */
+/** Enum for Cursor Direction
+ * @beta
+ */
 export enum CursorDirection {
   None = 0,
   Top = CursorDirectionParts.Top,
@@ -29,7 +33,7 @@ export enum CursorDirection {
 }
 
 /** Cursor Updated Event Args interface.
- * @alpha
+ * @beta
  */
 export interface CursorUpdatedEventArgs {
   oldPt: PointProps;
@@ -38,12 +42,12 @@ export interface CursorUpdatedEventArgs {
 }
 
 /** Cursor Updated Event class.
- * @alpha
+ * @beta
  */
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> { }
 
 /** Cursor Information class
- * @alpha
+ * @beta
  */
 export class CursorInformation {
   private static _cursorPosition: Point = new Point();

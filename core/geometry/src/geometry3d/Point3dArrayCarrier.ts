@@ -46,6 +46,20 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
     }
     return undefined;
   }
+  /** access x of indexed point */
+  public getXAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].x;
+  }
+
+  /** access y of indexed point */
+  public getYAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].y;
+  }
+
+  /** access z of indexed point */
+  public getZAtUncheckedPointIndex(pointIndex: number): number {
+    return this.data[pointIndex].z;
+  }
   /**
    * Return a vector from the point at indexA to the point at indexB
    * @param indexA index of point within the array
@@ -110,6 +124,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
       result.addCrossProductToTargetsInPlace(data[originIndex].x, data[originIndex].y, data[originIndex].z, data[indexA].x, data[indexA].y, data[indexA].z, data[indexB].x, data[indexB].y, data[indexB].z);
   }
   /**
+   * * compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
+   * * accumulate it to the result.
+   */
+  public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
+    if (this.isValidIndex(index)) {
+      const point = this.data[index];
+      sum.x += scale * point.x;
+      sum.y += scale * point.y;
+      sum.z += scale * point.z;
+    }
+  }
+  /**
    * read-only property for number of XYZ in the collection.
    */
   public get length(): number {
@@ -153,6 +179,10 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   /** remove all points. */
   public clear(): void {
     this.data.length = 0;
+  }
+  /** Reverse the points in place */
+  public reverseInPlace (): void {
+    this.data.reverse ();
   }
   /**
    * Return distance squared between indicated points.

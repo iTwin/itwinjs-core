@@ -41,6 +41,9 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
+alpha;CategoryTree 
+alpha;CategoryTreeProps
+alpha;CategoryTreeState
 internal;ChangeSetInfo
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
@@ -94,23 +97,23 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
-alpha;CursorDirection
-alpha;CursorDirectionParts
-alpha;CursorInformation
-alpha;CursorPopup 
-alpha;CursorPopupContent: React_2.FunctionComponent
+beta;CursorDirection
+beta;CursorDirectionParts
+beta;CursorInformation
+beta;CursorPopup 
+beta;CursorPopupContent: React_2.FunctionComponent
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
-alpha;CursorPopupManager
-alpha;CursorPopupOptions
-alpha;CursorPopupProps 
-public;CursorPopupRenderer 
+beta;CursorPopupManager
+beta;CursorPopupOptions
+beta;CursorPopupProps 
+beta;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
 alpha;CursorPrompt
-alpha;CursorUpdatedEvent 
-alpha;CursorUpdatedEventArgs
+beta;CursorUpdatedEvent 
+beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
 beta;CustomItemSpec 
@@ -143,6 +146,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;FaceCell 
 internal;FaceCellProps 
+alpha;FilterInfo
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
@@ -298,6 +302,9 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
+alpha;SpatialContainmentTree 
+alpha;SpatialContainmentTreeProps
+alpha;SpatialContainmentTreeState
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
@@ -317,8 +324,12 @@ alpha;StandardRotationNavigationAid
 alpha;StandardRotationNavigationAidControl 
 public;StateType
 public;StatusBar 
+beta;StatusBarCenterSection: React_2.FunctionComponent
 public;StatusBarFieldId = string | null
+beta;StatusBarLeftSection: React_2.FunctionComponent
 public;StatusBarProps 
+beta;StatusBarRightSection: React_2.FunctionComponent
+beta;StatusBarSpaceBetween: React_2.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -389,11 +400,13 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityComponent 
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus
 public;VisibilityTree 
 public;VisibilityTreeProps
+alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler

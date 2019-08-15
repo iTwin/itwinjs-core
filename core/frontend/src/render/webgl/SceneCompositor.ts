@@ -649,10 +649,12 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
+    this.target.decorationState.isReadPixelsInProgress = true;
     this.target.pushState(this.target.decorationState);
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.recordPerformanceMetric("Overlay Draws");
     this.target.popBranch();
+    this.target.decorationState.isReadPixelsInProgress = false;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {

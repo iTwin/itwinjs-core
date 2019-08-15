@@ -19,8 +19,8 @@ describe("<MutedText />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<MutedText />);
-    wrapper.find(".uicore-text-muted").should.exist;
+    const wrapper = mount(<MutedText />);
+    wrapper.find(".uicore-text-muted").length.should.eq(1);
   });
 
   it("has correct text", () => {

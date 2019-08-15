@@ -24,6 +24,8 @@ export * from "./ui-framework/messages/Pointer";
 export * from "./ui-framework/oidc/SignIn";
 export * from "./ui-framework/oidc/SignOut";
 
+export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
+export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
 
 export * from "./ui-framework/pickers/ListPicker";
@@ -89,6 +91,7 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetFactory";
 export * from "./ui-framework/widgets/WidgetStack";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
+export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";

@@ -572,14 +572,32 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
+export interface ChangeData {
+    // (undocumented)
+    changedElements: ChangedElements;
+    // (undocumented)
+    changedModels: ChangedModels;
+}
+
+// @internal (undocumented)
 export interface ChangedElements {
     // (undocumented)
     classIds: Id64String[];
     // (undocumented)
     elements: Id64String[];
     // (undocumented)
+    modelIds?: Id64String[];
+    // (undocumented)
     opcodes: number[];
+}
+
+// @internal (undocumented)
+export interface ChangedModels {
+    // (undocumented)
+    bboxes: AxisAlignedBox3dProps[];
+    // (undocumented)
+    modelIds: Id64String[];
 }
 
 // @public
@@ -1301,7 +1319,7 @@ export type DPoint2dProps = number[];
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
-    static createFromCartographicOrigin(origin: Cartographic): EcefLocation;
+    static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;

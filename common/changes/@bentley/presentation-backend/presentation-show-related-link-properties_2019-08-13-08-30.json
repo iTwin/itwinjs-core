@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Include related LinkElement properties when creating content for Elements",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

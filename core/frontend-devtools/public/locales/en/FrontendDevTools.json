@@ -11,6 +11,18 @@
     },
     "ReportWebGLCompatibility": {
       "keyin": "fdt webgl report compatibility"
+    },
+    "EmphasizeSelectedElements": {
+      "keyin": "fdt emphasize selection"
+    },
+    "IsolateSelectedElements": {
+      "keyin": "fdt isolate selection"
+    },
+    "ClearIsolatedElements": {
+      "keyin": "fdt clear isolate"
+    },
+    "ChangeViewFlags": {
+      "keyin": "fdt change viewflags"
     }
   }
 }

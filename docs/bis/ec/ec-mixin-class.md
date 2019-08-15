@@ -12,5 +12,6 @@ An entity class incorporates a mixin by declaring the mixin class as a base clas
 1. An entity class may only inherit from a mixin if the entity class derives from the ‘applies to’ class specified in the mixin definition.
 2. An entity class may not inherit a property with the same name from the primary and mixin hierarchies
 3. An entity class may not override a property inherited from a mixin
+4. An entity class must put its entity base class first followed by mixins.
 
 Mixins can be used as relationship endpoints.

@@ -43,8 +43,13 @@ export class ParityRegion extends CurveCollection {
       }
     }
   }
-  /** Create a parity region with given loops */
+  /** Return a single loop or parity region with given loops.
+   * * The returned structure CAPTURES the loops.
+   * * The loops are NOT reorganized by hole analysis.
+   */
   public static createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion {
+    if (data instanceof Loop)
+      return data;
     const result = new ParityRegion();
     result.addLoops(data);
     return result;

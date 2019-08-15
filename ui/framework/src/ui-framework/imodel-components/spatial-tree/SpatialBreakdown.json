@@ -1,0 +1,74 @@
+{
+  "$schema": "../../../presentation/common/Ruleset.schema.json",
+  "id": "ui-framework/SpatialBreakdown",
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "SpatialComposition",
+              "classNames": [
+                "CompositeElement"
+              ]
+            }
+          ],
+          "arePolymorphic": true,
+          "instanceFilter": "this.ComposingElement = NULL",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"CompositeElement\", \"SpatialComposition\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "SpatialComposition",
+            "classNames": [
+              "CompositeComposesSubComposites"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "SpatialComposition",
+            "classNames": [
+              "CompositeElement"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"CompositeElement\", \"SpatialComposition\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "SpatialComposition",
+            "classNames": [
+              "CompositeOverlapsSpatialElements"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SpatialElement"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    }
+  ]
+}

@@ -63,6 +63,7 @@ import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
+import { PresentationTreeDataProvider } from '@bentley/presentation-components';
 import * as PropTypes from 'prop-types';
 import * as React_2 from 'react';
 import { RectangleProps } from '@bentley/ui-core';
@@ -481,6 +482,47 @@ export interface CardSelectedEventArgs {
     id: any;
     // (undocumented)
     index: number;
+}
+
+// @alpha
+export class CategoryTree extends React_2.Component<CategoryTreeProps, CategoryTreeState> {
+    constructor(props: CategoryTreeProps);
+    // @internal (undocumented)
+    componentDidMount(): Promise<void>;
+    // (undocumented)
+    componentDidUpdate(prevProps: CategoryTreeProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface CategoryTreeProps {
+    activeView?: Viewport;
+    allViewports?: boolean;
+    clearAll?: boolean;
+    iModel: IModelConnection;
+    selectAll?: boolean;
+    showSearchBox?: boolean;
+}
+
+// @alpha
+export interface CategoryTreeState {
+    // (undocumented)
+    activeView?: Viewport;
+    // (undocumented)
+    categories: Category[];
+    // (undocumented)
+    checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    // (undocumented)
+    dataProvider?: PresentationTreeDataProvider;
+    // (undocumented)
+    filterInfo?: FilterInfo;
+    // (undocumented)
+    isLoading: boolean;
+    // (undocumented)
+    selectedNodes: string[];
 }
 
 // @internal
@@ -1002,7 +1044,7 @@ export interface CubeNavigationAidProps extends CommonProps {
     onAnimationEnd?: () => void;
 }
 
-// @alpha (undocumented)
+// @beta
 export enum CursorDirection {
     // (undocumented)
     Bottom = 1,
@@ -1024,7 +1066,7 @@ export enum CursorDirection {
     TopRight = 4112
 }
 
-// @alpha (undocumented)
+// @beta
 export enum CursorDirectionParts {
     // (undocumented)
     Bottom = 1,
@@ -1036,7 +1078,7 @@ export enum CursorDirectionParts {
     Top = 4096
 }
 
-// @alpha
+// @beta
 export class CursorInformation {
     // @internal
     static clearCursorDirections(): void;
@@ -1049,7 +1091,7 @@ export class CursorInformation {
     static readonly onCursorUpdatedEvent: CursorUpdatedEvent;
 }
 
-// @alpha
+// @beta
 export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopupState> {
     // @internal
     constructor(props: CursorPopupProps);
@@ -1065,7 +1107,7 @@ export class CursorPopup extends React_2.Component<CursorPopupProps, CursorPopup
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export const CursorPopupContent: React_2.FunctionComponent<CommonDivProps>;
 
 // @internal
@@ -1078,7 +1120,7 @@ export interface CursorPopupFadeOutEventArgs {
     id: string;
 }
 
-// @alpha
+// @beta
 export class CursorPopupManager {
     static close(id: string, apply: boolean, fadeOut?: boolean): void;
     // @internal (undocumented)
@@ -1096,7 +1138,7 @@ export class CursorPopupManager {
     static updatePosition(pt: PointProps): void;
     }
 
-// @alpha
+// @beta
 export interface CursorPopupOptions {
     onApply?: () => void;
     onClose?: () => void;
@@ -1104,7 +1146,7 @@ export interface CursorPopupOptions {
     title?: string;
 }
 
-// @alpha
+// @beta
 export interface CursorPopupProps extends CommonProps {
     // (undocumented)
     content: React_2.ReactNode;
@@ -1123,7 +1165,7 @@ export interface CursorPopupProps extends CommonProps {
     title?: string;
 }
 
-// @public
+// @beta
 export class CursorPopupRenderer extends React_2.Component<any, CursorPopupRendererState> {
     constructor(props: any);
     // (undocumented)
@@ -1161,11 +1203,11 @@ export class CursorPrompt {
     display(toolIconSpec: string, instruction: ToolAssistanceInstruction, offset?: PointProps, relativePosition?: RelativePosition): void;
     }
 
-// @alpha
+// @beta
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface CursorUpdatedEventArgs {
     // (undocumented)
     direction: CursorDirection;
@@ -1528,6 +1570,18 @@ export interface FaceCellProps extends React_2.AllHTMLAttributes<HTMLDivElement>
     onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
     // (undocumented)
     vector: Vector3d;
+}
+
+// @alpha
+export interface FilterInfo {
+    // (undocumented)
+    activeMatchIndex?: number;
+    // (undocumented)
+    filter?: string;
+    // (undocumented)
+    filtering?: boolean;
+    // (undocumented)
+    matchesCount?: number;
 }
 
 // @beta
@@ -2948,6 +3002,10 @@ export class RealityDataPicker extends React_2.Component<RealityDataPickerProps,
 // @alpha
 export class RealityDataPickerControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static readonly iconSpec: string;
+    // (undocumented)
+    static readonly label: string;
 }
 
 // @public
@@ -3211,6 +3269,31 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
+// @alpha
+export class SpatialContainmentTree extends React_2.Component<SpatialContainmentTreeProps, SpatialContainmentTreeState> {
+    constructor(props: SpatialContainmentTreeProps);
+    // @internal (undocumented)
+    componentDidMount(): Promise<void>;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface SpatialContainmentTreeProps {
+    // (undocumented)
+    iModel: IModelConnection;
+}
+
+// @alpha
+export interface SpatialContainmentTreeState {
+    // (undocumented)
+    dataProvider?: IPresentationTreeDataProvider;
+    // (undocumented)
+    initialized: false;
+}
+
 // @public
 export enum SpecialKey {
     // (undocumented)
@@ -3428,8 +3511,14 @@ export class StatusBar extends React_2.Component<StatusBarProps, StatusBarState>
     readonly state: Readonly<StatusBarState>;
     }
 
+// @beta
+export const StatusBarCenterSection: React_2.FunctionComponent<CommonDivProps>;
+
 // @public
 export type StatusBarFieldId = string | null;
+
+// @beta
+export const StatusBarLeftSection: React_2.FunctionComponent<CommonDivProps>;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -3438,6 +3527,12 @@ export interface StatusBarProps extends CommonProps {
     // (undocumented)
     widgetControl?: StatusBarWidgetControl;
 }
+
+// @beta
+export const StatusBarRightSection: React_2.FunctionComponent<CommonDivProps>;
+
+// @beta
+export const StatusBarSpaceBetween: React_2.FunctionComponent<CommonDivProps>;
 
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
@@ -4183,6 +4278,16 @@ export class ViewUtilities {
     static viewSupportsCamera(viewport: ScreenViewport): boolean;
 }
 
+// @alpha
+export class VisibilityComponent extends React_2.Component<any, VisibilityTreeState_2> {
+    constructor(props: any);
+    // (undocumented)
+    componentDidMount(): Promise<void>;
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
     constructor(props: VisibilityHandlerProps);
@@ -4238,6 +4343,15 @@ export interface VisibilityTreeProps {
     selectionMode?: SelectionMode;
     // @internal
     visibilityHandler?: VisibilityHandler;
+}
+
+// @alpha
+export class VisibilityWidget extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    static readonly iconSpec: string;
+    // (undocumented)
+    static readonly label: string;
 }
 
 // @public

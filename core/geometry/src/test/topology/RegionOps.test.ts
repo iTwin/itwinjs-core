@@ -15,9 +15,9 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 
 import { RegionOps } from "../../curve/RegionOps";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 
-import { Range3d } from "../../geometry3d/Range";
+import { Range3d, Range2d } from "../../geometry3d/Range";
 import { PolygonWireOffsetContext } from "../../curve/PolygonOffsetContext";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { HalfEdgeGraph } from "../../topology/Graph";
@@ -31,6 +31,12 @@ import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Geometry } from "../../Geometry";
+import { Loop } from "../../curve/Loop";
+import { Arc3d } from "../../curve/Arc3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { AnyRegion } from "../../curve/CurveChain";
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -216,7 +222,7 @@ describe("RegionOps", () => {
       Sample.appendSawTooth([], 1, 0.5, 1, 1, 3)]) {
       const growableSplat = GrowableXYZArray.create(splat);
       const data = [growableSplat, rectangle];
-      const range = Range3d.createFromVariantData (data);
+      const range = Range3d.createFromVariantData(data);
       const dx = range.xLength() * 2.0;
       const dy = range.yLength() * 2.0;
       y0 = 0.0;
@@ -425,6 +431,102 @@ describe("PolygonOffset", () => {
     const filterFactors = [0.5, 1.0, 1.5, 2.0];
     testFilteredPolygonOffset([pointsA, pointsB], "filteredFractals", offsetDistances, filterFactors);
 
+  });
+});
+
+describe("RegionInOut", () => {
+  it("EasyRectangleInOut", () => {
+    const ck = new Checker();
+    const range = Range2d.createXYXY(-2, 1, 4, 3);
+    const rectangle = Sample.createRectangleInRange2d(range, 0, true);
+    const loop = Loop.create(LineString3d.create(rectangle));
+    const loopWithSegments = loop.cloneWithExpandedLineStrings() as Loop;
+    for (const geometry of [loop, loopWithSegments]) {
+      /** pure rectangle interior hits */
+      for (const u of [-1, 0.5, 2]) {
+        for (const v of [-0.4, 0.6, 3]) {
+          const xy = range.fractionToPoint(u, v);
+          ck.testBoolean(Geometry.isIn01(u) && Geometry.isIn01(v), RegionOps.testPointInOnOutRegionXY(geometry, xy.x, xy.y) > 0, { case: "SimpleInOut", uu: u, vv: v });
+        }
+      }
+      // rectangle edge hits
+      // q01 is always on an extended edge
+      for (const q01 of [0, 1]) {
+        // qe is somewhere "along" the edge
+        for (const qe of [-0.4, 0.0, 0.3, 1.0, 1.6]) {
+          for (const uv of [Point2d.create(q01, qe), Point2d.create(qe, q01)]) {
+            const xy = range.fractionToPoint(uv.x, uv.y);
+            ck.testExactNumber(Geometry.isIn01(qe) ? 0 : -1,
+              RegionOps.testPointInOnOutRegionXY(geometry, xy.x, xy.y), { case: "InOutEdge", uu: uv.x, vv: uv.y });
+          }
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("CircleInOut", () => {
+    const ck = new Checker();
+    const arc0 = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), 3, 2);
+    const arc1 = arc0.cloneInRotatedBasis(Angle.createDegrees(15)); Loop;
+    for (const arc of [arc0, arc1]) {
+      for (const fraction of [0.0, 0.25, 0.4, 0.5, 0.88, 1.0]) {
+        for (const radialFraction of [0.4, 1.0, 1.2]) {
+          const xy = arc.fractionAndRadialFractionToPoint(fraction, radialFraction);
+          const region = Loop.create(arc);
+          const classify = RegionOps.testPointInOnOutRegionXY(region, xy.x, xy.y);
+          const expectedClassify = Geometry.split3WaySign(radialFraction - 1.0, 1.0, 0.0, -1.0);
+          if (!ck.testExactNumber(expectedClassify, classify, { arcInOut: arc, fractionAlong: fraction, fractionRadial: radialFraction }))
+            RegionOps.testPointInOnOutRegionXY(region, xy.x, xy.y);
+        }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("MixedInOut", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    const unitZ = Vector3d.unitZ();
+    const smallDistance = 0.001;
+    const testPoint = Point3d.create();
+    const testBasis = Plane3dByOriginAndVectors.createXYPlane();
+    let x0 = 0.0;
+    const y0 = 0.0;
+    const errorVector = Vector3d.create(-1, 1, 0);
+    const parityRegions = Sample.createSimpleParityRegions(true) as AnyRegion[];
+    const unionRegions = Sample.createSimpleUnions() as AnyRegion[];
+    for (const loop of parityRegions.concat(unionRegions)) {
+      const primitives = loop.collectCurvePrimitives();
+      // We trust
+      // 1) primitives have usual CCW outside, CW holes
+      // 2) points close to primitives are in to left, out to right -- other primitives are not nearby
+      // 3) frenet frame is well defined
+      for (const cp of primitives) {
+        for (const fraction of [0.359823, 0.5623112321]) {
+          const basis = cp.fractionToPointAnd2Derivatives(fraction, testBasis);
+          if (basis !== undefined) {
+            basis.vectorU.normalizeInPlace();
+            const perp = unitZ.crossProduct(basis.vectorU); // This should be an inward perpendicular !
+            for (const q of [1, 0, -1]) {
+              basis.origin.plusScaled(perp, q * smallDistance, testPoint);
+              const classify = RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
+              ck.testExactNumber(q, classify, "InOut", { primitive: cp, f: fraction, point: testPoint });
+              GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint,
+                q === 0 ? smallDistance * 20 : smallDistance, x0, y0);
+              if (q !== classify) {
+                RegionOps.testPointInOnOutRegionXY(loop, testPoint.x, testPoint.y);
+                GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(testPoint, testPoint.plus(errorVector)), x0, y0);
+              }
+            }
+          }
+        }
+      }
+      GeometryCoreTestIO.captureGeometry(allGeometry, loop, x0, y0);
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MixedInOut");
+    expect(ck.getNumErrors()).equals(0);
   });
 
 });

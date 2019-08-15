@@ -51,6 +51,11 @@ export class BranchState {
   public set viewFlags(vf: ViewFlags) { vf.clone(this._viewFlags); }
   public get showClipVolume(): boolean { return this.viewFlags.clipVolume; }
 
+  // This is set to true when we're rendering overlay decorations for readPixels(). Otherwise, transparent surfaces become un-pickable when they are flashed.
+  public set isReadPixelsInProgress(inProgress: boolean) {
+    this._viewFlags.transparency = !inProgress;
+  }
+
   private constructor(flags: ViewFlags, transform: Transform, ovrs: FeatureSymbology.Overrides, clip?: ClipPlanesVolume | ClipMaskVolume, planarClassifier?: PlanarClassifier, textureDrape?: TextureDrape, iModel?: IModelConnection) {
     this._viewFlags = flags;
     this.transform = transform;

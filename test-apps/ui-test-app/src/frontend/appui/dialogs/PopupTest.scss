@@ -68,20 +68,13 @@
   height: 28px
 }
 
-.popupcolors {
-  background: $uicore-white;
-  color: $uicore-white;
-}
-
-.statusbarcolors {
-  background: #3f4850;
-  color: #3f4850;
-  border-color: #3f4850;
+.popup-colors {
+  background-color: $buic-background-panel;
+  color: $buic-text-color;
 }
 
 .popup-test-content {
   padding: 15px 20px 15px 20px;
-  color: #777;
   width: 120px;
 
   h4 {
@@ -95,7 +88,6 @@
     height: 1px;
     width: 100%;
     margin: 0 0 10px 0;
-    background: #ccc;
   }
 
   > ul {
@@ -110,16 +102,8 @@
     color: inherit;
 
     &:hover {
-      background: #eee;
+      color: $buic-foreground-primary;
       cursor: pointer;
     }
   }
-}
-
-.statusbarcolors .popup-test-content {
-  color: $uicore-white;
-}
-
-.statusbarcolors .popup-test-content ul li:hover {
-  color: #777;
 }

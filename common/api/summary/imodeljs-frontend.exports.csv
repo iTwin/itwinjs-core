@@ -17,7 +17,7 @@ public;ActivityMessageEndReason
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
-internal;AppearanceOverrideProps
+beta;AppearanceOverrideProps
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 
@@ -100,8 +100,8 @@ public;ElementPicker
 public;ElementState 
 internal;ElemMethod
 internal;ElemSource
-internal;EmphasizeElements 
-internal;EmphasizeElementsProps
+beta;EmphasizeElements 
+beta;EmphasizeElementsProps
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
@@ -112,7 +112,7 @@ public;EventHandled
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider
-internal;FeatureOverrideType
+beta;FeatureOverrideType
 public;FeatureSymbology
 alpha;findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise
 alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -296,6 +296,7 @@ public;SelectionSetEventType
 public;SelectionTool 
 public;SelectRemoveEvent
 public;SelectReplaceEvent
+alpha;SetupCameraTool 
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 

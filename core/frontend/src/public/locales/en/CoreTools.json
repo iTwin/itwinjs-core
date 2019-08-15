@@ -85,6 +85,19 @@
           "description": "Fit all graphics in the chosen model"
         }
       },
+      "SetupCamera": {
+        "keyin": "Set up Camera",
+        "description": "Set up view camera",
+        "flyover": "Set up Camera",
+        "Prompts": {
+          "FirstPoint": "Define camera position.",
+          "NextPoint": "Define camera target point."
+        },
+        "Labels": {
+          "CameraHeight": "Camera Height",
+          "TargetHeight": "Target Height"
+        }
+      },
       "ToggleCamera": {
         "keyin": "Camera Toggle",
         "description": "Turns on camera if off, turns off camera if on.",

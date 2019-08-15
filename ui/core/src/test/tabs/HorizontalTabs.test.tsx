@@ -9,7 +9,8 @@ import { HorizontalTabs } from "../../ui-core";
 
 describe("<HorizontalTabs />", () => {
   it("should render", () => {
-    mount(<HorizontalTabs labels={[]} />);
+    const wrapper = mount(<HorizontalTabs labels={[]} />);
+    wrapper.find(".uicore-tabs-horizontal").length.should.equal(1);
   });
 
   it("renders correctly", () => {
@@ -17,13 +18,13 @@ describe("<HorizontalTabs />", () => {
   });
 
   it("labels render correctly", () => {
-    const wrapper = shallow(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} />);
+    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} />);
     wrapper.find("a").length.should.equal(3);
   });
 
   it("onClickLabel triggers correctly", () => {
     const handler = sinon.spy();
-    const wrapper = shallow(<HorizontalTabs labels={["label 1", "label 2"]} onClickLabel={handler} />);
+    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2"]} onClickLabel={handler} />);
     const label = wrapper.find("a").at(1);
     label.simulate("click");
     handler.should.have.been.calledOnce;
@@ -31,14 +32,12 @@ describe("<HorizontalTabs />", () => {
   });
 
   it("activeIndex sets correctly", () => {
-    const wrapper = shallow(<HorizontalTabs labels={["label 1"]} activeIndex={0} />);
-    wrapper.find(".active").should.exist;
-
+    const wrapper = mount(<HorizontalTabs labels={["label 1"]} activeIndex={0} />);
+    wrapper.find(".active").length.should.eq(1);
   });
 
   it("green sets correctly", () => {
-    const wrapper = shallow(<HorizontalTabs labels={["label 1"]} green={true} />);
-    wrapper.find(".green").should.exist;
-
+    const wrapper = mount(<HorizontalTabs labels={["label 1"]} green={true} />);
+    wrapper.find(".uicore-tabs-green").length.should.eq(1);
   });
 });

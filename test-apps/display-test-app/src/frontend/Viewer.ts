@@ -17,7 +17,7 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { DebugPanel } from "./DebugPanel";
-import { emphasizeSelectedElements, FeatureOverridesPanel } from "./FeatureOverrides";
+import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
 import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
@@ -89,20 +89,11 @@ class DebugTools extends ToolBarDropDown {
       tooltip: "Test drawing aid tools",
     }));
 
-    const wantEmphasize = false;
-    if (wantEmphasize) {
-      this._element.appendChild(createToolButton({
-        className: "bim-icon-cancel",
-        click: () => emphasizeSelectedElements(IModelApp.viewManager.selectedView!),
-        tooltip: "Emphasize selected elements",
-      }));
-    } else {
-      this._element.appendChild(createImageButton({
-        src: "fit-to-view.svg",
-        click: () => zoomToSelectedElements(IModelApp.viewManager.selectedView!),
-        tooltip: "Zoom to selected elements",
-      }));
-    }
+    this._element.appendChild(createImageButton({
+      src: "fit-to-view.svg",
+      click: () => zoomToSelectedElements(IModelApp.viewManager.selectedView!),
+      tooltip: "Zoom to selected elements",
+    }));
 
     this._element.appendChild(createImageButton({
       src: "Markup.svg",

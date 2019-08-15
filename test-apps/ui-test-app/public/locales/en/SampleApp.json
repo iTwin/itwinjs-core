@@ -239,7 +239,6 @@
   "widgets": {
     "NavigationTree": "Navigation Tree",
     "VisibilityTree": "Visibility Tree",
-    "RealityData": "Reality Data",
     "BreadcrumbDemo": "Breadcrumb Demo",
     "ModelSelector": "Model Selector",
     "StatusBar": "Status Bar",

@@ -21,7 +21,7 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { StrokeOptions } from "./StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";
@@ -599,7 +599,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       for (xy of trigPoints) {
         const radians = Math.atan2(xy.y, xy.x);
         const fraction = this._sweep.radiansToPositivePeriodicFraction(radians);
-        result.push(CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction)));
+        const detail = CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction));
+        detail.intervalRole = CurveIntervalRole.isolated;
+        if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+        else if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, this._sweep.startRadians))
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+        result.push(detail);
       }
     }
     return numIntersection;
@@ -817,6 +823,23 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       this.sweep.fractionToRadians(fractionB));
     return arcB;
   }
+  /** Return an arc whose basis vectors are rotated by given angle within the current basis space.
+   * * the result arc will have its zero-degree point (new `vector0`) at the current `vector0 * cos(theta) + vector90 * sin(theta)`
+   * * the result sweep is adjusted so all fractional coordinates (e.g. start and end) evaluate to the same xyz.
+   *   * Specifically, theta is subtracted from the original start and end angles.
+   * @param theta the angle (in the input arc space) which is to become the 0-degree point in the new arc.
+   */
+  public cloneInRotatedBasis(theta: Angle): Arc3d {
+    const c = theta.cos();
+    const s = theta.sin();
+    const vector0 = this._matrix.multiplyXY(c, -s);
+    const vector90 = this.matrix.multiplyXY(s, c);
+
+    const newSweep = AngleSweep.createStartEndRadians(this._sweep.startRadians - theta.radians, this._sweep.endRadians - theta.radians);
+    const arcB = Arc3d.create(this._center.clone(), vector0, vector90, newSweep);
+    return arcB;
+  }
+
   /**
    * Find intervals of this CurvePrimitive that are interior to a clipper
    * @param clipper clip structure (e.g.clip planes)

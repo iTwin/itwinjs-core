@@ -8,6 +8,10 @@
 @import "../style/index";
 @import "../inputs/variables";
 
+$uicore-button-height: 28px;
+$uicore-button-line-height: $uicore-baseline * 1.5;
+$uicore-button-padding: ($uicore-button-height - $uicore-button-line-height) / 2;
+$uicore-button-padding-bordered: $uicore-button-padding - 1px;
 
 /// Mixins ---------------------------------------------------------------------
 
@@ -15,10 +19,10 @@
 
     display:                inline-block;
 
-    padding:                $uicore-inputs-padding $uicore-unbordered-padding;
+    padding:                $uicore-button-padding $uicore-unbordered-padding;
     margin:                 $uicore-inputs-margin 0;
     border-radius:          $uicore-border-radius;
-    line-height:            $uicore-line-height;
+    line-height:            $uicore-button-line-height;
     outline:                none;
     box-shadow:             none;
     font-family:            $uicore-font-family;

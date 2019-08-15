@@ -19,8 +19,8 @@ describe("<Headline />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<Headline />);
-    wrapper.find(".uicore-text-headline").should.exist;
+    const wrapper = mount(<Headline />);
+    wrapper.find(".uicore-text-headline").length.should.eq(1);
   });
 
   it("has correct text", () => {

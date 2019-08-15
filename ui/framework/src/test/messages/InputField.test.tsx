@@ -41,7 +41,7 @@ describe("InputFieldMessage", () => {
     expect(wrapper.find("div.uifw-popup-message-inputField").length).to.eq(1);
     expect(wrapper.find("div.uifw-popup-message-brief").length).to.eq(1);
     expect(wrapper.find("div.uifw-popup-message-detailed").length).to.eq(1);
-    expect(wrapper.find("div.icon-status-error").length).to.eq(1);
+    expect(wrapper.find("i.icon-status-error").length).to.eq(1);
     expect(wrapper.find("div.uifw-popup-message-close").length).to.eq(1);
 
     MessageManager.hideInputFieldMessage();
@@ -53,7 +53,7 @@ describe("InputFieldMessage", () => {
     details.setInputFieldTypeDetails(divElement);
     MessageManager.displayInputFieldMessage(details.inputField!, details.briefMessage, details.detailedMessage, details.priority);
     wrapper.update();
-    expect(wrapper.find("div.icon-status-warning").length).to.eq(1);
+    expect(wrapper.find("i.icon-status-warning").length).to.eq(1);
     MessageManager.hideInputFieldMessage();
 
     // Info icon
@@ -61,7 +61,7 @@ describe("InputFieldMessage", () => {
     details.setInputFieldTypeDetails(divElement);
     MessageManager.displayInputFieldMessage(details.inputField!, details.briefMessage, details.detailedMessage, details.priority);
     wrapper.update();
-    expect(wrapper.find("div.icon-info").length).to.eq(1);
+    expect(wrapper.find("i.icon-info").length).to.eq(1);
     MessageManager.hideInputFieldMessage();
 
     // Without an inputFieldElement

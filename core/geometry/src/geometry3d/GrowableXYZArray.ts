@@ -713,6 +713,20 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
+  /**
+   * * compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
+   * * accumulate it to the result.
+   */
+  public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
+    const i = index * 3;
+    const data = this._data;
+    if (this.isIndexValid(index)) {
+      sum.x += scale * data[i];
+      sum.y += scale * data[i + 1];
+      sum.z += scale * data[i + 2];
+    }
+  }
+
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
   public crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
     const j = targetAIndex * 3;

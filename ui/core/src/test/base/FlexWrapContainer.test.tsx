@@ -20,8 +20,8 @@ describe("<FlexWrapContainer />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<FlexWrapContainer />);
-    wrapper.find(".uicore-flex-wrap-container").should.exist;
+    const wrapper = mount(<FlexWrapContainer />);
+    wrapper.find(".uicore-flex-wrap-container").length.should.eq(1);
   });
 
   it("has correct text", () => {
