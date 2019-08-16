@@ -19,7 +19,7 @@ import { LayoutHorizontalSplitProps, LayoutVerticalSplitProps, ContentLayoutProp
 import "./ContentLayout.scss";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
-// Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
+// Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.
 // import SplitPane from "react-split-pane";
 const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
@@ -109,7 +109,6 @@ interface SplitContainerProps extends CommonProps {
 /** Split Container class.
  */
 class SplitContainer extends React.Component<SplitContainerProps> {
-
   private _containerDiv: HTMLDivElement | null = null;
 
   constructor(props: SplitContainerProps) {
@@ -120,13 +119,12 @@ class SplitContainer extends React.Component<SplitContainerProps> {
     let percentage = 0;
 
     if (this._containerDiv && size > 0) {
-      const width = this._containerDiv.getBoundingClientRect().width;
-      const height = this._containerDiv.getBoundingClientRect().height;
-
       if (this.props.orientation === Orientation.Horizontal) {
+        const height = this._containerDiv.getBoundingClientRect().height;
         if (height > 0)
           percentage = size / height;
       } else {
+        const width = this._containerDiv.getBoundingClientRect().width;
         if (width > 0)
           percentage = size / width;
       }

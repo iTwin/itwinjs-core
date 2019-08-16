@@ -19,7 +19,7 @@ import {
 import TestUtils from "../TestUtils";
 import sinon = require("sinon");
 
-const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
+// import SplitPane from "react-split-pane";
 
 describe("ContentLayout", () => {
 
@@ -166,20 +166,20 @@ describe("ContentLayout", () => {
   });
 
   // TODO - does not work
-  it.skip("SplitPane onChanged", () => {
-    const wrapper = mount(
-      <div style={{ width: "100px", height: "100px" }}>
-        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
-      </div>);
+  // it.skip("SplitPane onChanged", () => {
+  //   const wrapper = mount(
+  //     <div style={{ width: "100px", height: "100px" }}>
+  //       <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
+  //     </div>);
 
-    const splitPanel = wrapper.find(SplitPane);
-    expect(splitPanel.length).to.eq(1);
+  //   const splitPanel = wrapper.find(SplitPane);
+  //   expect(splitPanel.length).to.eq(1);
 
-    splitPanel.simulate("change", { size: 60 });
-    wrapper.update();
+  //   splitPanel.simulate("change", { size: 60 });
+  //   wrapper.update();
 
-    wrapper.unmount();
-  });
+  //   wrapper.unmount();
+  // });
 
   it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {
     const layoutProps: ContentLayoutProps = {

@@ -157,7 +157,7 @@
     "react-dnd-html5-backend": "^5.0.1",
     "react-redux": "^5.0.7",
     "react-resize-detector": "^3.2.0",
-    "react-split-pane": "0.1.77",
+    "react-split-pane": "0.1.87",
     "redux": "^4.0.3",
     "svg-sprite-loader": "^3.8.0"
   },
