@@ -14,10 +14,10 @@ import * as hash from "object-hash";
 import * as path from "path";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, BriefcaseManager, CategorySelector,
-  DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector,
-  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject, Model,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject, Model,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -806,6 +806,143 @@ describe("IModelTransformer", () => {
   after(async () => {
     testDataManager.sourceDb.closeSnapshot();
     testDataManager.targetDb.closeSnapshot();
+  });
+
+  function createTeamIModel(teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {
+    const teamFile: string = path.join(KnownTestLocations.outputDir, `Team${teamName}.bim`);
+    if (IModelJsFs.existsSync(teamFile)) {
+      IModelJsFs.removeSync(teamFile);
+    }
+    const iModelDb: IModelDb = IModelDb.createSnapshot(teamFile, { rootSubject: { name: teamName } });
+    assert.exists(iModelDb);
+    const contextSubjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, "Context");
+    assert.isTrue(Id64.isValidId64(contextSubjectId));
+    const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, `Definition${teamName}`);
+    assert.isTrue(Id64.isValidId64(definitionModelId));
+    const spatialCategoryId = TestDataManager.insertSpatialCategory(iModelDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, `Physical${teamName}`);
+    assert.isTrue(Id64.isValidId64(physicalModelId));
+    const physicalObjectProps1: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: `PhysicalObject${teamName}1`,
+      geom: TestDataManager.createBox(Point3d.create(1, 1, 1)),
+      placement: {
+        origin: teamOrigin,
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId1: Id64String = iModelDb.elements.insertElement(physicalObjectProps1);
+    assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    iModelDb.saveChanges();
+    return iModelDb;
+  }
+
+  function createSharedIModel(teamNames: string[]): IModelDb {
+    const iModelName: string = `Shared${teamNames.join("")}`;
+    const iModelFile: string = path.join(KnownTestLocations.outputDir, `${iModelName}.bim`);
+    if (IModelJsFs.existsSync(iModelFile)) {
+      IModelJsFs.removeSync(iModelFile);
+    }
+    const iModelDb: IModelDb = IModelDb.createSnapshot(iModelFile, { rootSubject: { name: iModelName } });
+    assert.exists(iModelDb);
+    teamNames.forEach((teamName: string) => {
+      const subjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, teamName);
+      assert.isTrue(Id64.isValidId64(subjectId));
+    });
+    return iModelDb;
+  }
+
+  function assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
+    const definitionPartitionId: Id64String = getTeamDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const spatialCategoryId = getTeamSpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const physicalPartitionId: Id64String = getTeamPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    getTeamPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, teamName, "1");
+  }
+
+  function assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
+    teamNames.forEach((teamName: string) => {
+      const subjectId: Id64String = getTeamSubjectId(iModelDb, teamName);
+      const definitionPartitionId: Id64String = getTeamDefinitionPartitionId(iModelDb, subjectId, teamName);
+      const spatialCategoryId = getTeamSpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+      const physicalPartitionId: Id64String = getTeamPhysicalPartitionId(iModelDb, subjectId, teamName);
+      getTeamPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, teamName, "1");
+    });
+  }
+
+  function getTeamSubjectId(iModelDb: IModelDb, teamName: string): Id64String {
+    const subjectId: Id64String = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, teamName))!;
+    assert.isTrue(Id64.isValidId64(subjectId));
+    return subjectId;
+  }
+
+  function getTeamDefinitionPartitionId(iModelDb: IModelDb, parentSubjectId: Id64String, teamName: string): Id64String {
+    const partitionCode: Code = DefinitionPartition.createCode(iModelDb, parentSubjectId, `Definition${teamName}`);
+    const partitionId: Id64String = iModelDb.elements.queryElementIdByCode(partitionCode)!;
+    assert.isTrue(Id64.isValidId64(partitionId));
+    return partitionId;
+  }
+
+  function getTeamSpatialCategoryId(iModelDb: IModelDb, modelId: Id64String, teamName: string): Id64String {
+    const categoryCode: Code = SpatialCategory.createCode(iModelDb, modelId, `SpatialCategory${teamName}`);
+    const categoryId: Id64String = iModelDb.elements.queryElementIdByCode(categoryCode)!;
+    assert.isTrue(Id64.isValidId64(categoryId));
+    return categoryId;
+  }
+
+  function getTeamPhysicalPartitionId(iModelDb: IModelDb, parentSubjectId: Id64String, teamName: string): Id64String {
+    const partitionCode: Code = PhysicalPartition.createCode(iModelDb, parentSubjectId, `Physical${teamName}`);
+    const partitionId: Id64String = iModelDb.elements.queryElementIdByCode(partitionCode)!;
+    assert.isTrue(Id64.isValidId64(partitionId));
+    return partitionId;
+  }
+
+  function getTeamPhysicalElementId(iModelDb: IModelDb, modelId: Id64String, categoryId: Id64String, teamName: string, suffix: string): Id64String {
+    const elementId: Id64String = TestDataManager.queryByUserLabel(iModelDb, `PhysicalObject${teamName}${suffix}`);
+    assert.isTrue(Id64.isValidId64(elementId));
+    const element: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(elementId);
+    assert.equal(element.model, modelId);
+    assert.equal(element.category, categoryId);
+    return elementId;
+  }
+
+  it.skip("should sync Team iModels into Shared", async () => {
+    const iModelA: IModelDb = createTeamIModel("A", Point3d.create(0, 0, 0), ColorDef.green);
+    const iModelB: IModelDb = createTeamIModel("B", Point3d.create(0, 10, 0), ColorDef.blue);
+    const iModelShared: IModelDb = createSharedIModel(["A", "B"]);
+
+    assertTeamIModelContents(iModelA, "A");
+    assertTeamIModelContents(iModelB, "B");
+
+    if (true) {
+      const subjectId: Id64String = getTeamSubjectId(iModelShared, "A");
+      const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
+      transformerA2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerA2S.excludeSubject("/Context");
+      transformerA2S.excludeElement(IModel.dictionaryId);
+      transformerA2S.importAll();
+      transformerA2S.dispose();
+      iModelShared.saveChanges("Imported A");
+    }
+
+    if (true) {
+      const subjectId: Id64String = getTeamSubjectId(iModelShared, "B");
+      const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
+      transformerB2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerB2S.excludeSubject("/Context");
+      transformerB2S.excludeElement(IModel.dictionaryId);
+      transformerB2S.importAll();
+      transformerB2S.dispose();
+      iModelShared.saveChanges("Imported B");
+      assertSharedIModelContents(iModelShared, ["A", "B"]);
+    }
+
+    iModelA.closeSnapshot();
+    iModelB.closeSnapshot();
+    iModelShared.closeSnapshot();
   });
 
   function count(iModelDb: IModelDb, classFullName: string): number {

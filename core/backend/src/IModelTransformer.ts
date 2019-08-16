@@ -27,6 +27,8 @@ export class IModelTransformer {
   protected _sourceDb: IModelDb;
   /** The read/write target iModel. */
   protected _targetDb: IModelDb;
+  /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
+  protected _targetScopeElementId: Id64String = IModel.rootSubjectId;
   /** The native import context */
   private _importContext: IModelJsNative.ImportContext;
   /** The set of CodeSpecs to exclude from transformation to the target iModel. */
@@ -47,10 +49,12 @@ export class IModelTransformer {
   /** Construct a new IModelImporter
    * @param sourceDb The source IModelDb
    * @param targetDb The target IModelDb
+   * @param targetScopeElementId The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String) {
     this._sourceDb = sourceDb;
     this._targetDb = targetDb;
+    if (undefined !== targetScopeElementId) this._targetScopeElementId = targetScopeElementId;
     this._importContext = new IModelHost.platform.ImportContext(this._sourceDb.nativeDb, this._targetDb.nativeDb);
     this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
   }
@@ -155,7 +159,7 @@ export class IModelTransformer {
   private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
     this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
-      statement.bindId("scopeId", this.getTargetScopeElementId());
+      statement.bindId("scopeId", this._targetScopeElementId);
       statement.bindString("kind", Element.className);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceElementId: Id64String = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
@@ -342,13 +346,6 @@ export class IModelTransformer {
     return `${elementAspectProps.classFullName} elementId=[${this.formatIdForLogger(elementAspectProps.element.id)}]`;
   }
 
-  /** Return the Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
-   * @note A subclass must override this method if multiple iModels are being combined into a single iModel.
-   */
-  protected getTargetScopeElementId(): Id64String {
-    return IModel.rootSubjectId;
-  }
-
   /** Mark the specified Element as skipped so its processing can be deferred. */
   protected skipElement(sourceElement: Element): void {
     this._skippedElementIds.add(sourceElement.id);
@@ -414,10 +411,9 @@ export class IModelTransformer {
    */
   protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean {
     const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
-    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
-      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
+      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === this._targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
         const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
         return (lastModifiedTime !== sourceAspect.version) || (sourceElement.computeHash() !== sourceAspect.checksum);
       }
@@ -443,6 +439,9 @@ export class IModelTransformer {
    * @param sourceElementId Identifies the Element from the source iModel to import.
    */
   public importElement(sourceElementId: Id64String): void {
+    if (sourceElementId === IModel.rootSubjectId) {
+      throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
+    }
     Logger.logTrace(loggerCategory, `--> importElement(${this.formatIdForLogger(sourceElementId)})`);
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     if (this.shouldExcludeElement(sourceElement)) {
@@ -502,8 +501,7 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was inserted.
    */
   protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
-    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId));
+    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, this._targetScopeElementId, targetElementId));
   }
 
   /** Record provenance about the source Element for change detection.
@@ -511,9 +509,8 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was updated.
    */
   protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    const targetScopeElementId: Id64String = this.getTargetScopeElementId();
-    const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, targetScopeElementId, targetElementId);
-    ExternalSourceAspect.deleteForElement(this._targetDb, sourceAspectProps.scope.id, targetElementId);
+    const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, this._targetScopeElementId, targetElementId);
+    ExternalSourceAspect.deleteForElement(this._targetDb, this._targetScopeElementId, targetElementId);
     this._targetDb.elements.insertAspect(sourceAspectProps);
   }
 
@@ -1025,7 +1022,7 @@ export class IModelTransformer {
     this.initFromExternalSourceAspects();
     this.importCodeSpecs();
     this.importFonts();
-    this.importElement(IModel.rootSubjectId);
+    this.importChildElements(IModel.rootSubjectId);
     this.importModels(DefinitionPartition.classFullName);
     this.importModels(InformationPartitionElement.classFullName);
     this.importSkippedElements();
