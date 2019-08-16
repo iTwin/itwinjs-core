@@ -433,7 +433,7 @@ packages:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-KVNdK+BOAQ7pfFujMIn1rjsDSX0=
+      integrity: sha512-81znHL9uL8RlE8iF2eNUGJLhlfVgPI/QC8FshIw15oJN81duHssgH47ClfQOd4w3IzeAA4NlQsqA6fWV5iGaSg==
   /@fimbul/bifrost/0.17.0_tslint@5.18.0+typescript@3.5.3:
     dependencies:
       '@fimbul/ymir': 0.17.0_tsutils@3.17.0+typescript@3.5.3
