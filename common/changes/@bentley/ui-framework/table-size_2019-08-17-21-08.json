@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Had to back up to react-split-pane 0.1.77",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}
