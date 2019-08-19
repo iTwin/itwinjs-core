@@ -2,6 +2,63 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/ui-components_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use latest icon library"
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "explicitly set margin for button groups to avoid bleed over from BWC styles."
+          },
+          {
+            "comment": "After canceling (clearing) search, set focus back to input field."
+          },
+          {
+            "comment": "Skip failing test until UI team can investigate"
+          },
+          {
+            "comment": "Updated generic icon package"
+          },
+          {
+            "comment": "Fix DateTime type converters"
+          },
+          {
+            "comment": "Improve point type converters to handle points defined as `number[]` or `{x,y}` or `{x,y,z}`"
+          },
+          {
+            "comment": "Change floating point converter to round-off numbers up to 2 decimal places"
+          },
+          {
+            "comment": "Fixed property grid tests."
+          },
+          {
+            "comment": "Fixed OnPropertyLinkClick event handler assignment for nested properties in PropertyGrid. Fixed OnPropertyLinkClick signature for PropertyGrid."
+          },
+          {
+            "comment": "Added onPropertyLinkClick handler property for PropertyGrid with default behavior to open url links in the new tab or open email client if it is an email link. Wrote tests for it."
+          },
+          {
+            "comment": "Update FilteringInput to use updated search box design from UX."
+          },
+          {
+            "comment": "Added SelectionMode.None to the default SelectionHandler."
+          },
+          {
+            "comment": "Tree: Fix children not loaded when parent is reloaded due to other page loads after children request"
+          },
+          {
+            "comment": "Update to latest icon package version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/ui-components_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

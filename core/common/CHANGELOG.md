@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Add optional arguments to EcefLocation.createFromCartographicOrigin
+- Allow custom tile cache services.
+- Add CodeSpec.isManagedWithIModel, CodeSpec.scopeType, deprecate CodeSpec.specScopeType
+- Add CodeSpec.create
+- Add terrain settings.
+- Require electron without eval trick.
+- Log more information during RPC trace/info request logging.
+- Changed the transfer chunk size for mobile RPC transport.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

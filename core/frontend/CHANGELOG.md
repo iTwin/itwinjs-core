@@ -1,6 +1,47 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Add a frontend keyin UI and handler.
+- Add inertia to Pan and Rotate tools
+- Add test to avoid crash on null view
+- Add support for BackstageComposer so Plugins can add backstage items.
+- Fix loading bug with IModelConnection.codeSpecs
+- Support depth buffered background map and terrain provided through Cesium World Terrain.  Switch to logarithmic Z-Buffer
+- Added CursorPopupRenderer to render multiple CursorPopups per RelativePosition.
+- Added CursorPrompt, improved Pointer messages
+- Added support for displaying shadows.
+- Fixed inability to select pickable overlay decorations when elements are emphasized or isolated in the viewport.
+- EmphasizeElements API for resymbolizing and isolating elements.
+- Fix Feature IDs for planar classification picking.
+- Use https: to download Plugin files, unless server is localhost
+- Correct cutting plane direction for Syncro schedule support.
+- Fix element locate occassionally locating transparent areas of textured surfaces.
+- Fix DecorateContext.addDecoration() ignoring view background graphic type.
+- Fix specular lighting in specific case when specular exponent is zero.
+- #151464 Improved grid display performance.
+- Don't check eyeDot in camera view.
+- Grid - fix loop test point, check spacing once when camera is off, don't fade unless decreasing.
+- Mass properties tool, report error when selection contains no valid elements for operation.
+- Report WebGL context loss to the user.
+- Optimized shader programs by moving computations from fragment to vertex shader; implemented material atlases to reduce number of draw calls associated with surface materials.
+- Measure distance, don't use cursor location in decorate while suspended.
+- Plugin changes to support building to tar files and hosting by external web servers.
+- Allow defining points with `number[]` and `{x,y}` or `{x,y,z}`
+- Made onClick event handler in LinkElementInfo optional.
+- #139626 Change SelectTool to always start in pick mode, add better filter explanations.
+- Add tool assistance for SelectTool.
+- Update SelectTool to set want tool setting property to true.
+- Rework map imagery and terrain tile trees to improve display fidelity during panning and zooming.
+- If a material specifies a pattern map and transparency, multiply pattern alpha by material alpha.
+- Fix a bug in which a tile request could become stuck in the "loading" state.
+- Added Tool.parseAndRun to make executing Tools from keyins easier.
+- #155077 Project point to ACS plane when zooming if an element isn't identify and no background map is displayed.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

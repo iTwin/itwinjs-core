@@ -2,6 +2,120 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/imodeljs-frontend_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a frontend keyin UI and handler."
+          },
+          {
+            "comment": "Add inertia to Pan and Rotate tools"
+          },
+          {
+            "comment": "Add test to avoid crash on null view"
+          },
+          {
+            "comment": "Add support for BackstageComposer so Plugins can add backstage items."
+          },
+          {
+            "comment": "Fix loading bug with IModelConnection.codeSpecs"
+          },
+          {
+            "comment": "Support depth buffered background map and terrain provided through Cesium World Terrain.  Switch to logarithmic Z-Buffer"
+          },
+          {
+            "comment": "Added CursorPopupRenderer to render multiple CursorPopups per RelativePosition."
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "Added support for displaying shadows."
+          },
+          {
+            "comment": "Fixed inability to select pickable overlay decorations when elements are emphasized or isolated in the viewport."
+          },
+          {
+            "comment": "EmphasizeElements API for resymbolizing and isolating elements."
+          },
+          {
+            "comment": "Fix Feature IDs for planar classification picking."
+          },
+          {
+            "comment": "Use https: to download Plugin files, unless server is localhost"
+          },
+          {
+            "comment": "Correct cutting plane direction for Syncro schedule support."
+          },
+          {
+            "comment": "Fix element locate occassionally locating transparent areas of textured surfaces."
+          },
+          {
+            "comment": "Fix DecorateContext.addDecoration() ignoring view background graphic type."
+          },
+          {
+            "comment": "Fix specular lighting in specific case when specular exponent is zero."
+          },
+          {
+            "comment": "#151464 Improved grid display performance."
+          },
+          {
+            "comment": "Don't check eyeDot in camera view."
+          },
+          {
+            "comment": "Grid - fix loop test point, check spacing once when camera is off, don't fade unless decreasing."
+          },
+          {
+            "comment": "Mass properties tool, report error when selection contains no valid elements for operation."
+          },
+          {
+            "comment": "Report WebGL context loss to the user."
+          },
+          {
+            "comment": "Optimized shader programs by moving computations from fragment to vertex shader; implemented material atlases to reduce number of draw calls associated with surface materials."
+          },
+          {
+            "comment": "Measure distance, don't use cursor location in decorate while suspended."
+          },
+          {
+            "comment": "Plugin changes to support building to tar files and hosting by external web servers."
+          },
+          {
+            "comment": "Allow defining points with `number[]` and `{x,y}` or `{x,y,z}`"
+          },
+          {
+            "comment": "Made onClick event handler in LinkElementInfo optional."
+          },
+          {
+            "comment": "#139626 Change SelectTool to always start in pick mode, add better filter explanations."
+          },
+          {
+            "comment": "Add tool assistance for SelectTool."
+          },
+          {
+            "comment": "Update SelectTool to set want tool setting property to true."
+          },
+          {
+            "comment": "Rework map imagery and terrain tile trees to improve display fidelity during panning and zooming."
+          },
+          {
+            "comment": "If a material specifies a pattern map and transparency, multiply pattern alpha by material alpha."
+          },
+          {
+            "comment": "Fix a bug in which a tile request could become stuck in the \"loading\" state."
+          },
+          {
+            "comment": "Added Tool.parseAndRun to make executing Tools from keyins easier."
+          },
+          {
+            "comment": "#155077 Project point to ACS plane when zooming if an element isn't identify and no background map is displayed."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/imodeljs-frontend_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

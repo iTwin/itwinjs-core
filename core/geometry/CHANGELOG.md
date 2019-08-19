@@ -1,6 +1,19 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- WireMoment computation; polyline filters for short edge, small triangle, perpendicular projection
+- Triangulate cut faces in polyface clip.  Variant point data parse.  Bilinear Patch ray intersection"
+- Construct offset from path with curves.
+- Mesh principal axis computation.
+- Document unit length rows/cols requirement of Matrix3d.toQuaternion
+- Correct point4d normalization to handle small w values (NPC)
+- #151464 Improved grid display performance.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT
