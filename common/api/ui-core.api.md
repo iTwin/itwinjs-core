@@ -1126,9 +1126,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     constructor(props: ReactNumericInputProps);
     componentDidMount(): void;
     componentDidUpdate(_prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
-    componentWillReceiveProps(props: ReactNumericInputProps): void;
     componentWillUnmount(): void;
-    componentWillUpdate(): void;
     static defaultProps: {
         step: number;
         min: number;
@@ -1148,6 +1146,10 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     refsInput: HTMLInputElement | undefined;
     render(): JSX.Element;
     static SPEED: number;
+    // (undocumented)
+    UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void;
+    // (undocumented)
+    UNSAFE_componentWillUpdate(): void;
     }
 
 // @alpha (undocumented)

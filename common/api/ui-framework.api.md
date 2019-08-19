@@ -150,9 +150,9 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentWillReceiveProps(nextProps: ActionItemButtonProps): void;
-    // (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState): BaseItemState | null;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
