@@ -5,12 +5,12 @@
 /** @module Widget */
 
 import * as React from "react";
-import { IModelApp, SelectedViewportChangedArgs, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { SelectionMode, ContextMenu, ContextMenuItem } from "@bentley/ui-components";
 import { CategoryTree } from "../imodel-components/category-tree/CategoriesTree";
-import { VisibilityTree } from "../imodel-components//visibility-tree/VisibilityTree";
+import { VisibilityTree } from "../imodel-components/visibility-tree/VisibilityTree";
 import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
-import { Position } from "@bentley/ui-core";
+import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -22,12 +22,25 @@ const visibilityKey = "0";
 const categoryKey = "1";
 const spatialKey = "2";
 
+/**
+ * Props for `VisibilityComponent`
+ * @alpha
+ */
+export interface VisibilityComponentProps {
+  /** iModel whose data should be displayed in the component */
+  iModelConnection: IModelConnection;
+  /** Viewport to use for controlling display */
+  activeViewport?: Viewport;
+  /** `React.Ref` to the root HTML element  */
+  activeTreeRef?: React.Ref<HTMLDivElement>;
+}
+
 interface VisibilityTreeState {
   initialized: boolean;
   activeTree: string;
   showOptions: boolean;
   showSearchBox: boolean;
-  viewport: ScreenViewport;
+  viewport?: Viewport;
   selectAll: boolean;
   clearAll: boolean;
 }
@@ -36,7 +49,7 @@ interface VisibilityTreeState {
  * @alpha
  */
 // istanbul ignore next
-export class VisibilityComponent extends React.Component<any, VisibilityTreeState> {
+export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
   private _optionsElement: HTMLElement | null = null;
 
   constructor(props: any) {
@@ -92,7 +105,7 @@ export class VisibilityComponent extends React.Component<any, VisibilityTreeStat
     const { iModelConnection } = this.props;
     const { activeTree, showSearchBox, viewport, selectAll, clearAll } = this.state;
     return (<div className="uifw-visibility-tree-wrapper">
-      {activeTree === visibilityKey && <VisibilityTree imodel={iModelConnection} activeView={viewport} selectionMode={SelectionMode.None} />}
+      {activeTree === visibilityKey && <VisibilityTree imodel={iModelConnection} activeView={viewport} selectionMode={SelectionMode.None} rootElementRef={this.props.activeTreeRef} />}
       {activeTree === categoryKey && <CategoryTree iModel={iModelConnection} activeView={viewport} showSearchBox={showSearchBox}
         selectAll={selectAll} clearAll={clearAll} />}
       {activeTree === spatialKey && <SpatialContainmentTree iModel={iModelConnection} />}
@@ -131,6 +144,9 @@ export class VisibilityComponent extends React.Component<any, VisibilityTreeStat
  */
 // istanbul ignore next
 export class VisibilityWidget extends WidgetControl {
+  private _activeTreeRef = React.createRef<HTMLDivElement>();
+  private _maintainScrollPosition?: ScrollPositionMaintainer;
+
   public static get iconSpec() {
     return `svg:${widgetIconSvg}`;
   }
@@ -142,8 +158,21 @@ export class VisibilityWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     if (options && options.iModelConnection)
-      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} />;
+      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} />;
     else
       this.reactElement = "no imodel";
+  }
+
+  public saveTransientState(): void {
+    if (this._activeTreeRef.current)
+      this._maintainScrollPosition = new ScrollPositionMaintainer(this._activeTreeRef.current);
+  }
+
+  public restoreTransientState(): boolean {
+    if (this._maintainScrollPosition) {
+      this._maintainScrollPosition.dispose();
+      this._maintainScrollPosition = undefined;
+    }
+    return true;
   }
 }

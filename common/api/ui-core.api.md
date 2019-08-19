@@ -8,6 +8,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { IDisposable } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
@@ -1265,6 +1266,13 @@ export interface RectangleProps {
     // (undocumented)
     readonly top: number;
 }
+
+// @alpha
+export class ScrollPositionMaintainer implements IDisposable {
+    constructor(el: Element);
+    // (undocumented)
+    dispose(): void;
+    }
 
 // @public
 export const ScrollView: React.FunctionComponent<CommonDivProps>;
