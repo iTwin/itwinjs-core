@@ -6,8 +6,7 @@ import { Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DictionaryModel, DisplayStyle3d, Element, IModelDb } from "../../imodeljs-backend";
-import { NativeLoggerCategory } from "../../IModelJsNative";
+import { BackendRequestContext, DictionaryModel, DisplayStyle3d, Element, IModelDb, NativeLoggerCategory } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "../integration/HubUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -29,7 +28,7 @@ describe("ExcludedElements", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(requestContext, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {

@@ -36,11 +36,11 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
 }
 
 /** Resize a canvas to a desired size.  The final size will be targetSize plus barSize.  The original canvas is left untouched and a new, resized canvas with potential side bars is returned.
- * @param canvasIn the source [[HTMLCanvasElement]] to resize.
+ * @param canvasIn the source [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) to resize.
  * @param targetSize the desired new size for the canvas image.
  * @param barSize total size of side bars to add to the image in width and height; defaults to (0, 0).  For example, if you specify (2, 0), a 1 pixel side bar will be added to the left and right sides of the resized image.  If an odd dimension is specified, the left or upper side of the image will be one pixel larger than the opposite side.  For example, if you specify (1, 0), a 1 pixel side bar will be added to the left side of the image and a 0 pixel side bar will be added to the right side of the image.
  * @param barStyle CSS style string to apply to any side bars; defaults to "#C0C0C0", which is silver.
- * @returns an [[HTMLCanvasElement]] object containing the resized image and any requested side bars.
+ * @returns an [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object containing the resized image and any requested side bars.
  * @public
  */
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
@@ -66,9 +66,9 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
 }
 
 /** Create a canvas element with the same dimensions and contents as an image buffer.
- * @param buffer the source [[ImageBuffer]] object from which the [[HTMLCanvasElement]] object will be constructed.
+ * @param buffer the source [[ImageBuffer]] object from which the [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object will be constructed.
  * @param preserveAlpha If false, the alpha channel will be set to 255 (fully opaque). This is recommended when converting an already-blended image (e.g., one obtained from [[Viewport.readImage]]).
- * @returns an [[HTMLCanvasElement]] object containing the contents of the source image buffer, or undefined if the conversion fails.
+ * @returns an [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object containing the contents of the source image buffer, or undefined if the conversion fails.
  * @public
  */
 export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
@@ -104,7 +104,7 @@ export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean 
 }
 
 /** Create an ImageBuffer in the specified format with the same dimensions and contents as a canvas.
- * @param canvas the source [[HTMLCanvasElement]] object from which the [[ImageBuffer]] object will be constructed.
+ * @param canvas the source [HTMLCanvasElement](https://developer.mozilla.org/docs/Web/API/HTMLCanvasElement) object from which the [[ImageBuffer]] object will be constructed.
  * @param format the desired format of the created ImageBuffer; defaults to [[ImageBufferFormat.Rgba]].
  * @returns an [[ImageBuffer]] object containing the contents of the source canvas, or undefined if the conversion fails.
  * @public

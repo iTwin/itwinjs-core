@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
 
+// Importing through require due to types for linkifyjs not exporting 'find' function
+const linkify = require("linkifyjs"); // tslint:disable-line: no-var-requires
+
 import * as React from "react";
 import classnames from "classnames";
 import ResizeObserver from "resize-observer-polyfill";
 
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -45,9 +48,10 @@ export interface PropertyGridProps extends CommonProps {
   isPropertyEditingEnabled?: boolean;
   /** Callback for when properties are being edited @beta */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
+  /** Callback for when links in properties are being clicked @beta */
+  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
   /** Callback for when properties are updated @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
-
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
 }
@@ -158,6 +162,19 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.updateOrientation(this.state.orientation, this.props.orientation);
   }
 
+  private handleLinkClick(_record: PropertyRecord, text: string) {
+    const linksArray = linkify.find(text) as Array<{ type: string, value: string, href: string }>;
+    if (linksArray.length <= 0)
+      return;
+    const foundLink = linksArray[0];
+    if (foundLink && foundLink.href) {
+      if (foundLink.type === "url")
+        window.open(foundLink.href, "_blank")!.focus();
+      else if (foundLink.type === "email")
+        location.href = foundLink.href;
+    }
+  }
+
   private updateOrientation(currentOrientation: Orientation, propOrientation?: Orientation) {
     if (propOrientation !== undefined) {
       if (propOrientation !== currentOrientation)
@@ -209,7 +226,6 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       this._hasPendingDataRequest = false;
       return this.gatherData();
     }
-
     const categories = new Array<PropertyGridCategory>();
     propertyData.categories.map((category: PropertyCategory, _index: number) => {
       const gridCategory: PropertyGridCategory = {
@@ -217,9 +233,21 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         propertyCount: propertyData.records[category.name].length,
         properties: propertyData.records[category.name],
       };
+      this.assignRecordClickHandlers(propertyData.records[category.name]);
       categories.push(gridCategory);
     });
     this.setState({ categories, loadStart: undefined });
+  }
+
+  private assignRecordClickHandlers(records: PropertyRecord[]) {
+    records.forEach((record: PropertyRecord) => {
+      if (record.links)
+        record.links.onClick = this.props.onPropertyLinkClick ? this.props.onPropertyLinkClick : this.handleLinkClick;
+      if (record.value.valueFormat === PropertyValueFormat.Array)
+        this.assignRecordClickHandlers((record.value as ArrayValue).items);
+      if (record.value.valueFormat === PropertyValueFormat.Struct)
+        this.assignRecordClickHandlers(Object.values((record.value as StructValue).members));
+    });
   }
 
   private _onExpansionToggled = (categoryName: string) => {

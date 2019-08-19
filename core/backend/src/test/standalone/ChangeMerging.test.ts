@@ -5,11 +5,10 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64String, ChangeSetStatus, ChangeSetApplyOption, OpenMode } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl, SpatialCategory } from "../../imodeljs-backend";
+import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl, SpatialCategory, IModelJsNative } from "../../imodeljs-backend";
 import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelJsNative } from "../../IModelJsNative";
 import { IModelHost } from "../../IModelHost";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.

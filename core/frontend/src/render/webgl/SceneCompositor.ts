@@ -649,10 +649,12 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
+    this.target.decorationState.isReadPixelsInProgress = true;
     this.target.pushState(this.target.decorationState);
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.recordPerformanceMetric("Overlay Draws");
     this.target.popBranch();
+    this.target.decorationState.isReadPixelsInProgress = false;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -719,7 +721,6 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    this.target.plan!.selectExpandedFrustum();
     this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
 
     const fbStack = System.instance.frameBufferStack;
@@ -729,7 +730,6 @@ abstract class Compositor extends SceneCompositor {
       this.target.techniques.execute(this.target, cmds, RenderPass.BackgroundMap);
     });
 
-    this.target.plan!.selectViewFrustum();
     this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
   }
 

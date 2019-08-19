@@ -1055,7 +1055,7 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
 
-// @internal (undocumented)
+// @internal
 export const formatStringRgx: RegExp;
 
 // @beta
@@ -1136,9 +1136,6 @@ export enum FractionalPrecision {
     // (undocumented)
     TwoHundredFiftySix = 256
 }
-
-// @internal
-export function generateFormatString(format: Format | OverrideFormat): string;
 
 // @internal
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
@@ -1344,8 +1341,7 @@ export class KindOfQuantity extends SchemaItem {
     constructor(schema: Schema, name: string);
     // (undocumented)
     protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
-    // (undocumented)
-    protected createFormatOverride(parent: Format, name: string, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
+    protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
     readonly defaultPresentationFormat: Format | OverrideFormat | undefined;
     // (undocumented)
     deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
@@ -1506,6 +1502,8 @@ export class OverrideFormat {
     readonly formatTraits: FormatTraits;
     // (undocumented)
     readonly fullName: string;
+    // @alpha
+    fullNameXml(koqSchema: Schema): string;
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)

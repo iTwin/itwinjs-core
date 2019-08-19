@@ -14,12 +14,13 @@ import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
+import { ChangeData } from '@bentley/imodeljs-common';
 import { ChangedElements } from '@bentley/imodeljs-common';
+import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodeljs-clients';
@@ -79,8 +80,8 @@ import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
-import { IModelStatus } from '@bentley/bentleyjs-core';
-import { IModelStatus as IModelStatus_2 } from '@bentley/imodeljs-common';
+import { IModelJsNative } from '@bentley/imodeljs-native';
+import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
@@ -93,7 +94,6 @@ import { LinearlyReferencedFromToLocationProps } from '@bentley/imodeljs-common'
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodeljs-clients';
-import { Logger } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
@@ -120,7 +120,6 @@ import { Readable } from 'stream';
 import { ReferentElementProps } from '@bentley/imodeljs-common';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RenderMaterialProps } from '@bentley/imodeljs-common';
-import { RepositoryStatus } from '@bentley/bentleyjs-core';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -128,7 +127,6 @@ import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StandardViewIndex } from '@bentley/geometry-core';
-import { StatusCodeWithMessage } from '@bentley/bentleyjs-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
@@ -140,7 +138,6 @@ import { TileTreeProps } from '@bentley/imodeljs-common';
 import { Transform } from '@bentley/geometry-core';
 import { TypeDefinition } from '@bentley/imodeljs-common';
 import { TypeDefinitionElementProps } from '@bentley/imodeljs-common';
-import { UsageType } from '@bentley/imodeljs-clients';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentLabelProps } from '@bentley/imodeljs-common';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -303,6 +300,7 @@ export enum BackendLoggerCategory {
     IModelDb = "imodeljs-backend.IModelDb",
     IModelHost = "imodeljs-backend.IModelHost",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+    IModelTileUpload = "imodeljs-backend.IModelTileUpload",
     // @alpha
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
@@ -475,17 +473,19 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     toJSON(): CategorySelectorProps;
 }
 
-// @beta
+// @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     readonly isOpen: boolean;
     isProcessed(changesetId: string): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
@@ -606,13 +606,15 @@ export interface CloudStorageServiceCredentials {
     // (undocumented)
     account: string;
     // (undocumented)
-    service: "azure";
+    service: "azure" | "external";
 }
 
 // @beta (undocumented)
 export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
+    // (undocumented)
+    contentEncoding?: "gzip";
     // (undocumented)
     type?: string;
 }
@@ -1331,6 +1333,20 @@ export class ElementOwnsChildElements extends RelatedElement {
 }
 
 // @public
+export class ElementOwnsMultiAspects extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
+export class ElementOwnsUniqueAspect extends RelatedElement {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @public
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static readonly className: string;
@@ -1382,15 +1398,17 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @beta
+// @public
 export namespace ExportGraphics {
+    // @beta @deprecated
     export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
+    export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
 }
 
-// @beta
+// @public
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
-// @beta
+// @public
 export interface ExportGraphicsInfo {
     color: number;
     elementId: Id64String;
@@ -1400,13 +1418,13 @@ export interface ExportGraphicsInfo {
     textureId?: Id64String;
 }
 
-// @beta
+// @public
 export interface ExportGraphicsLines {
     indices: Int32Array;
     points: Float64Array;
 }
 
-// @beta
+// @public
 export interface ExportGraphicsMesh {
     indices: Int32Array;
     normals: Float32Array;
@@ -1414,21 +1432,24 @@ export interface ExportGraphicsMesh {
     points: Float64Array;
 }
 
-// @beta
-export interface ExportGraphicsProps {
+// @public
+export interface ExportGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
-    partInstanceArray?: ExportPartInstanceProps[];
+    partInstanceArray?: ExportPartInstanceInfo[];
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportGraphicsProps = ExportGraphicsOptions;
+
+// @public
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
-// @beta
+// @public
 export interface ExportLinesInfo {
     color: number;
     elementId: Id64String;
@@ -1436,8 +1457,8 @@ export interface ExportLinesInfo {
     subCategory: Id64String;
 }
 
-// @beta
-export interface ExportPartDisplayProps {
+// @public
+export interface ExportPartDisplayInfo {
     // (undocumented)
     categoryId: Id64String;
     // (undocumented)
@@ -1450,21 +1471,27 @@ export interface ExportPartDisplayProps {
     subCategoryId: Id64String;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartDisplayProps = ExportPartDisplayInfo;
+
+// @public
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
-// @beta
-export interface ExportPartGraphicsProps {
+// @public
+export interface ExportPartGraphicsOptions {
     angleTol?: number;
     chordTol?: number;
-    displayProps: ExportPartDisplayProps;
+    displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
+
+// @public
 export interface ExportPartInfo {
     color: number;
     materialId?: Id64String;
@@ -1472,18 +1499,21 @@ export interface ExportPartInfo {
     textureId?: Id64String;
 }
 
-// @beta
-export interface ExportPartInstanceProps {
-    displayProps: ExportPartDisplayProps;
+// @public
+export interface ExportPartInstanceInfo {
+    displayProps: ExportPartDisplayInfo;
     partId: Id64String;
     partInstanceId: Id64String;
     transform?: Float64Array;
 }
 
-// @beta
+// @beta @deprecated (undocumented)
+export type ExportPartInstanceProps = ExportPartInstanceInfo;
+
+// @public
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
-// @beta
+// @public
 export interface ExportPartLinesInfo {
     color: number;
     lines: ExportGraphicsLines;
@@ -1833,10 +1863,8 @@ export class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
-    // @beta
-    exportGraphics(exportProps: ExportGraphicsProps): DbResult;
-    // @beta
-    exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
+    exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
+    exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
     // (undocumented)
     readonly fontMap: FontMap;
@@ -1859,6 +1887,7 @@ export class IModelDb extends IModel {
     // @internal
     readonly isOpen: boolean;
     readonly isReadonly: boolean;
+    readonly isSnapshot: boolean;
     // @deprecated
     readonly isStandalone: boolean;
     // (undocumented)
@@ -1994,6 +2023,8 @@ export class IModelHost {
     static authorizationClient: IAuthorizationClient | undefined;
     // (undocumented)
     static backendVersion: string;
+    // @internal
+    static readonly compressCachedTiles: boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
@@ -2010,7 +2041,7 @@ export class IModelHost {
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
-    // @internal (undocumented)
+    // @beta
     static tileCacheService: CloudStorageService;
     // @internal
     static readonly tileContentRequestTimeout: number;
@@ -2024,6 +2055,8 @@ export class IModelHost {
 export class IModelHostConfiguration {
     appAssetsDir?: string;
     briefcaseCacheDir: string;
+    // @beta
+    compressCachedTiles?: boolean;
     // (undocumented)
     concurrentQuery: Config;
     // @alpha
@@ -2088,734 +2121,22 @@ export class IModelJsFsStats {
     size: number;
 }
 
-// @internal
-export namespace IModelJsNative {
-    // (undocumented)
-    export function addReferenceToObjectInVault(id: string): void;
-    export class ApplyChangeSetsRequest {
-        constructor(db: DgnDb);
-        closeBriefcase(): void;
-        containsSchemaChanges(): boolean;
-        doApplyAsync(callback: (status: ChangeSetStatus) => void, applyOption: ChangeSetApplyOption): void;
-        static doApplySync(db: DgnDb, changeSetTokens: string, applyOption: ChangeSetApplyOption): ChangeSetStatus;
-        readChangeSets(changeSetTokens: string): ChangeSetStatus;
-        reopenBriefcase(openMode: OpenMode): DbResult;
-    }
-    const // (undocumented)
-    version: string;
-    let // (undocumented)
-    logger: Logger;
-    export enum AuthType {
-        // (undocumented)
-        None = 0,
-        // (undocumented)
-        OIDC = 1,
-        // (undocumented)
-        SAML = 2
-    }
-    export interface BriefcaseManagerOnConflictPolicy {
-        deleteVsUpdate: number;
-        updateVsDelete: number;
-        updateVsUpdate: number;
-    }
-    // (undocumented)
-    export class BriefcaseManagerResourcesRequest {
-        // (undocumented)
-        isEmpty(): boolean;
-        // (undocumented)
-        reset(): void;
-        // (undocumented)
-        toJSON(): string;
-    }
-    // (undocumented)
-    export class ChangedElementsECDb implements IDisposable {
-        constructor();
-        // (undocumented)
-        closeDb(): void;
-        // (undocumented)
-        createDb(db: DgnDb, dbName: string): DbResult;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        getChangedElements(startChangesetId: string, endChangesetId: string): ErrorStatusOrResult<IModelStatus, ChangedElements>;
-        // (undocumented)
-        isOpen(): boolean;
-        // (undocumented)
-        isProcessed(changesetId: string): boolean;
-        // (undocumented)
-        openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
-        // (undocumented)
-        processChangesets(db: DgnDb, changesets: string, rulesetId: string, filterSpatial: boolean): DbResult;
-    }
-    // (undocumented)
-    export function clearLogLevelCache(): void;
-    export class DgnDb implements IConcurrentQueryManager {
-        constructor();
-        // (undocumented)
-        abandonChanges(): DbResult;
-        // (undocumented)
-        abandonCreateChangeSet(): void;
-        // (undocumented)
-        addPendingChangeSet(changeSetId: string): DbResult;
-        // (undocumented)
-        appendBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest): void;
-        // (undocumented)
-        attachChangeCache(changeCachePath: string): DbResult;
-        // (undocumented)
-        beginMultiTxnOperation(): DbResult;
-        // (undocumented)
-        briefcaseManagerEndBulkOperation(): RepositoryStatus;
-        // (undocumented)
-        briefcaseManagerStartBulkOperation(): RepositoryStatus;
-        // (undocumented)
-        buildBriefcaseManagerResourcesRequestForElement(req: BriefcaseManagerResourcesRequest, elemId: string, opcode: DbOpcode): RepositoryStatus;
-        // (undocumented)
-        buildBriefcaseManagerResourcesRequestForLinkTableRelationship(req: BriefcaseManagerResourcesRequest, relKey: string, opcode: DbOpcode): RepositoryStatus;
-        // (undocumented)
-        buildBriefcaseManagerResourcesRequestForModel(req: BriefcaseManagerResourcesRequest, modelId: string, opcode: DbOpcode): RepositoryStatus;
-        // (undocumented)
-        cancelTo(txnId: TxnIdString): IModelStatus;
-        // (undocumented)
-        closeIModel(): void;
-        // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
-        // (undocumented)
-        createChangeCache(changeCacheFile: ECDb, changeCachePath: string): DbResult;
-        // (undocumented)
-        createIModel(fileName: string, props: string): DbResult;
-        // (undocumented)
-        deleteElement(elemIdJson: string): IModelStatus;
-        // (undocumented)
-        deleteElementAspect(aspectIdJson: string): IModelStatus;
-        // (undocumented)
-        deleteLinkTableRelationship(props: string): DbResult;
-        // (undocumented)
-        deleteModel(modelIdJson: string): IModelStatus;
-        // (undocumented)
-        detachChangeCache(): number;
-        // (undocumented)
-        dumpChangeSet(changeSet: string): void;
-        // (undocumented)
-        embedFont(fontProps: string): string;
-        // (undocumented)
-        enableTxnTesting(): void;
-        // (undocumented)
-        endMultiTxnOperation(): DbResult;
-        // (undocumented)
-        executeTest(testName: string, params: string): string;
-        // (undocumented)
-        exportGraphics(exportProps: ExportGraphicsProps): DbResult;
-        // (undocumented)
-        exportPartGraphics(exportProps: ExportPartGraphicsProps): DbResult;
-        // (undocumented)
-        exportSchemas(exportDirectory: string): DbResult;
-        // (undocumented)
-        extractBriefcaseManagerResourcesRequest(reqOut: BriefcaseManagerResourcesRequest, reqIn: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
-        // (undocumented)
-        extractBulkResourcesRequest(req: BriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
-        // (undocumented)
-        extractChangeSummary(changeCacheFile: ECDb, changesetFilePath: string): ErrorStatusOrResult<DbResult, string>;
-        // (undocumented)
-        extractCodes(): ErrorStatusOrResult<DbResult, string>;
-        // (undocumented)
-        extractCodesFromFile(changeSets: string): ErrorStatusOrResult<DbResult, string>;
-        // (undocumented)
-        finishCreateChangeSet(): ChangeSetStatus;
-        // (undocumented)
-        static getAssetsDir(): string;
-        // (undocumented)
-        getBriefcaseId(): number;
-        // (undocumented)
-        getCurrentTxnId(): TxnIdString;
-        // (undocumented)
-        getDbGuid(): GuidString;
-        // (undocumented)
-        getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
-        // (undocumented)
-        getGeoCoordinatesFromIModelCoordinates(points: string): string;
-        // (undocumented)
-        getIModelCoordinatesFromGeoCoordinates(points: string): string;
-        // (undocumented)
-        getIModelProps(): string;
-        // (undocumented)
-        getMassProperties(props: string): string;
-        // (undocumented)
-        getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        getMultiTxnOperationDepth(): number;
-        // (undocumented)
-        getParentChangeSetId(): string;
-        // (undocumented)
-        getPendingChangeSets(): ErrorStatusOrResult<DbResult, string>;
-        // (undocumented)
-        getRedoString(): string;
-        // (undocumented)
-        getReversedChangeSetId(): string | undefined;
-        // (undocumented)
-        getSchema(name: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        getSchemaItem(schemaName: string, itemName: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        getTileContent(treeId: string, tileId: string, callback: (result: ErrorStatusOrResult<IModelStatus, Uint8Array>) => void): void;
-        // (undocumented)
-        getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
-        // (undocumented)
-        getTxnDescription(txnId: TxnIdString): string;
-        // (undocumented)
-        getUndoString(): string;
-        // (undocumented)
-        hasFatalTxnError(): boolean;
-        // (undocumented)
-        hasSavedChanges(): boolean;
-        // (undocumented)
-        hasUnsavedChanges(): boolean;
-        // (undocumented)
-        importFunctionalSchema(): DbResult;
-        // (undocumented)
-        importSchemas(schemaFileNames: string[]): DbResult;
-        // (undocumented)
-        inBulkOperation(): boolean;
-        // (undocumented)
-        insertCodeSpec(name: string, specType: number, scopeReq: number): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        insertElement(elemProps: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        insertElementAspect(aspectProps: string): IModelStatus;
-        // (undocumented)
-        insertLinkTableRelationship(props: string): ErrorStatusOrResult<DbResult, string>;
-        // (undocumented)
-        insertModel(modelProps: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        isChangeCacheAttached(): boolean;
-        // (undocumented)
-        isOpen(): boolean;
-        // (undocumented)
-        isReadonly(): boolean;
-        // (undocumented)
-        isRedoPossible(): boolean;
-        // (undocumented)
-        isTxnIdValid(txnId: TxnIdString): boolean;
-        // (undocumented)
-        isUndoPossible(): boolean;
-        // (undocumented)
-        logTxnError(fatal: boolean): void;
-        // (undocumented)
-        openIModel(dbName: string, mode: OpenMode): DbResult;
-        // (undocumented)
-        pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
-            result: string;
-            rowCount: number;
-        };
-        // (undocumented)
-        pollTileContent(treeId: string, tileId: string): ErrorStatusOrResult<IModelStatus, IModelDb.TileContentState | TileContent>;
-        // (undocumented)
-        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
-            taskId: number;
-        };
-        // (undocumented)
-        queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
-        // (undocumented)
-        queryFirstTxnId(): TxnIdString;
-        // (undocumented)
-        queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;
-        // (undocumented)
-        queryNextAvailableFileProperty(props: string): number;
-        // (undocumented)
-        queryNextTxnId(txnId: TxnIdString): TxnIdString;
-        // (undocumented)
-        queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
-        // (undocumented)
-        queryProjectGuid(): GuidString;
-        // (undocumented)
-        readFontMap(): string;
-        // (undocumented)
-        reinstateTxn(): IModelStatus;
-        // (undocumented)
-        removePendingChangeSet(changeSetId: string): DbResult;
-        // (undocumented)
-        reverseAll(): IModelStatus;
-        // (undocumented)
-        reverseTo(txnId: TxnIdString): IModelStatus;
-        // (undocumented)
-        reverseTxns(numOperations: number): IModelStatus;
-        // (undocumented)
-        saveChanges(description?: string): DbResult;
-        // (undocumented)
-        saveFileProperty(props: string, strValue: string | undefined, blobVal: Uint8Array | undefined): number;
-        // (undocumented)
-        saveProjectGuid(guid: GuidString): DbResult;
-        // (undocumented)
-        setAsMaster(guid?: GuidString): DbResult;
-        // (undocumented)
-        setBriefcaseId(idValue: number): DbResult;
-        // (undocumented)
-        setBriefcaseManagerOptimisticConcurrencyControlPolicy(conflictPolicy: BriefcaseManagerOnConflictPolicy): RepositoryStatus;
-        // (undocumented)
-        setBriefcaseManagerPessimisticConcurrencyControlPolicy(): RepositoryStatus;
-        // (undocumented)
-        setDbGuid(guid: GuidString): DbResult;
-        // (undocumented)
-        setIModelDb(iModelDb?: IModelDb): void;
-        // (undocumented)
-        startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
-        // (undocumented)
-        static unsafeSetBriefcaseId(dbName: string, briefcaseId: number, dbGuid?: GuidString, projectGuid?: GuidString): DbResult;
-        // (undocumented)
-        updateElement(elemProps: string): IModelStatus;
-        // (undocumented)
-        updateElementAspect(aspectProps: string): IModelStatus;
-        // (undocumented)
-        updateIModelProps(props: string): void;
-        // (undocumented)
-        updateLinkTableRelationship(props: string): DbResult;
-        // (undocumented)
-        updateModel(modelProps: string): IModelStatus;
-        // (undocumented)
-        updateProjectExtents(newExtentsJson: string): void;
-        // (undocumented)
-        static vacuum(dbName: string, pageSize?: number): DbResult;
-    }
-    // (undocumented)
-    export class DisableNativeAssertions implements IDisposable {
-        constructor();
-        // (undocumented)
-        dispose(): void;
-    }
-    // (undocumented)
-    export function dropObjectFromVault(id: string): void;
-    // (undocumented)
-    export class ECDb implements IDisposable, IConcurrentQueryManager {
-        constructor();
-        // (undocumented)
-        abandonChanges(): DbResult;
-        // (undocumented)
-        closeDb(): void;
-        // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
-        // (undocumented)
-        createDb(dbName: string): DbResult;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        importSchema(schemaPathName: string): DbResult;
-        // (undocumented)
-        isOpen(): boolean;
-        // (undocumented)
-        openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
-        // (undocumented)
-        pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
-            result: string;
-            rowCount: number;
-        };
-        // (undocumented)
-        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
-            taskId: number;
-        };
-        // (undocumented)
-        saveChanges(changesetName?: string): DbResult;
-    }
-    // (undocumented)
-    export class ECPresentationManager implements IDisposable {
-        constructor(id?: string);
-        // (undocumented)
-        addRuleset(serializedRuleset: string): ErrorStatusOrResult<ECPresentationStatus, string>;
-        // (undocumented)
-        clearRulesets(): ErrorStatusOrResult<ECPresentationStatus, void>;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        forceLoadSchemas(db: DgnDb, callback: (result: ECPresentationStatus) => void): void;
-        // (undocumented)
-        getRulesets(rulesetId: string): ErrorStatusOrResult<ECPresentationStatus, string>;
-        // (undocumented)
-        getRulesetVariableValue(rulesetId: string, variableId: string, type: string): ErrorStatusOrResult<ECPresentationStatus, any>;
-        // (undocumented)
-        handleRequest(db: DgnDb, options: string, callback: (result: ErrorStatusOrResult<ECPresentationStatus, string>) => void): void;
-        // (undocumented)
-        removeRuleset(rulesetId: string, hash: string): ErrorStatusOrResult<ECPresentationStatus, boolean>;
-        // (undocumented)
-        setRulesetVariableValue(rulesetId: string, variableId: string, type: string, value: any): ErrorStatusOrResult<ECPresentationStatus, void>;
-        // (undocumented)
-        setupLocaleDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
-        // (undocumented)
-        setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
-        // (undocumented)
-        setupSupplementalRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
-    }
-    // (undocumented)
-    export const enum ECPresentationStatus {
-        // (undocumented)
-        Error = 1,
-        // (undocumented)
-        InvalidArgument = 2,
-        // (undocumented)
-        Success = 0
-    }
-    // (undocumented)
-    export class ECSchemaXmlContext {
-        constructor();
-        // (undocumented)
-        addSchemaPath(path: string): void;
-        // (undocumented)
-        readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
-        // (undocumented)
-        setSchemaLocater(locater: ECSchemaXmlContext.SchemaLocaterCallback): void;
-    }
-    // (undocumented)
-    export namespace ECSchemaXmlContext {
-        // (undocumented)
-        export interface SchemaKey {
-            // (undocumented)
-            minorVersion: number;
-            // (undocumented)
-            name: string;
-            // (undocumented)
-            readVersion: number;
-            // (undocumented)
-            writeVersion: number;
-        }
-        // (undocumented)
-        export type SchemaLocaterCallback = (key: SchemaKey, matchType: SchemaMatchType) => string | undefined | void;
-        // (undocumented)
-        export const enum SchemaMatchType {
-            // (undocumented)
-            Exact = 1,
-            // (undocumented)
-            Identical = 0,
-            // (undocumented)
-            Latest = 3,
-            // (undocumented)
-            LatestReadCompatible = 4,
-            // (undocumented)
-            LatestWriteCompatible = 2
-        }
-    }
-    // (undocumented)
-    export class ECSqlBinder {
-        constructor();
-        // (undocumented)
-        addArrayElement(): ECSqlBinder;
-        // (undocumented)
-        bindBlob(base64String: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): DbResult;
-        // (undocumented)
-        bindBoolean(val: boolean): DbResult;
-        // (undocumented)
-        bindDateTime(isoString: string): DbResult;
-        // (undocumented)
-        bindDouble(val: number): DbResult;
-        // (undocumented)
-        bindGuid(guidStr: GuidString): DbResult;
-        // (undocumented)
-        bindId(hexStr: Id64String): DbResult;
-        // (undocumented)
-        bindInteger(val: number | string): DbResult;
-        // (undocumented)
-        bindMember(memberName: string): ECSqlBinder;
-        // (undocumented)
-        bindNavigation(navIdHexStr: Id64String, relClassName?: string, relClassTableSpace?: string): DbResult;
-        // (undocumented)
-        bindNull(): DbResult;
-        // (undocumented)
-        bindPoint2d(x: number, y: number): DbResult;
-        // (undocumented)
-        bindPoint3d(x: number, y: number, z: number): DbResult;
-        // (undocumented)
-        bindString(val: string): DbResult;
-    }
-    // (undocumented)
-    export class ECSqlColumnInfo {
-        constructor();
-        // (undocumented)
-        getAccessString(): string;
-        // (undocumented)
-        getPropertyName(): string;
-        // (undocumented)
-        getRootClassAlias(): string;
-        // (undocumented)
-        getRootClassName(): string;
-        // (undocumented)
-        getRootClassTableSpace(): string;
-        // (undocumented)
-        getType(): number;
-        // (undocumented)
-        isEnum(): boolean;
-        // (undocumented)
-        isGeneratedProperty(): boolean;
-        // (undocumented)
-        isSystemProperty(): boolean;
-    }
-    // (undocumented)
-    export class ECSqlStatement implements IDisposable {
-        constructor();
-        // (undocumented)
-        clearBindings(): DbResult;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        getBinder(param: number | string): ECSqlBinder;
-        // (undocumented)
-        getColumnCount(): number;
-        // (undocumented)
-        getValue(columnIndex: number): ECSqlValue;
-        // (undocumented)
-        prepare(db: DgnDb | ECDb, ecsql: string): StatusCodeWithMessage<DbResult>;
-        // (undocumented)
-        reset(): DbResult;
-        // (undocumented)
-        step(): DbResult;
-        // (undocumented)
-        stepAsync(callback: (result: DbResult) => void): void;
-        // (undocumented)
-        stepForInsert(): {
-            status: DbResult;
-            id: string;
-        };
-        // (undocumented)
-        stepForInsertAsync(callback: (result: {
-            status: DbResult;
-            id: string;
-        }) => void): void;
-    }
-    // (undocumented)
-    export class ECSqlValue {
-        constructor();
-        // (undocumented)
-        getArrayIterator(): ECSqlValueIterator;
-        // (undocumented)
-        getBlob(): Uint8Array;
-        // (undocumented)
-        getBoolean(): boolean;
-        // (undocumented)
-        getClassNameForClassId(): string;
-        // (undocumented)
-        getColumnInfo(): ECSqlColumnInfo;
-        // (undocumented)
-        getDateTime(): string;
-        // (undocumented)
-        getDouble(): number;
-        // (undocumented)
-        getEnum(): Array<{
-            schema: string;
-            name: string;
-            key: string;
-            value: number | string;
-        }> | undefined;
-        // (undocumented)
-        getGeometry(): string;
-        // (undocumented)
-        getGuid(): GuidString;
-        // (undocumented)
-        getId(): Id64String;
-        // (undocumented)
-        getInt(): number;
-        // (undocumented)
-        getInt64(): number;
-        // (undocumented)
-        getNavigation(): {
-            id: Id64String;
-            relClassName?: string;
-        };
-        // (undocumented)
-        getPoint2d(): {
-            x: number;
-            y: number;
-        };
-        // (undocumented)
-        getPoint3d(): {
-            x: number;
-            y: number;
-            z: number;
-        };
-        // (undocumented)
-        getString(): string;
-        // (undocumented)
-        getStructIterator(): ECSqlValueIterator;
-        // (undocumented)
-        isNull(): boolean;
-    }
-    // (undocumented)
-    export class ECSqlValueIterator {
-        constructor();
-        // (undocumented)
-        getCurrent(): ECSqlValue;
-        // (undocumented)
-        moveNext(): boolean;
-    }
-    export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
-        error?: StatusCodeWithMessage<ErrorCodeType>;
-        result?: ResultType;
-    }
-    // (undocumented)
-    export function getObjectFromVault(id: string): any;
-    // (undocumented)
-    export function getObjectRefCountFromVault(id: string): number;
-    // (undocumented)
-    export interface IConcurrentQueryManager {
-        // (undocumented)
-        concurrentQueryInit(config: Config): boolean;
-        // (undocumented)
-        pollConcurrentQuery(taskId: number): {
-            status: PollStatus;
-            result: string;
-            rowCount: number;
-        };
-        // (undocumented)
-        postConcurrentQuery(ecsql: string, bindings: string, limit: QueryLimit, quota: QueryQuota, priority: QueryPriority): {
-            status: PostStatus;
-            taskId: number;
-        };
-    }
-    // (undocumented)
-    export class ImportContext implements IDisposable {
-        constructor(sourceDb: DgnDb, targetDb: DgnDb);
-        // (undocumented)
-        addClass(sourceClassFullName: string, targetClassFullName: string): BentleyStatus;
-        // (undocumented)
-        addCodeSpecId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
-        // (undocumented)
-        addElementId(sourceId: Id64String, targetId: Id64String): BentleyStatus;
-        // (undocumented)
-        cloneElement(sourceId: Id64String): ElementProps;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        findCodeSpecId(sourceId: Id64String): Id64String;
-        // (undocumented)
-        findElementId(sourceId: Id64String): Id64String;
-        // (undocumented)
-        importCodeSpec(sourceId: Id64String): Id64String;
-        // (undocumented)
-        importFont(sourceId: number): number;
-    }
-    // (undocumented)
-    export interface NativeCrashReportingConfig {
-        crashDir: string;
-        enableCrashDumps?: boolean;
-        maxDumpsInDir?: number;
-        params?: NativeCrashReportingConfigNameValuePair[];
-        wantFullMemory?: boolean;
-    }
-    // (undocumented)
-    export interface NativeCrashReportingConfigNameValuePair {
-        // (undocumented)
-        name: string;
-        // (undocumented)
-        value: string;
-    }
-    export class NativeDevTools {
-        // (undocumented)
-        static signal(signalType: number): boolean;
-    }
-    // (undocumented)
-    export class NativeUlasClient {
-        // (undocumented)
-        static initializeRegion(region: number): void;
-        // (undocumented)
-        static markFeature(accessToken: string, featureEvent: NativeUlasClientFeatureEvent, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
-        // (undocumented)
-        static trackUsage(accessToken: string, appVersionStr: string, projectId: GuidString, authType?: AuthType, productId?: number, deviceId?: string, usageType?: UsageType, correlationId?: string): BentleyStatus;
-    }
-    // (undocumented)
-    export interface NativeUlasClientFeatureEvent {
-        // (undocumented)
-        featureId: string;
-        // (undocumented)
-        projectId?: string;
-        // (undocumented)
-        versionStr: string;
-    }
-    // (undocumented)
-    export function setCrashReporting(cfg: NativeCrashReportingConfig): void;
-    // (undocumented)
-    export function setUseTileCache(useTileCache: boolean): void;
-    // (undocumented)
-    export class SnapRequest {
-        constructor();
-        // (undocumented)
-        cancelSnap(): void;
-        // (undocumented)
-        doSnap(db: DgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
-    }
-    // (undocumented)
-    export class SqliteStatement implements IDisposable {
-        constructor();
-        // (undocumented)
-        bindBlob(param: number | string, val: Uint8Array | ArrayBuffer | SharedArrayBuffer): DbResult;
-        // (undocumented)
-        bindDouble(param: number | string, val: number): DbResult;
-        // (undocumented)
-        bindGuid(param: number | string, guidStr: GuidString): DbResult;
-        // (undocumented)
-        bindId(param: number | string, hexStr: Id64String): DbResult;
-        // (undocumented)
-        bindInteger(param: number | string, val: number | string): DbResult;
-        // (undocumented)
-        bindNull(param: number | string): DbResult;
-        // (undocumented)
-        bindString(param: number | string, val: string): DbResult;
-        // (undocumented)
-        clearBindings(): DbResult;
-        // (undocumented)
-        dispose(): void;
-        // (undocumented)
-        getColumnCount(): number;
-        // (undocumented)
-        getColumnName(columnIndex: number): string;
-        // (undocumented)
-        getColumnType(columnIndex: number): number;
-        // (undocumented)
-        getValueBlob(columnIndex: number): Uint8Array;
-        // (undocumented)
-        getValueDouble(columnIndex: number): number;
-        // (undocumented)
-        getValueGuid(columnIndex: number): GuidString;
-        // (undocumented)
-        getValueId(columnIndex: number): Id64String;
-        // (undocumented)
-        getValueInteger(columnIndex: number): number;
-        // (undocumented)
-        getValueString(columnIndex: number): string;
-        // (undocumented)
-        isReadonly(): boolean;
-        // (undocumented)
-        isValueNull(columnIndex: number): boolean;
-        // (undocumented)
-        prepare(db: DgnDb | ECDb, sql: string): StatusCodeWithMessage<DbResult>;
-        // (undocumented)
-        reset(): DbResult;
-        // (undocumented)
-        step(): DbResult;
-        // (undocumented)
-        stepAsync(callback: (result: DbResult) => void): void;
-    }
-    // (undocumented)
-    export function storeObjectInVault(obj: any, id: string): void;
-    // (undocumented)
-    export interface TileContent {
-        // (undocumented)
-        content: Uint8Array;
-        // (undocumented)
-        elapsedSeconds: number;
-    }
-}
-
 // @alpha
 export class IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
+    protected deleteElement(targetElement: Element): void;
+    protected deleteElementAspect(targetElementAspect: ElementAspect): void;
+    detectElementDeletes(): void;
     dispose(): void;
     excludeCodeSpec(codeSpecName: string): void;
     protected _excludedCodeSpecNames: Set<string>;
+    protected _excludedElementAspectClasses: Set<typeof ElementAspect>;
     protected _excludedElementCategoryIds: Set<string>;
     protected _excludedElementClasses: Set<typeof Element>;
     protected _excludedElementIds: Set<string>;
     protected _excludedRelationshipClasses: Set<typeof Relationship>;
     excludeElement(sourceElementId: Id64String): void;
+    excludeElementAspectClass(sourceClassFullName: string): void;
     excludeElementCategory(sourceCategoryId: Id64String): void;
     excludeElementClass(sourceClassFullName: string): void;
     excludeRelationshipClass(sourceClassFullName: string): void;
@@ -2823,47 +2144,67 @@ export class IModelTransformer {
     findMissingPredecessors(sourceElement: Element): Id64Set;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
+    protected formatElementAspectForLogger(elementAspectProps: ElementAspectProps): string;
     protected formatElementForLogger(elementProps: ElementProps): string;
     protected formatIdForLogger(id: Id64String): string;
     protected formatModelForLogger(modelProps: ModelProps): string;
     protected formatRelationshipForLogger(relProps: RelationshipProps): string;
-    protected hasElementChanged(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String): boolean;
+    protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     importAll(): void;
-    importChildElements(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    importChildElements(sourceElementId: Id64String): void;
     importCodeSpec(codeSpecName: string): void;
     importCodeSpecs(): void;
-    importElement(sourceElementId: Id64String, targetScopeElementId: Id64String): void;
+    importElement(sourceElementId: Id64String): void;
     importFonts(): void;
     importModel(sourceModeledElementId: Id64String): void;
-    importModelContents(sourceModeledElementId: Id64String, targetScopeElementId: Id64String): void;
-    importModels(modeledElementClass: string, targetScopeElementId: Id64String): void;
+    importModels(modeledElementClass: string): void;
     importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void;
     importRelationships(baseRelClassFullName: string): void;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     importSkippedElements(): void;
     initFromExternalSourceAspects(): void;
-    protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected insertElement(targetElementProps: ElementProps): Id64String;
+    protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
+    protected insertModel(targetModelProps: ModelProps): void;
     protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String;
     protected onCodeSpecExcluded(_codeSpecName: string): void;
+    protected onElementAspectDeleted(_targetElementAspect: ElementAspect): void;
+    protected onElementAspectExcluded(_sourceElementAspect: ElementAspect): void;
+    protected onElementAspectInserted(_targetElementAspect: ElementAspectProps): void;
+    protected onElementAspectUpdated(_targetElementAspect: ElementAspectProps): void;
+    protected onElementDeleted(_targetElement: Element): void;
     protected onElementExcluded(_sourceElement: Element): void;
-    protected onElementInserted(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementInserted(_sourceElement: Element, _targetElementProps: ElementProps): void;
     protected onElementSkipped(_sourceElement: Element): void;
-    protected onElementUpdated(_sourceElement: Element, _targetElementIds: Id64Array): void;
+    protected onElementUpdated(_sourceElement: Element, _targetElementProps: ElementProps): void;
+    protected onModelInserted(_sourceModel: Model, _targetModelProps: ModelProps): void;
+    protected onModelUpdated(_sourceModel: Model, _targetModelProps: ModelProps): void;
     protected onRelationshipExcluded(_sourceRelationship: Relationship): void;
-    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelInstanceId: Id64String): void;
+    protected onRelationshipInserted(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
+    protected onRelationshipUpdated(_sourceRelationship: Relationship, _targetRelationshipProps: RelationshipProps): void;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
     static resolveSubjectId(iModelDb: IModelDb, subjectPath: string): Id64String | undefined;
+    protected shouldDeleteElement(_targetElement: Element): boolean;
+    protected shouldDeleteElementAspect(targetElementAspect: ElementAspect): boolean;
     protected shouldExcludeElement(sourceElement: Element): boolean;
+    protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean;
     protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
-    protected transformElement(sourceElement: Element): ElementProps[];
+    protected _targetScopeElementId: Id64String;
+    protected transformElement(sourceElement: Element): ElementProps;
+    protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
+    protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected transformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void;
+    protected updateElement(targetElementProps: ElementProps): void;
+    protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void;
+    protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void;
+    protected updateModel(targetModelProps: ModelProps): void;
     protected updateRelationship(targetRelationshipProps: RelationshipProps): void;
 }
 
@@ -3375,24 +2716,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
-// @internal
-export enum NativeLoggerCategory {
-    // (undocumented)
-    BeSQLite = "BeSQLite",
-    // (undocumented)
-    Changeset = "Changeset",
-    // (undocumented)
-    DgnCore = "DgnCore",
-    // (undocumented)
-    ECDb = "ECDb",
-    // (undocumented)
-    ECObjectsNative = "ECObjectsNative",
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    UnitsNative = "UnitsNative"
-}
-
 // @public
 export class OpenParams {
     constructor(
@@ -3401,6 +2724,8 @@ export class OpenParams {
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
+    readonly isSnapshot: boolean;
+    // @deprecated
     readonly isStandalone: boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
@@ -4070,7 +3395,7 @@ export type TxnIdString = string;
 export class TxnManager {
     constructor(_iModel: IModelDb);
     beginMultiTxnOperation(): DbResult;
-    cancelTo(txnId: TxnIdString): IModelStatus_2;
+    cancelTo(txnId: TxnIdString): IModelStatus;
     describeChangeSet(endTxnId?: TxnIdString): string;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
@@ -4107,12 +3432,12 @@ export class TxnManager {
     queryFirstTxnId(): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
-    reinstateTxn(): IModelStatus_2;
+    reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
-    reverseAll(): IModelStatus_2;
-    reverseSingleTxn(): IModelStatus_2;
-    reverseTo(txnId: TxnIdString): IModelStatus_2;
-    reverseTxns(numOperations: number): IModelStatus_2;
+    reverseAll(): IModelStatus;
+    reverseSingleTxn(): IModelStatus;
+    reverseTo(txnId: TxnIdString): IModelStatus;
+    reverseTxns(numOperations: number): IModelStatus;
     readonly validationErrors: ValidationError[];
 }
 
@@ -4223,6 +3548,8 @@ export class WebMercatorModel extends SpatialModel {
     static readonly className: string;
 }
 
+
+export * from "@bentley/imodeljs-native/IModelJsNative";
 
 // (No @packageDocumentation comment for this package)
 

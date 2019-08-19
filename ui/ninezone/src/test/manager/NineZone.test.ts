@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { NineZoneManager, StagePanelType, Point } from "../../ui-ninezone";
+import { Point, Rectangle } from "@bentley/ui-core";
+import { NineZoneManager, StagePanelType } from "../../ui-ninezone";
 import { NineZoneManagerTestProps } from "./TestProps";
 import { ZonesManager } from "../../ui-ninezone/zones/manager/Zones";
-import { Rectangle } from "../../ui-ninezone/utilities/Rectangle";
 import { HorizontalAnchor } from "../../ui-ninezone/widget/Stacked";
 
 describe("NineZoneManager", () => {

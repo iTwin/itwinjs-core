@@ -5,10 +5,11 @@
 /** @module Cursor */
 
 import { RelativePosition } from "@bentley/imodeljs-frontend";
-import { UiEvent } from "@bentley/ui-core";
-import { Point } from "@bentley/ui-ninezone";
+import { UiEvent, Point, PointProps } from "@bentley/ui-core";
 
-/** @alpha */
+/** Enum for Cursor Direction parts
+ *  @beta
+ */
 export enum CursorDirectionParts {
   Top = 0x1000,
   Left = 0x0100,
@@ -16,7 +17,9 @@ export enum CursorDirectionParts {
   Bottom = 0x0001,
 }
 
-/** @alpha */
+/** Enum for Cursor Direction
+ * @beta
+ */
 export enum CursorDirection {
   None = 0,
   Top = CursorDirectionParts.Top,
@@ -30,21 +33,21 @@ export enum CursorDirection {
 }
 
 /** Cursor Updated Event Args interface.
- * @alpha
+ * @beta
  */
 export interface CursorUpdatedEventArgs {
-  oldPt: Point;
-  newPt: Point;
+  oldPt: PointProps;
+  newPt: PointProps;
   direction: CursorDirection;
 }
 
 /** Cursor Updated Event class.
- * @alpha
+ * @beta
  */
 export class CursorUpdatedEvent extends UiEvent<CursorUpdatedEventArgs> { }
 
 /** Cursor Information class
- * @alpha
+ * @beta
  */
 export class CursorInformation {
   private static _cursorPosition: Point = new Point();
@@ -53,9 +56,9 @@ export class CursorInformation {
   private static _cursorDirections = new Array<CursorDirection>();
 
   /** Sets the cursor position. */
-  public static set cursorPosition(pt: Point) { this._cursorPosition = pt; }
+  public static set cursorPosition(pt: PointProps) { this._cursorPosition = Point.create(pt); }
   /** Gets the cursor position. */
-  public static get cursorPosition(): Point { return this._cursorPosition; }
+  public static get cursorPosition(): PointProps { return this._cursorPosition; }
   /** Gets the cursor X position. */
   public static get cursorX(): number { return this._cursorPosition.x; }
   /** Gets the cursor Y position. */
@@ -68,9 +71,9 @@ export class CursorInformation {
   public static readonly onCursorUpdatedEvent = new CursorUpdatedEvent();
 
   /** Handles the mouse movement.  Sets the cursor position and direction and emits onCursorUpdatedEvent. */
-  public static handleMouseMove(point: Point): void {
+  public static handleMouseMove(point: PointProps): void {
     const oldPt = CursorInformation.cursorPosition;
-    const direction = this._determineMostFrequentDirection(this._cursorDirections, this.cursorPosition, point);
+    const direction = this._determineMostFrequentDirection(this._cursorDirections, this._cursorPosition, Point.create(point));
 
     this.cursorPosition = point;
     this._cursorDirection = direction;

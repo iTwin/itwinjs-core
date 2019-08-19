@@ -5,6 +5,13 @@
 /** @module Item */
 
 import * as React from "react";
+import classnames = require("classnames");
+
+import { withOnOutsideClick, CommonProps, SizeProps } from "@bentley/ui-core";
+import {
+  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn, Panel,
+  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction,
+} from "@bentley/ui-ninezone";
 
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { ItemDefBase, BaseItemState } from "../shared/ItemDefBase";
@@ -13,14 +20,7 @@ import { Icon, IconSpec } from "../shared/IconComponent";
 import { ItemList, ItemMap } from "../shared/ItemMap";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { PropsHelper } from "../utils/PropsHelper";
-
-import {
-  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
-  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroupComponent, Direction, Size,
-} from "@bentley/ui-ninezone";
-import { withOnOutsideClick, CommonProps } from "@bentley/ui-core";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import classnames = require("classnames");
 import { BetaBadge } from "../betabadge/BetaBadge";
 
 // tslint:disable-next-line: variable-name
@@ -139,7 +139,7 @@ type ToolGroupTrayMap = Map<string, ToolGroupTray>;
 
 interface GroupItemComponentProps extends CommonProps {
   groupItemDef: GroupItemDef;
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
 }
 
 interface GroupItemState extends BaseItemState {
@@ -357,7 +357,7 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
         {...props}
         className={classNames}
         key={this.state.groupItemDef.id}
-        onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended)}
+        onIsHistoryExtendedChange={(isExtended: boolean) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
@@ -396,6 +396,10 @@ class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState>
   }
 
   private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+    // If any popups are open, don't show history
+    if (Panel.isPanelOpen)
+      return;
+
     this.setState({ isExtended });
   }
 

@@ -16,7 +16,7 @@ import {
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost, Platform } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -734,7 +734,7 @@ export class BriefcaseManager {
       res = nativeDb.openIModel(briefcase.pathname, OpenMode.ReadWrite);
       if (DbResult.BE_SQLITE_OK !== res)
         throw new IModelError(res, "Unable to open Db", Logger.logError, loggerCategory, () => ({ ...briefcase.getDebugInfo(), result: res }));
-      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId);
+      assert(nativeDb.getParentChangeSetId() === checkpoint.mergedChangeSetId, "The parentChangeSetId of the checkpoint was not correctly set by iModelHub");
 
       // verify that all following values were set correctly by unsafeSetBriefcaseId()
       assert(nativeDb.getBriefcaseId() === briefcase.briefcaseId);

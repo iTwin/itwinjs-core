@@ -19,8 +19,8 @@ describe("<Subheading />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<Subheading />);
-    wrapper.find(".uicore-text-subheading").should.exist;
+    const wrapper = mount(<Subheading />);
+    wrapper.find(".uicore-text-subheading").length.should.eq(1);
   });
 
   it("has correct text", () => {

@@ -118,9 +118,9 @@ export class SuspendedToolState {
 
 /** @internal */
 export class CurrentInputState {
-  private _rawPoint: Point3d = new Point3d();
-  private _uorPoint: Point3d = new Point3d();
-  private _viewPoint: Point3d = new Point3d();
+  private readonly _rawPoint: Point3d = new Point3d();
+  private readonly _point: Point3d = new Point3d();
+  private readonly _viewPoint: Point3d = new Point3d();
   public qualifiers = BeModifierKeys.None;
   public motionTime = 0;
   public viewport?: ScreenViewport;
@@ -135,8 +135,8 @@ export class CurrentInputState {
 
   public get rawPoint() { return this._rawPoint; }
   public set rawPoint(pt: Point3d) { this._rawPoint.setFrom(pt); }
-  public get uorPoint() { return this._uorPoint; }
-  public set uorPoint(pt: Point3d) { this._uorPoint.setFrom(pt); }
+  public get point() { return this._point; }
+  public set point(pt: Point3d) { this._point.setFrom(pt); }
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
   public get wasMotion() { return 0 !== this.motionTime; }
@@ -198,7 +198,7 @@ export class CurrentInputState {
     const now = Date.now();
     const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < this.viewport!.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
 
-    this.button[button].init(this.uorPoint, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
+    this.button[button].init(this.point, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
   }
 
@@ -210,7 +210,7 @@ export class CurrentInputState {
 
   public toEvent(ev: BeButtonEvent, useSnap: boolean) {
     let coordsFrom = CoordSource.User;
-    const point = this.uorPoint.clone();
+    const point = this.point.clone();
     let viewport = this.viewport;
 
     if (useSnap) {
@@ -260,7 +260,7 @@ export class CurrentInputState {
     this._viewPoint.y = pt.y;
     this._viewPoint.z = vp.npcToView(NpcCenter).z;
     vp.viewToWorld(this._viewPoint, this._rawPoint);
-    this._uorPoint = this._rawPoint.clone();
+    this.point = this._rawPoint;
     this.inputSource = source;
   }
 
@@ -273,7 +273,7 @@ export class CurrentInputState {
         IModelApp.toolAdmin.adjustSnapPoint();
       return;
     }
-    IModelApp.toolAdmin.adjustPoint(this._uorPoint, vp, true, applyLocks);
+    IModelApp.toolAdmin.adjustPoint(this._point, vp, true, applyLocks);
   }
 
   public isStartDrag(button: BeButton): boolean {
@@ -569,7 +569,7 @@ export class ToolAdmin {
 
     const pt2d = this.getMousePosition(event);
 
-    vp.removeAnimator();
+    vp.setAnimator();
     current.fromButton(vp, pt2d, InputSource.Mouse, true);
     const wheelEvent = new BeWheelEvent();
     wheelEvent.wheelDelta = delta;
@@ -591,7 +591,7 @@ export class ToolAdmin {
     if (this.filterViewport(vp))
       return;
 
-    vp.removeAnimator();
+    vp.setAnimator();
     const ev = new BeTouchEvent({ touchEvent });
     const current = this.currentInputState;
     const pos = BeTouchEvent.getTouchListCentroid(0 !== touchEvent.targetTouches.length ? touchEvent.targetTouches : touchEvent.changedTouches, vp);
@@ -1193,7 +1193,7 @@ export class ToolAdmin {
     if (filtered)
       return;
 
-    vp.removeAnimator();
+    vp.setAnimator();
     const ev = new BeButtonEvent();
     const current = this.currentInputState;
     current.fromButton(vp, pt2d, inputSource, true);
@@ -1508,7 +1508,7 @@ export class ToolAdmin {
     this.fillEventFromCursorLocation(ev);
 
     const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
-    viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
+    viewport.drawLocateCursor(context, ev.viewPoint, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }
 
   public get isLocateCircleOn(): boolean { return this.toolState.locateCircleOn && this.currentInputState.inputSource === InputSource.Mouse && this._canvasDecoration === undefined; }

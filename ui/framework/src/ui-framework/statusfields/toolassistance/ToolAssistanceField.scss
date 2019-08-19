@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
-$image-size: 20px;
-$image-size-wide: 28px;
+$image-size: 22px;
+$image-size-wide: 30px;
 $key-size: 20px;
 $key-size-small: 12px;
 $key-size-medium: 18px;
@@ -115,6 +115,6 @@ $key-size-large: 36px;
 
 .nz-footer-toolAssistance-instruction-image {
   i {
-    font-size: 18px;
+    font-size: 20px;
   }
 }

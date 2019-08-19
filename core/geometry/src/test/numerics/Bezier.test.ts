@@ -489,6 +489,8 @@ describe("PascalCoefficients", () => {
     ck.testCoordinate(0.0, bezier1.deflateRoot(0.5), " order=0 bezier deflation");
     bezier1.allocateOrder(5);
     ck.testExactNumber(5, bezier1.order);
+    bezier1.allocateOrder (10);
+    ck.testExactNumber(10, bezier1.order);
 
     bezier1.allocateOrder(5);
     ck.testExactNumber(5, bezier1.order);

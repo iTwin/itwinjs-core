@@ -19,8 +19,8 @@ describe("<BlockText />", () => {
   });
 
   it("has correct className", () => {
-    const wrapper = shallow(<BlockText />);
-    wrapper.find(".uicore-text-block").should.exist;
+    const wrapper = mount(<BlockText />);
+    wrapper.find(".uicore-text-block").length.should.eq(1);
   });
 
   it("has correct text", () => {

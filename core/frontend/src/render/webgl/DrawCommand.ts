@@ -271,13 +271,14 @@ export class RenderCommands {
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new Range3d();
   private readonly _commands: DrawCommands[];
-  private readonly _stack: BranchStack; // refers to the Target's BranchStack
-  private readonly _batchState: BatchState; // refers to the Target's BatchState
+  private _target: Target;
+  private _stack: BranchStack; // refers to the Target's BranchStack
+  private _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
   private _addTranslucentAsOpaque: boolean = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
-  public readonly target: Target;
+  public get target(): Target { return this._target; }
 
   public get isEmpty(): boolean {
     for (const commands of this._commands)
@@ -308,12 +309,19 @@ export class RenderCommands {
   public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
 
   constructor(target: Target, stack: BranchStack, batchState: BatchState) {
-    this.target = target;
+    this._target = target;
     this._stack = stack;
     this._batchState = batchState;
     this._commands = Array<DrawCommands>(RenderPass.COUNT);
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
+  }
+
+  public reset(target: Target, stack: BranchStack, batchState: BatchState): void {
+    this._target = target;
+    this._stack = stack;
+    this._batchState = batchState;
+    this.clear();
   }
 
   public addGraphics(scene: GraphicList, forcedPass: RenderPass = RenderPass.None): void {
@@ -326,6 +334,12 @@ export class RenderCommands {
   public addBackgroundMapGraphics(backgroundMapGraphics: GraphicList): void {
     this._forcedRenderPass = RenderPass.BackgroundMap;
     backgroundMapGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+  /** Add overlay graphics to the world overlay pass */
+  public addOverlayGraphics(overlayGraphics: GraphicList): void {
+    this._forcedRenderPass = RenderPass.WorldOverlay;
+    overlayGraphics.forEach((entry: RenderGraphic) => (entry as Graphic).addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -546,7 +560,7 @@ export class RenderCommands {
     this._addTranslucentAsOpaque = false;
   }
 
-  public init(scene: GraphicList, backgroundMap: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
+  public init(scene: GraphicList, backgroundMap: GraphicList, overlayGraphics?: GraphicList, dec?: Decorations, dynamics?: GraphicList, initForReadPixels: boolean = false): void {
     this.clear();
 
     if (initForReadPixels) {
@@ -566,6 +580,8 @@ export class RenderCommands {
 
     this.addGraphics(scene);
     this.addBackgroundMapGraphics(backgroundMap);
+    if (undefined !== overlayGraphics)
+      this.addOverlayGraphics(overlayGraphics);
 
     if (undefined !== dynamics && 0 < dynamics.length) {
       this.addDecorations(dynamics);

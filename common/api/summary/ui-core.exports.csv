@@ -30,6 +30,7 @@ public;ContextMenuItemProps
 public;ContextMenuProps 
 public;ContextSubMenu 
 public;ContextSubMenuProps 
+internal;Corner
 beta;Cube 
 internal;CubeFace 
 internal;CubeFaceProps 
@@ -53,6 +54,7 @@ public;ExpandableListProps
 public;ExpansionToggle 
 public;ExpansionToggleProps 
 beta;Face
+alpha;FeaturedTile: React.FunctionComponent
 public;FillCentered: React.FunctionComponent
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
 public;FlexWrapContainer: React.FunctionComponent
@@ -67,7 +69,6 @@ public;GlobalDialogProps
 public;Headline: React.FunctionComponent
 public;HorizontalAlignment
 beta;HorizontalTabs 
-beta;HorizontalTabsProps 
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -93,12 +94,15 @@ beta;LoadingSpinnerProps
 beta;LoadingStatus 
 beta;LoadingStatusProps 
 beta;LocalUiSettings 
+beta;MainTabsProps 
 public;MessageBox 
 public;MessageBoxProps 
 public;MessageContainer 
 public;MessageContainerProps 
 public;MessagedComponentProps
 public;MessageSeverity
+alpha;MinimalFeaturedTile: React.FunctionComponent
+alpha;MinimalTile: React.FunctionComponent
 public;MutedText: React.FunctionComponent
 beta;NoChildrenProps
 beta;NodeCheckboxProps
@@ -110,7 +114,8 @@ alpha;NumericInputProps
 public;Omit
 beta;OmitChildrenProp
 public;Orientation
-internal;Point
+internal;Point 
+beta;PointProps
 beta;Popup 
 beta;PopupProps 
 beta;Position
@@ -123,6 +128,8 @@ public;RadioProps
 internal;ReactNumericInput 
 alpha;ReactNumericInputProps 
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
+internal;Rectangle 
+beta;RectangleProps
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 
@@ -130,6 +137,8 @@ public;Select
 public;SelectProps 
 beta;SessionUiSettings 
 internal;shallowDiffers: (a:
+internal;Size 
+beta;SizeProps
 public;SmallText: React.FunctionComponent
 public;SortDirection
 public;Spinner 
@@ -147,10 +156,15 @@ public;SvgPath
 public;SvgPathProps 
 public;SvgSprite 
 public;SvgSpriteProps 
+beta;Tabs 
+beta;TabsProps 
 public;Textarea 
 public;TextareaProps 
 public;TextProps 
 internal;TildeFinder
+alpha;Tile 
+internal;TileDefaultProps = Pick
+alpha;TileProps 
 public;TimeFormat
 public;Timer
 public;Title: React.FunctionComponent
@@ -175,6 +189,7 @@ beta;UiSettingsStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;VerticalAlignment
+beta;VerticalTabs 
 public;WebFontIcon: React.FunctionComponent
 public;WebFontIconProps 
 public;withIsPressed: 

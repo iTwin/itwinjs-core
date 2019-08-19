@@ -84,6 +84,257 @@ describe("PropertyGrid", () => {
       expect(categoryBlock.exists(), "Second category block does not exist").to.be.true;
     });
 
+    it("if property record has links propertry set and onClick is not set, sets onClick property, otherwise not", async () => {
+      const testMatcher = (_displayValue: string) => [];
+      const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      testRecord.links = {
+        matcher: testMatcher,
+      };
+      dataProvider.getData = async (): Promise<PropertyData> => ({
+        label: faker.random.word(),
+        description: faker.random.words(),
+        categories: [...categories],
+        records: {
+          Group_1: [testRecord],
+          Group_2: [records[0]],
+        },
+      });
+      const wrapper = mount(<PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider} />);
+
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      expect(testRecord.links.matcher).to.be.equal(testMatcher);
+      expect(testRecord.links.onClick).to.be.not.undefined;
+      expect(records[0].links).to.be.undefined;
+    });
+
+    it("sets default onPropertyLinkClick event handler to records with link property if not passed with props", async () => {
+      const testMatcher = (_displayValue: string) => [];
+      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      // tslint:disable-next-line: object-literal-key-quotes
+      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
+      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
+      testNestedRecord1.links = {
+        matcher: testMatcher,
+      };
+      testNestedRecord2.links = {
+        matcher: testMatcher,
+      };
+      testArrayRecord.links = {
+        matcher: testMatcher,
+      };
+
+      dataProvider.getData = async (): Promise<PropertyData> => ({
+        label: faker.random.word(),
+        description: faker.random.words(),
+        categories: [...categories],
+        records: {
+          Group_1: [testArrayRecord],
+          Group_2: [records[0]],
+        },
+      });
+      const wrapper = mount(<PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider} />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      expect(testArrayRecord.links!.onClick).to.be.not.undefined;
+      expect(testNestedRecord1.links!.onClick).to.be.not.undefined;
+      expect(testNestedRecord2.links!.onClick).to.be.not.undefined;
+    });
+
+    it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
+      const testMatcher = (_displayValue: string) => [];
+      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+      // tslint:disable-next-line: object-literal-key-quotes
+      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { "testProperty": testNestedRecord2 });
+      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
+      testNestedRecord1.links = {
+        matcher: testMatcher,
+      };
+      testNestedRecord2.links = {
+        matcher: testMatcher,
+      };
+      testStructRecord.links = {
+        matcher: testMatcher,
+      };
+
+      dataProvider.getData = async (): Promise<PropertyData> => ({
+        label: faker.random.word(),
+        description: faker.random.words(),
+        categories: [...categories],
+        records: {
+          Group_1: [testArrayRecord],
+          Group_2: [records[0]],
+        },
+      });
+      const propertyLinkClickFn = () => { };
+      const wrapper = mount(<PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        onPropertyLinkClick={propertyLinkClickFn} />);
+
+      await TestUtils.flushAsyncOperations();
+
+      wrapper.update();
+
+      expect(testNestedRecord1.links!.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testStructRecord.links!.onClick).to.be.equal(propertyLinkClickFn);
+      expect(testNestedRecord2.links!.onClick).to.be.equal(propertyLinkClickFn);
+    });
+
+    describe("default onPropertyLinkClick behaviour", () => {
+      const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+
+      before(() => {
+        location = locationMockRef.object;
+      });
+
+      after(() => {
+        locationMockRef.reset();
+      });
+
+      it("opens new window if the link text was found in record and it was not an email", async () => {
+        const testMatcher = (_displayValue: string) => [];
+        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+        testRecord.links = {
+          matcher: testMatcher,
+        };
+        dataProvider.getData = async (): Promise<PropertyData> => ({
+          label: faker.random.word(),
+          description: faker.random.words(),
+          categories: [...categories],
+          records: {
+            Group_1: [testRecord],
+            Group_2: [records[0]],
+          },
+        });
+        const wrapper = mount(<PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider} />);
+
+        const windowMockRef = moq.Mock.ofType<Window>();
+        await TestUtils.flushAsyncOperations();
+        window.open = (url?: string, target?: string, _features?: string, _replace?: boolean) => {
+          if (url === "http://www.testLink.com" && target === "_blank")
+            return windowMockRef.object;
+          else
+            return null;
+        };
+        wrapper.update();
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with link www.testLink.com"), "www.testLink.com");
+        windowMockRef.verify((x) => x.focus(), moq.Times.once());
+      });
+
+      it("does not open new window if there were no url links", async () => {
+        const testMatcher = (_displayValue: string) => [];
+        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+        testRecord.links = {
+          matcher: testMatcher,
+        };
+        dataProvider.getData = async (): Promise<PropertyData> => ({
+          label: faker.random.word(),
+          description: faker.random.words(),
+          categories: [...categories],
+          records: {
+            Group_1: [testRecord],
+            Group_2: [records[0]],
+          },
+        });
+        const wrapper = mount(<PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider} />);
+
+        const windowMockRef = moq.Mock.ofType<Window>();
+        await TestUtils.flushAsyncOperations();
+        window.open = (_url?: string, _target?: string, _features?: string, _replace?: boolean) => {
+          return windowMockRef.object;
+        };
+        wrapper.update();
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with someLink@mail.com otherLink@mail.com"), "not an url link");
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with someLink@mail.com otherLink@mail.com"), "testEmail@mail.com");
+        windowMockRef.verify((x) => x.focus(), moq.Times.never());
+        windowMockRef.verify((x) => x.focus(), moq.Times.never());
+      });
+
+      it("does not open new window if there were no url links", async () => {
+        const testMatcher = (_displayValue: string) => [];
+        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+        testRecord.links = {
+          matcher: testMatcher,
+        };
+        dataProvider.getData = async (): Promise<PropertyData> => ({
+          label: faker.random.word(),
+          description: faker.random.words(),
+          categories: [...categories],
+          records: {
+            Group_1: [testRecord],
+            Group_2: [records[0]],
+          },
+        });
+        const wrapper = mount(<PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider} />);
+
+        const windowMockRef = moq.Mock.ofType<Window>();
+        await TestUtils.flushAsyncOperations();
+        window.open = (_url?: string, _target?: string, _features?: string, _replace?: boolean) => {
+          return windowMockRef.object;
+        };
+        wrapper.update();
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with someLink@mail.com otherLink@mail.com"), "not an url link");
+        windowMockRef.verify((x) => x.focus(), moq.Times.never());
+      });
+
+      it("sets location href value to value got in the text if it is an email link", async () => {
+        const testMatcher = (_displayValue: string) => [];
+        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+        testRecord.links = {
+          matcher: testMatcher,
+        };
+        dataProvider.getData = async (): Promise<PropertyData> => ({
+          label: faker.random.word(),
+          description: faker.random.words(),
+          categories: [...categories],
+          records: {
+            Group_1: [testRecord],
+            Group_2: [records[0]],
+          },
+        });
+        const wrapper = mount(<PropertyGrid
+          orientation={Orientation.Horizontal}
+          dataProvider={dataProvider} />);
+
+        await TestUtils.flushAsyncOperations();
+        wrapper.update();
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with testLink.com someLink@mail.com otherLink@mail.com"), "someOtherLink@mail.com");
+        expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
+      });
+    });
+
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
       const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 

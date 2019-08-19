@@ -5,12 +5,12 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
+import { SelectionTool } from "@bentley/imodeljs-frontend";
 import { CommandItemDef } from "../../ui-framework/shared/CommandItemDef";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
 import { ItemProps } from "../../ui-framework/shared/ItemProps";
-import { Orientation } from "@bentley/ui-core";
-import { Size } from "@bentley/ui-ninezone";
+import { Orientation, Size } from "@bentley/ui-core";
 
 describe("Item", () => {
 
@@ -74,6 +74,14 @@ describe("Item", () => {
     });
     expect(toolItem.isPressed).to.be.true;
     expect(toolItem.isActive).to.be.true;
+  });
+
+  it("ToolItemDef helper function", () => {
+    const toolItem = ToolItemDef.getItemDefForTool(SelectionTool, "icon-override", ["args1", "args2"]);
+    expect(toolItem.iconSpec).to.be.eq("icon-override");
+    expect(toolItem.label).not.to.be.undefined;
+    expect(toolItem.tooltip).not.to.be.undefined;
+    expect(toolItem.execute).not.to.be.undefined;
   });
 
   class TestItemDef extends ActionButtonItemDef {

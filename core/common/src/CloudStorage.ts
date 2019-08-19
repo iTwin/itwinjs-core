@@ -7,6 +7,7 @@ export enum CloudStorageProvider {
   Azure,
   Amazon,
   AliCloud,
+  External,
 }
 
 /** @beta */

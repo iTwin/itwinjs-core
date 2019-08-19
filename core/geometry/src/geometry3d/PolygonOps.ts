@@ -10,11 +10,11 @@ import { XAndY } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Ray3d } from "./Ray3d";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Point3dArray } from "./PointHelpers";
+import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
+import { Range3d } from "./Range";
 /** Static class for operations that treat an array of points as a polygon (with area!) */
 /**
  * Various (static method) computations for arrays of points interpreted as a polygon.
@@ -77,11 +77,20 @@ export class PolygonOps {
    * for a right triangle in the first quadrant at the origin -- (0,0),(1,0),(0,1)
    */
   private static readonly _triangleMomentWeights = Matrix4d.createRowValues(2.0 / 24.0, 1.0 / 24.0, 0, 4.0 / 24.0, 1.0 / 24.0, 2.0 / 24.0, 0, 4.0 / 24.0, 0, 0, 0, 0, 4.0 / 24.0, 4.0 / 24.0, 0, 12.0 / 24.0);
+  /** These values are the integrated volume moment products [xx,xy,xz, x, yx,yy,yz,y, zx,zy,zz,z,x,y,z,1]
+   * for a tetrahedron in the first quadrant at the origin -- (0,00),(1,0,0),(0,1,0),(0,0,1)
+   */
+  private static readonly _tetrahedralMomentWeights = Matrix4d.createRowValues(
+    1.0 / 60.0, 1.0 / 120, 1.0 / 120, 1.0 / 24.0,
+    1.0 / 120, 1.0 / 60.0, 1.0 / 120, 1.0 / 24.0,
+    1.0 / 120, 1.0 / 120, 1.0 / 60.0, 1.0 / 24.0,
+    1.0 / 24.0, 1.0 / 24.0, 1.0 / 24.0, 1.0 / 6.0);
   // statics for shared reuse.
   // many methods use these.
   // only use them in "leaf" methods that are certain not to call other users . . .
   private static _vector0 = Vector3d.create();
   private static _vector1 = Vector3d.create();
+  private static _vector2 = Vector3d.create();
   private static _vectorOrigin = Vector3d.create();
   private static _normal = Vector3d.create();
   private static _matrixA = Matrix4d.createIdentity();
@@ -112,15 +121,33 @@ export class PolygonOps {
     PolygonOps.areaNormalGo(new Point3dArrayCarrier(points), result);
     return result;
   }
-  /** return the area of the polygon (assuming planar) */
+  /** return the area of the polygon.
+   * * This assumes the polygon is planar
+   * * This does NOT assume the polygon is on the xy plane.
+   */
   public static area(points: Point3d[]): number {
     return PolygonOps.areaNormal(points).magnitude();
   }
-  /** return the projected XY area of the polygon (assuming planar) */
-  public static areaXY(points: Point3d[]): number {
+  /** return the projected XY area of the polygon. */
+  public static areaXY(points: Point3d[] | IndexedXYZCollection): number {
     let area = 0.0;
-    for (let i = 1; i + 1 < points.length; i++)
-      area += points[0].crossProductToPointsXY(points[i], points[i + 1]);
+    if (points instanceof IndexedXYZCollection) {
+      if (points.length > 2) {
+        const x0 = points.getXAtUncheckedPointIndex(0);
+        const y0 = points.getYAtUncheckedPointIndex(0);
+        let u1 = points.getXAtUncheckedPointIndex(1) - x0;
+        let v1 = points.getYAtUncheckedPointIndex(1) - y0;
+        let u2, v2;
+        for (let i = 1; i + 1 < points.length; i++ , u1 = u2, v1 = v2) {
+          u2 = points.getXAtUncheckedPointIndex(i) - x0;
+          v2 = points.getYAtUncheckedPointIndex(i) - y0;
+          area += Geometry.crossProductXYXY(u1, v1, u2, v2);
+        }
+      }
+    } else {
+      for (let i = 1; i + 1 < points.length; i++)
+        area += points[0].crossProductToPointsXY(points[i], points[i + 1]);
+    }
     return 0.5 * area;
   }
   /**
@@ -130,31 +157,62 @@ export class PolygonOps {
    * * 'a' member is the area.
    * @param points
    */
-  public static centroidAreaNormal(points: Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+    if (Array.isArray(points)) {
+      const carrier = new Point3dArrayCarrier(points);
+      return this.centroidAreaNormal(carrier);
+    } else if (points instanceof IndexedXYZCollection) {
+      return this.centroidAreaNormalGo(points);
+    }
+    return undefined;
+  }
+  /**
+   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
+   * * origin at the centroid of the (3D) polygon
+   * * normal is a unit vector perpendicular to the plane
+   * * 'a' member is the area.
+   * @param points
+   */
+  private static centroidAreaNormalGo(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+    if (Array.isArray(points)) {
+      const carrier = new Point3dArrayCarrier(points);
+      return this.centroidAreaNormal(carrier);
+    }
     const n = points.length;
     if (n === 3) {
-      const normal = points[0].crossProductToPoints(points[1], points[2]);
+      const normal = points.crossProductIndexIndexIndex(0, 1, 2)!;
       const a = 0.5 * normal.magnitude();
-      const result = Ray3d.createCapture(Point3dArray.centroid(new Point3dArrayCarrier(points)), normal);
+      const centroid = points.getPoint3dAtCheckedPointIndex(0)!;
+      points.accumulateScaledXYZ(1, 1.0, centroid);
+      points.accumulateScaledXYZ(2, 1.0, centroid);
+      centroid.scaleInPlace(1.0 / 3.0);
+      const result = Ray3d.createCapture(centroid, normal);
       if (result.tryNormalizeInPlaceWithAreaWeight(a))
         return result;
       return undefined;
     }
     if (n >= 3) {
-      const origin = points[0].clone();
-      const normal = PolygonOps.areaNormal(points);
-      normal.normalizeInPlace();
-      const vector0 = origin.vectorTo(points[1]);
-      let vector1 = Vector3d.create();
+
+      const areaNormal = Vector3d.createZero();
+      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      for (let i = 2; i < n; i++) {
+        points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
+      }
+      areaNormal.normalizeInPlace();
+
+      const origin = points.getPoint3dAtCheckedPointIndex(0)!;
+      const vector0 = Vector3d.create();
+      const vector1 = Vector3d.create();
+      points.vectorXYAndZIndex(origin, 1, vector0);
       let cross = Vector3d.create();
       const centroidSum = Vector3d.createZero();
       const normalSum = Vector3d.createZero();
       let signedTriangleArea;
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
-        vector1 = origin.vectorTo(points[i], vector1);
+        points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = normal.dotProduct(cross);    // well, actually twice the area.
+        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
         normalSum.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
@@ -222,16 +280,46 @@ export class PolygonOps {
     PolygonOps.areaNormalGo(points, result);
     return result.normalizeInPlace();
   }
-  /** Return the matrix of area products of a polygon with respect to an origin.
+  /** Accumulate to the matrix of area products of a polygon with respect to an origin.
    * The polygon is assumed to be planar and non-self-intersecting.
    */
+  /** Accumulate to the matrix of area products of a polygon with respect to an origin.
+   * * The polygon is assumed to be planar and non-self-intersecting.
+   * * Accumulated values are integrals over triangles from point 0 of the polygon to other edges of the polygon.
+   * * Integral over each triangle is transformed to integrals from the given origin.
+   * @param points array of points around the polygon.   Final closure point is not needed.
+   * @param origin origin for global accumulation.
+   * @param moments 4x4 matrix where products are accumulated.
+   */
   public static addSecondMomentAreaProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
+    this.addSecondMomentTransformedProducts(PolygonOps._triangleMomentWeights, points, origin, 2, moments);
+  }
+
+  /** Accumulate to the matrix of volume products of a polygon with respect to an origin.
+   * * The polygon is assumed to be planar and non-self-intersecting.
+   * * Accumulated values are integrals over tetrahedra from the origin to triangles on the polygon.
+   * @param points array of points around the polygon.   Final closure point is not needed.
+   * @param origin origin for tetrahedra
+   * @param moments 4x4 matrix where products are accumulated.
+   */
+  public static addSecondMomentVolumeProducts(points: IndexedXYZCollection, origin: Point3d, moments: Matrix4d) {
+    this.addSecondMomentTransformedProducts(PolygonOps._tetrahedralMomentWeights, points, origin, 3, moments);
+  }
+  /** Return the matrix of area products of a polygon with respect to an origin.
+   * The polygon is assumed to be planar and non-self-intersecting.
+   * * `frameType===2` has xy vectors in the plane of the polygon, plus a unit normal z. (Used for area integrals)
+   * * `frameType===3` has vectors from origin to 3 points in the triangle. (Used for volume integrals)
+   */
+  private static addSecondMomentTransformedProducts(firstQuadrantMoments: Matrix4d, points: IndexedXYZCollection, origin: Point3d,
+    frameType: 2 | 3,
+    moments: Matrix4d) {
     const unitNormal = PolygonOps._normal;
     if (PolygonOps.unitNormal(points, unitNormal)) {
       // The direction of the normal makes the various detJ values positive or negative so that non-convex polygons
       // sum correctly.
       const vector01 = PolygonOps._vector0;
       const vector02 = PolygonOps._vector1;
+      const vector03 = PolygonOps._vector2;
       const placement = PolygonOps._matrixA;
       const matrixAB = PolygonOps._matrixB;
       const matrixABC = PolygonOps._matrixC;
@@ -239,22 +327,34 @@ export class PolygonOps {
       const numPoints = points.length;
       let detJ = 0;
       for (let i2 = 2; i2 < numPoints; i2++) {
-        points.vectorIndexIndex(0, i2 - 1, vector01);
-        points.vectorIndexIndex(0, i2, vector02);
-        detJ = unitNormal.tripleProduct(vector01, vector02);
-        placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
-        placement.multiplyMatrixMatrix(PolygonOps._triangleMomentWeights, matrixAB);
-        matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
-        moments.addScaledInPlace(matrixABC, detJ);
+        if (frameType === 2) {
+          points.vectorIndexIndex(0, i2 - 1, vector01);
+          points.vectorIndexIndex(0, i2, vector02);
+          detJ = unitNormal.tripleProduct(vector01, vector02);
+          placement.setOriginAndVectors(vectorOrigin, vector01, vector02, unitNormal);
+          placement.multiplyMatrixMatrix(firstQuadrantMoments, matrixAB);
+          matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
+          moments.addScaledInPlace(matrixABC, detJ);
+        } else if (frameType === 3) {
+          points.vectorXYAndZIndex(origin, 0, vector01);
+          points.vectorXYAndZIndex(origin, i2 - 1, vector02);
+          points.vectorXYAndZIndex(origin, i2, vector03);
+          detJ = vector01.tripleProduct(vector02, vector03);
+          placement.setOriginAndVectors(origin, vector01, vector02, vector03);
+          placement.multiplyMatrixMatrix(firstQuadrantMoments, matrixAB);
+          matrixAB.multiplyMatrixMatrixTranspose(placement, matrixABC);
+          moments.addScaledInPlace(matrixABC, detJ);
+        }
       }
     }
   }
+
   /** Test the direction of turn at the vertices of the polygon, ignoring z-coordinates.
    *
    * *  For a polygon without self intersections, this is a convexity and orientation test: all positive is convex and counterclockwise,
    * all negative is convex and clockwise
    * *  Beware that a polygon which turns through more than a full turn can cross itself and close, but is not convex
-   * *  Returns 1 if all turns are to the left, -1 if all to the right, and 0 if there are any zero turns
+   * *  Returns 1 if all turns are to the left, -1 if all to the right, and 0 if there are any zero or reverse turns
    */
   public static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number {
     // Reduce count by trailing duplicates; leaves iLast at final index
@@ -315,5 +415,172 @@ export class PolygonOps {
         return context.classifyCounts();
     }
     return context.classifyCounts();
+  }
+  /**
+   * Test if point (x,y) is IN, OUT or ON a polygon.
+   * @return (1) for in, (-1) for OUT, (0) for ON
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param points array of xy coordinates.
+   */
+  public static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined {
+    const context = new XYParitySearchContext(x, y);
+    let i0 = 0;
+    const n = points.length;
+    let i1;
+    let iLast = -1;
+    // walk to an acceptable start index ...
+    for (i0 = 0; i0 < n; i0 = i1) {
+      i1 = i0 + 1;
+      if (i1 >= n)
+        i1 = 0;
+      if (context.tryStartEdge(points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1))) {
+        iLast = i1;
+        break;
+      }
+    }
+    if (iLast < 0)
+      return undefined;
+    for (let i = 1; i <= n; i++) {
+      i1 = iLast + i;
+      if (i1 >= n)
+        i1 -= n;
+      if (!context.advance(points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1)))
+        return context.classifyCounts();
+    }
+    return context.classifyCounts();
+  }
+
+  /**
+   * Reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * @param loops
+   * @param outwardNormal
+   * @return the number of loops reversed.
+   */
+  public static orientLoopsCCWForOutwardNormalInPlace(loops: GrowableXYZArray | GrowableXYZArray[], outwardNormal: Vector3d): number {
+    if (loops instanceof IndexedXYZCollection)
+      return this.orientLoopsCCWForOutwardNormalInPlace([loops], outwardNormal);
+    const orientations: number[] = [];
+    const unitNormal = Vector3d.create();
+    // orient individually ... (no hole analysis)
+    let numReverse = 0;
+    for (const loop of loops) {
+      if (this.unitNormal(loop, unitNormal)) {
+        const q = unitNormal.dotProduct(outwardNormal);
+        orientations.push(q);
+        if (q <= 0.0)
+          loop.reverseInPlace();
+        numReverse++;
+      } else {
+        orientations.push(0.0);
+      }
+    }
+    return numReverse;
+  }
+  /**
+   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * * Return an array of arrays which capture the input pointers.
+   * * In each first level array:
+   *    * The first loop is an outer loop.
+   *    * all subsequent loops are holes
+   *    * The outer loop is CCW
+   *    * The holes are CW.
+   *
+   * @param loops multiple loops to sort and reverse.
+   */
+  public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
+    const loopAndArea: SortablePolygon[] = [];
+    for (const loop of loops) {
+      SortablePolygon.pushLoop(loopAndArea, loop);
+    }
+    return SortablePolygon.assignParentsAndDepth(loopAndArea);
+  }
+
+}
+/**
+ * A `SortablePolygon` carries a (single) loop with data useful for sorting for inner-outer structure.
+ * @internal
+ */
+class SortablePolygon {
+  public loop: IndexedReadWriteXYZCollection;
+  public sortKey: number;
+  public signedArea: number;
+  public range: Range3d;
+  public parentIndex?: number;
+  public isHole: boolean;
+  public outputSetIndex?: number;
+  /**
+   *
+   * @param loop Loop to capture.
+   */
+  public constructor(loop: IndexedReadWriteXYZCollection, range: Range3d, signedArea: number) {
+    this.loop = loop;
+    this.range = range;
+    this.signedArea = signedArea;
+    this.sortKey = Math.abs(this.signedArea);
+    this.isHole = false;
+  }
+  /** Push loop with sort data onto the array.
+   * * No action if no clear normal.
+   * * return true if pushed.
+   */
+  public static pushLoop(loops: SortablePolygon[], loop: IndexedReadWriteXYZCollection): boolean {
+    const areaXY = PolygonOps.areaXY(loop);
+    if (areaXY > 0.0) {
+      loops.push(new SortablePolygon(loop, Range3d.createFromVariantData(loop), areaXY));
+      return true;
+    }
+    return true;
+  }
+  /** Push loop with sort data onto the array.
+   * * No action if no clear normal.
+   * * return true if pushed.
+   */
+  public static assignParentsAndDepth(loops: SortablePolygon[]): IndexedReadWriteXYZCollection[][] {
+    const outputSets: IndexedReadWriteXYZCollection[][] = [];
+    // Sort largest to smallest ...
+    loops.sort((loopA: SortablePolygon, loopB: SortablePolygon) => (loopB.sortKey - loopA.sortKey));
+    outputSets.length = 0;
+    // starting with smallest loop, point each loop to smallest containing parent.
+    for (let i = loops.length; i-- > 0;) {
+      const searchX = loops[i].loop.getXAtUncheckedPointIndex(0);
+      const searchY = loops[i].loop.getYAtUncheckedPointIndex(0);
+      // find smallest containing parent (search forward only to hit)
+      loops[i].parentIndex = undefined;
+      loops[i].outputSetIndex = undefined;
+      for (let j = i; j-- > 0;) {
+        if (loops[j].range.containsXY(searchX, searchY)
+          && 1 === PolygonOps.classifyPointInPolygonXY(searchX, searchY, loops[j].loop)) {
+          loops[i].parentIndex = j;
+          break;
+        }
+      }
+    }
+    // In large-to-small order:
+    // If a loop has no parent or has a "hole" as parent it is outer.
+    // otherwise (i.e. it has a non-hole parent) it becomes a hole in the parent.
+    for (const loopData of loops) {
+      loopData.isHole = false;
+      const parentIndex = loopData.parentIndex;
+      if (parentIndex !== undefined)
+        loopData.isHole = !loops[parentIndex].isHole;
+      if (!loopData.isHole) {
+        loopData.reverseLoopForAreaSign(1.0);
+        loopData.outputSetIndex = outputSets.length;
+        outputSets.push([]);
+        outputSets[loopData.outputSetIndex].push(loopData.loop);
+      } else {
+        loopData.reverseLoopForAreaSign(-1.0);
+        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
+        outputSets[outputSetIndex].push(loopData.loop);
+      }
+    }
+    return outputSets;
+  }
+  private reverseLoopForAreaSign(areaSign: number) {
+    if (areaSign * this.signedArea < 0.0) {
+      this.loop.reverseInPlace();
+      this.signedArea *= -1.0;
+    }
   }
 }

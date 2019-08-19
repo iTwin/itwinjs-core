@@ -16,7 +16,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { FunctionalSchema } from "./domains/Functional";
 import { GenericSchema } from "./domains/Generic";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "./IModelJsNative";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
@@ -90,6 +90,11 @@ export class IModelHostConfiguration {
    * @beta
    */
   public restrictTileUrlsByClientIp?: boolean;
+
+  /** Whether to compress cached tiles.
+   * @beta
+   */
+  public compressCachedTiles?: boolean;
 
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
    * @internal
@@ -240,7 +245,12 @@ export class IModelHost {
   /** @internal */
   public static loadNative(region: number, dir?: string): void { this.registerPlatform(Platform.load(dir), region); }
 
-  /** @internal */
+  /**
+   * @beta
+   * @note A reference implementation is set by default for [AzureBlobStorage]. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom [CloudStorageService] and also set [IModelHostConfiguration.tileCacheCredentials] using "external" for the service name.
+   *       Note that the account and access key members of [CloudStorageServiceCredentials] may have blank values unless the custom service implementation uses them.
+   */
   public static tileCacheService: CloudStorageService;
 
   /** This method must be called before any iModel.js services are used.
@@ -367,15 +377,20 @@ export class IModelHost {
    */
   public static get restrictTileUrlsByClientIp(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.restrictTileUrlsByClientIp ? true : false); }
 
+  /** Whether to compress cached tiles.
+   * @internal
+   */
+  public static get compressCachedTiles(): boolean { return undefined !== IModelHost.configuration && (IModelHost.configuration.compressCachedTiles ? true : false); }
+
   private static setupTileCache() {
     const config = IModelHost.configuration!;
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;
 
-    if (credentials.service === "azure") {
+    if (credentials.service === "azure" && !IModelHost.tileCacheService) {
       IModelHost.tileCacheService = new AzureBlobStorage(credentials);
-    } else {
+    } else if (credentials.service !== "external") {
       throw new IModelError(BentleyStatus.ERROR, "Unsupported cloud service credentials for tile cache.");
     }
   }

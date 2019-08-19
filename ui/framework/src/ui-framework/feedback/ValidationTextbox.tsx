@@ -96,6 +96,7 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
   }
 
   private processValidateText(target: HTMLInputElement | undefined): void {
+    // istanbul ignore next
     if (undefined === target)
       return;
 
@@ -141,7 +142,7 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
 
   /** Displays error message. */
   private _showErrorMessage(target: Element) {
-    MessageManager.displayInputFieldMessage(target as HTMLElement, this.props.errorText!, this.props.detailedErrorText ? this.props.detailedErrorText : "");
+    MessageManager.displayInputFieldMessage(target as HTMLElement, this.props.errorText!, this.props.detailedErrorText);
     return;
   }
 
@@ -154,14 +155,14 @@ export class ValidationTextbox extends React.PureComponent<ValidationTextboxProp
 
     switch (event.keyCode) {
       case 27:
-        if (this.props.onEscPressed) {
+        // istanbul ignore else
+        if (this.props.onEscPressed)
           this.props.onEscPressed();
-        }
         break;
       case 13:
-        if (this.props.onEnterPressed) {
+        // istanbul ignore else
+        if (this.props.onEnterPressed)
           this.props.onEnterPressed();
-        }
         break;
     }
   }

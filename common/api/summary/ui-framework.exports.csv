@@ -5,6 +5,7 @@ public;class ActionButtonItemDef
 public;ActionCreatorsObject =
 public;ActionItemButton 
 public;ActionItemButtonProps 
+beta;ActionItemSpec 
 public;ActionsUnion
 public;ActionTypes
 public;ActionWithPayload
@@ -20,11 +21,18 @@ beta;AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProp
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
+beta;BackstageComposer 
 public;BackstageEvent 
 public;BackstageEventArgs
+beta;BackstageItemManager
 public;BackstageItemProps 
+beta;BackstageItemProvider
+beta;BackstageItemProviderRegisteredEventArgs
+beta;BackstageItemSpec
 public;BackstageItemState
+beta;BackstageItemType
 public;BackstageProps 
+beta;BadgeType
 public;BaseItemState
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -33,6 +41,9 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
+alpha;CategoryTree 
+alpha;CategoryTreeProps
+alpha;CategoryTreeState
 internal;ChangeSetInfo
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
@@ -45,6 +56,8 @@ public;CommandItemDef
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
+beta;ConditionalDisplaySpecification
+beta;ConditionalDisplayType
 beta;ConditionalItemDef 
 beta;ConditionalItemProps 
 public;ConfigurableBase 
@@ -84,25 +97,26 @@ internal;CubeHover
 alpha;CubeNavigationAid 
 alpha;CubeNavigationAidControl 
 alpha;CubeNavigationAidProps 
-alpha;CursorDirection
-alpha;CursorDirectionParts
-alpha;CursorInformation
-alpha;CursorPopup 
-internal;CursorPopupCloseEvent 
-internal;CursorPopupCloseEventArgs
-alpha;CursorPopupContent: React_2.FunctionComponent
-alpha;CursorPopupManager
-internal;CursorPopupOpenEvent 
-internal;CursorPopupOpenEventArgs
-alpha;CursorPopupProps
+beta;CursorDirection
+beta;CursorDirectionParts
+beta;CursorInformation
+beta;CursorPopup 
+beta;CursorPopupContent: React_2.FunctionComponent
+internal;CursorPopupFadeOutEvent 
+internal;CursorPopupFadeOutEventArgs
+beta;CursorPopupManager
+beta;CursorPopupOptions
+beta;CursorPopupProps 
+beta;CursorPopupRenderer 
 internal;CursorPopupShow
 internal;CursorPopupUpdatePositionEvent 
 internal;CursorPopupUpdatePositionEventArgs
 alpha;CursorPrompt
-alpha;CursorUpdatedEvent 
-alpha;CursorUpdatedEventArgs
+beta;CursorUpdatedEvent 
+beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
+beta;CustomItemSpec 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -132,6 +146,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;FaceCell 
 internal;FaceCellProps 
+alpha;FilterInfo
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
@@ -206,6 +221,7 @@ beta;ListPickerItemProps
 beta;ListPickerProps
 beta;ListPickerPropsExtended 
 alpha;MapMode
+public;MarkupTools
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 
@@ -224,8 +240,8 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-alpha;ModelSelectorWidget 
-alpha;ModelSelectorWidgetControl 
+internal;ModelSelectorWidget 
+internal;ModelSelectorWidgetControl 
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 
@@ -254,6 +270,8 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: any
 public;PropsHelper
+alpha;RealityDataPicker 
+alpha;RealityDataPickerControl 
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
@@ -271,7 +289,7 @@ beta;SessionState
 beta;SessionStateActionId
 beta;SessionStateActions:
 beta;SessionStateActionsUnion = ActionsUnion
-beta;SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): SessionState
+beta;SessionStateReducer(state: SessionState | undefined, _action: SessionStateActionsUnion): DeepReadonly
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -284,9 +302,14 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
+alpha;SpatialContainmentTree 
+alpha;SpatialContainmentTreeProps
+alpha;SpatialContainmentTreeState
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
+beta;StageLauncher 
+beta;StageLauncher 
 alpha;StagePanel 
 public;StagePanelChangeHandler
 alpha;StagePanelDef 
@@ -301,8 +324,12 @@ alpha;StandardRotationNavigationAid
 alpha;StandardRotationNavigationAidControl 
 public;StateType
 public;StatusBar 
+beta;StatusBarCenterSection: React_2.FunctionComponent
 public;StatusBarFieldId = string | null
+beta;StatusBarLeftSection: React_2.FunctionComponent
 public;StatusBarProps 
+beta;StatusBarRightSection: React_2.FunctionComponent
+beta;StatusBarSpaceBetween: React_2.FunctionComponent
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -373,11 +400,13 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
+alpha;VisibilityComponent 
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus
 public;VisibilityTree 
 public;VisibilityTreeProps
+alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler

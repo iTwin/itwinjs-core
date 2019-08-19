@@ -27,6 +27,8 @@ import clickLeftIcon from "./mouse-click-left.svg";
 import clickRightIcon from "./mouse-click-right.svg";
 import mouseWheelClickIcon from "./mouse-click-wheel.svg";
 import clickLeftDragIcon from "./mouse-click-left-drag.svg";
+import clickRightDragIcon from "./mouse-click-right-drag.svg";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
 import { Logger } from "@bentley/bentleyjs-core";
 
 /** Properties of [[ToolAssistanceField]] component.
@@ -39,12 +41,14 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
   uiSettings: UiSettings;
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
+  /** Fade Out the Cursor Prompt when closed. */
+  fadeOutCursorPrompt: boolean;
 }
 
 /** Default properties of [[ToolAssistanceField]] component.
  * @alpha
  */
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout">;
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt">;
 
 /** @internal */
 interface ToolAssistanceFieldState {
@@ -66,6 +70,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
     includePromptAtCursor: true,
     cursorPromptTimeout: 5000,
+    fadeOutCursorPrompt: true,
     uiSettings: new LocalUiSettings(),
   };
 
@@ -81,7 +86,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showPromptAtCursor: false,
     };
 
-    this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout);
+    this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
   }
 
   /** @internal */
@@ -303,6 +308,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.LeftClickDrag:
           svgImage = clickLeftDragIcon;
+          className = "uifw-toolassistance-svg-wide";
+          break;
+        case ToolAssistanceImage.RightClickDrag:
+          svgImage = clickRightDragIcon;
+          className = "uifw-toolassistance-svg-wide";
+          break;
+        case ToolAssistanceImage.MouseWheelClickDrag:
+          svgImage = clickMouseWheelDragIcon;
           className = "uifw-toolassistance-svg-wide";
           break;
       }

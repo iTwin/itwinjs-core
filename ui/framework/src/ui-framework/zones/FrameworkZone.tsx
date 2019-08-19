@@ -5,11 +5,10 @@
 /** @module Zone */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ZoneTargetType,
   Zone as NZ_Zone,
-  RectangleProps,
   Outline,
   ZoneManagerProps,
   WidgetZoneId,

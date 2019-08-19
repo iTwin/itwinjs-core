@@ -1000,12 +1000,21 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
     // paginated behavior
     const parentId = parent ? parent.id : undefined;
     const complete = () => {
-      const pagedNodes = this.createPagedNodesResult(parent);
-      if (parent && isArrayLike(parent.children)) {
+      // note: the parent might be over-written due to other sibling page loads,
+      // so we have to make sure we're using the right parent and not the stale one
+      const actualParent = parent ? parent.beInspireTree.node(parent.id!) : undefined;
+      const pagedNodes = this.createPagedNodesResult(actualParent);
+      if (actualParent && isArrayLike(actualParent.children)) {
         // reset so concat doesn't duplicate nodes
-        parent.children = true;
+        actualParent.children = true;
       }
-      onNodesDelayLoaded(parent, pagedNodes);
+      onNodesDelayLoaded(actualParent, pagedNodes);
+      if (actualParent && actualParent !== parent) {
+        // if the `parent` is indeed stale, then calling resolve won't add child nodes
+        // to the tree - we have to additionally add them to the actual parent that's not stale
+        // see VSTS#152885
+        actualParent.addChildren(pagedNodes);
+      }
       resolve(pagedNodes, pagedNodes.length);
     };
     if (!this._paginationHelper.hasOrWillHaveLoadedPages(parentId)) {

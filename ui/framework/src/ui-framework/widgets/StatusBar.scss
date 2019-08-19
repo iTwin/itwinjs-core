@@ -16,3 +16,27 @@
   @include uicore-text(small);
 }
 
+.uifw-statusbar-space-between {
+	width: 100%;
+	display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.uifw-statusbar-left {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.uifw-statusbar-center {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.uifw-statusbar-right {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}

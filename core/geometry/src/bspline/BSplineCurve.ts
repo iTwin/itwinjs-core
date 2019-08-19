@@ -15,7 +15,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
 
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
@@ -274,6 +274,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
                 const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
                 if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {
                   const detail = CurveLocationDetail.createCurveEvaluatedFraction(this, fraction);
+                  detail.intervalRole = CurveIntervalRole.isolated;
                   result.push(detail);
                   previousFraction = fraction;
                 }

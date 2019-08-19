@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-function pseudoLocalizeObject (objIn) {
+function pseudoLocalizeObject(objIn) {
   let objOut = {};
   for (let prop in objIn) {
     if (objIn.hasOwnProperty(prop)) {
       if (typeof objIn[prop] === "string") {
-        objOut[prop] = pseudoLocalize (objIn[prop])
+        objOut[prop] = pseudoLocalize(objIn[prop])
       } else if (typeof objIn[prop] === "object") {
-        objOut[prop] = pseudoLocalizeObject (objIn[prop])
+        objOut[prop] = pseudoLocalizeObject(objIn[prop])
       }
     }
   }
-return objOut;
+  return objOut;
 }
 
 const replacements = {
@@ -42,23 +42,23 @@ const replacements = {
   y: "\u00FD\u00FF",
 };
 
-function pseudoLocalize (inputString) {
+function pseudoLocalize(inputString) {
   let inReplace = 0;
   let outString = "";
   let replaceIndex = 0; // Note: the pseudoLocalize algorithm in Bim02 uses random, but here we cycle through because Javascript doesn't allow setting of the seed for Math.random.
-  for (let iChar=0; iChar < inputString.length; iChar++) {
-    let thisChar = inputString.charAt (iChar);
-    let nextChar = ( (iChar+1) < inputString.length ) ? inputString.charAt(iChar+1) : 0;
+  for (let iChar = 0; iChar < inputString.length; iChar++) {
+    let thisChar = inputString.charAt(iChar);
+    let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;
 
     // handle the {{ and }} delimiters for placeholders - don't want to do anything to characters in between.
-    if ( ('{' === thisChar) && ('{' === nextChar ) ) {
+    if (('{' === thisChar) && ('{' === nextChar)) {
       inReplace++;
       iChar++;
-      outString = outString.concat ("{{");
-    } else if ( ('}' === thisChar) && ('}' === nextChar) && (inReplace > 0) ) {
+      outString = outString.concat("{{");
+    } else if (('}' === thisChar) && ('}' === nextChar) && (inReplace > 0)) {
       inReplace--;
       iChar++;
-      outString = outString.concat ("}}");
+      outString = outString.concat("}}");
     } else {
       let replacementChar = thisChar;
       if (0 === inReplace) {
@@ -67,13 +67,13 @@ function pseudoLocalize (inputString) {
           replacementChar = replacementsForChar.charAt(replaceIndex++ % replacementsForChar.length);
         }
       }
-    outString = outString.concat (replacementChar);
+      outString = outString.concat(replacementChar);
     }
   }
-return outString;
+  return outString;
 }
 
-function isJsonFile (fileName) {
+function isJsonFile(fileName) {
   return fileName.endsWith(".json");
 }
 
@@ -84,10 +84,10 @@ const fs = require("fs-extra")
 const englishDir = (argv.englishDir === undefined) ? paths.appLocalesEnglish : argv.englishDir;
 const inputFileNames = fs.readdirSync(englishDir).filter(isJsonFile);
 const outDir = (argv.out === undefined) ? paths.appLocalesPseudolocalize : argv.out;
-try  {
-  fs.mkdirpSync (outDir);
+try {
+  fs.mkdirpSync(outDir);
 } catch (e) {
-  console.log (e);// do nothing
+  console.log(e);// do nothing
 }
 
 
@@ -96,14 +96,9 @@ for (const inputFileName of inputFileNames) {
   const inputFileContents = fs.readFileSync(inputFilePath, "utf8");
   const outputFileName = outDir + "/" + inputFileName;
 
-  let jsonIn = fs.readFileSync (inputFilePath, {encoding: "utf8"});
-  let objIn = JSON.parse (jsonIn);
+  let jsonIn = fs.readFileSync(inputFilePath, { encoding: "utf8" });
+  let objIn = JSON.parse(jsonIn);
 
-  let objOut = pseudoLocalizeObject (objIn);
-  fs.writeFileSync (outputFileName, JSON.stringify(objOut, null, 2));
+  let objOut = pseudoLocalizeObject(objIn);
+  fs.writeFileSync(outputFileName, JSON.stringify(objOut, null, 2));
 }
-
-
-
-
-

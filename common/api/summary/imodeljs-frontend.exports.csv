@@ -16,7 +16,8 @@ public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
-internal;AppearanceOverrideProps
+beta;Animator
+beta;AppearanceOverrideProps
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 
@@ -25,6 +26,7 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;BackgroundMapTileTreeReference 
+internal;BackgroundTerrainTileTreeReference 
 alpha;BadgeType
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
@@ -51,6 +53,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
+internal;CesiumWorldTerrainTileLoader 
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -63,6 +66,7 @@ internal;Clips
 public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
+internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
 alpha;ConditionalDisplaySpecification
 alpha;ConditionalDisplayType
 internal;ContextMode
@@ -72,12 +76,11 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
 public;DecorateContext 
-alpha;DecorationAnimator 
 public;Decorations 
 public;Decorator
 internal;DefaultViewTouchTool 
@@ -97,8 +100,8 @@ public;ElementPicker
 public;ElementState 
 internal;ElemMethod
 internal;ElemSource
-internal;EmphasizeElements 
-internal;EmphasizeElementsProps
+beta;EmphasizeElements 
+beta;EmphasizeElementsProps
 public;EntityState 
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
@@ -109,7 +112,7 @@ public;EventHandled
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider
-internal;FeatureOverrideType
+beta;FeatureOverrideType
 public;FeatureSymbology
 alpha;findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise
 alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -129,6 +132,8 @@ public;GeometricModel2dState
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d): Promise
+internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GraphicBranch 
@@ -186,6 +191,8 @@ internal;LockedStates
 public;LookViewTool 
 alpha;ManipulatorToolEvent
 internal;MapImageryTileTreeReference 
+internal;MapTileGeometryAttributionProvider
+internal;class MapTileLoaderBase 
 internal;class MapTileTreeReference 
 public;MarginPercent
 public;Marker 
@@ -232,8 +239,9 @@ internal;PingTestResult
 beta;Pixel
 beta;PlanarClassifierMap = Map
 internal;PlanarClassifiers
-public;class Plugin
-public;PluginAdmin
+beta;class Plugin
+beta;PluginAdmin
+beta;PluginLoadResults = Plugin | undefined | string | string[]
 alpha;PluginUiManager
 alpha;PluginUiProvider
 beta;Primitives
@@ -247,11 +255,11 @@ beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
+internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
 alpha;RangeEditorParams 
 public;RelativePosition
-public;RemoveMe
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -264,6 +272,7 @@ public;class RenderSystem
 public;RenderSystem
 beta;Options
 internal;class RenderTarget 
+beta;RenderTargetDebugControl
 internal;class RenderTextureDrape 
 public;RotateViewTool 
 alpha;RotationMode
@@ -287,6 +296,7 @@ public;SelectionSetEventType
 public;SelectionTool 
 public;SelectRemoveEvent
 public;SelectReplaceEvent
+alpha;SetupCameraTool 
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
@@ -326,6 +336,7 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;class TerrainProvider 
+internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
 internal;TextureDrapes
 internal;TextureImage
@@ -391,7 +402,6 @@ internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
-public;ViewportAnimator
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 
@@ -404,7 +414,10 @@ public;class ViewTool
 beta;ViewUndoEvent
 public;ViewUndoTool 
 public;WalkViewTool 
-internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object"
+internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth"
+internal;WebMapTileLoader 
+internal;WebMapTileProps 
+internal;WebMapTileTreeProps 
 internal;WheelEventProcessor
 public;WindowAreaTool 
 public;ZoomToOptions

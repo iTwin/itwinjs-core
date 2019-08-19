@@ -9,7 +9,7 @@ import * as React from "react";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, PanViewTool, RotateViewTool, SelectionTool, ViewToggleCameraTool, WalkViewTool,
-  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool,
+  WindowAreaTool, ZoomViewTool, ViewClipByPlaneTool, ViewUndoTool, ViewRedoTool,
   ViewClipDecorationProvider,
 } from "@bentley/imodeljs-frontend";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
@@ -17,6 +17,9 @@ import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
 import { CustomItemDef } from "./shared/CustomItemDef";
 import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
+import { BaseItemState } from "../ui-framework/shared/ItemDefBase";
+import { ContentViewManager } from "./content/ContentViewManager";
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -157,4 +160,41 @@ export class CoreTools {
     });
   }
 
+  // TODO - Need to provide a sync message that is fire when the Undo/Redo button needs to be refreshed in the
+  // active view.
+  public static get viewUndoCommand() {
+    return new ToolItemDef({
+      toolId: ViewUndoTool.toolId,
+      iconSpec: ViewUndoTool.iconSpec,
+      label: () => ViewUndoTool.flyover,
+      tooltip: () => ViewUndoTool.description,
+      execute: () => { IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView); },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          returnState.isEnabled = activeContentControl.viewport.isRedoPossible;
+        return returnState;
+      },
+    });
+  }
+
+  public static get viewRedoCommand() {
+    return new ToolItemDef({
+      toolId: ViewRedoTool.toolId,
+      iconSpec: ViewRedoTool.iconSpec,
+      label: () => ViewRedoTool.flyover,
+      tooltip: () => ViewRedoTool.description,
+      execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport)
+          returnState.isEnabled = activeContentControl.viewport.isRedoPossible;
+        return returnState;
+      },
+    });
+  }
 }

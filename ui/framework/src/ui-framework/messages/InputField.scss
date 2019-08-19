@@ -14,10 +14,6 @@
   display: flex;
   align-items: center;
 
-  .icon {
-    margin: 0 5px 0 0;
-  }
-
   .uifw-popup-message-inputField-content {
     min-width: 180px;
     max-width: 360px;
@@ -29,26 +25,37 @@
       align-items: center;
       display: flex;
       flex-direction: row;
-    }
 
-    .icon-status-warning {
-      color: $buic-foreground-warning;
-    }
+      >.uifw-popup-message-icon {
+        padding-left: 3px;
+        padding-right: 3px;
 
-    .icon-status-warning {
-      color: $buic-foreground-warning;
-    }
+        .icon-status-warning {
+          color: $buic-foreground-warning;
+        }
 
-    .icon-status-error {
-      color: $buic-foreground-alert;
-    }
+        .icon-status-warning {
+          color: $buic-foreground-warning;
+        }
 
-    .uifw-popup-message-brief {
-      @include uicore-text(body);
-    }
+        .icon-status-error {
+          color: $buic-foreground-alert;
+        }
+      }
 
-    .uifw-popup-message-detailed {
-      @include uicore-text(small);
+      .uifw-popup-message-text {
+        color: $buic-foreground-body;
+        padding-left: 3px;
+        padding-right: 3px;
+
+        .uifw-popup-message-brief {
+          @include uicore-text(body);
+        }
+
+        .uifw-popup-message-detailed {
+          @include uicore-text(small);
+        }
+      }
     }
   }
 

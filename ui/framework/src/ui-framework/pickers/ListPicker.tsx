@@ -5,15 +5,15 @@
 /** @module Picker */
 
 import * as React from "react";
-import { CommonProps, withOnOutsideClick } from "@bentley/ui-core";
-import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally, Size } from "@bentley/ui-ninezone";
+import { CommonProps, withOnOutsideClick, SizeProps } from "@bentley/ui-core";
+import { Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = withOnOutsideClick(withContainIn(Group));
+const ContainedGroup = withOnOutsideClick(withContainIn(Group), undefined, false);
 
 /** Enum for the list picker item type
  * @beta
@@ -44,7 +44,7 @@ export interface ListPickerProps {
   iconSpec?: string | React.ReactNode;
   setEnabled: (item: ListItem, enabled: boolean) => any;
   onExpanded?: (expand: boolean) => void;
-  onSizeKnown?: (size: Size) => void;
+  onSizeKnown?: (size: SizeProps) => void;
 }
 
 /** State for the [[ListPickerBase]] component

@@ -3,6 +3,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/approved-packages.schema.json",
   "packages": [
     {
+      "name": "@azure/storage-blob",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -39,6 +43,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/icons-generic",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@bentley/icons-generic-webfont",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -68,7 +76,7 @@
     },
     {
       "name": "@bentley/imodeljs-markup",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
@@ -168,7 +176,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "bunyan",
@@ -245,6 +253,10 @@
     {
       "name": "concurrently",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cors",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cpx",
@@ -423,6 +435,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "js-untar",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "jsdom",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
@@ -449,6 +465,10 @@
     {
       "name": "license-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "linkifyjs",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "lodash",
@@ -755,6 +775,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "tar",
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
       "name": "tooltip.js",
       "allowedCategories": [ "internal" ]
     },
@@ -876,7 +900,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "webpack-dev-server",

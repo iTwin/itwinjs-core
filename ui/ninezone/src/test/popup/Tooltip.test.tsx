@@ -5,7 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { offsetAndContainInContainer, SizeProps, Tooltip } from "../../ui-ninezone";
+import { SizeProps } from "@bentley/ui-core";
+import { offsetAndContainInContainer, Tooltip } from "../../ui-ninezone";
 import { createRect } from "../Utils";
 
 describe("<Tooltip />", () => {

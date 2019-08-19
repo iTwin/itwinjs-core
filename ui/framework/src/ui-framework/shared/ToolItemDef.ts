@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { ToolItemProps } from "./ItemProps";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 
@@ -25,5 +26,16 @@ export class ToolItemDef extends ActionButtonItemDef {
 
   public get id(): string {
     return this.toolId;
+  }
+
+  /** Create a ToolItemDef that will run a registered tool. */
+  public static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef {
+    return new ToolItemDef({
+      toolId: tool.toolId,
+      iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : "icon-placeholder",
+      label: () => tool.flyover,
+      tooltip: () => tool.description,
+      execute: () => { IModelApp.tools.run(tool.toolId, args); },
+    });
   }
 }

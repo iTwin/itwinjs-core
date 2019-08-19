@@ -429,7 +429,8 @@ export abstract class ViewState extends ElementState {
       let zBack = eyeToOrigin.z;              // Distance from eye to backplane.
       let zFront = zBack + zDelta;            // Distance from eye to frontplane.
 
-      if (enforceFrontToBackRatio && zFront / zBack < Viewport.nearScale24) {
+      const nearScale = IModelApp.renderSystem.supportsLogZBuffer ? ViewFrustum.nearScaleLog24 : ViewFrustum.nearScaleNonLog24;
+      if (enforceFrontToBackRatio && zFront / zBack < nearScale) {
         // In this case we are running up against the zBuffer resolution limitation (currently 24 bits).
         // Set back clipping plane at 10 kilometer which gives us a front clipping plane about 3 meters.
         // Decreasing the maximumBackClip (MicroStation uses 1 kilometer) will reduce the minimum front
@@ -440,7 +441,7 @@ export abstract class ViewState extends ElementState {
           eyeToOrigin.z = zBack;
         }
 
-        zFront = zBack * Viewport.nearScale24;
+        zFront = zBack * nearScale;
         zDelta = zFront - eyeToOrigin.z;
       }
 

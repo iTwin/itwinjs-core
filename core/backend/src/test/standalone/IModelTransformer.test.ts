@@ -2,21 +2,22 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Guid, Id64, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, LowAndHighXYZ, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, ExternalSourceAspectProps, FontType,
+  AuxCoordSystem2dProps, CategorySelectorProps, Code, CodeScopeSpec, ColorDef, ElementProps, FontType,
   GeometricElement2dProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps,
-  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec,
+  IModel, ModelSelectorProps, Placement3d, Placement3dProps, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, BisCodeSpec, ElementAspectProps, ModelProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as hash from "object-hash";
 import * as path from "path";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
-  Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect, FunctionalModel, FunctionalSchema,
-  GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalElement, PhysicalModel, PhysicalObject, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject,
+  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, BriefcaseManager, CategorySelector,
+  DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
+  FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelJsFs, IModelTransformer, InformationPartitionElement, InformationRecordModel, ModelSelector,
+  OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship, RelationshipProps, SpatialCategory, SubCategory, Subject, Model,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -24,15 +25,21 @@ import { KnownTestLocations } from "../KnownTestLocations";
 /** Specialization of IModelTransformer for testing */
 class TestIModelTransformer extends IModelTransformer {
   public numInsertElementCalls = 0;
+  public numInsertElementProvenanceCalls = 0;
   public numUpdateElementCalls = 0;
+  public numUpdateElementProvenanceCalls = 0;
   public numExcludedElementCalls = 0;
 
+  public numModelsInserted = 0;
+  public numModelsUpdated = 0;
   public numElementsInserted = 0;
   public numElementsUpdated = 0;
+  public numElementsDeleted = 0;
   public numElementsExcluded = 0;
 
   public numRelationshipsExcluded = 0;
   public numCodeSpecsExcluded = 0;
+  public numElementAspectsExcluded = 0;
 
   public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
     super(sourceDb, targetDb);
@@ -48,6 +55,8 @@ class TestIModelTransformer extends IModelTransformer {
     super.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
     super.excludeSubject("/Only in Source");
     super.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
+    super.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
+    super.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
   }
 
   /** Initialize some CodeSpec remapping rules for testing */
@@ -72,15 +81,27 @@ class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override insertElement to count calls */
-  protected insertElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+  protected insertElement(targetElementProps: ElementProps): Id64String {
     this.numInsertElementCalls++;
-    super.insertElement(targetElementProps, sourceAspectProps);
+    return super.insertElement(targetElementProps);
+  }
+
+  /** Override insertElementProvenance to count calls */
+  protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    this.numInsertElementProvenanceCalls++;
+    return super.insertElementProvenance(sourceElement, targetElementId);
   }
 
   /** Override updateElement to count calls */
-  protected updateElement(targetElementProps: ElementProps, sourceAspectProps: ExternalSourceAspectProps): void {
+  protected updateElement(targetElementProps: ElementProps): void {
     this.numUpdateElementCalls++;
-    super.updateElement(targetElementProps, sourceAspectProps);
+    super.updateElement(targetElementProps);
+  }
+
+  /** Override insertElementProvenance to count calls */
+  protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
+    this.numUpdateElementProvenanceCalls++;
+    return super.updateElementProvenance(sourceElement, targetElementId);
   }
 
   /** Override shouldExcludeElement to count calls and exclude all Element from the Functional schema */
@@ -105,18 +126,31 @@ class TestIModelTransformer extends IModelTransformer {
     super.onRelationshipExcluded(sourceRelationship);
   }
 
+  /** Count the number of ElementAspects excluded in this callback */
+  protected onElementAspectExcluded(sourceElementAspect: ElementAspect): void {
+    this.numElementAspectsExcluded++;
+    super.onElementAspectExcluded(sourceElementAspect);
+  }
+
   /** Count the number of Elements inserted in this callback */
-  protected onElementInserted(sourceElement: Element, targetElementIds: Id64Array): void {
-    this.numElementsInserted += targetElementIds.length;
-    targetElementIds.forEach((targetElementId: Id64String) => assert.isTrue(Id64.isValidId64(targetElementId)));
-    super.onElementInserted(sourceElement, targetElementIds);
+  protected onElementInserted(sourceElement: Element, targetElementProps: ElementProps): void {
+    this.numElementsInserted++;
+    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
+    super.onElementInserted(sourceElement, targetElementProps);
   }
 
   /** Count the number of Elements updated in this callback */
-  protected onElementUpdated(sourceElement: Element, targetElementIds: Id64Array): void {
-    this.numElementsUpdated += targetElementIds.length;
-    targetElementIds.forEach((targetElementId: Id64String) => assert.isTrue(Id64.isValidId64(targetElementId)));
-    super.onElementUpdated(sourceElement, targetElementIds);
+  protected onElementUpdated(sourceElement: Element, targetElementProps: ElementProps): void {
+    this.numElementsUpdated++;
+    assert.isTrue(Id64.isValidId64(targetElementProps.id!));
+    super.onElementUpdated(sourceElement, targetElementProps);
+  }
+
+  /** Count the number of Elements deleted in this callback */
+  protected onElementDeleted(targetElement: Element): void {
+    this.numElementsDeleted++;
+    assert.isTrue(Id64.isValidId64(targetElement.id));
+    super.onElementDeleted(targetElement);
   }
 
   /** Count the number of Elements excluded in this callback */
@@ -125,19 +159,56 @@ class TestIModelTransformer extends IModelTransformer {
     super.onElementExcluded(sourceElement);
   }
 
+  /** Count the number of Models inserted in this callback */
+  protected onModelInserted(sourceModel: Model, targetModelProps: ModelProps): void {
+    this.numModelsInserted++;
+    super.onModelInserted(sourceModel, targetModelProps);
+  }
+
+  /** Count the number of Models updated in this callback */
+  protected onModelUpdated(sourceModel: Model, targetModelProps: ModelProps): void {
+    this.numModelsUpdated++;
+    super.onModelUpdated(sourceModel, targetModelProps);
+  }
+
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected transformElement(sourceElement: Element): ElementProps[] {
-    const transformedElementProps: ElementProps[] = super.transformElement(sourceElement);
-    for (const targetElementProps of transformedElementProps) {
-      if (!targetElementProps.federationGuid) {
-        targetElementProps.federationGuid = Guid.createValue();
-      }
-      if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
-        targetElementProps.targetString = sourceElement.sourceString;
-        targetElementProps.targetDouble = sourceElement.sourceDouble;
-      }
+  protected transformElement(sourceElement: Element): ElementProps {
+    const targetElementProps: ElementProps = super.transformElement(sourceElement);
+    if (!targetElementProps.federationGuid) {
+      targetElementProps.federationGuid = Guid.createValue();
     }
-    return transformedElementProps;
+    if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
+      targetElementProps.targetString = sourceElement.sourceString;
+      targetElementProps.targetDouble = sourceElement.sourceDouble;
+    }
+    return targetElementProps;
+  }
+
+  /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
+  protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+    const targetElementAspectProps: ElementAspectProps = super.transformElementAspect(sourceElementAspect, targetElementId);
+    if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
+      targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
+      targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
+      targetElementAspectProps.sourceDouble = undefined;
+      targetElementAspectProps.targetString = targetElementAspectProps.sourceString;
+      targetElementAspectProps.sourceString = undefined;
+      targetElementAspectProps.targetLong = targetElementAspectProps.sourceLong; // Id64 value was already remapped by super.transformElementAspect()
+      targetElementAspectProps.sourceLong = undefined;
+      targetElementAspectProps.targetGuid = targetElementAspectProps.sourceGuid;
+      targetElementAspectProps.sourceGuid = undefined;
+    } else if ("TestTransformerSource:SourceMultiAspect" === sourceElementAspect.classFullName) {
+      targetElementAspectProps.classFullName = "TestTransformerTarget:TargetMultiAspect";
+      targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
+      targetElementAspectProps.sourceDouble = undefined;
+      targetElementAspectProps.targetString = targetElementAspectProps.sourceString;
+      targetElementAspectProps.sourceString = undefined;
+      targetElementAspectProps.targetLong = targetElementAspectProps.sourceLong; // Id64 value was already remapped by super.transformElementAspect()
+      targetElementAspectProps.sourceLong = undefined;
+      targetElementAspectProps.targetGuid = targetElementAspectProps.sourceGuid;
+      targetElementAspectProps.sourceGuid = undefined;
+    }
+    return targetElementAspectProps;
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
@@ -185,7 +256,7 @@ class TestDataManager {
     // Import desired target schemas
     const requestContext = new BackendRequestContext();
     const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
-    await this.targetDb.importSchema(requestContext, targetSchemaFileName);
+    await this.targetDb.importSchemas(requestContext, [targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = this.targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
     assert.isTrue(Id64.isValidId64(targetCodeSpecId));
@@ -207,7 +278,7 @@ class TestDataManager {
     this.sourceDb.saveChanges();
     BriefcaseManager.createStandaloneChangeSet(this.sourceDb.briefcase); // importSchema below will fail if this is not called to flush local changes
     const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
-    await this.sourceDb.importSchema(requestContext, sourceSchemaFileName);
+    await this.sourceDb.importSchemas(requestContext, [sourceSchemaFileName]);
     // Embed font
     if (Platform.platformName.startsWith("win")) {
       this.sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
@@ -217,12 +288,12 @@ class TestDataManager {
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     this.sourceDb.updateProjectExtents(projectExtents);
-    // Create CodeSpecs
+    // Insert CodeSpecs
     const codeSpecId1: Id64String = this.sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
     const codeSpecId2: Id64String = this.sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
-    // Create RepositoryModel structure
+    // Insert RepositoryModel structure
     const subjectId = Subject.insert(this.sourceDb, IModel.rootSubjectId, "Subject", "Subject description");
     assert.isTrue(Id64.isValidId64(subjectId));
     const sourceOnlySubjectId = Subject.insert(this.sourceDb, IModel.rootSubjectId, "Only in Source");
@@ -241,7 +312,7 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(documentListModelId));
     const drawingId = Drawing.insert(this.sourceDb, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValidId64(drawingId));
-    // Create DefinitionElements
+    // Insert DefinitionElements
     const modelSelectorId = ModelSelector.insert(this.sourceDb, definitionModelId, "PhysicalModels", [physicalModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId = TestDataManager.insertSpatialCategory(this.sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
@@ -267,7 +338,7 @@ class TestDataManager {
     };
     const auxCoordSystemId = this.sourceDb.elements.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
-    // Create PhysicalElements
+    // Insert PhysicalElements
     const physicalObjectProps1: GeometricElement3dProps = {
       classFullName: PhysicalObject.classFullName,
       model: physicalModelId,
@@ -300,6 +371,15 @@ class TestDataManager {
     };
     const physicalObjectId2: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps2);
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
+    const physicalObjectProps3: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject3",
+    };
+    const physicalObjectId3: Id64String = this.sourceDb.elements.insertElement(physicalObjectProps3);
+    assert.isTrue(Id64.isValidId64(physicalObjectId3));
     const sourcePhysicalElementProps: GeometricElement3dProps = {
       classFullName: "TestTransformerSource:SourcePhysicalElement",
       model: physicalModelId,
@@ -319,7 +399,54 @@ class TestDataManager {
     };
     const sourcePhysicalElementId: Id64String = this.sourceDb.elements.insertElement(sourcePhysicalElementProps);
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
-    // Create DrawingGraphics
+    // Insert ElementAspects
+    this.sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceUniqueAspect",
+      element: new ElementOwnsUniqueAspect(physicalObjectId1),
+      commonDouble: 1.1,
+      commonString: "Unique",
+      commonLong: physicalObjectId1,
+      sourceDouble: 11.1,
+      sourceString: "UniqueAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: Guid.createValue(),
+      extraString: "Extra",
+    });
+    this.sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      commonDouble: 2.2,
+      commonString: "Multi",
+      commonLong: physicalObjectId1,
+      sourceDouble: 22.2,
+      sourceString: "MultiAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: Guid.createValue(),
+      extraString: "Extra",
+    });
+    this.sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      commonDouble: 3.3,
+      commonString: "Multi",
+      commonLong: physicalObjectId1,
+      sourceDouble: 33.3,
+      sourceString: "MultiAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: Guid.createValue(),
+      extraString: "Extra",
+    });
+    this.sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceUniqueAspectToExclude",
+      element: new ElementOwnsUniqueAspect(physicalObjectId1),
+      description: "SourceUniqueAspect1",
+    });
+    this.sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspectToExclude",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      description: "SourceMultiAspect1",
+    });
+    // Insert DrawingGraphics
     const drawingGraphicProps: GeometricElement2dProps = {
       classFullName: DrawingGraphic.classFullName,
       model: drawingId,
@@ -336,7 +463,7 @@ class TestDataManager {
     assert.isTrue(Id64.isValidId64(drawingGraphicId));
     const drawingGraphicRepresentsId = DrawingGraphicRepresentsElement.insert(this.sourceDb, drawingGraphicId, physicalObjectId1);
     assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId));
-    // Create ViewDefinitions
+    // Insert ViewDefinitions
     const viewId = OrthographicViewDefinition.insert(this.sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
     this.sourceDb.views.setDefaultViewId(viewId);
@@ -344,7 +471,7 @@ class TestDataManager {
     const drawingViewId = DrawingViewDefinition.insert(this.sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
     assert.isTrue(Id64.isValidId64(drawingViewId));
     this.sourceDb.saveChanges();
-    // Create instance of SourceRelToExclude to test relationship exclusion by class
+    // Insert instance of SourceRelToExclude to test relationship exclusion by class
     const relationship1: Relationship = this.sourceDb.relationships.createInstance({
       classFullName: "TestTransformerSource:SourceRelToExclude",
       sourceId: spatialCategorySelectorId,
@@ -352,7 +479,7 @@ class TestDataManager {
     });
     const relationshipId1: Id64String = this.sourceDb.relationships.insertInstance(relationship1);
     assert.isTrue(Id64.isValidId64(relationshipId1));
-    // Create instance of RelWithProps to test relationship property remapping
+    // Insert instance of RelWithProps to test relationship property remapping
     const relationship2: Relationship = this.sourceDb.relationships.createInstance({
       classFullName: "TestTransformerSource:SourceRelWithProps",
       sourceId: spatialCategorySelectorId,
@@ -474,9 +601,11 @@ class TestDataManager {
     // PhysicalElement
     const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject2");
+    const physicalObjectId3: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject3");
     const physicalElementId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalElement1");
     this.assertTargetElement(physicalObjectId1);
     this.assertTargetElement(physicalObjectId2);
+    this.assertTargetElement(physicalObjectId3);
     this.assertTargetElement(physicalElementId1);
     const physicalObject1: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId1);
     const physicalObject2: PhysicalObject = this.targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
@@ -490,6 +619,33 @@ class TestDataManager {
     assert.equal(physicalElement1.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.extraString, "Property should have been dropped during transformation");
+    // ElementUniqueAspects
+    const targetUniqueAspects: ElementAspect[] = this.targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
+    assert.equal(targetUniqueAspects.length, 1);
+    assert.equal(targetUniqueAspects[0].commonDouble, 1.1);
+    assert.equal(targetUniqueAspects[0].commonString, "Unique");
+    assert.equal(targetUniqueAspects[0].commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(targetUniqueAspects[0].targetDouble, 11.1);
+    assert.equal(targetUniqueAspects[0].targetString, "UniqueAspect");
+    assert.equal(targetUniqueAspects[0].targetLong, physicalObjectId1, "Id should have been remapped");
+    // assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].targetGuid)); // WIP: bug with ElementAspects and Guid?
+    // ElementTargetAspects
+    const targetMultiAspects: ElementAspect[] = this.targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
+    assert.equal(targetMultiAspects.length, 2);
+    assert.equal(targetMultiAspects[0].commonDouble, 2.2);
+    assert.equal(targetMultiAspects[0].commonString, "Multi");
+    assert.equal(targetMultiAspects[0].commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(targetMultiAspects[0].targetDouble, 22.2);
+    assert.equal(targetMultiAspects[0].targetString, "MultiAspect");
+    assert.equal(targetMultiAspects[0].targetLong, physicalObjectId1, "Id should have been remapped");
+    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].targetGuid)); // WIP: bug with ElementAspects and Guid?
+    assert.equal(targetMultiAspects[1].commonDouble, 3.3);
+    assert.equal(targetMultiAspects[1].commonString, "Multi");
+    assert.equal(targetMultiAspects[1].commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(targetMultiAspects[1].targetDouble, 33.3);
+    assert.equal(targetMultiAspects[1].targetString, "MultiAspect");
+    assert.equal(targetMultiAspects[1].targetLong, physicalObjectId1, "Id should have been remapped");
+    // assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].targetGuid)); // WIP: bug with ElementAspects and Guid?
     // DrawingGraphic
     const drawingGraphicId: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "DrawingGraphic");
     this.assertTargetElement(drawingGraphicId);
@@ -558,7 +714,24 @@ class TestDataManager {
     relWithProps.sourceString += "-Updated";
     relWithProps.sourceDouble = 1.2;
     this.sourceDb.relationships.updateInstance(relWithProps);
+    // Update ElementAspect properties
+    const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.sourceDb, "PhysicalObject1");
+    const sourceUniqueAspects: ElementAspect[] = this.sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect");
+    assert.equal(sourceUniqueAspects.length, 1);
+    sourceUniqueAspects[0].commonString += "-Updated";
+    sourceUniqueAspects[0].sourceString += "-Updated";
+    this.sourceDb.elements.updateAspect(sourceUniqueAspects[0]);
+    const sourceMultiAspects: ElementAspect[] = this.sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceMultiAspect");
+    assert.equal(sourceMultiAspects.length, 2);
+    sourceMultiAspects[1].commonString += "-Updated";
+    sourceMultiAspects[1].sourceString += "-Updated";
+    this.sourceDb.elements.updateAspect(sourceMultiAspects[1]);
     this.sourceDb.saveChanges();
+    // delete PhysicalObject3
+    const physicalObjectId3: Id64String = TestDataManager.queryByUserLabel(this.sourceDb, "PhysicalObject3");
+    assert.isTrue(Id64.isValidId64(physicalObjectId3));
+    this.sourceDb.elements.deleteElement(physicalObjectId3);
+    assert.equal(Id64.invalid, TestDataManager.queryByUserLabel(this.sourceDb, "PhysicalObject3"));
   }
 
   public assertUpdatesInTargetDb(): void {
@@ -585,6 +758,32 @@ class TestDataManager {
     );
     assert.equal(relWithProps.targetString, "One-Updated");
     assert.equal(relWithProps.targetDouble, 1.2);
+    // assert ElementAspect properties
+    const physicalObjectId1: Id64String = TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject1");
+    const targetUniqueAspects: ElementAspect[] = this.targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
+    assert.equal(targetUniqueAspects.length, 1);
+    assert.equal(targetUniqueAspects[0].commonDouble, 1.1);
+    assert.equal(targetUniqueAspects[0].commonString, "Unique-Updated");
+    assert.equal(targetUniqueAspects[0].commonLong, physicalObjectId1);
+    assert.equal(targetUniqueAspects[0].targetDouble, 11.1);
+    assert.equal(targetUniqueAspects[0].targetString, "UniqueAspect-Updated");
+    assert.equal(targetUniqueAspects[0].targetLong, physicalObjectId1);
+    const targetMultiAspects: ElementAspect[] = this.targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
+    assert.equal(targetMultiAspects.length, 2);
+    assert.equal(targetMultiAspects[0].commonDouble, 2.2);
+    assert.equal(targetMultiAspects[0].commonString, "Multi");
+    assert.equal(targetMultiAspects[0].commonLong, physicalObjectId1);
+    assert.equal(targetMultiAspects[0].targetDouble, 22.2);
+    assert.equal(targetMultiAspects[0].targetString, "MultiAspect");
+    assert.equal(targetMultiAspects[0].targetLong, physicalObjectId1);
+    assert.equal(targetMultiAspects[1].commonDouble, 3.3);
+    assert.equal(targetMultiAspects[1].commonString, "Multi-Updated");
+    assert.equal(targetMultiAspects[1].commonLong, physicalObjectId1);
+    assert.equal(targetMultiAspects[1].targetDouble, 33.3);
+    assert.equal(targetMultiAspects[1].targetString, "MultiAspect-Updated");
+    assert.equal(targetMultiAspects[1].targetLong, physicalObjectId1);
+    // assert PhysicalObject3 was deleted
+    assert.equal(Id64.invalid, TestDataManager.queryByUserLabel(this.targetDb, "PhysicalObject3"));
   }
 }
 
@@ -609,20 +808,145 @@ describe("IModelTransformer", () => {
     testDataManager.targetDb.closeSnapshot();
   });
 
-  function countElements(iModelDb: IModelDb): number {
-    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
-      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
+  function createTeamIModel(teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {
+    const teamFile: string = path.join(KnownTestLocations.outputDir, `Team${teamName}.bim`);
+    if (IModelJsFs.existsSync(teamFile)) {
+      IModelJsFs.removeSync(teamFile);
+    }
+    const iModelDb: IModelDb = IModelDb.createSnapshot(teamFile, { rootSubject: { name: teamName } });
+    assert.exists(iModelDb);
+    const contextSubjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, "Context");
+    assert.isTrue(Id64.isValidId64(contextSubjectId));
+    const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, `Definition${teamName}`);
+    assert.isTrue(Id64.isValidId64(definitionModelId));
+    const spatialCategoryId = TestDataManager.insertSpatialCategory(iModelDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, `Physical${teamName}`);
+    assert.isTrue(Id64.isValidId64(physicalModelId));
+    const physicalObjectProps1: GeometricElement3dProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: `PhysicalObject${teamName}1`,
+      geom: TestDataManager.createBox(Point3d.create(1, 1, 1)),
+      placement: {
+        origin: teamOrigin,
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId1: Id64String = iModelDb.elements.insertElement(physicalObjectProps1);
+    assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    iModelDb.saveChanges();
+    return iModelDb;
+  }
+
+  function createSharedIModel(teamNames: string[]): IModelDb {
+    const iModelName: string = `Shared${teamNames.join("")}`;
+    const iModelFile: string = path.join(KnownTestLocations.outputDir, `${iModelName}.bim`);
+    if (IModelJsFs.existsSync(iModelFile)) {
+      IModelJsFs.removeSync(iModelFile);
+    }
+    const iModelDb: IModelDb = IModelDb.createSnapshot(iModelFile, { rootSubject: { name: iModelName } });
+    assert.exists(iModelDb);
+    teamNames.forEach((teamName: string) => {
+      const subjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, teamName);
+      assert.isTrue(Id64.isValidId64(subjectId));
+    });
+    return iModelDb;
+  }
+
+  function assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
+    const definitionPartitionId: Id64String = getTeamDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    const spatialCategoryId = getTeamSpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+    const physicalPartitionId: Id64String = getTeamPhysicalPartitionId(iModelDb, IModel.rootSubjectId, teamName);
+    getTeamPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, teamName, "1");
+  }
+
+  function assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
+    teamNames.forEach((teamName: string) => {
+      const subjectId: Id64String = getTeamSubjectId(iModelDb, teamName);
+      const definitionPartitionId: Id64String = getTeamDefinitionPartitionId(iModelDb, subjectId, teamName);
+      const spatialCategoryId = getTeamSpatialCategoryId(iModelDb, definitionPartitionId, teamName);
+      const physicalPartitionId: Id64String = getTeamPhysicalPartitionId(iModelDb, subjectId, teamName);
+      getTeamPhysicalElementId(iModelDb, physicalPartitionId, spatialCategoryId, teamName, "1");
     });
   }
 
-  function countExternalSourceAspects(iModelDb: IModelDb): number {
-    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ExternalSourceAspect.classFullName}`, (statement: ECSqlStatement): number => {
-      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
-    });
+  function getTeamSubjectId(iModelDb: IModelDb, teamName: string): Id64String {
+    const subjectId: Id64String = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, teamName))!;
+    assert.isTrue(Id64.isValidId64(subjectId));
+    return subjectId;
   }
 
-  function countRelationships(iModelDb: IModelDb): number {
-    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ElementRefersToElements.classFullName}`, (statement: ECSqlStatement): number => {
+  function getTeamDefinitionPartitionId(iModelDb: IModelDb, parentSubjectId: Id64String, teamName: string): Id64String {
+    const partitionCode: Code = DefinitionPartition.createCode(iModelDb, parentSubjectId, `Definition${teamName}`);
+    const partitionId: Id64String = iModelDb.elements.queryElementIdByCode(partitionCode)!;
+    assert.isTrue(Id64.isValidId64(partitionId));
+    return partitionId;
+  }
+
+  function getTeamSpatialCategoryId(iModelDb: IModelDb, modelId: Id64String, teamName: string): Id64String {
+    const categoryCode: Code = SpatialCategory.createCode(iModelDb, modelId, `SpatialCategory${teamName}`);
+    const categoryId: Id64String = iModelDb.elements.queryElementIdByCode(categoryCode)!;
+    assert.isTrue(Id64.isValidId64(categoryId));
+    return categoryId;
+  }
+
+  function getTeamPhysicalPartitionId(iModelDb: IModelDb, parentSubjectId: Id64String, teamName: string): Id64String {
+    const partitionCode: Code = PhysicalPartition.createCode(iModelDb, parentSubjectId, `Physical${teamName}`);
+    const partitionId: Id64String = iModelDb.elements.queryElementIdByCode(partitionCode)!;
+    assert.isTrue(Id64.isValidId64(partitionId));
+    return partitionId;
+  }
+
+  function getTeamPhysicalElementId(iModelDb: IModelDb, modelId: Id64String, categoryId: Id64String, teamName: string, suffix: string): Id64String {
+    const elementId: Id64String = TestDataManager.queryByUserLabel(iModelDb, `PhysicalObject${teamName}${suffix}`);
+    assert.isTrue(Id64.isValidId64(elementId));
+    const element: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(elementId);
+    assert.equal(element.model, modelId);
+    assert.equal(element.category, categoryId);
+    return elementId;
+  }
+
+  it.skip("should sync Team iModels into Shared", async () => {
+    const iModelA: IModelDb = createTeamIModel("A", Point3d.create(0, 0, 0), ColorDef.green);
+    const iModelB: IModelDb = createTeamIModel("B", Point3d.create(0, 10, 0), ColorDef.blue);
+    const iModelShared: IModelDb = createSharedIModel(["A", "B"]);
+
+    assertTeamIModelContents(iModelA, "A");
+    assertTeamIModelContents(iModelB, "B");
+
+    if (true) {
+      const subjectId: Id64String = getTeamSubjectId(iModelShared, "A");
+      const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
+      transformerA2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerA2S.excludeSubject("/Context");
+      transformerA2S.excludeElement(IModel.dictionaryId);
+      transformerA2S.importAll();
+      transformerA2S.dispose();
+      iModelShared.saveChanges("Imported A");
+    }
+
+    if (true) {
+      const subjectId: Id64String = getTeamSubjectId(iModelShared, "B");
+      const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
+      transformerB2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerB2S.excludeSubject("/Context");
+      transformerB2S.excludeElement(IModel.dictionaryId);
+      transformerB2S.importAll();
+      transformerB2S.dispose();
+      iModelShared.saveChanges("Imported B");
+      assertSharedIModelContents(iModelShared, ["A", "B"]);
+    }
+
+    iModelA.closeSnapshot();
+    iModelB.closeSnapshot();
+    iModelShared.closeSnapshot();
+  });
+
+  function count(iModelDb: IModelDb, classFullName: string): number {
+    return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
   }
@@ -677,7 +1001,7 @@ describe("IModelTransformer", () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDb: IModelDb = IModelDb.openSnapshot(sourceFileName);
-    const numSourceElements: number = countElements(sourceDb);
+    const numSourceElements: number = count(sourceDb, Element.classFullName);
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
     // create target iModel
@@ -692,7 +1016,7 @@ describe("IModelTransformer", () => {
     await transformer.importSchemas(new BackendRequestContext());
     transformer.importAll();
     transformer.dispose();
-    const numTargetElements: number = countElements(targetDb);
+    const numTargetElements: number = count(targetDb, Element.classFullName);
     assert.isAtLeast(numTargetElements, numSourceElements);
     // clean up
     sourceDb.closeSnapshot();
@@ -701,8 +1025,14 @@ describe("IModelTransformer", () => {
 
   it("should import", async () => {
     let numElementsExcluded: number;
+    let numElementAspectsExcluded: number;
     let numRelationshipExcluded: number;
-    const numSourceRelationships: number = countRelationships(testDataManager.sourceDb);
+    const numSourceUniqueAspects: number = count(testDataManager.sourceDb, ElementUniqueAspect.classFullName);
+    const numSourceMultiAspects: number = count(testDataManager.sourceDb, ElementMultiAspect.classFullName);
+    const numSourceRelationships: number = count(testDataManager.sourceDb, ElementRefersToElements.classFullName);
+    assert.isAbove(numSourceUniqueAspects, 0);
+    assert.isAbove(numSourceMultiAspects, 0);
+    assert.isAbove(numSourceRelationships, 0);
 
     if (true) { // initial import
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
@@ -710,25 +1040,37 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
+      assert.isAbove(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.isAbove(transformer.numElementsInserted, 0);
+      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
       assert.isAbove(transformer.numElementsUpdated, 0);
+      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
+      assert.equal(transformer.numElementsDeleted, 0);
       assert.isAbove(transformer.numElementsExcluded, 0);
+      assert.isAbove(transformer.numElementAspectsExcluded, 0);
       assert.equal(transformer.numElementsInserted, transformer.numInsertElementCalls);
       assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementCalls);
       assert.equal(transformer.numElementsExcluded, transformer.numExcludedElementCalls);
-      assert.isAtLeast(countRelationships(testDataManager.targetDb), 1);
+      assert.isAtLeast(count(testDataManager.targetDb, ElementRefersToElements.classFullName), 1);
       numElementsExcluded = transformer.numElementsExcluded;
+      numElementAspectsExcluded = transformer.numElementAspectsExcluded;
       numRelationshipExcluded = transformer.numRelationshipsExcluded;
       testDataManager.targetDb.saveChanges();
       testDataManager.assertTargetDbContents();
+      transformer.dispose();
     }
 
-    const numTargetElements: number = countElements(testDataManager.targetDb);
-    const numTargetAspects: number = countExternalSourceAspects(testDataManager.targetDb);
-    const numTargetRelationships: number = countRelationships(testDataManager.targetDb);
+    const numTargetElements: number = count(testDataManager.targetDb, Element.classFullName);
+    const numTargetUniqueAspects: number = count(testDataManager.targetDb, ElementUniqueAspect.classFullName);
+    const numTargetMultiAspects: number = count(testDataManager.targetDb, ElementMultiAspect.classFullName);
+    const numTargetExternalSourceAspects: number = count(testDataManager.targetDb, ExternalSourceAspect.classFullName);
+    const numTargetRelationships: number = count(testDataManager.targetDb, ElementRefersToElements.classFullName);
+    assert.isAbove(numTargetUniqueAspects, 0);
+    assert.isAbove(numTargetMultiAspects, 0);
+    assert.equal(numSourceUniqueAspects + numSourceMultiAspects, numTargetUniqueAspects + numTargetMultiAspects + numElementAspectsExcluded - numTargetExternalSourceAspects);
     assert.equal(numSourceRelationships, numTargetRelationships + numRelationshipExcluded);
 
     if (true) { // second import with no changes to source, should be a no-op
@@ -738,16 +1080,21 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
+      assert.equal(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
       assert.equal(transformer.numElementsUpdated, 0);
+      assert.equal(transformer.numElementsDeleted, 0);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       assert.equal(transformer.numInsertElementCalls, 0);
+      assert.equal(transformer.numInsertElementProvenanceCalls, 0);
       assert.equal(transformer.numUpdateElementCalls, 0);
+      assert.equal(transformer.numUpdateElementProvenanceCalls, 0);
       assert.equal(transformer.numExcludedElementCalls, numElementsExcluded);
-      assert.equal(numTargetElements, countElements(testDataManager.targetDb), "Second import should not add elements");
-      assert.equal(numTargetAspects, countExternalSourceAspects(testDataManager.targetDb), "Second import should not add aspects");
-      assert.equal(numTargetRelationships, countRelationships(testDataManager.targetDb), "Second import should not add relationships");
+      assert.equal(numTargetElements, count(testDataManager.targetDb, Element.classFullName), "Second import should not add elements");
+      assert.equal(numTargetExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
+      assert.equal(numTargetRelationships, count(testDataManager.targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
+      transformer.dispose();
     }
 
     if (true) { // update source db, then import again
@@ -758,15 +1105,22 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
       const transformer = new TestIModelTransformer(testDataManager.sourceDb, testDataManager.targetDb);
       transformer.importAll();
-      transformer.dispose();
+      assert.equal(transformer.numModelsInserted, 0);
+      assert.equal(transformer.numModelsUpdated, 0);
       assert.equal(transformer.numElementsInserted, 0);
-      assert.equal(transformer.numElementsUpdated, 2);
+      assert.equal(transformer.numElementsInserted, transformer.numInsertElementProvenanceCalls);
+      assert.equal(transformer.numElementsUpdated, 3);
+      assert.equal(transformer.numElementsUpdated, transformer.numUpdateElementProvenanceCalls);
+      assert.equal(transformer.numElementsDeleted, 1);
       assert.equal(transformer.numElementsExcluded, numElementsExcluded);
       testDataManager.targetDb.saveChanges();
       testDataManager.assertUpdatesInTargetDb();
-      assert.equal(numTargetElements, countElements(testDataManager.targetDb), "Third import should not add elements");
-      assert.equal(numTargetAspects, countExternalSourceAspects(testDataManager.targetDb), "Third import should not add aspects");
-      assert.equal(numTargetRelationships, countRelationships(testDataManager.targetDb), "Third import should not add relationships");
+      const expectedNumTargetElements: number = numTargetElements + transformer.numElementsInserted - transformer.numElementsDeleted;
+      const expectedNumExternalSourceAspects: number = numTargetExternalSourceAspects + transformer.numElementsInserted - transformer.numElementsDeleted;
+      assert.equal(expectedNumTargetElements, count(testDataManager.targetDb, Element.classFullName), "Third import should not add elements");
+      assert.equal(expectedNumExternalSourceAspects, count(testDataManager.targetDb, ExternalSourceAspect.classFullName), "Third import should not add aspects");
+      assert.equal(numTargetRelationships, count(testDataManager.targetDb, ElementRefersToElements.classFullName), "Third import should not add relationships");
+      transformer.dispose();
     }
   });
 });

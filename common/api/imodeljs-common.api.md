@@ -289,6 +289,10 @@ export interface BackgroundMapProps {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
+    // @alpha
+    terrainSettings?: TerrainProps;
+    transparency?: number | false;
+    useDepthBuffer?: boolean;
 }
 
 // @beta
@@ -296,7 +300,6 @@ export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 // @beta
 export class BackgroundMapSettings {
-    constructor(providerName?: BackgroundMapProviderName, mapType?: BackgroundMapType, groundBias?: number, applyTerrain?: boolean);
     readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
     // (undocumented)
@@ -306,8 +309,13 @@ export class BackgroundMapSettings {
     readonly groundBias: number;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
+    // @alpha
+    readonly terrainSettings: TerrainSettings;
     // (undocumented)
     toJSON(): BackgroundMapProps;
+    readonly transparency: number | false;
+    readonly transparencyOverride: number | undefined;
+    readonly useDepthBuffer: boolean;
 }
 
 // @public
@@ -564,14 +572,32 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
+export interface ChangeData {
+    // (undocumented)
+    changedElements: ChangedElements;
+    // (undocumented)
+    changedModels: ChangedModels;
+}
+
+// @internal (undocumented)
 export interface ChangedElements {
     // (undocumented)
     classIds: Id64String[];
     // (undocumented)
     elements: Id64String[];
     // (undocumented)
+    modelIds?: Id64String[];
+    // (undocumented)
     opcodes: number[];
+}
+
+// @internal (undocumented)
+export interface ChangedModels {
+    // (undocumented)
+    bboxes: AxisAlignedBox3dProps[];
+    // (undocumented)
+    modelIds: Id64String[];
 }
 
 // @public
@@ -659,7 +685,9 @@ export enum CloudStorageProvider {
     // (undocumented)
     Amazon = 1,
     // (undocumented)
-    Azure = 0
+    Azure = 0,
+    // (undocumented)
+    External = 3
 }
 
 // @beta (undocumented)
@@ -1291,7 +1319,7 @@ export type DPoint2dProps = number[];
 // @public
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
-    static createFromCartographicOrigin(origin: Cartographic): EcefLocation;
+    static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
@@ -3039,6 +3067,10 @@ export class OctEncodedNormal {
     constructor(val: number);
     // (undocumented)
     decode(): Vector3d | undefined;
+    // (undocumented)
+    static decodeValue(val: number, result?: Vector3d): Vector3d;
+    // (undocumented)
+    static encode(vec: XYAndZ): number;
     // (undocumented)
     static fromVector(val: XYAndZ): OctEncodedNormal;
     // (undocumented)
@@ -4816,6 +4848,52 @@ export interface SubCategoryProps extends ElementProps {
 export interface SubjectProps extends ElementProps {
     // (undocumented)
     description?: string;
+}
+
+// @alpha
+export enum TerrainHeightOriginMode {
+    // (undocumented)
+    Geodetic = 0,
+    // (undocumented)
+    Geoid = 1,
+    // (undocumented)
+    Ground = 2
+}
+
+// @alpha
+export interface TerrainProps {
+    applyLighting?: boolean;
+    exaggeration?: number;
+    heightOrigin?: number;
+    heightOriginMode?: TerrainHeightOriginMode;
+    providerName?: string;
+}
+
+// @alpha
+export type TerrainProviderName = "CesiumWorldTerrain";
+
+// @alpha
+export class TerrainSettings {
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    readonly applyLighting: boolean;
+    clone(changedProps?: TerrainProps): TerrainSettings;
+    // (undocumented)
+    equals(other: TerrainSettings): boolean;
+    equalsJSON(json?: BackgroundMapProps): boolean;
+    readonly exaggeration: number;
+    // (undocumented)
+    static fromJSON(json?: TerrainProps): TerrainSettings;
+    readonly heightOrigin: number;
+    readonly heightOriginMode: TerrainHeightOriginMode;
+    readonly providerName: TerrainProviderName;
+    // (undocumented)
+    toJSON(): {
+        providerName: "CesiumWorldTerrain";
+        exaggeration: number;
+        applyLightng: boolean;
+        heightOrigin: number;
+        heightOriginMode: TerrainHeightOriginMode;
+    };
 }
 
 // @internal

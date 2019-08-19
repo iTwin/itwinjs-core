@@ -24,7 +24,7 @@ function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
     const basisFunctions = bezier.basisFunctions(f);
     const sum = NumberArray.sum(basisFunctions);
-    ck.testCoordinate(1.0, sum, "covnex sum");
+    ck.testCoordinate(1.0, sum, "convex sum");
     const y = bezier.evaluate(f);
     const left = bezier.createPeer();
     const right = bezier.createPeer();
@@ -46,11 +46,14 @@ describe("Bezier.HelloWorld", () => {
   it("Bezier.HelloWorld", () => {
     const ck = new Checker();
     const bez2 = new Order2Bezier(1, 2);
+    const bez2a = new Order2Bezier(4, 3);
     testBezier(ck, bez2);
     const bez3 = new Order3Bezier(1, 2, 5);
     testBezier(ck, bez3);
-
     const bez4 = new Order4Bezier(1, 2, 5, 6);
+    ck.testFalse(bez2a.subdivide(0.1, bez2, bez3), "mismatched subdivide order");
+    ck.testFalse(bez2a.subdivide(0.1, bez3, bez2), "mismatched subdivide order");
+    ck.testUndefined (BezierCoffs.maxAbsDiff (bez2, bez3), "mismatch order in maxAbsDiff");
     testBezier(ck, bez4);
 
     const bez5 = new Order5Bezier(1, 2, 5, 6, 8);
@@ -130,7 +133,7 @@ function testQuadrature(ck: Checker, xA: number, xB: number, xx: Float64Array, w
       const isSame = Geometry.isSameCoordinate(trueIntegral, approximateIntegral);
       if (Checker.noisy.gaussQuadrature) {
         if (p === maxDegree + 1) console.log("    ---------------  end of expected precise integrals");
-        console.log("     (p " + p + ") (abserr " + (approximateIntegral - trueIntegral) + ") (relerrr " + ((approximateIntegral - trueIntegral) / trueIntegral) + ")");
+        console.log("     (p " + p + ") (absErr " + (approximateIntegral - trueIntegral) + ") (relErr " + ((approximateIntegral - trueIntegral) / trueIntegral) + ")");
       }
       ck.testBoolean(p <= maxDegree, isSame, "Quadrature Exactness", p, maxDegree, trueIntegral, approximateIntegral);
     }
@@ -312,9 +315,9 @@ describe("ImplicitSurface", () => {
     Point3d.create(0, 0, 9),
     Point3d.create(rA, 0, 0)]) {
       const w = 2.0;
-      const fxyz = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
+      const fOfX = torus.evaluateImplicitFunctionXYZ(xyz.x, xyz.y, xyz.z);
       const f = torus.evaluateImplicitFunctionPoint(xyz);
-      ck.testCoordinate(f, fxyz, "torus evaluation variant");
+      ck.testCoordinate(f, fOfX, "torus evaluation variant");
       ck.testCoordinate(
         f * w * w * w * w,
         torus.evaluateImplicitFunctionXYZW(w * xyz.x, w * xyz.y, w * xyz.z, w),

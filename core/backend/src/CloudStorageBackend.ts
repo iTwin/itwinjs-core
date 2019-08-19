@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@bentley/imodeljs-common";
-import * as as from "azure-storage";
+import * as Azure from "@azure/storage-blob";
 import { PassThrough, Readable } from "stream";
+import * as zlib from "zlib";
 
 /** @beta */
 export interface CloudStorageServiceCredentials {
-  service: "azure";
+  service: "azure" | "external";
   account: string;
   accessKey: string;
 }
@@ -17,6 +18,7 @@ export interface CloudStorageServiceCredentials {
 export interface CloudStorageUploadOptions {
   type?: string;
   cacheControl?: string;
+  contentEncoding?: "gzip";
 }
 
 /** @beta */
@@ -35,7 +37,8 @@ export abstract class CloudStorageService {
 
 /** @beta */
 export class AzureBlobStorage extends CloudStorageService {
-  private _service: as.BlobService;
+  private _service: Azure.ServiceURL;
+  private _credential: Azure.SharedKeyCredential;
 
   public constructor(credentials: CloudStorageServiceCredentials) {
     super();
@@ -44,148 +47,99 @@ export class AzureBlobStorage extends CloudStorageService {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
 
-    this._service = as.createBlobService(credentials.account, credentials.accessKey);
+    this._credential = new Azure.SharedKeyCredential(credentials.account, credentials.accessKey);
+    const options: Azure.INewPipelineOptions = {};
+    const pipeline = Azure.StorageURL.newPipeline(this._credential, options);
+    this._service = new Azure.ServiceURL(`https://${credentials.account}.blob.core.windows.net`, pipeline);
   }
 
   public readonly id = CloudStorageProvider.Azure;
 
   public obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl {
-    const policy: as.common.SharedAccessPolicy = {
-      AccessPolicy: {
-        Permissions: as.BlobUtilities.SharedAccessPermissions.READ + as.BlobUtilities.SharedAccessPermissions.LIST,
-        Expiry: expiry,
-      },
+    const policy: Azure.IBlobSASSignatureValues = {
+      containerName: id.name,
+      permissions: Azure.ContainerSASPermissions.parse("rl").toString(),
+      expiryTime: expiry,
     };
 
     if (clientIp && clientIp !== "localhost" && clientIp !== "127.0.0.1" && clientIp !== "::1") {
-      policy.AccessPolicy.IPAddressOrRange = clientIp;
+      policy.ipRange = { start: clientIp };
     }
 
-    const token = this._service.generateSharedAccessSignature(id.name, "", policy);
+    const token = Azure.generateBlobSASQueryParameters(policy, this._credential);
 
     const url: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
       valid: 0,
       expires: expiry.getTime(),
-      url: this._service.getUrl(id.name, undefined, token),
+      url: `https://${this._credential.accountName}.blob.core.windows.net/${id.name}?${token.toString()}`,
     };
 
     return url;
   }
 
   public async ensureContainer(name: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this._service.createContainerIfNotExists(name, (error, result, response) => {
-        if (error || !response.isSuccessful) {
-          const reason = {
-            createContainerFailed: true,
-            containerName: name,
-            requestId: result.requestId,
-            responseStatus: response.statusCode,
-            responseError: undefined as any,
-            responseBody: "",
-          };
-
-          if (response.error) {
-            if (response.error instanceof Error) {
-              reason.responseError = {
-                name: response.error.name,
-                message: response.error.message,
-              };
-            } else {
-              reason.responseError = response.error;
-            }
+    return new Promise(async (resolve, reject) => {
+      try {
+        const container = Azure.ContainerURL.fromServiceURL(this._service, name);
+        await container.create(Azure.Aborter.none);
+        return resolve();
+      } catch (maybeErr) {
+        try {
+          const err = maybeErr as Azure.RestError;
+          if (err.statusCode === 409 && err.body.code === "ContainerAlreadyExists") {
+            return resolve();
           }
+        } catch { }
 
-          if (response.body) {
-            if (Buffer.isBuffer(response.body)) {
-              reason.responseBody = response.body.toString();
-            } else {
-              reason.responseBody = response.body;
-            }
-          }
-
-          reject(reason);
+        if (typeof (maybeErr) !== "undefined" && maybeErr) {
+          return reject(maybeErr);
         }
 
-        // _result indicates whether container already existed...irrelevant to semantics of our API
-
-        resolve();
-      });
+        return reject(new IModelError(BentleyStatus.ERROR, `Unable to create container "${name}".`));
+      }
     });
   }
 
   public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string> {
     return new Promise(async (resolve, reject) => {
-      const source = new PassThrough();
-      source.end(data);
-
-      const createOptions: as.BlobService.CreateBlockBlobRequestOptions = {
-        contentSettings: {
-          contentType: options ? options.type : "application/octet-stream",
-          cacheControl: options ? options.cacheControl : "private, max-age=31536000, immutable",
-        },
-      };
-
       try {
         await this.ensureContainer(container);
 
-        this._service.createBlockBlobFromStream(container, name, source, data.byteLength, createOptions, (error, result, response) => {
-          if (error || !response.isSuccessful) {
-            const reason = {
-              uploadTileFailed: true,
-              containerName: container,
-              tileId: name,
-              tileSize: data.byteLength,
-              requestId: result.requestId,
-              responseStatus: response.statusCode,
-              responseError: undefined as any,
-              responseBody: "",
-            };
+        const containerUrl = Azure.ContainerURL.fromServiceURL(this._service, container);
+        const blob = Azure.BlobURL.fromContainerURL(containerUrl, name);
+        const blocks = Azure.BlockBlobURL.fromBlobURL(blob);
 
-            if (response.error) {
-              if (response.error instanceof Error) {
-                reason.responseError = {
-                  name: response.error.name,
-                  message: response.error.message,
-                };
-              } else {
-                reason.responseError = response.error;
-              }
-            }
-
-            if (response.body) {
-              if (Buffer.isBuffer(response.body)) {
-                reason.responseBody = response.body.toString();
-              } else {
-                reason.responseBody = response.body;
-              }
-            }
-
-            reject(reason);
-          }
-
-          resolve(result.etag);
-        });
-      } catch (error) {
-        const reason = {
-          threwWhileUploadingTile: true,
-          containerName: container,
-          tileId: name,
-          tileSize: data.byteLength,
-          error: undefined as any,
+        const blobOptions: Azure.IUploadStreamToBlockBlobOptions = {
+          blobHTTPHeaders: {
+            blobContentType: (options && options.type) ? options.type : "application/octet-stream",
+            blobCacheControl: (options && options.cacheControl) ? options.cacheControl : "private, max-age=31536000, immutable",
+          },
         };
 
-        if (error instanceof Error) {
-          reason.error = {
-            name: error.name,
-            message: error.message,
-          };
+        const dataStream = new PassThrough();
+        dataStream.end(data);
+
+        let source: Readable;
+
+        if (options && options.contentEncoding === "gzip") {
+          blobOptions.blobHTTPHeaders!.blobContentEncoding = options.contentEncoding;
+          const compressor = zlib.createGzip();
+          source = dataStream.pipe(compressor);
         } else {
-          reason.error = error;
+          source = dataStream;
         }
 
-        reject(reason);
+        const blockSize = 100 * 1024 * 1024;
+        const concurrency = 1;
+        const result = await Azure.uploadStreamToBlockBlob(Azure.Aborter.none, source, blocks, blockSize, concurrency, blobOptions);
+        return resolve(result.eTag);
+      } catch (maybeErr) {
+        if (typeof (maybeErr) !== "undefined" && maybeErr) {
+          return reject(maybeErr);
+        }
+
+        return reject(new IModelError(BentleyStatus.ERROR, `Unable to upload "${name}".`));
       }
     });
   }

@@ -528,6 +528,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
     const points = this.getClipPoints(ev);
     if (points.length < 2)
       return;
@@ -551,7 +553,6 @@ export class ViewClipByShapeTool extends ViewClipTool {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -640,6 +641,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
     const range = Range3d.create();
     const transform = Transform.createIdentity();
     if (!this.getClipRange(range, transform, ev))
@@ -660,7 +663,6 @@ export class ViewClipByRangeTool extends ViewClipTool {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (undefined !== this._corner && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -1031,7 +1033,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   protected _suspendDecorator = false;
   protected _removeViewCloseListener?: () => void;
 
-  public constructor(protected _clipView: Viewport, protected _clipEventHandler?: ViewClipEventHandler) {
+  public constructor(protected _clipView: ScreenViewport, protected _clipEventHandler?: ViewClipEventHandler) {
     super(_clipView.iModel);
     if (!this.getClipData())
       return;
@@ -1518,13 +1520,13 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     }
   }
 
-  public static get(vp: Viewport): ViewClipDecoration | undefined {
+  public static get(vp: ScreenViewport): ViewClipDecoration | undefined {
     if (undefined === ViewClipDecoration._decorator || vp !== ViewClipDecoration._decorator._clipView)
       return undefined;
     return ViewClipDecoration._decorator;
   }
 
-  public static create(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined {
+  public static create(vp: ScreenViewport, clipEventHandler?: ViewClipEventHandler): string | undefined {
     if (undefined !== ViewClipDecoration._decorator)
       ViewClipDecoration.clear();
     if (!ViewClipTool.hasClip(vp))
@@ -1540,7 +1542,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     ViewClipDecoration._decorator = undefined;
   }
 
-  public static toggle(vp: Viewport, clipEventHandler?: ViewClipEventHandler): string | undefined {
+  public static toggle(vp: ScreenViewport, clipEventHandler?: ViewClipEventHandler): string | undefined {
     let clipId: string | undefined;
     if (undefined === ViewClipDecoration._decorator)
       clipId = ViewClipDecoration.create(vp, clipEventHandler);
@@ -1980,34 +1982,34 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
   public selectOnCreate(): boolean { return this.selectDecorationOnCreate; }
   public clearOnDeselect(): boolean { return this.clearDecorationOnDeselect; }
 
-  public onNewClip(viewport: Viewport): void {
+  public onNewClip(viewport: ScreenViewport): void {
     ViewClipDecoration.create(viewport, this);
     if (undefined !== this._settings)
       this._settings.clearActiveClipId(viewport);
     this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.New, this);
   }
 
-  public onNewClipPlane(viewport: Viewport): void {
+  public onNewClipPlane(viewport: ScreenViewport): void {
     ViewClipDecoration.create(viewport, this);
     if (undefined !== this._settings)
       this._settings.clearActiveClipId(viewport);
     this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.NewPlane, this);
   }
 
-  public onModifyClip(viewport: Viewport): void {
+  public onModifyClip(viewport: ScreenViewport): void {
     if (undefined !== this._settings)
       this._settings.modifiedActiveClip(viewport);
     this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.Modify, this);
   }
 
-  public onClearClip(viewport: Viewport): void {
+  public onClearClip(viewport: ScreenViewport): void {
     ViewClipDecoration.clear();
     if (undefined !== this._settings)
       this._settings.clearActiveClipId(viewport);
     this.onActiveClipChanged.raiseEvent(viewport, ClipEventType.Clear, this);
   }
 
-  public onActivateClip(viewport: Viewport, interactive: boolean): void {
+  public onActivateClip(viewport: ScreenViewport, interactive: boolean): void {
     if (interactive)
       ViewClipDecoration.create(viewport, this);
     else
@@ -2025,9 +2027,9 @@ export class ViewClipDecorationProvider implements ViewClipEventHandler {
     return true;
   }
 
-  public showDecoration(vp: Viewport): void { ViewClipDecoration.create(vp, this); }
+  public showDecoration(vp: ScreenViewport): void { ViewClipDecoration.create(vp, this); }
   public hideDecoration(): void { ViewClipDecoration.clear(); }
-  public toggleDecoration(vp: Viewport): void { ViewClipDecoration.toggle(vp, this); }
+  public toggleDecoration(vp: ScreenViewport): void { ViewClipDecoration.toggle(vp, this); }
 
   public static create(): ViewClipDecorationProvider {
     if (undefined === ViewClipDecorationProvider._provider) {

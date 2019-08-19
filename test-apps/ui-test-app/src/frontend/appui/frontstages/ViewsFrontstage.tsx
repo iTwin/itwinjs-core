@@ -53,9 +53,12 @@ import {
   CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
+  RealityDataPickerControl,
   PopupButton,
   CursorPopupManager,
   CursorPopupContent,
+  VisibilityWidget,
+  ZoneLocation,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -82,7 +85,7 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
 
-import { SvgSprite, ScrollView } from "@bentley/ui-core";
+import { SvgSprite, ScrollView, Point } from "@bentley/ui-core";
 import rotateIcon from "../icons/rotate.svg";
 
 export class ViewsFrontstage extends FrontstageProvider {
@@ -122,7 +125,7 @@ export class ViewsFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage id="ViewsFrontstage"
-        defaultTool={AppTools.appSelectElementCommand}
+        defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         topLeft={
@@ -135,7 +138,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         topCenter={
           <Zone
             widgets={[
-              <Widget isToolSettings={true} />,
+              <Widget isToolSettings={true} defaultState={WidgetState.Open} />,
             ]}
           />
         }
@@ -172,6 +175,10 @@ export class ViewsFrontstage extends FrontstageProvider {
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
           />
         }
@@ -193,7 +200,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={[
               <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                 control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
@@ -368,7 +375,7 @@ class FrontstageToolWidget extends React.Component {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearSelection",
       execute: () => {
-        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
@@ -446,7 +453,7 @@ class FrontstageToolWidget extends React.Component {
   private get _restoreContentLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", betaBadge: true, execute: async () => {
-        const iModelConnection = SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection;
+        const iModelConnection = UiFramework.getIModelConnection();
         if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
           // Parse SavedViewLayoutProps
           const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
@@ -480,9 +487,39 @@ class FrontstageToolWidget extends React.Component {
             {FrontstageManager.activeToolSettingsNode}
           </CursorPopupContent>
         );
-        CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, 20, RelativePosition.TopRight);
+        // CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
+        CursorPopupManager.open("test1", content, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 10);
         CursorInformation.onCursorUpdatedEvent.addListener(this._handleCursorUpdated);
         document.addEventListener("keyup", this._handleCursorPopupKeypress);
+      },
+    });
+  }
+
+  private get _addCursorPopups() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.addCursorPopups", execute: async () => {
+        CursorPopupManager.open("testR1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 10);
+        CursorPopupManager.open("testBR1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 10);
+        CursorPopupManager.open("testB1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 10);
+        CursorPopupManager.open("testBL1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 10);
+        CursorPopupManager.open("testL1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 10);
+        CursorPopupManager.open("testTL1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 10);
+        CursorPopupManager.open("testT1", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 10);
+      },
+    });
+  }
+
+  private get _moreCursorPopups() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.moreCursorPopups", execute: async () => {
+        CursorPopupManager.open("testTR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopRight, 11);
+        CursorPopupManager.open("testR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Right, 11);
+        CursorPopupManager.open("testBR2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomRight, 11);
+        CursorPopupManager.open("testB2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 85), RelativePosition.Bottom, 11);
+        CursorPopupManager.open("testBL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.BottomLeft, 11);
+        CursorPopupManager.open("testL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(40, 20), RelativePosition.Left, 11);
+        CursorPopupManager.open("testTL2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 20), RelativePosition.TopLeft, 11);
+        CursorPopupManager.open("testT2", <CursorPopupContent>Hello World!</CursorPopupContent>, CursorInformation.cursorPosition, new Point(20, 100), RelativePosition.Top, 11);
       },
     });
   }
@@ -497,7 +534,7 @@ class FrontstageToolWidget extends React.Component {
 
   private _handleCursorUpdated(args: CursorUpdatedEventArgs) {
     // const relativePosition = CursorInformation.getRelativePositionFromCursorDirection(args.direction);
-    CursorPopupManager.updatePosition(args.newPt, 20, RelativePosition.TopRight);
+    CursorPopupManager.updatePosition(args.newPt);
   }
 
   private _handleCursorPopupKeypress = (event: any) => {
@@ -510,6 +547,21 @@ class FrontstageToolWidget extends React.Component {
 
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
+    CursorPopupManager.close("testTR2", false);
+    CursorPopupManager.close("testR1", false);
+    CursorPopupManager.close("testR2", false);
+    CursorPopupManager.close("testBR1", false);
+    CursorPopupManager.close("testBR2", false);
+    CursorPopupManager.close("testB1", false);
+    CursorPopupManager.close("testB2", false);
+    CursorPopupManager.close("testBL1", false);
+    CursorPopupManager.close("testBL2", false);
+    CursorPopupManager.close("testL1", false);
+    CursorPopupManager.close("testL2", false);
+    CursorPopupManager.close("testTL1", false);
+    CursorPopupManager.close("testTL2", false);
+    CursorPopupManager.close("testT1", false);
+    CursorPopupManager.close("testT2", false);
     CursorInformation.onCursorUpdatedEvent.removeListener(this._handleCursorUpdated);
     document.removeEventListener("keyup", this._handleCursorPopupKeypress);
   }
@@ -590,7 +642,7 @@ class FrontstageToolWidget extends React.Component {
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
-      AppTools.appSelectElementCommand,
+      CoreTools.selectElementCommand,
       this._openNestedAnimationStage,
       new ToolItemDef({
         toolId: "Measure.Points", iconSpec: "icon-measure-distance", labelKey: "SampleApp:tools.Measure.Points.flyover",
@@ -650,7 +702,7 @@ class FrontstageToolWidget extends React.Component {
         items: [
           AppTools.tool1, AppTools.tool2, this._groupItemDef,
           this._saveContentLayout, this._restoreContentLayout,
-          this._startCursorPopup, this._endCursorPopup,
+          this._startCursorPopup, this._addCursorPopups, this._moreCursorPopups, this._endCursorPopup,
         ],
         stateSyncIds: [SyncUiEventId.ActiveContentChanged],
         stateFunc: this._anotherGroupStateFunc,
@@ -706,7 +758,7 @@ class FrontstageNavigationWidget extends React.Component {
       customId: "sampleApp:viewSelector",
       reactElement: (
         <ViewSelector
-          imodel={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection}
+          imodel={UiFramework.getIModelConnection()}
           listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
         />
       ),
@@ -739,7 +791,7 @@ class FrontstageNavigationWidget extends React.Component {
     return (
       <NavigationWidget
         navigationAidId="CubeNavigationAid"
-        iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.iModelConnection!}
+        iModelConnection={UiFramework.getIModelConnection()}
         horizontalItems={this._horizontalToolbarItems}
         verticalItems={this._verticalToolbarItems}
       />

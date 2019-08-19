@@ -16,10 +16,11 @@ import {
 } from "@bentley/bentleyjs-core";
 import {
   ClipVector,
+  Matrix4d,
+  Plane3dByOriginAndUnitNormal,
+  Point4d,
   Range3d,
   Transform,
-  Matrix4d,
-  Point4d,
 } from "@bentley/geometry-core";
 import {
   BatchType,
@@ -171,7 +172,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
-    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume);
+    return new Tile.DrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume, this.loader.parentsAndChildrenExclusive);
   }
 
   public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
@@ -184,11 +185,13 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     box.transformBy(treeTransform, box);
     if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
       return;
-    if (tile.children === undefined) { //  || !tile.childrenAreLoaded) {
+    if (tile.children === undefined) {
       for (const boxPoint of box.points) {
         matrix.multiplyPoint3d(boxPoint, 1, TileTree._scratchPoint4d);
         if (TileTree._scratchPoint4d.w > .0001)
           range.extendXYZW(TileTree._scratchPoint4d.x, TileTree._scratchPoint4d.y, TileTree._scratchPoint4d.z, TileTree._scratchPoint4d.w);
+        else
+          range.high.z = Math.max(1.0, range.high.z);   // behind eye plane...
       }
     } else {
       for (const child of tile.children)
@@ -475,5 +478,7 @@ export namespace TileTree {
       if (undefined !== tree)
         tree.collectStatistics(stats);
     }
+
+    public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }
   }
 }

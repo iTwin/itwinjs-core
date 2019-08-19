@@ -9,13 +9,10 @@ import {
   IDisposable,
 } from "@bentley/bentleyjs-core";
 import {
-  ColorByName,
-  ColorDef,
   LinePixels,
   RgbColor,
 } from "@bentley/imodeljs-common";
 import {
-  EmphasizeElements,
   FeatureOverrideProvider,
   FeatureSymbology,
   Viewport,
@@ -32,17 +29,6 @@ import {
   ColorInputProps,
 } from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
-
-export function emphasizeSelectedElements(vp: Viewport): void {
-  const emph = EmphasizeElements.getOrCreate(vp);
-  if (emph.overrideSelectedElements(vp, new ColorDef(ColorByName.orange), undefined, true, false) // replace existing; don't clear selection set...
-    && emph.emphasizeSelectedElements(vp, undefined, true)) { // ...replace existing; now clear selection set
-    vp.isFadeOutActive = true;
-  } else {
-    EmphasizeElements.clear(vp); // clear any previous overrides
-    vp.isFadeOutActive = false;
-  }
-}
 
 export class Provider implements FeatureOverrideProvider {
   private readonly _elementOvrs = new Map<Id64String, FeatureSymbology.Appearance>();

@@ -14,12 +14,14 @@ import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 const OBJECTS_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/objects";
 const DATA_CHANNEL = "@bentley/imodeljs-common/ElectronRpcProtocol/data";
 
+declare var __non_webpack_require__: NodeRequire;
+
 /** @internal */
 export const interop = (() => {
   let electron = null;
   if (typeof (global) !== "undefined" && global && global.process && (global.process as any).type) {
-    // tslint:disable-next-line:no-eval
-    electron = eval("require")("electron");
+    const realRequire = (typeof (__non_webpack_require__) !== "undefined") ? __non_webpack_require__ : require;
+    electron = realRequire("electron");
   }
 
   return electron;
@@ -161,7 +163,10 @@ class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcRequest, Rpc
       response = await RpcRequestFulfillment.forUnknownError(message, err);
     }
 
+    const raw = response.rawResult;
+    response.rawResult = undefined; // Otherwise, it will be serialized in IPC layer and large responses will then crash the app
     this.sendResponse(response, evt);
+    response.rawResult = raw;
   }
 }
 

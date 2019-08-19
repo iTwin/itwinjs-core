@@ -15,6 +15,7 @@ import { MarkupTool } from "./MarkupTool";
  */
 export class PlaceTextTool extends RedlineTool {
   public static toolId = "Markup.Text.Place";
+  public static iconSpec = "icon-text-medium";
   protected _nRequiredPoints = 1;
   protected _minPoints = 0;
   protected _value!: string;

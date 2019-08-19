@@ -5,9 +5,9 @@
 /** @module Rendering */
 
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
 import {
-  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
+  AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
   QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
@@ -183,7 +183,6 @@ export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
   public readonly viewFrustum: ViewFrustum;
-  public readonly expandedFrustum: ViewFrustum | undefined;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -202,10 +201,9 @@ export class RenderPlan {
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
   public get fraction(): number { return this._curFrustum.frustFraction; }
 
-  public selectExpandedFrustum() { if (undefined !== this.expandedFrustum) this._curFrustum = this.expandedFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, expandedFrustum: ViewFrustum | undefined, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -217,7 +215,6 @@ export class RenderPlan {
     this.hline = hline;
     this.lights = lights;
     this._curFrustum = this.viewFrustum = viewFrustum;
-    this.expandedFrustum = expandedFrustum;
     this.analysisStyle = analysisStyle;
     this.ao = ao;
     this.isFadeOutActive = isFadeOutActive;
@@ -231,8 +228,7 @@ export class RenderPlan {
     const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    const expandedFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, expandedFrustum!, clipVec, hline, lights, style.analysisStyle, ao);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, clipVec, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -749,6 +745,18 @@ export class PackedFeatureTable {
   }
 }
 
+/** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
+ * @beta
+ */
+export interface RenderTargetDebugControl {
+  /** Destroy this target's webgl context. Returns false if this behavior is not supported. */
+  loseContext(): boolean;
+  /** If true, render to the screen as if rendering off-screen for readPixels(). */
+  drawForReadPixels: boolean;
+  /** If true, use log-z depth buffer (assuming supported by client). */
+  useLogZ: boolean;
+}
+
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
  * Application code rarely interacts directly with a RenderTarget - instead, it interacts with a Viewport which forwards requests to the implementation
  * of the RenderTarget.
@@ -783,7 +791,8 @@ export abstract class RenderTarget implements IDisposable {
   public dispose(): void { }
   public reset(): void { }
   public abstract changeScene(scene: GraphicList): void;
-  public changeBackgroundMap(_scene: GraphicList): void { }
+  public abstract changeBackgroundMap(_graphics: GraphicList): void;
+  public abstract changeOverlayGraphics(_scene: GraphicList): void;
   public changeTextureDrapes(_drapes: TextureDrapeMap): void { }
   public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
   public changeSolarShadowMap(_solarShadowMap?: RenderSolarShadowMap): void { }
@@ -799,6 +808,8 @@ export abstract class RenderTarget implements IDisposable {
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+
+  public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
 }
 
 /** Describes a texture loaded from an HTMLImageElement
@@ -973,7 +984,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */
-  public createTile(tileTexture: RenderTexture, corners: Point3d[]): RenderGraphic | undefined {
+  public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();
 
     // corners
@@ -1001,6 +1012,11 @@ export abstract class RenderSystem implements IDisposable {
 
     rasterTile.texture = tileTexture;
     rasterTile.isPlanar = true;
+
+    if (undefined !== featureIndex) {
+      rasterTile.features.featureID = featureIndex;
+      rasterTile.features.type = FeatureIndexType.Uniform;
+    }
 
     const trimesh = this.createTriMesh(rasterTile);
     if (undefined === trimesh)
@@ -1116,11 +1132,16 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public enableDiagnostics(_enable: RenderDiagnostics): void { }
+
+  /** @internal */
+  public get supportsLogZBuffer(): boolean { return true === this.options.logarithmicDepthBuffer; }
 }
 
 /** @internal */
-export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_half_float" |
-  "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object";
+export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
+  "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
+  "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
+  "EXT_frag_depth";
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -1129,7 +1150,8 @@ export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint"
  * @public
  */
 export namespace RenderSystem {
-  /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup.
+  /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
+   *
    * @beta
    */
   export interface Options {
@@ -1150,13 +1172,21 @@ export namespace RenderSystem {
      */
     preserveShaderSourceCode?: boolean;
 
-    /** If true display solar shadows.
+    /** If true, display solar shadows when enabled by [ViewFlags.shadows]($common).
      *
      * Default value: false
      *
-     * @internal
+     * @beta
      */
     displaySolarShadows?: boolean;
+
+    /** If the view frustum is sufficiently large, and the EXT_frag_depth WebGL extension is available, use a logarithmic depth buffer to improve depth buffer resolution. Framerate may degrade to an extent while the logarithmic depth buffer is in use. If this option is disabled, or the extension is not supported, the near and far planes of very large view frustums will instead be moved to reduce the draw distance.
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    logarithmicDepthBuffer?: boolean;
   }
 }
 

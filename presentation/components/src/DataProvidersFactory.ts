@@ -43,6 +43,11 @@ export class DataProvidersFactory {
       // display value)
       return displayValue;
     }
+    if (typename === "double") {
+      // note: type converters can't convert raw double value to
+      // display value since unit system is not implemented yet
+      return displayValue;
+    }
     return TypeConverterManager.getConverter(typename).convertToString(value);
   }
 

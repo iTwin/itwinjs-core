@@ -6,7 +6,7 @@
 import {
   IModelApp,
   ViewClipDecorationProvider,
-  Viewport,
+  ScreenViewport,
 } from "@bentley/imodeljs-frontend";
 import {
   createComboBox,
@@ -23,11 +23,11 @@ function setFocusToHome(): void {
 }
 
 export class SectionsPanel extends ToolBarDropDown {
-  private readonly _vp: Viewport;
+  private readonly _vp: ScreenViewport;
   private readonly _element: HTMLElement;
   private _toolName: string = "ViewClip.ByPlane";
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(vp: ScreenViewport, parent: HTMLElement) {
     super();
     this._vp = vp;
     this._element = document.createElement("div");

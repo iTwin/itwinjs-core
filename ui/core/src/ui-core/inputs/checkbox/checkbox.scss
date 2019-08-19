@@ -33,20 +33,23 @@
   }
 
   input[type="checkbox"] + .core-checkbox-label {
-    padding-left: .5em;
     transition: color .1s ease;
+
+    >.core-checkbox-label-text {
+      padding-left: .5em;
+    }
   }
 
   &.success > input[type="checkbox"] + .core-checkbox-label {
-    color: $buic-foreground-success; /*$uicore-green;*/
+    color: $buic-foreground-success;
   }
 
   &.warning > input[type="checkbox"] + .core-checkbox-label {
-    color: $buic-foreground-warning; /*$uicore-orange;*/
+    color: $buic-foreground-warning;
   }
 
   &.error > input[type="checkbox"] + .core-checkbox-label {
-    color: $buic-foreground-alert; /*$uicore-red;*/
+    color: $buic-foreground-alert;
   }
 
   input[type="checkbox"] + .core-checkbox-label:before,

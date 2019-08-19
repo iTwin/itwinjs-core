@@ -26,7 +26,7 @@ public;class Callout
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
-beta;ChangedElementsDb 
+internal;ChangedElementsDb 
 public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
 internal;ChangeSetToken
 beta;ChangeSummary
@@ -91,26 +91,33 @@ public;ElementGroupsMembers
 public;ElementGroupsMembersProps 
 public;ElementMultiAspect 
 public;ElementOwnsChildElements 
+public;ElementOwnsMultiAspects 
+public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
-beta;ExportGraphics
-beta;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
-beta;ExportGraphicsInfo
-beta;ExportGraphicsLines
-beta;ExportGraphicsMesh
-beta;ExportGraphicsProps
-beta;ExportLinesFunction = (info: ExportLinesInfo) => void
-beta;ExportLinesInfo
-beta;ExportPartDisplayProps
-beta;ExportPartFunction = (info: ExportPartInfo) => void
-beta;ExportPartGraphicsProps
-beta;ExportPartInfo
-beta;ExportPartInstanceProps
-beta;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
-beta;ExportPartLinesInfo
+public;ExportGraphics
+beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
+public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
+public;ExportGraphicsInfo
+public;ExportGraphicsLines
+public;ExportGraphicsMesh
+public;ExportGraphicsOptions
+beta;ExportGraphicsProps = ExportGraphicsOptions
+public;ExportLinesFunction = (info: ExportLinesInfo) => void
+public;ExportLinesInfo
+public;ExportPartDisplayInfo
+beta;ExportPartDisplayProps = ExportPartDisplayInfo
+public;ExportPartFunction = (info: ExportPartInfo) => void
+public;ExportPartGraphicsOptions
+beta;ExportPartGraphicsProps = ExportPartGraphicsOptions
+public;ExportPartInfo
+public;ExportPartInstanceInfo
+beta;ExportPartInstanceProps = ExportPartInstanceInfo
+public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
+public;ExportPartLinesInfo
 public;ExternalSourceAspect 
 public;ExternalSourceAspect
 public;class FunctionalBreakdownElement 
@@ -154,7 +161,6 @@ public;IModelHost
 public;IModelHostConfiguration
 public;IModelJsFs
 public;IModelJsFsStats
-internal;IModelJsNative
 alpha;IModelTransformer
 internal;class InformationCarrierElement 
 public;class InformationContentElement 
@@ -192,7 +198,6 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;NativeLoggerCategory
 public;OpenParams
 public;OrthographicViewDefinition 
 public;class PhysicalElement 

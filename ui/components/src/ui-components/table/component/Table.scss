@@ -143,14 +143,11 @@
   }
 
   .components-editor-container {
-    margin-left: 6px;
-    margin-right: 6px;
+    margin-top: 2px;
   }
 
   .components-cell-editor {
-    border: $buic-foreground-primary solid 1px;
     background: $buic-background-control !important;
-    box-sizing: border-box;
     height: 100%;
   }
 }

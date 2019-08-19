@@ -134,7 +134,7 @@ export class CodeSpec {
 
   /** Internal-only constructor. Proper use is to supply `properties` only or `scopeType` and `scopeReq` but not `properties`.
    * > Note: The deprecation has to do with moving the constructor from public to internal
-   * @deprecated Use CodeSpec.create or CodeSpec.createFromJson instead of the internal constructor
+   * @deprecated Use [[create]] or [[createFromJson]] instead of the internal constructor
    * @internal
    */
   public constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {

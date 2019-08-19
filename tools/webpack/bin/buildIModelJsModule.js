@@ -12,9 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // ------------------------------- NOTE -----------------------------------
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const yargs = require("yargs");
 const child_process = require("child_process");
 const glob = require("glob");
+const tar = require("tar");
+const crypto = require("crypto");
+const SIGNATURE_FILENAME = "digitalSignature";
 // Get the arguments using the ubiquitous yargs package.
 function getArgs() {
     const args = yargs
@@ -91,6 +95,74 @@ class Utils {
         }
         return new Result("Symlink or Copy Source Resources", 0);
     }
+    static ensureSymlink(sourceFile, outFilePath, detail) {
+        try {
+            if (fs.existsSync(outFilePath)) {
+                try {
+                    const linkContents = fs.readlinkSync(outFilePath, { encoding: "utf8" });
+                    if (linkContents === sourceFile) {
+                        if (detail > 3)
+                            console.log("  File", outFilePath, "already exists");
+                        return 0;
+                    }
+                }
+                catch (_error) {
+                    // It's not a link, do nothing and let it get deleted.
+                }
+                if (detail > 3)
+                    console.log("  Removing existing symlink found in", outFilePath);
+                fs.unlinkSync(outFilePath);
+            }
+            if (detail > 3)
+                console.log("  Symlinking", sourceFile, "to", outFilePath);
+            fs.symlinkSync(sourceFile, outFilePath);
+        }
+        catch (error) {
+            console.log(error);
+            return 1;
+        }
+        return 0; // success
+    }
+    // symlinks the module file and source map file if available.
+    static symlinkOrCopyModuleFile(moduleSourceFile, outFilePath, alwaysCopy, detail) {
+        const mapFile = moduleSourceFile + ".map";
+        const outMapFile = outFilePath + ".map";
+        const cssFile = moduleSourceFile.replace(".js", ".css");
+        const outCssFile = outFilePath.replace(".js", ".css");
+        if (alwaysCopy) {
+            // copy  the module file.
+            if (detail > 3)
+                console.log("  Copying file", moduleSourceFile, "to", outFilePath);
+            // if there is a symlink already there, copyFileSync fails, so check for that case.
+            if (fs.existsSync(outFilePath))
+                fs.unlinkSync(outFilePath);
+            fs.copyFileSync(moduleSourceFile, outFilePath);
+            if (fs.existsSync(mapFile)) {
+                if (detail > 3)
+                    console.log("  Copying file", mapFile, "to", outMapFile);
+                // if there is a symlink already there, copyFileSync fails, so check for that case.
+                if (fs.existsSync(outMapFile))
+                    fs.unlinkSync(outMapFile);
+                fs.copyFileSync(mapFile, outMapFile);
+            }
+            if (fs.existsSync(cssFile)) {
+                if (detail > 3)
+                    console.log("  Copying file", cssFile, "to", outCssFile);
+                if (fs.existsSync(outCssFile))
+                    fs.unlinkSync(outCssFile);
+                fs.copyFileSync(cssFile, outCssFile);
+            }
+        }
+        else {
+            // symlink the module file.
+            this.ensureSymlink(moduleSourceFile, outFilePath, detail);
+            // if there's a source map file, link that, too.
+            if (fs.existsSync(mapFile))
+                this.ensureSymlink(mapFile, outMapFile, detail);
+            if (fs.existsSync(cssFile))
+                this.ensureSymlink(cssFile, outCssFile, detail);
+        }
+    }
     // we use this where there is a possible race condition where the compiler might be creating directories in parallel to our linking.
     static makeDirectoryNoError(outDirectory) {
         // Note: mkdirSync with option of { recursive: true } did not work on Linux, necessitating this workaround/
@@ -112,6 +184,9 @@ class Utils {
             // do nothing on error.
         }
     }
+    static isDirectory(directoryName) {
+        return (fs.statSync(directoryName)).isDirectory();
+    }
     static moveFile(sourceDirectory, destDirectory, fileName, warn) {
         const sourceFile = path.join(sourceDirectory, fileName);
         if (!fs.existsSync(sourceFile)) {
@@ -121,6 +196,62 @@ class Utils {
         }
         const destFile = path.join(destDirectory, fileName);
         fs.renameSync(sourceFile, destFile);
+    }
+    // find the files that go into the plugin manifest (recurses through directories). The names should be relative to the buildDir.
+    static findAllPluginFiles(fileList, rootDir, thisDir, skipFile) {
+        const entryList = fs.readdirSync(thisDir);
+        for (const thisEntry of entryList) {
+            const thisPath = path.resolve(thisDir, thisEntry);
+            if (Utils.isDirectory(thisPath)) {
+                Utils.findAllPluginFiles(fileList, rootDir + thisEntry + "/", thisPath, skipFile);
+            }
+            else {
+                // skip the runtime.js and the prod.js.map files.
+                if (thisEntry.startsWith("runtime"))
+                    continue;
+                if ((-1 !== thisEntry.indexOf("prod")) && thisEntry.endsWith(".js.map"))
+                    continue;
+                if (skipFile && (thisEntry === skipFile))
+                    continue;
+                fileList.push(rootDir + thisEntry);
+            }
+        }
+    }
+    static removeAllFiles(thisDir) {
+        // recurse to remove all files only.
+        try {
+            const entryList = fs.readdirSync(thisDir);
+            for (const thisEntry of entryList) {
+                const thisPath = path.resolve(thisDir, thisEntry);
+                if (Utils.isDirectory(thisPath)) {
+                    this.removeAllFiles(thisPath);
+                }
+                else {
+                    fs.unlinkSync(thisPath);
+                }
+            }
+        }
+        catch (error) {
+            // don't care.
+        }
+    }
+    static removeDirectory(thisDir, depth) {
+        // recurse to remove all directories.
+        try {
+            const entryList = fs.readdirSync(thisDir);
+            for (const thisEntry of entryList) {
+                const thisPath = path.resolve(thisDir, thisEntry);
+                if (Utils.isDirectory(thisPath)) {
+                    this.removeDirectory(thisPath, depth + 1);
+                    fs.rmdirSync(thisPath);
+                }
+            }
+            if (depth === 0)
+                fs.rmdirSync(thisDir);
+        }
+        catch (error) {
+            // don't care.
+        }
     }
 }
 // description of each node_module.
@@ -150,8 +281,8 @@ class DependentInfo {
         this.versionAvailable = versionAvailable;
     }
 }
-// class that copies (or symlinks) the external modules needed my iModel.js into the web resources directory.
-class ModuleCopier {
+// class that copies (or symlinks) the external modules needed by iModel.js into the web resources directory.
+class DependentTracker {
     // these are all modules that are listed as external in our webpack configuration, and therefore need to be copied to the web resources directory.
     constructor(_nodeModulesDirectory, _isDevelopment, _detail, _alwaysCopy) {
         this._nodeModulesDirectory = _nodeModulesDirectory;
@@ -167,6 +298,7 @@ class ModuleCopier {
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-quantity", "imodeljs-quantity.js", undefined),
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-frontend", "imodeljs-frontend.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/imodeljs-markup", "imodeljs-markup.js", undefined, "lib/public"),
+            new ModuleInfo(_isDevelopment, "@bentley/frontend-devtools", "frontend-devtools.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-core", "ui-core.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-components", "ui-components.js", undefined, "lib/public"),
             new ModuleInfo(_isDevelopment, "@bentley/ui-framework", "ui-framework.js", undefined, "lib/public"),
@@ -189,78 +321,16 @@ class ModuleCopier {
         const symlinkSource = `${sourcePublicDirectory}/**/*`;
         Utils.symlinkFiles(process.cwd(), symlinkSource, outputPublicDirectory, this._alwaysCopy, this._detail);
     }
-    // checks contents of existing symlink and replaces it if necessary
-    ensureSymlink(sourceFile, outFilePath) {
-        try {
-            if (fs.existsSync(outFilePath)) {
-                try {
-                    const linkContents = fs.readlinkSync(outFilePath, { encoding: "utf8" });
-                    if (linkContents === sourceFile) {
-                        if (this._detail > 3)
-                            console.log("  File", outFilePath, "already exists");
-                        return 0;
-                    }
-                }
-                catch (_error) {
-                    // It's not a link, do nothing and let it get deleted.
-                }
-                if (this._detail > 3)
-                    console.log("  Removing existing symlink found in", outFilePath);
-                fs.unlinkSync(outFilePath);
-            }
-            if (this._detail > 3)
-                console.log("  Symlinking", sourceFile, "to", outFilePath);
-            fs.symlinkSync(sourceFile, outFilePath);
-        }
-        catch (error) {
-            console.log(error);
-            return 1;
-        }
-        return 0; // success
-    }
-    // symlinks the module file and source map file if available.
-    symlinkOrCopyModuleFile(moduleSourceFile, outFilePath) {
-        const mapFile = moduleSourceFile + ".map";
-        const outMapFile = outFilePath + ".map";
-        const cssFile = moduleSourceFile.replace(".js", ".css");
-        const outCssFile = outFilePath.replace(".js", ".css");
-        if (this._alwaysCopy) {
-            // copy  the module file.
-            if (this._detail > 3)
-                console.log("  Copying file", moduleSourceFile, "to", outFilePath);
-            // if there is a symlink already there, copyFileSync fails, so check for that case.
-            if (fs.existsSync(outFilePath))
-                fs.unlinkSync(outFilePath);
-            fs.copyFileSync(moduleSourceFile, outFilePath);
-            if (fs.existsSync(mapFile)) {
-                if (this._detail > 3)
-                    console.log("  Copying file", mapFile, "to", outMapFile);
-                // if there is a symlink already there, copyFileSync fails, so check for that case.
-                if (fs.existsSync(outMapFile))
-                    fs.unlinkSync(outMapFile);
-                fs.copyFileSync(mapFile, outMapFile);
-            }
-            if (fs.existsSync(cssFile)) {
-                if (this._detail > 3)
-                    console.log("  Copying file", cssFile, "to", outCssFile);
-                if (fs.existsSync(outCssFile))
-                    fs.unlinkSync(outCssFile);
-                fs.copyFileSync(cssFile, outCssFile);
-            }
-        }
-        else {
-            // symlink the module file.
-            this.ensureSymlink(moduleSourceFile, outFilePath);
-            // if there's a source map file, link that, too.
-            if (fs.existsSync(mapFile))
-                this.ensureSymlink(mapFile, outMapFile);
-            if (fs.existsSync(cssFile))
-                this.ensureSymlink(cssFile, outCssFile);
-        }
-    }
     // this function adds the dependencies found in package.json that are external modules. Recurses, but only to depth 1.
-    findExternalModuleDependents(parentPackageRoot, depth, problemPackages) {
+    findExternalModuleDependents(parentPackageRoot, depth, problemPackages, includeExtraModules) {
         const packageFileContents = Utils.readPackageFileContents(parentPackageRoot);
+        // if there are extraSystemModules specified, add them to dependencies.
+        if (includeExtraModules && packageFileContents.iModelJs.buildModule.extraSystemModules) {
+            for (const extraModule in packageFileContents.iModelJs.buildModule.extraSystemModules) {
+                if (!packageFileContents.dependencies[extraModule])
+                    packageFileContents.dependencies[extraModule] = packageFileContents.iModelJs.buildModule.extraSystemModules[extraModule];
+            }
+        }
         // find new dependents from this packageFileContents
         const newDependents = [];
         for (const dependent in packageFileContents.dependencies) {
@@ -276,12 +346,12 @@ class ModuleCopier {
                     if (!fs.existsSync(dependentPackageRoot)) {
                         dependentPackageRoot = path.resolve(parentPackageRoot, "node_modules", dependent);
                         if (!fs.existsSync(dependentPackageRoot)) {
-                            problemPackages.push(`Cannot find package.json for dependent ${dependent}`);
+                            problemPackages.push(`Cannot find package.json for dependent ${dependent}\n`);
                         }
                     }
                     const dependentPackageContents = Utils.readPackageFileContents(dependentPackageRoot);
                     if (!dependentPackageContents.version) {
-                        problemPackages.push(`Cannot find version in package.json of dependent: ${dependent}`);
+                        problemPackages.push(`Cannot find version in package.json of dependent: ${dependent}\n`);
                     }
                     newDependents.push(new DependentInfo(dependent, dependentPackageRoot, parentPackageRoot, externalModule, packageFileContents.dependencies[dependent], dependentPackageContents.version));
                 }
@@ -294,7 +364,7 @@ class ModuleCopier {
         // we need to check the first level of dependents of our direct dependents to find the non-imodeljs dependencies like lodash, react, redux, etc.
         if (depth < 2) {
             for (const newDependent of newDependents) {
-                this.findExternalModuleDependents(newDependent.packageRoot, depth + 1, problemPackages);
+                this.findExternalModuleDependents(newDependent.packageRoot, depth + 1, problemPackages, false);
             }
         }
     }
@@ -329,7 +399,7 @@ class ModuleCopier {
             return dependentNodeModuleFile;
         return undefined;
     }
-    // finds dependents, symlinks them to destination directory.
+    // finds dependents, symlinks them to destination directory (when building application type only).
     symlinkOrCopyExternalModules(outputDirectory) {
         if (this._detail > 0)
             console.log("Starting symlink or copy external modules");
@@ -340,7 +410,7 @@ class ModuleCopier {
             }
             // Read the package file for the current directory, and add the dependents recursively (to depth 2) to the sub-dependencies of the iModelJs modules.
             const problemPackages = [];
-            this.findExternalModuleDependents(process.cwd(), 0, problemPackages);
+            this.findExternalModuleDependents(process.cwd(), 0, problemPackages, true);
             if (problemPackages.length > 0)
                 return new Result("Symlink or Copy ExternalModules", 1, undefined, undefined, "Failure to process some dependent packages: \n".concat(...problemPackages));
             const missingPeerDependencies = this.checkPeerDependencies();
@@ -367,12 +437,12 @@ class ModuleCopier {
                         }
                     }
                     const fullFilePath = path.resolve(outFilePath, externalModule.destFileName);
-                    this.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath);
+                    Utils.symlinkOrCopyModuleFile(moduleSourceFile, fullFilePath, this._alwaysCopy, this._detail);
                     // copy/symlink the iModelJsLoader.js file into the same directory as imodeljs-frontend
                     if (dependent.name === "imodeljs-frontend") {
                         const imjsLoaderSourceFile = moduleSourceFile.replace("imodeljs-frontend", "IModelJsLoader");
                         const imjsLoaderPath = path.resolve(outFilePath, "IModelJsLoader.js");
-                        this.symlinkOrCopyModuleFile(imjsLoaderSourceFile, imjsLoaderPath);
+                        Utils.symlinkOrCopyModuleFile(imjsLoaderSourceFile, imjsLoaderPath, this._alwaysCopy, this._detail);
                     }
                     // symlink any subModules in the build.
                     const packageFileContents = Utils.readPackageFileContents(dependent.packageRoot);
@@ -384,7 +454,7 @@ class ModuleCopier {
                                 const subModuleFileName = subModule.bundleName + ".js";
                                 const subModuleSourceFile = path.resolve(thisDirectory, subModuleFileName);
                                 const destFullFilePath = path.resolve(outFilePath, subModuleFileName);
-                                this.symlinkOrCopyModuleFile(subModuleSourceFile, destFullFilePath);
+                                Utils.symlinkOrCopyModuleFile(subModuleSourceFile, destFullFilePath, this._alwaysCopy, this._detail);
                             }
                         }
                     }
@@ -403,6 +473,25 @@ class ModuleCopier {
             return new Result("Symlink or Copy External Modules", 1, e);
         }
         return new Result("Symlink or Copy External Modules", 0);
+    }
+    getExternalModuleVersionsObject() {
+        // get the dependencies.
+        const problemPackages = [];
+        this.findExternalModuleDependents(process.cwd(), 0, problemPackages, false);
+        let versionObject = new Object();
+        // Fix the dependentInfos that have versions with pre-release versions in them. Change 0.191.0-dev.6, for example, to >=0.191.0-dev.0.
+        for (const dependent of this._dependentList) {
+            let thisVersion = dependent.versionRequested;
+            const dashPosition = thisVersion.indexOf("-");
+            if (-1 !== dashPosition) {
+                const lastNumPosition = thisVersion.lastIndexOf('.');
+                if ((-1 !== lastNumPosition) && (lastNumPosition > dashPosition)) {
+                    thisVersion = ">=" + thisVersion.slice(0, lastNumPosition + 1) + "0";
+                }
+            }
+            versionObject[dependent.name] = thisVersion;
+        }
+        return versionObject;
     }
 }
 // this class creates pseudo-localized versions of all the locale .json files specified in the sourceDirectory.
@@ -468,6 +557,12 @@ class PseudoLocalizer {
         fs.writeFileSync(outputFile, JSON.stringify(objOut, null, 2));
         return 0;
     }
+    isSymLink(fileName) {
+        if (!fs.existsSync(fileName))
+            return false;
+        const stats = fs.statSync(fileName);
+        return stats.isSymbolicLink();
+    }
     convertAll() {
         try {
             Utils.makeDirectoryNoError(this._destDirectory);
@@ -477,9 +572,9 @@ class PseudoLocalizer {
                 // find it relative to source.
                 const relativePath = path.relative(this._sourceDirectory, fileName);
                 const outputPath = path.resolve(this._destDirectory, relativePath);
-                if (fs.existsSync(outputPath)) {
+                if (this.isSymLink(outputPath)) {
                     if (this._detail > 3)
-                        console.log("  File", outputPath, "already exists");
+                        console.log("  File", outputPath, "already exists and is a symLink - skipped.");
                 }
                 else {
                     if (this._detail > 3)
@@ -518,6 +613,169 @@ PseudoLocalizer.replacements = {
     Y: "\u00DD\u00A5",
     y: "\u00FD\u00FF",
 };
+// Class that supervises the digital signature operation.
+class DigitalSignatureOperation {
+    constructor(_privateKey) {
+        this._privateKey = _privateKey;
+        this._sign = crypto.createSign("RSA-SHA256");
+    }
+    // Create an instance of the DigitalSignOperation class, copying the PublicKey to the build directory.
+    static createInstance(signProp, buildDir) {
+        const op = "Sign Plugin";
+        if (!signProp) {
+            return undefined;
+        }
+        if (!signProp.privateKey) {
+            return new Result(op, 1, undefined, undefined, 'The "sign" property must have a "privateKey" property');
+        }
+        if (!signProp.publicKey) {
+            return new Result(op, 1, undefined, undefined, 'The "sign" property must have a "publicKey" property');
+        }
+        // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
+        const privateKeyFileName = process.env[signProp.privateKey];
+        if (!privateKeyFileName) {
+            return new Result(op, 1, undefined, undefined, `The "sign.privateKey" property is set to "${signProp.privateKey}" but that is not an environment variable (which must point to a ".pem" file).`);
+        }
+        if (!fs.existsSync(privateKeyFileName)) {
+            return new Result(op, 1, undefined, undefined, `"sign.privateKey" is an environment variable (${signProp.privateKey}) that evaluates to "${privateKeyFileName}", but that file does not exist`);
+        }
+        let privateKey;
+        try {
+            privateKey = fs.readFileSync(privateKeyFileName, { encoding: "utf8" });
+        }
+        catch (error) {
+            return new Result(op, 1, undefined, undefined, `Error reading private key from "${privateKeyFileName}", ${error}`);
+        }
+        // validate the sign.privateKey property. It must be an environment variable that resolves to a .pem file.
+        const publicKeyFileName = process.env[signProp.publicKey];
+        if (!publicKeyFileName) {
+            return new Result(op, 1, undefined, undefined, `The "sign.publicKey" property is set to "${signProp.publicKey}", but that is not an environment variable (which must point to a ".pem" file).`);
+        }
+        if (!fs.existsSync(publicKeyFileName)) {
+            return new Result(op, 1, undefined, undefined, `"sign.publicKey" is an environment variable (${signProp.publicKey}) that evaluates to ${publicKeyFileName}, but that file does not exist`);
+        }
+        // try to read the file.
+        let publicKey;
+        try {
+            publicKey = fs.readFileSync(publicKeyFileName, { encoding: "utf8" });
+        }
+        catch (error) {
+            return new Result(op, 1, undefined, undefined, `Error reading public key from "${publicKeyFileName}", ${error}`);
+        }
+        // try to write the file to the build directory.
+        const outputKeyFile = path.resolve(buildDir, "publicKey.pem");
+        try {
+            fs.writeFileSync(outputKeyFile, publicKey);
+        }
+        catch (error) {
+            return new Result(op, 1, `Error writing public key file to "${outputKeyFile}", ${error}`);
+        }
+        return new DigitalSignatureOperation(privateKey);
+        // validate the sign.publicKey property. It must be an environment variable that resolves to a .pem file.
+    }
+    // accumulate the hash for all the data that is getting put into the tar file (with the exception of the signature itself), and create the signature
+    createSignatureFile(rootDir, fileList, signatureFile) {
+        // sort the file list so they are in a known order.
+        fileList.sort();
+        // read contents of each file and add it to the data to be signed.
+        try {
+            for (const fileName of fileList) {
+                // read each file into a buffer.
+                const filePath = path.resolve(rootDir, fileName);
+                const contents = fs.readFileSync(filePath);
+                // accumulate its data.
+                this._sign.update(contents);
+            }
+        }
+        catch (error) {
+            return new Result("Accumulate Signed Data", 1, error);
+        }
+        try {
+            this._sign.end();
+            const signature = this._sign.sign(this._privateKey);
+            fs.writeFileSync(signatureFile, signature);
+            // success.
+            return undefined;
+        }
+        catch (error) {
+            return new Result("Creating Digital Signature File", 1, error);
+        }
+    }
+    // verify the signature of the untarred data.
+    async verifySignature(tarFile, subModule, detail) {
+        const tmpDirName = `${os.tmpdir}${path.sep}`;
+        let verifyDir;
+        try {
+            verifyDir = fs.mkdtempSync(tmpDirName);
+        }
+        catch (error) {
+            return new Result(`Build Plugin ${subModule.bundleName}`, 1, error, undefined, `Creating temporary directory ${tmpDirName} to verify signature`);
+        }
+        // this try is here so we can remove the temporary directory when we are done.
+        try {
+            try {
+                await tar.extract({ cwd: verifyDir, file: tarFile });
+            }
+            catch (error) {
+                return new Result(`Build Plugin ${subModule.bundleName}`, 1, error, undefined, `Extracting tar file for signature verification`);
+            }
+            // verify existence of and read the digSigFile
+            let digitalSignature;
+            try {
+                const digSigFile = path.resolve(verifyDir, SIGNATURE_FILENAME);
+                if (!fs.existsSync(digSigFile))
+                    return new Result(`Build Plugin ${subModule.bundleName}`, 1, undefined, undefined, "Cannot find digital signature files while attempting to verify");
+                digitalSignature = fs.readFileSync(digSigFile);
+            }
+            catch (error) {
+                return new Result("Read Digital Signature File", 1, error);
+            }
+            // verify existence of and read the public key file.
+            let publicKey;
+            try {
+                const publicKeyFile = path.resolve(verifyDir, "publicKey.pem");
+                if (!fs.existsSync(publicKeyFile))
+                    return new Result(`Build Plugin ${subModule.bundleName}`, 1, undefined, undefined, 'Cannot find "publicKey.pem" file while attempting to verify');
+                publicKey = fs.readFileSync(publicKeyFile, { encoding: "utf8" });
+            }
+            catch (error) {
+                return new Result("Read Public Key", 1, error);
+            }
+            // build the list of files we untarred (except "digitalSignature").
+            const verifyList = new Array();
+            try {
+                Utils.findAllPluginFiles(verifyList, "", verifyDir, SIGNATURE_FILENAME);
+                if (detail > 4)
+                    console.log('Files checked in tar file:', verifyList);
+            }
+            catch (error) {
+                return new Result(`Build Plugin ${subModule.bundleName}`, 1, error, undefined, "Finding files for verification");
+            }
+            // sort verifyList so it's in the same order as when we created the digital signature.
+            verifyList.sort();
+            const verify = crypto.createVerify("RSA-SHA256");
+            try {
+                for (const fileName of verifyList) {
+                    const filePath = path.resolve(verifyDir, fileName);
+                    const contents = fs.readFileSync(filePath);
+                    verify.update(contents);
+                }
+                verify.end();
+            }
+            catch (error) {
+                return new Result("Accumulate data for verification", 1, error);
+            }
+            if (verify.verify(publicKey, digitalSignature))
+                return undefined;
+            else
+                return new Result("Digital Signature does not match", 1);
+        }
+        finally {
+            Utils.removeAllFiles(verifyDir);
+            Utils.removeDirectory(verifyDir, 0);
+        }
+    }
+}
 // Class that holds the results of a build operation.
 class Result {
     constructor(operation, exitCode, error, stdout, stderr) {
@@ -547,7 +805,7 @@ class IModelJsModuleBuilder {
             return true;
         }
         if ((this._moduleDescription.type !== "system") && (this._moduleDescription.type !== "application") &&
-            (this._moduleDescription.type !== "plugin") && (this._moduleDescription.type != "webworker")) {
+            (this._moduleDescription.type !== "plugin") && (this._moduleDescription.type !== "webworker")) {
             console.log('iModelJs.buildModule.type must be one of "system", "application", "plugin", or "webworker"');
             return true;
         }
@@ -603,16 +861,16 @@ class IModelJsModuleBuilder {
         }
         return Promise.resolve(new Result("Symlink or Copy Source Resources", 0));
     }
-    // If this is an application, symlink the external modules that the application uses into the web server's directory.
+    // Symlink the external modules that the application uses into the web server's directory (when building application type only).
     symlinkRequiredExternalModules() {
-        const nodeModulesDir = path.resolve(process.cwd(), "node_modules");
-        const moduleCopier = new ModuleCopier(nodeModulesDir, this._isDevelopment, this._detail, this._alwaysCopy);
         if (this._moduleDescription.type !== "application")
             return Promise.resolve(new Result("Symlink or Copy External Modules", 0));
         if (!this._moduleDescription.webpack || !this._moduleDescription.webpack.dest)
             return Promise.resolve(new Result("Symlink Or Copy External Modules", 0));
+        const nodeModulesDir = path.resolve(process.cwd(), "node_modules");
+        const dependentTracker = new DependentTracker(nodeModulesDir, this._isDevelopment, this._detail, this._alwaysCopy);
         const outputDirectory = path.resolve(process.cwd(), this._moduleDescription.webpack.dest);
-        return Promise.resolve(moduleCopier.symlinkOrCopyExternalModules(outputDirectory));
+        return Promise.resolve(dependentTracker.symlinkOrCopyExternalModules(outputDirectory));
     }
     makeConfig() {
         let useCreateConfig = false;
@@ -757,15 +1015,20 @@ class IModelJsModuleBuilder {
         if (!webpack.dest || !webpack.entry || !webpack.bundleName) {
             return Promise.resolve(new Result("Webpack", 1, undefined, undefined, 'IModelJs.buildModule.webpack must have "dest", "entry", and "bundleName" properties'));
         }
-        let outputPath = path.resolve(process.cwd(), webpack.dest);
-        if (this._moduleDescription.type === "system") {
-            outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
-        }
-        // start the webpack process according to the arguments.
         const styleSheets = webpack.styleSheets ? true : false;
-        if (this._detail > 0)
-            console.log("Starting Webpack Module");
-        return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._version, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);
+        let outputPath = path.resolve(process.cwd(), webpack.dest);
+        if (this._moduleDescription.type === "plugin") {
+            return this.buildPlugin(webpack, outputPath, styleSheets, 0);
+        }
+        else {
+            if (this._moduleDescription.type === "system") {
+                outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
+            }
+            // start the webpack process according to the arguments.
+            if (this._detail > 0)
+                console.log("Starting Webpack Module");
+            return this.startWebpack("Webpack Module", outputPath, webpack.entry, webpack.bundleName, styleSheets, this._moduleDescription.type, this._version, this._isDevelopment, this._webpackStats, 0, webpack.htmlTemplate);
+        }
     }
     // build the array of subModules.
     async buildSubModules() {
@@ -777,7 +1040,7 @@ class IModelJsModuleBuilder {
         if (!Array.isArray(this._moduleDescription.subModules)) {
             return Promise.resolve([new Result("Build SubModules", 1, undefined, undefined, "iModelJs.buildModule.subModules must be an array of {dest, entry, bundleName} objects")]);
         }
-        const results = [];
+        let results = [];
         let moduleNum = 1;
         for (const subModule of this._moduleDescription.subModules) {
             if (!subModule.dest || !subModule.entry || !subModule.bundleName) {
@@ -788,20 +1051,115 @@ class IModelJsModuleBuilder {
             // this is a special case for the IModelJsLoader - set plugin.type to "system" or "webworker" to avoid plugin treatment.
             const subType = subModule.type || "plugin";
             if ((subType !== "system") && (subType !== "plugin") && (subType != "webworker")) {
-                console.log('the "type" property for a subModule must be one of "system", "plugin", or "webworker"');
+                results.push(new Result("Build SubModules", 1, undefined, undefined, 'the "type" property for a subModule must be one of "system", "plugin", or "webworker"'));
+                return Promise.resolve(results);
             }
             let outputPath = path.resolve(process.cwd(), subModule.dest);
             if ((subType === "system") || (subType === "webworker"))
                 outputPath = path.resolve(outputPath, this._isDevelopment ? "dev" : "prod");
-            if (this._detail > 0)
-                console.log("Starting webpack of", subModule.entry);
-            const pluginResult = await this.startWebpack(`Webpack Plugin ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, undefined, this._isDevelopment, this._webpackStats, moduleNum++);
-            results.push(pluginResult);
-            if (pluginResult.error || pluginResult.stderr) {
-                return Promise.resolve(results);
+            let subModuleResult = [];
+            if (subType === "plugin") {
+                // building a plugin is more complicated. We build a tar file for it.
+                subModuleResult.push(await this.buildPlugin(subModule, outputPath, styleSheets, moduleNum));
             }
+            else {
+                if (this._detail > 0)
+                    console.log("Starting webpack of", subModule.entry);
+                subModuleResult.push(await this.startWebpack(`Webpack SubModule ${subModule.entry}`, outputPath, subModule.entry, subModule.bundleName, styleSheets, subType, undefined, this._isDevelopment, this._webpackStats, moduleNum++));
+            }
+            results = results.concat(subModuleResult);
         }
         return Promise.resolve(results);
+    }
+    async buildPlugin(subModule, tarDirectory, styleSheets, moduleNum) {
+        if (!subModule.build) {
+            return Promise.resolve(new Result("Build SubModules", 1, undefined, undefined, 'a plugin module must provide a "build" key in addition to "dest", "entry", and "bundleName" properties'));
+        }
+        const buildDir = path.resolve(process.cwd(), subModule.build);
+        if (this._detail > 3)
+            console.log(`Starting build of plugin ${subModule.bundleName} with buildDir ${buildDir}`);
+        // make sure directory exists.
+        Utils.makeDirectoryNoError(buildDir);
+        // make the manifest object.
+        const manifest = {};
+        // save the bundleName in the manifest.
+        manifest.bundleName = subModule.bundleName;
+        // Build the development version to buildDir/dev
+        if (this._detail > 3)
+            console.log("Webpacking development version of plugin", subModule.bundleName);
+        const devCompileOutput = path.resolve(buildDir, "dev");
+        manifest.devPlugin = subModule.bundleName.concat(".js");
+        const devCompileResult = await this.startWebpack(`Webpack Plugin Dev version${subModule.entry}`, devCompileOutput, subModule.entry, subModule.bundleName, styleSheets, "plugin", undefined, true, this._webpackStats, moduleNum);
+        if (devCompileResult.error || devCompileResult.stderr) {
+            return Promise.resolve(devCompileResult);
+        }
+        // Build the production version to buildDir/prod
+        if (this._detail > 3)
+            console.log("Webpacking production version of plugin", subModule.bundleName);
+        const prodCompileOutput = path.resolve(buildDir, "prod");
+        const prodCompileResult = await this.startWebpack(`Webpack Plugin Prod version ${subModule.entry}`, prodCompileOutput, subModule.entry, subModule.bundleName, styleSheets, "plugin", undefined, false, false, moduleNum);
+        if (prodCompileResult.error || prodCompileResult.stderr) {
+            return Promise.resolve(prodCompileResult);
+        }
+        // we need to pseudolocalize here, rather than after the webpack step - otherwise our pseudolocalized files won't be in the tar file.
+        const pseudoLocalizeResult = this.pseudoLocalize();
+        if (0 !== pseudoLocalizeResult.exitCode)
+            return Promise.resolve(pseudoLocalizeResult);
+        // Make a JSON file called manifest.json with keys versionsRequired, prodVersion, devVersion. We will tar that in.
+        const dependentTracker = new DependentTracker(process.cwd(), true, this._detail, this._alwaysCopy);
+        manifest.versionsRequired = dependentTracker.getExternalModuleVersionsObject();
+        const signer = DigitalSignatureOperation.createInstance(subModule.sign, buildDir);
+        if (signer instanceof Result)
+            return Promise.resolve(signer);
+        const manifestFileName = path.resolve(buildDir, "manifest.json");
+        if (this._detail > 3)
+            console.log(`Creating manifest file ${manifestFileName} for plugin ${subModule.bundleName}`);
+        fs.writeFileSync(manifestFileName, JSON.stringify(manifest, null, 2));
+        // tar manifest.JSON, development, and production versions, along with whatever files got moved using the sourceResources directive.
+        const fileList = new Array();
+        try {
+            Utils.findAllPluginFiles(fileList, "", buildDir, SIGNATURE_FILENAME);
+            if (this._detail > 4)
+                console.log('Files to go in tar file:', fileList);
+        }
+        catch (error) {
+            return Promise.resolve(new Result(`Building Plugin ${subModule.bundleName}`, 1, error, undefined, "Error finding files"));
+        }
+        // prepare the digital signature operation
+        if (signer) {
+            if (this._detail > 3)
+                console.log("Calculating signature of plugin resources");
+            const signatureFile = path.resolve(buildDir, SIGNATURE_FILENAME);
+            const signResult = signer.createSignatureFile(buildDir, fileList, signatureFile);
+            if (signResult instanceof Result)
+                return Promise.resolve(signResult);
+            fileList.push(SIGNATURE_FILENAME);
+        }
+        if (this._detail > 3)
+            console.log("Creating tar file for plugin", subModule.bundleName);
+        Utils.makeDirectoryNoError(tarDirectory);
+        const tarFile = path.resolve(tarDirectory, subModule.bundleName.concat(".plugin.tar"));
+        try {
+            await tar.create({ cwd: buildDir, gzip: false, file: tarFile, follow: true }, fileList);
+        }
+        catch (error) {
+            return Promise.resolve(new Result(`Build Plugin ${subModule.bundleName}`, 1, error, "Creating tar file"));
+        }
+        /* ----------- This is relevant only for the BrowserLocalPluginLoader, which is not currently used.
+        // for debugging, put the development version 'bundleName'.js and 'bundlename'.js.map into the same directory as the tar file, and we will preferentially load that.
+        const devVersionSource = path.resolve(devCompileOutput, manifest.devPlugin);
+        const devVersionDest = path.resolve(outputPath, manifest.devPlugin);
+        Utils.symlinkOrCopyModuleFile(devVersionSource, devVersionDest, this._alwaysCopy, this._detail);
+           ----------- */
+        if (signer) {
+            if (this._detail > 3)
+                console.log("Verifying signature of plugin tar file");
+            // create an output directory, into which we will untar the tar file we just created.
+            const verifyResult = await signer.verifySignature(tarFile, subModule, this._detail);
+            if (verifyResult)
+                return verifyResult;
+        }
+        return Promise.resolve(new Result("Build Plugin", 0));
     }
     pseudoLocalize() {
         if (!this._moduleDescription.pseudoLocalize) {
@@ -817,9 +1175,10 @@ class IModelJsModuleBuilder {
         if (this._detail > 0)
             console.log("Starting pseudoLocalize");
         const pseudoLocalizer = new PseudoLocalizer(sourceDirectory, destDirectory, this._detail);
+        const result = pseudoLocalizer.convertAll();
         if (this._detail > 0)
             console.log("Finished PseudoLocalize");
-        return pseudoLocalizer.convertAll();
+        return result;
     }
     // If there's an error in the Result, report it and set the exitCode.
     reportError(result) {
@@ -899,16 +1258,19 @@ class IModelJsModuleBuilder {
         exitCode = this.reportResults(stepTwoResults);
         if (0 !== exitCode)
             return exitCode;
-        const pluginResults = await this.buildSubModules();
-        exitCode = this.reportResults(pluginResults);
+        // pseudoLocalize has to be done after symlinking external modules, except for plugins, which have to do it before making the tarfile.
+        if (this._moduleDescription.type !== "plugin") {
+            const pseudoLocalizeResult = this.pseudoLocalize();
+            exitCode = this.reportResults([pseudoLocalizeResult]);
+            if (0 != exitCode)
+                return exitCode;
+        }
+        const subModuleResults = await this.buildSubModules();
+        exitCode = this.reportResults(subModuleResults);
         if (0 !== exitCode)
             return exitCode;
         const makeConfigResult = await this.makeConfig();
         exitCode = this.reportResults([makeConfigResult]);
-        if (0 != exitCode)
-            return exitCode;
-        const pseudoLocalizeResult = this.pseudoLocalize();
-        exitCode = this.reportResults([pseudoLocalizeResult]);
         return exitCode;
     }
 }

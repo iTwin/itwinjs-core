@@ -13,11 +13,11 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { NewtonEvaluatorRtoR, Newton1dUnboundedApproximateDerivative } from "../numerics/Newton";
-import { Quadrature } from "../numerics/Quadrature";
+import { GaussMapper } from "../numerics/Quadrature";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
-import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
@@ -359,10 +359,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public abstract reverseInPlace(): void;
   /**
    * Compute intersections with a plane.
-   * The intersections are appended to the result array.
-   * The base class implementation emits strokes to an AppendPlaneIntersectionStrokeHandler object, which uses a Newton iteration to get
-   * high-accuracy intersection points within strokes.
-   * Derived classes should override this default implementation if there are easy analytic solutions.
+   * * The intersections are appended to the result array.
+   * * The base class implementation emits strokes to an AppendPlaneIntersectionStrokeHandler object, which uses a Newton iteration to get
+   *     high-accuracy intersection points within strokes.
+   * * Derived classes should override this default implementation if there are easy analytic solutions.
+   * * Derived classes are free to implement extended intersections (e.g. arc!!!)
    * @param plane The plane to be intersected.
    * @param result Array to receive intersections
    * @returns Return the number of CurveLocationDetail's added to the result array.
@@ -373,6 +374,82 @@ export abstract class CurvePrimitive extends GeometryQuery {
     this.emitStrokableParts(strokeHandler);
     return result.length - n0;
   }
+  /**
+   * Examine contents of an array of CurveLocationDetail.
+   * Filter the intersections according to the parameters.
+   * @param allowExtend if false, remove points on the extension.
+   * @param applySnappedCoordinates if true, change the stored fractions and coordinates to exact end values.  Otherwise
+   *     use the exact values only for purpose of updating the curveIntervalRole.
+   * @param startEndFractionTolerance if nonzero, adjust fraction to 0 or 1 with this tolerance.
+   * @param startEndXYZTolerance if nonzero, adjust to endpoint with this tolerance.
+   * @internal
+   */
+  public static snapAndRestrictDetails(
+    details: CurveLocationDetail[],
+    allowExtend: boolean = true,
+    applySnappedCoordinates: boolean = false,
+    startEndFractionTolerance = Geometry.smallAngleRadians,
+    startEndXYZTolerance = Geometry.smallMetricDistance) {
+    const n0 = details.length;
+    let acceptIndex = 0;
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
+    let snappedCoordinates: Point3d | undefined;
+    for (let candidateIndex = 0; candidateIndex < n0; candidateIndex++) {
+      snappedCoordinates = undefined;
+      const detail = details[candidateIndex];
+      let fraction = detail.fraction;
+      let accept = allowExtend || Geometry.isIn01(fraction);
+      if (detail.curve) {
+        detail.curve.startPoint(point0);
+        detail.curve.endPoint(point1);
+      }
+
+      if (startEndFractionTolerance > 0) {
+        if (Math.abs(fraction) < startEndFractionTolerance) {
+          fraction = 0.0;
+          accept = true;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point0;
+        }
+        if (Math.abs(fraction - 1.0) < startEndFractionTolerance) {
+          fraction = 1.0;
+          accept = true;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point1;
+          if (detail.curve)
+            snappedCoordinates = detail.curve.startPoint(point1);
+        }
+      }
+      if (startEndXYZTolerance > 0 && detail.curve !== undefined) {
+        // REMARK: always test both endpoints.   If there is a cyclic fraction space, an intersection marked as "after" the end might have wrapped all the way to the beginning.
+        if (detail.point.distance(point0) <= startEndXYZTolerance) {
+          fraction = 0.0;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point0;
+        } else if (detail.point.distance(point1) <= startEndXYZTolerance) {
+          fraction = 1.0;
+          detail.intervalRole = CurveIntervalRole.isolatedAtVertex;
+          snappedCoordinates = point1;
+        }
+      }
+      if (accept) {
+        if (applySnappedCoordinates) {
+          detail.fraction = fraction;
+          if (snappedCoordinates !== undefined)
+            detail.point.setFrom(snappedCoordinates);
+        }
+        if (acceptIndex < candidateIndex)
+          details[acceptIndex] = detail;
+        acceptIndex++;
+      }
+
+    }
+    if (acceptIndex < n0)
+      details.length = acceptIndex;
+
+  }
+
   /** Ask if the curve is within tolerance of a plane.
    * @returns Returns true if the curve is completely within tolerance of the plane.
    */
@@ -607,9 +684,7 @@ class CurveLengthContext implements IStrokeHandler {
   private _ray: Ray3d;
   private _fraction0: number;
   private _fraction1: number;
-  private _gaussX: Float64Array;
-  private _gaussW: Float64Array;
-  private _gaussMapper: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
+  private _gaussMapper: GaussMapper;
 
   private tangentMagnitude(fraction: number): number {
     this._ray = (this._curve as CurvePrimitive).fractionToPointAndDerivative(fraction, this._ray);
@@ -628,20 +703,7 @@ class CurveLengthContext implements IStrokeHandler {
       this._fraction0 = fraction1;
       this._fraction1 = fraction0;
     }
-    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
-    this._gaussX = new Float64Array(maxGauss);
-    this._gaussW = new Float64Array(maxGauss);
-    // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
-    if (numGaussPoints > 5 || numGaussPoints < 1)
-      numGaussPoints = 5;
-    switch (numGaussPoints) {
-      case 1: this._gaussMapper = Quadrature.setupGauss1; break;
-      case 2: this._gaussMapper = Quadrature.setupGauss2; break;
-      case 3: this._gaussMapper = Quadrature.setupGauss3; break;
-      case 4: this._gaussMapper = Quadrature.setupGauss4; break;
-      default: this._gaussMapper = Quadrature.setupGauss5; break;
-    }
-
+    this._gaussMapper = new GaussMapper(numGaussPoints);
   }
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;
@@ -664,9 +726,9 @@ class CurveLengthContext implements IStrokeHandler {
       for (let i = 1; i <= numStrokes; i++) {
         const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
         const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, (i) * df, fraction1);
-        const numGauss = this._gaussMapper(fractionA, fractionB, this._gaussX, this._gaussW);
+        const numGauss = this._gaussMapper.mapXAndW(fractionA, fractionB);
         for (let k = 0; k < numGauss; k++) {
-          this._summedLength += this._gaussW[k] * this.tangentMagnitude(this._gaussX[k]);
+          this._summedLength += this._gaussMapper.gaussW[k] * this.tangentMagnitude(this._gaussMapper.gaussX[k]);
         }
       }
     }

@@ -605,6 +605,9 @@ export const enum VertexShaderComponent {
   // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
   // bool checkForLateDiscard()
   CheckForLateDiscard,
+  // (Optional) Adjust the final position
+  // vec4 adjustPosition(vec4 pos)
+  FinalizePosition,
 
   COUNT,
 }
@@ -633,6 +636,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     addPosition(this, this.usesVertexTable);
+
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -715,6 +719,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     main.addline("  gl_Position = computePosition(rawPosition);");
 
+    const finalizePos = this.get(VertexShaderComponent.FinalizePosition);
+    if (undefined !== finalizePos) {
+      prelude.addFunction("vec4 finalizePosition(vec4 pos)", finalizePos);
+      main.addline("  gl_Position = finalizePosition(gl_Position);");
+    }
+
     for (const comp of this._computedVarying) {
       main.addline("  " + comp);
     }
@@ -787,6 +797,10 @@ export const enum FragmentShaderComponent {
   // (Optional) Override current featureId
   // vec4 overrideFeatureId(vec4 currentId)
   OverrideFeatureId,
+  // (Optional) Override fragment depth
+  // float finalizeDepth()
+  FinalizeDepth,
+
   COUNT,
 }
 
@@ -919,6 +933,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyDebug) {
       prelude.addFunction("vec4 applyDebugColor(vec4 baseColor)", applyDebug);
       main.addline("  baseColor = applyDebugColor(baseColor);");
+    }
+
+    const finalizeDepth = this.get(FragmentShaderComponent.FinalizeDepth);
+    if (undefined !== finalizeDepth) {
+      prelude.addFunction("float finalizeDepth()", finalizeDepth);
+      main.addline("  gl_FragDepthEXT = finalizeDepth();");
     }
 
     const assignFragData = this.get(FragmentShaderComponent.AssignFragData);
@@ -1070,7 +1090,8 @@ export class ProgramBuilder {
   public buildProgram(gl: WebGLRenderingContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
-    if (this.vert.exceedsMaxVaryingVectors(fragSource))
+    const checkMaxVarying = true;
+    if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
     // Debug output

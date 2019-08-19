@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { ShaderBuilder } from "../ShaderBuilder";
+
 /** @internal */
 export const decodeUint16 = `
 float decodeUInt16(vec2 v) {
@@ -48,3 +50,37 @@ vec3 encodeDepthRgb(float depth) {
   return enc;
 }
 `;
+
+/** Pack 2 floats in the integer range [0..255] into a single float equal to v.x | (v.y << 8)
+ * @internal
+ */
+export const pack2Bytes = `
+float pack2Bytes(vec2 v) {
+  return v.x + (v.y * 256.0);
+}
+`;
+
+/** Unpack a float in the integer range [0..0xffff] into a vec2 containing 2 integers in the range [0..255]
+ * @internal
+ */
+export const unpack2Bytes = `
+vec2 unpack2Bytes(float f) {
+  vec2 v;
+  v.y = floor(f / 256.0);
+  v.x = floor(f - v.y * 256.0);
+  return v;
+}
+`;
+
+/** @internal */
+export const unpackAndNormalize2Bytes = `
+vec2 unpackAndNormalize2Bytes(float f) {
+  return unpack2Bytes(f) / 255.0;
+}
+`;
+
+/** @internal */
+export function addUnpackAndNormalize2Bytes(builder: ShaderBuilder): void {
+  builder.addFunction(unpack2Bytes);
+  builder.addFunction(unpackAndNormalize2Bytes);
+}

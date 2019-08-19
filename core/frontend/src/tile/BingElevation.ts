@@ -25,17 +25,20 @@ export class BingElevationProvider {
   private static _scratchUV = Point2d.createZero();
   private static _scratchPoint = Point3d.createZero();
 
-  private _heightRequestTemplate: string;
+  private _heightRangeRequestTemplate: string;
+  private _seaLevelOffsetRequestTemplate: string;
+  private _heightListRequestTemplate: string;
   protected _requestContext = new ClientRequestContext("");
 
   constructor() {
     const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
-    this._heightRequestTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=sealevel&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
+    this._heightRangeRequestTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
+    this._seaLevelOffsetRequestTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
+    this._heightListRequestTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
   public async getHeights(range: Range2d) {
     const boundingBox = range.low.y + "," + range.low.x + "," + range.high.y + "," + range.high.x;
-    const requestUrl = this._heightRequestTemplate.replace("{boundingBox}", boundingBox);
-
+    const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
     try {
       const tileResponse: Response = await request(this._requestContext, requestUrl, tileRequestOptions);
@@ -44,18 +47,53 @@ export class BingElevationProvider {
       return undefined;
     }
   }
-  public async getRange(iModel: IModelConnection) {
+  public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
+    const carto = iModel.spatialToCartographicFromEcef(point);
+    const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude));
+    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
+    try {
+      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      return tileResponse.body.resourceSets[0].resources[0].offsets[0];
+    } catch (error) {
+      return 0.0;
+    }
+  }
+  public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
+    const carto = iModel.spatialToCartographicFromEcef(point);
+    const requestUrl = this._heightListRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude)).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
+    try {
+      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      return tileResponse.body.resourceSets[0].resources[0].elevations[0];
+    } catch (error) {
+      return 0.0;
+    }
+  }
+
+  public async getHeightRange(iModel: IModelConnection) {
     const latLongRange = Range2d.createNull();
     const range = iModel.projectExtents.clone();
     range.expandInPlace(1000.);         // Expand for project surroundings.
     for (const corner of range.corners()) {
-      const carto = await iModel.spatialToCartographic(corner);
+      const carto = iModel.spatialToCartographicFromEcef(corner);
       latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
     }
     const heights = await this.getHeights(latLongRange);
     return Range1d.createArray(heights);
   }
-  public async getGraphic(latLongRange: Range2d, corners: Point3d[], texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined> {
+
+  public async getHeightAverage(iModel: IModelConnection) {
+    const latLongRange = Range2d.createNull();
+    for (const corner of iModel.projectExtents.corners()) {
+      const carto = iModel.spatialToCartographicFromEcef(corner);
+      latLongRange.extendXY(Angle.radiansToDegrees(carto.longitude), Angle.radiansToDegrees(carto.latitude));
+    }
+    const heights = await this.getHeights(latLongRange);
+    let total = 0.0;
+    for (const height of heights) total += height;
+    return total / heights.length;
+  }
+  public async getGraphic(latLongRange: Range2d, corners: Point3d[], groundBias: number, texture: RenderTexture, system: RenderSystem): Promise<RenderGraphic | undefined> {
     const heights = await this.getHeights(latLongRange);
     if (undefined === heights)
       return undefined;
@@ -73,6 +111,9 @@ export class BingElevationProvider {
       BingElevationProvider._scratchRange.low.z = Math.min(BingElevationProvider._scratchRange.low.z, height);
       BingElevationProvider._scratchRange.high.z = Math.max(BingElevationProvider._scratchRange.high.z, height);
     }
+
+    BingElevationProvider._scratchRange.low.z += groundBias;
+    BingElevationProvider._scratchRange.high.z += groundBias;
 
     BingElevationProvider._scratchQParams.setFromRange(BingElevationProvider._scratchRange);
     const mesh = Mesh.create({ displayParams, type: Mesh.PrimitiveType.Mesh, range: BingElevationProvider._scratchRange, isPlanar: false, is2d: false });
@@ -96,7 +137,7 @@ export class BingElevationProvider {
       BingElevationProvider._scratchUV.x = 0;
       for (let col = 0; col < size; col++ , BingElevationProvider._scratchUV.x += delta) {
         patch.uvFractionToPoint(BingElevationProvider._scratchUV.x, BingElevationProvider._scratchUV.y, BingElevationProvider._scratchPoint);
-        BingElevationProvider._scratchPoint.z = heights[(sizeM1 - row) * size + col];
+        BingElevationProvider._scratchPoint.z = groundBias + heights[(sizeM1 - row) * size + col];
         BingElevationProvider._scratchQPoint.init(BingElevationProvider._scratchPoint, BingElevationProvider._scratchQParams);
         mesh.addVertex(VertexKey.create({ position: BingElevationProvider._scratchQPoint, fillColor: 0xffffff, uvParam: BingElevationProvider._scratchUV }));
       }

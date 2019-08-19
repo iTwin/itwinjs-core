@@ -432,6 +432,7 @@ describe("XmlParser", () => {
   describe("parseFormat", () => {
     it("should parse props corrtectly", () => {
       const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
         <Format typeName="TestFormat" type="decimal" precision="4" uomSeparator="" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel">
           <Composite spacer="">
               <Unit label="&#176;">u:ARC_DEG</Unit>
@@ -446,15 +447,22 @@ describe("XmlParser", () => {
 
       const [, , itemElement] = findResult;
 
+      const expectedReferenceSchema = [
+        {
+          name: "Units",
+          version: "1.0.0"
+        } as SchemaReferenceProps
+      ];
+
       const composite = {
         spacer: "",
         units: [
           {
-            name: "u:ARC_DEG",
+            name: "Units.ARC_DEG",
             label: "°",
           },
           {
-            name: "u:ARC_MINUTE",
+            name: "Units.ARC_MINUTE",
             label: "'",
           },
         ],
@@ -479,8 +487,10 @@ describe("XmlParser", () => {
         stationSeparator: undefined,
       } as FormatProps;
 
+      const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
       const actualProps = parser.parseFormat(itemElement);
       assert.deepEqual(actualProps, expectedProps);
+      assert.deepEqual(actualReferenceSchema, expectedReferenceSchema);
     });
 
     it("should throw for missing type", () => {
@@ -577,8 +587,8 @@ describe("XmlParser", () => {
       const [, , itemElement] = findResult;
 
       const expectedProps = {
-        persistenceUnit: "RAD",
-        presentationUnits: ["UN1", "UN2"],
+        persistenceUnit: "TestSchema.RAD",
+        presentationUnits: ["TestSchema.UN1", "TestSchema.UN2"],
         relativeError: 0.01,
         label: undefined,
         description: undefined,
@@ -586,6 +596,48 @@ describe("XmlParser", () => {
 
       const actualProps = parser.parseKindOfQuantity(itemElement);
       assert.deepEqual(actualProps, expectedProps);
+    });
+
+    it("should parse props correctly when using persistenceUnit and presentationUnits from Units schema", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <ECSchemaReference name="Formats" alias="f" version="1.0.0"></ECSchemaReference>
+        <KindOfQuantity typeName="TestKoQ" persistenceUnit="u:RAD"
+                        presentationUnits="f:DoubleUnitFormat(6)[f:YRD|yard(s)][u:FT|u:feet];f:QuadUnitFormat(6)[f:MILE|mile(s)][u:YRD|yard(s)][f:FT|feet][f:IN|inch(es)]" relativeError="1e-2" />`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestKoQ");
+      if (findResult === undefined)
+        throw new Error("Expected finding KindOfQuantity to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const expectedReferenceSchema = [
+        {
+          name: "Units",
+          version: "1.0.0"
+        } as SchemaReferenceProps,
+        {
+          name: "Formats",
+          version: "1.0.0"
+        } as SchemaReferenceProps
+
+      ];
+
+      const expectedProps = {
+        persistenceUnit: "Units.RAD",
+        presentationUnits: [
+          "Formats.DoubleUnitFormat(6)[Formats.YRD|yard(s)][Units.FT|u:feet]",
+          "Formats.QuadUnitFormat(6)[Formats.MILE|mile(s)][Units.YRD|yard(s)][Formats.FT|feet][Formats.IN|inch(es)]"],
+        relativeError: 0.01,
+        label: undefined,
+        description: undefined,
+      };
+
+      const actualReferenceSchema = Array.from(parser.getReferences());
+      const actualProps = parser.parseKindOfQuantity(itemElement);
+      assert.deepEqual(actualProps, expectedProps);
+      assert.deepEqual(actualReferenceSchema, expectedReferenceSchema);
     });
 
     it("should throw for missing persistenceUnit attribute", () => {

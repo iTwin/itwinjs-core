@@ -6,9 +6,9 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { UiEvent, CommonProps, MessageContainer, MessageSeverity } from "@bentley/ui-core";
+import { UiEvent, CommonProps, MessageContainer, MessageSeverity, Point, PointProps, Rectangle, SizeProps } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
-import { offsetAndContainInContainer, Point, PointProps, Rectangle, SizeProps, Tooltip } from "@bentley/ui-ninezone";
+import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import "./Pointer.scss";
 import { MessageSpan, MessageDiv } from "./MessageSpan";
@@ -232,7 +232,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
       const adjustedPosition = offsetAndContainInContainer(relativeBounds, containerBounds.getSize(), offset);
       const position = adjustedPosition.offset(viewportOffset);
 
-      if (Point.create(position).equals(prevState.position))
+      if (position.equals(prevState.position))
         return null;
 
       return {

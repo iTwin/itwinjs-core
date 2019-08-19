@@ -11,8 +11,8 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
-import { SessionStateActionId } from "../SessionState";
-import { UiFramework, PresentationSelectionScope } from "../UiFramework";
+import { SessionStateActionId, PresentationSelectionScope } from "../SessionState";
+import { UiFramework } from "../UiFramework";
 import { IModelConnection, IModelApp, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
 import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { SelectionScope, getInstancesCount } from "@bentley/presentation-common";
@@ -31,7 +31,7 @@ export enum SyncUiEventId {
   /** The active view maintained by the ViewManager has changed. */
   ActiveViewportChanged = "activeviewportchanged",
   /** Backstage has been closed.
-   * @deprecated - Use BackstageEvent instead
+   * @deprecated Use BackstageEvent instead
    */
   BackstageCloseEvent = "backstagecloseevent",
   /** Backstage has been closed. */

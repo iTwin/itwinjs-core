@@ -7,8 +7,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
-import { CommonProps } from "@bentley/ui-core";
-import { Point } from "@bentley/ui-ninezone";
+import { CommonProps, Point } from "@bentley/ui-core";
 
 import { UiFramework } from "../UiFramework";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
@@ -20,8 +19,8 @@ import { KeyboardShortcutMenu } from "../keyboardshortcut/KeyboardShortcutMenu";
 import { PointerMessage } from "../messages/Pointer";
 import { InputFieldMessage } from "../messages/InputField";
 import { FrameworkState } from "../FrameworkState";
-import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { CursorInformation } from "../cursor/CursorInformation";
+import { CursorPopupRenderer } from "../cursor/cursorpopup/CursorPopupManager";
 
 import "./configurableui.scss";
 
@@ -75,7 +74,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
         <PointerMessage />
         <KeyboardShortcutMenu />
         <InputFieldMessage />
-        <CursorPopup />
+        <CursorPopupRenderer />
       </div>
     );
   }

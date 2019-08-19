@@ -655,9 +655,10 @@ export class Sample {
   }
   /** Assorted simple `Path` objects. */
   public static createSimplePaths(withGaps: boolean = false): Path[] {
-    const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 1), [Point3d.create(0, 10, 0)]]];
     const point0 = Point3d.create(0, 0, 0);
     const point1 = Point3d.create(10, 0, 0);
+
+    const p1 = [point1, Point3d.create(0, 10, 0), Point3d.create(6, 10, 0), Point3d.create(6, 10, 0), Point3d.create(0, 10, 0)];
     const segment1 = LineSegment3d.create(point0, point1);
     const vectorU = Vector3d.unitX(3);
     const vectorV = Vector3d.unitY(3);
@@ -667,9 +668,6 @@ export class Sample {
       Path.create(segment1, arc2),
       Path.create(
         LineSegment3d.create(point0, point1),
-        LineString3d.create(
-          Point3d.create(10, 0, 0),
-          Point3d.create(10, 5, 0)),
         LineString3d.create(p1)),
       Sample.createCappedArcPath(4, 0, 180),
     ];
@@ -681,6 +679,35 @@ export class Sample {
 
     return simplePaths;
   }
+  /** Assorted `Path` with lines and arcs.
+   * Specifically useful for offset tests.
+   */
+  public static createLineArcPaths(): Path[] {
+    const paths = [];
+    const x1 = 10.0;
+    const y2 = 5.0;
+    const y3 = 10.0;
+    for (const y0 of [0, -1, 1]) {
+      for (const x2 of [15, 11, 20, 9, 7]) {
+
+        const point0 = Point3d.create(0, y0, 0);
+        const point1 = Point3d.create(x1, 0, 0);
+        const point2 = Point3d.create(x2, y2, 0);
+        const point3 = Point3d.create(x1, y3, 0);
+        const point4 = Point3d.create(0, y3 + y0, 0);
+        const path0 = Path.create();
+        path0.tryAddChild(LineString3d.create(point0, point1, point2, point3, point4));
+        paths.push(path0);
+        const path1 = Path.create();
+        path1.tryAddChild(LineSegment3d.create(point0, point1));
+        path1.tryAddChild(Arc3d.createCircularStartMiddleEnd(point1, Point3d.create(x2, y2, 0), point3));
+        path1.tryAddChild(LineSegment3d.create(point3, point4));
+        paths.push(path1);
+      }
+    }
+    return paths;
+  }
+
   /** Assorted `PointString3d` objects. */
   public static createSimplePointStrings(): PointString3d[] {
     const p1 = [[Point3d.create(0, 10, 0)], [Point3d.create(6, 10, 0)], [Point3d.create(6, 10, 0), [Point3d.create(6, 10, 0)]]];
@@ -760,6 +787,15 @@ export class Sample {
       this.pushMove(points, riseX, riseY, 0);
       this.pushMove(points, dxHigh, 0, 0);
       this.pushMove(points, riseX, -riseY, 0);
+    }
+    return points;
+  }
+  /** append sawtooth with x distances successively scaled by xFactor */
+  public static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[] {
+    let factor = 1.0;
+    for (let i = 0; i < numPhase; i++) {
+      this.appendSawTooth(points, factor * dxLow, factor * riseX, riseY, factor * dxHigh, 1);
+      factor *= xFactor;
     }
     return points;
   }
@@ -857,57 +893,80 @@ export class Sample {
     return result;
   }
   /** Assorted `ParityRegion` objects */
-  public static createSimpleParityRegions(): ParityRegion[] {
+  public static createSimpleParityRegions(includeBCurves: boolean = false): ParityRegion[] {
     const pointC = Point3d.create(-5, 0, 0);
     const point0 = Point3d.create(0, 0, 0);
-    const point1 = Point3d.create(1, 2, 0);
+    const point1 = Point3d.create(4, 2, 0);
     const point2 = Point3d.create(6, 4, 0);
-    const point3 = Point3d.create(1, 5, 0);
+    const point3 = Point3d.create(5, 5, 0);
     const point4 = Point3d.create(8, 3, 0);
+
+    const reverseSweep = AngleSweep.createStartEndDegrees(0, -360);
     const ax = 10.0;
     const ay = 8.0;
-    const bx = 3.0;
+    const bx = -3.0;
     const by = 2.0;
     const r2 = 0.5;
     const r2A = 2.5;
+    const pointA = point0.plusXYZ(ax, 0, 0);
+    const pointB = pointA.plusXYZ(0, ay, 0);
+    const pointC1 = point0.plusXYZ(0, ay);
+
     const result = [
+      ParityRegion.create(
+        Loop.create(LineString3d.create(point0, pointA, pointB), Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!),
+        Loop.create(LineString3d.createRectangleXY(point1, bx, by))),
       ParityRegion.create(
         Loop.create(
           Arc3d.createXY(pointC, 2.0)),
-        Loop.create(Arc3d.createXY(pointC, 1.0))),
+        Loop.create(Arc3d.createXY(pointC, 1.0, reverseSweep))),
       ParityRegion.create(
         Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by))),
       ParityRegion.create(
         Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
-        Loop.create(Arc3d.createXY(point2, r2))),
+        Loop.create(Arc3d.createXY(point2, r2, reverseSweep))),
       ParityRegion.create(
         Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
-        Loop.create(Arc3d.createXY(point2, r2)),
+        Loop.create(Arc3d.createXY(point2, r2, reverseSweep)),
         Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
       ParityRegion.create(
-        Loop.create(LineString3d.createRectangleXY(point0, ax, ay)),
+        Loop.create(LineString3d.create(point0, pointA, pointB), Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
-        Loop.create(Arc3d.create(point4, Vector3d.create(r2, 0), Vector3d.create(0, r2A))),
+        Loop.create(Arc3d.create(point4, Vector3d.create(-r2, 0), Vector3d.create(0, r2A))),
         Loop.create(LineString3d.createRectangleXY(point3, bx, by))),
     ];
+    if (includeBCurves) {
+      const ey = 1.0;
+      result.push(
+        ParityRegion.create(Loop.create(
+          LineSegment3d.create(point0, pointA),
+          BSplineCurve3d.createUniformKnots(
+            [pointA, Point3d.create(ax + 1, ey),
+              Point3d.create(ax + 1, 2 * ey),
+              Point3d.create(ax + 2, 3 * ey),
+              Point3d.create(ax + 1, 4 * ey), pointB], 3)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!)));
+    }
     return result;
   }
   /** Union region. */
   public static createSimpleUnions(): UnionRegion[] {
     const parityRegions = Sample.createSimpleParityRegions();
-    const loops = Sample.createSimpleLoops();
+    const parityRange = parityRegions[0].range();
     const ax = 3.0;
     const ay = 1.0;
     const bx = 4.0;
     const by = 2.0;
     const result = [
-      UnionRegion.create(loops[0], parityRegions[0]),
       UnionRegion.create(
         Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 0, 0), ax, ay)),
-        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 2 * ay, 0), bx, by)))];
+        Loop.create(LineString3d.createRectangleXY(Point3d.create(0, 2 * ay, 0), bx, by))),
+      UnionRegion.create(
+        Loop.create(LineString3d.create(Sample.createRectangleXY(parityRange.low.x, parityRange.high.y + 0.5, parityRange.xLength(), parityRange.yLength()))),
+        parityRegions[0])];
     return result;
   }
   /** Assorted unstructured curve sets. */
@@ -1382,6 +1441,16 @@ export class Sample {
       points.push(Point3d.create(x0, y0, z));
     return points;
   }
+  /** create an array of points for a rectangle with corners of a Range2d.
+   */
+  public static createRectangleInRange2d(range: Range2d, z: number = 0.0, closed: boolean = false): Point3d[] {
+    const x0 = range.low.x;
+    const x1 = range.high.x;
+    const y0 = range.low.y;
+    const y1 = range.high.y;
+    return this.createRectangle(x0, y0, x1, y1, z, closed);
+  }
+
   /** Create assorted ruled sweeps */
   public static createRuledSweeps(includeParityRegion: boolean = false, includeBagOfCurves: boolean = false): RuledSweep[] {
     const allSweeps = [];

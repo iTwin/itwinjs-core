@@ -16,9 +16,9 @@ describe("<Toggle />", () => {
     );
 
     let label = wrapper.find("label.core-toggle");
-    label.should.exist;
+    label.length.should.eq(1);
     label = wrapper.find("label.core-toggle.rounded");
-    label.should.exist;
+    label.length.should.eq(1);
 
     wrapper.unmount();
   });
@@ -40,7 +40,7 @@ describe("<Toggle />", () => {
     );
 
     const input = wrapper.find("input.core-toggle-input");
-    input.should.exist;
+    input.length.should.eq(1);
 
     input.simulate("change", { checked: true });
     spyMethod.calledOnce.should.true;
@@ -56,7 +56,7 @@ describe("<Toggle />", () => {
     );
 
     const input = wrapper.find("input.core-toggle-input");
-    input.should.exist;
+    input.length.should.eq(1);
 
     input.simulate("blur");
     spyMethod.calledOnce.should.true;
@@ -97,10 +97,10 @@ describe("<Toggle />", () => {
     wrapper.update();
 
     const input = wrapper.find("input.core-toggle-input");
-    input.should.exist;
+    input.length.should.eq(1);
     input.getDOMNode().hasAttribute("disabled").should.true;
     const label = wrapper.find("label.core-toggle.disabled");
-    label.should.exist;
+    label.length.should.eq(1);
 
     wrapper.unmount();
   });

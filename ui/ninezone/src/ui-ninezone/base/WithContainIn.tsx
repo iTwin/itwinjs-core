@@ -5,8 +5,8 @@
 /** @module Base */
 
 import * as React from "react";
+import { RectangleProps, Rectangle } from "@bentley/ui-core";
 import { Css } from "../utilities/Css";
-import { Rectangle, RectangleProps } from "../utilities/Rectangle";
 
 /** Properties of [[withContainIn]] HOC.
  * @alpha

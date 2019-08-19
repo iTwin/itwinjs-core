@@ -11,14 +11,14 @@ The __@bentley/build-tools__ is a package for developers to consolidate the step
 Location: tsconfig-base.json\
 Requires build: no
 
-This file contains common tsconfig settings across all imodeljs packages. Packages should extend this file in their own tsconfig.json file, and then overwrite and set new properties as needed. Note that this file is different from the tsconfig.json file for this package, as that contains different settings for bentleyjs-tools only.
+This file contains common tsconfig settings across all iModel.js packages. Packages should extend this file in their own tsconfig.json file, and then overwrite and set new properties as needed. Note that this file is different from the tsconfig.json file for this package, as that contains different settings for bentleyjs-tools only.
 
 ### tslint
 
 Location: tslint.json\
 Requires build: yes
 
-This file contains common tslint settings across all imodeljs packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
+This file contains common tslint settings across all iModel.js packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
 
 ### TSLint Rules
 

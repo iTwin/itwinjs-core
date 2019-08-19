@@ -5,7 +5,7 @@
 
 /** @module Curve */
 
-import { AnyRegion } from "./CurveChain";
+import { AnyRegion, AnyCurve } from "./CurveChain";
 import { MomentData } from "../geometry4d/MomentData";
 import { RegionMomentsXY } from "./RegionMomentsXY";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "../topology/Graph";
@@ -17,8 +17,14 @@ import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { PolygonWireOffsetContext } from "./PolygonOffsetContext";
-import { CurveCollection } from "./CurveCollection";
+import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
+import { CurveCollection, BagOfCurves } from "./CurveCollection";
+import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
+import { Geometry } from "../Geometry";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
+import { PointInOnOutContext } from "./Query/InOutTests";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -242,11 +248,13 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
  * * `ParityRegion` -- a collection of loops, interpreted by parity rules.
  *    * The common "One outer loop and many Inner loops" is a parity region.
  * * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * @alpha
+ * @beta
  */
 export class RegionOps {
   /**
-   * Return moment data for a loop, parity region, or union region.
+   * Return moment sums for a loop, parity region, or union region.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
    * @param root any Loop, ParityRegion, or UnionRegion.
    */
   public static computeXYAreaMoments(root: AnyRegion): MomentData | undefined {
@@ -257,6 +265,17 @@ export class RegionOps {
       return result;
     }
     return undefined;
+  }
+  /** Return MomentData with the sums of wire moments.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   */
+  public static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined {
+    const handler = new CurveWireMomentsXYZ();
+    handler.visitLeaves(root);
+    const result = handler.momentData;
+    result.shiftOriginAndSumsToCentroidOfSums();
+    return result;
   }
 
   /**
@@ -350,13 +369,67 @@ export class RegionOps {
    * @param points a single loop or path
    * @param wrap true to include wraparound
    * @param offsetDistance distance of offset from wire.  Positive is left.
-   * @alpha
+   * @beta
    */
   public static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistance: number): CurveCollection | undefined {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistance);
-
   }
+  /**
+   * Construct curves that are offset from a Path or Loop
+   * * The construction will remove "some" local effects of features smaller than the offset distance, but will not detect self intersection among widely separated edges.
+   * * Offset distance is defined as positive to the left.
+   * * If offsetDistanceOrOptions is given as a number, default options are applied.
+   * * When the offset needs to do an "outside" turn, the first applicable construction is applied:
+   *   * If the turn is larger than `options.minArcDegrees`, a circular arc is constructed.
+   *   * if the turn is larger than `options.maxChamferDegrees`, the turn is constructed as a sequence of straight lines that are
+   *      * outside the arc
+   *      * have uniform turn angle less than `options.maxChamferDegrees`
+   *      * each line segment (except first and last) touches the arc at its midpoint.
+   *   * Otherwise the prior and successor curves are extended to simple intersection.
+   * @param curves input curves
+   * @param offsetDistanceOrOptions offset controls.
+   */
+  public static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions): CurveCollection | undefined {
+    const options = JointOptions.create(offsetDistanceOrOptions);
+    return CurveChainWireOffsetContext.constructCurveXYOffset(curves, options);
+  }
+  /**
+   * Test if point (x,y) is IN, OUT or ON a polygon.
+   * @return (1) for in, (-1) for OUT, (0) for ON
+   * @param x x coordinate
+   * @param y y coordinate
+   * @param points array of xy coordinates.
+   */
+  public static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number {
+    return PointInOnOutContext.testPointInOnOutRegionXY(curves, x, y);
+  }
+  /** Create curve collection of subtype determined by gaps between the input curves.
+   * * If (a) wrap is requested and (b) all curves connect head-to-tail (including wraparound), assemble as a `loop`.
+   * * If all curves connect head-to-tail except for closure, return a `Path`.
+   * * If there are internal gaps, return a `BagOfCurves`
+   * * If input array has zero length, return undefined.
+   */
+  public static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap: boolean = true): CurveCollection | undefined {
+    const n = curves.length;
+    if (n === 0)
+      return undefined;
+    let maxGap = 0.0;
+    if (wrap)
+      maxGap = Geometry.maxXY(maxGap, curves[0].startPoint().distance(curves[n - 1].endPoint()));
+    for (let i = 0; i + 1 < n; i++)
+      maxGap = Geometry.maxXY(maxGap, curves[i].endPoint().distance(curves[i + 1].startPoint()));
+    let collection: Loop | Path | BagOfCurves;
+    if (Geometry.isSmallMetricDistance(maxGap)) {
+      collection = wrap ? Loop.create() : Path.create();
+    } else {
+      collection = BagOfCurves.create();
+    }
+    for (const c of curves)
+      collection.tryAddChild(c);
+    return collection;
+  }
+
   private static _graphCheckPointFunction?: GraphCheckPointFunction;
   /**
    * Announce Checkpoint function for use during booleans

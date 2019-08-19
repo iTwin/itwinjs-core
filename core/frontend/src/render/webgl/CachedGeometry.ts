@@ -665,6 +665,27 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
   }
 }
 
+/** @internal */
+export class EVSMGeometry extends TexturedViewportQuadGeometry {
+  public readonly stepSize = new Float32Array(2);
+
+  public static createGeometry(depthBuffer: WebGLTexture, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EVSMGeometry(params, [depthBuffer], width, height);
+  }
+
+  public get depthTexture() { return this._textures[0]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
+    super(params, TechniqueId.EVSMFromDepth, textures);
+    this.stepSize[0] = 1.0 / width;
+    this.stepSize[1] = 1.0 / height;
+  }
+}
+
 /** Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
  * @internal
  */

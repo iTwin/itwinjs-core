@@ -37,7 +37,6 @@ export interface FrameworkStagePanelProps {
   panel: NineZoneStagePanelManagerProps;
   renderPane: (index: number) => React.ReactNode;
   resizable: boolean;
-  size?: number;
   widgetChangeHandler: WidgetChangeHandler;
   widgetCount: number;
   widgets: ZonesManagerWidgetsProps;

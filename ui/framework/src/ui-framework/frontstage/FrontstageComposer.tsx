@@ -5,11 +5,11 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import {
-  ResizeHandle, NineZoneManagerProps, WidgetZoneId, PointProps, RectangleProps, ZoneTargetType, Rectangle,
+  ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType,
   getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelType, StagePanelsManager, widgetZoneIds,
 } from "@bentley/ui-ninezone";
 import { StagePanelLocation, getNestedStagePanelKey } from "../stagepanels/StagePanel";
@@ -206,9 +206,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Top).collapseOffset = 0;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).minSize = 20;
     nestedPanelsManager.getPanelsManager("outer").getPanelManager(StagePanelType.Bottom).collapseOffset = 0;
+
     widgetZoneIds.forEach((zoneId: WidgetZoneId) => {
       const zoneDef = this.getZoneDef(zoneId);
-      if (!zoneDef || zoneDef.zoneState !== ZoneState.Open)
+      if (!zoneDef || zoneDef.zoneState === ZoneState.Off)
         return;
 
       if (!zoneDef.allowsMerging)

@@ -153,6 +153,10 @@ export class DecorateContext extends RenderContext {
           this._decorations.viewOverlay = [];
         this._decorations.viewOverlay.push(decoration);
         break;
+
+      case GraphicType.ViewBackground:
+        this.setViewBackground(decoration);
+        break;
     }
   }
 
@@ -424,6 +428,7 @@ export class DecorateContext extends RenderContext {
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];
+  public readonly overlayGraphics: RenderGraphic[] = [];
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
@@ -447,7 +452,8 @@ export class SceneContext extends RenderContext {
         this.backgroundGraphics.push(graphic);
         break;
       case TileTree.GraphicType.Overlay:
-      // ###TODO handle differently
+          this.overlayGraphics.push(graphic);
+          break;
       default:
         this.graphics.push(graphic);
         break;

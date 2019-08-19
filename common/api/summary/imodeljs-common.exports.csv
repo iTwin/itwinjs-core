@@ -32,7 +32,9 @@ public;Cartographic
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
-beta;ChangedElements
+internal;ChangeData
+internal;ChangedElements
+internal;ChangedModels
 public;ChangedValueState
 public;ChangeOpCode
 internal;CHANNEL = "@bentley/imodeljs-mobilegateway"
@@ -339,6 +341,10 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
+alpha;TerrainHeightOriginMode
+alpha;TerrainProps
+alpha;TerrainProviderName = "CesiumWorldTerrain"
+alpha;TerrainSettings
 internal;TestRpcManager
 public;TextString
 public;TextStringProps

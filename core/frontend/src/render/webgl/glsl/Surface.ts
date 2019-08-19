@@ -17,7 +17,7 @@ import { IsInstanced, IsAnimated, IsClassified, FeatureMode, IsShadowable, HasMa
 import { assignFragColor, assignFragColorWithPreMultipliedAlpha, addWhiteOnWhiteReversal, addPickBufferOutputs, addAltPickBufferOutputs } from "./Fragment";
 import { addFeatureAndMaterialLookup, addProjectionMatrix, addModelViewMatrix, addNormalMatrix } from "./Vertex";
 import { addAnimation } from "./Animation";
-import { unquantize2d, decodeDepthRgb } from "./Decode";
+import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Decode";
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
@@ -50,35 +50,27 @@ const applyMaterialColor = `
 `;
 
 // if this is a raster glyph, the sampled color has already been modified - do not modify further.
+// Mix diffuse color with texel based on texture weight.
+// Replace with diffuse RGB if RGB overridden.
+// Replace with diffuse alpha if alpha overridden.
+// Multiply texel alpha with diffuse alpha if specified.
 const applyTextureWeight = `
   float textureWeight = mat_texture_weight * extractSurfaceBit(kSurfaceBit_HasTexture) * (1.0 - u_applyGlyphTex);
   vec4 rgba = mix(baseColor, g_surfaceTexel, textureWeight);
   rgba.rgb = mix(rgba.rgb, v_color.rgb, extractSurfaceBit(kSurfaceBit_OverrideRgb));
   rgba.a = mix(rgba.a, v_color.a, extractSurfaceBit(kSurfaceBit_OverrideAlpha));
+  rgba.a = mix(rgba.a, v_color.a * rgba.a, extractSurfaceBit(kSurfaceBit_MultiplyAlpha));
   return rgba;
 `;
 
-const unpackMaterialParam = `
-vec2 unpackMaterialParam(float f) {
-  vec2 v;
-  v.y = floor(f / 256.0);
-  v.x = floor(f - v.y * 256.0);
-  return v;
-}`;
-
-const unpackAndNormalizeMaterialParam = `
-vec2 unpackAndNormalizeMaterialParam(float f) {
-  return unpackMaterialParam(f) / 255.0;
-}`;
-
 const decodeFragMaterialParams = `
 void decodeMaterialParams(vec4 params) {
-  mat_weights = unpackAndNormalizeMaterialParam(params.x);
+  mat_weights = unpackAndNormalize2Bytes(params.x);
 
-  vec2 texAndSpecR = unpackAndNormalizeMaterialParam(params.y);
+  vec2 texAndSpecR = unpackAndNormalize2Bytes(params.y);
   mat_texture_weight = texAndSpecR.x;
 
-  vec2 specGB = unpackAndNormalizeMaterialParam(params.z);
+  vec2 specGB = unpackAndNormalize2Bytes(params.z);
   mat_specular = vec4(texAndSpecR.y, specGB, params.w);
 }`;
 
@@ -134,8 +126,7 @@ export function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMateri
   frag.addGlobal("mat_weights", VariableType.Vec2); // diffuse, specular
   frag.addGlobal("mat_specular", VariableType.Vec4); // rgb, exponent
 
-  frag.addFunction(unpackMaterialParam);
-  frag.addFunction(unpackAndNormalizeMaterialParam);
+  addUnpackAndNormalize2Bytes(frag);
   frag.addFunction(decodeFragMaterialParams);
   frag.addInitializer("decodeMaterialParams(v_materialParams);");
 
@@ -254,7 +245,10 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_BackgroundFill", VariableType.Float, "5.0");
   builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
   builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
-  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.");
+  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.0");
+  builder.addConstant("kSurfaceBit_NoFaceFront", VariableType.Float, "9.0");
+  builder.addConstant("kSurfaceBit_MultiplyAlpha", VariableType.Float, "10.0");
+  // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceMask_HasTexture", VariableType.Float, "1.0");
@@ -266,6 +260,9 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_HasColorAndNormal", VariableType.Float, "64.0");
   builder.addConstant("kSurfaceMask_OverrideAlpha", VariableType.Float, "128.0");
   builder.addConstant("kSurfaceMask_OverrideRgb", VariableType.Float, "256.0");
+  builder.addConstant("kSurfaceMask_NoFaceFront", VariableType.Float, "512.0");
+  builder.addConstant("kSurfaceMask_MultiplyAlpha", VariableType.Float, "1024.0");
+  // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   builder.addFunction(extractNthBit);
   builder.addFunction(extractSurfaceBit);
@@ -278,8 +275,11 @@ const computeBaseSurfaceFlags = `
   float flags = u_surfaceFlags;
   if (feature_ignore_material) {
     bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
-    if (hasTexture)
+    if (hasTexture) {
       flags -= kSurfaceMask_HasTexture;
+      if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
+        flags -= kSurfaceMask_MultiplyAlpha;
+    }
 
     flags += kSurfaceMask_IgnoreMaterial;
   }
@@ -289,8 +289,11 @@ const computeColorSurfaceFlags = `
   if (feature_rgb.r >= 0.0)
     flags += kSurfaceMask_OverrideRgb;
 
-  if (feature_alpha >= 0.0)
+  if (feature_alpha >= 0.0) {
     flags += kSurfaceMask_OverrideAlpha;
+    if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
+      flags -= kSurfaceMask_MultiplyAlpha;
+  }
 `;
 
 const returnSurfaceFlags = `
@@ -435,9 +438,12 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addShaderFlags(builder);
 
   const feat = flags.featureMode;
-  addFeatureSymbology(builder, feat, FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None);
+  const opts = FeatureMode.Overrides === feat ? FeatureSymbologyOptions.Surface : FeatureSymbologyOptions.None;
+  const computeFeatureIdInFrag = 0 !== flags.isShadowable && 0 !== flags.isClassified && FeatureMode.Overrides === feat;
+
+  addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
-  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified);
+  addSurfaceDiscard(builder, feat, flags.isEdgeTestNeeded, flags.isClassified, computeFeatureIdInFrag);
   addNormal(builder, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
@@ -493,7 +499,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 // Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
 // We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
 // non-transparent pixel of it.
-const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha == 0.0;`;
+const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
 
 /** @internal */
 export function addSurfaceDiscardByAlpha(frag: FragmentShaderBuilder): void {

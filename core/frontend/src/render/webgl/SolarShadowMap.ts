@@ -17,12 +17,14 @@ import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
 import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
-import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows } from "@bentley/imodeljs-common";
-import { System } from "./System";
+import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
+import { System, RenderType } from "./System";
 import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./DrawCommand";
-import { RenderPass } from "./RenderFlags";
+import { RenderPass, TextureUnit } from "./RenderFlags";
+import { EVSMGeometry } from "./CachedGeometry";
+import { getDrawParams } from "./ScratchDrawParams";
 
 class SolarShadowMapDrawArgs extends Tile.DrawArgs {
   constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
@@ -43,11 +45,75 @@ class SolarShadowMapDrawArgs extends Tile.DrawArgs {
 }
 
 const enum Status { BelowHorizon, OutOfSynch, WaitingForTiles, GraphicsReady, TextureReady }
-export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory.Consumer {
 
+const shadowMapWidth = 4096;
+const shadowMapHeight = shadowMapWidth; // TBD - Adjust for aspect ratio.
+
+// Bundles up the disposable, create-once-and-reuse members of a SolarShadowMap.
+class Bundle {
+  private constructor(
+    public readonly depthTexture: Texture,
+    public readonly shadowMapTexture: Texture,
+    public readonly fbo: FrameBuffer,
+    public readonly fboSM: FrameBuffer,
+    public readonly evsmGeom: EVSMGeometry,
+    public readonly renderCommands: RenderCommands) {
+  }
+
+  public static create(target: Target, stack: BranchStack, batch: BatchState): Bundle | undefined {
+    const depthTextureHandle = System.instance.createDepthBuffer(shadowMapWidth, shadowMapHeight) as TextureHandle;
+    if (undefined === depthTextureHandle)
+      return undefined;
+
+    const fbo = FrameBuffer.create([], depthTextureHandle);
+    if (undefined === fbo)
+      return undefined;
+
+    let pixelDataType = GL.Texture.DataType.Float;
+    switch (System.instance.capabilities.maxRenderType) {
+      case RenderType.TextureFloat:
+        break;
+      case RenderType.TextureHalfFloat:
+        const exthf = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
+        if (undefined !== exthf) {
+          pixelDataType = exthf.HALF_FLOAT_OES;
+          break;
+        }
+      /* falls through */
+      default:
+        return undefined;
+    }
+
+    const shadowMapTextureHandle = TextureHandle.createForAttachment(shadowMapWidth, shadowMapHeight, GL.Texture.Format.Rgba, pixelDataType);
+    if (undefined === shadowMapTextureHandle)
+      return undefined;
+
+    const fboSM = FrameBuffer.create([shadowMapTextureHandle]);
+    if (undefined === fboSM)
+      return undefined;
+
+    const depthTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), depthTextureHandle);
+    const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
+    if (undefined === evsmGeom)
+      return undefined;
+
+    const shadowMapTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true), shadowMapTextureHandle);
+    const renderCommands = new RenderCommands(target, stack, batch);
+    return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
+  }
+
+  public dispose(): void {
+    dispose(this.depthTexture);
+    dispose(this.shadowMapTexture);
+    dispose(this.fbo);
+    dispose(this.fboSM);
+    dispose(this.evsmGeom);
+  }
+}
+
+export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory.Consumer {
+  private _bundle?: Bundle;
   private _doFitToFrustum = true;
-  private _depthTexture?: Texture;
-  private _fbo?: FrameBuffer;
   private _direction?: Vector3d;
   private _models?: ModelSelectorState;
   private _categories?: CategorySelectorState;
@@ -58,27 +124,55 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
   private _status = Status.OutOfSynch;
   private _settings = new SolarShadows.Settings();
   private _treeRefs: TileTree.Reference[] = [];
+  private readonly _scratchRange = Range3d.createNull();
+  private readonly _scratchTransform = Transform.createIdentity();
+  private readonly _scratchFrustumPlanes = new FrustumPlanes();
+  private readonly _scratchViewFlags = new ViewFlags();
+  private readonly _renderState: RenderState;
+  private readonly _noZRenderState: RenderState;
+  private readonly _branchStack = new BranchStack();
+  private readonly _batchState: BatchState;
+
+  private getBundle(target: Target): Bundle | undefined {
+    if (undefined === this._bundle) {
+      this._bundle = Bundle.create(target, this._branchStack, this._batchState);
+      assert(undefined !== this._bundle);
+    }
+
+    return this._bundle;
+  }
+
   public get isReady() { return this._status === Status.TextureReady; }
   public get projectionMatrix(): Matrix4 { return this._projectionMatrix; }
-  public get depthTexture(): Texture | undefined { return this._depthTexture; }
+  public get depthTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.depthTexture : undefined; }
+  public get shadowMapTexture(): Texture | undefined { return undefined !== this._bundle ? this._bundle.shadowMapTexture : undefined; }
   public get settings(): SolarShadows.Settings { return this._settings; }
   public get direction(): Vector3d | undefined { return this._direction; }
   public addGraphic(graphic: RenderGraphic) { this._graphics.push(graphic); }
-  private static _scratchRange = Range3d.createNull();
-  private static _scratchTransform = Transform.createIdentity();
 
   public constructor() {
     super();
+
+    this._renderState = new RenderState();
+    this._renderState.flags.depthMask = true;
+    this._renderState.flags.blend = false;
+    this._renderState.flags.depthTest = true;
+
+    this._noZRenderState = new RenderState();
+    this._noZRenderState.flags.depthMask = false;
+
+    this._batchState = new BatchState(this._branchStack);
   }
+
   public get requiresSynch() { return this._status === Status.OutOfSynch; }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._depthTexture)
-      stats.addShadowMap(this._depthTexture.bytesUsed);
+    const bundle = this._bundle;
+    if (undefined !== bundle)
+      stats.addShadowMap(bundle.depthTexture.bytesUsed + bundle.shadowMapTexture.bytesUsed);
   }
   public dispose() {
-    this._depthTexture = dispose(this._depthTexture);
-    this._fbo = dispose(this._fbo);
+    this._bundle = dispose(this._bundle);
     this.clearGraphics();
   }
   public set(viewFrustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState) {
@@ -165,13 +259,13 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
       // By fitting to the actual tiles we can reduce the shadowRange and make better use of the texture pixels.
       if (!backgroundOn) {
         const viewTileRange = Range3d.createNull();
-        const viewPlanes = new FrustumPlanes(this._viewFrustum);
-        this.forEachTileTree((tileTree) => tileTree.accumulateTransformedRange(viewTileRange, worldToMap, viewPlanes));
+        this._scratchFrustumPlanes.init(this._viewFrustum);
+        this.forEachTileTree((tileTree) => tileTree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes));
         if (!viewTileRange.isNull)
           shadowRange.intersect(viewTileRange, shadowRange);
       }
 
-      const projectRange = worldToMapTransform.multiplyRange(iModel.projectExtents, SolarShadowMap._scratchRange);
+      const projectRange = worldToMapTransform.multiplyRange(iModel.projectExtents, this._scratchRange);
       shadowRange.low.x = Math.max(shadowRange.low.x, projectRange.low.x);
       shadowRange.high.x = Math.min(shadowRange.high.x, projectRange.high.x);
       shadowRange.low.y = Math.max(shadowRange.low.y, projectRange.low.y);
@@ -189,15 +283,15 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
 
     const tileRange = Range3d.createNull();
-    const frustumPlanes = new FrustumPlanes(this._shadowFrustum);
+    this._scratchFrustumPlanes.init(this._shadowFrustum);
     const originalMissingTileCount = sceneContext.missingTiles.entries.length;
     this.forEachTileTree(((tileTree) => {
-      const drawArgs = SolarShadowMapDrawArgs.create(sceneContext, this, tileTree, frustumPlanes);
-      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, SolarShadowMap._scratchTransform);
+      const drawArgs = SolarShadowMapDrawArgs.create(sceneContext, this, tileTree, this._scratchFrustumPlanes);
+      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, this._scratchTransform);
       const selectedTiles = tileTree.selectTiles(drawArgs);
 
       for (const selectedTile of selectedTiles) {
-        tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, SolarShadowMap._scratchRange));
+        tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));
         selectedTile.drawGraphics(drawArgs);
       }
 
@@ -230,30 +324,17 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     if (this._status !== Status.GraphicsReady)
       return;
 
-    const shadowMapWidth = 4096;
-    const shadowMapHeight = shadowMapWidth;   // TBD - Adjust for aspect ratio.
-    if (undefined === this._fbo || undefined === this._depthTexture) {
-      const depthTextureHandle = System.instance.createDepthBuffer(shadowMapWidth, shadowMapHeight) as TextureHandle;
-      if (undefined === depthTextureHandle ||
-        undefined === (this._fbo = FrameBuffer.create([], depthTextureHandle))) {
-        assert(false, "Failed to create shadow depth buffer");
-        return;
-      }
-      this._depthTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), depthTextureHandle);
-    }
+    const bundle = this.getBundle(target);
+    if (undefined === bundle)
+      return;
 
     const prevState = System.instance.currentRenderState.clone();
     System.instance.context.viewport(0, 0, shadowMapWidth, shadowMapHeight);
 
-    const state = new RenderState();
-    state.flags.depthMask = true;
-    state.flags.blend = false;
-    state.flags.depthTest = true;
-
-    const viewFlags = target.currentViewFlags.clone();
+    const viewFlags = target.currentViewFlags.clone(this._scratchViewFlags);
     viewFlags.renderMode = RenderMode.SmoothShade;
     viewFlags.transparency = false;
-    viewFlags.textures = false;
+    // viewFlags.textures = false;  // need textures for alpha transparency shadows
     viewFlags.lighting = false;
     viewFlags.shadows = false;
     viewFlags.noGeometryMap = true;
@@ -262,25 +343,48 @@ export class SolarShadowMap extends RenderSolarShadowMap implements RenderMemory
     viewFlags.ambientOcclusion = false;
     viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
 
-    const stack = new BranchStack();
-    const batchState = new BatchState(stack);
-    System.instance.applyRenderState(state);
+    System.instance.applyRenderState(this._renderState);
     const prevPlan = target.plan;
 
     target.changeFrustum(this._shadowFrustum, this._shadowFrustum.getFraction(), true);
     target.branchStack.setViewFlags(viewFlags);
 
-    const renderCommands = new RenderCommands(target, stack, batchState);
+    const renderCommands = bundle.renderCommands;
+    renderCommands.reset(target, this._branchStack, this._batchState);
     renderCommands.addGraphics(this._graphics);
 
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
+    System.instance.frameBufferStack.execute(bundle.fbo, true, () => {
       System.instance.context.clearDepth(1.0);
       System.instance.context.clear(GL.BufferBit.Depth);
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaquePlanar), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
-    batchState.reset();   // Reset the batch Ids...
+    // copy depth buffer to EVSM shadow buffer
+    System.instance.frameBufferStack.execute(bundle.fboSM, true, () => {
+      System.instance.applyRenderState(this._noZRenderState);
+      const params = getDrawParams(target, bundle.evsmGeom);
+      target.techniques.draw(params);
+    });
+
+    // mipmap resulting EVSM texture and set filtering options
+    const gl = System.instance.context;
+    gl.activeTexture(TextureUnit.ShadowMap);
+    gl.bindTexture(gl.TEXTURE_2D, bundle.shadowMapTexture.texture.getHandle()!);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    const fullFloat = System.instance.capabilities.maxRenderType === RenderType.TextureFloat;
+    if (fullFloat && System.instance.capabilities.supportsTextureFloatLinear || !fullFloat && System.instance.capabilities.supportsTextureHalfFloatLinear) {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
+    const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
+    if (undefined !== ext) {
+      const max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
+    }
+    // target.recordPerformanceMetric("Compute EVSM");
+
+    this._batchState.reset();   // Reset the batch Ids...
     if (prevPlan)
       target.changeRenderPlan(prevPlan);
 

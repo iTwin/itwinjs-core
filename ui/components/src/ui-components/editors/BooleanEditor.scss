@@ -10,6 +10,10 @@ $checkbox-size: $uicore-font-size * 1.2;
   height:      $checkbox-size;
   width:       $checkbox-size;
   margin-left: 0px;
+
+  &.components-cell-editor {
+    border:      none;
+  }
 }
 
 .components-property-list--horizontal {

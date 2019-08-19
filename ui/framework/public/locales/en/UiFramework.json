@@ -16,7 +16,7 @@
     "sheet": "Sheet",
     "of": "of",
     "alert": "Alert",
-    "toolSettings": "Tool Settings",
+    "settings": "Settings",
     "minimize": "Minimize",
     "overflow": "Overflow"
   },
@@ -93,8 +93,23 @@
   },
   "realityData": {
     "title": "Reality Data",
+    "group": "Group",
+    "size": "Size",
+    "kilobytes": "KB",
+    "notAvailable": "N/A",
     "noneAvailable": "No reality data available.",
-    "bingMap": "Bing Map"
+    "bingMap": "Bing Map",
+    "attached": "(Attached)",
+    "settings": "Settings...",
+    "options": "Options",
+    "hybrid": "Hybrid",
+    "aerial": "Aerial",
+    "street": "Street",
+    "showAll": "Show All",
+    "hideAll": "Hide All",
+    "invertDisplay": "Invert",
+    "bingMapSettings": "Bing Map Settings",
+    "elevationOffset": "Elevation Offset:"
   },
   "savedViews": {
     "views": "Views",
@@ -147,6 +162,13 @@
     "searchViews": "Search Views...",
     "listView": "List",
     "thumbnailView": "Thumbnails"
+  },
+  "visibilityWidget": {
+    "modeltree": "Model Tree",
+    "categories": "Categories",
+    "containment": "Spatial Containment",
+    "options": "Options",
+    "visibilityTree": "Visibility Tree"
   },
   "visibilityTree": {
     "status": {

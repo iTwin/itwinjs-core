@@ -44,6 +44,20 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /** Return the number of points in use. */
   public get length() { return this._xyzInUse; }
 
+  /** Set number of points.
+   * Pad zeros if length grows.
+   */
+  public set length(newLength: number) {
+    let oldLength = this.length;
+    if (newLength < oldLength) {
+      this._xyzInUse = newLength;
+    } else if (newLength > oldLength) {
+      this.ensureCapacity(newLength);
+      while (oldLength++ < newLength)
+        this.pushXYZ(0, 0, 0);
+    }
+  }
+
   /** Return the number of float64 in use. */
   public get float64Length() { return this._xyzInUse * 3; }
   /** Return the raw packed data.
@@ -194,6 +208,18 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._xyzInUse++;
   }
 
+  /** move the coordinates at fromIndex to toIndex.
+   * * No action if either index is invalid.
+   */
+  public moveIndexToIndex(fromIndex: number, toIndex: number) {
+    if (this.isIndexValid(fromIndex) && this.isIndexValid(toIndex)) {
+      let iA = fromIndex * 3;
+      let iB = toIndex * 3;
+      this._data[iB++] = this._data[iA++];
+      this._data[iB++] = this._data[iA++];
+      this._data[iB] = this._data[iA];
+    }
+  }
   /** Remove one point from the back.
    * * NOTE that (in the manner of std::vector native) this is "just" removing the point -- no point is NOT returned.
    * * Use `back ()` to get the last x,y,z assembled into a `Point3d `
@@ -248,6 +274,24 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return result;
     }
     return undefined;
+  }
+
+  /** access x of indexed point */
+  public getXAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index];
+  }
+
+  /** access y of indexed point */
+  public getYAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index + 1];
+  }
+
+  /** access y of indexed point */
+  public getZAtUncheckedPointIndex(pointIndex: number): number {
+    const index = 3 * pointIndex;
+    return this._data[index + 2];
   }
 
   /** copy xy into strongly typed Point2d */
@@ -396,6 +440,25 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       data[i] = coffs[0] * x + coffs[1] * y + coffs[2] * z + x0;
       data[i + 1] = coffs[3] * x + coffs[4] * y + coffs[5] * z + y0;
       data[i + 2] = coffs[6] * x + coffs[7] * y + coffs[8] * z + z0;
+    }
+  }
+
+  /** reverse the order of points. */
+  public reverseInPlace() {
+    const n = this.length;
+    let j0, j1;
+    let a;
+    const data = this._data;
+    for (let i0 = 0, i1 = n - 1; i0 < i1; i0++ , i1--) {
+      j0 = 3 * i0;
+      j1 = 3 * i1;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      j0++;
+      j1++;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
+      j0++;
+      j1++;
+      a = data[j0]; data[j0] = data[j1]; data[j1] = a;
     }
   }
 
@@ -650,6 +713,20 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
+  /**
+   * * compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
+   * * accumulate it to the result.
+   */
+  public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
+    const i = index * 3;
+    const data = this._data;
+    if (this.isIndexValid(index)) {
+      sum.x += scale * data[i];
+      sum.y += scale * data[i + 1];
+      sum.z += scale * data[i + 2];
+    }
+  }
+
   /** Compute the cross product of vectors from from origin to indexed targets i and j */
   public crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
     const j = targetAIndex * 3;
@@ -664,7 +741,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
 
   /** Return the distance between two points in the array.
-   * @deprecated -- use distanceIndexIndex
+   * @deprecated use distanceIndexIndex
    */
   public distance(i: number, j: number): number | undefined {
     if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {

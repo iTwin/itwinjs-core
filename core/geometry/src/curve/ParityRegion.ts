@@ -27,6 +27,34 @@ export class ParityRegion extends CurveCollection {
   public get children(): Loop[] { return this._children; }
   /** Construct parity region with empty loop array */
   public constructor() { super(); this._children = []; }
+  /**
+   * Add loops (recursively) to this region's children
+   */
+  public addLoops(data?: Loop | Loop[] | Loop[][]) {
+    if (data === undefined) {
+    } else if (data instanceof Loop)
+      this.children.push(data);
+    else if (Array.isArray(data)) {
+      for (const child of data) {
+        if (child instanceof Loop)
+          this.children.push(child);
+        else if (Array.isArray(child))
+          this.addLoops(child);
+      }
+    }
+  }
+  /** Return a single loop or parity region with given loops.
+   * * The returned structure CAPTURES the loops.
+   * * The loops are NOT reorganized by hole analysis.
+   */
+  public static createLoops(data?: Loop | Loop[] | Loop[][]): Loop | ParityRegion {
+    if (data instanceof Loop)
+      return data;
+    const result = new ParityRegion();
+    result.addLoops(data);
+    return result;
+  }
+
   /** Create a parity region with given loops */
   public static create(...data: Loop[]): ParityRegion {
     const result = new ParityRegion();

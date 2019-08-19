@@ -6,14 +6,14 @@
 /** @module Topology */
 
 /**
- * * XYParitySerachContext is an internal class for callers that can feed points (without extracting to array structures)
+ * * XYParitySearchContext is an internal class for callers that can feed points (without extracting to array structures)
  * * Most will be via static methods which handle a specific data source.
  *   * PolygonOps.classifyPointInPolygon (x,y,points: XAndY[])
  *   * HalfEdgeGraphSearch.pointInOrOnFaceXY (halfEdgeOnFace, x, y)
  * Use pattern:
  * * Caller must be able walk around polygon producing x,y coordinates (possibly transformed from actual polygon)
  * * Caller announce edges to tryStartEdge until finding one acceptable to the search.
- * * Caller then passes additional points upto and including both x0,y0 and x1, y1 of the accepted start edge.
+ * * Caller then passes additional points up to and including both x0,y0 and x1, y1 of the accepted start edge.
  * Call sequence is:
  *    `context = new XYParitySearchContext`
  *    `repeat {  acquire edge (x0,y0) (x1,y1)} until context.tryStartEdge (x0,y0,x1,y1);`
@@ -44,7 +44,7 @@ export class XYParitySearchContext {
   }
   /**
    * test if x,y is a safe first coordinate to start the search.
-   * * safe start must have non-zero y so that final point test (return to x0,y0) does not need lookback for exact crossing logic.
+   * * safe start must have non-zero y so that final point test (return to x0,y0) does not need look back for exact crossing logic.
    * @param x
    * @param y
    */
@@ -59,14 +59,14 @@ export class XYParitySearchContext {
     return false;
   }
   /** Return true if parity accumulation proceeded normally.
-   * Return false if interupted for exact hit.
+   * Return false if interrupted for exact hit.
    */
   public advance(x: number, y: number): boolean {
     const u = x - this.xTest;
     const v = y - this.yTest;
     const p = v * this.v1;
     if (p > 0) {
-      // The commonn case -- skittering along above or below the x axis . . .
+      // The common case -- skittering along above or below the x axis . . .
       this.u0 = this.u1;
       this.v0 = this.v1;
       this.u1 = u;
@@ -75,7 +75,7 @@ export class XYParitySearchContext {
     }
     if (p < 0) {
       // crossing within (u1,v1) to (u,v)
-      // both v values are nonzero and of opposite sign, so this divisiion is safe . . .
+      // both v values are nonzero and of opposite sign, so this division is safe . . .
       const fraction = -this.v1 / (v - this.v1);
       const uCross = this.u1 + fraction * (u - this.u1);
       if (uCross === 0.0) {
@@ -115,7 +115,7 @@ export class XYParitySearchContext {
     }
     // fall out with v1 = 0
     // both v0 and v are nonzero.
-    // any along-0 v values that have passed through are on the same side of xTest, so u1 determins crossing
+    // any along-0 v values that have passed through are on the same side of xTest, so u1 determines crossing
     const q = this.v0 * v;
     if (this.u1 > 0) {
       if (q < 0)
@@ -131,7 +131,7 @@ export class XYParitySearchContext {
     return true;
   }
   /**
-   * Return classificatyion as ON, IN, or OUT according to hit and crossing counts.
+   * Return classification as ON, IN, or OUT according to hit and crossing counts.
    * * Any nonzero hit count is ON
    * * Otherwise IN if left crossing count is odd.
    * @return 0 if ON, 1 if IN, -1 if OUT

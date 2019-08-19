@@ -122,6 +122,33 @@ describe("DataProvidersFactory", () => {
       expect(dataProvider.description).to.eq("c");
     });
 
+    it("uses record's display value for double properties", async () => {
+      const ruleset = await createRandomRuleset();
+      const rawValue = 1.123;
+      const displayValue = "1.12 m2";
+
+      const field = createRandomPrimitiveField();
+      const descriptor = createRandomDescriptor();
+      descriptor.fields.push(field);
+      const contentItem = new Item([], "", "", undefined, { [field.name]: rawValue }, { [field.name]: displayValue }, []);
+      propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));
+
+      const record = createRandomPropertyRecord();
+      record.property.name = field.name;
+
+      const getConverterStub = sinon.spy(TypeConverterManager, "getConverter");
+
+      const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
+      props = { rulesetsFactory: rulesetsFactoryMock.object };
+      rulesetsFactoryMock
+        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("double", rawValue, displayValue) }));
+
+      const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
+      expect(getConverterStub).to.not.be.called;
+      expect(dataProvider.description).to.eq(displayValue);
+    });
+
   });
 
 });

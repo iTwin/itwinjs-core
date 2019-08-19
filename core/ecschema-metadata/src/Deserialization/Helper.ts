@@ -24,7 +24,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaKey, ECVersion, SchemaItemKey } from "../SchemaKey";
 import { SchemaPartVisitorDelegate, ISchemaPartVisitor } from "../SchemaPartVisitorDelegate";
-import { formatStringRgx } from "../utils/FormatEnums";
+import { getItemNamesFromFormatString } from "../utils/FormatEnums";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -951,18 +951,5 @@ export class SchemaReadHelper<T = unknown> {
       const customAttribute = provider(caClass);
       (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
     }
-  }
-}
-
-export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
-  const match = formatString.split(formatStringRgx);
-  yield match[1]; // the Format Name
-  let index = 4;
-  while (index < match.length - 1) { // index 0 and 21 are empty strings
-    if (match[index] !== undefined)
-      yield match[index + 1]; // Unit Name
-    else
-      break;
-    index += 4;
   }
 }

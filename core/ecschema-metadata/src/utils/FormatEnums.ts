@@ -2,10 +2,24 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OverrideFormat } from "../Metadata/OverrideFormat";
-import { Format } from "../Metadata/Format";
 
-/** @internal */
+/** The regular expression to parse [format strings]($docs/bis/ec/kindofquantity.md#format-string)
+ * provided in serialized formats as well as the full name of an [[OverrideFormat]].
+ *
+ * `formatName(precision)[unitName|unitLabel][unitName|unitLabel][unitName|unitLabel][unitName|unitLabel]`
+ *
+ * Explanation of the regex:
+ * - ([\w.:]+)
+ *   - Grabs the format full name
+ * - (\(([^\)]+)\))?
+ *   - Grabs the precision part with and without the `()`.
+ *   - The parentheses are needed to validate the entire string.  (TODO: Need to check if this is true)
+ * - (\[([^\|\]]+)([\|])?([^\]]+)?\])?
+ *   - 4 of these make up the rest of the regex, none of them are required so each end in `?`
+ *   - Grabs the unit name and label including the `[]`
+ *   - Grabs the unit name, `|` and label separately
+ * @internal
+ */
 export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
 /** @internal Needs to be moved to quantity */
@@ -20,35 +34,6 @@ export function* getItemNamesFromFormatString(formatString: string): Iterable<st
       break;
     index += 4;
   }
-}
-
-/** @internal Needs to be moved to quantity */
-export function generateFormatString(format: Format | OverrideFormat): string {
-  let formatString = format.name;
-  if ("parent" in format) {
-    if (undefined !== format.parent.schema.alias)
-      formatString = `${format.parent.schema.alias}:${format.name}`;
-  } else {
-    if (undefined !== format.schema.alias)
-      formatString = `${format.schema.alias}:${format.name}`;
-  }
-
-  if (undefined !== format.precision)
-    formatString += `(${format.precision.toString()})`;
-
-  if (undefined !== format.units) {
-    format.units.forEach(([unit, label]) => {
-      let unitName = unit.name;
-      if (undefined !== unit.schema.alias)
-        unitName = `${unit.schema.alias}:${unit.name}`;
-      formatString += `[${unitName}`;
-      if (undefined !== label)
-        formatString += `|${label}`;
-      formatString += "]";
-    });
-  }
-
-  return formatString;
 }
 
 /** @beta Needs to be moved to quantity  */

@@ -1,0 +1,99 @@
+@import "@bentley/ui-core/lib/ui-core/index.scss";
+@import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-core/lib/ui-core/style/colors";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
+
+.reality-data-widget {
+  height: 100%;
+  position: relative;
+
+  // TODO: modify LoadingSpinner to accept a class name
+  .core-ls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .reality-data-empty-msg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-style: italic;
+  }
+
+  .reality-data-viewer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    .reality-data-header {
+      display: flex;
+      align-items: center;
+      padding: 6px 5px;
+
+      .icon {
+        color: rgba(black, .85);
+        font-size: $uicore-font-size;
+
+        &:hover {
+          color: rgba(black, 1);
+          cursor: pointer;
+        }
+      }
+
+      .icon-search {
+        margin-left: auto;
+        margin-right: 6px;
+        font-size: $uicore-font-size;
+      }
+
+      .options {
+        padding: $uicore-xs;
+      }
+    }
+
+    // TODO: modify SearchBox to accept a class name
+    .core-searchbox {
+      display: none;
+      width: 98%;
+      align-self: center;
+      margin: 0;
+      margin-bottom: 10px;
+      -webkit-transition: all .5s ease;
+      -moz-transition: all .5s ease;
+      -o-transition: all .5s ease;
+      transition: all .5s ease;
+    }
+
+    &.show-search {
+      > .reality-data-header > .icon-search {
+        color: $uicore-blue;
+      }
+
+      > .core-searchbox {
+      display: flex;
+      }
+    }
+
+    .reality-data-content {
+      @include nz-scrollbar($color: $buic-background-4);
+      flex: 1;
+      overflow-y: auto;
+      width: 98%;
+      align-self: center;
+      margin-bottom: 10px;
+      background-color: $uicore-white;
+      border: 1px solid #ccc;
+
+      .reality-data-list {
+        margin: 0px;
+        padding: 0px;
+        list-style: none;
+        font-size: 14px;
+        overflow: hidden;
+      }
+    }
+  }
+}
