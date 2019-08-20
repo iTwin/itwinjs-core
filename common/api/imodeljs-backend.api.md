@@ -2123,7 +2123,7 @@ export class IModelJsFsStats {
 
 // @alpha
 export class IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     detectElementDeletes(): void;
@@ -2149,7 +2149,6 @@ export class IModelTransformer {
     protected formatIdForLogger(id: Id64String): string;
     protected formatModelForLogger(modelProps: ModelProps): string;
     protected formatRelationshipForLogger(relProps: RelationshipProps): string;
-    protected getTargetScopeElementId(): Id64String;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     importAll(): void;
     importChildElements(sourceElementId: Id64String): void;
@@ -2197,6 +2196,7 @@ export class IModelTransformer {
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
+    protected _targetScopeElementId: Id64String;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
