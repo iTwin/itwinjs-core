@@ -32,7 +32,7 @@ public;ContentRule
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase
 public;ContentSpecificationTypes
-public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule
+public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 alpha;DEFAULT_KEYS_BATCH_SIZE = 5000
@@ -55,6 +55,7 @@ public;ECPropertyValueQuerySpecification
 public;EditorDescription
 public;EnumerationChoice
 public;EnumerationInfo
+public;ExtendedDataRule 
 public;Field
 public;getInstancesCount: (keys: Readonly
 public;GroupingNodeKey 
@@ -108,6 +109,7 @@ internal;listFromJSON(json: NodeJSON[] | string): Node[]
 internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 internal;toJSON(node: Node): NodeJSON
+public;NodeArtifactsRule 
 public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey

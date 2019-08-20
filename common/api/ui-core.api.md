@@ -1783,7 +1783,7 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithIsPressedProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithIsPressedProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1800,7 +1800,7 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithIsPressedProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithIsPressedProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1829,7 +1829,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithOnOutsideClickProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1847,7 +1847,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithOnOutsideClickProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1875,7 +1875,7 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         startTimer(timeout: number): void;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithTimeoutProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithTimeoutProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1893,7 +1893,7 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         startTimer(timeout: number): void;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithTimeoutProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithTimeoutProps> & Readonly<{
             children?: React.ReactNode;
         }>;
