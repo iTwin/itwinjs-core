@@ -9,9 +9,10 @@ import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SpatialModelState } from "./ModelState";
 import { TileTree } from "./tile/TileTree";
-import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils } from "./tile/RealityModelTileTree";
+import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
 import { SpatialClassifiers } from "./SpatialClassification";
+import { DisplayStyleState } from "./DisplayStyleState";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -35,7 +36,7 @@ export class ContextRealityModelState {
   public readonly description: string;
   public readonly iModel: IModelConnection;
 
-  public constructor(props: ContextRealityModelProps, iModel: IModelConnection) {
+  public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
     this.url = props.tilesetUrl;
     this.name = undefined !== props.name ? props.name : "";
     this.description = undefined !== props.description ? props.description : "";
@@ -43,6 +44,7 @@ export class ContextRealityModelState {
 
     this._treeRef = createRealityTileTreeReference({
       iModel,
+      source: displayStyle,
       url: props.tilesetUrl,
       name: props.name,
       classifiers: new SpatialClassifiers(props),

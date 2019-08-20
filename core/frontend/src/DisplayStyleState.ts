@@ -74,7 +74,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (styles) {
       if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
-          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
       if (styles.analysisStyle)
         this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
@@ -199,7 +199,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.jsonProperties.styles.contextRealityModels = [];
 
     this.jsonProperties.styles.contextRealityModels.push(props);
-    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel));
+    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel, this));
   }
 
   /** @internal */

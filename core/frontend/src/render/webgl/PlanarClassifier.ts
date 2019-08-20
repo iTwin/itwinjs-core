@@ -158,9 +158,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   }
 
   public draw(target: Target) {
-    if (undefined === this._frustum) {
+    if (undefined === this._frustum)
       return;
-    }
 
     if (this._graphics === undefined)
       return;

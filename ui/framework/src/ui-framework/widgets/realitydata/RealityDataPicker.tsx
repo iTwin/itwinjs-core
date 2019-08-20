@@ -230,7 +230,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
         }
 
         _items.push({
-          model: new ContextRealityModelState(props, this._vp!.iModel),
+          model: new ContextRealityModelState(props, this._vp!.iModel, this._vp!.displayStyle),
           url: props.tilesetUrl,
           name: props.name || "",
           description: props.description || "",
