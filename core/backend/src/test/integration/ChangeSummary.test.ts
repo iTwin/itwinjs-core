@@ -76,7 +76,10 @@ describe("ChangeSummary (#integration)", () => {
   let readWriteTestIModel: TestIModelInfo;
 
   before(async () => {
-    Logger.setLevel("ECDb", LogLevel.Info);
+    IModelTestUtils.setupLogging();
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
+
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
 
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
@@ -642,6 +645,10 @@ describe("ChangeSummary (#integration)", () => {
     // User2 opens the iModel
     const iModel = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
 
+    // Attach change cache
+    ChangeSummaryManager.attachChangeCache(iModel);
+    assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
     // User1 pushes a change set
     await testUtility.pushTestChangeSet();
 
@@ -651,9 +658,6 @@ describe("ChangeSummary (#integration)", () => {
     const changeSummariesIds = await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, { currentVersionOnly: true });
     if (changeSummariesIds.length !== 1)
       throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
-
-    ChangeSummaryManager.attachChangeCache(iModel);
-    assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
     const changeSummaryId = changeSummariesIds[0];
     iModel.withPreparedStatement(
