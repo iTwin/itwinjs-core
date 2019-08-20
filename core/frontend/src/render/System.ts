@@ -5,7 +5,7 @@
 /** @module Rendering */
 
 import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY, Vector3d, Range1d } from "@bentley/geometry-core";
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
@@ -980,7 +980,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier, _tileTree: TileTree, _classifiedTileTree: TileTree, _sceneContext: SceneContext): RenderPlanarClassifier | undefined { return undefined; }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference, _heightRange?: Range1d): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public getSolarShadowMap(_frustum: Frustum, _direction: Vector3d, _settings: SolarShadows.Settings, _view: SpatialViewState): RenderSolarShadowMap | undefined { return undefined; }
   /** @internal */

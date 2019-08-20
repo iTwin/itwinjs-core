@@ -7,7 +7,7 @@
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d, Range1d,
 } from "@bentley/geometry-core";
 import {
   GraphicBranch,
@@ -804,7 +804,7 @@ export class System extends RenderSystem {
     return clipVolume;
   }
   public createPlanarClassifier(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedTree, sceneContext); }
-  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) { return BackgroundMapDrape.create(drapedTree, mapTree); }
+  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference, heightRange?: Range1d) { return BackgroundMapDrape.create(drapedTree, mapTree, heightRange); }
   public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined { return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
