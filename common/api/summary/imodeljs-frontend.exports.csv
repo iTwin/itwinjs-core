@@ -1,11 +1,25 @@
 sep=;
 Release Tag;API Item
 internal;AccuDraw
+internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
 beta;AccuDrawHintBuilder
+internal;AccuDrawRotateAxesTool 
+internal;AccuDrawRotateCycleTool 
+internal;AccuDrawRotateElementTool 
+internal;AccuDrawRotateFrontTool 
+internal;AccuDrawRotateSideTool 
+internal;AccuDrawRotateTopTool 
+internal;AccuDrawRotateViewTool 
+internal;AccuDrawSetLockAngleTool 
+internal;AccuDrawSetLockDistanceTool 
+internal;AccuDrawSetLockSmartTool 
+internal;AccuDrawSetLockXTool 
+internal;AccuDrawSetLockYTool 
+internal;AccuDrawSetLockZTool 
+internal;AccuDrawSetOriginTool 
 alpha;AccuDrawShortcuts
-internal;class AccuDrawTool
 public;AccuSnap 
 public;AccuSnap
 public;ACSDisplayOptions
@@ -84,6 +98,8 @@ public;DecorateContext
 public;Decorations 
 public;Decorator
 internal;DefaultViewTouchTool 
+internal;DefineACSByElementTool 
+internal;DefineACSByPointsTool 
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 

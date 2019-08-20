@@ -427,6 +427,14 @@ export class AccuDraw {
     }
 
 // @internal (undocumented)
+export class AccuDrawChangeModeTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
 export class AccudrawData {
     // (undocumented)
     angle: number;
@@ -537,6 +545,145 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
+// @internal (undocumented)
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
+    constructor(aboutCurrentZ?: boolean);
+    // (undocumented)
+    aboutCurrentZ: boolean;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    protected _immediateMode: boolean;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    parseAndRun(...args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateCycleTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    moveOrigin: boolean;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateFrontTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateSideTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateTopTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateViewTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockAngleTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockDistanceTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockSmartTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockXTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockYTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockZTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetOriginTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class AccuDrawShortcuts {
     // (undocumented)
@@ -588,13 +735,13 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean;
     // (undocumented)
-    static rotateCycle(updateCurrentACS: boolean): void;
+    static rotateCycle(): void;
     // (undocumented)
     static rotateToACS(): void;
     // (undocumented)
     static rotateToBase(): void;
     // (undocumented)
-    static rotateToElement(updateCurrentACS: boolean): void;
+    static rotateToElement(): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
     // (undocumented)
@@ -603,26 +750,6 @@ export class AccuDrawShortcuts {
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
     // (undocumented)
     static writeACS(_acsName: string): BentleyStatus;
-}
-
-// @internal (undocumented)
-export abstract class AccuDrawTool {
-    // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
-    abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): Promise<boolean>;
-    // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    doManipulationStop(cancel: boolean): void;
-    // (undocumented)
-    static installTool(shortcut: AccuDrawTool): boolean;
-    // (undocumented)
-    onDecorate(_context: DecorateContext): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
-    // (undocumented)
-    static outputPrompt(messageKey: string): void;
 }
 
 // @public
@@ -1876,6 +2003,40 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     onTouchComplete(_ev: BeTouchEvent): Promise<void>;
     // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class DefineACSByElementTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    activateAccuDrawOnStart(): boolean;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+}
+
+// @internal (undocumented)
+export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    activateAccuDrawOnStart(): boolean;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
     static toolId: string;
 }
@@ -3348,7 +3509,7 @@ export abstract class InputCollector extends InteractiveTool {
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    run(): boolean;
+    run(..._args: any[]): boolean;
 }
 
 // @beta
@@ -4755,7 +4916,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
-    run(): boolean;
+    run(..._args: any[]): boolean;
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
@@ -9096,7 +9257,7 @@ export abstract class ViewTool extends InteractiveTool {
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    run(): boolean;
+    run(..._args: any[]): boolean;
     // (undocumented)
     static showPrompt(prompt: string): void;
     // (undocumented)

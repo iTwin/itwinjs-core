@@ -27,7 +27,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Establish this tool as the active PrimitiveTool.
    * @return true if this tool was installed (though it may have exited too)
    */
-  public run(): boolean {
+  public run(..._args: any[]): boolean {
     const { toolAdmin, viewManager } = IModelApp;
     if (!this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
       return false;

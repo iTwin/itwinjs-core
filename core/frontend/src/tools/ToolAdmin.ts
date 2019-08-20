@@ -246,7 +246,7 @@ export class CurrentInputState {
     const state = this.button[BeButton.Data];
     const point = state.downUorPt;
     const rawPoint = state.downRawPt;
-    const viewPoint = this.viewport!.worldToView(rawPoint);
+    const viewPoint = this.viewport ? this.viewport.worldToView(rawPoint) : Point3d.create(); // BeButtonEvent is invalid when viewport is undefined
     ev.init({
       point, rawPoint, viewPoint, viewport: this.viewport!, coordsFrom: CoordSource.User,
       keyModifiers: this.qualifiers, button: BeButton.Data, isDown: state.isDown,

@@ -73,7 +73,7 @@ export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
-  public run(): boolean {
+  public run(..._args: any[]): boolean {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
       IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
