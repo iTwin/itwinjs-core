@@ -55,6 +55,16 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * data attached during stroking for facets.
    */
   public strokeData?: StrokeCountMap;
+  /**
+   * data attached in curve cutting.
+   * @internal
+   */
+  public startCut?: CurveLocationDetail;
+  /**
+   * data attached in curve cutting.
+   * @internal
+   */
+  public endCut?: CurveLocationDetail;
 
   /** Return the point (x,y,z) on the curve at fractional position.
    * @param fraction fractional position along the geometry.

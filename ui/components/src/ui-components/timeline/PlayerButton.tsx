@@ -52,9 +52,10 @@ export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonSta
     this.state = { isPlaying: this.props.isPlaying };
   }
 
-  public componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void {
-    if (nextProps.isPlaying !== this.state.isPlaying) {
-      this.setState({ isPlaying: nextProps.isPlaying });
+  /** @internal */
+  public componentDidUpdate() {
+    if (this.props.isPlaying !== this.state.isPlaying) {
+      this.setState({ isPlaying: this.props.isPlaying });
     }
   }
 

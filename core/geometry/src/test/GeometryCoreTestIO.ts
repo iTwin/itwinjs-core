@@ -31,7 +31,7 @@ export class GeometryCoreTestIO {
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }
-  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[], dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {

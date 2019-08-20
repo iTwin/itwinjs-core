@@ -401,6 +401,7 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityComponent 
+alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus

@@ -2144,6 +2144,7 @@ export class Sample {
   private static appendGeometry(source: GeometryQuery[], dest: GeometryQuery[]) {
     for (const g of source) dest.push(g);
   }
+
   /** Create a simple example of each GeometryQuery type .... */
   public static createAllGeometryQueryTypes(): GeometryQuery[] {
     const result: GeometryQuery[] = [];

@@ -39,8 +39,9 @@ export class Frontstage2 extends FrontstageProvider {
         descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
         verticalSplit: {
           percentage: 0.50,
-          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 } },
-          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3 } },
+          minSizeLeft: 100, minSizeRight: 100,
+          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
+          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
         },
       },
     );

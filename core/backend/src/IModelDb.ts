@@ -375,6 +375,8 @@ export class IModelDb extends IModel {
    * @param requestContext The client request context.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a snapshot iModel
+   * @note Keep the briefcase for as long as required, and if there's a possibility it can be reused. This is especially useful in pull and push
+   * workflows where keeping the briefcase will allow reusing the same briefcase id.
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();

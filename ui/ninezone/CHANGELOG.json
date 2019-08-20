@@ -2,6 +2,39 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/ui-ninezone_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use latest icon library"
+          },
+          {
+            "comment": "Add support for BackstageComposer so Plugins can add backstage items."
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+          },
+          {
+            "comment": "Updated generic icon package"
+          },
+          {
+            "comment": "Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Improved ToolAssistance item spacing. ViewSelector shows current view."
+          },
+          {
+            "comment": "Update to latest icon package version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/ui-ninezone_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

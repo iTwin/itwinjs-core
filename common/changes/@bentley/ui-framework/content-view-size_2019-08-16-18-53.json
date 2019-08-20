@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed SplitPane pane 2 size. Upgraded react-split-pane to 0.1.87.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

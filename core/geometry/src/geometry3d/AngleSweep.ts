@@ -142,7 +142,7 @@ export class AngleSweep implements BeJSONFunctions {
     public fractionPeriod(): number {
         return Geometry.safeDivideFraction(Math.PI * 2.0, Math.abs(this._radians1 - this._radians0), 1.0);
     }
-    /** return the fractional ized position of the angle,
+    /** return the fractionalized position of the angle,
      * computed without consideration of 2PI period.
      * That is, an angle that is numerically much beyond than the end angle
      * will produce a large fraction and an angle much beyond the start angle

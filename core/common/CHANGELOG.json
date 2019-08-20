@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/imodeljs-common_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add optional arguments to EcefLocation.createFromCartographicOrigin"
+          },
+          {
+            "comment": "Allow custom tile cache services."
+          },
+          {
+            "comment": "Add CodeSpec.isManagedWithIModel, CodeSpec.scopeType, deprecate CodeSpec.specScopeType"
+          },
+          {
+            "comment": "Add CodeSpec.create"
+          },
+          {
+            "comment": "Add terrain settings."
+          },
+          {
+            "comment": "Require electron without eval trick."
+          },
+          {
+            "comment": "Log more information during RPC trace/info request logging."
+          },
+          {
+            "comment": "Changed the transfer chunk size for mobile RPC transport."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/imodeljs-common_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

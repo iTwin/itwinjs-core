@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "162722, 162377: Added change summary test, and improved doc a little. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}
