@@ -22,7 +22,7 @@ import { RuleTypes, RuleBase, ConditionContainer } from "../Rule";
  * @note The rule is costly performance-wise and should only be used in very limited amount of specific cases where
  * hidden child nodes need to be used to used to determine parent node's visibility.
  *
- * @beta
+ * @public
  */
 export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
   /** Used for serializing to JSON. */

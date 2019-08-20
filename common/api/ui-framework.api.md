@@ -150,9 +150,9 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentWillReceiveProps(nextProps: ActionItemButtonProps): void;
-    // (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState): BaseItemState | null;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -2416,6 +2416,8 @@ export interface LayoutFragmentProps {
 // @public
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
     top: LayoutFragmentProps | number;
 }
 
@@ -2437,6 +2439,8 @@ export interface LayoutSplitPropsBase {
 // @public
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
     right: LayoutFragmentProps | number;
 }
 
@@ -4279,7 +4283,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export class VisibilityComponent extends React_2.Component<any, VisibilityTreeState_2> {
+export class VisibilityComponent extends React_2.Component<VisibilityComponentProps, VisibilityTreeState_2> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -4287,6 +4291,13 @@ export class VisibilityComponent extends React_2.Component<any, VisibilityTreeSt
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @alpha
+export interface VisibilityComponentProps {
+    activeTreeRef?: React_2.Ref<HTMLDivElement>;
+    activeViewport?: Viewport;
+    iModelConnection: IModelConnection;
+}
 
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
@@ -4340,6 +4351,8 @@ export interface VisibilityTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     imodel: IModelConnection;
+    // @alpha
+    rootElementRef?: React_2.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @internal
     visibilityHandler?: VisibilityHandler;
@@ -4352,6 +4365,10 @@ export class VisibilityWidget extends WidgetControl {
     static readonly iconSpec: string;
     // (undocumented)
     static readonly label: string;
+    // (undocumented)
+    restoreTransientState(): boolean;
+    // (undocumented)
+    saveTransientState(): void;
 }
 
 // @public

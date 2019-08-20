@@ -6925,9 +6925,9 @@ export namespace Tile {
         readonly worldToViewMap: Map4d;
     }
     export const enum LoadPriority {
-        Background = 3,
+        Background = 1,
         Classifier = 2,
-        Context = 1,
+        Context = 3,
         Primary = 0
     }
     export const enum LoadStatus {

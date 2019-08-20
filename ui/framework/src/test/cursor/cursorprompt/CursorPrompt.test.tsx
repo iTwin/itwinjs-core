@@ -62,7 +62,7 @@ describe("CursorPrompt", () => {
     await TestUtils.tick(40);
     expect(CursorPopupManager.popupCount).to.eq(1);
 
-    await TestUtils.tick(600);
+    await TestUtils.tick(1000);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     wrapper.unmount();

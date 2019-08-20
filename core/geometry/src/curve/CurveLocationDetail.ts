@@ -119,7 +119,7 @@ export class CurveLocationDetail {
   /**
    * Updated in this instance.
    * * Note that if caller omits `vector` and `a`, those fields are updated to the call-list defaults (NOT left as-is)
-   * * point and vector updates are by data copy (not capture of arglist pointers)
+   * * point and vector updates are by data copy (not capture of pointers)
    * @param fraction (required) fraction to install
    * @param point  (required) point to install
    * @param vector (optional) vector to install.
@@ -135,7 +135,7 @@ export class CurveLocationDetail {
   /**
    * Updated in this instance.
    * * Note that if caller omits a`, that field is updated to the call-list default (NOT left as-is)
-   * * point and vector updates are by data copy (not capture of arglist data.
+   * * point and vector updates are by data copy (not capture of the ray members)
    * @param fraction (required) fraction to install
    * @param ray  (required) point and vector to install
    * @param a (optional) numeric value to install.
@@ -319,9 +319,9 @@ export class CurveLocationDetailPair {
    */
   public approachType?: CurveCurveApproachType;
 
-  public constructor() {
-    this.detailA = new CurveLocationDetail();
-    this.detailB = new CurveLocationDetail();
+  public constructor(detailA?: CurveLocationDetail, detailB?: CurveLocationDetail) {
+    this.detailA = detailA ? detailA : new CurveLocationDetail();
+    this.detailB = detailB ? detailB : new CurveLocationDetail();
   }
 
   /** Create a curve detail pair using references to two CurveLocationDetails */

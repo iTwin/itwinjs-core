@@ -1,6 +1,27 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Allow custom tile cache services.
+- Bug 155921: Always acquire a briefcase when creating a new backend instance for PullAndPush workflows. 
+- Added Change Summary integration test, and fixed documentation. 
+- Trial code for tile upload errors
+- Fixed changeset performance tests
+- Tile upload logging.
+- Mark ExportGraphics API as public
+- Fixed typo
+- Support for gzip compression of tiles
+- Bug 148574: Fixed issue with opening iModels with names that are invalid on Unix or Windows. 
+- Add IModelDb.isSnapshot
+- internal addon API refactoring
+- Tile upload error catching.
+- Azure tile upload logging
+- Upgrade azure storage library.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

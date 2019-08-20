@@ -160,10 +160,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string, _unused?: () => boolean): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const content = RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
-    this.cacheTile(tokenProps, treeId, contentId, content); // tslint:disable-line:no-floating-promises
+    const content = await RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
+    this.cacheTile(tokenProps, treeId, contentId, content);
     return content;
-  } // tslint:disable-line:no-floating-promises
+  }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelTokenProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const invocation = RpcInvocation.current(this);
@@ -177,7 +177,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
-  private async cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Promise<Uint8Array>) {
+  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array) {
     if (!IModelHost.usingExternalTileCache) {
       return;
     }
@@ -194,7 +194,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
           options.contentEncoding = "gzip";
         }
 
-        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), await content, options);
+        await IModelHost.tileCacheService.upload(cache.formContainerName(id), cache.formResourceName(id), content, options);
       } catch (err) {
         Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
       }

@@ -1,6 +1,28 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Update to use latest icon library
+- Added CursorPrompt, improved Pointer messages
+- explicitly set margin for button groups to avoid bleed over from BWC styles.
+- After canceling (clearing) search, set focus back to input field.
+- Skip failing test until UI team can investigate
+- Updated generic icon package
+- Fix DateTime type converters
+- Improve point type converters to handle points defined as `number[]` or `{x,y}` or `{x,y,z}`
+- Change floating point converter to round-off numbers up to 2 decimal places
+- Fixed property grid tests.
+- Fixed OnPropertyLinkClick event handler assignment for nested properties in PropertyGrid. Fixed OnPropertyLinkClick signature for PropertyGrid.
+- Added onPropertyLinkClick handler property for PropertyGrid with default behavior to open url links in the new tab or open email client if it is an email link. Wrote tests for it.
+- Update FilteringInput to use updated search box design from UX.
+- Added SelectionMode.None to the default SelectionHandler.
+- Tree: Fix children not loaded when parent is reloaded due to other page loads after children request
+- Update to latest icon package version.
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

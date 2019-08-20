@@ -41,7 +41,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async close(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await IModelDb.find(iModelToken).close(requestContext, iModelToken.openMode === OpenMode.Readonly ? KeepBriefcase.Yes : KeepBriefcase.No);
+    if (iModelToken.openMode === OpenMode.Readonly)
+      return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
+
+    await IModelDb.find(iModelToken).close(requestContext, KeepBriefcase.No);
     return Promise.resolve(true);
   }
 

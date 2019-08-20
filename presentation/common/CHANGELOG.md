@@ -1,6 +1,15 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Add special handling for double values when creating 'similar instances' presentantation ruleset
+- Add special handling for point values when creating 'similar instances' presentation ruleset
+- Add special handling for DateTime values when creating 'similar instances' presentation ruleset
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

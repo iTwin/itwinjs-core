@@ -2,6 +2,27 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/frontend-devtools_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a frontend keyin UI and handler."
+          },
+          {
+            "comment": "Key-ins for emphasizing and isolating elements."
+          },
+          {
+            "comment": "Added keyin for changing view flags."
+          },
+          {
+            "comment": "Directory organization; package initialization; documentation; new key-ins."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/frontend-devtools_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

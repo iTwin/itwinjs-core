@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Tweak tile priorities so that reality models don't block quicker maps and classifiers.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

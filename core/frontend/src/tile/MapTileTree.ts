@@ -8,7 +8,7 @@ import { TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { assert } from "@bentley/bentleyjs-core";
 import { QuadId, computeMercatorFractionToDb } from "./WebMapTileTree";
-import { Point3d, Range1d, Range3d, Transform, XYZProps, Angle } from "@bentley/geometry-core";
+import { Point3d, Range1d, Range3d, Transform, XYZProps, Angle, BilinearPatch } from "@bentley/geometry-core";
 import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
 
@@ -83,7 +83,7 @@ class SelectionContext {
  * @internal
  */
 export class MapTile extends Tile {
-  private _reprojectionRequired = true;
+  public reprojectionRequired = true;
   constructor(params: Tile.Params, public quadId: QuadId, public corners: Point3d[], private _heightRange: Range1d | undefined) {
     super(params);
 
@@ -153,7 +153,7 @@ export class MapTile extends Tile {
     traversalQuads.combine(traversalDetails);
   }
 
-  private getOrCreateChildren(): Tile[] {
+  public getOrCreateChildren(): Tile[] {
     if (undefined === this._children) {
       this._children = [];
       const level = this.quadId.level + 1;
@@ -180,7 +180,7 @@ export class MapTile extends Tile {
 
     const sizeTestRatio = 2.0;        // Allow map tiles to get oversized by factor of 2 -- this makes bigger map tiles, improves performance and makes text more readable as it is less likely to be decimated.
     const meetsSse = args.getPixelSize(this) < this.maximumSize * sizeTestRatio;
-    if (this.isDisplayable && (meetsSse || this._anyChildNotFound || this.depth >= this._mapTree.maxDepth)) {
+    if (this.isDisplayable && (meetsSse || this._anyChildNotFound || this.depth >= this._mapTree.maxDepth) || this._mapTree.needsReprojection(this)) {
       traversalDetails.maxDepth = Math.max(traversalDetails.maxDepth, this.depth);
       return context.selectOrQueue(this, traversalDetails);
     } else {
@@ -207,8 +207,7 @@ export class MapTile extends Tile {
     }
   }
   public async reprojectCorners(): Promise<void> {
-    if (this._reprojectionRequired) {
-      this._reprojectionRequired = false;
+    if (this.reprojectionRequired) {
       await this._mapTree.reprojectTileCorners(this);
     }
   }
@@ -223,7 +222,7 @@ export class MapTileTree extends TileTree {
   private _mercatorFractionToDb: Transform;
   private _gcsConverter: GeoConverter | undefined;
   public traversalQuadsByDepth: TraversalQuads[] = new Array<TraversalQuads>();
-  public static minReprojectionDepth = 6;     // Reprojection does not work with very large tiles so just do linear transform.
+  public static minReprojectionDepth = 8;     // Reprojection does not work with very large tiles so just do linear transform.
 
   constructor(params: TileTree.Params, public groundBias: number, gcsConverterAvailable: boolean, public mapTilingScheme: MapTilingScheme, public heightRange: Range1d, public maxDepth: number = 20, public preloadDescendantDepth = 3) {
     super(params);
@@ -235,8 +234,12 @@ export class MapTileTree extends TileTree {
     const linearRangeSquared: number = params.iModel.projectExtents.diagonal().magnitudeSquared();
     this._gcsConverter = (gcsConverterAvailable && linearRangeSquared > 1000.0 * 1000.0) ? params.iModel.geoServices.getConverter("WGS84") : undefined;
   }
+  public needsReprojection(tile: MapTile) {
+    return tile.reprojectionRequired && undefined !== this._gcsConverter && tile.depth >= MapTileTree.minReprojectionDepth;
+  }
 
   public async reprojectTileCorners(tile: MapTile): Promise<void> {
+    tile.reprojectionRequired = false;
     if (!this._gcsConverter || tile.depth < MapTileTree.minReprojectionDepth)
       return;
     const fractionalCorners = this.getFractionalTileCorners(tile.quadId);
@@ -257,6 +260,22 @@ export class MapTileTree extends TileTree {
     }
     for (let i = 0; i < 4; i++)
       tile.corners[i] = Point3d.fromJSON(iModelCoordinates.result[i]!.p);
+
+    const children = tile.getOrCreateChildren();
+    for (const child of children) {
+      let bilinearPatch;
+      const mapChild = child as MapTile;
+      if (mapChild.reprojectionRequired) {
+        if (undefined === bilinearPatch)
+          bilinearPatch = new BilinearPatch(tile.corners[0], tile.corners[1], tile.corners[2], tile.corners[3]);
+        const childFractionalCorners = this.getFractionalTileCorners(mapChild.quadId);
+        for (let i = 0; i < 4; i++) {
+          const u = (childFractionalCorners[i].x - fractionalCorners[0].x) / (fractionalCorners[1].x - fractionalCorners[0].x);
+          const v = (childFractionalCorners[i].y - fractionalCorners[0].y) / (fractionalCorners[2].y - fractionalCorners[0].y);
+          mapChild.corners[i] = bilinearPatch.uvFractionToPoint(u, v);
+        }
+      }
+    }
   }
 
   public selectTiles(args: Tile.DrawArgs): Tile[] {
@@ -266,7 +285,7 @@ export class MapTileTree extends TileTree {
 
     rootTile.selectMapTile(context, args, new TraversalDetails());
 
-    context.missing.sort((a, b) => a.depth - b.depth);      // Load lower resolution (preloaeded)  tiles first so we can quickly get something displayed.
+    context.missing.sort((a, b) => a.depth - b.depth);      // Load lower resolution (preloaded)  tiles first so we can quickly get something displayed.
     selected.sort((a, b) => b.depth - a.depth);             // But if already loaded select the higher resolution ones.
 
     for (const tile of context.missing)
