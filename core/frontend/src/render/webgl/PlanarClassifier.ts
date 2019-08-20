@@ -16,7 +16,7 @@ import { TileTree } from "../../tile/TileTree";
 import { Tile } from "../../tile/Tile";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d, Range1d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./ScratchDrawParams";
@@ -143,7 +143,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState, this._width, this._height);
+    const classifiedRange = classifiedTree.location.multiplyRange(classifiedTree.range);
+    const heightRange = Range1d.createXX(classifiedRange.low.z, classifiedRange.high.z);
+
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewFrustum, classifiedTree, viewState, this._width, this._height, heightRange);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -156,7 +159,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public draw(target: Target) {
     if (undefined === this._frustum) {
-      assert(false);
       return;
     }
 

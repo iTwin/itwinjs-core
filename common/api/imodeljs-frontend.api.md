@@ -1171,6 +1171,8 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
+    getHeightRange(): Range1d | undefined;
+    // (undocumented)
     getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // (undocumented)
     settings: BackgroundMapSettings;
@@ -3611,7 +3613,7 @@ export interface MapTileGeometryAttributionProvider {
 
 // @internal (undocumented)
 export abstract class MapTileLoaderBase extends TileLoader {
-    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, _heightRange?: Range1d | undefined);
+    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
     // (undocumented)
     protected _applyLights: boolean;
     // (undocumented)
@@ -3622,6 +3624,8 @@ export abstract class MapTileLoaderBase extends TileLoader {
     protected _groundBias: number;
     // (undocumented)
     readonly heightRange: Range1d | undefined;
+    // (undocumented)
+    protected readonly _heightRange: Range1d | undefined;
     // (undocumented)
     protected _iModel: IModelConnection;
     // (undocumented)
@@ -5235,7 +5239,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
-    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
+    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference, _heightRange?: Range1d): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
@@ -5498,7 +5502,7 @@ export class SavedState {
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
-    addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined;
+    addBackgroundDrapedModel(drapedTree: TileTree, heightRange?: Range1d): RenderTextureDrape | undefined;
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
@@ -6689,6 +6693,8 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
     // (undocumented)
     abstract readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
+    // (undocumented)
+    readonly priority: Tile.LoadPriority;
 }
 
 // @internal (undocumented)
@@ -6926,9 +6932,10 @@ export namespace Tile {
     }
     export const enum LoadPriority {
         Background = 1,
-        Classifier = 2,
-        Context = 3,
-        Primary = 0
+        Classifier = 3,
+        Context = 4,
+        Primary = 0,
+        Terrain = 2
     }
     export const enum LoadStatus {
         // (undocumented)

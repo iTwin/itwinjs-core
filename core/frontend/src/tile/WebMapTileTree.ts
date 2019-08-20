@@ -148,13 +148,15 @@ export abstract class MapTileLoaderBase extends TileLoader {
   protected _applyLights = false;
   protected _featureTable: PackedFeatureTable;
   public get heightRange(): Range1d | undefined { return this._heightRange; }
+  protected readonly _heightRange: Range1d | undefined;
 
-  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, private _heightRange?: Range1d) {
+  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
     super();
     const featureTable = new FeatureTable(1, this._modelId);
     const feature = new Feature(this._modelId);
     featureTable.insert(feature);
     this._featureTable = PackedFeatureTable.pack(featureTable);
+    this._heightRange = (heightRange === undefined) ? undefined : heightRange.clone();
   }
 
   public get parentsAndChildrenExclusive(): boolean { return false; }
@@ -232,6 +234,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
  */
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
   abstract get geometryAttributionProvider(): MapTileGeometryAttributionProvider;
+  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Terrain; }
 }
 
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).

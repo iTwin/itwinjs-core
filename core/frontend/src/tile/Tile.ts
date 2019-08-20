@@ -674,10 +674,12 @@ export namespace Tile {
     Primary = 0,
     /** Typically, map tiles. */
     Background = 1,
+    /** Terrain -- requires background/map tiles for drape. */
+    Terrain = 2,
     /** Supplementary tiles used to classify the contents of geometric or reality models. */
-    Classifier = 2,
+    Classifier = 3,
     /** Typically, context reality models. */
-    Context = 3,
+    Context = 4,
   }
 
   /**
