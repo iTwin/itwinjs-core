@@ -1438,6 +1438,7 @@ export interface ExportGraphicsOptions {
     chordTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceInfo[];
@@ -1484,6 +1485,7 @@ export interface ExportPartGraphicsOptions {
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
