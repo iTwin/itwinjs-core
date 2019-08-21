@@ -183,7 +183,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
     const solarDataProvider = this._getSolarDataProvider(viewport);
     if (solarDataProvider && solarDataProvider.supportsTimelineAnimation) {
       let showOverlay = this.isInActiveContentControl();
-      if (showOverlay && solarDataProvider.shouldShowTimeline) showOverlay = false;
+      if (showOverlay && !solarDataProvider.shouldShowTimeline) showOverlay = false;
       this.setState({ solarDataProvider, showOverlay, dataProvider: undefined });
       return true;
     }
