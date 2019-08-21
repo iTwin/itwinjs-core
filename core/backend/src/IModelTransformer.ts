@@ -601,7 +601,9 @@ export class IModelTransformer {
     let changed: boolean = false;
     model.forEachProperty((propertyName: string) => {
       if (!changed) {
-        if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
+        if (propertyName === "geometryGuid") {
+          // skip because GeometricModel.GeometryGuid values cannot be compared across iModels
+        } else if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
           changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
         } else {
           changed = model[propertyName] !== modelProps[propertyName];
