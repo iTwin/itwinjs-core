@@ -6,7 +6,7 @@
 
 import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement, GeometricModelProps } from "@bentley/imodeljs-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -24,6 +24,7 @@ export class Model extends Entity implements ModelProps {
   public readonly name: string;
   public readonly parentModel: Id64String;
   public readonly jsonProperties: any;
+  public lastMod?: string;
   public isPrivate: boolean;
   public isTemplate: boolean;
 
@@ -36,6 +37,7 @@ export class Model extends Entity implements ModelProps {
     this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
+    this.lastMod = props.lastMod;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
@@ -113,6 +115,14 @@ export class Model extends Entity implements ModelProps {
  * @public
  */
 export class GeometricModel extends Model {
+  public geometryGuid?: string;
+
+  /** @internal */
+  constructor(props: GeometricModelProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.geometryGuid = props.geometryGuid;
+  }
+
   /** @internal */
   public static get className(): string { return "GeometricModel"; }
 

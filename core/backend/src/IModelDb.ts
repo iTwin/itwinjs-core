@@ -34,7 +34,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-import { PollStatus, PostStatus } from "./ConcurrentQuery";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -198,6 +197,14 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
+  /** @internal */
+  public static performUpgrade(pathname: string) {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
+    if (DbResult.BE_SQLITE_OK === res)
+      nativeDb.closeIModel();
+    return res;
+  }
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
@@ -590,20 +597,20 @@ export class IModelDb extends IModel {
         resolve({ status: QueryResponseStatus.Done, rows: [] });
       } else {
         const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-        if (postrc.status !== PostStatus.Done)
+        if (postrc.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
         const poll = () => {
           if (!this.isOpen) {
             resolve({ status: QueryResponseStatus.Done, rows: [] });
           } else {
             const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-            if (pollrc.status === PollStatus.Done)
+            if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Done)
               resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === PollStatus.Partial)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial)
               resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === PollStatus.Timeout)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
               resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-            else if (pollrc.status === PollStatus.Pending)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
               setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
             else
               resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });

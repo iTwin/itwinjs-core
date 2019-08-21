@@ -18,6 +18,7 @@ export interface ModelProps extends EntityProps {
   parentModel?: Id64String; // NB! Must always match the model of the modeledElement!
   isPrivate?: boolean;
   isTemplate?: boolean;
+  lastMod?: string;
   jsonProperties?: any;
 }
 
@@ -29,9 +30,13 @@ export interface ModelQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
+export interface GeometricModelProps extends ModelProps {
+  geometryGuid?: string;
+}
+
 /** Properties that define a [GeometricModel2d]($backend)
  * @public
  */
-export interface GeometricModel2dProps extends ModelProps {
+export interface GeometricModel2dProps extends GeometricModelProps {
   globalOrigin?: XYProps;
 }
