@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import sinon = require("sinon");
+import * as sinon from "sinon";
 
 import { Logger } from "@bentley/bentleyjs-core";
 

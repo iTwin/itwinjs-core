@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
-import sinon = require("sinon");
 import { expect } from "chai";
 
 import { NumericInput } from "../../../ui-core/inputs/numericinput/NumericInput";

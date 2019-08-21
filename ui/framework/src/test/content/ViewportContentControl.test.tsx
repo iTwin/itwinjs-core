@@ -4,9 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as moq from "typemoq";
+import * as sinon from "sinon";
 import { expect } from "chai";
+import { mount } from "enzyme";
 
-import TestUtils from "../TestUtils";
+import { ScreenViewport, ViewState3d, MockRender } from "@bentley/imodeljs-frontend";
+import { ViewportComponentEvents } from "@bentley/ui-components";
+
+import TestUtils, { storageMock } from "../TestUtils";
 import {
   ViewportContentControl,
   ConfigurableCreateInfo,
@@ -23,13 +28,14 @@ import {
   Zone,
   Widget,
   FrontstageComposer,
+  NavigationWidget,
+  SupportsViewSelectorChange,
+  ConfigurableUiManager,
 } from "../../ui-framework";
-import { ScreenViewport, ViewState3d, MockRender } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "@bentley/ui-components";
-import sinon = require("sinon");
-import { NavigationWidget } from "../../ui-framework/widgets/NavigationWidget";
-import { mount } from "enzyme";
-import { SupportsViewSelectorChange } from "../../ui-framework/content/ContentControl";
+
+const mySessionStorage = storageMock();
+
+const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
 
 describe("ViewportContentControl", () => {
 
@@ -37,12 +43,23 @@ describe("ViewportContentControl", () => {
   const viewMock = moq.Mock.ofType<ViewState3d>();
 
   before(async () => {
+    Object.defineProperty(window, "sessionStorage", {
+      get: () => mySessionStorage,
+    });
+
     await TestUtils.initializeUiFramework();
     MockRender.App.startup();
+
+    ConfigurableUiManager.initialize();
+    FrontstageManager.isInitialized = false;
+    FrontstageManager.initialize();
   });
 
   after(() => {
     MockRender.App.shutdown();
+
+    // restore the overriden property getter
+    Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
   });
 
   class TestViewportContentControl extends ViewportContentControl {
@@ -51,8 +68,11 @@ describe("ViewportContentControl", () => {
 
       this.reactElement = <div />;
 
-      this.viewport = viewportMock.object;
+      this.setIsReady();
     }
+
+    public get viewport(): ScreenViewport | undefined { return viewportMock.object; }
+
   }
   class Frontstage1 extends FrontstageProvider {
 
@@ -94,11 +114,6 @@ describe("ViewportContentControl", () => {
     }
   }
 
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-    await FrontstageManager.setActiveFrontstageDef(undefined);
-  });
-
   beforeEach(async () => {
     viewMock.reset();
     viewMock.setup((view) => view.classFullName).returns(() => "SheetViewDefinition");
@@ -106,6 +121,7 @@ describe("ViewportContentControl", () => {
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
 
     FrontstageManager.clearFrontstageDefs();
+    await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   it("Frontstage should support ViewportContentControl", async () => {
@@ -190,6 +206,20 @@ describe("ViewportContentControl", () => {
 
     remove();
     wrapper.unmount();
+  });
+
+  it("FrontstageManager.setActiveFrontstageDef should cause onActiveContentChangedEvent", async () => {
+    const spyMethod = sinon.spy();
+    const remove = ContentViewManager.onActiveContentChangedEvent.addListener(spyMethod);
+
+    const frontstageProvider = new Frontstage1();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+
+    await TestUtils.flushAsyncOperations();
+    expect(spyMethod.called).to.be.true;
+
+    remove();
   });
 
 });

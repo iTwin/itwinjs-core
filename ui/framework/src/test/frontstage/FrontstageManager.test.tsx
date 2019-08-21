@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import sinon = require("sinon");
+import * as sinon from "sinon";
 import * as moq from "typemoq";
 
 import { Logger } from "@bentley/bentleyjs-core";
@@ -15,34 +15,9 @@ import {
   CoreTools,
 } from "../../ui-framework";
 import { TestFrontstage } from "./FrontstageTestUtils";
-import TestUtils from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 
-class StorageMock {
-  private _storage: { [key: string]: any } = {};
-
-  public setItem(key: string, value: string) {
-    this._storage[key] = value || "";
-  }
-
-  public getItem(key: string) {
-    return key in this._storage ? this._storage[key] : null;
-  }
-
-  public removeItem(key: string) {
-    delete this._storage[key];
-  }
-
-  public get length() {
-    return Object.keys(this._storage).length;
-  }
-
-  public key(i: number) {
-    const keys = Object.keys(this._storage);
-    return keys[i] || null;
-  }
-}
-
-const mySessionStorage = new StorageMock();
+const mySessionStorage = storageMock();
 
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
 
@@ -66,7 +41,6 @@ describe("FrontstageManager", () => {
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
-
   });
 
   it("findWidget should return undefined when no active frontstage", async () => {
@@ -125,6 +99,7 @@ describe("FrontstageManager", () => {
       viewportMock.reset();
       viewportMock.setup((viewport) => viewport.view).returns(() => spatialViewStateMock.object);
 
+      FrontstageManager.isInitialized = false;
       FrontstageManager.initialize();
       IModelApp.viewManager.setSelectedView(viewportMock.object);
     });
