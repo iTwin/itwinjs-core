@@ -15,6 +15,7 @@ import * as yargs from "yargs";
 
 const CHORD_TOL = 0.001;
 const ANGLE_TOL = Angle.degreesToRadians(45);
+const MIN_BREP_SIZE = 0.01;
 
 class GltfGlobals {
   public static iModel: IModelDb;
@@ -292,7 +293,13 @@ function exportElements(elementIdArray: Id64Array, partInstanceArray: ExportPart
     addLines(info.lines, info.color);
   };
   GltfGlobals.iModel.exportGraphics({
-    chordTol: CHORD_TOL, angleTol: ANGLE_TOL, onGraphics, onLineGraphics, elementIdArray, partInstanceArray,
+    chordTol: CHORD_TOL,
+    angleTol: ANGLE_TOL,
+    minBRepFeatureSize: MIN_BREP_SIZE,
+    onGraphics,
+    onLineGraphics,
+    elementIdArray,
+    partInstanceArray,
   });
 }
 
@@ -365,6 +372,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceInfo[]) {
       onPartLineGraphics: onPartLineGraphics(meshIndices),
       chordTol: CHORD_TOL,
       angleTol: ANGLE_TOL,
+      minBRepFeatureSize: MIN_BREP_SIZE,
     });
     for (const instance of instanceList) {
       // It is legal for different GeometryPartInstances of the same GeometryPart to have different

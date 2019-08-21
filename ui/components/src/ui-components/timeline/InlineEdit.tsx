@@ -29,7 +29,9 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
     this.state = { value: this.props.defaultValue, originalValue: this.props.defaultValue };
   }
 
-  public componentWillReceiveProps(newProps: InlineEditProps) {
+  // TODO - Fix this so the unit test still runs successfully - must use getDerivedStateFromProps or componentDidUpdate
+  /** @internal */
+  public UNSAFE_componentWillReceiveProps(newProps: InlineEditProps) {    // tslint:disable-line: naming-convention
     if (newProps.defaultValue !== this.state.value) {
       this.setState({ value: newProps.defaultValue, originalValue: newProps.defaultValue });
     }

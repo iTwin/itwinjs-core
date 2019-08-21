@@ -1308,10 +1308,10 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
     // (undocumented)
-    componentWillReceiveProps(newProps: InlineEditProps): void;
-    // (undocumented)
     render(): JSX.Element;
-    }
+    // (undocumented)
+    UNSAFE_componentWillReceiveProps(newProps: InlineEditProps): void;
+}
 
 // @internal
 export enum InputContext {
@@ -1658,7 +1658,7 @@ export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) =
 export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
     constructor(props: PlayerButtonProps, context?: any);
     // (undocumented)
-    componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void;
+    componentDidUpdate(): void;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2426,8 +2426,6 @@ export class Table extends React.Component<TableProps, TableState> {
     componentDidMount(): void;
     // @internal (undocumented)
     componentDidUpdate(previousProps: TableProps): void;
-    // @internal (undocumented)
-    componentWillReceiveProps(newProps: TableProps): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)

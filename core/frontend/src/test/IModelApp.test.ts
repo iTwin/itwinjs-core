@@ -108,7 +108,7 @@ describe("IModelApp", () => {
     // here we are testing to make sure we can override the Select command but the keyin comes from the superclass because the toolId is not overridden
     const selTool = IModelApp.tools.create("Select")!;
     assert.instanceOf(selTool, TestSelectTool, "test select tool is active");
-    assert.equal(selTool.keyin, "Select Elements", "keyin comes from superclass");
+    assert.equal(selTool.keyin, "select elements", "keyin comes from superclass");
   });
 
   it("Should do trivial localizations", () => {

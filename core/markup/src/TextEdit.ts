@@ -25,7 +25,7 @@ export class PlaceTextTool extends RedlineTool {
     super.onPostInstall();
   }
 
-  protected showPrompt(): void { this.outputMarkupPrompt("Text.Place.Prompts.FirstPoint"); }
+  protected showPrompt(): void { this.outputMarkupPrompt("Markup.Text.Place.Prompts.FirstPoint"); }
 
   protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (isDynamics && InputSource.Touch === ev.inputSource)

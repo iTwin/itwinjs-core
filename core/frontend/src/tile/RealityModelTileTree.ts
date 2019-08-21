@@ -26,6 +26,8 @@ import { HitDetail } from "../HitDetail";
 import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference, SpatialClassifiers } from "../SpatialClassification";
 import { SceneContext } from "../ViewContext";
 import { RenderMemory } from "../render/System";
+import { ViewState } from "../ViewState";
+import { DisplayStyleState } from "../DisplayStyleState";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -90,9 +92,7 @@ class RealityTreeSupplier implements TileTree.Supplier {
 const realityTreeSupplier = new RealityTreeSupplier();
 
 /** @internal */
-export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-  return new RealityTreeReference(props);
-}
+export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference { return new RealityTreeReference(props); }
 
 /** @internal */
 export class RealityModelTileUtils {
@@ -300,11 +300,13 @@ class RealityModelTileLoader extends TileLoader {
   }
 }
 
+export type RealityModelSource = ViewState | DisplayStyleState;
 /** @internal */
 export namespace RealityModelTileTree {
   export interface ReferenceProps {
     url: string;
     iModel: IModelConnection;
+    source: RealityModelSource;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     name?: string;
@@ -379,7 +381,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
 
     if (undefined !== props.classifiers)
-      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel);
+      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }

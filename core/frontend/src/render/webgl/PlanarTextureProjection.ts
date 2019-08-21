@@ -5,8 +5,8 @@
 /** @module Rendering */
 import { Target } from "./Target";
 import { TileTree } from "../../tile/TileTree";
-import { Frustum, Npc, FrustumPlanes, RenderMode } from "@bentley/imodeljs-common";
-import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d } from "@bentley/geometry-core";
+import { Frustum, Npc, RenderMode } from "@bentley/imodeljs-common";
+import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
 import { ViewState3d } from "../../ViewState";
 import { ViewFrustum } from "../../Viewport";
@@ -14,9 +14,25 @@ import { Matrix4 } from "./Matrix";
 
 export class PlanarTextureProjection {
   private static _postProjectionMatrixNpc = Matrix4d.createRowValues(/* Row 1 */ 0, 1, 0, 0, /* Row 1 */ 0, 0, 1, 0, /* Row 3 */ 1, 0, 0, 0, /* Row 4 */ 0, 0, 0, 1);
-  private static _scratchFrustum = new Frustum();
 
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4 } {
+  private static extendRangeForFrustumPlaneIntersection(range: Range3d, texturePlane: Plane3dByOriginAndUnitNormal, textureTransform: Transform, frustum: Frustum, height: number) {
+    const intersect = new Point3d();
+    let includeHorizon = false;
+    const plane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(texturePlane.getNormalRef(), height), texturePlane.getNormalRef())!;
+
+    for (let i = 0; i < 4; i++) {
+      const frustumRay = Ray3d.createStartEnd(frustum.points[i + 4], frustum.points[i]);
+      const intersectDistance = frustumRay.intersectionWithPlane(plane, intersect);
+      if (intersectDistance !== undefined && (frustum.getFraction() === 1.0 || intersectDistance > 0.0)) {
+        range.extendTransformedPoint(textureTransform, intersect);
+      } else includeHorizon = true;
+    }
+    if (includeHorizon) {
+      for (let i = 0; i < 8; i++)
+        range.extendTransformedPoint(textureTransform, frustum.points[i]);
+    }
+  }
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4 } {
     const textureZ = texturePlane.getNormalRef();
     const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -40,20 +56,18 @@ export class PlanarTextureProjection {
     const textureMatrix = Matrix3d.createRows(frustumX, frustumY, frustumZ);
     const textureTransform = Transform.createRefs(Point3d.createZero(), textureMatrix);
 
-    let npcRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
-    const viewFrustumFrustum = viewFrustum.getFrustum();
-    const viewMap = viewFrustumFrustum.toMap4d()!;
-    const viewPlanes = new FrustumPlanes(viewFrustumFrustum);
+    const range = Range3d.createNull();
+    const frustum = new Frustum();
+    viewFrustum.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(frustum.points);
+
+    PlanarTextureProjection.extendRangeForFrustumPlaneIntersection(range, texturePlane, textureTransform, frustum, heightRange ? heightRange.low : 0.0);
+    if (heightRange)
+      PlanarTextureProjection.extendRangeForFrustumPlaneIntersection(range, texturePlane, textureTransform, frustum, heightRange.high);
 
     if (!tileTree.isBackgroundMap) {
-      const tileRange = Range3d.createNull();
-      tileTree.accumulateTransformedRange(tileRange, viewMap.transform0, viewPlanes);
-      npcRange = npcRange.intersect(tileRange);
+      // TBD... intersecting the range of the tile tree may reduce the projected area and improve fidelity for planar classifiers.
     }
 
-    PlanarTextureProjection._scratchFrustum.initFromRange(npcRange);
-    viewMap.transform1.multiplyPoint3dArrayQuietNormalize(PlanarTextureProjection._scratchFrustum.points);
-    const range = Range3d.createTransformedArray(textureTransform, PlanarTextureProjection._scratchFrustum.points);
     range.low.x = Math.min(range.low.x, textureDepth - .0001);    // Always include classification plane.
     range.high.x = Math.max(range.high.x, textureDepth + .0001);
 

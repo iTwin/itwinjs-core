@@ -2,6 +2,96 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/ui-framework_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add markupTool definitions. Update to use latest icon library"
+          },
+          {
+            "comment": "Add support for BackstageComposer so Plugins can add backstage items."
+          },
+          {
+            "comment": "Fix dragged widget offset."
+          },
+          {
+            "comment": "Widget with isToolSettings honors defaultState"
+          },
+          {
+            "comment": "Move MarkupTool definitions to their own class."
+          },
+          {
+            "comment": "Fixed location of ContentLayout within 9-zone area and Stage Panels"
+          },
+          {
+            "comment": "Added CursorPopupRenderer to render multiple CursorPopups per RelativePosition."
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "Added @bentley/icons-generic to dependencies which was wrongly set in devDependencies."
+          },
+          {
+            "comment": "#159907. Fixed Group Button history is overlapping a Popup Button panel when hovering over the Group button"
+          },
+          {
+            "comment": "Allow enter key in arguments field of keyin browser to trigger command execution. Select text on focus in to allow easy argument replacement"
+          },
+          {
+            "comment": "Added icons to markup/redline"
+          },
+          {
+            "comment": "Fixed Zone mergeWithZone processing"
+          },
+          {
+            "comment": "Port RealityData widget from Design Review."
+          },
+          {
+            "comment": "Added icon for redline text tool"
+          },
+          {
+            "comment": "Update FilteringInput to use updated search box design from UX. Also updated ModelSelectorTree to work with changes and marked ModelSelector as deprecated."
+          },
+          {
+            "comment": "Add tool assistance for SelectTool."
+          },
+          {
+            "comment": "Update SelectTool to display tool setting by default."
+          },
+          {
+            "comment": "Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Improved ToolAssistance item spacing. ViewSelector shows current view."
+          },
+          {
+            "comment": "Made Tool Settings tab tooltip more concise & clearer"
+          },
+          {
+            "comment": "Close ListPicker popup when clicking the button."
+          },
+          {
+            "comment": "Initialize stage panel size from size prop."
+          },
+          {
+            "comment": "VisibilityTree: Fix not all models' visibility being changed when changing visibility of parent subject"
+          },
+          {
+            "comment": "Visibility Tree: Handle `Viewport.isAlwaysDrawnExclusive` flag when determining and handling Element display states"
+          },
+          {
+            "comment": "Backport Visibility Widget from Design Review"
+          },
+          {
+            "comment": "Update to latest icon package version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/ui-framework_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

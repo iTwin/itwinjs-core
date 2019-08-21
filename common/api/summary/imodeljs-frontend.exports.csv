@@ -1,11 +1,25 @@
 sep=;
 Release Tag;API Item
 internal;AccuDraw
+internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
 beta;AccuDrawHintBuilder
+internal;AccuDrawRotateAxesTool 
+internal;AccuDrawRotateCycleTool 
+internal;AccuDrawRotateElementTool 
+internal;AccuDrawRotateFrontTool 
+internal;AccuDrawRotateSideTool 
+internal;AccuDrawRotateTopTool 
+internal;AccuDrawRotateViewTool 
+internal;AccuDrawSetLockAngleTool 
+internal;AccuDrawSetLockDistanceTool 
+internal;AccuDrawSetLockSmartTool 
+internal;AccuDrawSetLockXTool 
+internal;AccuDrawSetLockYTool 
+internal;AccuDrawSetLockZTool 
+internal;AccuDrawSetOriginTool 
 alpha;AccuDrawShortcuts
-internal;class AccuDrawTool
 public;AccuSnap 
 public;AccuSnap
 public;ACSDisplayOptions
@@ -75,7 +89,7 @@ alpha;ConversionData
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
@@ -84,6 +98,8 @@ public;DecorateContext
 public;Decorations 
 public;Decorator
 internal;DefaultViewTouchTool 
+internal;DefineACSByElementTool 
+internal;DefineACSByPointsTool 
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 

@@ -111,6 +111,7 @@ export abstract class GeometricModelState extends ModelState {
       return createRealityTileTreeReference({
         url,
         iModel: this.iModel,
+        source: view,
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,

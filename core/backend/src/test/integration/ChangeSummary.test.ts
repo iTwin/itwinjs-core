@@ -18,6 +18,7 @@ import { HubUtility } from "./HubUtility";
 import { KeepBriefcase } from "../../BriefcaseManager";
 import { SpatialCategory } from "../../Category";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
@@ -75,7 +76,10 @@ describe("ChangeSummary (#integration)", () => {
   let readWriteTestIModel: TestIModelInfo;
 
   before(async () => {
-    Logger.setLevel("ECDb", LogLevel.Info);
+    IModelTestUtils.setupLogging();
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
+
     requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
 
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
@@ -628,6 +632,49 @@ describe("ChangeSummary (#integration)", () => {
     }
 
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelId);
+  });
+
+  it("should be able to extract the last change summary right after applying a change set", async () => {
+    const userContext1 = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const userContext2 = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+
+    // User1 creates an iModel (on the Hub)
+    const testUtility = new TestChangeSetUtility(userContext1, "ChangeSummaryTest");
+    await testUtility.createTestIModel();
+
+    // User2 opens the iModel
+    const iModel = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+
+    // Attach change cache
+    ChangeSummaryManager.attachChangeCache(iModel);
+    assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
+
+    // User1 pushes a change set
+    await testUtility.pushTestChangeSet();
+
+    // User2 applies the change set and extracts the change summary
+    await iModel.pullAndMergeChanges(userContext2, IModelVersion.latest());
+
+    const changeSummariesIds = await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, { currentVersionOnly: true });
+    if (changeSummariesIds.length !== 1)
+      throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
+
+    const changeSummaryId = changeSummariesIds[0];
+    iModel.withPreparedStatement(
+      "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId",
+      (sqlStatement) => {
+        sqlStatement.bindId(1, changeSummaryId);
+        while (sqlStatement.step() === DbResult.BE_SQLITE_ROW) {
+          const instanceChangeId = Id64.fromJSON(sqlStatement.getRow().id);
+          const instanceChange = ChangeSummaryManager.queryInstanceChange(iModel, instanceChangeId);
+          const changedInstanceClass = instanceChange.changedInstance.className;
+          const changedInstanceOp = instanceChange.opCode;
+          const changedPropertyValueNames = ChangeSummaryManager.getChangedPropertyValueNames(iModel, instanceChangeId);
+          assert.isNotEmpty(changedInstanceClass);
+          assert.strictEqual(ChangeOpCode.Insert, changedInstanceOp);
+          assert.isAbove(changedPropertyValueNames.length, 0);
+        }
+      });
   });
 
 });

@@ -1,6 +1,14 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Wed, 24 Jul 2019 11:47:26 GMT and should not be manually modified.
+This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+
+## 1.3.0
+Tue, 13 Aug 2019 20:25:53 GMT
+
+### Updates
+
+- Fix bug with OverrideFormat names.  Remove the setter from KindOfQuantity for persistence format as that shouldn't be set by the public API.
+- Fix issues with KindOfQuantity serialization and deserialization to ECXml
 
 ## 1.2.0
 Wed, 24 Jul 2019 11:47:26 GMT

@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/presentation-components_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix invalid double display values in similar instances provider description"
+          },
+          {
+            "comment": "Use the new `RulesetsFactory.createSimilarInstancesRulesetAsync` to produce 'similar instances' ruleset. Use type converters to calculate display values used in 'similar instances' provider description."
+          },
+          {
+            "comment": "Added test for ContentBuilder to verify that links property is set for nested PropertyRecord."
+          },
+          {
+            "comment": "Added checking for links in the ContentBuilder with tests for it."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/presentation-components_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

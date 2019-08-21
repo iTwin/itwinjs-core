@@ -65,6 +65,18 @@ export interface ChildNodeSpecificationBase {
   hideIfNoChildren?: boolean;
 
   /**
+   * An [ECExpression]($docs/learning/presentation/Hierarchies/ECExpressions.md#specification) which
+   * indicates whether a node should be hidden or not.
+   *
+   * @note While the attribute provides much flexibility, it also has performance implications - it's
+   * strongly suggested to first consider using `instanceFilter`, `hideNodesInHierarchy` or `hideIfNoChildren`
+   * and only use `hideExpression` if none of them are sufficient.
+   *
+   * @beta
+   */
+  hideExpression?: string;
+
+  /**
    * Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.
    *
    * **Note:** setting this flag to `true` improves performance.

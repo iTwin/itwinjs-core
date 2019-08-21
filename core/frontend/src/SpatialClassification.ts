@@ -3,13 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module SpatialClassification */
-import { compareStrings, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { SceneContext } from "./ViewContext";
 import { BatchType, SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { IModelTile } from "./tile/IModelTile";
 import { TileTree, TileTreeSet } from "./tile/TileTree";
+import { ViewState } from "./ViewState";
+import { DisplayStyleState } from "./DisplayStyleState";
 
 interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
   modelId: Id64String;
@@ -19,14 +21,17 @@ interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
 // We should instead request the ONE-AND-ONLY classifier tile tree and determine planarity from result.
 // For now assume all classifiers are planar.
 class ClassifierTreeSupplier implements TileTree.Supplier {
-  private readonly  _nonexistentTreeOwner: TileTree.Owner = {
+  private readonly _nonexistentTreeOwner: TileTree.Owner = {
     tileTree: undefined,
     loadStatus: TileTree.LoadStatus.NotFound,
     load: () => undefined,
   };
 
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
-    const cmp = compareStrings(lhs.modelId, rhs.modelId);
+    let cmp = compareStrings(lhs.modelId, rhs.modelId);
+    if (0 === cmp)
+      cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
+
     return 0 === cmp ? IModelTile.compareTreeIds(lhs, rhs) : cmp;
   }
 
@@ -56,13 +61,15 @@ export abstract class SpatialClassifierTileTreeReference extends TileTree.Refere
 class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private _id: ClassifierTreeId;
   private readonly _classifiers: SpatialClassifiers;
+  private readonly _source: ViewState | DisplayStyleState;
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTree.Reference;
   private _owner: TileTree.Owner;
 
-  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection) {
+  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
-    this._id = this.createId(classifiers);
+    this._id = this.createId(classifiers, source);
+    this._source = source;
     this._iModel = iModel;
     this._classifiers = classifiers;
     this._classifiedTree = classifiedTree;
@@ -72,8 +79,8 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
 
   public get treeOwner(): TileTree.Owner {
-    const newId = this.createId(this._classifiers);
-    if (newId.modelId !== this._id.modelId || newId.expansion !== this._id.expansion) {
+    const newId = this.createId(this._classifiers, this._source);
+    if (newId.modelId !== this._id.modelId || newId.expansion !== this._id.expansion || 0 !== compareStringsOrUndefined(newId.animationId, this._id.animationId)) {
       this._id = newId;
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
     }
@@ -92,7 +99,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public addToScene(context: SceneContext): void {
-    const classifiedTree = this._classifiedTree.treeOwner.tileTree;
+    const classifiedTree = this._classifiedTree.treeOwner.load();
     if (undefined === classifiedTree)
       return;
 
@@ -112,19 +119,22 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     }
   }
 
-  private createId(classifiers: SpatialClassifiers): ClassifierTreeId {
+  private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {
     const active = classifiers.active;
+    const script = source.scheduleScript;
+    const animationId = (undefined !== script && undefined !== active) ? script.getModelAnimationId(active.modelId) : undefined;
     return {
       modelId: undefined !== active ? active.modelId : Id64.invalid,
       type: BatchType.PlanarClassifier,
       expansion: undefined !== active ? active.expand : 0,
+      animationId,
     };
   }
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference {
-  return new ClassifierTreeReference(classifiers, classifiedTree, iModel);
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+  return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 
 /** @internal */

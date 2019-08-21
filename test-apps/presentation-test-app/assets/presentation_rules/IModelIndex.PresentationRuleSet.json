@@ -69,8 +69,8 @@
               "Subject"
             ]
           },
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\" AND (this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Subject\") OR this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:PhysicalPartition\") OR this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:SpatialLocationPartition\"))",
-          "hideExpression": "NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.isContentModelPartition)",
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\"",
+          "hideExpression": "NOT ThisNode.HasChildren ANDALSO NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.isContentModel)",
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -89,38 +89,30 @@
       "condition": "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
       "specifications": [
         {
-          "specType": "RelatedInstanceNodes",
-          "relationships": {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": {
             "schemaName": "BisCore",
             "classNames": [
-              "SubjectOwnsPartitionElements"
+              "GeometricModel3d"
             ]
           },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalPartition",
-              "SpatialLocationPartition"
-            ]
-          },
+          "arePolymorphic": true,
           "relatedInstances": [
             {
               "relationship": {
                 "schemaName": "BisCore",
                 "className": "ModelModelsElement"
               },
-              "requiredDirection": "Backward",
+              "requiredDirection": "Forward",
               "class": {
                 "schemaName": "BisCore",
-                "className": "Model"
+                "className": "InformationPartitionElement"
               },
-              "isRequired": true,
-              "alias": "model"
+              "alias": "partition",
+              "isRequired": true
             }
           ],
-          "//instanceFilter": "model.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL",
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -131,11 +123,6 @@
           "items": {
             "isModel": "true"
           }
-        },
-        {
-          "ruleType": "StyleOverride",
-          "condition": "ThisNode.IsOfClass(\"InformationPartitionElement\", \"BisCore\")",
-          "foreColor": "\"Blue\""
         }
       ]
     },
@@ -144,38 +131,31 @@
       "condition": "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
       "specifications": [
         {
-          "specType": "RelatedInstanceNodes",
-          "relationships": {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": {
             "schemaName": "BisCore",
             "classNames": [
-              "SubjectOwnsPartitionElements"
+              "GeometricModel3d"
             ]
           },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalPartition",
-              "SpatialLocationPartition"
-            ]
-          },
+          "arePolymorphic": true,
           "relatedInstances": [
             {
               "relationship": {
                 "schemaName": "BisCore",
                 "className": "ModelModelsElement"
               },
-              "requiredDirection": "Backward",
+              "requiredDirection": "Forward",
               "class": {
                 "schemaName": "BisCore",
-                "className": "Model"
+                "className": "InformationPartitionElement"
               },
-              "isRequired": true,
-              "alias": "model"
+              "alias": "partition",
+              "isRequired": true
             }
           ],
-          "//instanceFilter": "model.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
-          "instanceFilter": "json_extract(this.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL",
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "hideNodesInHierarchy": true,
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -184,9 +164,42 @@
         {
           "ruleType": "NodeArtifacts",
           "items": {
-            "isContentModelPartition": "true"
+            "isContentModel": "true"
           }
         },
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isModel": "true"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"GeometricModel3d\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelOwnsSubModel"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricModel3d"
+            ]
+          },
+          "instanceFilter": "this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
         {
           "ruleType": "ExtendedData",
           "items": {

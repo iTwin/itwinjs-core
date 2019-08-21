@@ -15,14 +15,6 @@
     "NothingToRedo": "Nothing has been undone",
     "UndoAll": "Do you really want to undo all changes?"
   },
-  "AccuDraw": {
-    "Prompt": {
-      "DefineOrigin": "Define X axis origin",
-      "DefineXAxis": "Define X axis",
-      "DefineYDir": "Define Y axis",
-      "DefineElem": "Select element to define rotation"
-    }
-  },
   "LocateFailure": {
     "NoElements": "No Elements Found",
     "ByApp": "Element not valid for tool",

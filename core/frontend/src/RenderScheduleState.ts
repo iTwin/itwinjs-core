@@ -101,7 +101,7 @@ export namespace RenderScheduleState {
       return duration;
     }
     public get containsFeatureOverrides() { return undefined !== this.visibilityTimeline || undefined !== this.colorTimeline; }
-    public get containsAnimation() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline; }
+    public get containsAnimation() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline || undefined !== this.colorTimeline || undefined !== this.visibilityTimeline; }
 
     private static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]) {
       if (!timeline || timeline.length === 0)
@@ -126,7 +126,8 @@ export namespace RenderScheduleState {
     }
 
     public getVisibilityOverride(time: number, interval: Interval): number {
-      if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+      if (undefined === this.visibilityTimeline ||
+        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
         return 100.0;
       const timeline = this.visibilityTimeline!;
       let visibility = timeline[interval.index0].value;
@@ -147,10 +148,10 @@ export namespace RenderScheduleState {
         overrides.setAnimationNodeNeverDrawn(batchId);
         return;
       }
-      if (visibility <= 100)
+      if (visibility < 100)
         transparencyOverride = 1.0 - visibility / 100.0;
 
-      if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
+      if (undefined !== this.colorTimeline && ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
           const entry1 = this.colorTimeline![interval.index1].value;

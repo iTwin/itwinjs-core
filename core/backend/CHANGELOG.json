@@ -2,6 +2,60 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/imodeljs-backend_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow custom tile cache services."
+          },
+          {
+            "comment": "Bug 155921: Always acquire a briefcase when creating a new backend instance for PullAndPush workflows. "
+          },
+          {
+            "comment": "Added Change Summary integration test, and fixed documentation. "
+          },
+          {
+            "comment": "Trial code for tile upload errors"
+          },
+          {
+            "comment": "Fixed changeset performance tests"
+          },
+          {
+            "comment": "Tile upload logging."
+          },
+          {
+            "comment": "Mark ExportGraphics API as public"
+          },
+          {
+            "comment": "Fixed typo"
+          },
+          {
+            "comment": "Support for gzip compression of tiles"
+          },
+          {
+            "comment": "Bug 148574: Fixed issue with opening iModels with names that are invalid on Unix or Windows. "
+          },
+          {
+            "comment": "Add IModelDb.isSnapshot"
+          },
+          {
+            "comment": "internal addon API refactoring"
+          },
+          {
+            "comment": "Tile upload error catching."
+          },
+          {
+            "comment": "Azure tile upload logging"
+          },
+          {
+            "comment": "Upgrade azure storage library."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/imodeljs-backend_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

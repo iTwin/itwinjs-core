@@ -1431,7 +1431,7 @@ export namespace IModelDb {
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           return undefined;
 
-        return Id64.fromJSON(stmt.getRow().id);
+        return stmt.getValue(0).getId();
       });
     }
 

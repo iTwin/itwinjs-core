@@ -427,6 +427,14 @@ export class AccuDraw {
     }
 
 // @internal (undocumented)
+export class AccuDrawChangeModeTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
 export class AccudrawData {
     // (undocumented)
     angle: number;
@@ -537,6 +545,145 @@ export class AccuDrawHintBuilder {
     setXAxis2(xAxis: Vector3d): void;
 }
 
+// @internal (undocumented)
+export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
+    constructor(aboutCurrentZ?: boolean);
+    // (undocumented)
+    aboutCurrentZ: boolean;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    protected _immediateMode: boolean;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    parseAndRun(...args: any[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateCycleTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    moveOrigin: boolean;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateFrontTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateSideTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateTopTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawRotateViewTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockAngleTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockDistanceTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockSmartTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockXTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockYTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetLockZTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class AccuDrawSetOriginTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class AccuDrawShortcuts {
     // (undocumented)
@@ -588,13 +735,13 @@ export class AccuDrawShortcuts {
     // (undocumented)
     static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean;
     // (undocumented)
-    static rotateCycle(updateCurrentACS: boolean): void;
+    static rotateCycle(): void;
     // (undocumented)
     static rotateToACS(): void;
     // (undocumented)
     static rotateToBase(): void;
     // (undocumented)
-    static rotateToElement(updateCurrentACS: boolean): void;
+    static rotateToElement(): void;
     // (undocumented)
     static setOrigin(explicitOrigin?: Point3d): void;
     // (undocumented)
@@ -603,26 +750,6 @@ export class AccuDrawShortcuts {
     static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean;
     // (undocumented)
     static writeACS(_acsName: string): BentleyStatus;
-}
-
-// @internal (undocumented)
-export abstract class AccuDrawTool {
-    // (undocumented)
-    activateAccuDrawOnStart(): boolean;
-    // (undocumented)
-    abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): Promise<boolean>;
-    // (undocumented)
-    doManipulationStart(): void;
-    // (undocumented)
-    doManipulationStop(cancel: boolean): void;
-    // (undocumented)
-    static installTool(shortcut: AccuDrawTool): boolean;
-    // (undocumented)
-    onDecorate(_context: DecorateContext): void;
-    // (undocumented)
-    onManipulationComplete(): AccuDrawFlags;
-    // (undocumented)
-    static outputPrompt(messageKey: string): void;
 }
 
 // @public
@@ -1171,6 +1298,8 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
+    getHeightRange(): Range1d | undefined;
+    // (undocumented)
     getToolTip(hit: HitDetail): HTMLElement | string | undefined;
     // (undocumented)
     settings: BackgroundMapSettings;
@@ -1655,7 +1784,7 @@ export enum ContextMode {
 
 // @internal
 export class ContextRealityModelState {
-    constructor(props: ContextRealityModelProps, iModel: IModelConnection);
+    constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState);
     // (undocumented)
     readonly classifiers: SpatialClassifiers | undefined;
     // (undocumented)
@@ -1713,7 +1842,7 @@ export enum CoordSystem {
 }
 
 // @internal (undocumented)
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference;
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference;
 
 // @internal
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise<TileTree | undefined>;
@@ -1874,6 +2003,40 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     onTouchComplete(_ev: BeTouchEvent): Promise<void>;
     // (undocumented)
     onTouchMove(ev: BeTouchEvent): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @internal (undocumented)
+export class DefineACSByElementTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    activateAccuDrawOnStart(): boolean;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    updateOrientation(snap: SnapDetail, vp: Viewport): boolean;
+}
+
+// @internal (undocumented)
+export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
+    // (undocumented)
+    activateAccuDrawOnStart(): boolean;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
+    // (undocumented)
+    doManipulationStart(): void;
+    // (undocumented)
+    onManipulationComplete(): AccuDrawFlags;
     // (undocumented)
     static toolId: string;
 }
@@ -3346,7 +3509,7 @@ export abstract class InputCollector extends InteractiveTool {
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    run(): boolean;
+    run(..._args: any[]): boolean;
 }
 
 // @beta
@@ -3611,7 +3774,7 @@ export interface MapTileGeometryAttributionProvider {
 
 // @internal (undocumented)
 export abstract class MapTileLoaderBase extends TileLoader {
-    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, _heightRange?: Range1d | undefined);
+    constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _mapTilingScheme: MapTilingScheme, heightRange?: Range1d);
     // (undocumented)
     protected _applyLights: boolean;
     // (undocumented)
@@ -3622,6 +3785,8 @@ export abstract class MapTileLoaderBase extends TileLoader {
     protected _groundBias: number;
     // (undocumented)
     readonly heightRange: Range1d | undefined;
+    // (undocumented)
+    protected readonly _heightRange: Range1d | undefined;
     // (undocumented)
     protected _iModel: IModelConnection;
     // (undocumented)
@@ -4751,7 +4916,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;
     requireWriteableTarget(): boolean;
-    run(): boolean;
+    run(..._args: any[]): boolean;
     saveChanges(): Promise<void>;
     // (undocumented)
     targetIsLocked: boolean;
@@ -5235,7 +5400,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @internal (undocumented)
-    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
+    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference, _heightRange?: Range1d): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
@@ -5498,7 +5663,7 @@ export class SavedState {
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
-    addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined;
+    addBackgroundDrapedModel(drapedTree: TileTree, heightRange?: Range1d): RenderTextureDrape | undefined;
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
@@ -6689,6 +6854,8 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
     // (undocumented)
     abstract readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
+    // (undocumented)
+    readonly priority: Tile.LoadPriority;
 }
 
 // @internal (undocumented)
@@ -6925,10 +7092,11 @@ export namespace Tile {
         readonly worldToViewMap: Map4d;
     }
     export const enum LoadPriority {
-        Background = 3,
-        Classifier = 2,
-        Context = 1,
-        Primary = 0
+        Background = 1,
+        Classifier = 3,
+        Context = 4,
+        Primary = 0,
+        Terrain = 2
     }
     export const enum LoadStatus {
         // (undocumented)
@@ -9089,7 +9257,7 @@ export abstract class ViewTool extends InteractiveTool {
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    run(): boolean;
+    run(..._args: any[]): boolean;
     // (undocumented)
     static showPrompt(prompt: string): void;
     // (undocumented)
