@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Don't display markers that are very close to eye point.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
