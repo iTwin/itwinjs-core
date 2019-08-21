@@ -3936,6 +3936,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected acceptNewSegments(): Promise<void>;
     // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
     protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
     // (undocumented)
     decorate(context: DecorateContext): void;
@@ -4009,6 +4011,8 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedMeasurements: MeasureMarker[];
     // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
     protected readonly _checkedIds: Map<string, MassPropertiesResponseProps>;
     // (undocumented)
     decorate(context: DecorateContext): void;
@@ -4070,6 +4074,8 @@ export class MeasureLengthTool extends MeasureElementTool {
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -9003,6 +9009,7 @@ export abstract class ViewState extends ElementState {
     getZVector(result?: Vector3d): Vector3d;
     is2d(): this is ViewState2d;
     is3d(): this is ViewState3d;
+    isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
     isSpatialView(): this is SpatialViewState;
