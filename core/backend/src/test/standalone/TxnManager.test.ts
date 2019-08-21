@@ -8,7 +8,6 @@ import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
 import { assert } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { GeometricModel } from "../../Model";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
@@ -48,8 +47,7 @@ describe("TxnManager", () => {
   after(() => imodel.closeStandalone());
 
   it("Undo/Redo", () => {
-    let model = imodel.models.getModel(props.model) as GeometricModel;
-    assert.isUndefined(model.lastMod, "lastMod starts undefined");
+    let model = imodel.models.getModel(props.model) as PhysicalModel;
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
@@ -78,9 +76,7 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasLocalChanges);
 
     model = imodel.models.getModel(props.model);
-    assert.isDefined(model.lastMod);
     assert.isDefined(model.geometryGuid);
-    const lastMod1 = model.lastMod;
     const guid1 = model.geometryGuid;
 
     let element = imodel.elements.getElement<TestPhysicalObject>(elementId);
@@ -91,7 +87,6 @@ describe("TxnManager", () => {
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
 
     model = imodel.models.getModel(props.model);
-    assert.isUndefined(model.lastMod, "lastMod undefined after undo");
     assert.isUndefined(model.geometryGuid, "geometryGuid undefined after undo");
 
     assert.isTrue(txns.isRedoPossible);
@@ -103,7 +98,6 @@ describe("TxnManager", () => {
     assert.throws(() => imodel.elements.getElement(elementId), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     model = imodel.models.getModel(props.model);
-    assert.equal(model.lastMod, lastMod1, "lastMod should return after redo");
     assert.equal(model.geometryGuid, guid1, "geometryGuid should return redo");
 
     assert.isTrue(txns.isUndoPossible);
@@ -119,8 +113,6 @@ describe("TxnManager", () => {
     imodel.saveChanges(change2Msg);
 
     model = imodel.models.getModel(props.model);
-    assert.isDefined(model.lastMod);
-    assert.notEqual(model.lastMod, lastMod1, "lastMod should change");
     assert.equal(model.geometryGuid, guid1, "geometryGuid should not update with no geometry changes");
 
     element = imodel.elements.getElement(elementId);
@@ -140,9 +132,7 @@ describe("TxnManager", () => {
     imodel.saveChanges(change2Msg);
 
     model = imodel.models.getModel(props.model);
-    assert.isDefined(model.lastMod);
     assert.isDefined(model.geometryGuid);
-    assert.notEqual(model.lastMod, lastMod1, "lastMod should change");
     assert.notEqual(model.geometryGuid, guid1, "geometryGuid should update with adds");
 
     elementId = imodel.elements.insertElement(props); // create a new element
@@ -185,7 +175,6 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasLocalChanges);
 
     model = imodel.models.getModel(props.model);
-    assert.isUndefined(model.lastMod, "undo all, lastMod goes back to undefined");
     assert.isUndefined(model.geometryGuid, "undo all, geometryGuid goes back to undefined");
 
     const modifyId = imodel.elements.insertElement(props);
@@ -200,6 +189,14 @@ describe("TxnManager", () => {
     imodel.saveChanges("save update to modify guid");
     model = imodel.models.getModel(props.model);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
+
+    const guid3 = model.geometryGuid;
+    const modelProps = model.toJSON();
+    modelProps.geometryChanged = true;
+    imodel.models.updateModel(modelProps);
+    model = imodel.models.getModel(props.model);
+    assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
+
   });
 
   it("Element drives element events", async () => {

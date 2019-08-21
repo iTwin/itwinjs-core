@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement, GeometricModelProps } from "@bentley/imodeljs-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
@@ -20,42 +20,28 @@ import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 export class Model extends Entity implements ModelProps {
   /** @internal */
   public static get className(): string { return "Model"; }
-  public readonly modeledElement: RelatedElement;
+  public readonly modeledElement!: RelatedElement;
   public readonly name: string;
-  public readonly parentModel: Id64String;
-  public readonly jsonProperties: any;
-  public lastMod?: string;
+  public readonly parentModel!: Id64String;
+  public readonly jsonProperties: { [key: string]: any };
   public isPrivate: boolean;
   public isTemplate: boolean;
 
   /** @internal */
   constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
-    this.id = Id64.fromJSON(props.id);
-    this.name = props.name ? props.name : "";
-    this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
-    this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
+    this.name = props.name ? props.name : ""; // NB this isn't really a property of Model (it's the code.value of the modeled element), but it comes in ModelProps because it's often needed
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
-    this.lastMod = props.lastMod;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  /** Add all custom-handled properties of a Model to a json object.
+  /** Add all properties of a Model to a json object.
    * @internal
    */
   public toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
-    val.id = this.id;
-    val.modeledElement = this.modeledElement;
-    val.parentModel = this.parentModel;
-    val.name = this.name;
-    if (this.isPrivate)
-      val.isPrivate = this.isPrivate;
-    if (this.isTemplate)
-      val.isTemplate = this.isTemplate;
-    if (Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
+    val.name = this.name; // for cloning
     return val;
   }
 
@@ -109,6 +95,13 @@ export class Model extends Entity implements ModelProps {
    * @param opcode The operation that will be performed on the element.
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }
+
+  /** insert this Model in the iModel */
+  public insert() { return this.iModel.models.insertModel(this); }
+  /** Update this Model in the iModel. */
+  public update() { this.iModel.models.updateModel(this); }
+  /** Delete this Model from the iModel. */
+  public delete() { this.iModel.models.deleteModel(this.id); }
 }
 
 /** A container for persisting geometric elements.

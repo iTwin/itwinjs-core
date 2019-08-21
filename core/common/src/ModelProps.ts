@@ -18,7 +18,6 @@ export interface ModelProps extends EntityProps {
   parentModel?: Id64String; // NB! Must always match the model of the modeledElement!
   isPrivate?: boolean;
   isTemplate?: boolean;
-  lastMod?: string;
   jsonProperties?: any;
 }
 

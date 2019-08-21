@@ -1274,7 +1274,9 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel<T extends Model>(modelId: Id64String): T { return this._iModel.constructEntity<T>(this.getModelProps(modelId)); }
+    public getModel<T extends Model>(modelId: Id64String): T {
+      return this._iModel.constructEntity<T>(this.getModelProps(modelId));
+    }
 
     /**
      * Read the properties for a Model as a json string.
