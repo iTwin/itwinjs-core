@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { AccessToken, IModelClient, ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, IModelClient, /* ChangeSet, */ Version, Thumbnail, ThumbnailSize, ThumbnailQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
@@ -43,8 +43,7 @@ async function getIModelId(requestContext: AuthorizedClientRequestContext, name:
   return utils.getIModelId(requestContext, name);
 }
 
-// todo: tests fail because the imodel has been deleted from the context
-describe.skip("iModelHub ThumbnailHandler", () => {
+describe("iModelHub ThumbnailHandler", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let _projectId: string;
   let imodelId: GuidString;
@@ -56,8 +55,10 @@ describe.skip("iModelHub ThumbnailHandler", () => {
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
     if (!TestConfig.enableMocks) {
-      utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
-      imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      // utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
+      // imodelHubClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      this.skip();
+      return;
     }
 
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
@@ -72,30 +73,30 @@ describe.skip("iModelHub ThumbnailHandler", () => {
       return;
     }
 
-    // Delete and create a new iModel if we have not expected number of versions.
-    versions = (await imodelHubClient.versions.get(requestContext, imodelId));
-    if (versions.length !== 0 && versions.length !== 3) {
-      await utils.createIModel(requestContext, imodelName, _projectId, true);
-      imodelId = await getIModelId(requestContext, imodelName);
-      versions = new Array<Version>();
-    }
+    // // Delete and create a new iModel if we have not expected number of versions.
+    // versions = (await imodelHubClient.versions.get(requestContext, imodelId));
+    // if (versions.length !== 0 && versions.length !== 3) {
+    //   await utils.createIModel(requestContext, imodelName, _projectId, true);
+    //   imodelId = await getIModelId(requestContext, imodelName);
+    //   versions = new Array<Version>();
+    // }
 
-    if (versions.length === 0) {
-      // Create 3 named versions
-      const briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
-      const changeSets: ChangeSet[] = await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3);
-      for (let i = 0; i < 3; i++)
-        await imodelHubClient.versions.create(requestContext, imodelId, changeSets[i].id!, `Version ${i + 1}`);
-      versions = (await imodelHubClient.versions.get(requestContext, imodelId));
+    // if (versions.length === 0) {
+    //   // Create 3 named versions
+    //   const briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
+    //   const changeSets: ChangeSet[] = await utils.createChangeSets(requestContext, imodelId, briefcase, 0, 3);
+    //   for (let i = 0; i < 3; i++)
+    //     await imodelHubClient.versions.create(requestContext, imodelId, changeSets[i].id!, `Version ${i + 1}`);
+    //   versions = (await imodelHubClient.versions.get(requestContext, imodelId));
 
-      // Wait for all 4 thumbnails (tip and 3 named versions).
-      for (let i = 0; i < 50; i++) {
-        const largeThumbnails: Thumbnail[] = await imodelHubClient.thumbnails.get(requestContext, imodelId, "Large");
-        if (largeThumbnails.length === 4)
-          break;
-        await utils.delay(6000);
-      }
-    }
+    //   // Wait for all 4 thumbnails (tip and 3 named versions).
+    //   for (let i = 0; i < 50; i++) {
+    //     const largeThumbnails: Thumbnail[] = await imodelHubClient.thumbnails.get(requestContext, imodelId, "Large");
+    //     if (largeThumbnails.length === 4)
+    //       break;
+    //     await utils.delay(6000);
+    //   }
+    // }
   });
 
   after(() => {

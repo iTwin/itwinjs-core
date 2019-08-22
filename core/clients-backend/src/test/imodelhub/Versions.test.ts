@@ -61,7 +61,7 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
   }
 }
 
-describe.skip("iModelHub VersionHandler", () => {
+describe("iModelHub VersionHandler", () => {
   let imodelId: GuidString;
   let imodelId2: GuidString;
   let iModelClient: IModelClient;
@@ -125,10 +125,9 @@ describe.skip("iModelHub VersionHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  // TODO: Fix this failing test - https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/125068
   it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
-    utils.mockGetChangeSet(imodelId, false, undefined, ...mockedChangeSets);
+    utils.mockGetChangeSet(imodelId, false, "?$top=1000", ...mockedChangeSets);
     const changeSetsCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
 
     // creating changeset for new named version
