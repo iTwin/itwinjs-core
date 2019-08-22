@@ -5447,6 +5447,8 @@ export abstract class RenderSystem implements IDisposable {
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    // @beta
+    readonly debugControl: RenderSystemDebugControl | undefined;
     // @internal (undocumented)
     abstract dispose(): void;
     // @internal (undocumented)
@@ -5486,6 +5488,12 @@ export namespace RenderSystem {
         // @internal
         preserveShaderSourceCode?: boolean;
     }
+}
+
+// @beta
+export interface RenderSystemDebugControl {
+    drawSurfacesAsWiremesh: boolean;
+    loseContext(): boolean;
 }
 
 // @internal
@@ -5562,7 +5570,6 @@ export abstract class RenderTarget implements IDisposable {
 // @beta
 export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
-    loseContext(): boolean;
     useLogZ: boolean;
 }
 
@@ -6716,8 +6723,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     isRangeOutsideActiveVolume(range: Range3d): boolean;
     // (undocumented)
     readonly isReadPixelsInProgress: boolean;
-    // (undocumented)
-    loseContext(): boolean;
     // (undocumented)
     readonly monoColor: FloatRgba;
     // (undocumented)

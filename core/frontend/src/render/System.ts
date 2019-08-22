@@ -749,8 +749,6 @@ export class PackedFeatureTable {
  * @beta
  */
 export interface RenderTargetDebugControl {
-  /** Destroy this target's webgl context. Returns false if this behavior is not supported. */
-  loseContext(): boolean;
   /** If true, render to the screen as if rendering off-screen for readPixels(). */
   drawForReadPixels: boolean;
   /** If true, use log-z depth buffer (assuming supported by client). */
@@ -877,6 +875,15 @@ export interface GraphicBranchOptions {
   iModel?: IModelConnection;
 }
 
+/** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
+ * @beta
+ */
+export interface RenderSystemDebugControl {
+  /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
+  loseContext(): boolean;
+  /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
+  drawSurfacesAsWiremesh: boolean;
+}
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -1135,6 +1142,11 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsLogZBuffer(): boolean { return true === this.options.logarithmicDepthBuffer; }
+
+  /** Obtain an object that can be used to control various debugging features. Returns `undefined` if debugging features are unavailable for this `RenderSystem`.
+   * @beta
+   */
+  public get debugControl(): RenderSystemDebugControl | undefined { return undefined; }
 }
 
 /** @internal */

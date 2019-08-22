@@ -356,7 +356,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   // RenderTargetDebugControl
   public useLogZ = true;
   public drawForReadPixels = false;
-  public loseContext(): boolean { return System.instance.loseContext(); }
   public get debugControl(): RenderTargetDebugControl { return this; }
 
   protected constructor(rect?: ViewRect) {

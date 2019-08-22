@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added access to debugging features to RenderSystem via RenderSystemDebugControl; includes support for forcing webgl context loss and toggling pseudo-wiremesh surface display.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
