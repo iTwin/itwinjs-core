@@ -3,9 +3,11 @@ Release Tag;API Item
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+alpha;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
+beta;ClearIsolatedElementsTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -25,12 +27,16 @@ alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
 beta;DiagnosticsPanel
+beta;class EmphasizeElementsTool 
+beta;EmphasizeSelectedElementsTool 
 beta;FpsTracker
 beta;FrontendDevTools
 beta;FrustumDecorator 
+beta;IsolateSelectedElementsTool 
 beta;KeyinField
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
+beta;LoseWebGLContextTool 
 beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
@@ -43,6 +49,8 @@ alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
+beta;class RenderSystemDebugControlTool 
+beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
@@ -52,5 +60,8 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
+alpha;ToggleLogZTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
+beta;ToggleReadPixelsTool 
+beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

@@ -287,6 +287,7 @@ internal;class RenderSolarShadowMap
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
+beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
 internal;class RenderTextureDrape 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed bug in style of the weight picker popup",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "joe.zbuchalski@bentley.com"
+}

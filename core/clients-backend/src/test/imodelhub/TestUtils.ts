@@ -704,11 +704,12 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
 
   const client = getDefaultClient();
 
-  const result: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  const result: ChangeSet[] = existingChangeSets.slice(startingId);
 
   const changeSets = getMockChangeSets(briefcase);
 
-  for (let i = result.length; i < startingId + count; ++i) {
+  for (let i = existingChangeSets.length; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
     const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);

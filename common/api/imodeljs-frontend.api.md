@@ -3936,6 +3936,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // (undocumented)
     protected acceptNewSegments(): Promise<void>;
     // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
     protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
     // (undocumented)
     decorate(context: DecorateContext): void;
@@ -4009,6 +4011,8 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedMeasurements: MeasureMarker[];
     // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
     protected readonly _checkedIds: Map<string, MassPropertiesResponseProps>;
     // (undocumented)
     decorate(context: DecorateContext): void;
@@ -4070,6 +4074,8 @@ export class MeasureLengthTool extends MeasureElementTool {
 export class MeasureLocationTool extends PrimitiveTool {
     // (undocumented)
     protected readonly _acceptedLocations: MeasureMarker[];
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -5441,6 +5447,8 @@ export abstract class RenderSystem implements IDisposable {
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
     createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams): RenderGraphic | undefined;
+    // @beta
+    readonly debugControl: RenderSystemDebugControl | undefined;
     // @internal (undocumented)
     abstract dispose(): void;
     // @internal (undocumented)
@@ -5480,6 +5488,12 @@ export namespace RenderSystem {
         // @internal
         preserveShaderSourceCode?: boolean;
     }
+}
+
+// @beta
+export interface RenderSystemDebugControl {
+    drawSurfacesAsWiremesh: boolean;
+    loseContext(): boolean;
 }
 
 // @internal
@@ -5556,7 +5570,6 @@ export abstract class RenderTarget implements IDisposable {
 // @beta
 export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
-    loseContext(): boolean;
     useLogZ: boolean;
 }
 
@@ -6710,8 +6723,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     isRangeOutsideActiveVolume(range: Range3d): boolean;
     // (undocumented)
     readonly isReadPixelsInProgress: boolean;
-    // (undocumented)
-    loseContext(): boolean;
     // (undocumented)
     readonly monoColor: FloatRgba;
     // (undocumented)
@@ -9003,6 +9014,7 @@ export abstract class ViewState extends ElementState {
     getZVector(result?: Vector3d): Vector3d;
     is2d(): this is ViewState2d;
     is3d(): this is ViewState3d;
+    isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
     isSpatialView(): this is SpatialViewState;

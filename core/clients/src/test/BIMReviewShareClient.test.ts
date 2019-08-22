@@ -15,7 +15,7 @@ describe("BIMReviewShareClient", () => {
   let projectId: GuidString = "";
   const moduleName = "BIMREVIEWSHARE_TEST_SavedViewsModule";
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
     if (TestConfig.enableMocks)
       return;
@@ -38,7 +38,7 @@ describe("BIMReviewShareClient", () => {
     }
   });
 
-  it("should be able to post, retrieve, update and delete Content instance and data (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to post, retrieve, update and delete Content instance and data (#integration)", async () => {
     // Test with fabricated "User ID"
     const userGuidTest: GuidString = Guid.createValue();
     const userGuidTest2: GuidString = Guid.createValue();

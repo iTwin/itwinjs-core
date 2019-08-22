@@ -15,12 +15,12 @@ describe("UlasClient - SAML Token (#integration)", () => {
   const client: UlasClient = new UlasClient();
   let accessToken: AccessToken;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async () => {
     const authToken = await TestConfig.login();
     accessToken = await client.getAccessToken(new ClientRequestContext(), authToken);
   });
 
-  it("Post usage log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
     for (const usageType of [UsageType.Beta, UsageType.HomeUse, UsageType.PreActivation, UsageType.Production, UsageType.Trial]) {
       const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), usageType);
@@ -34,7 +34,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     }
   });
 
-  it("Post usage log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log with project id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.4");
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
@@ -46,7 +46,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post usage log with session id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log with session id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "0.5", Guid.createValue());
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial);
 
@@ -58,7 +58,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post usage log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log without product version (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry: UsageLogEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, Guid.createValue());
 
@@ -70,7 +70,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post usage log - hostName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post usage log - hostName special cases (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5");
     for (const hostName of [
       "::1",
@@ -88,7 +88,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     }
   });
 
-  it("Invalid usage log entry (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Invalid usage log entry (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.101");
     let entry: UsageLogEntry = new UsageLogEntry("", UsageType.HomeUse);
 
@@ -111,7 +111,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isTrue(hasThrown, "UlasClient.logUsage is expected to throw if UsageType is not one of the enum values.");
   });
 
-  it("AccessToken without feature tracking claims (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("AccessToken without feature tracking claims (#integration)", async () => {
     enum TokenMode {
       Complete,
       NoUserProfile,
@@ -172,7 +172,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     }
   });
 
-  it("Post feature log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const myFeatureId: GuidString = Guid.createValue();
 
@@ -188,7 +188,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     }
   });
 
-  it("Post feature log with project id (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log with project id (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
@@ -200,7 +200,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post feature log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log without product version (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const entry = new FeatureLogEntry(Guid.createValue(), os.hostname(), UsageType.Trial, Guid.createValue());
     entry.usageData.push({ name: "imodelid", value: Guid.createValue() }, { name: "imodelsize", value: 596622 });
@@ -212,7 +212,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(resp.time, 0);
   });
 
-  it("Post feature log - hostName special cases (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post feature log - hostName special cases (#integration)", async () => {
     const requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.5.99");
     for (const hostName of [
       "::1",
@@ -230,7 +230,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     }
   });
 
-  it("Post multiple feature logs (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post multiple feature logs (#integration)", async () => {
     let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4.99");
     const feature1Id: GuidString = Guid.createValue();
     const feature2Id: GuidString = Guid.createValue();
@@ -258,7 +258,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isTrue(hasThrown, "Passing no FeatureLogEntry to UlasClient.logFeature is expected to throw.");
   });
 
-  it("Post duration feature log (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post duration feature log (#integration)", async () => {
     let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43", "3.4");
     const myFeatureId: GuidString = Guid.createValue();
     let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);
@@ -295,7 +295,7 @@ describe("UlasClient - SAML Token (#integration)", () => {
     assert.isAtLeast(endResp.time, 0);
   });
 
-  it("Post duration feature log without product version (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("Post duration feature log without product version (#integration)", async () => {
     let requestContext = new AuthorizedClientRequestContext(accessToken, undefined, "43");
     const myFeatureId: GuidString = Guid.createValue();
     let startEntry = new FeatureStartedLogEntry(myFeatureId, os.hostname(), UsageType.Beta);

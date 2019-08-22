@@ -279,6 +279,8 @@ export abstract class ViewState extends ElementState {
   public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  /** Returns true if this ViewState is-a [[DrawingViewState]] */
+  public isDrawingView(): this is DrawingViewState { return this instanceof DrawingViewState; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */

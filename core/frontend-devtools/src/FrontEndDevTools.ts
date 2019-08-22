@@ -6,10 +6,13 @@
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import {
-  LoseWebGLContextTool,
   ToggleReadPixelsTool,
   ToggleLogZTool,
 } from "./tools/RenderTargetTools";
+import {
+  LoseWebGLContextTool,
+  ToggleWiremeshTool,
+} from "./tools/RenderSystemTools";
 import {
   ClearIsolatedElementsTool,
   EmphasizeSelectedElementsTool,
@@ -41,6 +44,7 @@ export class FrontendDevTools {
 
     ReportWebGLCompatibilityTool.register(i18n);
     LoseWebGLContextTool.register(i18n);
+    ToggleWiremeshTool.register(i18n);
     ToggleReadPixelsTool.register(i18n);
     ToggleLogZTool.register(i18n);
 

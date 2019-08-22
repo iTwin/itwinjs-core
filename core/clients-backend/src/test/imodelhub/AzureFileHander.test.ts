@@ -7,7 +7,7 @@ import * as chai from "chai";
 import * as stream from "stream";
 
 describe("iModelHub AzureFileHandler BufferedStream", () => {
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
   });
 

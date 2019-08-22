@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import * as sinon from "sinon";
 import { expect } from "chai";
-import sinon = require("sinon");
 import { render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 
@@ -142,7 +142,7 @@ describe("UiShowHideManager", () => {
       await TestUtils.flushAsyncOperations();
       expect(UiShowHideManager.isUiVisible).to.eq(true);
 
-      await TestUtils.tick(100);
+      await TestUtils.tick(500);
       expect(UiShowHideManager.isUiVisible).to.eq(false);
     });
 

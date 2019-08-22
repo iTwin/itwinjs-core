@@ -34,7 +34,7 @@ describe("iModelHubClient LockHandler", () => {
   const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
@@ -66,7 +66,7 @@ describe("iModelHubClient LockHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should acquire one Lock", async function (this: Mocha.ITestCallbackContext) {
+  it("should acquire one Lock", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
     utils.mockUpdateLocks(imodelId, [generatedLock]);
@@ -78,7 +78,7 @@ describe("iModelHubClient LockHandler", () => {
     chai.expect(lock.lockType).equal(generatedLock.lockType);
   });
 
-  it("should acquire multiple Locks", async function (this: Mocha.ITestCallbackContext) {
+  it("should acquire multiple Locks", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock1 = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
@@ -91,7 +91,7 @@ describe("iModelHubClient LockHandler", () => {
     chai.expect(locks.length).to.be.equal(2);
   });
 
-  it("should update Lock multiple times", async function (this: Mocha.ITestCallbackContext) {
+  it("should update Lock multiple times", async () => {
     lastObjectId = utils.incrementLockObjectId(lastObjectId);
     const generatedLock = utils.generateLock(briefcases[0].briefcaseId!, lastObjectId, 1, 1, briefcases[0].fileId);
 
@@ -114,14 +114,14 @@ describe("iModelHubClient LockHandler", () => {
     chai.expect(lock.lockLevel).equals(LockLevel.Shared);
   });
 
-  it("should get information on Locks", async function (this: Mocha.ITestCallbackContext) {
+  it("should get information on Locks", async () => {
     utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ResponseBuilder.generateObject<Lock>(Lock));
     // Needs to acquire before expecting more than 0.
     const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
     chai.expect(locks.length).to.be.greaterThan(0);
   });
 
-  it("should get Locks in chunks", async function (this: Mocha.ITestCallbackContext) {
+  it("should get Locks in chunks", async () => {
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
     utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId)];
 

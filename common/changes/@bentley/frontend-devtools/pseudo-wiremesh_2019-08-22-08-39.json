@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added keyin for toggling pseudo-wiremesh surface display.",
+      "packageName": "@bentley/frontend-devtools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools",
+  "email": "Paul.Connelly@bentley.com"
+}

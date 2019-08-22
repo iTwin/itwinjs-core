@@ -5,6 +5,8 @@
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as React from "react";
+import * as sinon from "sinon";
+
 import {
   ContentLayout,
   ContentGroup,
@@ -17,7 +19,6 @@ import {
   FrontstageManager,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import sinon = require("sinon");
 
 // import SplitPane from "react-split-pane";
 

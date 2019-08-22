@@ -1829,10 +1829,9 @@ export class FrontstageDef {
     readonly panelDefs: StagePanelDef[];
     // @alpha (undocumented)
     rightPanel?: StagePanelDef;
-    // (undocumented)
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
-    // (undocumented)
+    setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
     startDefaultTool(): void;
     // (undocumented)
@@ -1889,6 +1888,8 @@ export class FrontstageManager {
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static findWidget(widgetId: string): WidgetDef | undefined;
     static initialize(): void;
+    // @internal (undocumented)
+    static isInitialized: boolean;
     static readonly isLoading: boolean;
     static readonly modalFrontstageCount: number;
     static readonly nestedFrontstageCount: number;

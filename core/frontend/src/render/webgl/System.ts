@@ -21,6 +21,7 @@ import {
   RenderPlanarClassifier,
   RenderSolarShadowMap,
   RenderSystem,
+  RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
 } from "../System";
@@ -538,7 +539,7 @@ const enum VertexAttribState {
 }
 
 /** @internal */
-export class System extends RenderSystem {
+export class System extends RenderSystem implements RenderSystemDebugControl {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -822,15 +823,6 @@ export class System extends RenderSystem {
     canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
   }
 
-  public loseContext(): boolean {
-    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
-    if (undefined === ext)
-      return false;
-
-    ext.loseContext();
-    return true;
-  }
-
   private async handleContextLoss(): Promise<void> {
     const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
     return ToolAdmin.exceptionHandler(msg);
@@ -1057,4 +1049,18 @@ export class System extends RenderSystem {
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }
+
+  // RenderSystemDebugControl
+  private _drawSurfacesAsWiremesh = false;
+  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
+  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
+  public loseContext(): boolean {
+    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
+    if (undefined === ext)
+      return false;
+
+    ext.loseContext();
+    return true;
+  }
+
 }

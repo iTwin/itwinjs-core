@@ -3,6 +3,9 @@
     "LoseWebGLContext": {
       "keyin": "fdt webgl lose context"
     },
+    "ToggleWiremesh": {
+      "keyin": "fdt toggle wiremesh"
+    },
     "ToggleReadPixels": {
       "keyin": "fdt toggle readpixels"
     },

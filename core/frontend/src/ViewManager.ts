@@ -394,10 +394,8 @@ export class ViewManager {
   public setViewCursor(cursor: string = "default") {
     if (cursor === this.cursor)
       return;
-
     this.cursor = cursor;
-    if (undefined !== this.selectedView) {
-      this.selectedView.setCursor(cursor);
-    }
+    for (const vp of this._viewports)
+      vp.setCursor(cursor);
   }
 }

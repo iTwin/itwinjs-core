@@ -211,7 +211,7 @@ export class Marker implements CanvasDecoration {
       return false;
 
     const pt4 = vp.worldToView4d(this.worldLocation);
-    if (pt4.w > 1.0 || pt4.w < 0) // outside of frustum.
+    if (pt4.w > 1.0 || pt4.w < 1.0e-6) // outside of frustum or too close to eye.
       return false;
 
     pt4.realPoint(this.position);
