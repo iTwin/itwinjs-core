@@ -3,13 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
+import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder, ModelProps } from "@bentley/imodeljs-common";
 import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
 import { assert } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { UpdateModelOptions } from "../../IModelDb";
 
 describe("TxnManager", () => {
+  const pause = async (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
   const requestContext = new BackendRequestContext();
@@ -46,7 +48,7 @@ describe("TxnManager", () => {
 
   after(() => imodel.closeStandalone());
 
-  it("Undo/Redo", () => {
+  it("Undo/Redo", async () => {
     let model = imodel.models.getModel(props.model) as PhysicalModel;
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
@@ -191,12 +193,20 @@ describe("TxnManager", () => {
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
     const guid3 = model.geometryGuid;
-    const modelProps = model.toJSON();
+    const modelProps: ModelProps & UpdateModelOptions = model.toJSON();
     modelProps.geometryChanged = true;
     imodel.models.updateModel(modelProps);
     model = imodel.models.getModel(props.model);
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
 
+    const lastMod = imodel.models.queryLastModifiedTime(props.model);
+    await pause(300); // we're going to update the lastMod below, make sure it will be different.
+    const modelProps2: ModelProps & UpdateModelOptions = model.toJSON();
+    modelProps2.updateLastMod = true;
+    imodel.models.updateModel(modelProps2);
+    model = imodel.models.getModel(props.model);
+    const lastMod2 = imodel.models.queryLastModifiedTime(props.model);
+    assert.notEqual(lastMod, lastMod2);
   });
 
   it("Element drives element events", async () => {

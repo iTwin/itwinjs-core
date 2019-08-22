@@ -52,6 +52,12 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
  */
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
 
+/** @internal */
+export interface UpdateModelOptions {
+  updateLastMod?: boolean;
+  geometryChanged?: boolean;
+}
+
 /** Parameters to open an IModelDb
  * @public
  */
@@ -1270,6 +1276,20 @@ export namespace IModelDb {
       return JSON.parse(json) as T;
     }
 
+    /** Query for the last modified time of the specified Model.
+     * @internal
+     */
+    public queryLastModifiedTime(modelId: Id64String): string {
+      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
+      return this._iModel.withPreparedStatement<string>(sql, (statement) => {
+        statement.bindId("modelId", modelId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          return statement.getValue(0).getDateTime();
+        }
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`, Logger.logWarning, loggerCategory);
+      });
+    }
+
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
@@ -1335,7 +1355,7 @@ export namespace IModelDb {
      * @param props the properties of the model to change
      * @throws [[IModelError]] if unable to update the model.
      */
-    public updateModel(props: ModelProps): void {
+    public updateModel(props: ModelProps & UpdateModelOptions): void {
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props);
 
@@ -1447,7 +1467,7 @@ export namespace IModelDb {
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
           return statement.getValue(0).getDateTime();
         }
-        throw new IModelError(IModelStatus.InvalidId, "Element not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`, Logger.logWarning, loggerCategory);
       });
     }
 
