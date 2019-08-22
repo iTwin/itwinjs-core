@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import * as utils from "./TestUtils";
 
-describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbackContext) {
+describe.skip("iModelHub Performance tests", () => {
   let imodelId: GuidString;
   const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;

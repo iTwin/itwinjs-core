@@ -64,7 +64,7 @@ describe("iModelHub BriefcaseHandler", () => {
   let briefcaseId: number;
   let acquiredBriefcaseId: number;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
@@ -177,7 +177,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.downloadUrl!.startsWith("https://"));
   });
 
-  it("should get the application data for a Briefcase", async function (this: Mocha.ITestCallbackContext) {
+  it("should get the application data for a Briefcase", async () => {
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), false, true);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().byId(briefcaseId).selectApplicationData()))[0];
     chai.expect(briefcase.briefcaseId).to.be.equal(briefcaseId);
@@ -190,7 +190,7 @@ describe("iModelHub BriefcaseHandler", () => {
     }
   });
 
-  it("should get the application data and download URL for a Briefcase", async function (this: Mocha.ITestCallbackContext) {
+  it("should get the application data and download URL for a Briefcase", async () => {
     mockGetBriefcaseRequest(imodelId, utils.generateBriefcase(briefcaseId), true, true);
     const briefcase: Briefcase = (await iModelClient.briefcases.get(requestContext, imodelId,
       new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl().selectApplicationData()))[0];
@@ -244,10 +244,7 @@ describe("iModelHub BriefcaseHandler", () => {
     iModelClient.setFileHandler(new AzureFileHandler());
   });
 
-  it("should get error 409 and fail to get briefcase", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should get error 409 and fail to get briefcase (#unit)", async () => {
     const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
     ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError("NoServerLicense"), 1, undefined, undefined, 409);
     let error;
@@ -261,10 +258,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.expect(error.name).to.be.equal("NoServerLicense");
   });
 
-  it("should get error 500 and retry to get briefcase", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should get error 500 and retry to get briefcase (#unit)", async () => {
     const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "Briefcase");
     ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError(undefined, "ServerError"), 5, undefined, undefined, 500);
     let error;

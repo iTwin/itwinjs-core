@@ -23,7 +23,7 @@
     "lint": "tslint --project . 1>&2",
     "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
-    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"#unit|iModelHub URL Whitelist Validator\" --invert",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {

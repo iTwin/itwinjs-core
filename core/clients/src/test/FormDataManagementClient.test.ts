@@ -16,7 +16,7 @@ describe.skip("FormDataManagementClient", () => {
   const formDataManagementClient: FormDataManagementClient = new FormDataManagementClient();
   const projectId: string = "0f4cf9a5-5b69-4189-b7a9-60f6a5a369a7";
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     if (TestConfig.enableMocks)
       return;
     this.enableTimeouts(false);
@@ -26,23 +26,17 @@ describe.skip("FormDataManagementClient", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
-  it("should be able to retrieve Form Definitions (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve Form Definitions (#integration)", async () => {
     const formDefinitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(requestContext, projectId);
     chai.assert(formDefinitions);
   });
 
-  it("should be able to retrieve Risk Issue Form Definitions (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to retrieve Risk Issue Form Definitions (#integration)", async () => {
     const formDefinitions: FormDefinition[] = await formDataManagementClient.getRiskIssueFormDefinitions(requestContext, projectId);
     chai.assert(formDefinitions);
   });
 
-  it("should be able to create new Form Data (#integration)", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to create new Form Data (#integration)", async () => {
     const definitions: FormDefinition[] = await formDataManagementClient.getFormDefinitions(requestContext, projectId);
     const formDef = definitions[0];
     const formId = formDef.formId!;
@@ -67,7 +61,7 @@ describe.skip("FormDataManagementClient", () => {
     chai.assert(newFromData);
   });
 
-  it("should be able to create new Risk Issue Form Data (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to create new Risk Issue Form Data (#integration)", async function () {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -90,7 +84,7 @@ describe.skip("FormDataManagementClient", () => {
     chai.assert(newFromData);
   });
 
-  it("should be able to retrieve Form Data (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve Form Data (#integration)", async function () {
     if (TestConfig.enableMocks)
       this.skip();
 
@@ -98,7 +92,7 @@ describe.skip("FormDataManagementClient", () => {
     chai.assert(formData);
   });
 
-  it("should be able to retrieve Risk Issue Form Data (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve Risk Issue Form Data (#integration)", async function () {
     if (TestConfig.enableMocks)
       this.skip();
 

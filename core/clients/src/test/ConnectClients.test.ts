@@ -14,14 +14,14 @@ describe("ConnectClient (#integration)", () => {
   const connectClient: ConnectClient = new ConnectClient();
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
     const authToken: AuthorizationToken = await TestConfig.login();
     const accessToken = await connectClient.getAccessToken(new ClientRequestContext(), authToken);
     requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
-  it("should get a list of projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get a list of projects (#integration)", async () => {
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",
       $top: 20,
@@ -31,7 +31,7 @@ describe("ConnectClient (#integration)", () => {
     chai.expect(projects.length).greaterThan(0);
   });
 
-  it("should get a list of Most Recently Used (MRU) projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get a list of Most Recently Used (MRU) projects (#integration)", async () => {
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",
       $top: 20,
@@ -42,7 +42,7 @@ describe("ConnectClient (#integration)", () => {
     chai.expect(projects.length).greaterThan(0);
   });
 
-  it("should get a list of Favorite projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get a list of Favorite projects (#integration)", async () => {
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",
       $top: 20,
@@ -53,7 +53,7 @@ describe("ConnectClient (#integration)", () => {
     chai.expect(projects.length).to.be.greaterThan(0);
   });
 
-  it("should get a project by name (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get a project by name (#integration)", async () => {
     const queryOptions: ConnectRequestQueryOptions = {
       $select: "*",
       $filter: "Name+eq+'" + TestConfig.projectName + "'",
@@ -62,7 +62,7 @@ describe("ConnectClient (#integration)", () => {
     chai.expect(project.name).equals(TestConfig.projectName);
   });
 
-  it("should get a list of invited projects (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should get a list of invited projects (#integration)", async () => {
     const invitedProjects: Project[] = await connectClient.getInvitedProjects(requestContext);
     chai.expect(invitedProjects.length).greaterThan(0);
   });
