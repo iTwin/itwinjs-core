@@ -179,6 +179,7 @@ export * from "./curve/CurveCurve";
 export * from "./curve/CurveCurveIntersectXY";
 export * from "./curve/CurveCurveIntersectXYZ";
 export * from "./curve/CurveLocationDetail";
+export * from "./curve/CurveFactory";
 export * from "./curve/CurvePrimitive";
 export * from "./curve/CurveProcessor";
 export * from "./curve/GeometryQuery";

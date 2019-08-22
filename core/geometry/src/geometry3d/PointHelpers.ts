@@ -684,12 +684,15 @@ export class Point3dArray {
     return collector.claimResult();
   }
   /**
+   * `Point3dArray.createRange(data)` is deprecated.  Used `Range3d.createFromVariantData(data: MultiLineStringDataVariant): Range3d`
    * @deprecated Use Range3d.createFromVariantData (data)
    * @param data
    */
   public static createRange(data: MultiLineStringDataVariant): Range3d { return Range3d.createFromVariantData(data); }
   private static _workPoint?: Point3d;
-  /** @deprecated - use VariantPointStream.streamXYZXYZ (handler)
+  /**
+   * `Point3dArray.streamXYZ` is deprecated -- use `VariantPointStream.streamXYZ (handler)`
+   * @deprecated - use VariantPointStream.streamXYZ (handler)
    * Invoke a callback with each x,y,z from an array of points in variant forms.
    * @param startChainCallback called to announce the beginning of points (or recursion)
    * @param pointCallback (index, x,y,z) = function to receive point coordinates one by one
@@ -741,13 +744,14 @@ export class Point3dArray {
     }
     return numPoint;
   }
-/**
- * @deprecated - use VariantPointStream.streamXYZXYZ (handler)
- * Invoke a callback with each x,y,z from an array of points in variant forms.
- * @param startChainCallback callback of the form `startChainCallback (source, isLeaf)` to be called with the source array at each level.
- * @param segmentCallback callback of the form `segmentCallback (index0, x0,y0,z0, index1, x1,y1,z1)`
- * @param endChainCallback callback of the form `endChainCallback (source, isLeaf)` to be called with the source array at each level.
-*/
+  /**
+     * `Point3dArray.streamXYZXYZ` is deprecated -- use `VariantPointStream.streamXYZXYZ (handler)`
+   * @deprecated - use VariantPointStream.streamXYZXYZ (handler)
+   * Invoke a callback with each x,y,z from an array of points in variant forms.
+   * @param startChainCallback callback of the form `startChainCallback (source, isLeaf)` to be called with the source array at each level.
+   * @param segmentCallback callback of the form `segmentCallback (index0, x0,y0,z0, index1, x1,y1,z1)`
+   * @param endChainCallback callback of the form `endChainCallback (source, isLeaf)` to be called with the source array at each level.
+  */
   public static streamXYZXYZ(data: MultiLineStringDataVariant,
     startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined,
     segmentCallback: (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => void,
@@ -804,4 +808,77 @@ export class Point3dArray {
     return numSegment;
   }
 
+  /** Computes the hull of the XY projection of points.
+   * * Returns the hull as an array of Point3d
+   * * Optionally returns non-hull points in `insidePoints[]`
+   * * If both arrays empty if less than 3 points.
+   * *
+   */
+  public static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint: boolean = false) {
+    hullPoints.length = 0;
+    insidePoints.length = 0;
+    let n = points.length;
+    // Get deep copy
+    const xy1: Point3d[] = points.slice(0, n);
+    xy1.sort(Geometry.lexicalXYLessThan);
+    if (n < 3) {
+      for (const p of xy1)
+        hullPoints.push(p);
+      if (addClosurePoint && xy1.length > 0)
+        hullPoints.push(xy1[0]);
+      return;
+    }
+    hullPoints.push(xy1[0]); // This is sure to stay
+    hullPoints.push(xy1[1]); // This one can be removed in loop.
+    let numInside = 0;
+    // First sweep creates upper hull
+    for (let i = 2; i < n; i++) {
+      const candidate = xy1[i];
+      let top = hullPoints.length - 1;
+      while (top >= 1 && hullPoints[top - 1].crossProductToPointsXY(hullPoints[top], candidate) <= 0.0) {
+        xy1[numInside++] = hullPoints[top];
+        top--;
+        hullPoints.pop();
+      }
+      hullPoints.push(candidate);
+    }
+    const i0 = hullPoints.length - 1;
+    xy1.length = numInside;
+    xy1.push(hullPoints[0]);    // force first point to be reconsidered as final hull point.
+    xy1.sort(Geometry.lexicalXYLessThan);
+    n = xy1.length;
+    // xy1.back () is already on stack.
+    hullPoints.push(xy1[n - 1]);
+    for (let i = n - 1; i-- > 0;) {
+      const candidate = xy1[i];
+      let top = hullPoints.length - 1;
+      while (top > i0 && hullPoints[top - 1].crossProductToPointsXY(hullPoints[top], candidate) <= 0.0) {
+        insidePoints.push(hullPoints[top]);
+        top--;
+        hullPoints.pop();
+      }
+      if (i > 0)    // don't replicate start !!!
+        hullPoints.push(candidate);
+    }
+    if (addClosurePoint)
+      hullPoints.push(hullPoints[0]);
+  }
+  /**
+   * Return (clones of) points in data[] with min and max x and y parts.
+   * @param data array to examine.
+   */
+  public static minMaxPoints(data: Point3d[]): { minXPoint: Point3d, maxXPoint: Point3d, minYPoint: Point3d, maxYPoint: Point3d } | undefined {
+    if (data.length === 0)
+      return undefined;
+    const result = { minXPoint: data[0].clone(), maxXPoint: data[0].clone(), minYPoint: data[0].clone(), maxYPoint: data[0].clone() };
+    let q;
+    for (let i = 1; i < data.length; i++) {
+      q = data[i];
+      if (q.x < result.minXPoint.x) result.minXPoint.setFromPoint3d(q);
+      if (q.x > result.maxXPoint.x) result.maxXPoint.setFromPoint3d(q);
+      if (q.y < result.minYPoint.y) result.minYPoint.setFromPoint3d(q);
+      if (q.y > result.maxYPoint.y) result.maxYPoint.setFromPoint3d(q);
+    }
+    return result;
+  }
 }
