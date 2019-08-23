@@ -69,8 +69,19 @@ export class MeshData implements IDisposable {
 
   public dispose() {
     dispose(this.lut);
-    if (undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned)
-      this.texture.dispose();
+    if (this._ownsTexture)
+      this.texture!.dispose();
+  }
+
+  // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
+  private get _ownsTexture(): boolean {
+    return undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVertexTable(this.lut.bytesUsed);
+    if (this._ownsTexture)
+      stats.addTexture(this.texture!.bytesUsed);
   }
 }
 
@@ -126,7 +137,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addVertexTable(this.meshData.lut.bytesUsed);
+    this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
 
     // Only count the shared instance buffers once...

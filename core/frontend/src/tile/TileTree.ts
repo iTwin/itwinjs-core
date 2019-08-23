@@ -116,7 +116,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
     this.isBackgroundMap = props.isBackgroundMap;
-    this.expirationTime = IModelApp.tileAdmin.tileExpirationTime;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
@@ -127,6 +126,9 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
     this.contentRange = props.contentRange;
+
+    const admin = IModelApp.tileAdmin;
+    this.expirationTime = Tile.LoadPriority.Context === this.loader.priority ? admin.realityTileExpirationTime : admin.tileExpirationTime;
   }
 
   public get rootTile(): Tile { return this._rootTile; }

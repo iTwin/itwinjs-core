@@ -18,7 +18,10 @@ import {
   EmphasizeSelectedElementsTool,
   IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import { ChangeViewFlagsTool } from "./tools/ChangeViewFlagsTool";
+import {
+  ChangeViewFlagsTool,
+  ToggleSkyboxTool,
+} from "./tools/ChangeViewFlagsTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -53,6 +56,7 @@ export class FrontendDevTools {
     IsolateSelectedElementsTool.register(i18n);
 
     ChangeViewFlagsTool.register(i18n);
+    ToggleSkyboxTool.register(i18n);
 
     return i18n.readFinished;
   }

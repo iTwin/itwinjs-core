@@ -7194,6 +7194,8 @@ export abstract class TileAdmin {
     // @internal
     abstract process(): void;
     // @internal (undocumented)
+    abstract readonly realityTileExpirationTime: BeDuration;
+    // @internal (undocumented)
     abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
@@ -7215,6 +7217,8 @@ export namespace TileAdmin {
         maxActiveRequests?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
+        // @internal
+        realityTileExpirationTime?: number;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;

@@ -241,6 +241,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
   public setContent(content: Tile.Content): void {
+    // This should never happen but paranoia.
+    this._graphic = dispose(this._graphic);
+
     const { graphic, isLeaf, contentRange, sizeMultiplier } = content;
 
     this._graphic = graphic;

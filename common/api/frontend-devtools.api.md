@@ -590,6 +590,14 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
     static toolId: string;
 }
 
+// @alpha
+export class ToggleSkyboxTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     // (undocumented)

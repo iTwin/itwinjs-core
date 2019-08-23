@@ -63,5 +63,6 @@ beta;TileStatisticsTracker
 alpha;ToggleLogZTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
 beta;ToggleReadPixelsTool 
+alpha;ToggleSkyboxTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker
