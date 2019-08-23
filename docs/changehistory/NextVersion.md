@@ -32,3 +32,6 @@ ignore: true
   * `PolyfaceBuilder`
     * (static) `PolyfaceBuilder.pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined;`
       * Return triangulated mesh within the convex hull around the points.
+  * `Ray3d`
+    * `interval = myRay.intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d`
+      * return fractions (along the ray `myRay`) where the `myRay` enters and exits a `Range3d`, or null `Range1d` if no in intersection.

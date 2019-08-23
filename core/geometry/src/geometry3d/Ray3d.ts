@@ -13,6 +13,7 @@ import { XYAndZ } from "./XYZProps";
 import { CurveLocationDetail, CurveLocationDetailPair, CurveCurveApproachType } from "../curve/CurveLocationDetail";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Vector2d } from "./Point2dVector2d";
+import { Range1d, Range3d } from "./Range";
 /** A Ray3d contains
  * * an origin point.
  * * a direction vector.  The vector is NOT required to be normalized.
@@ -255,6 +256,22 @@ export class Ray3d implements BeJSONFunctions {
       this.origin.plusScaled(this.direction, division, result);
     }
     return division;
+  }
+
+  /**
+   * * Find intersection of the ray with a Range3d.
+   * * return the range of fractions (on the ray) which are "inside" the range.
+   * * Note that a range is always returned;  if there is no intersection it is indicated by the test `result.sNull`
+   */
+  public intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d {
+    if (range.isNull)
+      return Range1d.createNull(result);
+    const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
+    if (interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x)
+      && interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y)
+      && interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z))
+      return interval;
+    return interval;
   }
 
   /** Construct a vector from `ray.origin` to target point.

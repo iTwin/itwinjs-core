@@ -1031,6 +1031,55 @@ export class Range1d extends RangeBase {
       this.low - delta,
       this.high + delta, true);
   }
+  /**
+   * clip this range to a linear half space condition
+   * * if `limitA > limitB` the limit space is empty
+   *   * make this range null
+   *   * return false;
+   * * otherwise (i.e `limitA <= limitB`)
+   *   * solve `a + u * f = limitA' and `a + u * f = limitA`
+   *   * if unable to solve (i.e. u near zero), `a` alone determines whether to (a) leave this interval unchanged or (b) reduce to nothing.
+   *   * the `f` values are an interval in the space of this `Range1d`
+   *   * restrict the range to that interval (i.e intersect existing (low,high) with the fraction interval.
+   *   * return true if the range is non-null after the clip.
+   * @param a constant of linear map
+   * @param u coefficient of linear map
+   * @param limitA crossing value, assumed in range relation with limitB
+   * @param limitB crossing value, assumed in range relation with limitB
+   * @param limitIsHigh true if the limit is an upper limit on mapped values.
+   *
+   */
+  public clipLinearMapToInterval(a: number, u: number, limitA: number, limitB: number): boolean {
+    // f = (limit - a) / u
+    if (limitB < limitA || this.high < this.low)
+      return false;
+    const fractionA = Geometry.conditionalDivideFraction(limitA - a, u);
+    const fractionB = Geometry.conditionalDivideFraction(limitB - a, u);
+    // single point case
+    if (fractionA === undefined || fractionB === undefined) {
+      if (limitA <= a && a <= limitB)
+        return true;
+      this.setNull();
+      return false;
+    }
+
+    if (fractionA < fractionB) {
+      if (fractionA > this.low)
+        this.low = fractionA;
+      if (fractionB < this.high)
+        this.high = fractionB;
+    } else {
+      if (fractionA < this.high)
+        this.high = fractionA;
+      if (fractionB > this.low)
+        this.low = fractionB;
+    }
+    if (this.high < this.low) {
+      this.setNull();
+      return false;
+    }
+    return true;
+  }
 }
 
 /**
@@ -1371,4 +1420,5 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.low.x - delta, this.low.y - delta,
       this.high.x + delta, this.high.y + delta, true);
   }
+
 }
