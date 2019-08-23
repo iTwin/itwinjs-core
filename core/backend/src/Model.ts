@@ -113,7 +113,6 @@ export class GeometricModel extends Model {
   /** @internal */
   constructor(props: GeometricModelProps, iModel: IModelDb) {
     super(props, iModel);
-    this.geometryGuid = props.geometryGuid;
   }
 
   /** @internal */

@@ -200,7 +200,7 @@ describe("TxnManager", () => {
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
 
     const lastMod = imodel.models.queryLastModifiedTime(props.model);
-    await pause(300); // we're going to update the lastMod below, make sure it will be different.
+    await pause(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
     const modelProps2: ModelProps & UpdateModelOptions = model.toJSON();
     modelProps2.updateLastMod = true;
     imodel.models.updateModel(modelProps2);

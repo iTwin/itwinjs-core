@@ -13,7 +13,8 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority, QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
+  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -52,9 +53,13 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
  */
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
 
-/** @internal */
+/** Options for [[IModelDb.Models.updateModel]]
+ * @public
+ */
 export interface UpdateModelOptions {
+  /** If defined, update the last modify time of the Model */
   updateLastMod?: boolean;
+  /** If defined, update the GeometryGuid of the Model */
   geometryChanged?: boolean;
 }
 
