@@ -13,7 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
- * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDB.
+ * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
  * See [Creating models]($docs/learning/backend/CreateModels.md)
  * @public
  */

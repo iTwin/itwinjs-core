@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder, ModelProps } from "@bentley/imodeljs-common";
+import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Point3d, Angle, LineSegment3d } from "@bentley/geometry-core";
 import { assert } from "chai";
 import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
@@ -49,7 +49,11 @@ describe("TxnManager", () => {
   after(() => imodel.closeStandalone());
 
   it("Undo/Redo", async () => {
-    let model = imodel.models.getModel(props.model) as PhysicalModel;
+    const models = imodel.models;
+    const elements = imodel.elements;
+    const modelId = props.model;
+
+    let model = models.getModel(modelId) as PhysicalModel;
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
@@ -66,7 +70,7 @@ describe("TxnManager", () => {
     txns.onBeforeUndoRedo.addListener(() => afterUndo++);
     txns.onAfterUndoRedo.addListener((action) => { beforeUndo++; undoAction = action; });
 
-    let elementId = imodel.elements.insertElement(props);
+    let elementId = elements.insertElement(props);
     assert.isFalse(txns.isRedoPossible);
     assert.isFalse(txns.isUndoPossible);
     assert.isTrue(txns.hasUnsavedChanges);
@@ -77,18 +81,18 @@ describe("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
     const guid1 = model.geometryGuid;
 
-    let element = imodel.elements.getElement<TestPhysicalObject>(elementId);
+    let element = elements.getElement<TestPhysicalObject>(elementId);
     assert.equal(element.intProperty, 100, "int property should be 100");
 
     assert.isTrue(txns.isUndoPossible);  // we have an undoable Txn, but nothing undone.
     assert.equal(change1Msg, txns.getUndoString());
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid undefined after undo");
 
     assert.isTrue(txns.isRedoPossible);
@@ -97,9 +101,9 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 1);
     assert.equal(undoAction, TxnAction.Reverse);
 
-    assert.throws(() => imodel.elements.getElement(elementId), IModelError);
+    assert.throws(() => elements.getElement(elementId), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.equal(model.geometryGuid, guid1, "geometryGuid should return redo");
 
     assert.isTrue(txns.isUndoPossible);
@@ -108,112 +112,113 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 2);
     assert.equal(undoAction, TxnAction.Reinstate);
 
-    element = imodel.elements.getElement(elementId);
+    element = elements.getElement(elementId);
     element.intProperty = 200;
     element.update();
 
     imodel.saveChanges(change2Msg);
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.equal(model.geometryGuid, guid1, "geometryGuid should not update with no geometry changes");
 
-    element = imodel.elements.getElement(elementId);
+    element = elements.getElement(elementId);
     assert.equal(element.intProperty, 200, "int property should be 200");
     assert.equal(txns.getTxnDescription(txns.queryPreviousTxnId(txns.getCurrentTxnId())), change2Msg);
 
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    element = imodel.elements.getElement(elementId);
+    element = elements.getElement(elementId);
     assert.equal(element.intProperty, 100, "int property should be 100");
 
     // make sure abandon changes works.
     element.delete();
-    assert.throws(() => imodel.elements.getElement(elementId), IModelError);
+    assert.throws(() => elements.getElement(elementId), IModelError);
     imodel.abandonChanges(); //
-    element = imodel.elements.getElement(elementId); // should be back now.
-    imodel.elements.insertElement(props); // create a new element
+    element = elements.getElement(elementId); // should be back now.
+    elements.insertElement(props); // create a new element
     imodel.saveChanges(change2Msg);
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.isDefined(model.geometryGuid);
     assert.notEqual(model.geometryGuid, guid1, "geometryGuid should update with adds");
 
-    elementId = imodel.elements.insertElement(props); // create a new element
+    elementId = elements.insertElement(props); // create a new element
     assert.isTrue(txns.hasUnsavedChanges);
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
     assert.isFalse(txns.hasUnsavedChanges);
-    assert.throws(() => imodel.elements.getElement(elementId), IModelError); // reversing a txn with pending uncommitted changes should abandon them.
+    assert.throws(() => elements.getElement(elementId), IModelError); // reversing a txn with pending uncommitted changes should abandon them.
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.throws(() => imodel.elements.getElement(elementId), IModelError); // doesn't come back, wasn't committed
+    assert.throws(() => elements.getElement(elementId), IModelError); // doesn't come back, wasn't committed
 
     // verify multi-txn operations are undone/redone together
-    const el1 = imodel.elements.insertElement(props);
+    const el1 = elements.insertElement(props);
     imodel.saveChanges("step 1");
     txns.beginMultiTxnOperation();
     assert.equal(1, txns.getMultiTxnOperationDepth());
-    const el2 = imodel.elements.insertElement(props);
+    const el2 = elements.insertElement(props);
     imodel.saveChanges("step 2");
-    const el3 = imodel.elements.insertElement(props);
+    const el3 = elements.insertElement(props);
     imodel.saveChanges("step 3");
     txns.endMultiTxnOperation();
     assert.equal(0, txns.getMultiTxnOperationDepth());
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    assert.throws(() => imodel.elements.getElement(el2), IModelError);
-    assert.throws(() => imodel.elements.getElement(el3), IModelError);
-    imodel.elements.getElement(el1);
+    assert.throws(() => elements.getElement(el2), IModelError);
+    assert.throws(() => elements.getElement(el3), IModelError);
+    elements.getElement(el1);
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
-    assert.throws(() => imodel.elements.getElement(el1), IModelError);
+    assert.throws(() => elements.getElement(el1), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    assert.throws(() => imodel.elements.getElement(el2), IModelError);
-    assert.throws(() => imodel.elements.getElement(el3), IModelError);
-    imodel.elements.getElement(el1);
+    assert.throws(() => elements.getElement(el2), IModelError);
+    assert.throws(() => elements.getElement(el3), IModelError);
+    elements.getElement(el1);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
-    imodel.elements.getElement(el1);
-    imodel.elements.getElement(el2);
-    imodel.elements.getElement(el3);
+    elements.getElement(el1);
+    elements.getElement(el2);
+    elements.getElement(el3);
 
     assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
     assert.isFalse(txns.hasUnsavedChanges);
     assert.isFalse(txns.hasPendingTxns);
     assert.isFalse(txns.hasLocalChanges);
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.isUndefined(model.geometryGuid, "undo all, geometryGuid goes back to undefined");
 
-    const modifyId = imodel.elements.insertElement(props);
+    const modifyId = elements.insertElement(props);
     imodel.saveChanges("check guid changes");
 
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     const guid2 = model.geometryGuid;
-    const toModify = imodel.elements.getElement<TestPhysicalObject>(modifyId);
+    const toModify = elements.getElement<TestPhysicalObject>(modifyId);
     toModify.placement.origin.x += 1;
     toModify.placement.origin.y += 1;
     toModify.update();
     imodel.saveChanges("save update to modify guid");
-    model = imodel.models.getModel(props.model);
+    model = models.getModel(modelId);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
     const guid3 = model.geometryGuid;
-    const modelProps: ModelProps & UpdateModelOptions = model.toJSON();
+    const modelProps = model.toJSON() as UpdateModelOptions;
     modelProps.geometryChanged = true;
-    imodel.models.updateModel(modelProps);
-    model = imodel.models.getModel(props.model);
+    models.updateModel(modelProps);
+    model = models.getModel(modelId);
     assert.notEqual(guid3, model.geometryGuid, "update model should change guid");
 
-    const lastMod = imodel.models.queryLastModifiedTime(props.model);
+    const lastMod = models.queryLastModifiedTime(modelId);
     await pause(300); // we're going to update the lastMod below, make sure it will be different by waiting .3 seconds
-    const modelProps2: ModelProps & UpdateModelOptions = model.toJSON();
+    const modelProps2 = model.toJSON() as UpdateModelOptions;
     modelProps2.updateLastMod = true;
-    imodel.models.updateModel(modelProps2);
-    model = imodel.models.getModel(props.model);
-    const lastMod2 = imodel.models.queryLastModifiedTime(props.model);
+    models.updateModel(modelProps2);
+    model = models.getModel(modelId);
+    const lastMod2 = models.queryLastModifiedTime(modelId);
     assert.notEqual(lastMod, lastMod2);
   });
 
   it("Element drives element events", async () => {
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
-    const el1 = imodel.elements.insertElement(props);
-    const el2 = imodel.elements.insertElement(props);
+    const elements = imodel.elements;
+    const el1 = elements.insertElement(props);
+    const el2 = elements.insertElement(props);
     const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
     ede.property1 = "test ede";
     ede.insert();
@@ -260,7 +265,7 @@ describe("TxnManager", () => {
     assert.equal(validateOutput, 0);
     assert.equal(deletedDependency, 0);
 
-    const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
+    const element2 = elements.getElement<TestPhysicalObject>(el2);
     // make sure we actually change something in the element table. Otherwise update does nothing unless we wait long enough for last-mod-time to be updated.
     element2.userLabel = "new value";
     element2.update();

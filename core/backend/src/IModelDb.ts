@@ -56,7 +56,7 @@ export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
 /** Options for [[IModelDb.Models.updateModel]]
  * @public
  */
-export interface UpdateModelOptions {
+export interface UpdateModelOptions extends ModelProps {
   /** If defined, update the last modify time of the Model */
   updateLastMod?: boolean;
   /** If defined, update the GeometryGuid of the Model */
@@ -84,7 +84,7 @@ export class OpenParams {
   }
 
   /** Returns true if the OpenParams open a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of an iModel *snapshot*.
+   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot*.
    */
   public get isStandalone(): boolean { return this.syncMode === undefined; }
 
@@ -107,7 +107,7 @@ export class OpenParams {
   public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
-   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel.
+   * @deprecated use snapshot iModels.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
   /** Returns true if equal and false otherwise */
@@ -272,7 +272,7 @@ export class IModelDb extends IModel {
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
-   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[open]] or [[openSnapshot]] instead.
+   * @deprecated Callers should migrate to [[open]] or [[openSnapshot]].
    * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
@@ -354,7 +354,7 @@ export class IModelDb extends IModel {
   }
 
   /** Returns true if this is a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot* iModels.
    */
   public get isStandalone(): boolean {
     return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
@@ -370,7 +370,7 @@ export class IModelDb extends IModel {
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
-   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel. Callers should migrate to [[closeSnapshot]].
+   * @deprecated standalone has been replaced *snapshot* iModels. Callers should migrate to [[closeSnapshot]].
    * @internal
    */
   public closeStandalone(): void {
@@ -1360,7 +1360,7 @@ export namespace IModelDb {
      * @param props the properties of the model to change
      * @throws [[IModelError]] if unable to update the model.
      */
-    public updateModel(props: ModelProps & UpdateModelOptions): void {
+    public updateModel(props: UpdateModelOptions): void {
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props);
 
