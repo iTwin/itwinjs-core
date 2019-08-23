@@ -40,6 +40,7 @@ import { AnyRegion, AnyCurve } from "../../curve/CurveChain";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { Path } from "../../curve/Path";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { CurveFactory } from "../../curve/CurveFactory";
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -600,7 +601,7 @@ describe("CloneSplitCurves", () => {
     const stringA = LineString3d.create([10, 10], [0, 10], [0, 0]);
     const loop = Loop.create(segmentA, arcA, stringA);
 
-    const path0 = createFilletChain([
+    const path0 = CurveFactory.createFilletsInLineString([
       Point3d.create(1, 1),
       Point3d.create(5, 1),
       Point3d.create(8, 3),
@@ -608,7 +609,7 @@ describe("CloneSplitCurves", () => {
       Point3d.create(12, 8),
       Point3d.create(5, 8)], 0.5);
 
-    const path1 = createFilletChain([
+    const path1 = CurveFactory.createFilletsInLineString([
       Point3d.create(1, 1),
       Point3d.create(5, 1),
       Point3d.create(14, 3),
@@ -638,22 +639,3 @@ describe("CloneSplitCurves", () => {
   });
 
 });
-
-function createFilletChain(points: Point3d[], radius: number): Path {
-  const pointA = points[0];
-  const path = Path.create();
-  for (let i = 1; i + 1 < points.length; i++) {
-    const arcData = Arc3d.createFilletArc(points[i - 1], points[i], points[i + 1], radius);
-    if (arcData) {
-      const pointB = points[i].interpolate(arcData.fraction10, points[i - 1]);
-      path.tryAddChild(LineSegment3d.create(pointA, pointB));
-      path.tryAddChild(arcData.arc);
-      points[i].interpolate(arcData.fraction12, points[i + 1], pointA);
-    } else {
-      path.tryAddChild(LineSegment3d.create(pointA, points[i]));
-      pointA.setFromPoint3d(points[i]);
-    }
-  }
-  path.tryAddChild(LineSegment3d.create(pointA, points[points.length - 1]));
-  return path;
-}

@@ -14,6 +14,7 @@ public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePr
 public;AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection
 public;AnyRegion = Loop | ParityRegion | UnionRegion
 public;Arc3d 
+public;ArcBlendData
 public;ArcVectors
 public;AuxChannel
 public;AuxChannelData
@@ -70,6 +71,7 @@ internal;CurveCurveIntersectXY
 internal;CurveCurveIntersectXYZ 
 public;CurveExtendMode
 public;CurveExtendOptions
+public;CurveFactory
 public;CurveIntervalRole
 public;CurveLocationDetail
 public;CurveLocationDetailArrayPair

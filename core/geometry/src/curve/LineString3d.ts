@@ -1253,7 +1253,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return result;
   }
-  /** @deprecated use LineString3d.createArrayOfLineString3dFromVariantData */
+  /**
+   * This method name is deprecated. Use `LineString3d.createArrayOfLineString3dFromVariantData`
+   * @deprecated use LineString3d.createArrayOfLineString3dFromVariantData
+   */
   public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
     return this.createArrayOfLineString3dFromVariantData(data);
 

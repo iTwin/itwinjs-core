@@ -527,6 +527,10 @@ export class Geometry {
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
   }
+  /** 2D dot product of vectors layed out as scalars. */
+  public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
+    return ux * vx + uy * vy;
+  }
   /**
    * Clamp to (min(a,b), max(a,b))
    * @param x

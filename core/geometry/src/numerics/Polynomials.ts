@@ -11,6 +11,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../geometry4d/Point4d";
+import { XAndY } from "../geometry3d/XYZProps";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -1361,7 +1362,7 @@ export class SmallSystem {
    * @param pointA1 end point
    * @param spacePoint homogeneous point in space
    */
-  public static lineSegment3dXYClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
+  public static lineSegment3dXYClosestPointUnbounded(pointA0: XAndY, pointA1: XAndY, spacePoint: XAndY): number | undefined {
     // Considering only x,y parts....
     const ux = pointA1.x - pointA0.x;
     const uy = pointA1.y - pointA0.y;

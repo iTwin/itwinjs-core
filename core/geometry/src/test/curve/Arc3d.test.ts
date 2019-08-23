@@ -301,12 +301,12 @@ describe("Arc3d", () => {
     const point0 = Point3d.create(1, 2, 3);
     const point2 = Point3d.create(4, 2, -1);
     const radius = 2.0;
-    ck.testUndefined(Arc3d.createFilletArc(point0, point0, point2, radius));
-    for (const lambda of [-0.52, 0.45, 1.2]) {
+    for (const lambda of [0.0, -0.52, 0.45, 1.2, 1.0]) {
       const point1 = point0.interpolate(lambda, point2);
-      ck.testUndefined(Arc3d.createFilletArc(point0, point1, point2, radius));
-    }
+      const data = Arc3d.createFilletArc(point0, point1, point2, radius);
+      ck.testDefined (data, "Degenerated arc data");
+      ck.testUndefined(data.arc, "Degenerate arc -- expect no arc in data");
+      }
     expect(ck.getNumErrors()).equals(0);
   });
-
 });

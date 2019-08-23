@@ -1004,4 +1004,69 @@ describe("PolygonAreas", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("ConvexHullManyPoints", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const a = 3.29;
+    const dTheta = 0.34;
+    let x0 = 0;
+    const y0 = 0;
+    for (const numPoints of [9, 42, 273]) {
+      const points: Point3d[] = [];
+      for (let theta = 0.01 * (numPoints - 8); points.length < numPoints; theta += dTheta) {
+        points.push(lisajouePoint3d(theta * theta, a, 0));
+      }
+      const range = Range3d.createFromVariantData(points);
+      const dx = Math.ceil(range.xLength() + 4);
+      const dy = Math.ceil(range.yLength() + 1);
+      const interior: Point3d[] = [];
+      const hull: Point3d[] = [];
+      Point3dArray.computeConvexHullXY(points, hull, interior, true);
+      // hull.push(hull[0].clone());    // closure point !
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create([0, 0], [1, 0], [1, 1], [0, 1], [0, 0]), x0, y0);
+
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points, 0.01, x0, y0);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points, 0.01, x0, y0 + dy);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
+      ck.checkpoint("ConvexHullManyPoints");
+      if (ck.testExactNumber(points.length + 1, hull.length + interior.length)) {
+        let residual = points;
+        const y1 = y0 + 2 * dy;
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y1);
+        const minXPoints = [];
+        const minYPoints = [];
+        const maxXPoints = [];
+        const maxYPoints = [];
+        while (residual.length > 0) {
+          const newInterior: Point3d[] = [];
+          const newHull: Point3d[] = [];
+          Point3dArray.computeConvexHullXY(residual, newHull, newInterior, true);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(newHull), x0, y1);
+          const q = Point3dArray.minMaxPoints(newHull)!;
+
+          minXPoints.push(q.minXPoint);
+          minYPoints.push(q.minYPoint);
+
+          maxXPoints.push(q.maxXPoint);
+          maxYPoints.push(q.maxYPoint);
+          residual = newInterior;
+        }
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(minXPoints), x0, y1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(maxXPoints), x0, y1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(minYPoints), x0, y1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(maxYPoints), x0, y1);
+      }
+      x0 += dx;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Point3dArray", "ConvexHullManyPoints");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
+
+// cspell:word lisajoue
+export function lisajouePoint3d(theta: number, a: number, z: number = 0): Point3d {
+  const r = Math.cos(a * theta);
+  return Point3d.create(r * Math.cos(theta), r * Math.sin(theta), z);
+}

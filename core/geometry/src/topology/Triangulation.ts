@@ -12,6 +12,8 @@ import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { InsertAndRetriangulateContext } from "./InsertAndRetriangulateContext";
 
 /**
  * type for use as signature for xyz data of a single linestring appearing in a parameter list.
@@ -105,7 +107,7 @@ export class Triangulator {
    *  *  If a flip would be possible, test the results of flipping using incircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
-  public static flipTriangles(graph: HalfEdgeGraph) {
+  public static flipTriangles(graph: HalfEdgeGraph): number {
     const nodeArray = graph.allHalfEdges;
     graph.clearMask(HalfEdgeMask.VISITED);
     let foundNonVisited = false;
@@ -148,6 +150,40 @@ export class Triangulator {
     }
 
     graph.clearMask(HalfEdgeMask.VISITED);
+    return numFlip;
+  }
+  /** Create a graph with a triangulation points.
+   * * The outer limit of the graph is the convex hull of the points.
+   * * The outside loop is marked `HalfEdgeMask.EXTERIOR`
+   */
+  public static createTriangulatedGraphFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
+    if (points.length < 3)
+      return undefined;
+    const hull: Point3d[] = [];
+    const interior: Point3d[] = [];
+    Point3dArray.computeConvexHullXY(points, hull, interior, true);
+    const graph = new HalfEdgeGraph();
+    const context = InsertAndRetriangulateContext.create(graph);
+    Triangulator.createFaceLoopFromCoordinates(graph, hull, true, true);
+    // HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
+    let numInsert = 0;
+    for (const p of interior) {
+      context.insertAndRetriangulate(p, true);
+      numInsert++;
+      if (numInsert > 16) {
+        context.reset();
+        Triangulator.flipTriangles(context.graph);
+        // console.log (" intermediate flips " + numFlip);
+        numInsert = 0;
+      }
+    }
+    // final touchup for aspect ratio flip
+    for (let i = 0; i < 15; i++) {
+      const numFlip = Triangulator.flipTriangles(graph);
+      if (numFlip === 0)
+        break;
+    }
+    return graph;
   }
   /**
    * * Only one outer loop permitted.
@@ -288,7 +324,7 @@ export class Triangulator {
     // Add the starting nodes as the boundary, and apply initial masks to the primary edge and exteriors
     const assembler = new AssembleXYZXYZChains(graph, id);
     VariantPointDataStream.streamXYZ(data, assembler);
-    return assembler.claimSeeds ();
+    return assembler.claimSeeds();
   }
 
   /**
@@ -516,7 +552,7 @@ export class Triangulator {
   private static eliminateHole(graph: HalfEdgeGraph, hole: HalfEdge, outerNode: HalfEdge) {
     const outerNodeA = Triangulator.findHoleBridge(hole, outerNode);
     if (outerNodeA) {
-      Triangulator.splitPolygon(graph, outerNodeA, hole);
+      Triangulator.splitFace(graph, outerNodeA, hole);
     }
   }
   // cspell:word Eberly
@@ -629,7 +665,7 @@ export class Triangulator {
    * * "a" and "b" still represent the same physical pieces of edges
    * @returns Returns the (base of) the new half edge, at the "a" end.
    */
-  private static splitPolygon(graph: HalfEdgeGraph, a: HalfEdge, b: HalfEdge): HalfEdge {
+  private static splitFace(graph: HalfEdgeGraph, a: HalfEdge, b: HalfEdge): HalfEdge {
     const a2 = graph.createEdgeXYZXYZ(a.x, a.y, a.z, a.i, b.x, b.y, b.z, b.i);
     const b2 = a2.faceSuccessor;
 
@@ -680,7 +716,7 @@ export class Triangulator {
             && P2 !== P0
             && P2 !== P1
             && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
-            upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
+            upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
             P0 = upperSideOfNewEdge;
             P1 = P0.faceSuccessor;
             P2 = P1.faceSuccessor;
@@ -697,7 +733,7 @@ export class Triangulator {
         P1 = P2.facePredecessor;
         P0 = P1.facePredecessor;
         while (P2.faceSuccessor !== P0 && P0 !== left) {
-          upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
+          upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
           P1 = upperSideOfNewEdge;
           P0 = P1.facePredecessor;
         }
@@ -705,7 +741,7 @@ export class Triangulator {
            left node to the right, except when already
            topped out */
         if (P2.faceSuccessor !== P0) {
-          upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
+          upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
           P0 = upperSideOfNewEdge;
         }
         start = P0;
@@ -733,7 +769,7 @@ export class Triangulator {
             && P2 !== P0
             && P2 !== P1
             && HalfEdge.crossProductXYAlongChain(P0, P1, P2) > 0) {
-            upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
+            upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
             P0 = upperSideOfNewEdge.facePredecessor;
             P1 = upperSideOfNewEdge;
           }
@@ -749,7 +785,7 @@ export class Triangulator {
         P1 = P0.faceSuccessor;
         P2 = P1.faceSuccessor;
         while (P2.faceSuccessor !== P0 && P2 !== right) {
-          upperSideOfNewEdge = Triangulator.splitPolygon(graph, P0, P2);
+          upperSideOfNewEdge = Triangulator.splitFace(graph, P0, P2);
           P0 = upperSideOfNewEdge;
           P1 = P2;
           P2 = P2.faceSuccessor;
@@ -758,7 +794,7 @@ export class Triangulator {
            left node to the right, except when already
            topped out */
         if (P2.faceSuccessor !== P0) {
-          Triangulator.splitPolygon(graph, P0, P2);
+          Triangulator.splitFace(graph, P0, P2);
         }
         start = right;
         right = start.faceSuccessor;
