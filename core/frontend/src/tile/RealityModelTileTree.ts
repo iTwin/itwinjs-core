@@ -201,6 +201,9 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
+const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
+realityModelViewFlagOverrides.clearClipVolume();
+
 /** @internal */
 class RealityModelTileLoader extends TileLoader {
   private readonly _tree: RealityModelTileTreeProps;
@@ -217,8 +220,7 @@ class RealityModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  protected static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
-  public get viewFlagOverrides() { return RealityModelTileLoader._viewFlagOverrides; }
+  public get viewFlagOverrides() { return realityModelViewFlagOverrides; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
 
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
