@@ -22,6 +22,10 @@ import {
   ChangeViewFlagsTool,
   ToggleSkyboxTool,
 } from "./tools/ChangeViewFlagsTool";
+import {
+  SaveViewTool,
+  ApplyViewTool,
+} from "./tools/SavedViews";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -57,6 +61,9 @@ export class FrontendDevTools {
 
     ChangeViewFlagsTool.register(i18n);
     ToggleSkyboxTool.register(i18n);
+
+    SaveViewTool.register(i18n);
+    ApplyViewTool.register(i18n);
 
     return i18n.readFinished;
   }

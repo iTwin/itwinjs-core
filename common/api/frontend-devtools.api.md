@@ -25,6 +25,22 @@ import { Tool } from '@bentley/imodeljs-frontend';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
+import { ViewState } from '@bentley/imodeljs-frontend';
+import { ViewStateProps } from '@bentley/imodeljs-common';
+
+// @beta
+export class ApplyViewTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: undefined;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(view?: ViewState): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha (undocumented)
 export interface Button {
@@ -212,6 +228,9 @@ export function createSlider(props: SliderProps): Slider;
 
 // @alpha (undocumented)
 export function createTextBox(props: TextBoxProps): TextBox;
+
+// @beta
+export function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState>;
 
 // @beta
 export class DiagnosticsPanel {
@@ -492,6 +511,17 @@ export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     static toolId: string;
 }
+
+// @beta
+export class SaveViewTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export function serializeViewState(view: ViewState): ViewStateProps;
 
 // @alpha (undocumented)
 export interface Slider {
