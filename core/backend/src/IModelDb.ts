@@ -370,7 +370,7 @@ export class IModelDb extends IModel {
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
-   * @deprecated standalone has been replaced *snapshot* iModels. Callers should migrate to [[closeSnapshot]].
+   * @deprecated standalone has been replaced by snapshot iModels. Callers should migrate to [[closeSnapshot]].
    * @internal
    */
   public closeStandalone(): void {
