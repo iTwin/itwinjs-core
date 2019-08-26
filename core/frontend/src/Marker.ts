@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d } from "@bentley/geometry-core";
+import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d, Vector3d } from "@bentley/geometry-core";
 import { imageElementFromUrl } from "./ImageUtil";
 import { DecorateContext } from "./ViewContext";
 import { CanvasDecoration } from "./render/System";
@@ -28,6 +28,25 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
 /** @public */
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
+
+function getMinScaleViewW(vp: Viewport): number {
+  let zHigh;
+  const origin = vp.view.getCenter();
+  const direction = vp.view.getZVector(); direction.scaleInPlace(-1);
+  const corners = vp.view.iModel.projectExtents.corners();
+  const delta = Vector3d.create();
+  for (const corner of corners) {
+    Vector3d.createStartEnd(origin, corner, delta);
+    const projection = delta.dotProduct(direction);
+    if (undefined === zHigh || projection > zHigh)
+      zHigh = projection;
+  }
+  if (undefined === zHigh)
+    return 0.0;
+  origin.plusScaled(direction, zHigh, origin);
+  const viewPt = vp.worldToView4d(origin);
+  return viewPt.w;
+}
 
 /** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
  * Markers draw on top of all scene graphics, and show visual cues about locations of interest.
@@ -204,9 +223,10 @@ export class Marker implements CanvasDecoration {
   public setImageUrl(url: string) { this.setImage(imageElementFromUrl(url)); }
 
   /** Set the position (in pixels) for this Marker in the supplied Viewport, based on its worldLocation.
+   * @param markerSet The MarkerSet if this Marker is included in a set.
    * @return true if the Marker is visible and its new position is inside the Viewport.
    */
-  public setPosition(vp: Viewport): boolean {
+  public setPosition(vp: Viewport, markerSet?: MarkerSet<Marker>): boolean {
     if (!this.visible) // if we're turned off, skip
       return false;
 
@@ -228,7 +248,11 @@ export class Marker implements CanvasDecoration {
       let scale = 1.0;
       if (vp.isCameraOn) {
         const range = this._scaleFactorRange;
-        scale = Geometry.clamp(range.low + ((1 - pt4.w) * range.length()), .4, 2.0);
+        const minScaleViewW = (undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp));
+        if (minScaleViewW > 0.0)
+          scale = Geometry.clamp(range.high - (pt4.w / minScaleViewW) * range.length(), .4, 2.0);
+        else
+          scale = Geometry.clamp(range.low + ((1 - pt4.w) * range.length()), .4, 2.0);
         this.rect.scaleAboutCenter(scale, scale);
       }
       this._scaleFactor.set(scale, scale);
@@ -294,6 +318,8 @@ export abstract class MarkerSet<T extends Marker> {
   protected _entries: Array<T | Cluster<T>> = []; // this is an array that holds either Markers or a cluster of markers.
   /** @internal */
   protected readonly _worldToViewMap = Matrix4d.createZero();
+  /** @internal */
+  protected _minScaleViewW?: number;
 
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
   public minimumClusterSize = 1;
@@ -307,6 +333,13 @@ export abstract class MarkerSet<T extends Marker> {
    */
   protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
 
+  /** Get weight value limit establishing the distance from camera for the back of view scale factor. */
+  public getMinScaleViewW(vp: Viewport): number {
+    if (undefined === this._minScaleViewW)
+      this._minScaleViewW = getMinScaleViewW(vp);
+    return this._minScaleViewW;
+  }
+
   /** This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
@@ -319,11 +352,13 @@ export abstract class MarkerSet<T extends Marker> {
     // clusters (otherwise they're recreated continually and never hilited.) */
     if (!this._worldToViewMap.isAlmostEqual(vp.worldToViewMap.transform0)) {
       this._worldToViewMap.setFrom(vp.worldToViewMap.transform0);
-      entries.length = 0;   // start over.
+      this._minScaleViewW = undefined; // Invalidate current value.
+      entries.length = 0; // start over.
+
       // loop through all of the Markers in the MarkerSet.
       for (const marker of this.markers) {
         // establish the screen position for this marker. If it's not in view, setPosition returns false
-        if (!marker.setPosition(vp))
+        if (!marker.setPosition(vp, this))
           continue;
 
         let added = false;

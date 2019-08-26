@@ -3877,7 +3877,7 @@ export class Marker implements CanvasDecoration {
     protected _scaleFactorRange?: Range1d;
     setImage(image: MarkerImage | Promise<MarkerImage>): void;
     setImageUrl(url: string): void;
-    setPosition(vp: Viewport): boolean;
+    setPosition(vp: Viewport, markerSet?: MarkerSet<Marker>): boolean;
     setScaleFactor(range: Range1dProps): void;
     size: Point2d;
     title?: HTMLElement | string;
@@ -3899,8 +3899,11 @@ export abstract class MarkerSet<T extends Marker> {
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;
+    getMinScaleViewW(vp: Viewport): number;
     readonly markers: Set<T>;
     minimumClusterSize: number;
+    // @internal (undocumented)
+    protected _minScaleViewW?: number;
     // @internal (undocumented)
     protected readonly _worldToViewMap: Matrix4d;
 }
