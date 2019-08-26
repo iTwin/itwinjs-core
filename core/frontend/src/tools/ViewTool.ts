@@ -301,7 +301,7 @@ export abstract class ViewManip extends ViewTool {
   public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
 
-    // If rotate is active, the mouse wheel should about the target center when it's displayed...
+    // If rotate is active, the mouse wheel should zoom about the target center when it's displayed...
     if ((this.handleMask & ViewHandleType.Rotate) && (this.targetCenterLocked || this.inHandleModify)) {
       ev.point = this.targetCenterWorld;
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
@@ -450,8 +450,7 @@ export abstract class ViewManip extends ViewTool {
       return this.setTargetCenterWorld(defaultPoint, false, false);
     }
 
-    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
-    this.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint(), false, false);
+    this.setTargetCenterWorld(vp.view.getTargetPoint(), false, false); // Tools that use pickNearestVisibleGeometry on first point will override this location...
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
