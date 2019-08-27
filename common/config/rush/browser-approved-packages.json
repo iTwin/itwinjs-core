@@ -435,7 +435,7 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "linkifyjs",
+      "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
     {

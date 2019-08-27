@@ -1472,6 +1472,14 @@ export interface LoadedImage {
 // @public
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
+// @public
+export const matchLinks: (text: string) => {
+    index: number;
+    lastIndex: number;
+    schema: string;
+    url: string;
+}[];
+
 // @internal
 export interface MenuItem {
     checked?: boolean;
