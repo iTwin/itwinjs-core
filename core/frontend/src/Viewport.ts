@@ -1636,6 +1636,7 @@ export abstract class Viewport implements IDisposable {
   /** When true, the scene will never be recreated. Chiefly for debugging purposes.
    * @internal
    */
+  public get freezeScene(): boolean { return this._freezeScene; }
   public set freezeScene(freeze: boolean) {
     if (freeze !== this._freezeScene) {
       this._freezeScene = freeze;

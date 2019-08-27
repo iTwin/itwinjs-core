@@ -33,6 +33,7 @@ import {
   GraphicList,
   Pixel,
   PlanarClassifierMap,
+  PrimitiveVisibility,
   RenderPlan,
   RenderSolarShadowMap,
   RenderSystem,
@@ -259,18 +260,6 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
 
 type ClipVolume = ClipPlanesVolume | ClipMaskVolume;
 
-/** Used for debugging purposes, to toggle display of instanced or batched primitives.
- * @internal
- */
-export const enum PrimitiveVisibility {
-  /** Draw all primitives. */
-  All,
-  /** Only draw instanced primitives. */
-  Instanced,
-  /** Only draw un-instanced primitives. */
-  Uninstanced,
-}
-
 /** @internal */
 export interface Hilites {
   readonly elements: Id64.Uint32Set;
@@ -349,13 +338,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _readPixelsSelector = Pixel.Selector.None;
   private _drawNonLocatable = true;
   public isFadeOutActive = false;
-  public primitiveVisibility: PrimitiveVisibility = PrimitiveVisibility.All;
   private _solarShadowMap?: SolarShadowMap;
   private _backgroundMapDrape?: BackgroundMapDrape;
 
   // RenderTargetDebugControl
   public useLogZ = true;
   public drawForReadPixels = false;
+  public primitiveVisibility = PrimitiveVisibility.All;
   public get debugControl(): RenderTargetDebugControl { return this; }
 
   protected constructor(rect?: ViewRect) {

@@ -19,9 +19,11 @@ import {
   GraphicBuilder,
   GraphicType,
   IModelApp,
+  Tool,
   Viewport,
   ViewState3d,
 } from "@bentley/imodeljs-frontend";
+import { parseToggle } from "./parseToggle";
 
 /**
  * Decorates the viewport with a graphical depiction of a Frustum.
@@ -195,5 +197,44 @@ export class FrustumDecorator implements Decorator {
       IModelApp.viewManager.dropDecorator(instance);
       FrustumDecorator._instance = undefined;
     }
+  }
+
+  public static get isEnabled() { return undefined !== FrustumDecorator._instance; }
+}
+
+/** Enable ("ON"), disable ("OFF"), or toggle ("TOGGLE" or omitted) the [[FrustumDecorator]].
+ * @beta
+ */
+export class ToggleFrustumSnapshotTool extends Tool {
+  public static toolId = "ToggleFrustumSnapshot";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(enable?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp)
+      return true;
+
+    if (undefined === enable)
+      enable = !FrustumDecorator.isEnabled;
+
+    if (enable !== FrustumDecorator.isEnabled) {
+      if (enable) {
+        FrustumDecorator.enable(vp);
+        vp.onChangeView.addOnce(() => FrustumDecorator.disable());
+      } else {
+        FrustumDecorator.disable();
+      }
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+
+    return true;
   }
 }

@@ -747,6 +747,19 @@ export class PackedFeatureTable {
   }
 }
 
+/** Used for debugging purposes, to toggle display of instanced or batched primitives.
+ * @see [[RenderTargetDebugControl]].
+ * @alpha
+ */
+export const enum PrimitiveVisibility {
+  /** Draw all primitives. */
+  All,
+  /** Only draw instanced primitives. */
+  Instanced,
+  /** Only draw un-instanced primitives. */
+  Uninstanced,
+}
+
 /** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
  * @beta
  */
@@ -755,6 +768,8 @@ export interface RenderTargetDebugControl {
   drawForReadPixels: boolean;
   /** If true, use log-z depth buffer (assuming supported by client). */
   useLogZ: boolean;
+  /** @alpha */
+  primitiveVisibility: PrimitiveVisibility;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.

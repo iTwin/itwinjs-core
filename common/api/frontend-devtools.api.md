@@ -279,7 +279,9 @@ export class FrustumDecorator implements Decorator {
     decorate(context: DecorateContext): void;
     static disable(): void;
     static enable(vp: Viewport): void;
-    }
+    // (undocumented)
+    static readonly isEnabled: boolean;
+}
 
 // @beta
 export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
@@ -423,7 +425,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static toggle(imodel: IModelConnection, enabled?: boolean): void;
+    static toggle(imodel: IModelConnection, enabled?: boolean): boolean;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
 }
@@ -601,6 +603,20 @@ export class TileStatisticsTracker {
     dispose(): void;
     }
 
+// @beta
+export class ToggleFrustumSnapshotTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class ToggleLogZTool extends RenderTargetDebugControlTool {
     // (undocumented)
@@ -610,7 +626,35 @@ export class ToggleLogZTool extends RenderTargetDebugControlTool {
 }
 
 // @beta
-export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void;
+export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
+// @beta
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean;
+
+// @beta
+export class ToggleProjectExtentsTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @beta
 export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {

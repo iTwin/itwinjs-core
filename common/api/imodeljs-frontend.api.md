@@ -4951,7 +4951,7 @@ export interface PrimitiveValue extends BasePropertyValue {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
-// @internal
+// @alpha
 export const enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
@@ -5577,6 +5577,8 @@ export abstract class RenderTarget implements IDisposable {
 // @beta
 export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
+    // @alpha (undocumented)
+    primitiveVisibility: PrimitiveVisibility;
     useLogZ: boolean;
 }
 

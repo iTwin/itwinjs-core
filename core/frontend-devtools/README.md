@@ -18,7 +18,7 @@ Because this is a developer-only package, its functionality is not expected to e
   * `FpsTracker` - displays the average frames-per-second.
   * `TileStatisticsTracker` - displays the state of tile requests in the system.
   * `MemoryTracker` - displays statistics about GPU memory allocated by the display system.
-  * `DiagnosticsPanel` - combines all of the above widgets into a single panel, along with some additional controls for toggling tile bounding volumes, displaying project extents, etc.
+  * `DiagnosticsPanel` - combines all of the above widgets into a single panel.
 
 ## Usage
 

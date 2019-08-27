@@ -263,7 +263,7 @@ alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
-internal;enum PrimitiveVisibility
+alpha;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
 beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
