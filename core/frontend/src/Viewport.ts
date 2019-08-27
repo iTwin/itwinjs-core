@@ -271,6 +271,8 @@ export class ViewRect {
    * @param deltaY The distance to inset the ViewRect in the y direction.
    */
   public inset(deltaX: number, deltaY: number): void {
+    deltaX = Math.floor(deltaX);
+    deltaY = Math.floor(deltaY);
     if (this.width - 2 * deltaX <= 0 || this.height - 2 * deltaY <= 0) {
       this.init(0, 0, 0, 0);
       return;

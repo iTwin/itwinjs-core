@@ -5148,6 +5148,10 @@ export namespace ViewFlag {
         apply(base: ViewFlags): ViewFlags;
         // (undocumented)
         clear(): void;
+        // (undocumented)
+        clearClipVolume(): void;
+        // (undocumented)
+        clearPresent(flag: PresenceFlag): void;
         // @internal
         readonly clipVolumeOverride: boolean | undefined;
         // (undocumented)

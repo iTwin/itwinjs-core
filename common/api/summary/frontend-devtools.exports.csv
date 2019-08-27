@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+beta;ApplyViewTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
@@ -26,6 +27,7 @@ alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInpu
 alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
+beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
@@ -52,6 +54,8 @@ alpha;RadioBoxProps
 beta;class RenderSystemDebugControlTool 
 beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
+beta;SaveViewTool 
+beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
@@ -63,5 +67,6 @@ beta;TileStatisticsTracker
 alpha;ToggleLogZTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
 beta;ToggleReadPixelsTool 
+alpha;ToggleSkyboxTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

@@ -774,6 +774,7 @@ export namespace ViewFlag {
     private readonly _values = new ViewFlags();
 
     public setPresent(flag: PresenceFlag) { this._present |= (1 << flag); }
+    public clearPresent(flag: PresenceFlag) { this._present &= ~(1 << flag); }
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this._present & (1 << flag)); }
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
@@ -818,8 +819,11 @@ export namespace ViewFlag {
     public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.kForceSurfaceDiscard); }
     public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
+
     public anyOverridden() { return 0 !== this._present; }
+
     public clear() { this._present = 0; }
+    public clearClipVolume() { this.clearPresent(PresenceFlag.kClipVolume); }
 
     /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
      * @internal

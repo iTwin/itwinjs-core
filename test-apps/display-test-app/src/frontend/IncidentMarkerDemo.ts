@@ -114,7 +114,9 @@ class IncidentClusterMarker extends Marker {
     if (cluster.markers.length > maxLen)
       title += "<br>...";
 
-    this.title = title;
+    const div = document.createElement("div"); // Use HTML as markup isn't supported for string.
+    div.innerHTML = title;
+    this.title = div;
     this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
     this.setImage(image);
   }
@@ -153,7 +155,9 @@ export class IncidentMarkerDemo {
     return undefined;
   }
 
-  // load all images. After they're loaded, make the incident markers
+  // load all images. After they're loaded, make the incident markers.
+  // If there will be a lot of markers displayed, it's best to draw images without scaling.
+  // The Warning_sign.svg used in this example is quite large and is always being scaled down.
   private async loadAll(extents: AxisAlignedBox3d) {
     const loads = [
       this.loadOne("Warning_sign.svg"), // must be first, see "get warningSign()" above

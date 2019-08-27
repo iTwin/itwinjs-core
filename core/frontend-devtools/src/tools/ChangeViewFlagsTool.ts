@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
+  Environment,
   IModelApp,
   Tool,
   Viewport,
@@ -87,5 +88,25 @@ export class ChangeViewFlagsTool extends Tool {
     }
 
     return this.run(vf, vp);
+  }
+}
+
+/** Toggles the skybox.
+ * ###TODO Generalize this to modify any aspect of display style.
+ * @alpha
+ */
+export class ToggleSkyboxTool extends Tool {
+  public static toolId = "ToggleSkybox";
+
+  public run(): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    const view = undefined !== vp ? vp.view : undefined;
+    if (undefined !== view && view.is3d()) {
+      const style = view.getDisplayStyle3d();
+      style.environment = new Environment({ sky: { display: !style.environment.sky.display } });
+      vp!.invalidateRenderPlan();
+    }
+
+    return true;
   }
 }

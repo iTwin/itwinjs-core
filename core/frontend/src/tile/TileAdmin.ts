@@ -48,6 +48,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
   /** @internal */
+  public abstract get realityTileExpirationTime(): BeDuration;
+  /** @internal */
   public abstract get tileTreeExpirationTime(): BeDuration | undefined;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
@@ -190,10 +192,13 @@ export namespace TileAdmin {
      * Default value: 20 seconds.
      * Minimum value: 5 seconds.
      * Maximum value: 60 seconds.
-     *
-     * @alpha
      */
     tileExpirationTime?: number;
+
+    /** ###TODO clean up later. Added for Microsoft demo. Specifies expiration time for reality models. Default: 5 seconds.
+     * @internal
+     */
+    realityTileExpirationTime?: number;
 
     /** If defined, the minimum number of seconds to keep a TileTree in memory after it has become disused.
      * Each time a TileTree is drawn, we record the current time as its most-recently-used time.
@@ -370,6 +375,7 @@ class Admin extends TileAdmin {
   private _totalDispatchedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
+  private readonly _realityTileExpirationTime: BeDuration;
   private readonly _treeExpirationTime?: BeDuration;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
@@ -417,6 +423,9 @@ class Admin extends TileAdmin {
     // If unspecified, tile expiration time defaults to 20 seconds.
     this._tileExpirationTime = clamp((options.tileExpirationTime ? options.tileExpirationTime : 20), 5, 60)!;
 
+    // If unspecified, reality tile expiration time defaults to 5 seconds.
+    this._realityTileExpirationTime = clamp((options.realityTileExpirationTime ? options.realityTileExpirationTime : 5), 5, 60)!;
+
     // If unspecified, trees never expire (will change this to use a default later).
     this._treeExpirationTime = clamp(options.tileTreeExpirationTime, 10, 3600);
 
@@ -426,6 +435,7 @@ class Admin extends TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
+  public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
 
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {

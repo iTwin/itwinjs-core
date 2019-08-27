@@ -3574,6 +3574,7 @@ export class Quadrature {
 
 // @public
 export class Range1d extends RangeBase {
+    clipLinearMapToInterval(a: number, u: number, limitA: number, limitB: number): boolean;
     clone(result?: this): this;
     containsRange(other: Range1d): boolean;
     containsX(x: number): boolean;
@@ -3845,6 +3846,7 @@ export class Ray3d implements BeJSONFunctions {
     getDirectionRef(): Vector3d;
     getOriginRef(): Point3d;
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
+    intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
     origin: Point3d;
     perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d;

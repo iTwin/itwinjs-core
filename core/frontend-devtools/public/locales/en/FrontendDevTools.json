@@ -26,6 +26,15 @@
     },
     "ChangeViewFlags": {
       "keyin": "fdt change viewflags"
+    },
+    "ToggleSkybox": {
+      "keyin": "fdt toggle skybox"
+    },
+    "SaveView": {
+      "keyin": "fdt save view"
+    },
+    "ApplyView": {
+      "keyin": "fdt apply view"
     }
   }
 }
