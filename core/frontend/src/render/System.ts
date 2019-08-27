@@ -488,6 +488,8 @@ export namespace Pixel {
     public readonly iModel?: IModelConnection;
     /** @internal */
     public readonly tileId?: string;
+    /** @internal */
+    public get isClassifier(): boolean { return undefined !== this.featureTable && BatchType.Primary !== this.featureTable.type; }
 
     /** @internal */
     public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string) {

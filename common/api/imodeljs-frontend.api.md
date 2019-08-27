@@ -3040,7 +3040,7 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string);
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
     // (undocumented)
     readonly distFraction: number;
@@ -3058,6 +3058,8 @@ export class HitDetail {
     readonly hitSource: HitSource;
     // @alpha
     readonly iModel: IModelConnection;
+    // @alpha (undocumented)
+    readonly isClassifier: boolean;
     readonly isElementHit: boolean;
     // @alpha
     readonly isExternalIModelHit: boolean;
@@ -4778,6 +4780,8 @@ export namespace Pixel {
         readonly geometryClass: GeometryClass | undefined;
         // @internal (undocumented)
         readonly iModel?: IModelConnection;
+        // @internal (undocumented)
+        readonly isClassifier: boolean;
         // (undocumented)
         readonly planarity: Planarity;
         // (undocumented)
