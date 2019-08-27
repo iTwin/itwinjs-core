@@ -1471,7 +1471,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
     activeIndex?: number;
     green?: boolean;
     labels: string[];
-    onClickLabel?: (id: number) => any;
+    onClickLabel?: (index: number) => any;
 }
 
 // @public

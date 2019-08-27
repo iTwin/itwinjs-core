@@ -118,3 +118,19 @@ $key-size-large: 36px;
     font-size: 20px;
   }
 }
+
+.uifw-toolAssistance-content {
+  $horizontal-padding: 10px;
+  $vertical-padding: 10px;
+
+  padding-left: $horizontal-padding;
+  padding-right: $horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+}
+
+.uifw-toolAssistance-tabs {
+  > li {
+    width: 50%;
+  }
+}

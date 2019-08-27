@@ -359,9 +359,9 @@ public;ToolActivatedEvent
 public;ToolActivatedEventArgs
 alpha;ToolAssistanceChangedEvent 
 alpha;ToolAssistanceChangedEventArgs
-alpha;ToolAssistanceField 
-alpha;ToolAssistanceFieldDefaultProps = Pick
-alpha;ToolAssistanceFieldProps 
+beta;ToolAssistanceField 
+internal;ToolAssistanceFieldDefaultProps = Pick
+beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
 internal;ToolbarProps 

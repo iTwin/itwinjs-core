@@ -7592,15 +7592,15 @@ export class ToolAdmin {
     readonly viewTool: ViewTool | undefined;
     }
 
-// @alpha
+// @beta
 export class ToolAssistance {
     static readonly altKey: string;
     static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
+    static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
     static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
     static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
-    static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean): ToolAssistanceInstruction;
+    static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
@@ -7616,7 +7616,7 @@ export class ToolAssistance {
     static readonly upSymbol: string;
 }
 
-// @alpha
+// @beta
 export enum ToolAssistanceImage {
     AcceptPoint = 1,
     CursorClick = 2,
@@ -7629,27 +7629,35 @@ export enum ToolAssistanceImage {
     RightClickDrag = 7
 }
 
-// @alpha
+// @beta
+export enum ToolAssistanceInputMethod {
+    Both = 0,
+    Mouse = 1,
+    Touch = 2
+}
+
+// @beta
 export interface ToolAssistanceInstruction {
     image: string | ToolAssistanceImage;
+    inputMethod?: ToolAssistanceInputMethod;
     isNew?: boolean;
     keyboardInfo?: ToolAssistanceKeyboardInfo;
     text: string;
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceInstructions {
     mainInstruction: ToolAssistanceInstruction;
     sections?: ToolAssistanceSection[];
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceSection {
     instructions: ToolAssistanceInstruction[];
     label?: string;
