@@ -1234,6 +1234,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     hiddenLineSettings: HiddenLine.Settings;
     solarShadowsSettings: SolarShadows.Settings;
     // @internal (undocumented)
+    sunDir: Vector3d | undefined;
+    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
 
@@ -1244,6 +1246,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
+    // @alpha
+    sceneLights?: SceneLightsProps;
     // @beta
     solarShadows?: SolarShadows.Props;
 }
@@ -4467,26 +4471,11 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @internal (undocumented)
-export class SceneLights {
-    constructor(imageBased: {
-        environmentalMap: RenderTexture;
-        diffuseImage: RenderTexture;
-        solar: ImageLight.Solar;
-    }, fstop?: number);
+// @alpha
+export interface SceneLightsProps {
     // (undocumented)
-    addLight(light: Light): void;
-    // (undocumented)
-    fstop: number;
-    // (undocumented)
-    imageBased: {
-        environmentalMap: RenderTexture;
-        diffuseImage: RenderTexture;
-        solar: ImageLight.Solar;
-    };
-    // (undocumented)
-    readonly isEmpty: boolean;
-    }
+    sunDir?: XYZProps;
+}
 
 // @public
 export interface SerializedRpcOperation {

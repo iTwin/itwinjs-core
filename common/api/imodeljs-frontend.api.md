@@ -151,7 +151,6 @@ import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
-import { SceneLights } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/imodeljs-clients';
 import { SettingsMapResult } from '@bentley/imodeljs-clients';
 import { SettingsResult } from '@bentley/imodeljs-clients';
@@ -2082,7 +2081,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     readonly settings: DisplayStyle3dSettings;
     // @beta (undocumented)
     readonly sunDirection: Vector3d | undefined;
-    }
+}
 
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
@@ -5381,8 +5380,6 @@ export class RenderPlan {
     // (undocumented)
     readonly isFadeOutActive: boolean;
     // (undocumented)
-    readonly lights?: SceneLights;
-    // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
     selectViewFrustum(): void;
@@ -6585,8 +6582,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
-    readonly ambientLight: Float32Array;
-    // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // (undocumented)
     analysisStyle?: AnalysisStyle;
@@ -6693,8 +6688,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly frustumUniforms: FrustumUniforms;
     // (undocumented)
-    readonly fStop: number;
-    // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
     // (undocumented)
     getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
@@ -6788,8 +6781,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
-    // (undocumented)
-    readonly shaderLights: ShaderLights | undefined;
     // (undocumented)
     readonly solarShadowMap: SolarShadowMap | undefined;
     // (undocumented)

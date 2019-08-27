@@ -6,7 +6,6 @@
 
 import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
-import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d, Range1dProps } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
@@ -1792,16 +1791,6 @@ export enum GeometryClass {
   Dimension = 2,
   /** Used to classify geometry used to fill planar regions with a 2d pattern (e.g., hatch lines). */
   Pattern = 3,
-}
-
-/** @internal */
-export class SceneLights {
-  private _list: Light[] = [];
-  public get isEmpty(): boolean { return this._list.length === 0; }
-  constructor(public imageBased: { environmentalMap: RenderTexture, diffuseImage: RenderTexture, solar: ImageLight.Solar },
-    public fstop: number = 0, // must be between -3 and +3
-  ) { }
-  public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
 /** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].

@@ -75,7 +75,6 @@ import { PlanarClassifier } from "./PlanarClassifier";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { TextureDrape } from "./TextureDrape";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
-import { ShaderLights } from "./Lighting";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
 import { FloatRgba } from "./FloatRGBA";
@@ -307,9 +306,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readonly activePlanarClassifiers = new PlanarClassifiers();
   public readonly activeTextureDrapes = new TextureDrapes();
   protected _fbo?: FrameBuffer;
-  private _fStop: number = 0;
-  private _ambientLight: Float32Array = new Float32Array(3);
-  private _shaderLights?: ShaderLights;
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -380,10 +376,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get flashedId(): Id64String { return this._flashedId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
-
-  public get fStop(): number { return this._fStop; }
-  public get ambientLight(): Float32Array { return this._ambientLight; }
-  public get shaderLights(): ShaderLights | undefined { return this._shaderLights; }
 
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
@@ -803,16 +795,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._stack.setViewFlags(vf);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
-
-    // this.shaderlights.clear // ###TODO : Lighting
-    this._fStop = 0.0;
-    this._ambientLight[0] = 0.2;
-    this._ambientLight[1] = 0.2;
-    this._ambientLight[2] = 0.2;
-    if (plan.is3d && undefined !== plan.lights) {
-      // convertLights(...); // TODO: Lighting
-      this._fStop = plan.lights.fstop;
-    }
   }
 
   public drawFrame(sceneMilSecElapsed?: number): void {

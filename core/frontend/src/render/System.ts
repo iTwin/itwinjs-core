@@ -9,7 +9,7 @@ import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAnd
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d, SolarShadows,
-  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
+  QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -190,7 +190,6 @@ export class RenderPlan {
   public readonly aaText: AntiAliasPref;
   public readonly activeVolume?: ClipVector;
   public readonly hline?: HiddenLine.Settings;
-  public readonly lights?: SceneLights;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
@@ -203,7 +202,7 @@ export class RenderPlan {
 
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, activeVolume?: ClipVector, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, isFadeOutActive: boolean, activeVolume?: ClipVector, hline?: HiddenLine.Settings, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -213,7 +212,6 @@ export class RenderPlan {
     this.aaText = aaText;
     this.activeVolume = activeVolume;
     this.hline = hline;
-    this.lights = lights;
     this._curFrustum = this.viewFrustum = viewFrustum;
     this.analysisStyle = analysisStyle;
     this.ao = ao;
@@ -226,9 +224,8 @@ export class RenderPlan {
 
     const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
     const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-    const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, clipVec, hline, lights, style.analysisStyle, ao);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, vp.isFadeOutActive, clipVec, hline, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
