@@ -30,7 +30,9 @@ export class HalfEdgePositionDetail {
   /** the relevant node */
   private _node?: HalfEdge;
   /** The current coordinates */
-  private _xyz: Point3d;
+  public x: number;
+  public y: number;
+  public z: number;
   /** fractional position along edge.   Only defined if the topo tag is `HalfEdgeTopo.Edge` */
   private _edgeFraction?: number;
   /** Enumeration of status vertex, edge, or face status. */
@@ -42,9 +44,9 @@ export class HalfEdgePositionDetail {
   /** Constructor.
    * * The point is CAPTURED.  (static `create` methods normally clone their inputs.)
    */
-  private constructor(node: HalfEdge | undefined, xyz: Point3d | undefined, topo: HalfEdgeTopo, edgeFraction?: number, iTag?: number, _dTag?: number) {
+  private constructor(node: HalfEdge | undefined, x: number, y: number, z: number, topo: HalfEdgeTopo, edgeFraction?: number, iTag?: number, _dTag?: number) {
     this._node = node;
-    this._xyz = xyz !== undefined ? xyz : Point3d.create();
+    this.x = x; this.y = y; this.z = z;
     this._topo = topo;
     this._edgeFraction = edgeFraction;
     this._iTag = iTag;
@@ -54,7 +56,9 @@ export class HalfEdgePositionDetail {
   /** Copy (clones of) all data from other */
   public setFrom(other: HalfEdgePositionDetail) {
     this._node = other._node;
-    this._xyz.setFromPoint3d(other._xyz);
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
     this._topo = other._topo;
     this._edgeFraction = other._edgeFraction;
     this._iTag = other._iTag;
@@ -67,7 +71,7 @@ export class HalfEdgePositionDetail {
   }
   /**  Create with null data. */
   public static create(): HalfEdgePositionDetail {
-    const detail = new HalfEdgePositionDetail(undefined, undefined, HalfEdgeTopo.None);
+    const detail = new HalfEdgePositionDetail(undefined, 0, 0, 0, HalfEdgeTopo.None);
     return detail;
   }
   public getITag(): number | undefined { return this._iTag; }
@@ -80,11 +84,10 @@ export class HalfEdgePositionDetail {
   /** Create with node, fraction along edge, marked as "HalfEdgeTopo.Edge".  Compute interpolated xyz on the edge */
   public static createEdgeAtFraction(node: HalfEdge, edgeFraction: number): HalfEdgePositionDetail {
     const node1 = node.faceSuccessor;
-    const xyz = Point3d.create(
-      Geometry.interpolate(node.x, edgeFraction, node1.x),
-      Geometry.interpolate(node.y, edgeFraction, node1.y),
-      Geometry.interpolate(node.z, edgeFraction, node1.z));
-    return new HalfEdgePositionDetail(node, xyz, HalfEdgeTopo.Edge, edgeFraction);
+    const x = Geometry.interpolate(node.x, edgeFraction, node1.x);
+    const y = Geometry.interpolate(node.y, edgeFraction, node1.y);
+    const z = Geometry.interpolate(node.z, edgeFraction, node1.z);
+    return new HalfEdgePositionDetail(node, x, y, z, HalfEdgeTopo.Edge, edgeFraction);
   }
 
   /** reassign contents so this instance becomes a face hit.
@@ -95,8 +98,11 @@ export class HalfEdgePositionDetail {
     this._topo = HalfEdgeTopo.Face;
     if (node)
       this._node = node;
-    if (xyz)
-      this._xyz.setFrom(xyz);
+    if (xyz) {
+      this.x = xyz.x;
+      this.y = xyz.y;
+      this.z = xyz.z;
+    }
     return this;
   }
 
@@ -120,11 +126,9 @@ export class HalfEdgePositionDetail {
     this._node = node;
     const nodeB = node.faceSuccessor;
     this._edgeFraction = edgeFraction;
-    this._xyz.set(
-      Geometry.interpolate(node.x, edgeFraction, nodeB.x),
-      Geometry.interpolate(node.y, edgeFraction, nodeB.y),
-      Geometry.interpolate(node.z, edgeFraction, nodeB.z),
-    );
+    this.x = Geometry.interpolate(node.x, edgeFraction, nodeB.x);
+    this.y = Geometry.interpolate(node.y, edgeFraction, nodeB.y);
+    this.z = Geometry.interpolate(node.z, edgeFraction, nodeB.z);
     return this;
   }
 
@@ -132,8 +136,7 @@ export class HalfEdgePositionDetail {
    * * Take xyz from the node.
    */
   public static createVertex(node: HalfEdge): HalfEdgePositionDetail {
-    return new HalfEdgePositionDetail(node,
-      Point3d.create(node.x, node.y, node.z), HalfEdgeTopo.Vertex);
+    return new HalfEdgePositionDetail(node, node.x, node.y, node.z, HalfEdgeTopo.Vertex);
   }
 
   /** Create with node and (optional) xyz, marked as "HalfEdgeTopo.Vertex"
@@ -142,10 +145,15 @@ export class HalfEdgePositionDetail {
   public resetAsVertex(node: HalfEdge): HalfEdgePositionDetail {
     this._topo = HalfEdgeTopo.Vertex;
     this._node = node;
-    this._xyz.setFrom(node);
+    this.setXYZFromNode(node);
     return this;
   }
-
+  /** Copy x,y,z from the node to this instance local values. */
+  public setXYZFromNode(node: HalfEdge) {
+    this.x = node.x;
+    this.y = node.y;
+    this.z = node.z;
+  }
   /**
    * Return the (possibly undefined) edge fraction.
    */
@@ -165,14 +173,8 @@ export class HalfEdgePositionDetail {
   /** Return the node reference from this detail */
   public get node(): HalfEdge | undefined { return this._node; }
   /** Return the (clone of, or optional filled in result) coordinates from this detail. */
-  public clonePoint(result?: Point3d): Point3d { return this._xyz.clone(result); }
+  public clonePoint(result?: Point3d): Point3d { return Point3d.create(this.x, this.y, this.z, result); }
 
-  /** Return the x coordinate of this detail. */
-  public get x(): number { return this._xyz.x; }
-  /** Return the y coordinate of this detail. */
-  public get y(): number { return this._xyz.y; }
-  /** Return the z coordinate of this detail. */
-  public get z(): number { return this._xyz.z; }
   /*
     // If candidateKey is less than resultKey, replace resultPos and resultKey
     // by the candidate data.
