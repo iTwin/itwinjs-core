@@ -3162,6 +3162,8 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     static readonly className: string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
+    static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
     // @internal (undocumented)
