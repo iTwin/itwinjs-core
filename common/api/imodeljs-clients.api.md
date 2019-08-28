@@ -64,7 +64,7 @@ export class AllLocksDeletedEvent extends BriefcaseEvent {
 // @internal (undocumented)
 export class ArgumentCheck {
     // (undocumented)
-    static defined(argumentName: string, argument?: any): void;
+    static defined(argumentName: string, argument?: any, allowEmpty?: boolean): void;
     // (undocumented)
     static definedNumber(argumentName: string, argument?: number): void;
     // (undocumented)
@@ -73,7 +73,7 @@ export class ArgumentCheck {
     static valid(argumentName: string, argument?: any): void;
     static validBriefcaseId(argumentName: string, argument?: number): void;
     // (undocumented)
-    static validChangeSetId(argumentName: string, argument?: string): void;
+    static validChangeSetId(argumentName: string, argument?: string, allowEmpty?: boolean): void;
     // (undocumented)
     static validGuid(argumentName: string, argument?: string): void;
 }
@@ -1927,7 +1927,7 @@ export class VersionHandler {
 
 // @beta
 export class VersionQuery extends InstanceIdQuery {
-    byChangeSet(changesetId: string): this;
+    byChangeSet(changeSetId: string): this;
     byName(name: string): this;
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }

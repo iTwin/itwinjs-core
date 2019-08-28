@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow to create baseline Named Version",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Andrius.Zonys@bentley.com"
+}

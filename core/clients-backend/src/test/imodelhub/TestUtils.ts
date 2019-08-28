@@ -555,7 +555,7 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
     result.id = Guid.createValue();
     result.wsgId = result.id;
   }
-  result.changeSetId = changesetId || generateChangeSetId();
+  result.changeSetId = changesetId === undefined || changesetId === null ? generateChangeSetId() : changesetId;
   result.name = name || `TestVersion-${result.changeSetId!}`;
   result.smallThumbnailId = smallThumbnailId;
   result.largeThumbnailId = largeThumbnailId;

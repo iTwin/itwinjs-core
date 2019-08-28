@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Guid } from "@bentley/bentleyjs-core";
 import {
   AccessToken, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
   ThumbnailQuery, ThumbnailSize, IModelClient, AuthorizedClientRequestContext,
-  RequestGlobalOptions, RequestTimeoutOptions,
+  RequestGlobalOptions, RequestTimeoutOptions, IModelQuery,
 } from "@bentley/imodeljs-clients";
 import { TestConfig } from "../TestConfig";
 import { TestUsers } from "../TestUsers";
@@ -62,13 +62,16 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
 }
 
 describe("iModelHub VersionHandler", () => {
+  let contextId: string;
   let imodelId: GuidString;
   let imodelId2: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
   const imodelName2 = "imodeljs-clients Versions test 2";
+  const baselineVersionsiModelNamePrefix = "imodeljs-clients baseline versions iModel ";
   const firstVersionName = "Version 1";
+  let baselineiModelName = "";
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
@@ -88,8 +91,9 @@ describe("iModelHub VersionHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    await utils.createIModel(requestContext, imodelName, undefined, false, true);
-    await utils.createIModel(requestContext, imodelName2, undefined, false, true);
+    contextId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, imodelName, contextId, false, true);
+    await utils.createIModel(requestContext, imodelName2, contextId, false, true);
     imodelId = await utils.getIModelId(requestContext, imodelName);
     imodelId2 = await utils.getIModelId(requestContext, imodelName2);
     iModelClient = utils.getDefaultClient();
@@ -100,7 +104,7 @@ describe("iModelHub VersionHandler", () => {
       const changeSetCount = (await iModelClient.changeSets.get(requestContext, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
-        await utils.createIModel(requestContext, imodelName, undefined, true, true);
+        await utils.createIModel(requestContext, imodelName, contextId, true, true);
         imodelId = await utils.getIModelId(requestContext, imodelName);
         briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
       }
@@ -110,11 +114,18 @@ describe("iModelHub VersionHandler", () => {
         // Create at least 1 named version
         await createNamedVersionWithThumbnail(requestContext, iModelClient, imodelId2, firstVersionName);
       }
+      // Cleanup baseline version's iModels if they left undeleted
+      const baselineiModelsQuery = new IModelQuery().filter(`Name+like+'${baselineVersionsiModelNamePrefix}%'`);
+      const imodels = await iModelClient.iModels.get(requestContext, contextId, baselineiModelsQuery);
+      for (const imodel of imodels)
+        await iModelClient.iModels.delete(requestContext, contextId, imodel.id!);
     }
   });
 
-  after(() => {
+  after(async () => {
     if (!TestConfig.enableMocks) {
+      if (baselineiModelName)
+        await utils.deleteIModelByName(requestContext, contextId, baselineiModelName);
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
       iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
@@ -141,6 +152,35 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(!!version.id);
     chai.expect(version.changeSetId).to.be.equal(changeSet.id);
     chai.expect(version.name).to.be.equal(versionName);
+  });
+
+  it("should create and get baseline named version", async () => {
+    // Create new iModel
+    let baselineiModelId = Guid.createValue();
+    if (!TestConfig.enableMocks) {
+      baselineiModelName = baselineVersionsiModelNamePrefix + Guid.createValue();
+      await utils.createIModel(requestContext, baselineiModelName);
+      baselineiModelId = await utils.getIModelId(requestContext, baselineiModelName);
+    }
+
+    // Create baseline version
+    const versionName = `Version0`;
+    utils.mockCreateVersion(baselineiModelId, versionName, "");
+    const newBaselineVersion: Version = await iModelClient.versions.create(requestContext, baselineiModelId, "", versionName);
+
+    chai.assert(!!newBaselineVersion);
+    chai.expect(!!newBaselineVersion.id);
+    chai.expect(newBaselineVersion.changeSetId).to.be.equal("");
+    chai.expect(newBaselineVersion.name).to.be.equal(versionName);
+
+    // Get
+    const mockedVersion = utils.generateVersion(undefined, "");
+    utils.mockGetVersions(baselineiModelId, `?$filter=ChangeSetId+eq+%27%27`, mockedVersion);
+
+    const existingBaselineVersion: Version[] = await iModelClient.versions.get(requestContext, baselineiModelId, new VersionQuery().byChangeSet(""));
+    chai.assert(existingBaselineVersion);
+    chai.expect(existingBaselineVersion.length).to.be.equal(1);
+    chai.expect(existingBaselineVersion[0].changeSetId).to.be.empty;
   });
 
   it("should get named versions", async () => {
