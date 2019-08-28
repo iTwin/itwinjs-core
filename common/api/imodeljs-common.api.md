@@ -3791,7 +3791,6 @@ export enum RenderMode {
 
 // @beta
 export namespace RenderSchedule {
-    // (undocumented)
     export interface ColorEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: {
@@ -3800,23 +3799,16 @@ export namespace RenderSchedule {
             blue: number;
         };
     }
-    // (undocumented)
     export interface CuttingPlaneEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: CuttingPlaneProps;
     }
-    // (undocumented)
     export interface CuttingPlaneProps {
-        // (undocumented)
         direction: number[];
-        // (undocumented)
         hidden?: boolean;
-        // (undocumented)
         position: number[];
-        // (undocumented)
         visible?: boolean;
     }
-    // (undocumented)
     export interface ElementTimelineProps {
         // (undocumented)
         batchId: number;
@@ -3831,37 +3823,26 @@ export namespace RenderSchedule {
         // (undocumented)
         visibilityTimeline?: VisibilityEntryProps[];
     }
-    // (undocumented)
     export interface ModelTimelineProps {
         // (undocumented)
         elementTimelines: ElementTimelineProps[];
         // (undocumented)
         modelId: Id64String;
     }
-    // (undocumented)
     export interface TimelineEntryProps {
-        // (undocumented)
         interpolation: number;
-        // (undocumented)
         time: number;
     }
-    // (undocumented)
     export interface TransformEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: TransformProps;
     }
-    // (undocumented)
     export interface TransformProps {
-        // (undocumented)
         orientation: number[];
-        // (undocumented)
         pivot: number[];
-        // (undocumented)
         position: number[];
-        // (undocumented)
         transform: number[][];
     }
-    // (undocumented)
     export interface VisibilityEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: number;
