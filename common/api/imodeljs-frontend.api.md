@@ -7266,7 +7266,8 @@ export abstract class TileLoader {
     adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string;
     // (undocumented)
     protected readonly _batchType: BatchType;
-    compareTilePriorities(lhs: Tile, rhs: Tile): number;
+    // (undocumented)
+    computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
@@ -7326,8 +7327,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     readonly is2d: boolean;
     // (undocumented)
     readonly is3d: boolean;
-    // (undocumented)
-    readonly isBackgroundMap?: boolean;
     readonly lastSelectedTime: BeTimePoint;
     // (undocumented)
     readonly loader: TileLoader;
@@ -7387,8 +7386,6 @@ export namespace TileTree {
         readonly iModel: IModelConnection;
         // (undocumented)
         readonly is3d: boolean;
-        // (undocumented)
-        readonly isBackgroundMap?: boolean;
         // (undocumented)
         readonly loader: TileLoader;
         // (undocumented)
@@ -9365,8 +9362,6 @@ export class WebMapTileProps implements TileProps {
 export class WebMapTileTreeProps implements TileTreeProps {
     constructor(groundBias: number, modelId: Id64String, heightRange?: Range1d, maxTilesToSkip?: number);
     id: string;
-    // (undocumented)
-    isBackgroundMap: boolean;
     location: TransformProps;
     // (undocumented)
     maxTilesToSkip: number;

@@ -253,18 +253,17 @@ export namespace TileAdmin {
   }
 }
 
-function compareTilePriorities(lhs: Tile, rhs: Tile): number {
-  let diff = lhs.loader.priority - rhs.loader.priority;
-  if (0 === diff) {
-    diff = lhs.loader.compareTilePriorities(lhs, rhs);
-  }
+function comparePriorities(lhs: TileRequest, rhs: TileRequest): number {
+  let diff = lhs.tile.loader.priority - rhs.tile.loader.priority;
+  if (0 === diff)
+    diff = lhs.priority - rhs.priority;
 
   return diff;
 }
 
 class Queue extends PriorityQueue<TileRequest> {
   public constructor() {
-    super((lhs, rhs) => compareTilePriorities(lhs.tile, rhs.tile));
+    super((lhs, rhs) => comparePriorities(lhs, rhs));
   }
 
   public has(request: TileRequest): boolean {
@@ -473,7 +472,15 @@ class Admin extends TileAdmin {
     this._pendingRequests = this._swapPendingRequests;
     this._swapPendingRequests = previouslyPending;
 
+    // We will repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
+
+    // Recompute priority of each request.
+    for (const req of this._pendingRequests)
+      req.priority = req.tile.loader.computeTilePriority(req.tile, req.viewports);
+
+    // Sort pending requests by priority.
+    this._pendingRequests.sort();
 
     // Cancel any previously pending requests which are no longer needed.
     for (const queued of previouslyPending)
@@ -507,7 +514,7 @@ class Admin extends TileAdmin {
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
-          this._pendingRequests.push(request);
+          this._pendingRequests.append(request);
         }
       } else {
         const req = tile.request;
@@ -515,7 +522,7 @@ class Admin extends TileAdmin {
         if (undefined !== req) {
           // Request may already be dispatched (in this._activeRequests) - if so do not re-enqueue!
           if (req.isQueued && 0 === req.viewports.length)
-            this._pendingRequests.push(req);
+            this._pendingRequests.append(req);
 
           req.addViewport(vp);
           assert(0 < req.viewports.length);

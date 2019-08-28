@@ -101,6 +101,17 @@ export class PriorityQueue<T> implements Iterable<T> {
     return clone;
   }
 
+  /** Pushes a value onto the back of the queue without making any attempt to enforce ordering.
+   * After using this function, you must manually invoke sort() to ensure the queue is sorted again.
+   * @param value The value to append
+   * @returns The appended value, cloned according to the [[CloneFunction]] supplied to this queue's constructor.
+   */
+  public append(value: T): T {
+    const clone = this._clone(value);
+    this._array.push(clone);
+    return clone;
+  }
+
   /** Returns the element at the front of the queue, or `undefined` if the queue is empty. */
   public get front(): T | undefined {
     return this._peek(0);
