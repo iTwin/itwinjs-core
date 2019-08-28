@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Bug fix in FluendLoggerStream. The bug was causing all the logs to categorize as Informatoin.",
+      "packageName": "@bentley/logger-config",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/logger-config",
+  "email": "Tauqeer.Hassan@bentley.com"
+}

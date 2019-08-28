@@ -117,7 +117,7 @@ export class FluentdLoggerStream extends Writable {
       try {
         packet = JSON.parse(chunk);
         if (packet.hasOwnProperty("level")) {
-          packet.level = this.mapLevelToString(chunk.level);
+          packet.level = this.mapLevelToString(packet.level);
         }
         packet = JSON.stringify(packet);
       } catch (error) {
