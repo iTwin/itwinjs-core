@@ -16,11 +16,12 @@ See the CONTRIBUTING.md file in the root of the imodeljs repository for addition
 
 Programming questions and requests for programming advice are best asked on [Stack Overflow](https://stackoverflow.com/tags/imodeljs).
 
-### Videos
+### Guidance
 
-We frequently post helpful iModel.js background and training videos:
+We frequently post helpful iModel.js videos and articles:
 
 - [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA/featured)
+- [Blog](https://medium.com/imodeljs)
 
 ### Notifications and Updates
 
