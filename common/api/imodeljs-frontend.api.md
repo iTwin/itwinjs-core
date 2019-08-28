@@ -3214,6 +3214,15 @@ export interface IconEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.Icon;
 }
 
+// @beta
+export interface IconListEditorParams extends BasePropertyEditorParams {
+    iconValue: string;
+    iconValues: string[];
+    numColumns?: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.IconListData;
+}
+
 // @public
 export class IconSprites {
     static emptyAll(): void;
@@ -4983,7 +4992,7 @@ export interface PropertyEditorInfo {
 }
 
 // @beta
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams;
 
 // @beta
 export enum PropertyEditorParamTypes {
@@ -4997,6 +5006,8 @@ export enum PropertyEditorParamTypes {
     CustomFormattedNumber = 11,
     // (undocumented)
     Icon = 2,
+    // (undocumented)
+    IconListData = 12,
     // (undocumented)
     InputEditorSize = 3,
     // (undocumented)

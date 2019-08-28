@@ -48,6 +48,7 @@ export * from "./ui-components/editors/ToggleEditor";
 export * from "./ui-components/editors/ColorEditor";
 export * from "./ui-components/editors/WeightEditor";
 export * from "./ui-components/editors/CustomNumberEditor";
+export * from "./ui-components/editors/IconEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
@@ -96,6 +97,8 @@ export * from "./ui-components/color/HueSlider";
 export * from "./ui-components/color/AlphaSlider";
 export * from "./ui-components/color/SaturationPicker";
 export * from "./ui-components/color/ColorPickerButton";
+
+export * from "./ui-components/iconpicker/IconPickerButton";
 
 export * from "./ui-components/lineweight/Swatch";
 export * from "./ui-components/lineweight/WeightPickerButton";
