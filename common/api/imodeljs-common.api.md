@@ -1290,7 +1290,7 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
-    ContextRealityModels?: ContextRealityModelProps[];
+    contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
     // @beta
@@ -2045,6 +2045,7 @@ export namespace Gradient {
         readonly isOutlined: boolean;
         // (undocumented)
         keys: KeyColor[];
+        mapColor(value: number): ColorDef;
         // (undocumented)
         mode: Mode;
         // (undocumented)

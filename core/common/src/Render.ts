@@ -1528,7 +1528,7 @@ export namespace Gradient {
     }
 
     /** Maps a value to an RGBA value adjusted from a color present in this symbology's array. */
-    private mapColor(value: number) {
+    public mapColor(value: number) {
       if (value < 0)
         value = 0;
       else if (value > 1)

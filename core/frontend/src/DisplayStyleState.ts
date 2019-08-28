@@ -186,6 +186,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
 
+  /** @internal  */
+  public set scheduleScript(script: RenderScheduleState.Script | undefined) {
+    if (undefined === script) {
+      this._scheduleScript = undefined;
+    } else {
+      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, script.modelTimelines);
+    }
+    this.jsonProperties.scheduleScript = this._scheduleScript;
+  }
+
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 

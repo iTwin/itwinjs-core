@@ -2127,7 +2127,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly name: string;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    readonly scheduleScript: RenderScheduleState.Script | undefined;
+    scheduleScript: RenderScheduleState.Script | undefined;
     // @deprecated
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;

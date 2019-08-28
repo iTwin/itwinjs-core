@@ -509,7 +509,7 @@ export interface DisplayStyleSettingsProps {
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
-  ContextRealityModels?: ContextRealityModelProps[];
+  contextRealityModels?: ContextRealityModelProps[];
   /** List of IDs of excluded elements */
   excludedElements?: Id64String[];
 }
