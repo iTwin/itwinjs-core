@@ -18,8 +18,8 @@ import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -31,6 +31,7 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * * ZERO value of the halfspace function is "on"
  * * NEGATIVE value of the halfspace function is "outside"
  * * A representative point on the plane is (signedDistance*u, signedDistance * v, signedDistance *w)
+ * * Given a point and inward normal, the signedDistance is (point DOT normal)
  * @public
  */
 export class ClipPlane implements Clipper {
@@ -126,19 +127,26 @@ export class ClipPlane implements Clipper {
   }
 
   /** Create a ClipPlane
-   * * "normal" is the inward normal of the plane. (It is internally normalized)
+   * * "normal" (normalX, normalY, nz) is the inward normal of the plane.
+   * * The given (normalX,normalY,normalZ)
    * * "point" is any point of the plane.
    * * The stored distance for the plane is the dot product of the point with the normal (i.e. treat the point's xyz as a vector from the origin.)
    */
   public static createNormalAndPointXYZXYZ(normalX: number, normalY: number, normalZ: number,
     originX: number, originY: number, originZ: number,
-    invisible: boolean = false, interior: boolean = false): ClipPlane | undefined {
-    const normal = Vector3d.create(normalX, normalY, normalZ);
-
-    const normalized = normal.normalizeInPlace();
-    if (normalized) {
-      const distance = normal.dotProductXYZ(originX, originY, originZ);
-      return new ClipPlane(normal, distance, invisible, interior);
+    invisible: boolean = false, interior: boolean = false, result?: ClipPlane): ClipPlane | undefined {
+    const q = Geometry.hypotenuseXYZ(normalX, normalY, normalZ);
+    const r = Geometry.conditionalDivideFraction(1, q);
+    if (r !== undefined) {
+      if (result) {
+        result._inwardNormal.set(normalX * r, normalY * r, normalZ * r);
+        result._distanceFromOrigin = result._inwardNormal.dotProductXYZ(originX, originY, originZ);
+        result._invisible = invisible;
+        result._interior = interior;
+        return result;
+      }
+      const normal = Vector3d.create(normalX * r, normalY * r, normalZ * r);
+      return new ClipPlane(normal, normal.dotProductXYZ(originX, originY, originZ), invisible, interior);
     }
     return undefined;
   }
@@ -547,6 +555,64 @@ export class ClipPlane implements Clipper {
       }
     }
   }
+
+  private static _xyz0Work: Point3d = Point3d.create();
+  private static _xyz1Work: Point3d = Point3d.create();
+  private static _xyz2Work: Point3d = Point3d.create();
+
+  /**
+   * Split a (convex) polygon into 2 parts.
+   * @param xyz original polygon
+   * @param xyzIn array to receive inside part
+   * @param xyzOut array to receive outside part
+   * @param altitudeRange min and max altitudes encountered.
+   */
+  public convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d) {
+    const xyz0 = ClipPlane._xyz0Work;
+    const xyz1 = ClipPlane._xyz1Work;
+    const xyz2 = ClipPlane._xyz2Work;
+    const n = xyz.length;
+    xyzOut.length = 0;
+    xyzIn.length = 0;
+    xyzIn.clear();
+    xyzOut.clear();
+    // let numSplit = 0;
+    ClipPlane._fractionTol = 1.0e-8;
+    if (n > 2) {
+      xyz.back(xyz0);
+      altitudeRange.setNull();
+      let a0 = this.evaluatePoint(xyz0);
+      altitudeRange.extendX(a0);
+      //    if (a0 >= 0.0)
+      //      work.push_back (xyz0);
+      for (let i1 = 0; i1 < n; i1++) {
+        xyz.getPoint3dAtUncheckedPointIndex(i1, xyz1);
+        const a1 = this.evaluatePoint(xyz1);
+        altitudeRange.extendX(a1);
+        let nearZero = false;
+        if (a0 * a1 < 0.0) {
+          // simple crossing. . .
+          const f = - a0 / (a1 - a0);
+          if (f > 1.0 - ClipPlane._fractionTol && a1 >= 0.0) {
+            // the endpoint will be saved -- avoid the duplicate
+            nearZero = true;
+          } else {
+            xyz0.interpolate(f, xyz1, xyz2);
+            xyzIn.push(xyz2);
+            xyzOut.push(xyz2);
+          }
+          // numSplit++;
+        }
+        if (a1 >= 0.0 || nearZero)
+          xyzIn.push(xyz1);
+        if (a1 <= 0.0 || nearZero)
+          xyzOut.push(xyz1);
+        xyz0.setFromPoint3d(xyz1);
+        a0 = a1;
+      }
+    }
+  }
+
   /**
    * Multiply the ClipPlane's DPoint4d by matrix.
    * @param matrix matrix to apply.

@@ -314,7 +314,7 @@ public;RpcResponseCacheControl
 public;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
 public;RpcSerializedValue
 public;RpcSerializedValue
-internal;SceneLights
+alpha;SceneLightsProps
 public;SerializedRpcOperation
 public;SerializedRpcRequest 
 public;ServerError 

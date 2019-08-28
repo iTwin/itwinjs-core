@@ -151,7 +151,6 @@ import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
 import { RgbColor } from '@bentley/imodeljs-common';
-import { SceneLights } from '@bentley/imodeljs-common';
 import { SettingsAdmin } from '@bentley/imodeljs-clients';
 import { SettingsMapResult } from '@bentley/imodeljs-clients';
 import { SettingsResult } from '@bentley/imodeljs-clients';
@@ -2082,7 +2081,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     readonly settings: DisplayStyle3dSettings;
     // @beta (undocumented)
     readonly sunDirection: Vector3d | undefined;
-    }
+}
 
 // @public
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
@@ -2128,7 +2127,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly name: string;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
-    readonly scheduleScript: RenderScheduleState.Script | undefined;
+    scheduleScript: RenderScheduleState.Script | undefined;
     // @deprecated
     setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract readonly settings: DisplayStyleSettings;
@@ -3040,7 +3039,7 @@ export class HiliteSet {
 
 // @public
 export class HitDetail {
-    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string);
+    constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string | undefined, geometryClass?: GeometryClass | undefined, modelId?: string | undefined, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
     // (undocumented)
     readonly distFraction: number;
@@ -3058,6 +3057,8 @@ export class HitDetail {
     readonly hitSource: HitSource;
     // @alpha
     readonly iModel: IModelConnection;
+    // @alpha (undocumented)
+    readonly isClassifier: boolean;
     readonly isElementHit: boolean;
     // @alpha
     readonly isExternalIModelHit: boolean;
@@ -4778,6 +4779,8 @@ export namespace Pixel {
         readonly geometryClass: GeometryClass | undefined;
         // @internal (undocumented)
         readonly iModel?: IModelConnection;
+        // @internal (undocumented)
+        readonly isClassifier: boolean;
         // (undocumented)
         readonly planarity: Planarity;
         // (undocumented)
@@ -4947,7 +4950,7 @@ export interface PrimitiveValue extends BasePropertyValue {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
-// @internal
+// @alpha
 export const enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
@@ -5377,8 +5380,6 @@ export class RenderPlan {
     // (undocumented)
     readonly isFadeOutActive: boolean;
     // (undocumented)
-    readonly lights?: SceneLights;
-    // (undocumented)
     readonly monoColor: ColorDef;
     // (undocumented)
     selectViewFrustum(): void;
@@ -5573,6 +5574,8 @@ export abstract class RenderTarget implements IDisposable {
 // @beta
 export interface RenderTargetDebugControl {
     drawForReadPixels: boolean;
+    // @alpha (undocumented)
+    primitiveVisibility: PrimitiveVisibility;
     useLogZ: boolean;
 }
 
@@ -6579,8 +6582,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     addBatch(batch: Batch): void;
     // (undocumented)
-    readonly ambientLight: Float32Array;
-    // (undocumented)
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // (undocumented)
     analysisStyle?: AnalysisStyle;
@@ -6687,8 +6688,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly frustumUniforms: FrustumUniforms;
     // (undocumented)
-    readonly fStop: number;
-    // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
     // (undocumented)
     getEdgeOverrides(pass: RenderPass): EdgeOverrides | undefined;
@@ -6782,8 +6781,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     setFlashed(id: Id64String, intensity: number): void;
     // (undocumented)
     setHiliteSet(hilite: HiliteSet): void;
-    // (undocumented)
-    readonly shaderLights: ShaderLights | undefined;
     // (undocumented)
     readonly solarShadowMap: SolarShadowMap | undefined;
     // (undocumented)
@@ -7588,15 +7585,15 @@ export class ToolAdmin {
     readonly viewTool: ViewTool | undefined;
     }
 
-// @alpha
+// @beta
 export class ToolAssistance {
     static readonly altKey: string;
     static readonly altKeyboardInfo: ToolAssistanceKeyboardInfo;
     static readonly arrowKeyboardInfo: ToolAssistanceKeyboardInfo;
-    static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
+    static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction;
     static createInstructions(mainInstruction: ToolAssistanceInstruction, sections?: ToolAssistanceSection[]): ToolAssistanceInstructions;
     static createKeyboardInfo(keys: string[], bottomKeys?: string[]): ToolAssistanceKeyboardInfo;
-    static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean): ToolAssistanceInstruction;
+    static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction;
     static createSection(instructions: ToolAssistanceInstruction[], label?: string): ToolAssistanceSection;
     static readonly ctrlKey: string;
     static readonly ctrlKeyboardInfo: ToolAssistanceKeyboardInfo;
@@ -7612,7 +7609,7 @@ export class ToolAssistance {
     static readonly upSymbol: string;
 }
 
-// @alpha
+// @beta
 export enum ToolAssistanceImage {
     AcceptPoint = 1,
     CursorClick = 2,
@@ -7625,27 +7622,35 @@ export enum ToolAssistanceImage {
     RightClickDrag = 7
 }
 
-// @alpha
+// @beta
+export enum ToolAssistanceInputMethod {
+    Both = 0,
+    Mouse = 1,
+    Touch = 2
+}
+
+// @beta
 export interface ToolAssistanceInstruction {
     image: string | ToolAssistanceImage;
+    inputMethod?: ToolAssistanceInputMethod;
     isNew?: boolean;
     keyboardInfo?: ToolAssistanceKeyboardInfo;
     text: string;
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceInstructions {
     mainInstruction: ToolAssistanceInstruction;
     sections?: ToolAssistanceSection[];
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceKeyboardInfo {
     bottomKeys?: string[];
     keys: string[];
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceSection {
     instructions: ToolAssistanceInstruction[];
     label?: string;

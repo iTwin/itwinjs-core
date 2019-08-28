@@ -1234,6 +1234,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     hiddenLineSettings: HiddenLine.Settings;
     solarShadowsSettings: SolarShadows.Settings;
     // @internal (undocumented)
+    sunDir: Vector3d | undefined;
+    // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
 
@@ -1244,6 +1246,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
+    // @alpha
+    sceneLights?: SceneLightsProps;
     // @beta
     solarShadows?: SolarShadows.Props;
 }
@@ -1286,7 +1290,7 @@ export interface DisplayStyleSettingsProps {
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
-    ContextRealityModels?: ContextRealityModelProps[];
+    contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
     // @beta
@@ -2041,6 +2045,7 @@ export namespace Gradient {
         readonly isOutlined: boolean;
         // (undocumented)
         keys: KeyColor[];
+        mapColor(value: number): ColorDef;
         // (undocumented)
         mode: Mode;
         // (undocumented)
@@ -3786,7 +3791,6 @@ export enum RenderMode {
 
 // @beta
 export namespace RenderSchedule {
-    // (undocumented)
     export interface ColorEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: {
@@ -3795,23 +3799,16 @@ export namespace RenderSchedule {
             blue: number;
         };
     }
-    // (undocumented)
     export interface CuttingPlaneEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: CuttingPlaneProps;
     }
-    // (undocumented)
     export interface CuttingPlaneProps {
-        // (undocumented)
         direction: number[];
-        // (undocumented)
         hidden?: boolean;
-        // (undocumented)
         position: number[];
-        // (undocumented)
         visible?: boolean;
     }
-    // (undocumented)
     export interface ElementTimelineProps {
         // (undocumented)
         batchId: number;
@@ -3826,37 +3823,26 @@ export namespace RenderSchedule {
         // (undocumented)
         visibilityTimeline?: VisibilityEntryProps[];
     }
-    // (undocumented)
     export interface ModelTimelineProps {
         // (undocumented)
         elementTimelines: ElementTimelineProps[];
         // (undocumented)
         modelId: Id64String;
     }
-    // (undocumented)
     export interface TimelineEntryProps {
-        // (undocumented)
         interpolation: number;
-        // (undocumented)
         time: number;
     }
-    // (undocumented)
     export interface TransformEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: TransformProps;
     }
-    // (undocumented)
     export interface TransformProps {
-        // (undocumented)
         orientation: number[];
-        // (undocumented)
         pivot: number[];
-        // (undocumented)
         position: number[];
-        // (undocumented)
         transform: number[][];
     }
-    // (undocumented)
     export interface VisibilityEntryProps extends TimelineEntryProps {
         // (undocumented)
         value: number;
@@ -4467,26 +4453,11 @@ export namespace RpcSerializedValue {
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
 
-// @internal (undocumented)
-export class SceneLights {
-    constructor(imageBased: {
-        environmentalMap: RenderTexture;
-        diffuseImage: RenderTexture;
-        solar: ImageLight.Solar;
-    }, fstop?: number);
+// @alpha
+export interface SceneLightsProps {
     // (undocumented)
-    addLight(light: Light): void;
-    // (undocumented)
-    fstop: number;
-    // (undocumented)
-    imageBased: {
-        environmentalMap: RenderTexture;
-        diffuseImage: RenderTexture;
-        solar: ImageLight.Solar;
-    };
-    // (undocumented)
-    readonly isEmpty: boolean;
-    }
+    sunDir?: XYZProps;
+}
 
 // @public
 export interface SerializedRpcOperation {

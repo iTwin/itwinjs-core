@@ -72,13 +72,13 @@ export class VersionQuery extends InstanceIdQuery {
 
   /**
    * Query version by its [[ChangeSet]] id.
-   * @param changesetId Id of the ChangeSet.
+   * @param changesetId Id of the ChangeSet. Empty ChangeSet id can be provided to query iModel's baseline version.
    * @returns This query.
    * @throws [IModelHubClientError]($clients) with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if changeSetId is undefined or not a valid [[ChangeSet.id]] format.
    */
-  public byChangeSet(changesetId: string) {
-    ArgumentCheck.validChangeSetId("changesetId", changesetId);
-    this.addFilter(`ChangeSetId+eq+'${changesetId}'`);
+  public byChangeSet(changeSetId: string) {
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
+    this.addFilter(`ChangeSetId+eq+'${changeSetId}'`);
     return this;
   }
 
@@ -147,7 +147,7 @@ export class VersionHandler {
   /** Create a named [[Version]] of an iModel.
    * @param requestContext The client request context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param changeSetId Id of the [[ChangeSet]] to create a named Version for.
+   * @param changeSetId Id of the [[ChangeSet]] to create a named Version for. Empty ChangeSet id can be provided to create iModel's baseline version.
    * @param name Name of the new named Version.
    * @param description Description of the new named Version.
    * @returns Created Version instance.
@@ -162,7 +162,7 @@ export class VersionHandler {
     Logger.logInfo(loggerCategory, "Creating named version for iModel", () => ({ iModelId, changeSetId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
-    ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
+    ArgumentCheck.validChangeSetId("changeSetId", changeSetId, true);
     ArgumentCheck.defined("name", name);
 
     let version = new Version();

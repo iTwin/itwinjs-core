@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

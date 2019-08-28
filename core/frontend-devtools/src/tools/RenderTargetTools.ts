@@ -5,6 +5,7 @@
 
 import {
   IModelApp,
+  PrimitiveVisibility,
   RenderTargetDebugControl,
   ScreenViewport,
   Tool,
@@ -46,5 +47,41 @@ export class ToggleLogZTool extends RenderTargetDebugControlTool {
   public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
     control.useLogZ = !control.useLogZ;
     vp.invalidateRenderPlan();
+  }
+}
+
+/** Control whether all geometry renders, or only instanced or batched geometry.
+ * Allowed argument: "instanced", "batched", "all". Defaults to "all" if no arguments supplied.
+ * @beta
+ */
+export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool {
+  public static toolId = "TogglePrimitiveVisibility";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  private _visibility = PrimitiveVisibility.All;
+
+  public execute(control: RenderTargetDebugControl, vp: ScreenViewport): void {
+    control.primitiveVisibility = this._visibility;
+    vp.invalidateScene();
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    if (0 < args.length) {
+      switch (args[0].toLowerCase()) {
+        case "instanced":
+          this._visibility = PrimitiveVisibility.Instanced;
+          break;
+        case "batched":
+          this._visibility = PrimitiveVisibility.Uninstanced;
+          break;
+        case "all":
+          break;
+        default:
+          return true;
+      }
+    }
+
+    return this.run(args);
   }
 }

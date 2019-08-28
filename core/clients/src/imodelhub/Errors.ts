@@ -244,8 +244,8 @@ export class IModelHubClientError extends IModelHubError {
 
 /** @internal */
 export class ArgumentCheck {
-  public static defined(argumentName: string, argument?: any) {
-    if (!argument)
+  public static defined(argumentName: string, argument?: any, allowEmpty: boolean = false) {
+    if (argument === undefined || argument === null || (argument === "" && !allowEmpty))
       throw IModelHubClientError.undefinedArgument(argumentName);
   }
 
@@ -283,14 +283,17 @@ export class ArgumentCheck {
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  private static isValidChangeSetId(changeSetId: string) {
+  private static isValidChangeSetId(changeSetId: string, allowEmpty: boolean = false) {
+    if (changeSetId.length === 0)
+      return allowEmpty;
+
     const pattern = new RegExp("^[0-9A-Fa-f]+$");
     return changeSetId.length === 40 && pattern.test(changeSetId);
   }
 
-  public static validChangeSetId(argumentName: string, argument?: string) {
-    this.defined(argumentName, argument);
-    if (!this.isValidChangeSetId(argument!))
+  public static validChangeSetId(argumentName: string, argument?: string, allowEmpty: boolean = false) {
+    this.defined(argumentName, argument, allowEmpty);
+    if (!this.isValidChangeSetId(argument!, allowEmpty))
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 }

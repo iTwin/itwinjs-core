@@ -3,10 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
-
-// Importing through require due to types for linkifyjs not exporting 'find' function
-const linkify = require("linkifyjs"); // tslint:disable-line: no-var-requires
-
 import { assert } from "@bentley/bentleyjs-core";
 import {
   ValuesDictionary, PresentationError, PresentationStatus,
@@ -20,6 +16,7 @@ import {
   ArrayValue, StructValue, PrimitiveValue,
   PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo,
 } from "@bentley/imodeljs-frontend";
+import { matchLinks } from "@bentley/ui-components";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
@@ -64,10 +61,8 @@ const createStructValue = (description: StructTypeDescription, valueObj: ValuesD
  * @internal
  */
 export const getLinks = (value: string): Array<{ start: number, end: number }> => {
-  let startPoint = 0;
-  return linkify.find(value).map((linkInfo: { value: string; }) => {
-    startPoint += value.substr(startPoint).indexOf(linkInfo.value);
-    return { start: startPoint, end: startPoint += linkInfo.value.length };
+  return matchLinks(value).map((linkInfo: { index: number; lastIndex: number }) => {
+    return { start: linkInfo.index, end: linkInfo.lastIndex };
   });
 };
 

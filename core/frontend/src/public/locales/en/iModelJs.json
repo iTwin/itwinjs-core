@@ -21,7 +21,8 @@
     "Transient": "Decoration is not valid for this tool",
     "NotSnappable": "SubCategory has snapping turned off",
     "NotLocatable": "SubCategory has locate turned off",
-    "ExternalIModel": "iModel is not locatable"
+    "ExternalIModel": "iModel is not locatable",
+    "RealityModelSnapMode": "Reality models restricted to nearest snap"
   },
   "Element": {
     "Id": "Id",

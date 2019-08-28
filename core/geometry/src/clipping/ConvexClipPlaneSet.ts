@@ -46,8 +46,8 @@ export class ConvexClipPlaneSet implements Clipper {
     }
     return val;
   }
-  /** Extract clip planes from a json array `[  clipplane, clipplane ]`.
-   * * Non-clipplane members are ignored.
+  /** Extract clip planes from a json array `[  clipPlane, clipPlane ]`.
+   * * Non-clipPlane members are ignored.
    */
   public static fromJSON(json: any, result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
@@ -191,9 +191,36 @@ export class ConvexClipPlaneSet implements Clipper {
         if (clip) { result._planes.push(clip); }
       }
     }
-
     return result;
   }
+  /**
+   * (re)set a plane and ConvexClipPlaneSet for a convex array, such as a convex facet used for xy clip.
+   * @param points
+   * @param result
+   */
+  public static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet) {
+    let i0 = points.length - 1;
+    const n = points.length;
+    let x0 = points.getXAtUncheckedPointIndex(i0);
+    let y0 = points.getYAtUncheckedPointIndex(i0);
+    let x1, y1, nx, ny;
+    frustum._planes.length = 0;
+    const z0 = points.getZAtUncheckedPointIndex(i0);  // z for planes can stay fixed
+    const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
+    ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
+    if (planeNormal.normalizeInPlace()) {
+      for (let i1 = 0; i1 < n; i0 = i1, i1++ , x0 = x1, y0 = y1) {
+        x1 = points.getXAtUncheckedPointIndex(i1);
+        y1 = points.getYAtUncheckedPointIndex(i1);
+        nx = -(y1 - y0);
+        ny = x1 - x0;
+        const clipper = ClipPlane.createNormalAndPointXYZXYZ(nx, ny, 0, x1, y1, z0);
+        if (clipper)
+          frustum._planes.push(clipper);
+      }
+    }
+  }
+
   /** Deep clone of all planes. */
   public clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
@@ -446,14 +473,14 @@ export class ConvexClipPlaneSet implements Clipper {
     for (let i = 0; (i + 1) < points.length; i++) {
       if (reverse) {
         const toAdd = ClipPlane.createEdgeAndUpVector(points[i + 1], points[i], upVector, tiltAngle);
-        if (toAdd) {   // Clipplane creation could result in undefined
+        if (toAdd) {   // clipPlane creation could result in undefined
           result.addPlaneToConvexSet(toAdd);
         } else {
           return undefined;
         }
       } else {
         const toAdd = ClipPlane.createEdgeAndUpVector(points[i], points[i + 1], upVector, tiltAngle);
-        if (toAdd) {   // Clipplane creation could result in undefined
+        if (toAdd) {   // clipPlane creation could result in undefined
           result.addPlaneToConvexSet(toAdd);
         } else {
           return undefined;
@@ -543,7 +570,7 @@ export class ConvexClipPlaneSet implements Clipper {
       if (inwardNormalNormalized) { // Should never fail... simply a check due to the format of the normalize function return
         distance = inwardNormalNormalized.dotProduct(xyz0);
         const clipToAdd = ClipPlane.createNormalAndDistance(inwardNormalNormalized, distance, false, false);
-        if (clipToAdd) { this._planes.push(clipToAdd); }  // Clipplane creation could result in undefined
+        if (clipToAdd) { this._planes.push(clipToAdd); }  // clipPlane creation could result in undefined
       }
     }
     if (sideSelect !== 0.0) {
@@ -555,7 +582,7 @@ export class ConvexClipPlaneSet implements Clipper {
         const xyz0: Point3d = points[0];
         const distance = planeNormalNormalized.dotProduct(xyz0);
         const clipToAdd = ClipPlane.createNormalAndDistance(planeNormalNormalized, distance, false, false);
-        if (clipToAdd) { this._planes.push(clipToAdd); }  // Clipplane creation could result in undefined
+        if (clipToAdd) { this._planes.push(clipToAdd); }  // clipPlane creation could result in undefined
       }
     }
     return isCCW ? 1 : -1;
@@ -626,23 +653,6 @@ export class ConvexClipPlaneSet implements Clipper {
     if (zHigh !== undefined)
       this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
   }
-  /*
-    #define CheckAreaXY_not
-    // EDL Dec 7 2016.
-    // superficially bad area split observed when a vertical facet (edge on from above) is split.
-    // a1=-2.9864408788819741e-008
-    // a2=0
-    // this is artificially near zero.
-    #ifdef CheckAreaXY
-    double Check(double a0, double a1)
-    {
-    double dx = fabs (a1 - a0);
-    bool sameArea = DoubleOps::AlmostEqual (a0, a1);
-    BeAssert (sameArea);
-    return dx;
-    }
-    #endif
-  */
 
   // FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------
 

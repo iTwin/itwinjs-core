@@ -64,8 +64,11 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
+beta;ToggleFrustumSnapshotTool 
 alpha;ToggleLogZTool 
-beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
+beta;TogglePrimitiveVisibilityTool 
+beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
+beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
 alpha;ToggleSkyboxTool 
 beta;ToggleWiremeshTool 

@@ -7,43 +7,53 @@
 
 @mixin uicore-tabs-horizontal {
 
-    @include uicore-tabs;
+  @include uicore-tabs;
 
-    > li {
+  > li {
 
-        display:        inline-block;
-        margin:         0 -1px 0 0;
-        padding:        0;
+    display:        inline-block;
+    margin:         0 -1px 0 0;
+    padding:        0;
 
-        > a {
+    > a {
 
-            line-height:            $uicore-line-height;
-            padding:                7px 14px;
-            margin:                 6px 0 0;
-            border:                 1px solid $buic-text-color-muted;
-            border-bottom:          0 none transparent;
-            background:             $buic-background-tab-inactive;
+      line-height:          $uicore-line-height;
+      padding:              9px 14px;
+      margin:               0;
+      border-bottom:        0 none transparent;
+      background:           $buic-background-tab-inactive;
+      text-align:           center;
 
-            &::after {
+      $bar-size: 2px;
 
-                width:              100%;
-                height:             2px;
-            }
-        }
+      &::after {
 
-        &.active {
-            > a {
+        width: 100%;
+        height: $bar-size;
+        top: $bar-size;
+        padding-left: $bar-size;
+        padding-right: $bar-size;
+        box-sizing: border-box;
+        background-clip: content-box;
 
-                border-bottom:      1px solid $buic-background-tab-active;
-                color:              $buic-foreground-primary;
-                background:         $buic-background-tab-active;
-            }
-        }
-
-        &:last-child > a {
-
-          border-bottom:  1px solid $buic-text-color-muted;
-        }
-
+      }
     }
+
+    &:not(.active) {
+      border-bottom: 1px solid $buic-background-dialog-stroke;
+    }
+
+    &:not(:first-child) {
+      border-left: 1px solid $buic-background-dialog-stroke;
+    }
+
+    &.active {
+      > a {
+
+        color:              $buic-foreground-primary;
+        background:         $buic-background-tab-active;
+      }
+    }
+
+  }
 }

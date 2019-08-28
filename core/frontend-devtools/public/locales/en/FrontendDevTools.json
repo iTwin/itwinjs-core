@@ -35,6 +35,21 @@
     },
     "ApplyView": {
       "keyin": "fdt apply view"
+    },
+    "ToggleProjectExtents": {
+      "keyin": "fdt project extents"
+    },
+    "ToggleFrustumSnapshot": {
+      "keyin": "fdt frustum snapshot"
+    },
+    "FreezeScene": {
+      "keyin": "fdt freeze scene"
+    },
+    "ShowTileVolumes": {
+      "keyin": "fdt tile bounds"
+    },
+    "TogglePrimitiveVisibility": {
+      "keyin": "fdt visibility"
     }
   }
 }

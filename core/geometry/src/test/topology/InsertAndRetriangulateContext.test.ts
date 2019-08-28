@@ -178,17 +178,29 @@ describe("InsertAndRetriangulateContext", () => {
       y0 = 0;
       let numPointsInserted = 0;
       for (const point of [
-        Point3d.create(1.5, 0.5),
-        Point3d.create(0.5, 1.5),
-        Point3d.create(1.2, 2.8),
-        Point3d.create(1.8, 2.0),
-        Point3d.create(1.8, 1.0),
-        Point3d.create(2.0, 2.0),
-        Point3d.create(2.5, 0.5),
-        Point3d.create(0.2, 0.6),
-        Point3d.create(0.3, 0.4),
-        Point3d.create(1.2, 0.4),
-        Point3d.create(2.2, 0.7),
+        Point3d.create(0.5, 0.6),  // in face
+        Point3d.create(1.0, 0.6),  // move to edge
+        Point3d.create(1.5, 0.6),  // cross one edge into a face
+        Point3d.create(0.5, 0.7),  // back to first face
+        Point3d.create(0.5, 1.0),  // up to an edge
+        Point3d.create(1, 1), // directly to a vertex
+        Point3d.create(0.5, 1.0),  // back to edge
+        Point3d.create(1.5, 1.0),  // through vertex to mid edge
+        Point3d.create(0.5, 2.0), // up to a higher edge
+        Point3d.create(2.5, 2.0),  // along edge, through 2 vertices
+
+        Point3d.create(2, 2),   // back up to a vertex
+        Point3d.create(2, 1), // move to another
+        Point3d.create(1, 1), // and another
+        Point3d.create(0.5, 1.5), // face interior
+        Point3d.create(1, 1), // back to vertex
+        Point3d.create(0.5, 2), // mid edge
+        Point3d.create(0.5, 2), // sit there again
+        Point3d.create(0.2, 2), // same edge
+        Point3d.create(0.5, 1.5), // in face
+        Point3d.create(0.5, 1.5), // stay
+        Point3d.create(1.0, 1.0), // at vertex
+        Point3d.create(1.0, 1.0), // stay
       ]) {
         //        console.log("insertAndRetriangulate", point);
         context.insertAndRetriangulate(point, true);
@@ -222,12 +234,12 @@ describe("InsertAndRetriangulateContext", () => {
     const a = 3.29;
     const dTheta = 0.34;
     let x0 = 0;
-    const y0 = 0;
     // lisajouePoint3d makes points smeared within distance 1 of the origin.
     // nonzero yShift gradually makes points move upward
     // (nb the hull process makes points mostly move left to right)
-    for (const yShiftStep of [0.0, 0.005, 0.01, 0.05]) {
-      for (const numPoints of [9, 25, 55, 150 /* , 400, 4000 */]) {
+    for (const yShiftStep of [0.0, 0.01, 0.05]) {
+      for (const numPoints of [9, 25, 1024 /* , 4096 */]) {
+        let y0 = 0;
         // console.log("Triangulate", numPoints);
         const points: Point3d[] = [];
         let yShift = 0.0;
@@ -270,14 +282,28 @@ describe("InsertAndRetriangulateContext", () => {
         const hull: Point3d[] = [];
         const interior: Point3d[] = [];
         Point3dArray.computeConvexHullXY(points, hull, interior, true);
-        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, 0.001, x0, y0);
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0 + yShiftDisplay);
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0 + yShiftDisplay);
-        // GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
+        // GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, 0.001, x0, y0);
+        // GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+        // y0 += yShiftDisplay;
+        if (numPoints < 100) {
+          const r = 0.002;
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, points, r, x0, y0);
+          y0 += yShiftDisplay;
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, r, x0, y0);
+          y0 += yShiftDisplay;
 
+        }
+
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
+        // GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(interior), x0, y0);
+        const timerName = "before pointsToTriangulatedPolyface " + numPoints;
+        console.time(timerName);
         const polyface = PolyfaceBuilder.pointsToTriangulatedPolyface(points);
-        GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0 + yShiftDisplay * 2);
+        console.timeEnd(timerName);
+        y0 += yShiftDisplay;
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface, x0, y0);
         if (ck.testDefined(polyface, "polyface triangulation") && polyface) {
           const polyfaceArea = PolyfaceQuery.sumFacetAreas(polyface);
           const hullArea = PolygonOps.areaXY(hull);

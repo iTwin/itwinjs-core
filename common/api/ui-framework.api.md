@@ -3785,7 +3785,7 @@ export interface ToolAssistanceChangedEventArgs {
     instructions: ToolAssistanceInstructions | undefined;
 }
 
-// @alpha
+// @beta
 export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
@@ -3800,12 +3800,13 @@ export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldPr
     render(): React_2.ReactNode;
     }
 
-// @alpha
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt">;
+// @internal
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
-// @alpha
+// @beta
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
     cursorPromptTimeout: number;
+    defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
     uiSettings: UiSettings;
@@ -4099,6 +4100,8 @@ export class UiFramework {
     static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any>;
     // @internal
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    // @beta (undocumented)
+    static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @beta (undocumented)

@@ -621,6 +621,18 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
+    if (thisHit.isModelHit || thisHit.isClassifier) {
+      if (snapModes.includes(SnapMode.Nearest)) {
+        if (out) out.snapStatus = SnapStatus.Success;
+        return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
+      }
+      if (out) {
+        out.snapStatus = (1 === snapModes.length && snapModes.includes(SnapMode.Intersection) ? SnapStatus.NoSnapPossible : SnapStatus.NotSnappable);
+        out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("RealityModelSnapMode"));
+      }
+      return undefined;
+    }
+
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {

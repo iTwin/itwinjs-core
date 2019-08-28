@@ -21,7 +21,7 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
  * * As entries are added to the array, the buffer is reallocated as needed to accommodate.
  * * The reallocations leave unused space to accept further additional entries without reallocation.
  * * The `length` property returns the number of entries in use.
- * * the `capacity` property returns the (usually larger) length of the (overallocated) Float64Array.
+ * * the `capacity` property returns the (usually larger) length of the (over-allocated) Float64Array.
  * @public
  */
 export class GrowableFloat64Array {

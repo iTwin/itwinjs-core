@@ -28,7 +28,9 @@ import {
   IModelApp,
   IModelConnection,
   Marker,
+  Tool,
 } from "@bentley/imodeljs-frontend";
+import { parseToggle } from "./parseToggle";
 
 /** @alpha */
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
@@ -282,19 +284,22 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     }
   }
 
-  public static toggle(imodel: IModelConnection, enabled?: boolean) {
+  // Returns true if extents become enabled.
+  public static toggle(imodel: IModelConnection, enabled?: boolean): boolean {
     if (undefined !== enabled) {
       const alreadyEnabled = undefined !== ProjectExtentsDecoration._decorator;
       if (enabled === alreadyEnabled)
-        return;
+        return alreadyEnabled;
     }
 
     if (undefined === ProjectExtentsDecoration._decorator) {
       ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration(imodel);
       IModelApp.toolAdmin.startDefaultTool();
+      return true;
     } else {
       ProjectExtentsDecoration._decorator.stop();
       ProjectExtentsDecoration._decorator = undefined;
+      return false;
     }
   }
 }
@@ -302,8 +307,43 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 /** Enable or disable the project extents decoration. This decoration draws a box coinciding with the iModel's project extents.
  * @param imodel The iModel from which to obtain the extents.
  * @param enable If undefined, the current enabled state of the decoration will be inverted; otherwise it will be enabled if true, or disabled if false.
+ * @returns true if the extents are now ON, false if they are now OFF.
  * @beta
  */
-export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void {
-  ProjectExtentsDecoration.toggle(imodel, enabled);
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean {
+  return ProjectExtentsDecoration.toggle(imodel, enabled);
+}
+
+/** Enable or disable project extents decoration.
+ * The key-in takes at most 1 argument (case-insensitive):
+ *  - "ON" => enable project extents
+ *  - "OFF" => disable project extents
+ *  - "TOGGLE" or omitted => toggle project extents
+ *
+ * @see [toggleProjectExtents]
+ * @beta
+ */
+export class ToggleProjectExtentsTool extends Tool {
+  public static toolId = "ToggleProjectExtents";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(enable?: boolean): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && vp.view.isSpatialView()) {
+      const iModel = vp.iModel;
+      if (toggleProjectExtents(iModel, enable))
+        vp.onChangeView.addOnce(() => toggleProjectExtents(iModel, false));
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const enable = parseToggle(args[0]);
+    if (typeof enable !== "string")
+      this.run(enable);
+
+    return true;
+  }
 }

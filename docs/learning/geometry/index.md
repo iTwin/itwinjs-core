@@ -11,6 +11,10 @@ Topics:
 * [Polyface Index Pairing](./PolyfaceIndexPairing.md)
 * [PolyfaceBuilder](./PolyfaceBuilder.md)
 * [StrokeOptions](./StrokeOptions.md)
+* [Triangulation](./Triangulation.md)
+* [RegionOps class](./RegionOps.md)
+* [PolyfaceClip class](./PolyfaceClip.md)
+
 
 Web Links
 

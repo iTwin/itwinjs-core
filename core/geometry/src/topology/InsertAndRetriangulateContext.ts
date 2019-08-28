@@ -19,10 +19,15 @@ import { Ray3d } from "../geometry3d/Ray3d";
 export class InsertAndRetriangulateContext {
   private _graph: HalfEdgeGraph;
   private _searcher: HalfEdgePositionDetail;
+  // Temporaries used in reAimFromFace
+  // private _lastBefore: HalfEdgePositionDetail;
+  // private _firstAfter: HalfEdgePositionDetail;
 
   private constructor(graph: HalfEdgeGraph) {
     this._graph = graph;
     this._searcher = HalfEdgePositionDetail.create();
+    // this._lastBefore = HalfEdgePositionDetail.create();
+    // this._firstAfter = HalfEdgePositionDetail.create();
   }
   /** Create a new context referencing the graph. */
   public static create(graph: HalfEdgeGraph) {
@@ -179,8 +184,8 @@ export class InsertAndRetriangulateContext {
       if (!psc.setSearchRay(movingPosition, xyz, ray)) {
         return false;
       } else if (movingPosition.isFace) {
-        const lastBefore = HalfEdgePositionDetail.create();
-        const firstAfter = HalfEdgePositionDetail.create();
+        const lastBefore =  HalfEdgePositionDetail.create();
+        const firstAfter =  HalfEdgePositionDetail.create();
         const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore` !!
         switch (rc) {

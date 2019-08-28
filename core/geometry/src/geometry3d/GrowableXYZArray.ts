@@ -565,6 +565,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
     }
   }
+
+  /** Initialize `range` with coordinates in this array. */
+  public setRange(range: Range3d, transform?: Transform) {
+    range.setNull();
+    this.extendRange(range, transform);
+  }
+
   /** Sum the lengths of segments between points. */
   public sumLengths(): number {
     let sum = 0.0;
