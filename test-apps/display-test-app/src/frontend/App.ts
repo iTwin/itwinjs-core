@@ -16,6 +16,7 @@ import {
   SelectionTool,
   SnapMode,
   TileAdmin,
+  Tool,
   ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
@@ -134,6 +135,20 @@ class SVTSelectionTool extends SelectionTool {
   }
 }
 
+class RefreshTilesTool extends Tool {
+  public static toolId = "RefreshTiles";
+  public static get maxArgs() { return undefined; }
+
+  public run(changedModelIds?: string[]): boolean {
+    IModelApp.viewManager.refreshForModifiedModels(changedModelIds);
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args);
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -151,6 +166,7 @@ export class DisplayTestApp {
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
+    RefreshTilesTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 

@@ -12,6 +12,9 @@
     },
     "SVTSelect": {
       "keyin": "svt select"
+    },
+    "RefreshTiles": {
+      "keyin": "dta refresh tiles"
     }
   }
 }

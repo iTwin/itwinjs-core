@@ -397,6 +397,11 @@ export namespace TileTree {
      * @returns the loaded TileTree if loading completed successfully, or undefined if the tree is still loading or loading failed.
      */
     load(): TileTree | undefined;
+
+    /** Do not call this directly.
+     * @internal
+     */
+    dispose(): void;
   }
 
   /** Interface adopted by an object which can supply a [[TileTree]] for rendering.

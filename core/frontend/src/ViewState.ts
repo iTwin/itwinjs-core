@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, Id64, Id64String, JsonUtils, BeTimePoint } from "@bentley/bentleyjs-core";
+import {
+  BeTimePoint,
+  Id64,
+  Id64Arg,
+  Id64String,
+  JsonUtils,
+  assert,
+} from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
@@ -931,6 +938,24 @@ export abstract class ViewState extends ElementState {
       frustum.multiply(worldTransform);
       this.setupFromFrustum(frustum);
     }
+  }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
+   * Returns true if any tile tree was invalidated.
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean {
+    let refreshed = false;
+    this.forEachModelTreeRef((ref) => {
+      const tree = ref.treeOwner.tileTree;
+      if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
+        ref.treeOwner.dispose();
+        refreshed = true;
+      }
+    });
+
+    return refreshed;
   }
 }
 
