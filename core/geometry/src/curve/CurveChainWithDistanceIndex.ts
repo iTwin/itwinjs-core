@@ -180,6 +180,8 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
  * @public
  */
 export class CurveChainWithDistanceIndex extends CurvePrimitive {
+  public readonly curvePrimitiveType = "curveChainWithDistanceIndex";
+
   private _path: CurveChain;
   private _fragments: PathFragment[];
   private _totalLength: number; // matches final fragment distance1.

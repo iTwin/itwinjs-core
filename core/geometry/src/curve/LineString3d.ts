@@ -77,6 +77,8 @@ function accumulateGoodUnitPerpendicular(
  * @public
  */
 export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
+  public readonly curvePrimitiveType = "lineString";
+
   private static _workPointA = Point3d.create();
   private static _workPointB = Point3d.create();
   private static _workPointC = Point3d.create();

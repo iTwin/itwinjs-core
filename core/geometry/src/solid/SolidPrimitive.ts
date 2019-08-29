@@ -8,6 +8,33 @@
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
+import { Box } from "./Box";
+import { Cone } from "./Cone";
+import { Sphere } from "./Sphere";
+import { LinearSweep } from "./LinearSweep";
+import { RotationalSweep } from "./RotationalSweep";
+import { RuledSweep } from "./RuledSweep";
+import { TorusPipe } from "./TorusPipe";
+
+/** Describes the concrete type of a [[SolidPrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
+ *
+ *  - "box" => [[Box]]
+ *  - "cone" => [[Cone]]
+ *  - "sphere" => [[Sphere]]
+ *  - "linearSweep" => [[LinearSweep]]
+ *  - "rotationalSweep" => [[RotationalSweep]]
+ *  - "ruledSweep" => [[RuledSweep]]
+ *  - "torusPipe" => [[TorusPipe]]
+ *
+ * @public
+ */
+export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe";
+
+/** Union type of all subclasses of [[SolidPrimitive]].
+ * @public
+ */
+export type AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe;
+
 /**
  * Base class for SolidPrimitive variants.
  *
@@ -15,6 +42,9 @@ import { Transform } from "../geometry3d/Transform";
  * @public
  */
 export abstract class SolidPrimitive extends GeometryQuery {
+  public readonly geometryCategory = "solid";
+  public abstract readonly solidPrimitiveType: SolidPrimitiveType;
+
   /** flag indicating whether cap region is considered closed (i.e. a planar region, rather than just a wire in space) */
   protected _capped: boolean;
   protected constructor(capped: boolean) { super(); this._capped = capped; }

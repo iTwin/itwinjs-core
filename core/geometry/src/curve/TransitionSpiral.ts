@@ -167,6 +167,8 @@ export class TransitionConditionalProperties {
  * @alpha
  */
 export class TransitionSpiral3d extends CurvePrimitive {
+  public readonly curvePrimitiveType = "transitionSpiral";
+
   /** Return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line) */
   public static radiusToCurvature(radius: number): number { return (radius === 0.0) ? 0.0 : 1.0 / radius; }
 

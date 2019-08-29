@@ -62,6 +62,8 @@ export interface ArcVectors {
  * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
+  public readonly curvePrimitiveType = "arc";
+
   /**
    * Test if this and other are both instances of Arc3d.
    */

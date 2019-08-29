@@ -56,10 +56,8 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public addArc(ellipse: Arc3d, isEllipse: boolean, filled: boolean): void {
     let curve;
-    let isLoop = false;
     if (isEllipse || filled) {
       curve = Loop.create(ellipse);
-      isLoop = true;
     } else {
       curve = Path.create(ellipse);
     }
@@ -70,7 +68,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve.children.push(gapSegment);
     }
     const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-    if (isLoop)
+    if (curve instanceof Loop)
       this.accum.addLoop(curve, displayParams, this.placement, false);
     else
       this.accum.addPath(curve, displayParams, this.placement, false);
