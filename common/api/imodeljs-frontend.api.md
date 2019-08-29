@@ -6539,8 +6539,6 @@ export class SyncFlags {
     // (undocumented)
     invalidateRenderPlan(): void;
     // (undocumented)
-    invalidateRotatePoint(): void;
-    // (undocumented)
     invalidateScene(): void;
     // (undocumented)
     readonly isRedrawPending: boolean;
@@ -6553,8 +6551,6 @@ export class SyncFlags {
     // (undocumented)
     readonly isValidRenderPlan: boolean;
     // (undocumented)
-    readonly isValidRotatePoint: boolean;
-    // (undocumented)
     readonly isValidScene: boolean;
     // (undocumented)
     setRedrawPending(): void;
@@ -6566,8 +6562,6 @@ export class SyncFlags {
     setValidDecorations(): void;
     // (undocumented)
     setValidRenderPlan(): void;
-    // (undocumented)
-    setValidRotatePoint(): void;
     // (undocumented)
     setValidScene(): void;
 }
@@ -7361,6 +7355,7 @@ export namespace TileTree {
         NotLoaded = 0
     }
     export interface Owner {
+        dispose(): void;
         load(): TileTree | undefined;
         readonly loadStatus: TileTree.LoadStatus;
         readonly tileTree: TileTree | undefined;
@@ -8577,6 +8572,8 @@ export class ViewManager {
     // @internal
     purgeTileTrees(olderThan: BeTimePoint): void;
     // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
+    // @internal
     renderLoop(): void;
     // @internal (undocumented)
     readonly sceneInvalidated: boolean;
@@ -8849,6 +8846,8 @@ export abstract class Viewport implements IDisposable {
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
+    // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal (undocumented)
     renderFrame(): boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
@@ -9040,6 +9039,8 @@ export abstract class ViewState extends ElementState {
     abstract onRenderFrame(_viewport: Viewport): void;
     // @internal
     peekDetail(name: string): any;
+    // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     // @internal
     removeDetail(name: string): void;
     resetExtentLimits(): void;
