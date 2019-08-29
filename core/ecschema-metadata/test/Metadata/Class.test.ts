@@ -16,6 +16,7 @@ import { SchemaItem } from "../../src/Metadata/SchemaItem";
 import { SchemaKey } from "../../src/SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { CustomAttributeSet } from "../../src/Metadata/CustomAttribute";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -78,6 +79,232 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("TESTPROP")).equal(primProp);
       expect(await entityClass.getInheritedProperty("testprop")).equal(primProp);
       expect(await entityClass.getInheritedProperty("tEsTpRoP")).equal(primProp);
+    });
+  });
+
+  describe("get inherited custom attributes", () => {
+    it("class only has local custom attributes, no base classes", async () => {
+      const entityClass = new EntityClass(schema, "TestEntity");
+      const mutableEntity = entityClass as ECClass as MutableClass;
+      mutableEntity.addCustomAttribute({ className: "TestSchema.CustomAttribute0" });
+      mutableEntity.addCustomAttribute({ className: "TestSchema.CustomAttribute1" });
+      mutableEntity.addCustomAttribute({ className: "TestSchema.CustomAttribute2" });
+      mutableEntity.addCustomAttribute({ className: "TestSchema.CustomAttribute3" });
+
+      const localCustomAttributes = entityClass.customAttributes;
+      expect(localCustomAttributes).not.to.be.undefined;
+
+      const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
+        expect(inheritedCustomAttributes.get("TestSchema.CustomAttribute0")).to.be.equals(localCustomAttributes!.get("TestSchema.CustomAttribute0"));
+        expect(inheritedCustomAttributes.get("TestSchema.CustomAttribute1")).to.be.equals(localCustomAttributes!.get("TestSchema.CustomAttribute1"));
+        expect(inheritedCustomAttributes.get("TestSchema.CustomAttribute2")).to.be.equals(localCustomAttributes!.get("TestSchema.CustomAttribute2"));
+        expect(inheritedCustomAttributes.get("TestSchema.CustomAttribute3")).to.be.equals(localCustomAttributes!.get("TestSchema.CustomAttribute3"));
+      };
+
+      testInheritanceCA(await entityClass.getCustomAttributes());
+      testInheritanceCA(entityClass.getCustomAttributesSync());
+    });
+
+    it("class has one branch inheritance", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          TestFirstBaseCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestFirstBaseCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+
+          TestFirstBaseClass: {
+            schemaItemType: "EntityClass",
+            customAttributes: [
+              { className: "TestSchema.TestFirstBaseCAClass0" },
+              { className: "TestSchema.TestFirstBaseCAClass1" },
+            ]
+          },
+          TestSecondBaseClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestFirstBaseClass",
+          },
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestSecondBaseClass",
+            customAttributes: [
+              { className: "TestSchema.TestCAClass0" },
+              { className: "TestSchema.TestCAClass1" }
+            ]
+          },
+        },
+      };
+
+      schema = await Schema.fromJson(schemaJson, new SchemaContext());
+      expect(schema).not.to.be.undefined;
+
+      // testClass
+      const testClass = schema.getItemSync("TestClass") as ECClass;
+      expect(testClass).not.to.be.undefined;
+
+      const testCAClass0 = testClass.customAttributes!.get("TestSchema.TestCAClass0");
+      expect(testCAClass0).not.to.be.undefined;
+      const testCAClass1 = testClass.customAttributes!.get("TestSchema.TestCAClass1");
+      expect(testCAClass1).not.to.be.undefined;
+
+      // testFirstBaseClass
+      const testFirstBaseClass = schema.getItemSync("TestFirstBaseClass") as ECClass;
+      expect(testFirstBaseClass).not.to.be.undefined;
+
+      const testFirstBaseCAClass0 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass0");
+      expect(testFirstBaseCAClass0).not.to.be.undefined;
+      const testFirstBaseCAClass1 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass1");
+      expect(testFirstBaseCAClass1).not.to.be.undefined;
+
+      // testSecondBaseClass
+      const testSecondBaseClass = schema.getItemSync("TestSecondBaseClass") as ECClass;
+      expect(testSecondBaseClass).not.to.be.undefined;
+
+      // test inheritance CA
+      const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass0")).to.be.equals(testCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass1")).to.be.equals(testCAClass1);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstBaseCAClass0")).to.be.equals(testFirstBaseCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstBaseCAClass1")).to.be.equals(testFirstBaseCAClass1);
+      };
+
+      testInheritanceCA(await testClass.getCustomAttributes());
+      testInheritanceCA(testClass.getCustomAttributesSync());
+    });
+
+    it("class has multiple branches of inheritance", async () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          TestCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+
+          TestFirstBaseCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestFirstBaseCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+
+          TestFirstMixinCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestFirstMixinCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+
+          TestSecondMixinCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestSecondMixinCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+
+          TestMixinClass: {
+            schemaItemType: "Mixin",
+            appliesTo: "TestSchema.TestBaseClass",
+            customAttributes: [
+              { className: "TestSchema.TestCAClass0" },
+              { className: "TestSchema.TestCAClass1" },
+            ]
+          },
+          TestFirstMixinClass: {
+            schemaItemType: "Mixin",
+            baseClass: "TestSchema.TestMixinClass",
+            appliesTo: "TestSchema.TestBaseClass",
+            customAttributes: [
+              { className: "TestSchema.TestFirstMixinCAClass0" },
+              { className: "TestSchema.TestFirstMixinCAClass1" }
+            ]
+          },
+          TestSecondMixinClass: {
+            schemaItemType: "Mixin",
+            baseClass: "TestSchema.TestMixinClass",
+            appliesTo: "TestSchema.TestBaseClass",
+            customAttributes: [
+              { className: "TestSchema.TestSecondMixinCAClass0" },
+              { className: "TestSchema.TestSecondMixinCAClass1" }
+            ]
+          },
+
+          TestBaseClass: {
+            schemaItemType: "EntityClass",
+            mixins: ["TestSchema.TestMixinClass", "TestSchema.TestFirstMixinClass"],
+            customAttributes: [
+              { className: "TestSchema.TestFirstBaseCAClass0" },
+              { className: "TestSchema.TestFirstBaseCAClass1" }
+            ]
+          },
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestBaseClass",
+            mixins: ["TestSchema.TestFirstMixinClass", "TestSchema.TestSecondMixinClass"],
+            customAttributes: [
+              { className: "TestSchema.TestCAClass0" },
+              { className: "TestSchema.TestCAClass1" }
+            ]
+          },
+        },
+      };
+
+      schema = await Schema.fromJson(schemaJson, new SchemaContext());
+      expect(schema).not.to.be.undefined;
+
+      // testClass
+      const testClass = schema.getItemSync("TestClass") as ECClass;
+      expect(testClass).not.to.be.undefined;
+
+      const testCAClass0 = testClass.customAttributes!.get("TestSchema.TestCAClass0");
+      expect(testCAClass0).not.to.be.undefined;
+      const testCAClass1 = testClass.customAttributes!.get("TestSchema.TestCAClass1");
+      expect(testCAClass1).not.to.be.undefined;
+
+      // testFirstBaseClass
+      const testFirstBaseClass = schema.getItemSync("TestBaseClass") as ECClass;
+      expect(testFirstBaseClass).not.to.be.undefined;
+
+      const testFirstBaseCAClass0 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass0");
+      expect(testFirstBaseCAClass0).not.to.be.undefined;
+      const testFirstBaseCAClass1 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass1");
+      expect(testFirstBaseCAClass1).not.to.be.undefined;
+
+      // testMixinClass
+      const testMixinClass = schema.getItemSync("TestMixinClass") as Mixin;
+      expect(testMixinClass).not.to.be.undefined;
+
+      const testMixinCAClass0 = testMixinClass.customAttributes!.get("TestSchema.TestCAClass0");
+      expect(testMixinCAClass0).not.to.be.undefined;
+      const testMixinCAClass1 = testMixinClass.customAttributes!.get("TestSchema.TestCAClass1");
+      expect(testMixinCAClass1).not.to.be.undefined;
+
+      // testFirstMixinClass
+      const testFirstMixinClass = schema.getItemSync("TestFirstMixinClass") as Mixin;
+      expect(testFirstMixinClass).not.to.be.undefined;
+
+      const testFirstMixinCAClass0 = testFirstMixinClass.customAttributes!.get("TestSchema.TestFirstMixinCAClass0");
+      expect(testFirstMixinCAClass0).not.to.be.undefined;
+      const testFirstMixinCAClass1 = testFirstMixinClass.customAttributes!.get("TestSchema.TestFirstMixinCAClass1");
+      expect(testFirstMixinCAClass1).not.to.be.undefined;
+
+      // testSecondMixinClass
+      const testSecondMixinClass = schema.getItemSync("TestSecondMixinClass") as Mixin;
+      expect(testSecondMixinClass).not.to.be.undefined;
+
+      const testSecondMixinCAClass0 = testSecondMixinClass.customAttributes!.get("TestSchema.TestSecondMixinCAClass0");
+      expect(testSecondMixinCAClass0).not.to.be.undefined;
+      const testSecondMixinCAClass1 = testSecondMixinClass.customAttributes!.get("TestSchema.TestSecondMixinCAClass1");
+      expect(testSecondMixinCAClass1).not.to.be.undefined;
+
+      // test inheritance custom attributes
+      const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass0")).to.be.equals(testCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass1")).to.be.equals(testCAClass1);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstBaseCAClass0")).to.be.equals(testFirstBaseCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstBaseCAClass1")).to.be.equals(testFirstBaseCAClass1);
+
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass0")).not.to.be.equals(testMixinCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestCAClass1")).not.to.be.equals(testMixinCAClass1);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstMixinCAClass0")).to.be.equals(testFirstMixinCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestFirstMixinCAClass1")).to.be.equals(testFirstMixinCAClass1);
+        expect(inheritedCustomAttributes.get("TestSchema.TestSecondMixinCAClass0")).to.be.equals(testSecondMixinCAClass0);
+        expect(inheritedCustomAttributes.get("TestSchema.TestSecondMixinCAClass1")).to.be.equals(testSecondMixinCAClass1);
+      };
+
+      testInheritanceCA(await testClass.getCustomAttributes());
+      testInheritanceCA(testClass.getCustomAttributesSync());
     });
   });
 
