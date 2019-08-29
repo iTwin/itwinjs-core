@@ -140,6 +140,8 @@ class ResizeViewportTool extends Tool {
   public static get minArgs() { return 2; }
   public static get maxArgs() { return 2; }
 
+  public run(width: number, height: number): boolean {
+    const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
