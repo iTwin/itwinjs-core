@@ -165,10 +165,10 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       return;
     const foundLink = linksArray[0];
     if (foundLink && foundLink.url) {
-      if (foundLink.schema === "")
-        window.open(foundLink.url, "_blank")!.focus();
-      else if (foundLink.schema === "mailto:" || foundLink.schema === "pw:")
+      if (foundLink.schema === "mailto:" || foundLink.schema === "pw:")
         location.href = foundLink.url;
+      else
+        window.open(foundLink.url, "_blank")!.focus();
     }
   }
 
