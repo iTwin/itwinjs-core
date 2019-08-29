@@ -5746,6 +5746,8 @@ export class ScreenViewport extends Viewport {
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
+    // @internal
+    animateToCurrent(start: Frustum, animationTime?: BeDuration): void;
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState): void;
     clearViewUndo(): void;

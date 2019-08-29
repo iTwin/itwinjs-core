@@ -566,7 +566,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
 
     if (doAnimate)
-      viewport.animateFrustumChange(before, after);
+      viewport.animateToCurrent(before);
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {
@@ -1583,7 +1583,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
     const endFrust = vp.getWorldFrustum();
     if (!startFrust.equals(endFrust))
-      vp.animateFrustumChange(startFrust, endFrust);
+      vp.animateToCurrent(startFrust);
 
     this.getCenterPoint(this._anchorPtView);
   }
@@ -1837,9 +1837,9 @@ export class StandardViewTool extends ViewTool {
         const startFrustum = vp.getFrustum();
         const newFrustum = startFrustum.clone();
         newFrustum.multiply(rotateTransform);
-        vp.animateFrustumChange(startFrustum, newFrustum);
         vp.view.setupFromFrustum(newFrustum);
         vp.synchWithView(true);
+        vp.animateToCurrent(startFrustum);
       }
     }
     this.exitTool();
@@ -2060,7 +2060,7 @@ export class WindowAreaTool extends ViewTool {
     }
 
     vp.synchWithView(true);
-    vp.animateFrustumChange(startFrust, vp.getFrustum());
+    vp.animateToCurrent(startFrust);
   }
 }
 
@@ -2351,7 +2351,7 @@ export class ViewToggleCameraTool extends ViewTool {
 
       const startFrustum = vp.getFrustum();
       vp.synchWithView(true);
-      vp.animateFrustumChange(startFrustum, vp.getFrustum());
+      vp.animateToCurrent(startFrustum);
     }
     this.exitTool();
   }
@@ -2526,7 +2526,7 @@ export class SetupCameraTool extends PrimitiveTool {
       return;
 
     vp.synchWithView(true);
-    vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(500));
+    vp.animateToCurrent(startFrust, BeDuration.fromMilliseconds(500));
   }
 
   private _lengthFormatterSpec?: FormatterSpec;
