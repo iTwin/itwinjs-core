@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "1.4.0-dev.23",
+  "version": "1.4.0-dev.24",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -24,7 +24,7 @@
     "buildIModelJsModule": "./bin/buildIModelJsModule.js"
   },
   "dependencies": {
-    "@bentley/config-loader": "1.4.0-dev.23",
+    "@bentley/config-loader": "1.4.0-dev.24",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
