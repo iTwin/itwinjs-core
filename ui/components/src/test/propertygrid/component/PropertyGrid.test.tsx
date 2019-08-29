@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
+import { mount, shallow, ReactWrapper } from "enzyme";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import sinon from "sinon";
@@ -193,6 +193,9 @@ describe("PropertyGrid", () => {
 
     describe("default onPropertyLinkClick behaviour", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
+      let testRecord: PropertyRecord;
+      let wrapper: ReactWrapper<any, Readonly<{}>, React.Component<{}, {}, any>>;
+      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
 
       before(() => {
         location = locationMockRef.object;
@@ -202,9 +205,9 @@ describe("PropertyGrid", () => {
         locationMockRef.reset();
       });
 
-      it("opens new window if the link text was found in record and it was not an email", async () => {
+      beforeEach(() => {
         const testMatcher = (_displayValue: string) => [];
-        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
+        testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
         testRecord.links = {
           matcher: testMatcher,
         };
@@ -217,114 +220,63 @@ describe("PropertyGrid", () => {
             Group_2: [records[0]],
           },
         });
-        const wrapper = mount(<PropertyGrid
+        wrapper = mount(<PropertyGrid
           orientation={Orientation.Horizontal}
           dataProvider={dataProvider} />);
+      });
 
-        const windowMockRef = moq.Mock.ofType<Window>();
+      afterEach(() => {
+        spy.restore();
+      });
+
+      it("opens new window if the link text was found in record with no schema specified", async () => {
         await TestUtils.flushAsyncOperations();
-        window.open = (url?: string, target?: string, _features?: string, _replace?: boolean) => {
-          if (url === "http://www.testLink.com" && target === "_blank")
-            return windowMockRef.object;
-          else
-            return null;
-        };
-        wrapper.update();
+        spy = sinon.stub(window, "open");
+        spy.returns(moq.Mock.ofType<Window>().object);
 
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "test display label with link www.testLink.com"), "www.testLink.com");
-        windowMockRef.verify((x) => x.focus(), moq.Times.once());
+        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+      });
+
+      it("opens new window if the link text was found in record with http schema", async () => {
+        await TestUtils.flushAsyncOperations();
+        spy = sinon.stub(window, "open");
+        spy.returns(moq.Mock.ofType<Window>().object);
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with link http://www.testLink.com"), "http://www.testLink.com");
+        expect(spy).to.be.calledOnceWith("http://www.testLink.com", "_blank");
+      });
+
+      it("opens new window if the link text was found in record with https schema", async () => {
+        await TestUtils.flushAsyncOperations();
+        spy = sinon.stub(window, "open");
+        spy.returns(moq.Mock.ofType<Window>().object);
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "test display label with link https://www.testLink.com"), "https://www.testLink.com");
+        expect(spy).to.be.calledOnceWith("https://www.testLink.com", "_blank");
       });
 
       it("does not open new window if there were no url links", async () => {
-        const testMatcher = (_displayValue: string) => [];
-        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-        testRecord.links = {
-          matcher: testMatcher,
-        };
-        dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: faker.random.word(),
-          description: faker.random.words(),
-          categories: [...categories],
-          records: {
-            Group_1: [testRecord],
-            Group_2: [records[0]],
-          },
-        });
-        const wrapper = mount(<PropertyGrid
-          orientation={Orientation.Horizontal}
-          dataProvider={dataProvider} />);
-
-        const windowMockRef = moq.Mock.ofType<Window>();
         await TestUtils.flushAsyncOperations();
-        window.open = (_url?: string, _target?: string, _features?: string, _replace?: boolean) => {
-          return windowMockRef.object;
-        };
-        wrapper.update();
+        spy = sinon.stub(window, "open");
+        spy.returns(moq.Mock.ofType<Window>().object);
 
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "test display label with someLink@mail.com otherLink@mail.com"), "not an url link");
-
         testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
           "CADID1", "0000 0005 00E0 02D8",
           "test display label with someLink@mail.com otherLink@mail.com"), "testEmail@mail.com");
-        windowMockRef.verify((x) => x.focus(), moq.Times.never());
-        windowMockRef.verify((x) => x.focus(), moq.Times.never());
-      });
-
-      it("does not open new window if there were no url links", async () => {
-        const testMatcher = (_displayValue: string) => [];
-        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-        testRecord.links = {
-          matcher: testMatcher,
-        };
-        dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: faker.random.word(),
-          description: faker.random.words(),
-          categories: [...categories],
-          records: {
-            Group_1: [testRecord],
-            Group_2: [records[0]],
-          },
-        });
-        const wrapper = mount(<PropertyGrid
-          orientation={Orientation.Horizontal}
-          dataProvider={dataProvider} />);
-
-        const windowMockRef = moq.Mock.ofType<Window>();
-        await TestUtils.flushAsyncOperations();
-        window.open = (_url?: string, _target?: string, _features?: string, _replace?: boolean) => {
-          return windowMockRef.object;
-        };
-        wrapper.update();
-
-        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
-          "CADID1", "0000 0005 00E0 02D8",
-          "test display label with someLink@mail.com otherLink@mail.com"), "not an url link");
-        windowMockRef.verify((x) => x.focus(), moq.Times.never());
+        sinon.assert.notCalled(spy);
       });
 
       it("sets location href value to value got in the text if it is an email link", async () => {
-        const testMatcher = (_displayValue: string) => [];
-        const testRecord = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-        testRecord.links = {
-          matcher: testMatcher,
-        };
-        dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: faker.random.word(),
-          description: faker.random.words(),
-          categories: [...categories],
-          records: {
-            Group_1: [testRecord],
-            Group_2: [records[0]],
-          },
-        });
-        const wrapper = mount(<PropertyGrid
-          orientation={Orientation.Horizontal}
-          dataProvider={dataProvider} />);
-
         await TestUtils.flushAsyncOperations();
         wrapper.update();
 
@@ -332,6 +284,16 @@ describe("PropertyGrid", () => {
           "CADID1", "0000 0005 00E0 02D8",
           "test display label with testLink.com someLink@mail.com otherLink@mail.com"), "someOtherLink@mail.com");
         expect(locationMockRef.object.href).to.be.equal("mailto:someOtherLink@mail.com");
+      });
+
+      it("sets location href value to value got in the text if it is an ProjectWise Explorer link", async () => {
+        await TestUtils.flushAsyncOperations();
+        wrapper.update();
+
+        testRecord.links!.onClick!(TestUtils.createPrimitiveStringProperty(
+          "CADID1", "0000 0005 00E0 02D8",
+          "pw://server.bentley.com:datasource-01/Documents/ProjectName"), "pw://server.bentley.com:datasource-01/Documents/ProjectName");
+        expect(locationMockRef.object.href).to.be.equal("pw://server.bentley.com:datasource-01/Documents/ProjectName");
       });
     });
 

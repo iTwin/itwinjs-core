@@ -173,6 +173,7 @@ public;HitPriority
 public;HitSource
 beta;IconDefinition
 alpha;IconEditorParams 
+beta;IconListEditorParams 
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
@@ -266,7 +267,7 @@ beta;PrimitiveValue
 alpha;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
-beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
+beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams
 beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue

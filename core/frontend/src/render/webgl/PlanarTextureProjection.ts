@@ -32,7 +32,7 @@ export class PlanarTextureProjection {
         range.extendTransformedPoint(textureTransform, frustum.points[i]);
     }
   }
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, tileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4 } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewFrustum, _tileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4 } {
     const textureZ = texturePlane.getNormalRef();
     const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -64,9 +64,9 @@ export class PlanarTextureProjection {
     if (heightRange)
       PlanarTextureProjection.extendRangeForFrustumPlaneIntersection(range, texturePlane, textureTransform, frustum, heightRange.high);
 
-    if (!tileTree.isBackgroundMap) {
+    // if (!tileTree.isBackgroundMap) {
       // TBD... intersecting the range of the tile tree may reduce the projected area and improve fidelity for planar classifiers.
-    }
+    // }
 
     range.low.x = Math.min(range.low.x, textureDepth - .0001);    // Always include classification plane.
     range.high.x = Math.max(range.high.x, textureDepth + .0001);

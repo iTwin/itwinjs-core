@@ -5055,7 +5055,6 @@ export interface TileTreeProps {
     contentRange?: Range3dProps;
     formatVersion?: number;
     id: string;
-    isBackgroundMap?: boolean;
     location: TransformProps;
     maxTilesToSkip?: number;
     rootTile: TileProps;

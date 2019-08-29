@@ -47,6 +47,7 @@ import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
 import { Tile } from "./Tile";
+import { Viewport } from "../Viewport";
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
@@ -105,7 +106,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
-  public readonly isBackgroundMap?: boolean;
   // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -115,7 +115,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
-    this.isBackgroundMap = props.isBackgroundMap;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
@@ -226,10 +225,11 @@ export abstract class TileLoader {
   protected get _loadEdges(): boolean { return true; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
-  /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
-   * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
-   */
-  public compareTilePriorities(lhs: Tile, rhs: Tile): number { return lhs.depth - rhs.depth; }
+
+  public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
+    return tile.depth;
+  }
+
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] { return selected; }
@@ -241,8 +241,8 @@ export abstract class TileLoader {
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     return this.loadTileContentFromStream(tile, streamBuffer, isCanceled);
   }
-  public async loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content> {
 
+  public async loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content> {
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
     streamBuffer.curPos = position;
@@ -346,7 +346,6 @@ export namespace TileTree {
     readonly modelId: Id64String;
     readonly maxTilesToSkip?: number;
     readonly yAxisUp?: boolean;
-    readonly isBackgroundMap?: boolean;
     readonly clipVector?: ClipVector;
     readonly contentRange?: ElementAlignedBox3d;
   }
@@ -366,7 +365,6 @@ export namespace TileTree {
       modelId,
       maxTilesToSkip: props.maxTilesToSkip,
       yAxisUp: props.yAxisUp,
-      isBackgroundMap: props.isBackgroundMap,
       contentRange,
     };
   }
