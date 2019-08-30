@@ -2741,6 +2741,15 @@ export abstract class Viewport implements IDisposable {
 
     // ###TODO: Want to record memory used by RenderTarget?
   }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+    if (this.view.refreshForModifiedModels(modelIds))
+      this.invalidateScene();
+  }
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.

@@ -29,11 +29,14 @@ export interface ModelQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
+/** Properties that describe a [GeometricModel]($backend)
+ * @public
+ */
 export interface GeometricModelProps extends ModelProps {
-  /** A Guid that changes whenever the geometry of any element in this model changes. As changesets are created or applied, this
-   * value will always and only change if the geometry of any element in the model changes. In other words, between versions
-   * of the iModel, if this value is the same, you can assume all of the geometry in the model is the same (Note: other properties of elements
-   * may have changed.) If undefined, the state of the geometry is unknown.
+  /**A unique identifier that is updated each time a change affecting the appearance of a geometric element within this model
+   * is committed to the iModel. In other words, between versions of the iModel, if this value is the same, you can
+   * assume the appearance of all of the geometry in the model is the same (Note: other properties of elements may have changed.)
+   * If undefined, the state of the geometry is unknown.
    */
   geometryGuid?: string;
 }

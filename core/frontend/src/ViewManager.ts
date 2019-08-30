@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -397,5 +397,15 @@ export class ViewManager {
     this.cursor = cursor;
     for (const vp of this._viewports)
       vp.setCursor(cursor);
+  }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Call this after editing one or more models, passing in the Ids of those models, to cause new tiles to be generated reflecting the changes.
+   * Pass undefined if you are unsure which models changed (this is less efficient as it discards all tiles for all viewed models in all viewports).
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+    for (const vp of this._viewports)
+      vp.refreshForModifiedModels(modelIds);
   }
 }
