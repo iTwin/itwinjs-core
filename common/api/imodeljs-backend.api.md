@@ -1528,11 +1528,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum: string;
     // @internal (undocumented)
     static readonly className: string;
-    // @alpha
-    static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void;
     identifier: string;
     // @alpha
-    static initPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
+    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };

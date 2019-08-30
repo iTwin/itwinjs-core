@@ -501,7 +501,7 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was inserted.
    */
   protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, this._targetScopeElementId, targetElementId));
+    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId));
   }
 
   /** Record provenance about the source Element for change detection.
@@ -509,9 +509,12 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was updated.
    */
   protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    const sourceAspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, this._targetScopeElementId, targetElementId);
-    ExternalSourceAspect.deleteForElement(this._targetDb, this._targetScopeElementId, targetElementId);
-    this._targetDb.elements.insertAspect(sourceAspectProps);
+    const aspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId);
+    if (aspectProps.id === undefined) {
+      this._targetDb.elements.insertAspect(aspectProps);
+    } else {
+      this._targetDb.elements.updateAspect(aspectProps);
+    }
   }
 
   /** Import matching sub-models into the target IModelDb
