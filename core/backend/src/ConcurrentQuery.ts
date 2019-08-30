@@ -29,25 +29,3 @@ export interface Config {
   /** Read uncommited read for better performance */
   useUncommitedRead?: boolean;
 }
-
-/** Post status for concurrent query manager
- *  @internal
- */
-export enum PostStatus {
-  NotInitialized = 0,
-  Done = 1,
-  QueueSizeExceeded = 2,
-}
-
-/** Poll status for concurrent query manager
- *  @internal
- */
-export enum PollStatus {
-  NotInitialized = 0,
-  Done = 1,
-  Pending = 2,
-  Partial = 3,
-  Timeout = 4,
-  Error = 5,
-  NotFound = 6,
-}

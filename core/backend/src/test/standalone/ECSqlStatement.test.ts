@@ -419,7 +419,7 @@ describe("ECSqlStatement", () => {
         await ecdb.withPreparedStatement(ecsqln, async (stmt: ECSqlStatement) => {
           const nNum: number = 20;
           const nStr: string = "20";
-          const nDt: string = "-4713-01-21T12:00:00Z";
+          const nDt: string = "2019-01-21T12:00:00Z";
           const nHexStr: string = "0x14";
 
           stmt.bindInteger(1, nNum);
@@ -592,7 +592,7 @@ describe("ECSqlStatement", () => {
         await ecdb.withPreparedStatement(ecsqlfooId, async (stmt: ECSqlStatement) => {
           const num: number = 20;
           const str: string = "20";
-          const dt: string = "-4713-01-21T12:00:00Z";
+          const dt: string = "2019-01-21T12:00:00Z";
           const hexStr: string = "0x14";
 
           stmt.bindId(1, hexStr);

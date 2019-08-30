@@ -64,6 +64,7 @@ import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
@@ -2830,7 +2831,7 @@ export class GeoConverter {
 
 // @public
 export class GeometricModel2dState extends GeometricModelState implements GeometricModel2dProps {
-    constructor(props: GeometricModel2dProps, iModel: IModelConnection);
+    constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState);
     // @internal (undocumented)
     readonly asGeometricModel2d: GeometricModel2dState;
     // @internal (undocumented)
@@ -2854,17 +2855,21 @@ export class GeometricModel3dState extends GeometricModelState {
 }
 
 // @public
-export abstract class GeometricModelState extends ModelState {
+export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
+    constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState);
     // @internal (undocumented)
     readonly asGeometricModel: GeometricModelState;
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     createTileTreeReference(view: ViewState): TileTree.Reference;
+    // @internal (undocumented)
+    geometryGuid?: string;
     readonly is2d: boolean;
     abstract readonly is3d: boolean;
     // @internal (undocumented)
     readonly isGeometricModel: boolean;
+    // @internal
     queryModelRange(): Promise<Range3d>;
     // @internal (undocumented)
     readonly treeModelId: Id64String;
@@ -4346,14 +4351,14 @@ export class ModelSelectorState extends ElementState {
 
 // @public
 export class ModelState extends EntityState implements ModelProps {
-    constructor(props: ModelProps, iModel: IModelConnection);
+    constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState);
     readonly asGeometricModel: GeometricModelState | undefined;
     readonly asGeometricModel2d: GeometricModel2dState | undefined;
     readonly asGeometricModel3d: GeometricModel3dState | undefined;
     readonly asSpatialModel: SpatialModelState | undefined;
     // @internal (undocumented)
     static readonly className: string;
-    // @alpha
+    // @internal
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     readonly isGeometricModel: boolean;
     // (undocumented)
@@ -6416,7 +6421,7 @@ export class SpatialLocationModelState extends SpatialModelState {
 
 // @public
 export class SpatialModelState extends GeometricModel3dState {
-    constructor(props: ModelProps, iModel: IModelConnection);
+    constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState);
     // @internal (undocumented)
     readonly asSpatialModel: SpatialModelState;
     // @beta
@@ -6682,8 +6687,6 @@ export class SyncFlags {
     // (undocumented)
     invalidateRenderPlan(): void;
     // (undocumented)
-    invalidateRotatePoint(): void;
-    // (undocumented)
     invalidateScene(): void;
     // (undocumented)
     readonly isRedrawPending: boolean;
@@ -6696,8 +6699,6 @@ export class SyncFlags {
     // (undocumented)
     readonly isValidRenderPlan: boolean;
     // (undocumented)
-    readonly isValidRotatePoint: boolean;
-    // (undocumented)
     readonly isValidScene: boolean;
     // (undocumented)
     setRedrawPending(): void;
@@ -6709,8 +6710,6 @@ export class SyncFlags {
     setValidDecorations(): void;
     // (undocumented)
     setValidRenderPlan(): void;
-    // (undocumented)
-    setValidRotatePoint(): void;
     // (undocumented)
     setValidScene(): void;
 }
@@ -7503,6 +7502,7 @@ export namespace TileTree {
         NotLoaded = 0
     }
     export interface Owner {
+        dispose(): void;
         load(): TileTree | undefined;
         readonly loadStatus: TileTree.LoadStatus;
         readonly tileTree: TileTree | undefined;
@@ -8717,6 +8717,8 @@ export class ViewManager {
     // @internal
     purgeTileTrees(olderThan: BeTimePoint): void;
     // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
+    // @internal
     renderLoop(): void;
     // @internal (undocumented)
     readonly sceneInvalidated: boolean;
@@ -8989,6 +8991,8 @@ export abstract class Viewport implements IDisposable {
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
     // @beta
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
+    // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): void;
     // @internal (undocumented)
     renderFrame(): boolean;
     replaceViewedModels(modelIds: Id64Arg): Promise<void>;
@@ -9180,6 +9184,8 @@ export abstract class ViewState extends ElementState {
     abstract onRenderFrame(_viewport: Viewport): void;
     // @internal
     peekDetail(name: string): any;
+    // @internal
+    refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     // @internal
     removeDetail(name: string): void;
     resetExtentLimits(): void;

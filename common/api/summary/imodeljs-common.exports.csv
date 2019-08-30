@@ -119,6 +119,7 @@ public;GeometricElement2dProps
 public;GeometricElement3dProps 
 public;GeometricElementProps 
 public;GeometricModel2dProps 
+public;GeometricModelProps 
 public;GeometryAppearanceProps
 public;GeometryClass
 public;GeometryParams

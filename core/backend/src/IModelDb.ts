@@ -13,7 +13,8 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority, QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
+  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as os from "os";
@@ -34,7 +35,6 @@ import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost } from "./IModelHost";
-import { PollStatus, PostStatus } from "./ConcurrentQuery";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -52,6 +52,16 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
  * @public
  */
 export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
+
+/** Options for [[IModelDb.Models.updateModel]]
+ * @public
+ */
+export interface UpdateModelOptions extends ModelProps {
+  /** If defined, update the last modify time of the Model */
+  updateLastMod?: boolean;
+  /** If defined, update the GeometryGuid of the Model */
+  geometryChanged?: boolean;
+}
 
 /** Parameters to open an IModelDb
  * @public
@@ -74,7 +84,7 @@ export class OpenParams {
   }
 
   /** Returns true if the OpenParams open a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of an iModel *snapshot*.
+   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot*.
    */
   public get isStandalone(): boolean { return this.syncMode === undefined; }
 
@@ -97,7 +107,7 @@ export class OpenParams {
   public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
 
   /** Create parameters to open a standalone Db
-   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel.
+   * @deprecated use snapshot iModels.
    */
   public static standalone(openMode: OpenMode) { return new OpenParams(openMode); }
   /** Returns true if equal and false otherwise */
@@ -198,6 +208,15 @@ export class IModelDb extends IModel {
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
+  /** @internal */
+  public static performUpgrade(pathname: string) {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
+    if (DbResult.BE_SQLITE_OK === res)
+      nativeDb.closeIModel();
+    return res;
+  }
+
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
@@ -254,7 +273,7 @@ export class IModelDb extends IModel {
    * @param enableTransactions Enable tracking of transactions in this standalone iModel
    * @throws [[IModelError]]
    * @see [[open]], [[openSnapshot]]
-   * @deprecated iModelHub manages the change history of an iModel, so writing changes to a local/unmanaged file doesn't make sense. Callers should migrate to [[open]] or [[openSnapshot]] instead.
+   * @deprecated Callers should migrate to [[open]] or [[openSnapshot]].
    * @internal
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
@@ -336,7 +355,7 @@ export class IModelDb extends IModel {
   }
 
   /** Returns true if this is a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as the confusing concept of *standalone* is being replaced by the more strict concept of a read-only iModel *snapshot*.
+   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot* iModels.
    */
   public get isStandalone(): boolean {
     return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
@@ -352,7 +371,7 @@ export class IModelDb extends IModel {
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    * @see [[closeSnapshot]]
-   * @deprecated The confusing standalone concept is being replaced by the more strict concept of a read-only Snapshot iModel. Callers should migrate to [[closeSnapshot]].
+   * @deprecated standalone has been replaced by snapshot iModels. Callers should migrate to [[closeSnapshot]].
    * @internal
    */
   public closeStandalone(): void {
@@ -590,20 +609,20 @@ export class IModelDb extends IModel {
         resolve({ status: QueryResponseStatus.Done, rows: [] });
       } else {
         const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-        if (postrc.status !== PostStatus.Done)
+        if (postrc.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
           resolve({ status: QueryResponseStatus.PostError, rows: [] });
         const poll = () => {
           if (!this.isOpen) {
             resolve({ status: QueryResponseStatus.Done, rows: [] });
           } else {
             const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-            if (pollrc.status === PollStatus.Done)
+            if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Done)
               resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === PollStatus.Partial)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial)
               resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-            else if (pollrc.status === PollStatus.Timeout)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
               resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-            else if (pollrc.status === PollStatus.Pending)
+            else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
               setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
             else
               resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });
@@ -1263,11 +1282,27 @@ export namespace IModelDb {
       return JSON.parse(json) as T;
     }
 
+    /** Query for the last modified time of the specified Model.
+     * @internal
+     */
+    public queryLastModifiedTime(modelId: Id64String): string {
+      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
+      return this._iModel.withPreparedStatement<string>(sql, (statement) => {
+        statement.bindId("modelId", modelId);
+        if (DbResult.BE_SQLITE_ROW === statement.step()) {
+          return statement.getValue(0).getDateTime();
+        }
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Model ${modelId}`, Logger.logWarning, loggerCategory);
+      });
+    }
+
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel<T extends Model>(modelId: Id64String): T { return this._iModel.constructEntity<T>(this.getModelProps(modelId)); }
+    public getModel<T extends Model>(modelId: Id64String): T {
+      return this._iModel.constructEntity<T>(this.getModelProps(modelId));
+    }
 
     /**
      * Read the properties for a Model as a json string.
@@ -1326,7 +1361,7 @@ export namespace IModelDb {
      * @param props the properties of the model to change
      * @throws [[IModelError]] if unable to update the model.
      */
-    public updateModel(props: ModelProps): void {
+    public updateModel(props: UpdateModelOptions): void {
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(props);
 
@@ -1438,7 +1473,7 @@ export namespace IModelDb {
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
           return statement.getValue(0).getDateTime();
         }
-        throw new IModelError(IModelStatus.InvalidId, "Element not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidId, `Can't get lastMod time for Element ${elementId}`, Logger.logWarning, loggerCategory);
       });
     }
 

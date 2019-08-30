@@ -64,14 +64,12 @@ export class SyncFlags {
   private _scene = false;
   private _renderPlan = false;
   private _controller = false;
-  private _rotatePoint = false;
   private _animationFraction = false;
   private _redrawPending = false;
   public get isValidDecorations(): boolean { return this._decorations; }
   public get isValidScene(): boolean { return this._scene; }
   public get isValidController(): boolean { return this._controller; }
   public get isValidRenderPlan(): boolean { return this._renderPlan; }
-  public get isValidRotatePoint(): boolean { return this._rotatePoint; }
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void {
@@ -89,9 +87,6 @@ export class SyncFlags {
   public invalidateController(): void {
     this._controller = false;
     this.invalidateRenderPlan();
-  }
-  public invalidateRotatePoint(): void {
-    this._rotatePoint = false;
   }
   public invalidateAnimationFraction(): void {
     this._animationFraction = false;
@@ -111,9 +106,6 @@ export class SyncFlags {
   public setValidRenderPlan(): void {
     this._renderPlan = true;
   }
-  public setValidRotatePoint(): void {
-    this._rotatePoint = true;
-  }
   public setValidAnimationFraction(): void {
     this._animationFraction = true;
   }
@@ -125,7 +117,6 @@ export class SyncFlags {
     this._scene = other._scene;
     this._renderPlan = other._renderPlan;
     this._controller = other._controller;
-    this._rotatePoint = other._rotatePoint;
     this._animationFraction = other._animationFraction;
     this._redrawPending = other._redrawPending;
   }
@@ -484,7 +475,7 @@ export class ViewFrustum {
   public frustFraction: number = 1.0;
   /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
   public static nearScaleNonLog24 = 0.0003;
-  /** Maximum fration of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer */
   public static nearScaleLog24 = 1.0E-8;
 
   /** View origin, potentially expanded */
@@ -2749,6 +2740,15 @@ export abstract class Viewport implements IDisposable {
       tree.collectStatistics(stats);
 
     // ###TODO: Want to record memory used by RenderTarget?
+  }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+    if (this.view.refreshForModifiedModels(modelIds))
+      this.invalidateScene();
   }
 }
 

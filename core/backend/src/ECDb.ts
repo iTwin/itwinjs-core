@@ -11,7 +11,6 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
-import { PostStatus, PollStatus } from "./ConcurrentQuery";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -348,7 +347,7 @@ export class ECDb implements IDisposable {
     };
     return new Promise<QueryResponse>((resolve) => {
       const postrc = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!);
-      if (postrc.status !== PostStatus.Done)
+      if (postrc.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
       const poll = () => {
@@ -356,13 +355,13 @@ export class ECDb implements IDisposable {
           resolve({ status: QueryResponseStatus.Done, rows: [] });
         } else {
           const pollrc = this.nativeDb.pollConcurrentQuery(postrc.taskId);
-          if (pollrc.status === PollStatus.Done)
+          if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Done)
             resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollrc.result, reviver) });
-          else if (pollrc.status === PollStatus.Partial)
+          else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial)
             resolve({ status: QueryResponseStatus.Partial, rows: JSON.parse(pollrc.result, reviver) });
-          else if (pollrc.status === PollStatus.Timeout)
+          else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
             resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-          else if (pollrc.status === PollStatus.Pending)
+          else if (pollrc.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
             setTimeout(() => { poll(); }, IModelHost.configuration!.concurrentQuery.pollInterval);
           else
             resolve({ status: QueryResponseStatus.Error, rows: [pollrc.result] });

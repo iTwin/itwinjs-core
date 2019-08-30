@@ -496,7 +496,7 @@ export class SelectTool extends MarkupTool {
     this.markup.selected.emptyAll();
   }
   public onCleanup(): void { this.clearSelect(); }
-  protected showPrompt(): void { this.outputMarkupPrompt("Markup.Select.Prompts.IdentifyMarkup"); }
+  protected showPrompt(): void { this.outputMarkupPrompt("Select.Prompts.IdentifyMarkup"); }
   public onPostInstall() { this.initSelect(); super.onPostInstall(); }
   public onRestartTool(): void { this.initSelect(); }
 

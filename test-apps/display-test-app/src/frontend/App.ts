@@ -162,6 +162,20 @@ class ResizeViewportTool extends Tool {
   }
 }
 
+class RefreshTilesTool extends Tool {
+  public static toolId = "RefreshTiles";
+  public static get maxArgs() { return undefined; }
+
+  public run(changedModelIds?: string[]): boolean {
+    IModelApp.viewManager.refreshForModifiedModels(changedModelIds);
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args);
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -180,6 +194,7 @@ export class DisplayTestApp {
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
     ResizeViewportTool.register(svtToolNamespace);
+    RefreshTilesTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
