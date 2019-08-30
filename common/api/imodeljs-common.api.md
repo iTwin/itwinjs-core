@@ -1847,9 +1847,14 @@ export interface GeometricElementProps extends ElementProps {
 }
 
 // @public
-export interface GeometricModel2dProps extends ModelProps {
+export interface GeometricModel2dProps extends GeometricModelProps {
     // (undocumented)
     globalOrigin?: XYProps;
+}
+
+// @public
+export interface GeometricModelProps extends ModelProps {
+    geometryGuid?: string;
 }
 
 // @public

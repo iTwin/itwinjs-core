@@ -15,6 +15,9 @@
     },
     "ResizeViewport": {
       "keyin": "dta resize viewport"
+    },
+    "RefreshTiles": {
+      "keyin": "dta refresh tiles"
     }
   }
 }

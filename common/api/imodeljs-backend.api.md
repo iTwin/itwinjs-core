@@ -65,6 +65,7 @@ import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
@@ -1687,8 +1688,12 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 
 // @public
 export class GeometricModel extends Model {
+    // @internal
+    constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    geometryGuid?: string;
     queryExtents(): AxisAlignedBox3d;
 }
 
@@ -1910,6 +1915,8 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
+    // @internal (undocumented)
+    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -1984,7 +1991,9 @@ export namespace IModelDb {
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
         insertModel(props: ModelProps): Id64String;
-        updateModel(props: ModelProps): void;
+        // @internal
+        queryLastModifiedTime(modelId: Id64String): string;
+        updateModel(props: UpdateModelOptions): void;
     }
     // @internal
     export enum TileContentState {
@@ -2667,15 +2676,19 @@ export class Model extends Entity implements ModelProps {
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static readonly className: string;
+    delete(): void;
     // (undocumented)
     getJsonProperty(name: string): any;
     getUserProperties(namespace: string): any;
+    insert(): string;
     // (undocumented)
     isPrivate: boolean;
     // (undocumented)
     isTemplate: boolean;
     // (undocumented)
-    readonly jsonProperties: any;
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
     // (undocumented)
     readonly modeledElement: RelatedElement;
     // (undocumented)
@@ -2700,6 +2713,7 @@ export class Model extends Entity implements ModelProps {
     setUserProperties(nameSpace: string, value: any): void;
     // @internal
     toJSON(): ModelProps;
+    update(): void;
 }
 
 // @public
@@ -3453,6 +3467,12 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     static readonly className: string;
     // (undocumented)
     recipe?: RelatedElement;
+}
+
+// @public
+export interface UpdateModelOptions extends ModelProps {
+    geometryChanged?: boolean;
+    updateLastMod?: boolean;
 }
 
 // @public

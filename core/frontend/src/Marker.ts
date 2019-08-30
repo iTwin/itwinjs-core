@@ -44,8 +44,7 @@ function getMinScaleViewW(vp: Viewport): number {
   if (undefined === zHigh)
     return 0.0;
   origin.plusScaled(direction, zHigh, origin);
-  const viewPt = vp.worldToView4d(origin);
-  return viewPt.w;
+  return vp.worldToView4d(origin).w;
 }
 
 /** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
@@ -146,7 +145,7 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Make a new Marker at the same position and size as this Marker.
-   * Thew new Marker will share the world location and size objects, but will be otherwise blank.
+   * The new Marker will share the world location and size objects, but will be otherwise blank.
    */
   public static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T {
     const out = new (this as any)(other.worldLocation, other.size, ...args) as T;
@@ -284,8 +283,8 @@ export class Marker implements CanvasDecoration {
     }
   }
 
-  /** Set the position and ddd this Marker to the supplied DecorateContext, if it's visible.
-   * This method should be called from your implementation of [[Decorator.decorate]]. It will set this Marker's position based the
+  /** Set the position and add this Marker to the supplied DecorateContext, if it's visible.
+   * This method should be called from your implementation of [[Decorator.decorate]]. It will set this Marker's position based on the
    * Viewport from the context, and add this this Marker to the supplied DecorateContext.
    * @param context The DecorateContext for the Marker
    */
@@ -300,10 +299,11 @@ export class Marker implements CanvasDecoration {
  * @public
  */
 export class Cluster<T extends Marker> {
+  public readonly markers: T[];
   public readonly rect: ViewRect;
   public clusterMarker?: Marker;
 
-  public constructor(public readonly markers: T[]) {
+  public constructor(markers: T[]) {
     this.rect = markers[0].rect;
     this.markers = markers;
   }

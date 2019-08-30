@@ -6,7 +6,7 @@
 
 import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, GeometricModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
@@ -28,8 +28,8 @@ export class ModelState extends EntityState implements ModelProps {
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
-  constructor(props: ModelProps, iModel: IModelConnection) {
-    super(props, iModel);
+  constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState) {
+    super(props, iModel, state);
     this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
     this.name = props.name ? props.name : "";
     this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
@@ -63,8 +63,8 @@ export class ModelState extends EntityState implements ModelProps {
   public get asSpatialModel(): SpatialModelState | undefined { return undefined; }
 
   /**
-   * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
-   * @alpha
+   * Return the tool tip for this model. This is called only if the hit does not return a tooltip.
+   * @internal
    */
   public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
 }
@@ -73,11 +73,18 @@ export class ModelState extends EntityState implements ModelProps {
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
  */
-export abstract class GeometricModelState extends ModelState {
+export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   /** @internal */
   public static get className() { return "GeometricModel"; }
+  /** @internal */
+  public geometryGuid?: string;
 
   private _modelRange?: Range3d;
+
+  constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState) {
+    super(props, iModel, state);
+    this.geometryGuid = props.geometryGuid;
+  }
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
@@ -91,9 +98,9 @@ export abstract class GeometricModelState extends ModelState {
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
 
-  /** @internal */
-
-  /** Query for the union of the ranges of all the elements in this GeometricModel. */
+  /** Query for the union of the ranges of all the elements in this GeometricModel.
+   * @internal
+   */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
       const ranges = await this.iModel.models.queryModelRanges(this.id);
@@ -212,8 +219,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   /** @internal */
   public readonly globalOrigin: Point2d;
 
-  constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
-    super(props, iModel);
+  constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState) {
+    super(props, iModel, state);
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
@@ -263,8 +270,8 @@ export class SpatialModelState extends GeometricModel3dState {
   /** @internal */
   public get asSpatialModel(): SpatialModelState { return this; }
 
-  public constructor(props: ModelProps, iModel: IModelConnection) {
-    super(props, iModel);
+  public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
+    super(props, iModel, state);
     if (undefined !== this.jsonProperties.tilesetUrl)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
