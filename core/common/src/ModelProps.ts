@@ -33,8 +33,8 @@ export interface ModelQueryParams extends EntityQueryParams {
  * @public
  */
 export interface GeometricModelProps extends ModelProps {
-  /**A unique identifier that is updated each time a change affecting the appearance of a geometric element within this model
-   * is committed to the iModel. In other words, between versions of the iModel, if this value is the same, you can
+  /** A unique identifier that is updated each time a change affecting the appearance of a geometric element within this model
+   * is committed to the iModel. In other words, between versions of the iModel, if this value is the same you can
    * assume the appearance of all of the geometry in the model is the same (Note: other properties of elements may have changed.)
    * If undefined, the state of the geometry is unknown.
    */
