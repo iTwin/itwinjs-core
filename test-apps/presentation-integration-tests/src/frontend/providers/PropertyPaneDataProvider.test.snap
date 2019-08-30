@@ -253,14 +253,14 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "Mìsçêllãñéòús",
-      "name": "Miscellaneous",
+      "label": "Gèñêrãl",
+      "name": "General",
     },
   ],
   "description": "Physical Object",
   "label": "Physical Object [0-39]",
   "records": Object {
-    "Miscellaneous": Array [
+    "General": Array [
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,
@@ -1510,14 +1510,14 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "Mìsçêllãñéòús",
-      "name": "Miscellaneous",
+      "label": "Gèñêrãl",
+      "name": "General",
     },
   ],
   "description": "Physical Model",
   "label": "Properties_60InstancesWithUrl2",
   "records": Object {
-    "Miscellaneous": Array [
+    "General": Array [
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,
@@ -1547,8 +1547,8 @@ Object {
     },
     Object {
       "expand": false,
-      "label": "Mìsçêllãñéòús",
-      "name": "Miscellaneous",
+      "label": "Gèñêrãl",
+      "name": "General",
     },
   ],
   "description": "Physical Model",
@@ -1584,7 +1584,7 @@ Object {
         },
       },
     ],
-    "Miscellaneous": Array [
+    "General": Array [
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,
