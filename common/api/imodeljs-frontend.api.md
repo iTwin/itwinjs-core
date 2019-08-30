@@ -3214,6 +3214,15 @@ export interface IconEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.Icon;
 }
 
+// @beta
+export interface IconListEditorParams extends BasePropertyEditorParams {
+    iconValue: string;
+    iconValues: string[];
+    numColumns?: number;
+    // (undocumented)
+    type: PropertyEditorParamTypes.IconListData;
+}
+
 // @public
 export class IconSprites {
     static emptyAll(): void;
@@ -4983,7 +4992,7 @@ export interface PropertyEditorInfo {
 }
 
 // @beta
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams;
 
 // @beta
 export enum PropertyEditorParamTypes {
@@ -4997,6 +5006,8 @@ export enum PropertyEditorParamTypes {
     CustomFormattedNumber = 11,
     // (undocumented)
     Icon = 2,
+    // (undocumented)
+    IconListData = 12,
     // (undocumented)
     InputEditorSize = 3,
     // (undocumented)
@@ -5735,6 +5746,8 @@ export class ScreenViewport extends Viewport {
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
     animateFrustumChange(start: Frustum, end: Frustum, animationTime?: BeDuration, fromUndo?: ViewStateUndo): void;
+    // @internal
+    animateToCurrent(start: Frustum, animationTime?: BeDuration): void;
     readonly canvas: HTMLCanvasElement;
     changeView(view: ViewState): void;
     clearViewUndo(): void;
@@ -7255,7 +7268,8 @@ export abstract class TileLoader {
     adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string;
     // (undocumented)
     protected readonly _batchType: BatchType;
-    compareTilePriorities(lhs: Tile, rhs: Tile): number;
+    // (undocumented)
+    computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
@@ -7315,8 +7329,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     readonly is2d: boolean;
     // (undocumented)
     readonly is3d: boolean;
-    // (undocumented)
-    readonly isBackgroundMap?: boolean;
     readonly lastSelectedTime: BeTimePoint;
     // (undocumented)
     readonly loader: TileLoader;
@@ -7376,8 +7388,6 @@ export namespace TileTree {
         readonly iModel: IModelConnection;
         // (undocumented)
         readonly is3d: boolean;
-        // (undocumented)
-        readonly isBackgroundMap?: boolean;
         // (undocumented)
         readonly loader: TileLoader;
         // (undocumented)
@@ -9354,8 +9364,6 @@ export class WebMapTileProps implements TileProps {
 export class WebMapTileTreeProps implements TileTreeProps {
     constructor(groundBias: number, modelId: Id64String, heightRange?: Range1d, maxTilesToSkip?: number);
     id: string;
-    // (undocumented)
-    isBackgroundMap: boolean;
     location: TransformProps;
     // (undocumented)
     maxTilesToSkip: number;

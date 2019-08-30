@@ -22,6 +22,19 @@ import { GeometryQuery } from "./GeometryQuery";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 
+/** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
+ *  - "arc" => [[Arc3d]]
+ *  - "lineSegment" => [[LineSegment3d]]
+ *  - "lineString" => [[LineString3d]]
+ *  - "bsplineCurve" => [[BSplineCurve3dBase]] which is an intermediate class implemented by [[BSplineCurve3d and BsplineCurve3dH]]
+ *  - "bezierCurve" => [[BezierCurveBase]] which is an intermediate class implemented by [[BezierCurve3d and BezierCurve3dH]]
+ *  - "transitionSpiral" => [[TransitionSpiral3d]]
+ *  - "curveChainWithDistanceIndex" => [[CurveChainWithDistanceIndex]]
+ *
+ * @public
+ */
+export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex";
+
 /** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
  * @public
  */
@@ -50,6 +63,9 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  * @public
  */
 export abstract class CurvePrimitive extends GeometryQuery {
+  public readonly geometryCategory = "curvePrimitive";
+  public abstract readonly curvePrimitiveType: CurvePrimitiveType;
+
   protected constructor() { super(); }
   /**
    * data attached during stroking for facets.

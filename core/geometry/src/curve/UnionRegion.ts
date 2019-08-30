@@ -19,6 +19,8 @@ import { AnyCurve } from "./CurveChain";
  * @public
  */
 export class UnionRegion extends CurveCollection {
+  public readonly curveCollectionType = "unionRegion";
+
   /** test if `other` is a `UnionRegion` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof UnionRegion; }
   /** collection of Loop and ParityRegion children. */

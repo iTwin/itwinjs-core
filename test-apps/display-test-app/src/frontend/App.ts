@@ -16,6 +16,7 @@ import {
   SelectionTool,
   SnapMode,
   TileAdmin,
+  Tool,
   ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
@@ -134,6 +135,33 @@ class SVTSelectionTool extends SelectionTool {
   }
 }
 
+class ResizeViewportTool extends Tool {
+  public static toolId = "ResizeViewport";
+  public static get minArgs() { return 2; }
+  public static get maxArgs() { return 2; }
+
+  public run(width: number, height: number): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp)
+      return true;
+
+    const dW = width - vp.canvas.width;
+    const dH = height - vp.canvas.height;
+    window.resizeTo(window.outerWidth + dW, window.outerHeight + dH);
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const width = parseInt(args[0], 10);
+    const height = parseInt(args[1], 10);
+    if (!Number.isNaN(width) && !Number.isNaN(height))
+      this.run(width, height);
+
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   public static tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -151,6 +179,7 @@ export class DisplayTestApp {
     DrawingAidTestTool.register(svtToolNamespace);
     MarkupSelectTestTool.register(svtToolNamespace);
     SVTSelectionTool.register(svtToolNamespace);
+    ResizeViewportTool.register(svtToolNamespace);
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 

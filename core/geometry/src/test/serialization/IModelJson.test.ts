@@ -92,7 +92,7 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
     if (noisy)
       console.log(prettyPrint(imData));
     if (doParse) {
-      const g1 = IModelJson.Reader.parse(imData);
+      const g1 = IModelJson.Reader.parse(imData) as GeometryQuery;
       if (!g1 || !g.isAlmostEqual(g1)) {
         ck.announceError("IModelJson round trip error", g, prettyPrint(imData), prettyPrint(g1));
         console.log("*********** round trip data *********");
@@ -102,7 +102,7 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
         console.log("=====================================");
 
         const imData1 = IModelJson.Writer.toIModelJson(g);
-        const g2 = IModelJson.Reader.parse(imData1);
+        const g2 = IModelJson.Reader.parse(imData1) as GeometryQuery;
         g.isAlmostEqual(g2);
       }
       if (noisy)
@@ -120,7 +120,7 @@ function exerciseIModelJSonArray(ck: Checker, g: any[], doParse: boolean = false
   if (noisy)
     console.log(prettyPrint(imData));
   if (doParse) {
-    const g1 = IModelJson.Reader.parse(imData);
+    const g1 = IModelJson.Reader.parse(imData) as any[];
     if (ck.testTrue(Array.isArray(g1), "[] returns as array", g1)) {
       if (ck.testExactNumber(g.length, g1.length, "Array lengths", g, g1)) {
         for (let i = 0; i < g.length; i++) {

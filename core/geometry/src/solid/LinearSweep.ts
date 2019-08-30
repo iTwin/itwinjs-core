@@ -27,6 +27,8 @@ import { SolidPrimitive } from "./SolidPrimitive";
  * @public
  */
 export class LinearSweep extends SolidPrimitive {
+  public readonly solidPrimitiveType = "linearSweep";
+
   private _contour: SweepContour;
   private _direction: Vector3d;
 

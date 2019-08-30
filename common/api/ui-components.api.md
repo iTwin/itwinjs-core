@@ -1284,6 +1284,50 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
     onHueChange?: ((hue: HSVColor) => void) | undefined;
 }
 
+// @alpha
+export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEditorState> implements TypeEditor {
+    constructor(props: PropertyEditorProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    getValue(): string;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
+    // @internal
+    constructor(props: IconPickerProps);
+    // @internal (undocumented)
+    static defaultProps: Partial<IconPickerProps>;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    disabled?: boolean;
+    dropDownTitle?: string;
+    icon: string;
+    icons: string[];
+    numColumns: number;
+    onIconChange?: ((icon: string) => void) | undefined;
+    readonly?: boolean;
+}
+
+// @alpha
+export class IconPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    readonly reactElement: React.ReactNode;
+}
+
 // @public
 export interface IImageLoader {
     load: (item: any) => Image | undefined;

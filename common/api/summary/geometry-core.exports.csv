@@ -11,8 +11,10 @@ public;AnnounceCurvePrimitive = (cp: CurvePrimitive) => void
 public;AnnounceDrapePanel = (linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface, facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number) => any
 public;AnnounceNumberNumber = (a0: number, a1: number) => void
 public;AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void
-public;AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection
+public;AnyCurve = CurvePrimitive | CurveCollection
+public;AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd
 public;AnyRegion = Loop | ParityRegion | UnionRegion
+public;AnySolidPrimitive = Box | Cone | Sphere | LinearSweep | RotationalSweep | RuledSweep | TorusPipe
 public;Arc3d 
 public;ArcBlendData
 public;ArcVectors
@@ -65,6 +67,7 @@ public;CoordinateXYZ
 public;class CurveChain 
 public;CurveChainWithDistanceIndex 
 public;class CurveCollection 
+public;CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves"
 public;CurveCurve
 public;CurveCurveApproachType
 internal;CurveCurveIntersectXY 
@@ -78,6 +81,7 @@ public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
+public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex"
 public;CurveSearchStatus
 internal;DeepCompare
 internal;Degree2PowerPolynomial
@@ -89,6 +93,7 @@ internal;GaussMapper
 public;Geometry
 public;class GeometryHandler
 public;class GeometryQuery
+public;GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf"
 internal;GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any
 internal;GraphNodeFunction = (graph: HalfEdgeGraph, node: HalfEdge) => boolean
 public;GrowableBlockedArray
@@ -192,6 +197,7 @@ public;Segment1d
 public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 
+public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe"
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex

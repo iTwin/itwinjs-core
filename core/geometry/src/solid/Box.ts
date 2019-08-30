@@ -27,6 +27,8 @@ import { LineString3d } from "../curve/LineString3d";
  * @public
  */
 export class Box extends SolidPrimitive {
+  public readonly solidPrimitiveType = "box";
+
   private _localToWorld: Transform;
   private _baseX: number;
   private _baseY: number;

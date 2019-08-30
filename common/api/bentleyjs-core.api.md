@@ -996,6 +996,7 @@ export class PerfLogger implements IDisposable {
 export class PriorityQueue<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T>;
     constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);
+    append(value: T): T;
     // (undocumented)
     protected _array: T[];
     clear(): void;

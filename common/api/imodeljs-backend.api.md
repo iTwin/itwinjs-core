@@ -1610,10 +1610,12 @@ export class FunctionalPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class FunctionalSchema extends Schema {
-    // (undocumented)
+    // @deprecated (undocumented)
     static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }

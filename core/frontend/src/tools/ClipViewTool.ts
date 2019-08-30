@@ -1318,9 +1318,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     const startFrustum = this._clipView.getFrustum();
     const newFrustum = startFrustum.clone();
     newFrustum.multiply(rotateTransform);
-    this._clipView.animateFrustumChange(startFrustum, newFrustum);
     this._clipView.view.setupFromFrustum(newFrustum);
     this._clipView.synchWithView(true);
+    this._clipView.animateToCurrent(startFrustum);
     return true;
   }
 

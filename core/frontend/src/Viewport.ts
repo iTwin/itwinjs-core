@@ -2928,11 +2928,21 @@ export class ScreenViewport extends Viewport {
     this.setAnimator(new FrustumAnimator(animationTime, this, start, end, fromUndo));
   }
 
+  /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
+   * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
+   * a different location and call synchWithView, then call this method. After the animation the viewport
+   * frustum will be restored to its current location.
+   * @internal
+   */
+  public animateToCurrent(start: Frustum, animationTime?: BeDuration) {
+    this.animateFrustumChange(start, this.getFrustum(), animationTime, this.view.saveForUndo());
+  }
+
   protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
     options = options === undefined ? {} : options;
     this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
     if (options.animateFrustumChange === undefined || options.animateFrustumChange)
-      this.animateFrustumChange(startFrust, this.getFrustum(CoordSystem.World, false), options.animationTime);
+      this.animateToCurrent(startFrust, options.animationTime);
   }
 
   /** @internal */
@@ -3052,7 +3062,7 @@ export class ScreenViewport extends Viewport {
     this.updateChangeFlags(this.view);
     const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
     this.setupFromView();
-    if (undefined !== animationTime && undefined !== startFrust)
+    if (undefined !== startFrust)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime, this._currentBaseline);
   }
 

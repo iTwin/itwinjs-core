@@ -678,9 +678,9 @@ export class AccuDrawShortcuts {
     const newFrustum = startFrustum.clone();
     newFrustum.multiply(rotateTransform);
 
-    vp.animateFrustumChange(startFrustum, newFrustum);
     vp.view.setupFromFrustum(newFrustum);
     vp.synchWithView(true);
+    vp.animateToCurrent(startFrustum);
 
     accudraw.refreshDecorationsAndDynamics();
   }

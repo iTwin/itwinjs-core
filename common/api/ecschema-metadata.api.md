@@ -597,9 +597,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
     protected createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
-    protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
     // (undocumented)
     protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+    protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
     // (undocumented)
     protected createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
     // (undocumented)
@@ -619,6 +619,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getAllBaseClassesSync(): Iterable<AnyClass>;
     // (undocumented)
     getBaseClassSync(): ECClass | undefined;
+    getCustomAttributes(): Promise<CustomAttributeSet>;
+    getCustomAttributesSync(): CustomAttributeSet;
     getInheritedProperty(name: string): Promise<Property | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
     getProperties(resetCache?: boolean): Promise<Property[]>;

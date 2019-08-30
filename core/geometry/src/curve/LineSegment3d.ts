@@ -33,6 +33,8 @@ import { Clipper } from "../clipping/ClipUtils";
  * @public
  */
 export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
+  public readonly curvePrimitiveType = "lineSegment";
+
   /** test if `other` is of class `LineSegment3d` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof LineSegment3d; }
   private _point0: Point3d;

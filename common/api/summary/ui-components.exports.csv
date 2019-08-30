@@ -108,6 +108,10 @@ beta;HighlightingEngine
 public;HorizontalAlignment = "left" | "center" | "right" | "justify"
 beta;HueSlider 
 beta;HueSliderProps 
+alpha;IconEditor 
+alpha;IconPickerButton 
+alpha;IconPickerProps 
+alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
 public;ImageFileFormat = "png" | "jpg" | "jpge"

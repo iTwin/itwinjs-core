@@ -184,6 +184,17 @@ class CloneWithExpandedLineStrings extends CloneCurvesContext {
     return context._result;
   }
 }
+
+/** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
+ *    - "loop" => [[Loop]]
+ *    - "path" => [[Path]]
+ *    - "unionRegion" => [[UnionRegion]]
+ *    - "parityRegion" => [[ParityRegion]]
+ *    - "bagOfCurves" => [[BagOfCurves]]
+ * @public
+ */
+export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves";
+
 /**
  * * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
  *   * `CurveChain` is a (non-instantiable) intermediate class for a sequence of `CurvePrimitive ` joining head-to-tail.  The two instantiable forms of `CurveChain` are
@@ -195,6 +206,10 @@ class CloneWithExpandedLineStrings extends CloneCurvesContext {
  * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
+  public readonly geometryCategory = "curveCollection";
+  /** Type discriminator. */
+  public abstract readonly curveCollectionType: CurveCollectionType;
+
   /* tslint:disable:variable-name no-empty*/
   /**  Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
@@ -406,6 +421,8 @@ export abstract class CurveChain extends CurveCollection {
  * @public
  */
 export class BagOfCurves extends CurveCollection {
+  public readonly curveCollectionType = "bagOfCurves";
+
   /** test if `other` is an instance of `BagOfCurves` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof BagOfCurves; }
   /** Array of children.

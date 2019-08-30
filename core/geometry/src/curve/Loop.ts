@@ -20,6 +20,8 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * @public
  */
 export class Loop extends CurveChain {
+  public readonly curveCollectionType = "loop";
+
   /** tag value that can be set to true for user code to mark inner and outer loops. */
   public isInner: boolean = false;
   /** test if `other` is a `Loop` */
