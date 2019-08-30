@@ -424,10 +424,13 @@ export class RenderCommands {
 
     if (RenderPass.Translucent === pass && this._addTranslucentAsOpaque) {
       switch (command.renderOrder) {
-        case RenderOrder.PlanarSurface:
+        case RenderOrder.PlanarLitSurface:
+        case RenderOrder.PlanarUnlitSurface:
+        case RenderOrder.BlankingRegion:
           pass = RenderPass.OpaquePlanar;
           break;
-        case RenderOrder.Surface:
+        case RenderOrder.LitSurface:
+        case RenderOrder.UnlitSurface:
           pass = RenderPass.OpaqueGeneral;
           break;
         default:
@@ -442,10 +445,13 @@ export class RenderCommands {
         if (this._opaqueOverrides && haveFeatureOverrides) {
           let opaquePass: RenderPass;
           switch (command.renderOrder) {
-            case RenderOrder.PlanarSurface:
+            case RenderOrder.PlanarLitSurface:
+            case RenderOrder.PlanarUnlitSurface:
+            case RenderOrder.BlankingRegion:
               opaquePass = RenderPass.OpaquePlanar;
               break;
-            case RenderOrder.Surface:
+            case RenderOrder.LitSurface:
+            case RenderOrder.UnlitSurface:
               opaquePass = RenderPass.OpaqueGeneral;
               break;
             default:

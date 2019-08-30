@@ -395,8 +395,12 @@ export class SurfaceGeometry extends MeshGeometry {
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
-    else
-      return this.isPlanar ? RenderOrder.PlanarSurface : RenderOrder.Surface;
+
+    let order = this.isLit ? RenderOrder.LitSurface : RenderOrder.UnlitSurface;
+    if (this.isPlanar)
+      order = order | RenderOrder.PlanarBit;
+
+    return order;
   }
 
   public getColor(target: Target) {

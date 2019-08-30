@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Prevent ambient occlusion from being applied to unlit geometry.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
