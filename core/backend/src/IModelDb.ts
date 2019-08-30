@@ -216,6 +216,7 @@ export class IModelDb extends IModel {
       nativeDb.closeIModel();
     return res;
   }
+
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.

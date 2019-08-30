@@ -28,8 +28,8 @@ export class ModelState extends EntityState implements ModelProps {
   public readonly isPrivate: boolean;
   public readonly isTemplate: boolean;
 
-  constructor(props: ModelProps, iModel: IModelConnection) {
-    super(props, iModel);
+  constructor(props: ModelProps, iModel: IModelConnection, state?: ModelState) {
+    super(props, iModel, state);
     this.modeledElement = RelatedElement.fromJSON(props.modeledElement)!;
     this.name = props.name ? props.name : "";
     this.parentModel = Id64.fromJSON(props.parentModel)!; // NB! Must always match the model of the modeledElement!
@@ -81,6 +81,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
   private _modelRange?: Range3d;
 
+  constructor(props: GeometricModelProps, iModel: IModelConnection, state?: GeometricModelState) {
+    super(props, iModel, state);
+    this.geometryGuid = props.geometryGuid;
+  }
+
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
   /** @internal */
@@ -93,9 +98,9 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   /** @internal */
   public get treeModelId(): Id64String { return this.id; }
 
-  /** @internal */
-
-  /** Query for the union of the ranges of all the elements in this GeometricModel. */
+  /** Query for the union of the ranges of all the elements in this GeometricModel.
+   * @internal
+   */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
       const ranges = await this.iModel.models.queryModelRanges(this.id);
@@ -214,8 +219,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
   /** @internal */
   public readonly globalOrigin: Point2d;
 
-  constructor(props: GeometricModel2dProps, iModel: IModelConnection) {
-    super(props, iModel);
+  constructor(props: GeometricModel2dProps, iModel: IModelConnection, state?: GeometricModel2dState) {
+    super(props, iModel, state);
     this.globalOrigin = Point2d.fromJSON(props.globalOrigin);
   }
 
@@ -265,8 +270,8 @@ export class SpatialModelState extends GeometricModel3dState {
   /** @internal */
   public get asSpatialModel(): SpatialModelState { return this; }
 
-  public constructor(props: ModelProps, iModel: IModelConnection) {
-    super(props, iModel);
+  public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
+    super(props, iModel, state);
     if (undefined !== this.jsonProperties.tilesetUrl)
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
   }
