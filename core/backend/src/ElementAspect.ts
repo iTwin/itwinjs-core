@@ -132,11 +132,12 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
 
   /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
    * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
+   * @param targetDb The target iModel where this ExternalSourceAspect will be persisted.
    * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
    * @param targetElementId The optional Id of the Element that will own the ExternalSourceAspect. If not provided, it will be set to Id64.invalid.
    * @alpha
    */
-  public static initPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
+  public static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
     const sourceElementHash: string = sourceElement.computeHash();
     const aspectProps: ExternalSourceAspectProps = {
       classFullName: this.classFullName,
@@ -147,24 +148,14 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
       checksum: sourceElementHash,
       version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
     };
-    return aspectProps;
-  }
-
-  /** Delete matching ExternalSourceAspects. Must match Kind, Scope, and owning ElementId.
-   * @param targetDb The IModelDb
-   * @param targetScopeElementId Only consider ExternalSourceAspects from a particular source (scoped by this Element in the target IModelDb).
-   * @param targetElementId Only consider ExternalSourceAspects owned by this Element.
-   * @alpha
-   */
-  public static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void {
-    const sql = `SELECT ECInstanceId FROM ${this.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind='${ExternalSourceAspect.Kind.Element}'`;
-    targetDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    const sql = `SELECT ECInstanceId FROM ${this.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
+    aspectProps.id = targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
       statement.bindId("elementId", targetElementId);
       statement.bindId("scopeId", targetScopeElementId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        targetDb.elements.deleteAspect(statement.getValue(0).getId());
-      }
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
     });
+    return aspectProps;
   }
 }
 

@@ -207,7 +207,10 @@ export abstract class ViewState extends ElementState {
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
-  /** Get the RenderSchedule.Script from the displayStyle of this viewState */
+  /**
+   * Get the RenderSchedule.Script from the displayStyle of this viewState
+   * @internal
+   */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
 
   /** Determine whether this ViewState exactly matches another. */

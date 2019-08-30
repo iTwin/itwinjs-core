@@ -270,8 +270,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/wms-plugin-example",
+      "packageName": "wms-plugin-example",
       "projectFolder": "plugins/wms",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "iot-demo",
+      "projectFolder": "plugins/iot-demo",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
