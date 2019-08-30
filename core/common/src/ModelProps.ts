@@ -30,6 +30,11 @@ export interface ModelQueryParams extends EntityQueryParams {
 }
 
 export interface GeometricModelProps extends ModelProps {
+  /** A Guid that changes whenever the geometry of any element in this model changes. As changesets are created or applied, this
+   * value will always and only change if the geometry of any element in the model changes. In other words, between versions
+   * of the iModel, if this value is the same, you can assume all of the geometry in the model is the same (Note: other properties of elements
+   * may have changed.) If undefined, the state of the geometry is unknown.
+   */
   geometryGuid?: string;
 }
 

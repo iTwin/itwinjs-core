@@ -475,7 +475,7 @@ export class ViewFrustum {
   public frustFraction: number = 1.0;
   /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
   public static nearScaleNonLog24 = 0.0003;
-  /** Maximum fration of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer */
   public static nearScaleLog24 = 1.0E-8;
 
   /** View origin, potentially expanded */

@@ -6,7 +6,7 @@
 
 import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { BatchType, GeometricModel2dProps, ModelProps, GeometricModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { IModelTile } from "./tile/IModelTile";
@@ -63,8 +63,8 @@ export class ModelState extends EntityState implements ModelProps {
   public get asSpatialModel(): SpatialModelState | undefined { return undefined; }
 
   /**
-   * Return the tool tip for this element.  This is called only if the hit  element (or decorators) do not return a tooltip.
-   * @alpha
+   * Return the tool tip for this model. This is called only if the hit does not return a tooltip.
+   * @internal
    */
   public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
 }
@@ -73,9 +73,11 @@ export class ModelState extends EntityState implements ModelProps {
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  * @public
  */
-export abstract class GeometricModelState extends ModelState {
+export abstract class GeometricModelState extends ModelState implements GeometricModelProps {
   /** @internal */
   public static get className() { return "GeometricModel"; }
+  /** @internal */
+  public geometryGuid?: string;
 
   private _modelRange?: Range3d;
 

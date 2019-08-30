@@ -21,7 +21,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, SpatialModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, SpatialModelState, GeometricModel3dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -1596,9 +1596,8 @@ export class SpatialViewState extends ViewState3d {
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
       const model = this.iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
-      if (undefined !== model3d)
-        func(model3d);
+      if (undefined !== model && undefined !== model.asGeometricModel3d)
+        func(model as GeometricModel3dState);
     }
   }
 
@@ -1732,9 +1731,8 @@ export abstract class ViewState2d extends ViewState {
   public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);
-    const model2d = undefined !== model ? model.asGeometricModel2d : undefined;
-    if (undefined !== model2d)
-      func(model2d);
+    if (undefined !== model && undefined !== model.asGeometricModel2d)
+      func(model as GeometricModel2dState);
   }
 
   /** @internal */

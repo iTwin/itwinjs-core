@@ -44,8 +44,7 @@ function getMinScaleViewW(vp: Viewport): number {
   if (undefined === zHigh)
     return 0.0;
   origin.plusScaled(direction, zHigh, origin);
-  const viewPt = vp.worldToView4d(origin);
-  return viewPt.w;
+  return vp.worldToView4d(origin).w;
 }
 
 /** A Marker is a [[CanvasDecoration]], whose position follows a fixed location in world space.
