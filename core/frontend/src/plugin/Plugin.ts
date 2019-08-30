@@ -81,7 +81,7 @@ export abstract class Plugin {
    */
   public resolveResourceUrl(relativeUrl: string): string {
     if (!this._loader)
-      throw (new Error("The register method must be called prior to using the i18n member of Plugin."));
+      throw new Error("The register method must be called prior to using the resolveRelativeUrl method of Plugin.");
 
     return this._loader.resolveResourceUrl(relativeUrl);
   }
@@ -94,7 +94,7 @@ export abstract class Plugin {
       return this._i18n;
 
     if (!this._loader)
-      throw (new Error("The register method must be called prior to using the i18n member of Plugin."));
+      throw new Error("The register method must be called prior to using the i18n member of Plugin.");
 
     return (this._i18n = this._loader.getI18n());
   }
@@ -409,7 +409,8 @@ export class PluginAdmin {
 
   // @internal
   public static addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin) {
-    PluginAdmin._pendingPlugins.set(pluginRootName, pendingPlugin);
+    const pluginNameLC = pluginRootName.toLowerCase();
+    PluginAdmin._pendingPlugins.set(pluginNameLC, pendingPlugin);
   }
 
   // @internal
@@ -420,11 +421,12 @@ export class PluginAdmin {
 
    // @internal
   public static getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined {
-    // strip off .js if necessary
-    const plugin = PluginAdmin._registeredPlugins.get(pluginName);
+    // lowercase name.
+    const pluginNameLC = pluginName.toLowerCase();
+    const plugin = PluginAdmin._registeredPlugins.get(pluginNameLC);
     if (plugin)
       return Promise.resolve(plugin);
-    const pluginPromise = PluginAdmin._pendingPlugins.get(pluginName);
+    const pluginPromise = PluginAdmin._pendingPlugins.get(pluginNameLC);
     if (pluginPromise) {
       return pluginPromise.promise;
     }
@@ -501,10 +503,11 @@ export class PluginAdmin {
       }
     }
 
-    const pendingPlugin = PluginAdmin._pendingPlugins.get(pluginRoot);
+    const pluginRootLC = pluginRoot.toLowerCase();
+    const pendingPlugin = PluginAdmin._pendingPlugins.get(pluginRootLC);
     if (undefined !== pendingPlugin) {
       // it has been loaded (or at least we have started to load it) already. If it is registered, call its reload method. (Otherwise reload called when we're done the initial load)
-      const registeredPlugin = PluginAdmin._registeredPlugins.get(pluginRoot);
+      const registeredPlugin = PluginAdmin._registeredPlugins.get(pluginRootLC);
       if (registeredPlugin) {
         registeredPlugin.onExecute(args);
       }
@@ -557,18 +560,21 @@ export class PluginAdmin {
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
   public static register(plugin: Plugin): string[] | undefined {
-    PluginAdmin._registeredPlugins.set(plugin.name, plugin);
+    const pluginNameLC = plugin.name.toLowerCase();
+    PluginAdmin._registeredPlugins.set(pluginNameLC, plugin);
 
     // log successful load after plugin is registered.
     Logger.logInfo(loggerCategory, plugin.name + " registered");
 
     // retrieve the args we saved in the pendingPlugin.
     let args: string[] | undefined;
-    const pendingPlugin = PluginAdmin._pendingPlugins.get(plugin.name);
+    const pendingPlugin = PluginAdmin._pendingPlugins.get(pluginNameLC);
     if (pendingPlugin) {
       pendingPlugin.resolve!(plugin);
       plugin.loader = pendingPlugin.loader;
       args = pendingPlugin.args;
+    } else {
+      throw new Error ("Pending Plugin not found.");
     }
 
     if (!args)

@@ -1,7 +1,7 @@
 {
-  "name": "wms-plugin-example",
+  "name": "iot-demo",
   "version": "1.0.0",
-  "description": "Demonstration WMS Server",
+  "description": "IoT Demonstration",
   "main": "index.js",
   "scripts": {
     "build": "buildIModelJsModule",
@@ -11,14 +11,10 @@
     "cover": "",
     "docs": ""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/imodeljs/wms-example-plugin.git"
-  },
   "keywords": [
     "iModel",
     "BIM",
-    "wms",
+    "iot",
     "plugin"
   ],
   "author": {
@@ -26,10 +22,6 @@
     "url": "http://www.bentley.com"
   },
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/imodeljs/wms-example-plugin/issues"
-  },
-  "homepage": "https://github.com/imodeljs/wms-example-plugin#readme",
   "iModelJs": {
     "buildModule": {
       "type": "plugin",
@@ -42,8 +34,8 @@
       "webpack": {
         "build": "./lib/build",
         "dest": "./lib/plugin",
-        "entry": "./lib/wmsPlugin.js",
-        "bundleName": "wmsPlugin"
+        "entry": "./lib/iotDemo.js",
+        "bundleName": "iotDemo"
       },
       "pseudoLocalize": {
         "source": "./lib/build/locales/en",

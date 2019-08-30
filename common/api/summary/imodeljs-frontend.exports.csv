@@ -284,6 +284,7 @@ public;class RenderGraphic
 internal;RenderMemory
 internal;RenderPlan
 beta;class RenderPlanarClassifier 
+internal;RenderScheduleState
 internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem

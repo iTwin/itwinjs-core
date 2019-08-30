@@ -5406,6 +5406,136 @@ export abstract class RenderPlanarClassifier implements IDisposable {
     abstract dispose(): void;
 }
 
+// @internal (undocumented)
+export namespace RenderScheduleState {
+    // (undocumented)
+    export class ColorEntry extends TimelineEntry implements RenderSchedule.ColorEntryProps {
+        constructor(props: RenderSchedule.ColorEntryProps);
+        // (undocumented)
+        value: {
+            red: number;
+            green: number;
+            blue: number;
+        };
+    }
+    // (undocumented)
+    export class CuttingPlaneEntry extends TimelineEntry implements RenderSchedule.CuttingPlaneEntryProps {
+        constructor(props: RenderSchedule.CuttingPlaneEntryProps);
+        // (undocumented)
+        value: RenderSchedule.CuttingPlaneProps;
+    }
+    // (undocumented)
+    export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
+        // (undocumented)
+        batchId: number;
+        // (undocumented)
+        colorTimeline?: ColorEntry[];
+        // (undocumented)
+        readonly containsAnimationBatches: boolean;
+        // (undocumented)
+        readonly containsFeatureOverrides: boolean;
+        // (undocumented)
+        currentClip?: RenderClipVolume;
+        // (undocumented)
+        cuttingPlaneTimeline?: CuttingPlaneEntry[];
+        // (undocumented)
+        readonly duration: Range1d;
+        // (undocumented)
+        elementIds: Id64String[];
+        // (undocumented)
+        static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline;
+        // (undocumented)
+        getAnimationClip(time: number, interval: Interval): RenderClipVolume | undefined;
+        // (undocumented)
+        getAnimationTransform(time: number, interval: Interval): Transform | undefined;
+        // (undocumented)
+        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]): void;
+        // (undocumented)
+        getVisibilityOverride(time: number, interval: Interval): number;
+        // (undocumented)
+        readonly isValid: boolean;
+        // (undocumented)
+        transformTimeline?: TransformEntry[];
+        // (undocumented)
+        visibilityTimeline?: VisibilityEntry[];
+    }
+    // (undocumented)
+    export class Interval {
+        constructor(index0?: number, index1?: number, fraction?: number);
+        // (undocumented)
+        fraction: number;
+        // (undocumented)
+        index0: number;
+        // (undocumented)
+        index1: number;
+        // (undocumented)
+        init(index0: number, index1: number, fraction: number): void;
+    }
+    // (undocumented)
+    export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
+        // (undocumented)
+        containsAnimationBatches: boolean;
+        // (undocumented)
+        containsFeatureOverrides: boolean;
+        // (undocumented)
+        readonly duration: Range1d;
+        // (undocumented)
+        elementTimelines: ElementTimeline[];
+        // (undocumented)
+        static fromJSON(json?: RenderSchedule.ModelTimelineProps): ModelTimeline;
+        // (undocumented)
+        getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number): void;
+        // (undocumented)
+        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
+        // (undocumented)
+        modelId: Id64String;
+    }
+    // (undocumented)
+    export class Script {
+        constructor(displayStyleId: Id64String, iModel: IModelConnection);
+        // (undocumented)
+        readonly containsAnimationBatches: boolean;
+        // (undocumented)
+        readonly containsFeatureOverrides: boolean;
+        // (undocumented)
+        displayStyleId: Id64String;
+        // (undocumented)
+        readonly duration: Range1d;
+        // (undocumented)
+        static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined;
+        // (undocumented)
+        getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined;
+        // (undocumented)
+        getModelAnimationId(modelId: Id64String): Id64String | undefined;
+        // (undocumented)
+        getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number): void;
+        // (undocumented)
+        iModel: IModelConnection;
+        // (undocumented)
+        modelTimelines: ModelTimeline[];
+    }
+    // (undocumented)
+    export class TimelineEntry implements RenderSchedule.TimelineEntryProps {
+        constructor(props: RenderSchedule.TimelineEntryProps);
+        // (undocumented)
+        interpolation: number;
+        // (undocumented)
+        time: number;
+    }
+    // (undocumented)
+    export class TransformEntry extends TimelineEntry implements RenderSchedule.TransformEntryProps {
+        constructor(props: RenderSchedule.TransformEntryProps);
+        // (undocumented)
+        value: RenderSchedule.TransformProps;
+    }
+    // (undocumented)
+    export class VisibilityEntry extends TimelineEntry implements RenderSchedule.VisibilityEntryProps {
+        constructor(props: RenderSchedule.VisibilityEntryProps);
+        // (undocumented)
+        value: number;
+    }
+}
+
 // @internal
 export abstract class RenderSolarShadowMap implements IDisposable {
     // (undocumented)
@@ -9055,6 +9185,7 @@ export abstract class ViewState extends ElementState {
     resetExtentLimits(): void;
     // @internal (undocumented)
     abstract saveForUndo(): ViewStateUndo;
+    // @internal
     readonly scheduleScript: RenderScheduleState.Script | undefined;
     setAspectRatioSkew(val: number): void;
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
