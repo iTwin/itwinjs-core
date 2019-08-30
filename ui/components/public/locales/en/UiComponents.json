@@ -42,7 +42,10 @@
   "timeline": {
     "expand": "Expand",
     "minimize": "Minimize",
-    "repeat": "Repeat"
+    "repeat": "Repeat",
+    "slow": "Speed: slow",
+    "medium": "Speed: medium",
+    "fast": "Speed: fast"
   },
   "month": {
     "long": {

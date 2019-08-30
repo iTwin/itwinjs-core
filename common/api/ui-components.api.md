@@ -2131,6 +2131,8 @@ export interface ScrubberProps extends CommonProps {
     // (undocumented)
     onUpdate?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
+    showTime?: boolean;
+    // (undocumented)
     startDate?: Date;
     // (undocumented)
     totalDuration: number;
