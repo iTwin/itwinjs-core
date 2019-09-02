@@ -286,7 +286,7 @@ export class HubUtility {
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, pathname, "", undefined, 10 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { path: pathname });
     return iModel.id!;
   }
 
@@ -456,7 +456,7 @@ export class HubUtility {
     }
 
     // Create a new iModel
-    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, undefined, `Description for ${iModelName}`, undefined, 2 * 60 * 1000);
+    const iModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for ${iModelName}` });
     return iModel.wsgId;
   }
 }
@@ -489,7 +489,7 @@ class TestIModelHubProject {
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;
-    return client.iModels.create(requestContext, projectId, params.name, params.seedFile, params.description, params.tracker);
+    return client.iModels.create(requestContext, projectId, params.name, { path: params.seedFile, description: params.description, progressCallback: params.tracker });
   }
   public async deleteIModel(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<void> {
     const client = this.iModelHubClient;

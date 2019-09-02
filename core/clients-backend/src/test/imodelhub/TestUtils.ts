@@ -666,7 +666,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   }
 
   const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, contextId, name, pathName, "", undefined, 240000);
+  return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {

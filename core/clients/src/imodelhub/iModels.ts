@@ -13,9 +13,9 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { addSelectFileAccessKey, InstanceIdQuery } from "./Query";
+import * as deepAssign from "deep-assign";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
-const iModelTemplateEmpty = "Empty";
 
 /**
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
@@ -237,6 +237,81 @@ export class IModelQuery extends InstanceIdQuery {
 }
 
 /**
+ * Create an iModel by cloning another.
+ * @beta
+ */
+export interface CloneIModelTemplate {
+    /** Source iModel's Id. */
+    imodelId: string;
+    /** Id of the [[ChangeSet]] on source iModel that should be used as the baseline version. */
+    changeSetId?: string;
+}
+
+/**
+ * Create an iModel from an empty file.
+ * @beta
+ */
+export type EmptyIModelTemplate = "Empty";
+const iModelTemplateEmpty: EmptyIModelTemplate = "Empty";
+
+/**
+ * Options used when creating an [[HubIModel]] with [[IModelHandler.create]] or [[IModelsHandler.create]].
+ * @beta
+ */
+export interface IModelCreateOptions {
+    /** iModel seed file path. If not defined, iModel will be created from template. */
+    path?: string;
+    /** Description of the iModel on the Hub. */
+    description?: string;
+    /** Callback for tracking progress. */
+    progressCallback?: (progress: ProgressInfo) => void;
+    /**
+     * Time to wait for iModel initialization. When it times out the initialization will continue, but the promise will be rejected.
+     * Default is 2 minutes.
+     */
+    timeOutInMilliseconds?: number;
+    /** Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default. */
+    template?: CloneIModelTemplate | EmptyIModelTemplate;
+}
+
+/**
+ * Provider for default IModelCreateOptions, used by IModelHandler and IModelsHandler to set defaults.
+ * @internal
+ */
+export class DefaultIModelCreateOptionsProvider {
+    protected _defaultOptions: IModelCreateOptions;
+    /**  Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
+    constructor() {
+        this._defaultOptions = {
+            timeOutInMilliseconds: 120000,
+        };
+    }
+
+    /**
+     * Augments options with the provider's default values. The options passed in override any defaults where necessary.
+     * @param options Options that should be augmented.
+     */
+    public async assignOptions(options: IModelCreateOptions): Promise<void> {
+        const clonedOptions: IModelCreateOptions = Object.assign({}, options);
+        deepAssign(options, this._defaultOptions);
+        deepAssign(options, clonedOptions); // ensure the supplied options override the defaults
+        if (!options.template) // this assignment works incorrectly through deepAssign
+            options.template = iModelTemplateEmpty;
+        return Promise.resolve();
+    }
+
+    /**
+     * Formats iModel template value as a string.
+     * @param options Options that have the template value.
+     */
+    public templateToString(options: IModelCreateOptions): string | undefined {
+        if (!options.template || options.template === iModelTemplateEmpty)
+            return options.template;
+        return `${options.template.imodelId}:${options.template.changeSetId || ""}`;
+    }
+}
+
+/**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
  * @beta
@@ -245,6 +320,7 @@ export class IModelsHandler {
     private _handler: IModelBaseHandler;
     private _fileHandler?: FileHandler;
     private _seedFileHandler: SeedFileHandler;
+    private static _defaultCreateOptionsProvider: DefaultIModelCreateOptionsProvider;
 
     /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for WSG requests.
@@ -389,55 +465,27 @@ export class IModelsHandler {
         return seedFiles[0].initializationState!;
     }
 
-    /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-     * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
+    /**
+     * Augment update options with defaults returned by the DefaultIModelCreateOptionsProvider. The options passed in by clients override any defaults where necessary.
+     * @param options Options the caller wants to augment with the defaults.
+     * @returns Promise resolves after the defaults are setup.
+     */
+    private async setupOptionDefaults(options: IModelCreateOptions): Promise<void> {
+        if (!IModelsHandler._defaultCreateOptionsProvider)
+            IModelsHandler._defaultCreateOptionsProvider = new DefaultIModelCreateOptionsProvider();
+        return IModelsHandler._defaultCreateOptionsProvider.assignOptions(options);
+    }
+
+    /**
+     * Wait until the iModel is initialized.
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
-     * @param name Name of the iModel on the Hub.
-     * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
-     * @param description Description of the iModel on the Hub.
-     * @param progressCallback Callback for tracking progress.
-     * @param timeOutInMiliseconds Time to wait for iModel initialization.
-     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     * @param imodel iModel instance that will be returned if initialization is successful.
+     * @param timeOutInMilliseconds Maximum time to wait for the initialization.
      */
-    public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string,
-        description?: string, progressCallback?: (progress: ProgressInfo) => void,
-        timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
+    private async waitForInitializion(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
         requestContext.enter();
-        Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
-        ArgumentCheck.defined("requestContext", requestContext);
-        ArgumentCheck.validGuid("contextId", contextId);
-        ArgumentCheck.defined("name", name);
-
-        const imodelFromTemplate = !path;
-
-        if (typeof window !== "undefined")
-            return Promise.reject(IModelHubClientError.browser());
-
-        if (!this._fileHandler)
-            return Promise.reject(IModelHubClientError.fileHandler());
-
-        if (!!path && (!this._fileHandler.exists(path) || this._fileHandler.isDirectory(path)))
-            return Promise.reject(IModelHubClientError.fileNotFound());
-
-        const imodelTemplate = imodelFromTemplate ? iModelTemplateEmpty : undefined;
-        const imodel = await this.createIModelInstance(requestContext, contextId, name, description, imodelTemplate);
-        requestContext.enter();
-
-        if (imodelFromTemplate) {
-            return imodel;
-        }
-
-        try {
-            await this._seedFileHandler.uploadSeedFile(requestContext, imodel.id!, path!, description, progressCallback);
-        } catch (err) {
-            await this.delete(requestContext, contextId, imodel.id!);
-            return Promise.reject(err);
-        }
-        requestContext.enter();
-
-        const errorMessage = "Cannot upload SeedFile " + path;
+        const errorMessage = "iModel initialization failed";
         const retryDelay = timeOutInMilliseconds / 10;
         for (let retries = 10; retries > 0; --retries) {
             try {
@@ -466,6 +514,58 @@ export class IModelsHandler {
 
         Logger.logWarning(loggerCategory, errorMessage);
         return Promise.reject(IModelHubClientError.initializationTimeout());
+    }
+
+    /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+     * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
+     * @param requestContext The client request context.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
+     * @param name Name of the iModel on the Hub.
+     * @param createOptions Optional arguments for iModel creation.
+     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
+        requestContext.enter();
+        Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
+        ArgumentCheck.defined("requestContext", requestContext);
+        ArgumentCheck.validGuid("contextId", contextId);
+        ArgumentCheck.defined("name", name);
+
+        createOptions = createOptions || {};
+        await this.setupOptionDefaults(createOptions);
+
+        if (createOptions.path)
+            createOptions.template = undefined;
+
+        if (typeof window !== "undefined")
+            return Promise.reject(IModelHubClientError.browser());
+
+        if (!this._fileHandler)
+            return Promise.reject(IModelHubClientError.fileHandler());
+
+        if (!!createOptions.path && (!this._fileHandler.exists(createOptions.path) || this._fileHandler.isDirectory(createOptions.path)))
+            return Promise.reject(IModelHubClientError.fileNotFound());
+
+        const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
+        const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template);
+        requestContext.enter();
+
+        if (createOptions.template === iModelTemplateEmpty) {
+            return imodel;
+        }
+
+        if (!createOptions.template) {
+            try {
+                await this._seedFileHandler.uploadSeedFile(requestContext, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
+            } catch (err) {
+                await this.delete(requestContext, contextId, imodel.id!);
+                return Promise.reject(err);
+            }
+            requestContext.enter();
+        }
+
+        return this.waitForInitializion(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
     }
 
     /** Update iModel's name and/or description
@@ -595,14 +695,11 @@ export class IModelHandler {
      * @param requestContext The client request context.
      * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
      * @param name Name of the iModel on the Hub.
-     * @param path iModel seed file path. If not defined, iModel will be created from an empty file.
-     * @param description Description of the iModel on the Hub.
-     * @param progressCallback Callback for tracking progress.
-     * @param timeOutInMiliseconds Time to wait for iModel initialization.
+     * @param createOptions Optional arguments for iModel creation.
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
+    public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
         requestContext.enter();
 
         let imodelExists = true;
@@ -619,7 +716,7 @@ export class IModelHandler {
         if (imodelExists)
             return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
 
-        return this._handler.create(requestContext, contextId, name, path, description, progressCallback, timeOutInMilliseconds);
+        return this._handler.create(requestContext, contextId, name, createOptions);
     }
 
     /**

@@ -19,7 +19,7 @@ import { TestChangeSetUtility } from "./TestChangeSetUtility";
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
   if (!iModel)
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, undefined, `Description for iModel`, undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for iModel` });
   assert.isDefined(iModel.wsgId);
   return iModel.wsgId;
 }

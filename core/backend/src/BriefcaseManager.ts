@@ -1723,7 +1723,7 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.BadRequest, "Cannot create an iModel in iModelBank. This is a iModelHub only operation", Logger.logError, loggerCategory, () => ({ contextId, iModelName }));
     }
 
-    const hubIModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, contextId, iModelName, undefined, args.rootSubject.description, undefined, 2 * 60 * 1000);
+    const hubIModel: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, contextId, iModelName, { description: args.rootSubject.description });
     requestContext.enter();
 
     return hubIModel.wsgId;
