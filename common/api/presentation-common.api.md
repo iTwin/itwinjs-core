@@ -1393,7 +1393,9 @@ export interface SchemasSpecification {
 // @public
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
+    navigationPropertyClasses: RelatedClassInfo[];
     pathToPrimaryClass: RelationshipPath;
+    relatedInstanceClasses: RelatedClassInfo[];
     relatedPropertyPaths: RelationshipPath[];
     selectClassInfo: ClassInfo;
 }

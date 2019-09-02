@@ -40,30 +40,36 @@ export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
   };
 };
 
+export const createRandomRelatedClassInfo = (): ec.RelatedClassInfo => {
+  return {
+    sourceClassInfo: createRandomECClassInfo(),
+    targetClassInfo: createRandomECClassInfo(),
+    relationshipInfo: createRandomECClassInfo(),
+    isForwardRelationship: faker.random.boolean(),
+    isPolymorphicRelationship: faker.random.boolean(),
+  };
+};
+
+export const createRandomRelatedClassInfoJSON = (): ec.RelatedClassInfoJSON => {
+  return {
+    sourceClassInfo: createRandomECClassInfoJSON(),
+    targetClassInfo: createRandomECClassInfoJSON(),
+    relationshipInfo: createRandomECClassInfoJSON(),
+    isForwardRelationship: faker.random.boolean(),
+    isPolymorphicRelationship: faker.random.boolean(),
+  };
+};
+
 export const createRandomRelationshipPath = (length: number = 2): ec.RelationshipPath => {
   const path = new Array<ec.RelatedClassInfo>();
-  while (length--) {
-    path.push({
-      sourceClassInfo: createRandomECClassInfo(),
-      targetClassInfo: createRandomECClassInfo(),
-      relationshipInfo: createRandomECClassInfo(),
-      isForwardRelationship: faker.random.boolean(),
-      isPolymorphicRelationship: faker.random.boolean(),
-    });
-  }
+  while (length--)
+    path.push(createRandomRelatedClassInfo());
   return path;
 };
 
 export const createRandomRelationshipPathJSON = (length: number = 2): ec.RelationshipPathJSON => {
   const path = new Array<ec.RelatedClassInfoJSON>();
-  while (length--) {
-    path.push({
-      sourceClassInfo: createRandomECClassInfoJSON(),
-      targetClassInfo: createRandomECClassInfoJSON(),
-      relationshipInfo: createRandomECClassInfoJSON(),
-      isForwardRelationship: faker.random.boolean(),
-      isPolymorphicRelationship: faker.random.boolean(),
-    });
-  }
+  while (length--)
+    path.push(createRandomRelatedClassInfoJSON());
   return path;
 };
