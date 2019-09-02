@@ -395,6 +395,10 @@ export namespace GltfTileIO {
         range.low.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.low);
         range.high.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.high);
       }
+      if (undefined !== pseudoRtcBias) {
+        range.low.addInPlace(pseudoRtcBias);
+        range.high.addInPlace(pseudoRtcBias);
+      }
 
       renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
       if (undefined !== this._returnToCenter || this._yAxisUp || undefined !== transformToRoot) {
