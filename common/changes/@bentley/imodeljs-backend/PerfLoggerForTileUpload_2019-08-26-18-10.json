@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added performance logging for tile upload",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "khanaffan@gmail.com"
+}
