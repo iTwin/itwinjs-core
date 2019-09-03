@@ -43,3 +43,8 @@ ignore: true
   * `Ray3d`
     * `interval = myRay.intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d`
       * return fractions (along the ray `myRay`) where the `myRay` enters and exits a `Range3d`, or null `Range1d` if no in intersection.
+
+## Enhancements to IModelDb.exportGraphics
+
+  * IModelDb.exportGraphics and associated functions are now out of beta and tagged as public.
+  * Added [ExportGraphicsOptions.minBRepFeatureSize]($backend) to improve performance when exporting graphics for breps.
