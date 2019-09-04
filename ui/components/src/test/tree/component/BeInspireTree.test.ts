@@ -337,6 +337,43 @@ describe("BeInspireTree", () => {
           expect(renderer).to.have.callCount(1);
         });
 
+        if (entry.isDelayLoaded) {
+
+          it("requests data from the data provider", async () => {
+            let spy: sinon.SinonSpy;
+            if (typeof dataProvider === "function") {
+              spy = dataProvider = sinon.spy(dataProvider);
+            } else {
+              spy = sinon.spy(dataProvider as any, "getNodes");
+            }
+            tree = new BeInspireTree({
+              dataProvider,
+              mapPayloadToInspireNodeConfig,
+              pageSize: 1,
+            });
+            spy.resetHistory();
+            await tree.reload();
+            expect(spy).to.have.been.called;
+          });
+
+          if (entry.supportsPagination) {
+
+            it("requests data from paginated data provider", async () => {
+              tree = new BeInspireTree({
+                dataProvider,
+                mapPayloadToInspireNodeConfig,
+                pageSize: 1,
+              });
+              await tree.ready;
+              const spy = sinon.spy(dataProvider as any, "getNodes");
+              await tree.reload();
+              expect(spy).to.have.been.called;
+            });
+
+          }
+
+        }
+
       });
 
       describe("auto-expand", () => {
