@@ -86,6 +86,7 @@ Object {
       },
     },
     Object {
+      "autoExpand": false,
       "category": Object {
         "description": "Maxime accusamus aut eligendi voluptas natus.",
         "expand": false,
@@ -521,6 +522,7 @@ Object {
       },
     },
     Object {
+      "autoExpand": false,
       "category": Object {
         "description": "Repellat iure consequatur cumque.",
         "expand": false,

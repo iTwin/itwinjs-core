@@ -46,6 +46,7 @@ Object {
 
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
+  "autoExpand": false,
   "category": Object {
     "description": "Tempora consequuntur quam eveniet distinctio quos labore corporis neque distinctio.",
     "expand": false,
@@ -199,6 +200,7 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
+  "autoExpand": true,
   "category": Object {
     "description": "Est fugit nisi occaecati ea eos maiores distinctio.",
     "expand": true,
@@ -297,6 +299,7 @@ Object {
 
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid serialized JSON 1`] = `
 Object {
+  "autoExpand": false,
   "category": Object {
     "description": "Et rerum saepe odio quidem incidunt blanditiis.",
     "expand": true,

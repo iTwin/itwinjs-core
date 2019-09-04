@@ -100,7 +100,7 @@ describe("Field", () => {
     it("returns true for nested content field", () => {
       const field = new NestedContentField(createRandomCategory(), faker.random.word(), faker.random.words(),
         createRandomPrimitiveTypeDescription(), faker.random.boolean(), faker.random.number(), createRandomECClassInfo(),
-        [], []);
+        [], [], faker.random.boolean());
       expect(field.isNestedContentField());
     });
 
@@ -183,10 +183,10 @@ describe("NestedContentField", () => {
       const field1 = createRandomPrimitiveField();
       const field2 = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [field1]);
+        createRandomECClassInfo(), createRandomRelationshipPath(), [field1], faker.random.boolean());
       const field3 = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [field2]);
+        createRandomECClassInfo(), createRandomRelationshipPath(), [field2], faker.random.boolean());
 
       field2.rebuildParentship(field3);
       expect(field3.parent).to.be.undefined;

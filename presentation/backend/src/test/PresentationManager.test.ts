@@ -793,6 +793,7 @@ describe("PresentationManager", () => {
           } as FieldJSON],
           isReadonly: faker.random.boolean(),
           priority: faker.random.number(),
+          autoExpand: faker.random.boolean(),
         } as NestedContentFieldJSON],
         contentFlags: 0,
       };

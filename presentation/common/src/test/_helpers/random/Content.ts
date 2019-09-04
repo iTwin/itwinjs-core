@@ -76,6 +76,7 @@ export const createRandomNestedFieldJSON = (): NestedContentFieldJSON => ({
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
   nestedFields: [createRandomPrimitiveFieldJSON()],
+  autoExpand: faker.random.boolean(),
 });
 
 export const createRandomDescriptorJSON = (displayType?: string) => {

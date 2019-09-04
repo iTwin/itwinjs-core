@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added autoExpand property to RelatedPropertiesSpecification and NestedContentField",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "Saulius.Skliutas@bentley.com"
+}

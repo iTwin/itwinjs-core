@@ -340,6 +340,7 @@ Object {
       },
     },
     Object {
+      "autoExpand": true,
       "category": Object {
         "description": "Tempore dolorum rerum ut earum corporis molestias quae officia.",
         "expand": false,

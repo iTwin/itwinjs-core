@@ -5032,6 +5032,8 @@ export enum PropertyEditorParamTypes {
 // @beta
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
+    // (undocumented)
+    autoExpand?: boolean;
     copyWithNewValue(newValue: PropertyValue): PropertyRecord;
     // (undocumented)
     description?: string;
