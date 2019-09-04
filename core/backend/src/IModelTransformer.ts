@@ -61,6 +61,7 @@ export class IModelTransformer {
 
   /** Dispose any native resources associated with this IModelImporter. */
   public dispose(): void {
+    Logger.logTrace(loggerCategory, "dispose()");
     this._importContext.dispose();
   }
 
@@ -300,18 +301,18 @@ export class IModelTransformer {
    */
   protected shouldExcludeElement(sourceElement: Element): boolean {
     if (this._excludedElementIds.has(sourceElement.id)) {
-      Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by Id`);
+      Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementForLogger(sourceElement)} by Id`);
       return true;
     }
     if (sourceElement.category) {
       if (this._excludedElementCategoryIds.has(sourceElement.category)) {
-        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by Category [${this.formatIdForLogger(sourceElement.category)}]`);
+        Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementForLogger(sourceElement)} by Category [${this.formatIdForLogger(sourceElement.category)}]`);
         return true;
       }
     }
     for (const excludedElementClass of this._excludedElementClasses) {
       if (sourceElement instanceof excludedElementClass) {
-        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementForLogger(sourceElement)} by class`);
+        Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementForLogger(sourceElement)} by class`);
         return true;
       }
     }
@@ -349,7 +350,7 @@ export class IModelTransformer {
   /** Mark the specified Element as skipped so its processing can be deferred. */
   protected skipElement(sourceElement: Element): void {
     this._skippedElementIds.add(sourceElement.id);
-    Logger.logInfo(loggerCategory, `(Source) Skipped ${this.formatElementForLogger(sourceElement)}`);
+    Logger.logInfo(loggerCategory, `[Source] Skipped ${this.formatElementForLogger(sourceElement)}`);
   }
 
   /** Transform the specified sourceElement into ElementProps for the target iModel.
@@ -370,7 +371,7 @@ export class IModelTransformer {
    */
   protected insertElement(targetElementProps: ElementProps): Id64String {
     const targetElementId: Id64String = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
-    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatElementForLogger(targetElementProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatElementForLogger(targetElementProps)}`);
     return targetElementId;
   }
 
@@ -383,7 +384,7 @@ export class IModelTransformer {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
     this._targetDb.elements.updateElement(targetElementProps);
-    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementForLogger(targetElementProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatElementForLogger(targetElementProps)}`);
   }
 
   /** Delete the specified Element from the target iModel.
@@ -392,7 +393,7 @@ export class IModelTransformer {
    */
   protected deleteElement(targetElement: Element): void {
     this._targetDb.elements.deleteElement(targetElement.id);
-    Logger.logInfo(loggerCategory, `(Target) Deleted element ${this.formatElementForLogger(targetElement)}`);
+    Logger.logInfo(loggerCategory, `[Target] Deleted element ${this.formatElementForLogger(targetElement)}`);
   }
 
   /** Returns true if the detected potential delete of the specified target Element should happen.
@@ -442,8 +443,8 @@ export class IModelTransformer {
     if (sourceElementId === IModel.rootSubjectId) {
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
     }
-    Logger.logTrace(loggerCategory, `--> importElement(${this.formatIdForLogger(sourceElementId)})`);
     const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
+    Logger.logTrace(loggerCategory, `[Source] importElement() for ${this.formatElementForLogger(sourceElement)})`);
     if (this.shouldExcludeElement(sourceElement)) {
       this.onElementExcluded(sourceElement);
       return; // excluding an element will also exclude its children or sub-models
@@ -489,7 +490,7 @@ export class IModelTransformer {
   public importChildElements(sourceElementId: Id64String): void {
     const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
     if (childElementIds.length > 0) {
-      Logger.logTrace(loggerCategory, `--> importChildElements(${this.formatIdForLogger(sourceElementId)})`);
+      Logger.logTrace(loggerCategory, `[Source] importChildElements(${this.formatIdForLogger(sourceElementId)})`);
     }
     for (const childElementId of childElementIds) {
       this.importElement(childElementId);
@@ -521,7 +522,7 @@ export class IModelTransformer {
    * @param modeledElementClass The [Element.classFullName]($backend) to use to query for which sub-models to import.
    */
   public importModels(modeledElementClass: string): void {
-    Logger.logTrace(loggerCategory, `--> importModels(${modeledElementClass})`);
+    Logger.logTrace(loggerCategory, `[Source] importModels(${modeledElementClass})`);
     const sql = `SELECT ECInstanceId FROM ${modeledElementClass}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -534,8 +535,8 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   public importModel(sourceModeledElementId: Id64String): void {
-    Logger.logTrace(loggerCategory, `--> importModel(${this.formatIdForLogger(sourceModeledElementId)})`);
     const modeledElement: Element = this._sourceDb.elements.getElement({ id: sourceModeledElementId, wantGeometry: true });
+    Logger.logTrace(loggerCategory, `[Source] importModel() for ${this.formatElementForLogger(modeledElement)}`);
     if (this.shouldExcludeElement(modeledElement)) {
       this.onElementExcluded(modeledElement);
     } else {
@@ -574,7 +575,7 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import the contents of this model from the source IModelDb.
    */
   private importModelContents(sourceModeledElementId: Id64String): void {
-    Logger.logTrace(loggerCategory, `--> importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
+    Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", sourceModeledElementId);
@@ -636,7 +637,7 @@ export class IModelTransformer {
    */
   protected insertModel(targetModelProps: ModelProps): void {
     this._targetDb.models.insertModel(targetModelProps);
-    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatModelForLogger(targetModelProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatModelForLogger(targetModelProps)}`);
   }
 
   /** Update the transformed Model within the target iModel.
@@ -645,12 +646,12 @@ export class IModelTransformer {
    */
   protected updateModel(targetModelProps: ModelProps): void {
     this._targetDb.models.updateModel(targetModelProps);
-    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatModelForLogger(targetModelProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatModelForLogger(targetModelProps)}`);
   }
 
   /** Import elements that were skipped in a prior pass */
   public importSkippedElements(): void {
-    Logger.logTrace(loggerCategory, `--> importSkippedElements(), numSkipped=${this._skippedElementIds.size}`);
+    Logger.logTrace(loggerCategory, `[Source] importSkippedElements(), numSkipped=${this._skippedElementIds.size}`);
     this._skippedElementIds.forEach((elementId: Id64String) => {
       this._skippedElementIds.delete(elementId);
       this.importElement(elementId);
@@ -664,7 +665,7 @@ export class IModelTransformer {
    * @param baseRelClassFullName The specified base relationship class.
    */
   public importRelationships(baseRelClassFullName: string): void {
-    Logger.logTrace(loggerCategory, `--> importRelationships(${baseRelClassFullName})`);
+    Logger.logTrace(loggerCategory, `[Source] importRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -677,7 +678,7 @@ export class IModelTransformer {
 
   /** Import a relationship from the source iModel into the target iModel. */
   public importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void {
-    Logger.logTrace(loggerCategory, `--> importRelationship(${sourceRelClassFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
+    Logger.logTrace(loggerCategory, `[Source] importRelationship(${sourceRelClassFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
     const sourceRelationship: Relationship = this._sourceDb.relationships.getInstance(sourceRelClassFullName, sourceRelInstanceId);
     if (this.shouldExcludeRelationship(sourceRelationship)) {
       this.onRelationshipExcluded(sourceRelationship);
@@ -715,7 +716,7 @@ export class IModelTransformer {
   protected shouldExcludeRelationship(sourceRelationship: Relationship): boolean {
     for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
       if (sourceRelationship instanceof excludedRelationshipClass) {
-        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatRelationshipForLogger(sourceRelationship)} by class`);
+        Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatRelationshipForLogger(sourceRelationship)} by class`);
         return true;
       }
     }
@@ -746,7 +747,7 @@ export class IModelTransformer {
    */
   protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String {
     const targetRelInstanceId: Id64String = this._targetDb.relationships.insertInstance(targetRelationshipProps);
-    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
     return targetRelInstanceId;
   }
 
@@ -758,7 +759,7 @@ export class IModelTransformer {
       throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
     }
     this._targetDb.relationships.updateInstance(targetRelationshipProps);
-    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
   }
 
   /** Returns true if a change within a Relationship is detected.
@@ -902,7 +903,7 @@ export class IModelTransformer {
   protected shouldExcludeElementAspect(sourceElementAspect: ElementAspect): boolean {
     for (const excludedElementAspectClass of this._excludedElementAspectClasses) {
       if (sourceElementAspect instanceof excludedElementAspectClass) {
-        Logger.logInfo(loggerCategory, `(Source) Excluded ${this.formatElementAspectForLogger(sourceElementAspect)} by class`);
+        Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementAspectForLogger(sourceElementAspect)} by class`);
         return true;
       }
     }
@@ -933,7 +934,7 @@ export class IModelTransformer {
    */
   protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void {
     this._targetDb.elements.insertAspect(targetElementAspectProps);
-    Logger.logInfo(loggerCategory, `(Target) Inserted ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
   }
 
   /** Update the transformed ElementAspect in the target iModel.
@@ -942,7 +943,7 @@ export class IModelTransformer {
    */
   protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void {
     this._targetDb.elements.updateAspect(targetElementAspectProps);
-    Logger.logInfo(loggerCategory, `(Target) Updated ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
+    Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
   }
 
   /** Delete the specified ElementAspect from the target iModel.
@@ -951,7 +952,7 @@ export class IModelTransformer {
    */
   protected deleteElementAspect(targetElementAspect: ElementAspect): void {
     this._targetDb.elements.deleteAspect(targetElementAspect.id);
-    Logger.logInfo(loggerCategory, `(Target) Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
+    Logger.logInfo(loggerCategory, `[Target] Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
   }
 
   /** Returns true if a change within an ElementAspect is detected.
@@ -993,7 +994,7 @@ export class IModelTransformer {
 
   /** Import all fonts from the source iModel into the target iModel. */
   public importFonts(): void {
-    Logger.logTrace(loggerCategory, `--> importFonts()`);
+    Logger.logTrace(loggerCategory, `[Source] importFonts()`);
     for (const font of this._sourceDb.fontMap.fonts.values()) {
       this._importContext.importFont(font.id);
     }
@@ -1001,7 +1002,7 @@ export class IModelTransformer {
 
   /** Import all CodeSpecs from the source iModel into the target iModel. */
   public importCodeSpecs(): void {
-    Logger.logTrace(loggerCategory, `--> importCodeSpecs()`);
+    Logger.logTrace(loggerCategory, `[Source] importCodeSpecs()`);
     const sql = `SELECT Name FROM BisCore:CodeSpec`;
     this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1014,7 +1015,7 @@ export class IModelTransformer {
   /** Import a single CodeSpec from the source iModel into the target iModel. */
   public importCodeSpec(codeSpecName: string): void {
     if (this._excludedCodeSpecNames.has(codeSpecName)) {
-      Logger.logInfo(loggerCategory, `(Source) Excluding CodeSpec: ${codeSpecName}`);
+      Logger.logInfo(loggerCategory, `[Source] Excluding CodeSpec: ${codeSpecName}`);
       this.onCodeSpecExcluded(codeSpecName);
       return;
     }

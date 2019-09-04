@@ -34,6 +34,15 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    for (const [id] of this.settings.subCategoryOverrides) {
+      predecessorIds.add(id);
+    }
+    this.settings.excludedElements.forEach((id: Id64String) => predecessorIds.add(id));
+  }
 }
 
 /** A DisplayStyle for 2d views.
@@ -51,8 +60,7 @@ export class DisplayStyle2d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
-  /**
-   * Create a DisplayStyle2d for use by a ViewDefinition.
+  /** Create a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the DisplayStyle2d
@@ -71,8 +79,7 @@ export class DisplayStyle2d extends DisplayStyle {
     };
     return new DisplayStyle2d(displayStyleProps, iModelDb);
   }
-  /**
-   * Insert a DisplayStyle2d for use by a ViewDefinition.
+  /** Insert a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
    * @param name The name of the DisplayStyle2d

@@ -838,6 +838,8 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     abstract readonly settings: DisplayStyleSettings;

@@ -647,7 +647,7 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
-  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
 
@@ -748,7 +748,10 @@ export class DisplayStyleSettings {
    */
   public dropSubCategoryOverride(id: Id64String): void { this.changeSubCategoryOverride(id, true); }
 
-  /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
+  /** The overrides applied by this style. */
+  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> { return this._subCategoryOverrides; }
+
+  /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
@@ -917,7 +920,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     this._sunDir = dir.clone(this._sunDir);
     if (undefined === this._json3d.sceneLights)
-      this._json3d.sceneLights = { };
+      this._json3d.sceneLights = {};
 
     this._json3d.sceneLights.sunDir = dir.toJSON();
   }

@@ -1279,6 +1279,7 @@ export class DisplayStyleSettings {
     protected readonly _json: DisplayStyleSettingsProps;
     monochromeColor: ColorDef;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
+    readonly subCategoryOverrides: Map<Id64String, SubCategoryOverride>;
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
     viewFlags: ViewFlags;
