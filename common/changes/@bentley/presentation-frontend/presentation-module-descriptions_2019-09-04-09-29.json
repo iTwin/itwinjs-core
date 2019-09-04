@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add module descriptions",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

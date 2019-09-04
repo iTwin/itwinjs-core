@@ -130,6 +130,12 @@ export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPrese
 }
 
 // @public
+export interface IUnifiedSelectionComponent extends IPresentationDataProvider {
+    // (undocumented)
+    selectionHandler?: SelectionHandler;
+}
+
+// @public
 export class LabelsProvider implements IPresentationLabelsProvider {
     constructor(imodel: IModelConnection);
     getLabel(key: InstanceKey, memoize?: boolean): Promise<string>;
