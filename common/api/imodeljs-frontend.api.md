@@ -7934,6 +7934,11 @@ export interface ToolTipOptions {
     placement?: string;
 }
 
+// @internal
+export interface ToolTipProvider {
+    augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
+}
+
 // @public (undocumented)
 export type ToolType = typeof Tool;
 
@@ -8666,6 +8671,8 @@ export abstract class ViewingToolHandle {
 // @public
 export class ViewManager {
     addDecorator(decorator: Decorator): () => void;
+    // @internal
+    addToolTipProvider(provider: ToolTipProvider): () => void;
     addViewport(newVp: ScreenViewport): BentleyStatus;
     // @internal (undocumented)
     beginDynamicsMode(): void;
@@ -8679,6 +8686,8 @@ export class ViewManager {
     // @internal (undocumented)
     readonly doesHostHaveFocus: boolean;
     dropDecorator(decorator: Decorator): void;
+    // @internal
+    dropToolTipProvider(provider: ToolTipProvider): void;
     dropViewport(vp: ScreenViewport, disposeOfViewport?: boolean): BentleyStatus;
     // (undocumented)
     readonly dynamicsCursor: string;
@@ -8731,6 +8740,8 @@ export class ViewManager {
     readonly selectedView: ScreenViewport | undefined;
     setSelectedView(vp: ScreenViewport | undefined): BentleyStatus;
     setViewCursor(cursor?: string): void;
+    // @internal (undocumented)
+    readonly toolTipProviders: ToolTipProvider[];
     // @internal (undocumented)
     validateViewportScenes(): void;
     }

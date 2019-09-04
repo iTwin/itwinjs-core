@@ -58,6 +58,16 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
+/** An object which customizes the locate tooltip.
+ * @internal
+ */
+export interface ToolTipProvider {
+  /** Augment or replace tooltip for the specified HitDetail.
+   * To cooperate with other tooltip providers, replacing the input tooltip instead of appending information is discouraged.
+   */
+  augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
+}
+
 /** The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
@@ -74,6 +84,8 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  /** @internal */
+  public readonly toolTipProviders: ToolTipProvider[] = [];
 
   /** @internal */
   public onInitialized() {
@@ -88,6 +100,7 @@ export class ViewManager {
   public onShutDown() {
     this._viewports.length = 0;
     this.decorators.length = 0;
+    this.toolTipProviders.length = 0;
     this._selectedView = undefined;
   }
 
@@ -322,6 +335,31 @@ export class ViewManager {
       const iModel = entry[0];
       iModel.tiles.purge(olderThan, entry[1]);
     }
+  }
+
+  /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
+   * @internal
+   * @param provider The new tooltip provider to add.
+   * @throws Error if provider is already active.
+   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropToolTipProvider]].)
+   * @see [[dropToolTipOverrideProvider]]
+   */
+  public addToolTipProvider(provider: ToolTipProvider): () => void {
+    if (this.toolTipProviders.includes(provider))
+      throw new Error("tooltip provider already registered");
+    this.toolTipProviders.push(provider);
+    return () => { this.dropToolTipProvider(provider); };
+  }
+
+  /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
+   * @internal
+   * @param provider The tooltip to drop.
+   * @note Does nothing if decorator is not currently active.
+   */
+  public dropToolTipProvider(provider: ToolTipProvider) {
+    const index = this.toolTipProviders.indexOf(provider);
+    if (index >= 0)
+      this.toolTipProviders.splice(index, 1);
   }
 
   /** Add a new [[Decorator]] to display decorations into the active views.

@@ -612,7 +612,7 @@
     },
     {
       "name": "react-redux",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",

@@ -134,6 +134,11 @@ class ToolWidgetWithDef extends React.Component<Props> {
 
   public componentDidMount() {
     PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
+    if (PluginUiManager.hasRegisteredProviders) {
+      this.props.toolWidgetDef.generateMergedItemLists();
+      // force update when list of registered UiPluginProvides change
+      this.forceUpdate();
+    }
   }
 
   public componentWillUnmount() {

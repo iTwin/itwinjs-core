@@ -154,13 +154,7 @@ export class HitDetail {
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
-  /** Get the tooltip content for this HitDetail.
-   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
-   */
-  public async getToolTip(): Promise<HTMLElement | string> {
-    if (!this.isElementHit)
-      return IModelApp.viewManager.getDecorationToolTip(this);
-
+  private async getElementToolTip(): Promise<HTMLElement | string> {
     const msg: string[] = await this.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
     // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
     // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
@@ -169,6 +163,16 @@ export class HitDetail {
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
+  }
+
+  /** Get the tooltip content for this HitDetail.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   */
+  public async getToolTip(): Promise<HTMLElement | string> {
+    let toolTipPromise = this.isElementHit ? this.getElementToolTip() : IModelApp.viewManager.getDecorationToolTip(this);
+    for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
+      toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
+    return toolTipPromise;
   }
 
   /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.

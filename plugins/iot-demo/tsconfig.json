@@ -3,8 +3,14 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "declaration": false,
+    "declarationMap": false,
     "baseUrl": "./node_modules",
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "jsx": "react",
+    "types": [
+      "@bentley/webpack-tools"
+    ]
   },
   "include": [
     "./**/*.ts",

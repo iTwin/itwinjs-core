@@ -88,6 +88,7 @@ import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarItemInsertSpec } from '@bentley/imodeljs-frontend';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
+import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
@@ -2711,6 +2712,8 @@ export class ModelessDialogManager {
     // @internal (undocumented)
     static readonly dialogManager: DialogManagerBase;
     static readonly dialogs: import("./DialogManagerBase").DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ModelessDialogInfo | undefined;
     static getDialogZIndex(id: string): number;
     static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
@@ -2984,6 +2987,22 @@ export interface ProjectServices {
 
 // @public
 export const PromptField: any;
+
+// @alpha
+export interface PropertyChangeResult {
+    // (undocumented)
+    errorMsg?: string;
+    // (undocumented)
+    status: PropertyChangeStatus;
+}
+
+// @alpha
+export enum PropertyChangeStatus {
+    // (undocumented)
+    Error = 2,
+    // (undocumented)
+    Success = 0
+}
 
 // @public
 export class PropsHelper {
@@ -3596,6 +3615,16 @@ export interface SupportsViewSelectorChange {
     supportsViewSelectorChange: boolean;
 }
 
+// @alpha
+export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> {
+}
+
+// @alpha
+export interface SyncPropertiesChangeEventArgs {
+    // (undocumented)
+    properties: ToolSettingsPropertyItem[];
+}
+
 // @public
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> {
 }
@@ -4059,6 +4088,17 @@ export class TsRow {
     cols: TsCol[];
     // (undocumented)
     priority: number;
+}
+
+// @alpha
+export abstract class UiDataProvider {
+    // (undocumented)
+    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
+    processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult;
+    supplyAvailableProperties(): ToolSettingsPropertyItem[];
+    // @internal
+    syncPropertiesInUi(properties: ToolSettingsPropertyItem[]): void;
+    validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult;
 }
 
 // @public

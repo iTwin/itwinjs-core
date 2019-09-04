@@ -221,7 +221,7 @@ export class AnimationViewOverlay extends React.Component<AnimationOverlayProps,
                 minimized={true}
                 onChange={this.state.dataProvider.onAnimationFractionChanged}
                 onPlayPause={this.props.onPlayPause}
-                showDuration={true}
+                showDuration={false}
               />
             </div>
           </div>

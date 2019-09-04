@@ -392,6 +392,7 @@ internal;ToolSettingsState
 beta;ToolSettingsValue 
 internal;ToolState
 public;ToolTipOptions
+internal;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync
