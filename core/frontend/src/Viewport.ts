@@ -525,27 +525,9 @@ export class ViewFrustum {
    *  modifies the point and vector given
    *  @internal
    */
-  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
-    if (this._aspectRatioLocked)
-      return;
-
-    const windowAspect = this._viewRect.aspect * this.view.getAspectRatioSkew();
-    const viewAspect = delta.x / delta.y;
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = delta.clone();
-    if (viewAspect > windowAspect)
-      delta.y = delta.x / windowAspect;
-    else
-      delta.x = delta.y * windowAspect;
-
-    const newOrigin = origin.clone();
-    this.toView(newOrigin);
-    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
-    this.fromView(newOrigin, origin);
+  protected adjustAspectRatio(origin: Point3d, extent: Vector3d) {
+    if (!this._aspectRatioLocked)
+      this.view.adjustAspectRatio(origin, extent, this._viewRect.aspect);
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */

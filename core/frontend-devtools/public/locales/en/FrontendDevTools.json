@@ -50,6 +50,9 @@
     },
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
+    },
+    "SetAspectRatioSkew": {
+      "keyin": "fdt aspect skew"
     }
   }
 }

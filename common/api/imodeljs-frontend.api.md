@@ -8511,7 +8511,7 @@ export class ViewClipTool extends PrimitiveTool {
 
 // @internal
 export class ViewFrustum {
-    protected adjustAspectRatio(origin: Point3d, delta: Vector3d): void;
+    protected adjustAspectRatio(origin: Point3d, extent: Vector3d): void;
     // (undocumented)
     static createFromViewport(vp: Viewport): ViewFrustum | undefined;
     // (undocumented)
@@ -9108,8 +9108,8 @@ export class ViewRedoTool extends ViewTool {
 export abstract class ViewState extends ElementState {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
-    // @internal (undocumented)
-    protected adjustAspectRatio(windowAspect: number): void;
+    // @internal
+    adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number): void;
     abstract allow3dManipulations(): boolean;
     readonly analysisStyle: AnalysisStyle | undefined;
     // @internal (undocumented)
@@ -9143,6 +9143,8 @@ export abstract class ViewState extends ElementState {
     drawGrid(context: DecorateContext): void;
     equals(other: this): boolean;
     extentLimits: ExtentLimits;
+    // @internal (undocumented)
+    protected fixAspectRatio(windowAspect: number): void;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
     abstract forEachModelTreeRef(func: (treeRef: TileTree.Reference) => void): void;

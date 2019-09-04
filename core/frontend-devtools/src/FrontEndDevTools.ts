@@ -31,6 +31,7 @@ import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import { ToggleFrustumSnapshotTool } from "./tools/FrustumDecoration";
 import {
   FreezeSceneTool,
+  SetAspectRatioSkewTool,
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
 
@@ -79,6 +80,7 @@ export class FrontendDevTools {
     ToggleFrustumSnapshotTool.register(i18n);
 
     FreezeSceneTool.register(i18n);
+    SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
 
     return i18n.readFinished;

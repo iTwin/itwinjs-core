@@ -96,7 +96,7 @@ export class Model extends Entity implements ModelProps {
    */
   public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForModel(this, opcode); }
 
-  /** insert this Model in the iModel */
+  /** Insert this Model in the iModel */
   public insert() { return this.iModel.models.insertModel(this); }
   /** Update this Model in the iModel. */
   public update() { this.iModel.models.updateModel(this); }
@@ -107,7 +107,7 @@ export class Model extends Entity implements ModelProps {
 /** A container for persisting geometric elements.
  * @public
  */
-export class GeometricModel extends Model {
+export class GeometricModel extends Model implements GeometricModelProps {
   public geometryGuid?: string;
 
   /** @internal */

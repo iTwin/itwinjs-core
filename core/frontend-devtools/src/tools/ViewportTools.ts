@@ -54,7 +54,7 @@ export class ShowTileVolumesTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(boxes?: Tile.DebugBoundingBoxes): boolean  {
+  public run(boxes?: Tile.DebugBoundingBoxes): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -82,5 +82,30 @@ export class ShowTileVolumesTool extends Tool {
     }
 
     return this.run(boxes);
+  }
+}
+
+/** @alpha */
+export class SetAspectRatioSkewTool extends Tool {
+  public static toolId = "SetAspectRatioSkew";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  public run(skew?: number): boolean {
+    if (undefined === skew)
+      skew = 1.0;
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp) {
+      vp.view.setAspectRatioSkew(skew);
+      vp.synchWithView(false);
+    }
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const skew = args.length > 0 ? parseFloat(args[0]) : 1.0;
+    return !Number.isNaN(skew) && this.run(skew);
   }
 }

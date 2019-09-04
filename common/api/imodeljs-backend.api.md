@@ -1689,7 +1689,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 }
 
 // @public
-export class GeometricModel extends Model {
+export class GeometricModel extends Model implements GeometricModelProps {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)

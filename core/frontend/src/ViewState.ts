@@ -583,29 +583,33 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** @internal */
-  protected adjustAspectRatio(windowAspect: number): void {
-    const extents = this.getExtents();
+  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect rato skew),
+   * by adjusting one dimension or the other.
+   * @internal
+   */
+  public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
+    const origExtents = extents.clone();
     const viewAspect = extents.x / extents.y;
-    windowAspect *= this.getAspectRatioSkew();
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = extents.clone();
     if (viewAspect > windowAspect)
       extents.y = extents.x / windowAspect;
     else
       extents.x = extents.y * windowAspect;
 
-    let origin = this.getOrigin();
-    const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
-    const newOrigin = trans.multiplyPoint3d(origin);
+    // skew always adjusts y
+    const maxSkew = 25;
+    extents.y /= Geometry.clamp(this.getAspectRatioSkew(), 1 / maxSkew, maxSkew);
 
-    newOrigin.x += ((oldDelta.x - extents.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - extents.y) / 2.0);
+    const rotation = this.getRotation();
+    rotation.multiplyVectorInPlace(origin);
+    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5);
+    rotation.multiplyTransposeVectorInPlace(origin);
+  }
 
-    origin = trans.inverse()!.multiplyPoint3d(newOrigin);
+  /** @internal */
+  protected fixAspectRatio(windowAspect: number): void {
+    const extents = this.getExtents().clone();
+    const origin = this.getOrigin().clone();
+    this.adjustAspectRatio(origin, extents, windowAspect);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -897,7 +901,7 @@ export abstract class ViewState extends ElementState {
 
     this.setExtents(newDelta);
     if (aspect)
-      this.adjustAspectRatio(aspect);
+      this.fixAspectRatio(aspect);
 
     newDelta = this.getExtents();
 
