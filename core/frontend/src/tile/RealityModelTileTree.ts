@@ -447,7 +447,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       for (const key of Object.keys(batch))
         strings.push(key + ": " + batch[key]);
 
-    return strings.join("<br>");
+    const div = document.createElement("div");
+    div.innerHTML = strings.join("<br>");
+    return div;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
