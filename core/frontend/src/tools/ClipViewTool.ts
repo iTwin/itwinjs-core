@@ -1456,19 +1456,25 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         continue;
 
       // For single plane clip, choose location for handle that's visible in the current view...
-      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops) {
+      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops && this._clipPlanesLoops.length > 0) {
         if (!EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].origin, vp, 0.05)) {
-          const work = new GrowableXYZArray();
-          const finalPoints = new GrowableXYZArray();
-          const lineString = ((this._clipPlanesLoops[0] as Loop).getChild(0) as LineString3d).points;
-          const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
-          convexSet.polygonClip(lineString, finalPoints, work);
-          if (finalPoints.length > 0) {
-            const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
-            if (undefined !== loopArea) {
-              if (undefined === this._controls[iFace].floatingOrigin)
-                this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
-              this._controls[iFace].origin.setFrom(loopArea.origin);
+          const geom = this._clipPlanesLoops[0];
+          if (geom instanceof Loop && geom.children.length > 0) {
+            const child = geom.getChild(0);
+            if (child instanceof LineString3d) {
+              const work = new GrowableXYZArray();
+              const finalPoints = new GrowableXYZArray();
+              const lineString = child.points;
+              const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
+              convexSet.polygonClip(lineString, finalPoints, work);
+              if (finalPoints.length > 0) {
+                const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
+                if (undefined !== loopArea) {
+                  if (undefined === this._controls[iFace].floatingOrigin)
+                    this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
+                  this._controls[iFace].origin.setFrom(loopArea.origin);
+                }
+              }
             }
           }
         } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {
