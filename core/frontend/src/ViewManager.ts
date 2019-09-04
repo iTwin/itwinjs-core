@@ -337,6 +337,21 @@ export class ViewManager {
     }
   }
 
+  /** Get the tooltip for a persistent element.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * @beta
+   */
+  public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
+    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
+    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
+    let out = "";
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
+  }
+
   /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
    * @internal
    * @param provider The new tooltip provider to add.

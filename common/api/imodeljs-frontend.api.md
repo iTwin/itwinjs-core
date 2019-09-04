@@ -8698,6 +8698,8 @@ export class ViewManager {
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     // @internal
     getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // @beta
+    getElementToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getFirstOpenView(): ScreenViewport | undefined;
     // (undocumented)
     readonly grabbingCursor: string;
