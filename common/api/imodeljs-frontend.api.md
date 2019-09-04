@@ -7758,8 +7758,14 @@ export enum ToolAssistanceImage {
     LeftClickDrag = 6,
     MouseWheel = 5,
     MouseWheelClickDrag = 8,
+    OneTouchDoubleTap = 10,
+    OneTouchDrag = 11,
+    OneTouchTap = 9,
     RightClick = 4,
-    RightClickDrag = 7
+    RightClickDrag = 7,
+    TwoTouchDrag = 13,
+    TwoTouchPinch = 14,
+    TwoTouchTap = 12
 }
 
 // @beta

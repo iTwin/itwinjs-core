@@ -172,7 +172,15 @@ describe("ToolAssistanceField", () => {
     const instruction25 = ToolAssistance.createInstruction(ToolAssistanceImage.MouseWheelClickDrag, "xyz");
     const section2 = ToolAssistance.createSection([instruction21, instruction22, instruction23, instruction24, instruction25], "More Inputs");
 
-    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2]);
+    const instruction31 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, "xyz");
+    const instruction32 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDoubleTap, "xyz");
+    const instruction33 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, "xyz");
+    const instruction34 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, "xyz");
+    const instruction35 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchDrag, "xyz");
+    const instruction36 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchPinch, "xyz");
+    const section3 = ToolAssistance.createSection([instruction31, instruction32, instruction33, instruction34, instruction35, instruction36], "Touch Inputs");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2, section3]);
 
     notifications.setToolAssistance(instructions);
     wrapper.update();
@@ -183,8 +191,8 @@ describe("ToolAssistanceField", () => {
     wrapper.update();
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(3);
-    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(8);
+    expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(4);
+    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(14);
 
     wrapper.unmount();
   });

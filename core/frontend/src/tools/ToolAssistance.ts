@@ -29,6 +29,18 @@ export enum ToolAssistanceImage {
   RightClickDrag,
   /** Mouse image with darkened scroll wheel and left/right arrows */
   MouseWheelClickDrag,
+  /** Touch image with single finger tapping once */
+  OneTouchTap,
+  /** Touch image with single finger tapping twice */
+  OneTouchDoubleTap,
+  /** Touch image with single finger dragging */
+  OneTouchDrag,
+  /** Touch image with two fingers tapping once */
+  TwoTouchTap,
+  /** Touch image with two fingers dragging */
+  TwoTouchDrag,
+  /** Touch image with two fingers pinching */
+  TwoTouchPinch,
 }
 
 /** Input Method for Tool Assistance instruction

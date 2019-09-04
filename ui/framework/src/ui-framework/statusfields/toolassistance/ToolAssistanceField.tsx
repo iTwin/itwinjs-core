@@ -33,6 +33,12 @@ import mouseWheelClickIcon from "./mouse-click-wheel.svg";
 import clickLeftDragIcon from "./mouse-click-left-drag.svg";
 import clickRightDragIcon from "./mouse-click-right-drag.svg";
 import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
+import twoTouchPinchIcon from "./gesture-pinch.svg";
 
 /** Properties of [[ToolAssistanceField]] component.
  * @beta
@@ -429,6 +435,24 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         case ToolAssistanceImage.MouseWheelClickDrag:
           svgImage = clickMouseWheelDragIcon;
           className = "uifw-toolassistance-svg-wide";
+          break;
+        case ToolAssistanceImage.OneTouchTap:
+          svgImage = oneTouchTapIcon;
+          break;
+        case ToolAssistanceImage.OneTouchDoubleTap:
+          svgImage = oneTouchDoubleTapIcon;
+          break;
+        case ToolAssistanceImage.OneTouchDrag:
+          svgImage = oneTouchDragIcon;
+          break;
+        case ToolAssistanceImage.TwoTouchTap:
+          svgImage = twoTouchTapIcon;
+          break;
+        case ToolAssistanceImage.TwoTouchDrag:
+          svgImage = twoTouchDragIcon;
+          break;
+        case ToolAssistanceImage.TwoTouchPinch:
+          svgImage = twoTouchPinchIcon;
           break;
       }
 
