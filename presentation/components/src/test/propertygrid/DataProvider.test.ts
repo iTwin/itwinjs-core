@@ -305,7 +305,7 @@ describe("PropertyDataProvider", () => {
         field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
-          [createRandomPrimitiveField(), createRandomPrimitiveField()]);
+          [createRandomPrimitiveField(), createRandomPrimitiveField()], faker.random.boolean());
         field1.rebuildParentship();
         field2 = createRandomPrimitiveField();
         field1.category = field2.category = createRandomCategory();
@@ -484,12 +484,12 @@ describe("PropertyDataProvider", () => {
         const field11 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
-          [field111, field112]);
+          [field111, field112], faker.random.boolean());
         const field12 = createPrimitiveField();
         field1 = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
           faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1),
-          [field11, field12]);
+          [field11, field12], faker.random.boolean());
         field1.rebuildParentship();
         field2 = createPrimitiveField();
         field2.category = field1.category;

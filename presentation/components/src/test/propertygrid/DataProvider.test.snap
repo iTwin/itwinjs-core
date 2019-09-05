@@ -4,24 +4,20 @@ exports[`PropertyDataProvider getData handles records with no values 1`] = `
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "website Assurance",
-      "name": "Inverse",
+      "expand": false,
+      "label": "Fish partnerships",
+      "name": "orchid",
     },
   ],
-  "description": "conglomeration",
-  "label": "Customer deposit",
+  "description": "Egyptian Pound",
+  "label": "Toys",
   "records": Object {
-    "Inverse": Array [
+    "orchid": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Manager quantifying",
-          "editor": Object {
-            "name": "azure",
-            "params": Array [],
-          },
-          "name": "Designer",
-          "typename": "timestamp",
+          "displayLabel": "EXE port",
+          "name": "Pants",
+          "typename": "bit",
         },
         "value": Object {
           "displayValue": "",
@@ -44,19 +40,19 @@ Object {
     },
     Object {
       "expand": true,
-      "label": "zero defect Bedfordshire",
-      "name": "functionalities",
+      "label": "Consultant",
+      "name": "User-centric",
     },
   ],
   "description": undefined,
-  "label": "Generic Generic",
+  "label": "scalable Cotton alarm",
   "records": Object {
     "Favorite": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Afghani",
-          "name": "International",
-          "typename": "int",
+          "displayLabel": "Future California white",
+          "name": "envisioneer",
+          "typename": "timestamp",
         },
         "value": Object {
           "items": Array [
@@ -64,35 +60,32 @@ Object {
               "isMerged": false,
               "isReadonly": false,
               "property": Object {
-                "displayLabel": "Afghani",
-                "name": "International",
-                "typename": "int",
+                "displayLabel": "Future California white",
+                "name": "envisioneer",
+                "typename": "timestamp",
               },
               "value": Object {
                 "members": Object {
-                  "Implementation": PropertyRecord {
+                  "system": PropertyRecord {
+                    "autoExpand": true,
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "wireless",
-                      "name": "Implementation",
-                      "typename": "mediumint",
+                      "displayLabel": "Pines back-end",
+                      "name": "system",
+                      "typename": "text",
                     },
                     "value": Object {
                       "members": Object {
-                        "Iran": PropertyRecord {
-                          "description": "Tasty",
-                          "isReadonly": true,
+                        "strategy": PropertyRecord {
+                          "description": "New Zealand",
                           "property": Object {
-                            "displayLabel": "Garden Ball Towels",
-                            "editor": Object {
-                              "name": "Accountability",
-                              "params": Array [],
-                            },
-                            "name": "Iran",
-                            "typename": "binary",
+                            "displayLabel": "Hungary interfaces",
+                            "name": "strategy",
+                            "typename": "real",
                           },
                           "value": Object {
-                            "displayValue": "Tasty",
-                            "value": "Vista",
+                            "displayValue": "New Zealand",
+                            "value": "Identity",
                             "valueFormat": 0,
                           },
                         },
@@ -108,35 +101,32 @@ Object {
               "isMerged": false,
               "isReadonly": false,
               "property": Object {
-                "displayLabel": "Afghani",
-                "name": "International",
-                "typename": "int",
+                "displayLabel": "Future California white",
+                "name": "envisioneer",
+                "typename": "timestamp",
               },
               "value": Object {
                 "members": Object {
-                  "Implementation": PropertyRecord {
+                  "system": PropertyRecord {
+                    "autoExpand": true,
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "wireless",
-                      "name": "Implementation",
-                      "typename": "mediumint",
+                      "displayLabel": "Pines back-end",
+                      "name": "system",
+                      "typename": "text",
                     },
                     "value": Object {
                       "members": Object {
-                        "Iran": PropertyRecord {
-                          "description": "Accounts envisioneer circuit",
-                          "isReadonly": true,
+                        "strategy": PropertyRecord {
+                          "description": "Buckinghamshire",
                           "property": Object {
-                            "displayLabel": "Garden Ball Towels",
-                            "editor": Object {
-                              "name": "Accountability",
-                              "params": Array [],
-                            },
-                            "name": "Iran",
-                            "typename": "binary",
+                            "displayLabel": "Hungary interfaces",
+                            "name": "strategy",
+                            "typename": "real",
                           },
                           "value": Object {
-                            "displayValue": "Accounts envisioneer circuit",
-                            "value": "Accounts",
+                            "displayValue": "Buckinghamshire",
+                            "value": "systematic",
                             "valueFormat": 0,
                           },
                         },
@@ -149,31 +139,31 @@ Object {
               },
             },
           ],
-          "itemsTypeName": "int",
+          "itemsTypeName": "timestamp",
           "valueFormat": 1,
         },
       },
     ],
-    "functionalities": Array [
+    "User-centric": Array [
       PropertyRecord {
-        "description": "Indiana Mobility",
+        "description": "Arizona Home Loan Account Customer",
         "isReadonly": true,
         "property": Object {
-          "displayLabel": "Movies Coordinator",
-          "name": "payment",
-          "typename": "tinyint",
+          "displayLabel": "Michigan interface",
+          "name": "Cape",
+          "typename": "set",
         },
         "value": Object {
-          "displayValue": "Indiana Mobility",
-          "value": "Intelligent Rubber Pants",
+          "displayValue": "Arizona Home Loan Account Customer",
+          "value": "mobile",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Afghani",
-          "name": "International",
-          "typename": "int",
+          "displayLabel": "Future California white",
+          "name": "envisioneer",
+          "typename": "timestamp",
         },
         "value": Object {
           "items": Array [
@@ -181,70 +171,69 @@ Object {
               "isMerged": false,
               "isReadonly": false,
               "property": Object {
-                "displayLabel": "Afghani",
-                "name": "International",
-                "typename": "int",
+                "displayLabel": "Future California white",
+                "name": "envisioneer",
+                "typename": "timestamp",
               },
               "value": Object {
                 "members": Object {
-                  "Implementation": PropertyRecord {
+                  "Central": PropertyRecord {
+                    "description": "payment Investment Account",
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "wireless",
-                      "name": "Implementation",
-                      "typename": "mediumint",
+                      "displayLabel": "Mouse Ergonomic Frozen Shoes Bedfordshire",
+                      "name": "Central",
+                      "typename": "tinyint",
+                    },
+                    "value": Object {
+                      "displayValue": "payment Investment Account",
+                      "value": "payment",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "system": PropertyRecord {
+                    "autoExpand": true,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Pines back-end",
+                      "name": "system",
+                      "typename": "text",
                     },
                     "value": Object {
                       "members": Object {
-                        "Iran": PropertyRecord {
-                          "description": "Tasty",
+                        "red": PropertyRecord {
+                          "description": "mobile maroon",
                           "isReadonly": true,
                           "property": Object {
-                            "displayLabel": "Garden Ball Towels",
+                            "displayLabel": "mesh",
                             "editor": Object {
-                              "name": "Accountability",
+                              "name": "Delaware",
                               "params": Array [],
                             },
-                            "name": "Iran",
-                            "typename": "binary",
+                            "name": "red",
+                            "typename": "time",
                           },
                           "value": Object {
-                            "displayValue": "Tasty",
-                            "value": "Vista",
+                            "displayValue": "mobile maroon",
+                            "value": "PNG",
                             "valueFormat": 0,
                           },
                         },
-                        "synthesize": PropertyRecord {
-                          "description": "Bedfordshire plum",
+                        "strategy": PropertyRecord {
+                          "description": "New Zealand",
                           "property": Object {
-                            "displayLabel": "El Salvador Colon US Dollar",
-                            "name": "synthesize",
-                            "typename": "timestamp",
+                            "displayLabel": "Hungary interfaces",
+                            "name": "strategy",
+                            "typename": "real",
                           },
                           "value": Object {
-                            "displayValue": "Bedfordshire plum",
-                            "value": "Mouse",
+                            "displayValue": "New Zealand",
+                            "value": "Identity",
                             "valueFormat": 0,
                           },
                         },
                       },
                       "valueFormat": 2,
-                    },
-                  },
-                  "black": PropertyRecord {
-                    "description": "Paradigm",
-                    "property": Object {
-                      "displayLabel": "Computer markets",
-                      "editor": Object {
-                        "name": "red",
-                        "params": Array [],
-                      },
-                      "name": "black",
-                      "typename": "time",
-                    },
-                    "value": Object {
-                      "displayValue": "Paradigm",
-                      "value": "transmit",
-                      "valueFormat": 0,
                     },
                   },
                 },
@@ -255,48 +244,64 @@ Object {
               "isMerged": false,
               "isReadonly": false,
               "property": Object {
-                "displayLabel": "Afghani",
-                "name": "International",
-                "typename": "int",
+                "displayLabel": "Future California white",
+                "name": "envisioneer",
+                "typename": "timestamp",
               },
               "value": Object {
                 "members": Object {
-                  "Implementation": PropertyRecord {
+                  "Central": PropertyRecord {
+                    "description": "Granite",
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "wireless",
-                      "name": "Implementation",
-                      "typename": "mediumint",
+                      "displayLabel": "Mouse Ergonomic Frozen Shoes Bedfordshire",
+                      "name": "Central",
+                      "typename": "tinyint",
+                    },
+                    "value": Object {
+                      "displayValue": "Granite",
+                      "value": "Malaysia",
+                      "valueFormat": 0,
+                    },
+                  },
+                  "system": PropertyRecord {
+                    "autoExpand": true,
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Pines back-end",
+                      "name": "system",
+                      "typename": "text",
                     },
                     "value": Object {
                       "members": Object {
-                        "Iran": PropertyRecord {
-                          "description": "Accounts envisioneer circuit",
+                        "red": PropertyRecord {
+                          "description": "payment",
                           "isReadonly": true,
                           "property": Object {
-                            "displayLabel": "Garden Ball Towels",
+                            "displayLabel": "mesh",
                             "editor": Object {
-                              "name": "Accountability",
+                              "name": "Delaware",
                               "params": Array [],
                             },
-                            "name": "Iran",
-                            "typename": "binary",
+                            "name": "red",
+                            "typename": "time",
                           },
                           "value": Object {
-                            "displayValue": "Accounts envisioneer circuit",
-                            "value": "Accounts",
+                            "displayValue": "payment",
+                            "value": "B2C",
                             "valueFormat": 0,
                           },
                         },
-                        "synthesize": PropertyRecord {
-                          "description": "California",
+                        "strategy": PropertyRecord {
+                          "description": "Buckinghamshire",
                           "property": Object {
-                            "displayLabel": "El Salvador Colon US Dollar",
-                            "name": "synthesize",
-                            "typename": "timestamp",
+                            "displayLabel": "Hungary interfaces",
+                            "name": "strategy",
+                            "typename": "real",
                           },
                           "value": Object {
-                            "displayValue": "California",
-                            "value": "Web",
+                            "displayValue": "Buckinghamshire",
+                            "value": "systematic",
                             "valueFormat": 0,
                           },
                         },
@@ -304,29 +309,12 @@ Object {
                       "valueFormat": 2,
                     },
                   },
-                  "black": PropertyRecord {
-                    "description": "Beauty",
-                    "property": Object {
-                      "displayLabel": "Computer markets",
-                      "editor": Object {
-                        "name": "red",
-                        "params": Array [],
-                      },
-                      "name": "black",
-                      "typename": "time",
-                    },
-                    "value": Object {
-                      "displayValue": "Beauty",
-                      "value": "white",
-                      "valueFormat": 0,
-                    },
-                  },
                 },
                 "valueFormat": 2,
               },
             },
           ],
-          "itemsTypeName": "int",
+          "itemsTypeName": "timestamp",
           "valueFormat": 1,
         },
       },
@@ -340,41 +328,37 @@ Object {
   "categories": Array [
     Object {
       "expand": true,
-      "label": "end-to-end Handmade Soft Gloves mesh",
-      "name": "Adaptive",
+      "label": "Table transmitting Small",
+      "name": "wireless",
     },
   ],
   "description": undefined,
-  "label": "Fantastic",
+  "label": "Graphical User Interface Persevering Rustic Frozen Bacon",
   "records": Object {
-    "Adaptive": Array [
+    "wireless": Array [
       PropertyRecord {
+        "description": "Direct 1080p parse",
         "property": Object {
-          "displayLabel": "Lead Investment Account Re-contextualized",
-          "name": "overriding",
-          "typename": "blob",
+          "displayLabel": "Industrial",
+          "name": "Reactive",
+          "typename": "float",
         },
         "value": Object {
-          "items": Array [],
-          "itemsTypeName": "blob",
-          "valueFormat": 1,
+          "displayValue": "Direct 1080p parse",
+          "value": "synthesize",
+          "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "description": "Money Market Account innovate deposit",
         "property": Object {
-          "displayLabel": "Chair Suriname",
-          "editor": Object {
-            "name": "engage",
-            "params": Array [],
-          },
-          "name": "Metal",
-          "typename": "timestamp",
+          "displayLabel": "Wooden Usability",
+          "name": "Frozen",
+          "typename": "geometry",
         },
         "value": Object {
-          "displayValue": "Money Market Account innovate deposit",
-          "value": "Georgia",
-          "valueFormat": 0,
+          "items": Array [],
+          "itemsTypeName": "geometry",
+          "valueFormat": 1,
         },
       },
     ],
@@ -387,60 +371,59 @@ Object {
   "categories": Array [
     Object {
       "expand": false,
-      "label": "Saint Martin hacking International",
-      "name": "lime",
+      "label": "Via coherent",
+      "name": "vortals",
     },
   ],
   "description": undefined,
-  "label": "Andorra",
+  "label": "product",
   "records": Object {
-    "lime": Array [
+    "vortals": Array [
       PropertyRecord {
-        "isReadonly": true,
         "property": Object {
-          "displayLabel": "1080p copying Persevering",
-          "name": "responsive",
-          "typename": "varchar",
+          "displayLabel": "Costa Rica systemic Forward",
+          "name": "Avon",
+          "typename": "enum",
         },
         "value": Object {
           "items": Array [
             PropertyRecord {
               "isMerged": false,
-              "isReadonly": true,
+              "isReadonly": false,
               "property": Object {
-                "displayLabel": "1080p copying Persevering",
-                "name": "responsive",
-                "typename": "varchar",
+                "displayLabel": "Costa Rica systemic Forward",
+                "name": "Avon",
+                "typename": "enum",
               },
               "value": Object {
                 "members": Object {
-                  "National": PropertyRecord {
-                    "description": "Concrete Sausages Assurance",
-                    "isReadonly": true,
+                  "Factors": PropertyRecord {
                     "property": Object {
-                      "displayLabel": "Shoes AI",
-                      "name": "National",
-                      "typename": "tinyint",
-                    },
-                    "value": Object {
-                      "displayValue": "Concrete Sausages Assurance",
-                      "value": "Platinum",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "firewall": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "Paradigm",
-                      "editor": Object {
-                        "name": "auxiliary",
-                        "params": Array [],
-                      },
-                      "name": "firewall",
-                      "typename": "time",
+                      "displayLabel": "Cordoba Oro Integrated Granite",
+                      "name": "Factors",
+                      "typename": "decimal",
                     },
                     "value": Object {
                       "displayValue": "",
                       "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                  "Texas": PropertyRecord {
+                    "description": "Books e-business",
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Outdoors compressing",
+                      "editor": Object {
+                        "name": "dynamic",
+                        "params": Array [],
+                      },
+                      "name": "Texas",
+                      "typename": "binary",
+                    },
+                    "value": Object {
+                      "displayValue": "Books e-business",
+                      "value": "paradigms",
                       "valueFormat": 0,
                     },
                   },
@@ -450,41 +433,41 @@ Object {
             },
             PropertyRecord {
               "isMerged": false,
-              "isReadonly": true,
+              "isReadonly": false,
               "property": Object {
-                "displayLabel": "1080p copying Persevering",
-                "name": "responsive",
-                "typename": "varchar",
+                "displayLabel": "Costa Rica systemic Forward",
+                "name": "Avon",
+                "typename": "enum",
               },
               "value": Object {
                 "members": Object {
-                  "National": PropertyRecord {
-                    "description": "Mauritius Rupee",
-                    "isReadonly": true,
+                  "Factors": PropertyRecord {
                     "property": Object {
-                      "displayLabel": "Shoes AI",
-                      "name": "National",
-                      "typename": "tinyint",
-                    },
-                    "value": Object {
-                      "displayValue": "Mauritius Rupee",
-                      "value": "experiences",
-                      "valueFormat": 0,
-                    },
-                  },
-                  "firewall": PropertyRecord {
-                    "property": Object {
-                      "displayLabel": "Paradigm",
-                      "editor": Object {
-                        "name": "auxiliary",
-                        "params": Array [],
-                      },
-                      "name": "firewall",
-                      "typename": "time",
+                      "displayLabel": "Cordoba Oro Integrated Granite",
+                      "name": "Factors",
+                      "typename": "decimal",
                     },
                     "value": Object {
                       "displayValue": "",
                       "value": undefined,
+                      "valueFormat": 0,
+                    },
+                  },
+                  "Texas": PropertyRecord {
+                    "description": "Concrete",
+                    "isReadonly": true,
+                    "property": Object {
+                      "displayLabel": "Outdoors compressing",
+                      "editor": Object {
+                        "name": "dynamic",
+                        "params": Array [],
+                      },
+                      "name": "Texas",
+                      "typename": "binary",
+                    },
+                    "value": Object {
+                      "displayValue": "Concrete",
+                      "value": "New Taiwan Dollar",
                       "valueFormat": 0,
                     },
                   },
@@ -493,20 +476,21 @@ Object {
               },
             },
           ],
-          "itemsTypeName": "varchar",
+          "itemsTypeName": "enum",
           "valueFormat": 1,
         },
       },
       PropertyRecord {
-        "description": "synergies Internal scalable",
+        "description": "open-source",
+        "isReadonly": true,
         "property": Object {
-          "displayLabel": "Fantastic embrace functionalities",
-          "name": "redundant",
-          "typename": "geometry",
+          "displayLabel": "Cliff",
+          "name": "transmitting",
+          "typename": "timestamp",
         },
         "value": Object {
-          "displayValue": "synergies Internal scalable",
-          "value": "matrices",
+          "displayValue": "open-source",
+          "value": "reboot",
           "valueFormat": 0,
         },
       },
@@ -519,56 +503,59 @@ exports[`PropertyDataProvider getData nested content handling returns nested con
 Object {
   "categories": Array [
     Object {
-      "expand": false,
-      "label": "bypass encoding Maryland",
-      "name": "Garden",
+      "expand": true,
+      "label": "clicks-and-mortar Planner schemas",
+      "name": "Intelligent",
     },
   ],
   "description": undefined,
-  "label": "Soft",
+  "label": "Baby Rustic Frozen Soap Berkshire",
   "records": Object {
-    "Garden": Array [
+    "Intelligent": Array [
       PropertyRecord {
+        "autoExpand": true,
+        "isReadonly": true,
         "property": Object {
-          "displayLabel": "Thailand",
-          "name": "Principal",
-          "typename": "mediumint",
+          "displayLabel": "scalable asymmetric",
+          "name": "Cambridgeshire",
+          "typename": "point",
         },
         "value": Object {
           "items": Array [
             PropertyRecord {
               "isMerged": false,
-              "isReadonly": false,
+              "isReadonly": true,
               "property": Object {
-                "displayLabel": "Thailand",
-                "name": "Principal",
-                "typename": "mediumint",
+                "displayLabel": "scalable asymmetric",
+                "name": "Cambridgeshire",
+                "typename": "point",
               },
               "value": Object {
                 "members": Object {
-                  "Books": PropertyRecord {
-                    "description": "Fantastic Shirt",
+                  "local area network": PropertyRecord {
+                    "description": "Intelligent Soft Towels Small Wooden Shirt",
                     "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "Investment Account SCSI",
+                      "displayLabel": "Streamlined interface engineer",
                       "editor": Object {
-                        "name": "Handmade",
+                        "name": "Generic",
                         "params": Array [],
                       },
-                      "name": "Books",
-                      "typename": "point",
+                      "name": "local area network",
+                      "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "Fantastic Shirt",
-                      "value": "repurpose",
+                      "displayValue": "Intelligent Soft Towels Small Wooden Shirt",
+                      "value": "turquoise",
                       "valueFormat": 0,
                     },
                   },
-                  "circuit": PropertyRecord {
+                  "pixel": PropertyRecord {
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "Cambridgeshire Islands",
-                      "name": "circuit",
-                      "typename": "text",
+                      "displayLabel": "payment 1080p",
+                      "name": "pixel",
+                      "typename": "boolean",
                     },
                     "value": Object {
                       "displayValue": "",
@@ -582,37 +569,38 @@ Object {
             },
             PropertyRecord {
               "isMerged": false,
-              "isReadonly": false,
+              "isReadonly": true,
               "property": Object {
-                "displayLabel": "Thailand",
-                "name": "Principal",
-                "typename": "mediumint",
+                "displayLabel": "scalable asymmetric",
+                "name": "Cambridgeshire",
+                "typename": "point",
               },
               "value": Object {
                 "members": Object {
-                  "Books": PropertyRecord {
-                    "description": "Manager calculating",
+                  "local area network": PropertyRecord {
+                    "description": "experiences Refined Fresh Ball",
                     "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "Investment Account SCSI",
+                      "displayLabel": "Streamlined interface engineer",
                       "editor": Object {
-                        "name": "Handmade",
+                        "name": "Generic",
                         "params": Array [],
                       },
-                      "name": "Books",
-                      "typename": "point",
+                      "name": "local area network",
+                      "typename": "geometry",
                     },
                     "value": Object {
-                      "displayValue": "Manager calculating",
-                      "value": "Guinea Franc",
+                      "displayValue": "experiences Refined Fresh Ball",
+                      "value": "Credit Card Account",
                       "valueFormat": 0,
                     },
                   },
-                  "circuit": PropertyRecord {
+                  "pixel": PropertyRecord {
+                    "isReadonly": true,
                     "property": Object {
-                      "displayLabel": "Cambridgeshire Islands",
-                      "name": "circuit",
-                      "typename": "text",
+                      "displayLabel": "payment 1080p",
+                      "name": "pixel",
+                      "typename": "boolean",
                     },
                     "value": Object {
                       "displayValue": "",
@@ -625,7 +613,7 @@ Object {
               },
             },
           ],
-          "itemsTypeName": "mediumint",
+          "itemsTypeName": "point",
           "valueFormat": 1,
         },
       },
@@ -639,62 +627,28 @@ Object {
   "categories": Array [
     Object {
       "expand": true,
-      "label": "Administrator",
-      "name": "solid state",
+      "label": "Agent quantify Macedonia",
+      "name": "internet solution",
     },
   ],
   "description": undefined,
-  "label": "Chief New Hampshire",
+  "label": "Awesome Soft Soap",
   "records": Object {
-    "solid state": Array [
+    "internet solution": Array [
       PropertyRecord {
-        "description": "Singapore Dollar Plastic",
-        "isReadonly": true,
+        "autoExpand": true,
         "property": Object {
-          "displayLabel": "XML Designer",
-          "editor": Object {
-            "name": "silver",
-            "params": Array [],
-          },
-          "name": "Web",
-          "typename": "timestamp",
-        },
-        "value": Object {
-          "displayValue": "Singapore Dollar Plastic",
-          "value": "Expanded",
-          "valueFormat": 0,
-        },
-      },
-      PropertyRecord {
-        "property": Object {
-          "displayLabel": "Missouri Montana ADP",
-          "name": "Pound Sterling",
-          "typename": "point",
+          "displayLabel": "Cambridgeshire Ghana input",
+          "name": "payment",
+          "typename": "text",
         },
         "value": Object {
           "members": Object {
-            "Mountains": PropertyRecord {
-              "description": "disintermediate withdrawal",
+            "Car": PropertyRecord {
               "property": Object {
-                "displayLabel": "Officer Forest CSS",
-                "name": "Mountains",
-                "typename": "double",
-              },
-              "value": Object {
-                "displayValue": "disintermediate withdrawal",
-                "value": "Gorgeous",
-                "valueFormat": 0,
-              },
-            },
-            "Yemen": PropertyRecord {
-              "property": Object {
-                "displayLabel": "Squares",
-                "editor": Object {
-                  "name": "Paradigm",
-                  "params": Array [],
-                },
-                "name": "Yemen",
-                "typename": "tinyint",
+                "displayLabel": "e-business South Dakota",
+                "name": "Car",
+                "typename": "mediumint",
               },
               "value": Object {
                 "displayValue": "",
@@ -702,8 +656,40 @@ Object {
                 "valueFormat": 0,
               },
             },
+            "infrastructures": PropertyRecord {
+              "description": "morph",
+              "isReadonly": true,
+              "property": Object {
+                "displayLabel": "Avon Hat Turnpike",
+                "editor": Object {
+                  "name": "hacking",
+                  "params": Array [],
+                },
+                "name": "infrastructures",
+                "typename": "smallint",
+              },
+              "value": Object {
+                "displayValue": "morph",
+                "value": "Towels",
+                "valueFormat": 0,
+              },
+            },
           },
           "valueFormat": 2,
+        },
+      },
+      PropertyRecord {
+        "description": "Georgia bifurcated Mobility",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "emulation",
+          "name": "hub",
+          "typename": "timestamp",
+        },
+        "value": Object {
+          "displayValue": "Georgia bifurcated Mobility",
+          "value": "parsing",
+          "valueFormat": 0,
         },
       },
     ],
@@ -715,36 +701,36 @@ exports[`PropertyDataProvider getData nested content handling returns nested con
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "USB",
-      "name": "Computers",
+      "expand": false,
+      "label": "Ball Metrics models",
+      "name": "circuit",
     },
   ],
   "description": undefined,
-  "label": "Corporate Borders",
+  "label": "matrices",
   "records": Object {
-    "Computers": Array [
+    "circuit": Array [
       PropertyRecord {
-        "description": "architecture Malagasy Ariary",
+        "description": "vortals",
         "property": Object {
-          "displayLabel": "Corner",
-          "editor": Object {
-            "name": "Savings Account",
-            "params": Array [],
-          },
-          "name": "Creek",
-          "typename": "set",
+          "displayLabel": "Soap Communications",
+          "name": "Soft",
+          "typename": "text",
         },
         "value": Object {
-          "displayValue": "architecture Malagasy Ariary",
-          "value": "Michigan",
+          "displayValue": "vortals",
+          "value": "protocol",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Investor",
-          "name": "Steel",
+          "displayLabel": "Iowa",
+          "editor": Object {
+            "name": "Oregon",
+            "params": Array [],
+          },
+          "name": "intuitive",
           "typename": "decimal",
         },
         "value": Object {
@@ -763,37 +749,32 @@ Object {
   "categories": Array [
     Object {
       "expand": true,
-      "label": "HTTP bandwidth",
-      "name": "ability",
+      "label": "Delaware",
+      "name": "Garden",
     },
   ],
   "description": undefined,
-  "label": "reboot EXE",
+  "label": "Small Plastic Shirt Cotton Representative",
   "records": Object {
-    "ability": Array [
+    "Garden": Array [
       PropertyRecord {
-        "description": "Switzerland",
+        "description": "Hat bluetooth",
         "property": Object {
-          "displayLabel": "Home Loan Account",
-          "name": "Tools",
-          "typename": "bigint",
+          "displayLabel": "Dobra Hat AGP",
+          "name": "national",
+          "typename": "text",
         },
         "value": Object {
-          "displayValue": "Switzerland",
-          "value": "Dobra",
+          "displayValue": "Hat bluetooth",
+          "value": "Sharable",
           "valueFormat": 0,
         },
       },
       PropertyRecord {
-        "isReadonly": true,
         "property": Object {
-          "displayLabel": "Intelligent Soft",
-          "editor": Object {
-            "name": "neutral",
-            "params": Array [],
-          },
-          "name": "open architecture",
-          "typename": "datetime",
+          "displayLabel": "Computers",
+          "name": "Fantastic",
+          "typename": "boolean",
         },
         "value": Object {
           "displayValue": "",
@@ -810,7 +791,7 @@ exports[`PropertyDataProvider getData nested content handling returns nothing fo
 Object {
   "categories": Array [],
   "description": undefined,
-  "label": "South Carolina bus",
+  "label": "Frozen",
   "records": Object {},
 }
 `;
@@ -824,8 +805,8 @@ Object {
       "name": "needs-based",
     },
   ],
-  "description": "Bike Centralized",
-  "label": "Curve Canada",
+  "description": "teal Personal Loan Account transmitting",
+  "label": "Customer solutions",
   "records": Object {
     "needs-based": Array [
       PropertyRecord {
@@ -879,29 +860,30 @@ exports[`PropertyDataProvider getData returns primitive property data 1`] = `
 Object {
   "categories": Array [
     Object {
-      "expand": true,
-      "label": "deposit transition Car",
-      "name": "back-end",
+      "expand": false,
+      "label": "Graphical User Interface functionalities",
+      "name": "Trail",
     },
   ],
-  "description": "orchestrate",
-  "label": "Creative Cambridgeshire Mouse",
+  "description": "Analyst Assistant",
+  "label": "Electronics",
   "records": Object {
-    "back-end": Array [
+    "Trail": Array [
       PropertyRecord {
-        "description": "Clothing",
+        "description": "function Cambridgeshire",
+        "isReadonly": true,
         "property": Object {
-          "displayLabel": "Awesome approach",
+          "displayLabel": "Markets systemic white",
           "editor": Object {
-            "name": "sensor",
+            "name": "workforce",
             "params": Array [],
           },
-          "name": "Kids",
-          "typename": "tinyint",
+          "name": "Guam",
+          "typename": "decimal",
         },
         "value": Object {
-          "displayValue": "Clothing",
-          "value": "auxiliary",
+          "displayValue": "function Cambridgeshire",
+          "value": "Executive",
           "valueFormat": 0,
         },
       },
@@ -919,8 +901,8 @@ Object {
       "name": "Identity",
     },
   ],
-  "description": "hierarchy",
-  "label": "parsing application fault-tolerant",
+  "description": "Metal Venezuela",
+  "label": "navigating hack Refined",
   "records": Object {
     "Identity": Array [
       PropertyRecord {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Store navigation property classes separate from related property paths",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
