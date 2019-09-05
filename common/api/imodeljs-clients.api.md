@@ -792,6 +792,7 @@ export class HubCode extends CodeBase {
 export class HubIModel extends WsgInstance {
     createdDate?: string;
     description?: string;
+    extent?: number[];
     id?: GuidString;
     // @internal
     iModelTemplate?: string;
@@ -920,6 +921,7 @@ export class IModelCreatedEvent extends IModelHubGlobalEvent {
 // @beta
 export interface IModelCreateOptions {
     description?: string;
+    extent?: number[];
     path?: string;
     progressCallback?: (progress: ProgressInfo) => void;
     template?: CloneIModelTemplate | EmptyIModelTemplate;

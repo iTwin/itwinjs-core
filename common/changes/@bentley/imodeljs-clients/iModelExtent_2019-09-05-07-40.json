@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added iModel extent property",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Vilius.Kazlauskas@bentley.com"
+}

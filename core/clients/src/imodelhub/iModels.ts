@@ -54,6 +54,10 @@ export class HubIModel extends WsgInstance {
      */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.iModelTemplate")
     public iModelTemplate?: string;
+
+    /** Extent of iModel. Array of coordinates: [0] - south latitude, [1] - west longitude, [2] - north latitude, [3] - east longitude */
+    @ECJsonTypeMap.propertyToJson("wsg", "properties.Extent")
+    public extent?: number[];
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
@@ -272,6 +276,9 @@ export interface IModelCreateOptions {
     timeOutInMilliseconds?: number;
     /** Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default. */
     template?: CloneIModelTemplate | EmptyIModelTemplate;
+
+    /** Extent of iModel. Array of coordinates: [0] - south latitude, [1] - west longitude, [2] - north latitude, [3] - east longitude */
+    extent?: number[];
 }
 
 /**
@@ -321,6 +328,9 @@ export class IModelsHandler {
     private _fileHandler?: FileHandler;
     private _seedFileHandler: SeedFileHandler;
     private static _defaultCreateOptionsProvider: DefaultIModelCreateOptionsProvider;
+    private static readonly _imodelExtentLength: number = 4;
+    private static readonly _imodelExtentLatitudeLimit: number = 90;
+    private static readonly _imodelExtentLongitudeLimit: number = 180;
 
     /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for WSG requests.
@@ -400,7 +410,7 @@ export class IModelsHandler {
      * @param iModelTemplate iModel template.
      * @internal
      */
-    private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string): Promise<HubIModel> {
+    private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, extent?: number[]): Promise<HubIModel> {
         requestContext.enter();
         Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
 
@@ -411,6 +421,8 @@ export class IModelsHandler {
             iModel.description = description;
         if (iModelTemplate)
             iModel.iModelTemplate = iModelTemplate;
+        if (extent)
+            iModel.extent = extent;
 
         try {
             imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
@@ -516,6 +528,35 @@ export class IModelsHandler {
         return Promise.reject(IModelHubClientError.initializationTimeout());
     }
 
+    /**
+     * Verifies iModel extent
+     * @param extent iModel extent
+     * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if extent is invalid.
+     */
+    private validateExtent(extent: number[]): void {
+        if (extent.length === 0)
+            return;
+
+        if (extent.length !== IModelsHandler._imodelExtentLength)
+            throw IModelHubClientError.invalidArgument("extent");
+
+        this.validateExtentCoordinate(extent[0], IModelsHandler._imodelExtentLatitudeLimit);
+        this.validateExtentCoordinate(extent[1], IModelsHandler._imodelExtentLongitudeLimit);
+        this.validateExtentCoordinate(extent[2], IModelsHandler._imodelExtentLatitudeLimit);
+        this.validateExtentCoordinate(extent[3], IModelsHandler._imodelExtentLongitudeLimit);
+    }
+
+    /**
+     * Validates iModel extent coordinate
+     * @param coordinate iModel extent coordinate
+     * @param limit Coordinate limit value (latitude/longitude max value)
+     * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if coordinate is invalid.
+     */
+    private validateExtentCoordinate(coordinate: number, limit: number): void {
+        if (coordinate < -limit || coordinate > limit)
+            throw IModelHubClientError.invalidArgument("extent");
+    }
+
     /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
      * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
      * @param requestContext The client request context.
@@ -535,6 +576,9 @@ export class IModelsHandler {
         createOptions = createOptions || {};
         await this.setupOptionDefaults(createOptions);
 
+        if (createOptions.extent)
+            this.validateExtent(createOptions.extent);
+
         if (createOptions.path)
             createOptions.template = undefined;
 
@@ -548,7 +592,7 @@ export class IModelsHandler {
             return Promise.reject(IModelHubClientError.fileNotFound());
 
         const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
-        const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template);
+        const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.extent);
         requestContext.enter();
 
         if (createOptions.template === iModelTemplateEmpty) {
