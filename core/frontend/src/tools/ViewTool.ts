@@ -1722,6 +1722,7 @@ export class RotateViewTool extends ViewManip {
  */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
+  public static iconSpec = "icon-view-navigation";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
@@ -1733,6 +1734,7 @@ export class LookViewTool extends ViewManip {
  */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
+  public static iconSpec = "icon-move";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
@@ -1822,6 +1824,7 @@ export class FitViewTool extends ViewTool {
  */
 export class StandardViewTool extends ViewTool {
   public static toolId = "View.Standard";
+  public static iconSpec = "icon-cube-faces-top";
   constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
 
   public onPostInstall() {
@@ -2311,6 +2314,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
  */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
+  public static iconSpec = "icon-window-backward";
 
   public onPostInstall() {
     if (this.viewport)
@@ -2324,6 +2328,7 @@ export class ViewUndoTool extends ViewTool {
  */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
+  public static iconSpec = "icon-window-forward";
 
   public onPostInstall() {
     if (this.viewport)

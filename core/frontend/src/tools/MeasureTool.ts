@@ -92,6 +92,7 @@ class MeasureMarker extends Marker {
 /** @alpha */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
+  public static iconSpec = "icon-measure-distance";
   protected readonly _locationData = new Array<{ point: Point3d, refAxes: Matrix3d }>();
   protected readonly _acceptedSegments = new Array<{ distance: number, slope: number, start: Point3d, end: Point3d, delta: Vector3d, refAxes: Matrix3d, marker: MeasureMarker }>();
   protected _totalDistance: number = 0.0;
@@ -527,6 +528,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
 /** @alpha */
 export class MeasureLocationTool extends PrimitiveTool {
   public static toolId = "Measure.Location";
+  public static iconSpec = "icon-measure-location";
   protected readonly _acceptedLocations: MeasureMarker[] = [];
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
@@ -938,6 +940,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
 /** @alpha */
 export class MeasureLengthTool extends MeasureElementTool {
   public static toolId = "Measure.Length";
+  public static iconSpec = "icon-measure-2d";
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateLengths; }
 
   public onRestartTool(): void {
@@ -950,6 +953,7 @@ export class MeasureLengthTool extends MeasureElementTool {
 /** @alpha */
 export class MeasureAreaTool extends MeasureElementTool {
   public static toolId = "Measure.Area";
+  public static iconSpec = "icon-measure-area";
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateAreas; }
 
   public onRestartTool(): void {
@@ -962,6 +966,7 @@ export class MeasureAreaTool extends MeasureElementTool {
 /** @alpha */
 export class MeasureVolumeTool extends MeasureElementTool {
   public static toolId = "Measure.Volume";
+  public static iconSpec = "icon-measure-3d";
   protected getOperation(): MassPropertiesOperation { return MassPropertiesOperation.AccumulateVolumes; }
 
   public onRestartTool(): void {

@@ -348,6 +348,7 @@ export class ViewClipTool extends PrimitiveTool {
 /** @alpha A tool to remove a clip volume for a view */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
+  public static iconSpec = "icon-section-tool";
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && ViewClipTool.hasClip(vp)); }
 
   protected showPrompt(): void { this.outputPrompt("Clear.Prompts.FirstPoint"); }
@@ -377,7 +378,7 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
-  public static iconSpec = "icon-plane";
+  public static iconSpec = "icon-section-plane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
@@ -427,6 +428,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
+  public static iconSpec = "icon-section-shape";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
@@ -612,6 +614,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying range corners */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
+  public static iconSpec = "icon-section-range";
   protected _corner?: Point3d;
 
   protected showPrompt(): void { this.outputPrompt(undefined === this._corner ? "ByRange.Prompts.FirstPoint" : "ByRange.Prompts.NextPoint"); }
@@ -699,6 +702,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by element(s) */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
+  public static iconSpec = "icon-section-element";
   constructor(clipEventHandler?: ViewClipEventHandler, protected _alwaysUseRange: boolean = false) { super(clipEventHandler); }
 
   protected showPrompt(): void { this.outputPrompt("ByElement.Prompts.FirstPoint"); }

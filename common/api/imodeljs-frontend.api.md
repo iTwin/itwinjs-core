@@ -3737,6 +3737,8 @@ export enum LockedStates {
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     static toolId: string;
@@ -3934,6 +3936,8 @@ export class MeasureAreaTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onRestartTool(): void;
     // (undocumented)
     static toolId: string;
@@ -3973,6 +3977,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     protected getReferenceAxes(vp?: Viewport): Matrix3d;
     // (undocumented)
     protected getSnapPoints(): Point3d[] | undefined;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
@@ -4083,6 +4089,8 @@ export class MeasureLengthTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onRestartTool(): void;
     // (undocumented)
     static toolId: string;
@@ -4100,6 +4108,8 @@ export class MeasureLocationTool extends PrimitiveTool {
     decorateSuspended(context: DecorateContext): void;
     // (undocumented)
     protected getMarkerToolTip(point: Point3d): Promise<HTMLElement>;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
@@ -4132,6 +4142,8 @@ export class MeasureLocationTool extends PrimitiveTool {
 export class MeasureVolumeTool extends MeasureElementTool {
     // (undocumented)
     protected getOperation(): MassPropertiesOperation;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onRestartTool(): void;
     // (undocumented)
@@ -5926,6 +5938,8 @@ export class ScreenViewport extends Viewport {
 export class ScrollViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     static toolId: string;
@@ -6562,6 +6576,8 @@ export enum StandardViewId {
 // @public
 export class StandardViewTool extends ViewTool {
     constructor(viewport: ScreenViewport, _standardViewId: StandardViewId);
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onPostInstall(): void;
     // (undocumented)
@@ -8045,6 +8061,8 @@ export class ViewClipByElementTool extends ViewClipTool {
     // (undocumented)
     doClipToSelectedElements(viewport: Viewport): Promise<boolean>;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onPostInstall(): void;
@@ -8086,6 +8104,8 @@ export class ViewClipByRangeTool extends ViewClipTool {
     // (undocumented)
     protected getClipRange(range: Range3d, transform: Transform, ev: BeButtonEvent): boolean;
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
@@ -8107,6 +8127,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
     decorate(context: DecorateContext): void;
     // (undocumented)
     protected getClipPoints(ev: BeButtonEvent): Point3d[];
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     // (undocumented)
@@ -8141,6 +8163,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
 export class ViewClipClearTool extends ViewClipTool {
     // (undocumented)
     protected doClipClear(viewport: Viewport): boolean;
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
@@ -9114,6 +9138,8 @@ export class ViewRect {
 // @public
 export class ViewRedoTool extends ViewTool {
     // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
     onPostInstall(): void;
     // (undocumented)
     static toolId: string;
@@ -9468,6 +9494,8 @@ export enum ViewUndoEvent {
 
 // @public
 export class ViewUndoTool extends ViewTool {
+    // (undocumented)
+    static iconSpec: string;
     // (undocumented)
     onPostInstall(): void;
     // (undocumented)
