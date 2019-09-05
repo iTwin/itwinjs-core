@@ -261,7 +261,7 @@ export class NestedContentField extends Field {
    */
   public constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription,
     isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath,
-    nestedFields: Field[], autoExpand?: boolean, editor?: EditorDescription) {
+    nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean) {
     super(category, name, label, description, isReadonly, priority, editor);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;

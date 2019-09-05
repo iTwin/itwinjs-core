@@ -107,7 +107,7 @@ describe("Descriptor", () => {
       };
       const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], faker.random.boolean());
+        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], undefined, faker.random.boolean());
       descriptor.fields.push(nestedField);
       expect(descriptor.getFieldByName("does not exist", true)).to.be.undefined;
     });
@@ -126,7 +126,7 @@ describe("Descriptor", () => {
       };
       const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], faker.random.boolean());
+        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], undefined, faker.random.boolean());
       descriptor.fields.push(nestedField);
       expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
     });
