@@ -749,8 +749,8 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], autoExpand: boolean, editor?: EditorDescription);
-    autoExpand: boolean;
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], autoExpand?: boolean, editor?: EditorDescription);
+    autoExpand?: boolean;
     contentClassInfo: ClassInfo;
     // @internal
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
