@@ -3,20 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { ChangeOpCode, IModelVersion } from "@bentley/imodeljs-common";
+import { Point3d } from "@bentley/geometry-core";
+import { ChangeOpCode, ColorDef, IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import { ChangeSummaryExtractOptions, InstanceChange } from "../../ChangeSummaryManager";
+import { ElementAspect, ExternalSourceAspect } from "../../ElementAspect";
 import { Entity } from "../../Entity";
-import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, KeepBriefcase, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, Element, IModelDb, IModelJsFs, KeepBriefcase, KnownLocations, OpenParams } from "../../imodeljs-backend";
+import { Model } from "../../Model";
+import { Relationship } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { assertTargetDbContents, assertUpdatesInTargetDb, populateSourceDb, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb } from "../IModelTransformerUtils";
+import { assertTargetDbContents, assertUpdatesInTargetDb, populateSourceDb, populateTeamIModel, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
-import { Model } from "../../Model";
-import { Relationship } from "../../Relationship";
-import { ElementAspect } from "../../ElementAspect";
 
 class EntityTypeChanges {
   public insertedIds: Id64Set = new Set<Id64String>();
@@ -238,6 +239,58 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.models.deletedIds.size, 0);
         assert.equal(targetDbChanges.relationships.deletedIds.size, 0);
       }
+
+      await sourceDb.close(requestContext, KeepBriefcase.No);
+      await targetDb.close(requestContext, KeepBriefcase.No);
+    } finally {
+      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, sourceIModelId);
+      await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, targetIModelId);
+    }
+  });
+
+  // WIP: Need fix from Raman before IModelTransformer portion of test can be added
+  it.skip("Clone/upgrade test", async () => {
+    const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+    const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
+    const sourceIModelId: GuidString = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);
+    assert.isTrue(Guid.isGuid(sourceIModelId));
+    const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
+    const targetIModelId: GuidString = await HubUtility.recreateIModel(requestContext, projectId, targetIModelName);
+    assert.isTrue(Guid.isGuid(targetIModelId));
+
+    try {
+      const bisCoreSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn", "BisCore.ecschema.xml");
+
+      // open/upgrade sourceDb
+      const sourceDb: IModelDb = await IModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      assert.isFalse(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
+      sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      await sourceDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+
+      // push sourceDb schema changes
+      await sourceDb.concurrencyControl.request(requestContext);
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges(requestContext, () => "Upgrade BisCore");
+
+      // populate sourceDb
+      populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      await sourceDb.concurrencyControl.request(requestContext);
+      sourceDb.saveChanges();
+      await sourceDb.pushChanges(requestContext, () => "Populate Source");
+
+      // open/upgrade targetDb
+      const targetDb: IModelDb = await IModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      assert.isFalse(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect iModelHub to be using an old version of BisCore before ExternalSourceAspect was introduced");
+      targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+      await targetDb.importSchemas(requestContext, [bisCoreSchemaFileName]);
+      assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+
+      // push targetDb schema changes
+      await targetDb.concurrencyControl.request(requestContext);
+      targetDb.saveChanges();
+      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore"); // WIP: currently causes BeAssert in RevisionManager::CreateRevisionObject renaming temp revision changes file
 
       await sourceDb.close(requestContext, KeepBriefcase.No);
       await targetDb.close(requestContext, KeepBriefcase.No);

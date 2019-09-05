@@ -522,13 +522,19 @@ export function createTeamIModel(teamName: string, teamOrigin: Point3d, teamColo
   }
   const iModelDb: IModelDb = IModelDb.createSnapshot(teamFile, { rootSubject: { name: teamName } });
   assert.exists(iModelDb);
-  const contextSubjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, "Context");
+  populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
+  iModelDb.saveChanges();
+  return iModelDb;
+}
+
+export function populateTeamIModel(teamDb: IModelDb, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): void {
+  const contextSubjectId: Id64String = Subject.insert(teamDb, IModel.rootSubjectId, "Context");
   assert.isTrue(Id64.isValidId64(contextSubjectId));
-  const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, `Definition${teamName}`);
+  const definitionModelId = DefinitionModel.insert(teamDb, IModel.rootSubjectId, `Definition${teamName}`);
   assert.isTrue(Id64.isValidId64(definitionModelId));
-  const spatialCategoryId = insertSpatialCategory(iModelDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
+  const spatialCategoryId = insertSpatialCategory(teamDb, definitionModelId, `SpatialCategory${teamName}`, teamColor);
   assert.isTrue(Id64.isValidId64(spatialCategoryId));
-  const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, `Physical${teamName}`);
+  const physicalModelId = PhysicalModel.insert(teamDb, IModel.rootSubjectId, `Physical${teamName}`);
   assert.isTrue(Id64.isValidId64(physicalModelId));
   const physicalObjectProps1: GeometricElement3dProps = {
     classFullName: PhysicalObject.classFullName,
@@ -542,10 +548,8 @@ export function createTeamIModel(teamName: string, teamOrigin: Point3d, teamColo
       angles: YawPitchRollAngles.createDegrees(0, 0, 0),
     },
   };
-  const physicalObjectId1: Id64String = iModelDb.elements.insertElement(physicalObjectProps1);
+  const physicalObjectId1: Id64String = teamDb.elements.insertElement(physicalObjectProps1);
   assert.isTrue(Id64.isValidId64(physicalObjectId1));
-  iModelDb.saveChanges();
-  return iModelDb;
 }
 
 export function createSharedIModel(teamNames: string[]): IModelDb {
