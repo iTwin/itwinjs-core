@@ -431,7 +431,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
@@ -457,7 +457,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: undefined,
       };
@@ -473,7 +473,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
@@ -508,7 +508,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
@@ -543,7 +543,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: undefined,
       };
@@ -560,7 +560,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: undefined,
       };
@@ -577,7 +577,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: undefined,
       };
@@ -593,7 +593,7 @@ describe("ContentBuilder", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
       const values = {
         [field.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
@@ -620,10 +620,10 @@ describe("ContentBuilder", () => {
       const field12 = createRandomPrimitiveField();
       const field2 = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [field11, field12]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [field11, field12], undefined, faker.random.boolean());
       const field3 = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [field2]);
+        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [field2], undefined, faker.random.boolean());
       const values = {
         [field3.name]: [{
           primaryKeys: [createRandomECInstanceKey()],

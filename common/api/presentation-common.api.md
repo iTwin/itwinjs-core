@@ -749,7 +749,8 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
+    autoExpand?: boolean;
     contentClassInfo: ClassInfo;
     // @internal
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
@@ -1196,6 +1197,7 @@ export enum RelatedPropertiesSpecialValues {
 
 // @public
 export interface RelatedPropertiesSpecification {
+    autoExpand?: boolean;
     isPolymorphic?: boolean;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     propertyNames?: string[] | RelatedPropertiesSpecialValues;
@@ -1393,7 +1395,9 @@ export interface SchemasSpecification {
 // @public
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
+    navigationPropertyClasses: RelatedClassInfo[];
     pathToPrimaryClass: RelationshipPath;
+    relatedInstanceClasses: RelatedClassInfo[];
     relatedPropertyPaths: RelationshipPath[];
     selectClassInfo: ClassInfo;
 }

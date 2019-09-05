@@ -12,7 +12,7 @@ import {
   createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON,
+  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON, createRandomRelatedClassInfoJSON,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
@@ -678,6 +678,8 @@ describe("PresentationManager", () => {
           isSelectPolymorphic: true,
           pathToPrimaryClass: createRandomRelationshipPathJSON(1),
           relatedPropertyPaths: [createRandomRelationshipPathJSON(1)],
+          navigationPropertyClasses: [createRandomRelatedClassInfoJSON()],
+          relatedInstanceClasses: [createRandomRelatedClassInfoJSON()],
         }],
         fields: [{
           name: "Primitive property field with editor",
@@ -791,6 +793,7 @@ describe("PresentationManager", () => {
           } as FieldJSON],
           isReadonly: faker.random.boolean(),
           priority: faker.random.number(),
+          autoExpand: faker.random.boolean(),
         } as NestedContentFieldJSON],
         contentFlags: 0,
       };
@@ -886,6 +889,8 @@ describe("PresentationManager", () => {
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
+            navigationPropertyClasses: [],
+            relatedInstanceClasses: [],
           } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
@@ -960,6 +965,8 @@ describe("PresentationManager", () => {
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
+            navigationPropertyClasses: [],
+            relatedInstanceClasses: [],
           } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
@@ -1033,6 +1040,8 @@ describe("PresentationManager", () => {
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
+            navigationPropertyClasses: [],
+            relatedInstanceClasses: [],
           } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
@@ -1109,6 +1118,8 @@ describe("PresentationManager", () => {
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
+            navigationPropertyClasses: [],
+            relatedInstanceClasses: [],
           } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
@@ -1191,6 +1202,8 @@ describe("PresentationManager", () => {
             isSelectPolymorphic: true,
             pathToPrimaryClass: [],
             relatedPropertyPaths: [],
+            navigationPropertyClasses: [],
+            relatedInstanceClasses: [],
           } as SelectClassInfoJSON],
           fields: [{
             name: fieldName,
@@ -1363,6 +1376,8 @@ describe("PresentationManager", () => {
               isSelectPolymorphic: true,
               pathToPrimaryClass: [],
               relatedPropertyPaths: [],
+              navigationPropertyClasses: [],
+              relatedInstanceClasses: [],
             } as SelectClassInfoJSON],
             fields: [],
             contentFlags: 0,
@@ -1420,6 +1435,8 @@ describe("PresentationManager", () => {
               isSelectPolymorphic: true,
               pathToPrimaryClass: [],
               relatedPropertyPaths: [],
+              navigationPropertyClasses: [],
+              relatedInstanceClasses: [],
             } as SelectClassInfoJSON],
             fields: [],
             contentFlags: 0,
