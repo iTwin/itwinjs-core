@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "1.5.0-dev.2",
+  "version": "1.5.0-dev.3",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -40,12 +40,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.5.0-dev.2"
+    "@bentley/bentleyjs-core": "^1.5.0-dev.3"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "1.5.0-dev.2",
-    "@bentley/build-tools": "1.5.0-dev.2",
-    "@bentley/webpack-tools": "1.5.0-dev.2",
+    "@bentley/bentleyjs-core": "1.5.0-dev.3",
+    "@bentley/build-tools": "1.5.0-dev.3",
+    "@bentley/webpack-tools": "1.5.0-dev.3",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
