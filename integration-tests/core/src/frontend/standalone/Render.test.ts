@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { testViewports, comparePixelData, Color } from "../TestViewport";
+import { testViewports, comparePixelData, Color, testOnScreenViewport } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
-import { RenderMemory, Pixel, RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
+import { RenderMemory, Pixel, RenderSystem, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   IModelApp,
   IModelConnection,
@@ -16,8 +16,10 @@ import {
   SpatialViewState,
   Viewport,
   ViewRect,
+  Decorator,
+  DecorateContext,
 } from "@bentley/imodeljs-frontend";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d, Point3d } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("Test VAO creation", () => {
@@ -428,6 +430,38 @@ describe("Render mirukuru", () => {
           }
         }
       }
+    });
+  });
+
+  it("should show transparency for polylines", async () => {
+    const rect = new ViewRect(0, 0, 200, 150);
+    await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
+
+      class TestPolylineDecorator implements Decorator {
+        public decorate(context: DecorateContext) {
+          expect(context.viewport === vp);
+          // draw semi-transparent polyline from top left to bottom right of vp
+          const overlayBuilder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+          const polylineColor = ColorDef.from(0, 255, 0, 128);
+          overlayBuilder.setSymbology(polylineColor, polylineColor, 4);
+          overlayBuilder.addLineString([
+            new Point3d(0, 0, 0),
+            new Point3d(rect.width - 1, rect.height - 1, 0),
+          ]);
+          context.addDecorationFromBuilder(overlayBuilder);
+        }
+      }
+
+      const decorator = new TestPolylineDecorator();
+      IModelApp.viewManager.addDecorator(decorator);
+      await vp.drawFrame();
+      IModelApp.viewManager.dropDecorator(decorator);
+
+      // expect green blended with black background
+      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      expect(testColor.r).equals(0);
+      expect(testColor.g).approximately(128, 3);
+      expect(testColor.b).equals(0);
     });
   });
 
