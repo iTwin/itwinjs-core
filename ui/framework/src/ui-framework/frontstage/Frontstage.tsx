@@ -443,7 +443,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
     /** For Zones area within the Nine-zone area; excludes */
     const zonesStyle: React.CSSProperties = {
-      position: "absolute",
       pointerEvents: "none",
       display: "flex",
       flexFlow: "column",
