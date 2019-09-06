@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ensure IModelApp.queryRenderCompatibility() always returns an error message if webgl context creation fails.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

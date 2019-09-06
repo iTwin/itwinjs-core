@@ -611,7 +611,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl {
       hasMajorPerformanceCaveat = true;
       context = System.createContext(canvas); // try to create context without black-listed GPU
       if (undefined === context)
-        return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent };
+        return {
+          status: WebGLRenderCompatibilityStatus.CannotCreateContext,
+          missingOptionalFeatures: [],
+          missingRequiredFeatures: [],
+          userAgent: navigator.userAgent,
+          contextErrorMessage: errorMessage,
+        };
     }
 
     const capabilities = new Capabilities();
