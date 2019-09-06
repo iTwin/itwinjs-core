@@ -2054,7 +2054,8 @@ export class WindowAreaTool extends ViewTool {
       delta.z = vp.view.getExtents().z;
 
       // make sure its not too big or too small
-      vp.view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== vp.view.validateViewDelta(delta, true))
+        return;
 
       vp.view.setExtents(delta);
 

@@ -9228,6 +9228,8 @@ export abstract class ViewState extends ElementState {
     load(): Promise<void>;
     lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent): void;
+    // @internal (undocumented)
+    static maxSkew: number;
     readonly name: string;
     // @internal
     abstract onRenderFrame(_viewport: Viewport): void;

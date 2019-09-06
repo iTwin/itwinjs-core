@@ -2182,7 +2182,8 @@ export abstract class Viewport implements IDisposable {
       delta.y *= factor;
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      view.validateViewDelta(delta, true);
+      if (ViewStatus.Success !== view.validateViewDelta(delta, true))
+        return;
 
       const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 

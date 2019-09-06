@@ -583,26 +583,26 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect rato skew),
+  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect ratio skew),
    * by adjusting one dimension or the other.
+   * @param origin origin of view. adjusted by this method.
+   * @param extents view aligned extents (note: aspect ratio = `x/y`). Either extents.x or extents.y is adjusted by this method.
+   * @param windowAspect the aspect ratio (width/height) to match.
    * @internal
    */
   public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
     const origExtents = extents.clone();
-    const viewAspect = extents.x / extents.y;
-    if (viewAspect > windowAspect)
+    if (extents.x > (windowAspect * extents.y))
       extents.y = extents.x / windowAspect;
     else
       extents.x = extents.y * windowAspect;
 
-    // skew always adjusts y
-    const maxSkew = 25;
-    extents.y /= Geometry.clamp(this.getAspectRatioSkew(), 1 / maxSkew, maxSkew);
+    extents.y /= this.getAspectRatioSkew(); // skew always adjusts y
 
     const rotation = this.getRotation();
-    rotation.multiplyVectorInPlace(origin);
-    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5);
-    rotation.multiplyTransposeVectorInPlace(origin);
+    rotation.multiplyVectorInPlace(origin); // get origin into view-aligned coordinates
+    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5); // adjust by half of the distance we modified extents to keep centered
+    rotation.multiplyTransposeVectorInPlace(origin); // back to world coordinates
   }
 
   /** @internal */
@@ -706,8 +706,14 @@ export abstract class ViewState extends ElementState {
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate one axis of the view. */
-  public getAspectRatioSkew(): number { return JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0); }
+  /** @internal */
+  public static maxSkew = 25;
+
+  /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate the y axis of the view. */
+  public getAspectRatioSkew(): number {
+    const skew = JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0);
+    return Geometry.clamp(skew, 1 / ViewState.maxSkew, ViewState.maxSkew);
+  }
 
   /** Set the aspect ratio skew (x/y) for this view. To remove aspect ratio skew, pass 1.0 for val. */
   public setAspectRatioSkew(val: number) {
@@ -897,7 +903,8 @@ export abstract class ViewState extends ElementState {
         newDelta.z = diag;
     }
 
-    this.validateViewDelta(newDelta, true);
+    if (ViewStatus.Success !== this.validateViewDelta(newDelta, true))
+      return;
 
     this.setExtents(newDelta);
     if (aspect)
@@ -1800,7 +1807,7 @@ export class DrawingViewState extends ViewState2d {
     const treeRef = this._tileTreeRef;
     const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
     if (undefined !== tree) {
-      this._modelLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+      this._modelLimits = { min: Constant.oneMillimeter, max: 10.0 * tree.range.maxLength() };
       return this._modelLimits;
     }
 
