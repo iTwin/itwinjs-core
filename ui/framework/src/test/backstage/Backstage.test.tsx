@@ -42,19 +42,19 @@ describe("Backstage", () => {
     });
 
     it("renders correctly - isVisible", () => {
-      shallow(<Backstage isVisible={true} />).should.matchSnapshot();
+      shallow(<Backstage isVisible={true} />).dive().should.matchSnapshot();
     });
 
     it("renders correctly - !isVisible", () => {
-      shallow(<Backstage isVisible={false} />).should.matchSnapshot();
+      shallow(<Backstage isVisible={false} />).dive().should.matchSnapshot();
     });
 
     it("renders correctly with header", () => {
-      shallow(<Backstage header={<div> Hello World! </div>} />).should.matchSnapshot();
+      shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot();
     });
 
     it("renders correctly with AccessToken", () => {
-      shallow(<Backstage accessToken={new MockAccessToken()} />).should.matchSnapshot();
+      shallow(<Backstage accessToken={new MockAccessToken()} />).dive().should.matchSnapshot();
     });
 
     it("with child items", () => {
@@ -67,7 +67,7 @@ describe("Backstage", () => {
           <SeparatorBackstageItem />
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>,
-      ).should.matchSnapshot();
+      ).dive().should.matchSnapshot();
     });
 
     it("should show", () => {

@@ -9,6 +9,7 @@ import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
+import { BackstageItemProps as BackstageItemProps_2 } from '@bentley/ui-ninezone';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
 import { BaseTimelineDataProvider } from '@bentley/ui-components';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -71,6 +72,7 @@ import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/imodeljs-frontend';
 import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
+import { SafeAreaInsets } from '@bentley/ui-ninezone';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SelectionMode } from '@bentley/ui-components';
 import { SheetProps } from '@bentley/imodeljs-common';
@@ -318,6 +320,9 @@ export interface BackstageEventArgs {
     // (undocumented)
     isVisible: boolean;
 }
+
+// @internal (undocumented)
+export const BackstageItem: (props: BackstageItemProps_2) => JSX.Element;
 
 // @beta
 export class BackstageItemManager {
@@ -1616,6 +1621,8 @@ export interface FrameworkStagePanelProps {
     getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
     // (undocumented)
     initialSize?: number;
+    // (undocumented)
+    isInFooterMode: boolean;
     // (undocumented)
     isTargeted: boolean;
     // (undocumented)
@@ -3052,6 +3059,9 @@ export interface RotationData {
 // @internal (undocumented)
 export const RULESET: Ruleset;
 
+// @alpha
+export const SafeAreaContext: React_2.Context<SafeAreaInsets>;
+
 // @beta
 export class SavedView {
     static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: SavedViewProps): boolean;
@@ -3453,6 +3463,8 @@ export interface StagePanelRuntimeProps {
     draggedWidgetId: WidgetZoneId | undefined;
     // (undocumented)
     getWidgetContentRef: (id: WidgetZoneId) => React_2.Ref<HTMLDivElement>;
+    // (undocumented)
+    isInFooterMode: boolean;
     // (undocumented)
     isTargeted: boolean;
     // (undocumented)

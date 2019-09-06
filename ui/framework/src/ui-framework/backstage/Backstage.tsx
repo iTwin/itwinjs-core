@@ -5,12 +5,11 @@
 /** @module Backstage */
 
 import * as React from "react";
-
 import { UiEvent, CommonProps } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
-
 import { CommandItemDef } from "../shared/CommandItemDef";
+import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 
 /** [[BackstageEvent]] arguments.
@@ -122,16 +121,21 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
       header = <UserProfileBackstageItem accessToken={this.props.accessToken} />;
 
     return (
-      <NZ_Backstage
-        className={this.props.className}
-        header={header}
-        isOpen={this.state.isVisible}
-        onClose={this._onClose}
-        showOverlay={this.props.showOverlay}
-        style={this.props.style}
-      >
-        {this.props.children}
-      </NZ_Backstage>
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <NZ_Backstage
+            className={this.props.className}
+            header={header}
+            isOpen={this.state.isVisible}
+            onClose={this._onClose}
+            safeAreaInsets={safeAreaInsets}
+            showOverlay={this.props.showOverlay}
+            style={this.props.style}
+          >
+            {this.props.children}
+          </NZ_Backstage>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 }

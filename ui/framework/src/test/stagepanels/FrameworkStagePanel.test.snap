@@ -6,6 +6,7 @@ exports[`FrameworkStagePanel should render SplitterPaneTarget 1`] = `
 <StagePanel
   className="uifw-stagepanel"
   onToggleCollapse={[Function]}
+  safeAreaInsets={0}
   type={2}
 >
   <div
@@ -60,6 +61,7 @@ exports[`FrameworkStagePanel should render SplitterPaneTarget 1`] = `
 exports[`FrameworkStagePanel should render StagePanelTarget 1`] = `
 <StagePanelTarget
   onTargetChanged={[Function]}
+  safeAreaInsets={0}
   type={2}
 />
 `;
@@ -68,6 +70,7 @@ exports[`FrameworkStagePanel should render WidgetStack with openWidgetId and act
 <StagePanel
   className="uifw-stagepanel"
   onToggleCollapse={[Function]}
+  safeAreaInsets={0}
   type={2}
 >
   <div
@@ -130,6 +133,7 @@ exports[`FrameworkStagePanel should render collapsed StagePanel 1`] = `
 <StagePanel
   className="uifw-stagepanel"
   onToggleCollapse={[Function]}
+  safeAreaInsets={0}
   type={2}
 >
   <div

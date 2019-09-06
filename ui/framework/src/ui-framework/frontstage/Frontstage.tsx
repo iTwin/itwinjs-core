@@ -326,6 +326,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const panelRuntimeProps: StagePanelRuntimeProps = {
           draggedWidgetId: draggedWidget ? draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
+          isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
           panel,
           panelDef,

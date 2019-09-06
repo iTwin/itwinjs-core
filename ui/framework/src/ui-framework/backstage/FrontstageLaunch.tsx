@@ -5,16 +5,13 @@
 /** @module Backstage */
 
 import * as React from "react";
-
+import { Logger } from "@bentley/bentleyjs-core";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { FrontstageManager, FrontstageActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { PropsHelper } from "../utils/PropsHelper";
-import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps } from "./BackstageItem";
-
-import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
+import { Backstage } from "./Backstage";
+import { BackstageItemProps, BackstageItemState, getBackstageItemStateFromProps, BackstageItem } from "./BackstageItem";
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
@@ -105,7 +102,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public render(): React.ReactNode {
     return (
-      <NZ_BackstageItem
+      <BackstageItem
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
@@ -114,7 +111,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
         subtitle={this.state.subtitle}
       >
         {this.state.label}
-      </NZ_BackstageItem>
+      </BackstageItem>
     );
   }
 }

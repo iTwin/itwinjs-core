@@ -5,6 +5,7 @@ exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
   header={null}
   isOpen={false}
   onClose={[Function]}
+  safeAreaInsets={0}
   showOverlay={true}
 />
 `;
@@ -14,6 +15,7 @@ exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
   header={null}
   isOpen={true}
   onClose={[Function]}
+  safeAreaInsets={0}
   showOverlay={true}
 />
 `;
@@ -31,6 +33,7 @@ exports[`Backstage <Backstage /> renders correctly with AccessToken 1`] = `
   }
   isOpen={false}
   onClose={[Function]}
+  safeAreaInsets={0}
   showOverlay={true}
 />
 `;
@@ -44,6 +47,7 @@ exports[`Backstage <Backstage /> renders correctly with header 1`] = `
   }
   isOpen={false}
   onClose={[Function]}
+  safeAreaInsets={0}
   showOverlay={true}
 />
 `;
@@ -53,6 +57,7 @@ exports[`Backstage <Backstage /> with child items 1`] = `
   header={null}
   isOpen={true}
   onClose={[Function]}
+  safeAreaInsets={0}
   showOverlay={true}
 >
   <CommandLaunchBackstageItem

@@ -17,6 +17,7 @@ import { ToolUiManager } from "../toolsettings/ToolUiManager";
 import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
+import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 
 /** State for the ToolSettingsZone content.
  */
@@ -79,16 +80,22 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
       };
 
       return (
-        <Zone
-          className={this.props.className}
-          style={this.props.style}
-          bounds={this.props.bounds}
-          isHidden={this.props.isHidden}
-        >
-          <div style={divStyle} >
-            {this.getToolSettingsWidget()}
-          </div>
-        </Zone>
+        <SafeAreaContext.Consumer>
+          {(safeAreaInsets) => (
+            <Zone
+              bounds={this.props.bounds}
+              className={this.props.className}
+              id={2}
+              isHidden={this.props.isHidden}
+              safeAreaInsets={safeAreaInsets}
+              style={this.props.style}
+            >
+              <div style={divStyle} >
+                {this.getToolSettingsWidget()}
+              </div>
+            </Zone>
+          )}
+        </SafeAreaContext.Consumer>
       );
     }
 

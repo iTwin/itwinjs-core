@@ -24,6 +24,7 @@ public;Backstage
 beta;BackstageComposer 
 public;BackstageEvent 
 public;BackstageEventArgs
+internal;BackstageItem: (props: BackstageItemProps_2) => JSX.Element
 beta;BackstageItemManager
 public;BackstageItemProps 
 beta;BackstageItemProvider
@@ -279,6 +280,7 @@ public;ReducerActions
 public;ReducerMapActions
 internal;RotationData
 internal;RULESET: Ruleset
+alpha;SafeAreaContext: React_2.Context
 beta;SavedView
 beta;SavedViewLayout
 beta;SavedViewLayoutProps

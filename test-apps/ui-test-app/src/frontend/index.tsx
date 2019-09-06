@@ -28,6 +28,7 @@ import {
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
   BackstageItemManager,
   FrontstageDef,
+  SafeAreaContext,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -47,6 +48,7 @@ import { configure as mobxConfigure } from "mobx";
 import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -470,7 +472,9 @@ export class SampleAppViewer extends React.Component<any> {
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
           <BeDragDropContext>
-            <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+              <ConfigurableUiContent appBackstage={<BackstageComposer />} />
+            </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

@@ -52,6 +52,7 @@ import { Item } from "@src/toolbar/item/Item";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
+import { SafeAreaInsets } from "@src/utilities/SafeAreaInsets";
 import { WidgetContent } from "@src/widget/rectangular/Content";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
 import { TabGroup, HandleMode } from "@src/widget/rectangular/tab/Group";
@@ -331,6 +332,7 @@ interface StatusZoneExampleProps extends MessageProps {
   onOpenWidgetChange: (widget: FooterWidget) => void;
   openWidget: FooterWidget;
   outlineBounds: RectangleProps | undefined;
+  safeAreaInsets: SafeAreaInsets;
   targetBounds: RectangleProps;
   toastMessageKey: React.Key;
 }
@@ -352,15 +354,13 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   private _toolAssistanceTarget = React.createRef<HTMLDivElement>();
 
   public render() {
-    const bounds = Rectangle.create(this.props.bounds);
     return (
       <>
         <Zone
           bounds={this.props.isInFooterMode ? undefined : this.props.bounds}
+          id={8}
           isInFooterMode={this.props.isInFooterMode}
-          style={this.props.isInFooterMode ? {
-            height: `${bounds.getHeight()}px`,
-          } : undefined}
+          safeAreaInsets={this.props.safeAreaInsets}
         >
           <Footer
             isInFooterMode={this.props.isInFooterMode}
@@ -372,6 +372,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                 message={this.props.message}
               />
             }
+            safeAreaInsets={this.props.safeAreaInsets}
           >
             <div ref={this._toolAssistanceTarget}>
               <ToolAssistance
@@ -489,9 +490,11 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
         </Zone>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
-          zoneIndex={8}
           dropTarget={this.props.dropTarget}
+          isInFooterMode={this.props.isInFooterMode}
           onTargetChanged={this.props.onTargetChanged}
+          safeAreaInsets={this.props.safeAreaInsets}
+          zoneIndex={8}
         />
         {this.props.outlineBounds &&
           <Outline bounds={this.props.outlineBounds} />
@@ -684,12 +687,14 @@ class FloatingWidget extends React.PureComponent<FloatingWidgetProps> {
 interface FloatingZoneWidgetProps {
   draggedWidget: DraggedWidgetManagerProps | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  isInFooterMode: boolean;
   onResize: ((zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void) | undefined;
   onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, widgetBounds: RectangleProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
   openWidgetId: WidgetZoneId | undefined;
+  safeAreaInsets: SafeAreaInsets;
   tabIndex: number;
   widget: WidgetManagerProps | undefined;
   zone: ZoneManagerProps;
@@ -703,7 +708,10 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
     return (
       <Zone
         bounds={bounds}
+        id={this.props.zone.id}
         isFloating={!!zone.floating}
+        isInFooterMode={this.props.isInFooterMode}
+        safeAreaInsets={this.props.safeAreaInsets}
         style={zIndex}
       >
         {widget && <FloatingWidget
@@ -943,8 +951,10 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
 interface TargetExampleProps {
   bounds: RectangleProps;
   dropTarget: ZoneTargetType | undefined;
-  zoneIndex: WidgetZoneId;
+  isInFooterMode: boolean;
   onTargetChanged: TargetChangedFn;
+  safeAreaInsets: SafeAreaInsets;
+  zoneIndex: WidgetZoneId;
 }
 
 class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
@@ -952,6 +962,9 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
     return (
       <Zone
         bounds={this.props.bounds}
+        id={this.props.zoneIndex}
+        isInFooterMode={this.props.isInFooterMode}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         {this.props.dropTarget === ZoneTargetType.Merge &&
           <MergeTarget
@@ -1205,8 +1218,8 @@ class Content extends React.PureComponent {
     if (!ctx)
       return;
 
-    this._canvas.current.width = window.innerWidth;
-    this._canvas.current.height = window.innerHeight;
+    this._canvas.current.width = document.body.clientWidth;
+    this._canvas.current.height = document.body.clientHeight;
     this.drawRandomCircles(ctx, this._canvas.current.width, this._canvas.current.height);
 
     this._ctx = ctx;
@@ -1246,8 +1259,8 @@ class Content extends React.PureComponent {
     if (!this._ctx)
       return;
 
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    const width = document.body.clientWidth;
+    const height = document.body.clientHeight;
     this._canvas.current.width = width;
     this._canvas.current.height = height;
     this.drawRandomCircles(this._ctx, width, height);
@@ -1723,6 +1736,7 @@ class GroupColumnTool extends React.PureComponent<GroupColumnToolProps> {
 interface Zone1Props {
   bounds: RectangleProps;
   horizontalTools: Tools;
+  isInFooterMode: boolean;
   onAppButtonClick: () => void;
   onHistoryItemClick: (item: HistoryItem) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
@@ -1731,6 +1745,7 @@ interface Zone1Props {
   onPanelOutsideClick: (toolId: string) => void;
   onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onToolClick: (toolId: string) => void;
+  safeAreaInsets: SafeAreaInsets;
   verticalTools: Tools;
 }
 
@@ -1746,6 +1761,9 @@ class Zone1 extends React.PureComponent<Zone1Props> {
     return (
       <Zone
         bounds={this.props.bounds}
+        id={1}
+        isInFooterMode={this.props.isInFooterMode}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         <ToolsWidget
           button={this._appButton}
@@ -1794,6 +1812,9 @@ class Zone3 extends React.PureComponent<Zone3Props> {
     return (
       <Zone
         bounds={this.props.bounds}
+        id={3}
+        isInFooterMode={this.props.isInFooterMode}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         <ToolsWidget
           isNavigation
@@ -1851,7 +1872,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}
@@ -1941,6 +1962,7 @@ interface BackstageItemExampleProps {
   isDisabled?: boolean;
   label: string;
   onClick: (id: number) => void;
+  safeAreaInsets: SafeAreaInsets;
 }
 
 class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps> {
@@ -1951,6 +1973,7 @@ class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps
         isActive={this.props.isActive}
         isDisabled={this.props.isDisabled}
         onClick={this._handleClick}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         {this.props.label}
       </BackstageItem>
@@ -1965,6 +1988,7 @@ class BackstageItemExample extends React.PureComponent<BackstageItemExampleProps
 interface BackstageExampleProps {
   isOpen: boolean;
   onClose: () => void;
+  safeAreaInsets: SafeAreaInsets;
 }
 
 interface BackstageExampleState {
@@ -1976,45 +2000,71 @@ class BackstageExample extends React.PureComponent<BackstageExampleProps, Backst
     activeItem: 0,
   };
 
+  private getItemProps(itemId: number): BackstageItemExampleProps {
+    return {
+      id: itemId,
+      isActive: itemId === this.state.activeItem,
+      label: `Item ${itemId}`,
+      onClick: this._handleItemClick,
+      safeAreaInsets: this.props.safeAreaInsets,
+    };
+  }
+
   public render() {
     return (
       <Backstage
+        footer={
+          <div style={{ textAlign: "center" }}>Backstage Footer</div>
+        }
         header={
           <UserProfile
             color="#85a9cf"
             initials="NZ"
+            safeAreaInsets={this.props.safeAreaInsets}
           >
             9-Zone
           </UserProfile>
         }
         isOpen={this.props.isOpen}
         onClose={this.props.onClose}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         <BackstageItemExample
-          id={0}
-          isActive={this.state.activeItem === 0}
+          {...this.getItemProps(0)}
           label="Zones"
-          onClick={this._handleItemClick}
         />
         <BackstageItemExample
-          id={1}
-          isActive={this.state.activeItem === 1}
+          {...this.getItemProps(1)}
           isDisabled
           label="Disabled"
-          onClick={this._handleItemClick}
         />
         <BackstageSeparator />
         <BackstageItemExample
-          id={2}
-          isActive={this.state.activeItem === 2}
-          label="Item 2"
-          onClick={this._handleItemClick}
+          {...this.getItemProps(2)}
         />
         <BackstageItemExample
-          id={3}
-          isActive={this.state.activeItem === 3}
-          label="Item 3"
-          onClick={this._handleItemClick}
+          {...this.getItemProps(3)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(4)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(5)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(6)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(7)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(8)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(9)}
+        />
+        <BackstageItemExample
+          {...this.getItemProps(10)}
         />
       </Backstage>
     );
@@ -2031,6 +2081,7 @@ class BackstageExample extends React.PureComponent<BackstageExampleProps, Backst
 }
 
 interface StagePanelTargetExampleProps {
+  safeAreaInsets: SafeAreaInsets;
   type: ExampleStagePanelType;
   onTargetChanged: (target: ExampleStagePanelType | undefined) => void;
 }
@@ -2041,6 +2092,7 @@ class StagePanelTargetExample extends React.PureComponent<StagePanelTargetExampl
     return (
       <StagePanelTarget
         onTargetChanged={this._handleTargetChanged}
+        safeAreaInsets={this.props.safeAreaInsets}
         type={type}
       />
     );
@@ -2108,6 +2160,7 @@ class StagePanelWidget extends React.PureComponent<StagePanelWidgetProps> {
 
 interface WidgetStagePanelProps {
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  isInFooterMode: boolean;
   isSplitterTargetVisible: boolean;
   isZoneTargetVisible: boolean;
   onInitialize: (size: number, type: ExampleStagePanelType) => void;
@@ -2120,6 +2173,7 @@ interface WidgetStagePanelProps {
   onTabDrag: (dragged: PointProps) => void;
   onToggleCollapse: (panel: ExampleStagePanelType) => void;
   panel: NineZoneStagePanelManagerProps;
+  safeAreaInsets: SafeAreaInsets;
   type: ExampleStagePanelType;
   widgets: ZonesManagerWidgetsProps;
 }
@@ -2138,10 +2192,14 @@ class WidgetStagePanel extends React.PureComponent<WidgetStagePanelProps> {
   public render() {
     const type = getStagePanelType(this.props.type);
     const isVertical = StagePanelTypeHelpers.isVertical(type);
+    let safeAreaInsets = this.props.safeAreaInsets;
+    if (this.props.isInFooterMode)
+      safeAreaInsets &= ~SafeAreaInsets.Bottom;
     return (
       <StagePanel
         onResize={this._handleResize}
         onToggleCollapse={this._handleToggleCollapse}
+        safeAreaInsets={safeAreaInsets}
         size={this.props.panel.isCollapsed ? undefined : this.props.panel.size}
         type={type}
       >
@@ -2594,6 +2652,7 @@ interface ZonesExampleProps {
   onTooltipTimeout: () => void;
   onWidgetResize: (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => void;
   openWidget: FooterWidget;
+  safeAreaInsets: SafeAreaInsets;
   stagePanels: ExampleNestedStagePanelsProps;
   toastMessageKey: number;
   zones: ZonesManagerProps;
@@ -2668,6 +2727,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
       return (
         <StagePanelTargetExample
           onTargetChanged={this.props.onStagePanelTargetChanged}
+          safeAreaInsets={this.props.safeAreaInsets}
           type={exampleType}
         />
       );
@@ -2678,6 +2738,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
     return (
       <WidgetStagePanel
         getWidgetContentRef={this.props.getWidgetContentRef}
+        isInFooterMode={this.props.zones.isInFooterMode}
         isSplitterTargetVisible={isSplitterTargetVisible}
         isZoneTargetVisible={isZoneTargetVisible}
         onInitialize={this.props.onStagePanelInitialize}
@@ -2690,6 +2751,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         onTabDrag={this.props.onTabDrag}
         onToggleCollapse={this.props.onToggleCollapse}
         panel={panel}
+        safeAreaInsets={this.props.safeAreaInsets}
         type={exampleType}
         widgets={this.props.zones.widgets}
       />
@@ -2701,6 +2763,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
     if (exampleType === ExampleStagePanelType.BottomMost && this.props.stagePanels.panels.outer.bottom.isVisible) {
       return (
         <StagePanel
+          safeAreaInsets={this.props.safeAreaInsets}
           type={type}
         >
           <div
@@ -2744,6 +2807,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
       <Zone1
         bounds={this.props.zones.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
+        isInFooterMode={this.props.zones.isInFooterMode}
         key={zoneId}
         onAppButtonClick={this.props.onAppButtonClick}
         onHistoryItemClick={this._handleHistoryItemClick}
@@ -2753,6 +2817,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         onPanelOutsideClick={this._handlePanelOutsideClick}
         onPanelToolClick={this._handlePanelToolClick}
         onToolClick={this._handleToolClick}
+        safeAreaInsets={this.props.safeAreaInsets}
         verticalTools={this.state.tools[zoneId].vertical}
       />
     );
@@ -2763,7 +2828,10 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
     return (
       <Zone
         bounds={this.props.zones.zones[zoneId].bounds}
+        id={zoneId}
+        isInFooterMode={this.props.zones.isInFooterMode}
         key={zoneId}
+        safeAreaInsets={this.props.safeAreaInsets}
       >
         {this.state.tools[1].horizontal.toolSettings.isActive ?
           <ToolSettingsWidget
@@ -2781,6 +2849,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
       <Zone3
         bounds={this.props.zones.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
+        isInFooterMode={this.props.zones.isInFooterMode}
         key={zoneId}
         onHistoryItemClick={this._handleHistoryItemClick}
         onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
@@ -2790,6 +2859,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         onPanelToolClick={this._handlePanelToolClick}
         onToolbarScroll={this._handleToolbarScroll}
         onToolClick={this._handleToolClick}
+        safeAreaInsets={this.props.safeAreaInsets}
         verticalTools={this.state.tools[zoneId].vertical}
       />
     );
@@ -2817,6 +2887,7 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         onTargetChanged={this.props.onTargetChanged}
         openWidget={this.props.openWidget}
         outlineBounds={outlineBounds}
+        safeAreaInsets={this.props.safeAreaInsets}
         targetBounds={zone.bounds}
         toastMessageKey={this.props.toastMessageKey}
       />
@@ -2838,12 +2909,14 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         <FloatingZoneWidget
           draggedWidget={draggedWidget && (draggedWidget.id === zoneId) ? draggedWidget : undefined}
           getWidgetContentRef={this.props.getWidgetContentRef}
+          isInFooterMode={this.props.zones.isInFooterMode}
           onResize={this.props.onWidgetResize}
           onTabClick={this.props.onTabClick}
           onTabDrag={this.props.onTabDrag}
           onTabDragEnd={this.props.onTabDragEnd}
           onTabDragStart={this.props.onTabDragStart}
           openWidgetId={openWidgetId}
+          safeAreaInsets={this.props.safeAreaInsets}
           tabIndex={tabIndex}
           widget={widget}
           zone={zone}
@@ -2851,8 +2924,10 @@ export class ZonesExample extends React.PureComponent<ZonesExampleProps, ZonesEx
         <ZoneTargetExample
           bounds={zone.bounds}
           dropTarget={dropTarget}
-          zoneIndex={zone.id}
+          isInFooterMode={this.props.zones.isInFooterMode}
           onTargetChanged={this.props.onTargetChanged}
+          safeAreaInsets={this.props.safeAreaInsets}
+          zoneIndex={zone.id}
         />
         {outlineBounds && <Outline bounds={outlineBounds} />}
       </React.Fragment>
@@ -3364,6 +3439,7 @@ interface ZonesPageState {
   message: VisibleMessage;
   nineZone: ExampleZonesManagerProps;
   openWidget: FooterWidget;
+  safeAreaInsets: SafeAreaInsets;
   theme: Theme;
   toastMessageKey: number;
   widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>;
@@ -3401,6 +3477,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
       zones: getDefaultZonesManagerProps(),
     },
     openWidget: FooterWidget.None,
+    safeAreaInsets: SafeAreaInsets.All,
     theme: initialTheme,
     toastMessageKey: 0,
     widgetIdToContent: {},
@@ -3504,6 +3581,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
           onTooltipTimeout={this._handleTooltipTimeout}
           onWidgetResize={this._handleZoneResize}
           openWidget={this.state.openWidget}
+          safeAreaInsets={this.state.safeAreaInsets}
           stagePanels={this.state.nineZone.nested}
           toastMessageKey={this.state.toastMessageKey}
           zonesMeasurer={this._zonesMeasurer}
@@ -3530,6 +3608,7 @@ export default class ZonesPage extends React.PureComponent<{}, ZonesPageState> {
         <BackstageExample
           isOpen={this.state.isBackstageOpen}
           onClose={this._handleBackstageClose}
+          safeAreaInsets={this.state.safeAreaInsets}
         />
       </>
     );

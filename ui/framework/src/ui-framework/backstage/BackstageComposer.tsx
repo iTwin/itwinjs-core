@@ -137,10 +137,10 @@ export class BackstageComposer extends React.Component<BackstageProps, Backstage
     return (
       <Backstage
         accessToken={this.state.accessToken}
-        isVisible={this.props.isVisible}
-        showOverlay={this.props.showOverlay}
-        onClose={this.props.onClose}
         header={this.props.header}
+        isVisible={this.props.isVisible}
+        onClose={this.props.onClose}
+        showOverlay={this.props.showOverlay}
       >
         {this.getBackstageItemNodes()}
       </Backstage>

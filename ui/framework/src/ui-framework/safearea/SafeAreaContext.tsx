@@ -2,21 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/z-index";
+/** @module State */
 
-.nz-zones-zones {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: none;
-  transition: visibility 0.5s ease, opacity 0.5s ease;
+import * as React from "react";
+import { SafeAreaInsets } from "@bentley/ui-ninezone";
 
-  &.nz-hidden {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
+/**
+ * Context used to manage safe area (feature used by devices with non-rectangular screens).
+ * @alpha
+ */
+// tslint:disable-next-line: variable-name
+export const SafeAreaContext = React.createContext<SafeAreaInsets>(SafeAreaInsets.None);
