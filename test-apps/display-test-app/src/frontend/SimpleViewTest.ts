@@ -30,9 +30,10 @@ import { SimpleViewState } from "./SimpleViewState";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";
-import { Viewer } from "./Viewer";
 import SVTRpcInterface from "../common/SVTRpcInterface";
 import { setTitle } from "./Title";
+import { Surface } from "./Surface";
+import { Dock } from "./Window";
 
 RpcConfiguration.developmentMode = true; // needed for snapshots in web apps
 
@@ -182,11 +183,15 @@ async function main() {
 async function initView() {
   // open the specified view
   showStatus("opening View", configuration.viewName);
-  await Viewer.create({
+  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!);
+
+  const viewer = await DisplayTestApp.surface.createViewer({
     iModel: activeViewState.iModelConnection!,
     defaultViewName: configuration.viewName,
     fileDirectoryPath: configuration.standalonePath,
   });
+
+  viewer.dock(Dock.Full);
 
   showStatus("View Ready");
   hideSpinner();

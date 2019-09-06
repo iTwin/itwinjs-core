@@ -30,7 +30,7 @@ const computeAmbientOcclusion = `
   if (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear)
     return vec4(1.0);
 
-  float linearDepth = readDepthAndOrder(tc).y;
+  float linearDepth = depthAndOrder.y;
   float nonLinearDepth = computeNonLinearDepth(linearDepth);
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
 

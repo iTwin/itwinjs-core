@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { ToolType, Viewport, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
-import { createTextBox } from "../ui/TextBox";
+import { createTextBox, TextBox } from "../ui/TextBox";
 import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
 
 interface Keyin {
@@ -125,47 +125,63 @@ function keyinChanged(textBox: HTMLInputElement) {
   textBox.setSelectionRange(0, textBox.value.length);
 }
 
+/** Properties controlling how a KeyinField is created.
+ * @beta
+ */
+export interface KeyinFieldProps {
+  /** If supplied, the keyin field's elements will be added as children of this parent element. */
+  parent?: HTMLElement;
+  /** Required, unique ID prefix used to produce unique IDs for child elements. */
+  baseId: string;
+  /** Default: false. */
+  wantButton?: boolean;
+  /** Default: false. */
+  wantLabel?: boolean;
+}
+
 /** A textbox allowing input of key-ins (localized tool names) combined with a drop-down that lists all registered key-ins, filtered by substring match on the current input.
  * Press `enter` or click the Enter button to run the key-in.
  * @beta
  */
 export class KeyinField {
   public readonly autoCompleteList: DataList;
+  public readonly textBox: TextBox;
   public readonly keyins: string[];
-  public readonly focus: () => void;
 
-  public constructor(parent: HTMLElement, _vp: Viewport) {
+  public constructor(props: KeyinFieldProps) {
     this.keyins = findKeyins();
 
+    const autoCompleteListId = props.baseId + "_autoComplete";
     this.autoCompleteList = createDataList({
-      parent,
+      parent: props.parent,
       entries: keyinsToDataListEntries(this.keyins),
-      id: "keyin_autoCompleteList",
+      id: autoCompleteListId,
+      inline: true,
     });
 
-    const keyinTextBox = createTextBox({
-      label: "Key-in: ",
-      id: "keyin_cmdTextBox",
-      parent,
+    this.textBox = createTextBox({
+      label: props.wantLabel ? "Key-in: " : undefined,
+      id: props.baseId + "_textBox",
+      parent: props.parent,
       handler: keyinChanged,
       keypresshandler: async (tb, ev) => { await maybeSubmitKeyin(tb, ev); },
       focushandler: (_tb) => { respondToKeyinFocus(this); },
       tooltip: "Type the key-in text here",
       inline: true,
-      list: "keyin_autoCompleteList",
+      list: autoCompleteListId,
     });
 
-    createButton({
-      handler: async (_bt) => { await submitKeyin(keyinTextBox.textbox); },
-      id: "keyin_submitButton",
-      parent,
-      value: "Enter",
-      inline: true,
-      tooltip: "Click here to execute the key-in",
-    });
-
-    this.focus = () => {
-      keyinTextBox.textbox.focus();
-    };
+    if (props.wantButton) {
+      createButton({
+        handler: async (_bt) => { await submitKeyin(this.textBox.textbox); },
+        parent: props.parent,
+        value: "Enter",
+        inline: true,
+        tooltip: "Click here to execute the key-in",
+      });
+    }
   }
+
+  public focus() { this.textBox.textbox.focus(); }
+  public loseFocus() { this.textBox.textbox.blur(); }
 }

@@ -293,13 +293,25 @@ export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
 
 // @beta
 export class KeyinField {
-    constructor(parent: HTMLElement, _vp: Viewport);
+    constructor(props: KeyinFieldProps);
     // (undocumented)
     readonly autoCompleteList: DataList;
     // (undocumented)
-    readonly focus: () => void;
+    focus(): void;
     // (undocumented)
     readonly keyins: string[];
+    // (undocumented)
+    loseFocus(): void;
+    // (undocumented)
+    readonly textBox: TextBox;
+}
+
+// @beta
+export interface KeyinFieldProps {
+    baseId: string;
+    parent?: HTMLElement;
+    wantButton?: boolean;
+    wantLabel?: boolean;
 }
 
 // @alpha (undocumented)
@@ -558,7 +570,7 @@ export interface SliderProps {
     value: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface TextBox {
     // (undocumented)
     div: HTMLDivElement;
@@ -581,7 +593,7 @@ export interface TextBoxProps {
     // (undocumented)
     handler?: TextBoxHandler;
     // (undocumented)
-    id: string;
+    id?: string;
     // (undocumented)
     inline?: boolean;
     // (undocumented)

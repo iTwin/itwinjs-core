@@ -8,8 +8,8 @@ import {
   imageBufferToPngDataUrl,
   IModelApp,
   IModelConnection,
-  PluginAdmin,
   ScreenViewport,
+  Tool,
   Viewport,
   ViewState,
 } from "@bentley/imodeljs-frontend";
@@ -18,19 +18,17 @@ import { AnimationPanel } from "./AnimationPanel";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { DebugPanel } from "./DebugPanel";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
-import { IncidentMarkerDemo } from "./IncidentMarkerDemo";
-import { addSnapModes } from "./SnapModes";
 import { StandardRotations } from "./StandardRotations";
-import { TileLoadIndicator } from "./TileLoadIndicator";
-import { createImageButton, createToolButton, ToolBar, ToolBarDropDown } from "./ToolBar";
+import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { SectionsPanel } from "./SectionTools";
 import { SavedViewPicker } from "./SavedViews";
 import { ClassificationsPanel } from "./ClassificationsPanel";
-import { emulateVersionComparison } from "./VersionComparison";
 import { selectFileName } from "./FileOpen";
 import { setTitle } from "./Title";
+import { Window } from "./Window";
+import { Surface } from "./Surface";
 
 function saveImage(vp: Viewport) {
   const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
@@ -54,90 +52,52 @@ async function zoomToSelectedElements(vp: Viewport) {
     await vp.zoomToElements(elems);
 }
 
-class DebugTools extends ToolBarDropDown {
-  private readonly _element: HTMLElement;
+export class ZoomToSelectedElementsTool extends Tool {
+  public static toolId = "ZoomToSelectedElements";
+  public run(_args: any[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      zoomToSelectedElements(vp); // tslint:disable-line:no-floating-promises
 
-  public constructor(parent: HTMLElement) {
-    super();
-
-    this._element = document.createElement("div");
-    this._element.className = "toolMenu";
-    this._element.style.display = "flex";
-    this._element.style.cssFloat = "left";
-    this._element.style.width = "440px";
-
-    this._element.appendChild(createImageButton({
-      src: "Warning_sign.svg",
-      click: () => IncidentMarkerDemo.toggle(IModelApp.viewManager.selectedView!.iModel.projectExtents),
-      tooltip: "Test incident markers",
-    }));
-
-    this._element.appendChild(createImageButton({
-      src: "cold.svg",
-      click: () => IModelApp.tools.run("Plugin", ["wmsPlugin"]),
-      tooltip: "Test WMS Weather Maps",
-    }));
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-savedview",
-      click: () => saveImage(IModelApp.viewManager.selectedView!),
-      tooltip: "Save view as image",
-    }));
-
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-measure-tool",
-      click: () => IModelApp.tools.run("DrawingAidTest.Points", IModelApp.viewManager.selectedView!),
-      tooltip: "Test drawing aid tools",
-    }));
-
-    this._element.appendChild(createImageButton({
-      src: "fit-to-view.svg",
-      click: () => zoomToSelectedElements(IModelApp.viewManager.selectedView!),
-      tooltip: "Zoom to selected elements",
-    }));
-
-    this._element.appendChild(createImageButton({
-      src: "Markup.svg",
-      click: async () => this.doMarkup(),
-      tooltip: "Create Markup for View",
-    }));
-
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-work",
-      click: async () => PluginAdmin.loadPlugin("startWebWorkerPlugin.js"),
-      tooltip: "Start Web Worker Test",
-    }));
-
-    this._element.appendChild(createToolButton({
-      className: "bim-icon-isolate",
-      click: () => emulateVersionComparison(IModelApp.viewManager.selectedView!),
-      tooltip: "Emulate version comparison",
-    }));
-
-    parent.appendChild(this._element);
+    return true;
   }
+}
 
-  private async doMarkup() {
+export class SaveImageTool extends Tool {
+  public static toolId = "SaveImage";
+  public run(_args: any[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp)
+      saveImage(vp);
+
+    return true;
+  }
+}
+
+export class MarkupTool extends Tool {
+  public static toolId = "Markup";
+  public run(_args: any[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp)
+      return true;
+
     if (MarkupApp.isActive) {
       // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
       const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
       if (startMarkupSelect) {
         IModelApp.toolAdmin.startDefaultTool();
-        return;
+        return true;
       }
       MarkupApp.props.result.maxWidth = 1500;
-      const markupData = await MarkupApp.stop();
-      // tslint:disable:no-console
-      window.open(markupData.image, "Markup");
+      MarkupApp.stop().then((markupData) => window.open(markupData.image, "Markup")).catch((_) => { });
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      await MarkupApp.start(IModelApp.viewManager.selectedView!);
+      MarkupApp.start(vp); // tslint:disable-line:no-floating-promises
     }
-  }
 
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  protected _open(): void { this._element.style.display = "flex"; }
-  protected _close(): void { this._element.style.display = "none"; }
+    return true;
+  }
 }
 
 export interface ViewerProps {
@@ -146,37 +106,57 @@ export interface ViewerProps {
   defaultViewName?: string;
 }
 
-export class Viewer {
+export class Viewer extends Window {
   public readonly views: ViewList;
   public readonly viewport: ScreenViewport;
   public readonly toolBar: ToolBar;
   private _imodel: IModelConnection;
   private readonly _fileDirectoryPath?: string;
-  private readonly _spinner: HTMLElement;
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
+  private _isSavedView = false;
 
-  public static async create(props: ViewerProps): Promise<Viewer> {
+  public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
-    const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     const view = await views.getDefaultView(props.iModel);
-    const viewport = ScreenViewport.create(vpDiv, view);
-    const viewer = new Viewer(viewport, views, props);
+    const viewer = new Viewer(surface, view, views, props);
     return viewer;
   }
 
-  private constructor(viewport: ScreenViewport, views: ViewList, props: ViewerProps) {
+  public clone(): Viewer {
+    const view = this.viewport.view.clone();
+    const viewer = new Viewer(Surface.instance, view, this.views, {
+      iModel: view.iModel,
+      fileDirectoryPath: this._fileDirectoryPath,
+    });
+
+    if (!this.isDocked) {
+      // Match dimensions
+      viewer.container.style.width = this.container.style.width;
+      viewer.container.style.height = this.container.style.height;
+
+      // Offset position from top-left corner
+      const style = getComputedStyle(this.container, null);
+      const pxToNum = (propName: string) => parseFloat(style.getPropertyValue(propName).replace("px", "")) + 40;
+      viewer.container.style.top = pxToNum("top") + "px";
+      viewer.container.style.left = pxToNum("left") + "px";
+    }
+
+    return viewer;
+  }
+
+  private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
+    super(surface);
+    surface.element.appendChild(this.container);
+
     this._imodel = props.iModel;
-    this.viewport = viewport;
+    this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
     this._fileDirectoryPath = props.fileDirectoryPath;
 
-    this._spinner = document.getElementById("spinner") as HTMLDivElement;
-
-    new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement, this.viewport);
-    addSnapModes(document.getElementById("snapModesContainer")!);
-
-    this.toolBar = new ToolBar(document.getElementById("toolBar")!);
+    const toolbarDiv = document.createElement("div");
+    toolbarDiv.className = "topdiv";
+    this.toolBar = new ToolBar(toolbarDiv);
 
     this.toolBar.addDropDown({
       className: "bim-icon-properties",
@@ -187,7 +167,9 @@ export class Viewer {
     this.toolBar.addItem(createToolButton({
       className: "bim-icon-briefcases",
       tooltip: "Open iModel from disk",
-      click: () => { this.selectIModel(); }, // tslint:disable-line:no-floating-promises
+      click: () => {
+        this.selectIModel(); // tslint:disable-line:no-floating-promises
+      },
     }));
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
@@ -197,6 +179,7 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-model",
       tooltip: "Models",
+      only3d: true,
       createDropDown: async (container: HTMLElement) => {
         const picker = new ModelPicker(this.viewport, container);
         await picker.populate();
@@ -267,6 +250,7 @@ export class Viewer {
       className: "bim-icon-gyroscope",
       createDropDown: async (container: HTMLElement) => Promise.resolve(new StandardRotations(container, this.viewport)),
       tooltip: "Standard rotations",
+      only3d: true,
     });
 
     const walk = createImageButton({
@@ -304,6 +288,7 @@ export class Viewer {
     this.toolBar.addDropDown({
       className: "bim-icon-property-data",
       tooltip: "Spatial Classification",
+      only3d: true,
       createDropDown: async (container: HTMLElement) => {
         const panel = new ClassificationsPanel(this.viewport, container);
         await panel.populate();
@@ -317,12 +302,6 @@ export class Viewer {
       tooltip: "Override feature symbology",
     });
 
-    this.toolBar.addDropDown({
-      className: "bim-icon-appicon",
-      createDropDown: async (container: HTMLElement) => new DebugTools(container),
-      tooltip: "Debug tools",
-    });
-
     const fileSelector = document.getElementById("browserFileSelector") as HTMLInputElement;
     fileSelector.onchange = async () => {
       const files = fileSelector.files;
@@ -331,26 +310,39 @@ export class Viewer {
           await this.resetIModel(this._fileDirectoryPath! + "/" + files[0].name);
         } catch {
           alert("Error Opening iModel - Make sure you are selecting files from the following directory: " + this._fileDirectoryPath!);
-          this.hideSpinner();
         }
       }
     };
 
-    IModelApp.viewManager.addViewport(this.viewport);
+    this.updateTitle();
+  }
+
+  private updateTitle(): void {
+    let viewName = this.viewport.view.code.value;
+    if (undefined === viewName || 0 === viewName.length)
+      viewName = "UNNAMED";
+
+    const id = !this._isSavedView ? this.viewport.view.id : "Saved View";
+    const dim = this.viewport.view.is2d() ? "2d" : "3d";
+    this.title = "[ " + this.viewport.viewportId + " ] " + viewName + " <" + id + "> (" + dim + ")";
   }
 
   private async changeView(id: Id64String): Promise<void> {
-    await this.withSpinner(async () => {
-      const view = await this.views.getView(id, this._imodel);
-      await this.setView(view.clone());
-      for (const control of this._3dOnly)
-        control.style.display = this.viewport.view.is3d() ? "block" : "none";
-    });
+    const view = await this.views.getView(id, this._imodel);
+    await this.setView(view.clone());
+    for (const control of this._3dOnly)
+      control.style.display = this.viewport.view.is3d() ? "block" : "none";
   }
 
-  public async setView(view: ViewState): Promise<void> {
+  public async setView(view: ViewState, isSavedView = false): Promise<void> {
+    this._isSavedView = isSavedView;
     this.viewport.changeView(view);
-    await this.toolBar.onViewChanged();
+    this.updateTitle();
+    await this.toolBar.onViewChanged(this.viewport);
+  }
+
+  public async applySavedView(view: ViewState): Promise<void> {
+    return this.setView(view, true);
   }
 
   private async openView(view: ViewState): Promise<void> {
@@ -369,22 +361,24 @@ export class Viewer {
   }
 
   private async resetIModel(filename: string): Promise<void> {
-    await this.withSpinner(async () => {
-      let newIModel;
-      try {
-        newIModel = await IModelConnection.openSnapshot(filename);
-      } catch (err) {
-        alert(err.toString());
-        return;
-      }
+    let newIModel;
+    try {
+      newIModel = await IModelConnection.openSnapshot(filename);
+    } catch (err) {
+      alert(err.toString());
+      return;
+    }
 
-      IModelApp.viewManager.dropViewport(this.viewport, false);
-      await this.clearViews();
-      this._imodel = newIModel;
-      await this.buildViewList();
-      const view = await this.views.getDefaultView(this._imodel);
-      await this.openView(view);
-    });
+    Surface.instance.onResetIModel(this);
+    IModelApp.viewManager.dropViewport(this.viewport, false);
+
+    await this.clearViews();
+    this._imodel = newIModel;
+    await this.buildViewList();
+    const view = await this.views.getDefaultView(this._imodel);
+    await this.openView(view);
+
+    this.updateTitle();
   }
 
   private async selectIModel(): Promise<void> {
@@ -395,16 +389,33 @@ export class Viewer {
         setTitle(filename);
       } catch (_) {
         alert("Error - could not open file.");
-        this.hideSpinner();
       }
     }
   }
 
-  private showSpinner() { this._spinner.style.display = "block"; }
-  private hideSpinner() { this._spinner.style.display = "none"; }
-  private async withSpinner(func: () => Promise<void>): Promise<void> {
-    this.showSpinner();
-    await func();
-    this.hideSpinner();
+  public onFocus(): void {
+    this._header.element.classList.add("viewport-header-focused");
+    IModelApp.viewManager.setSelectedView(this.viewport);
+  }
+
+  public onLoseFocus(): void {
+    this._header.element.classList.remove("viewport-header-focused");
+  }
+
+  public onSelected(): void {
+    this._header.element.classList.add("viewport-header-selected");
+    this.container.classList.add("viewport-selected");
+  }
+
+  public onDeselected(): void {
+    this._header.element.classList.remove("viewport-header-selected");
+    this.container.classList.remove("viewport-selected");
+  }
+
+  public get windowId(): string { return this.viewport.viewportId.toString(); }
+
+  public onClose(): void {
+    // ###TODO? this.dispose();
+    IModelApp.viewManager.dropViewport(this.viewport, true);
   }
 }

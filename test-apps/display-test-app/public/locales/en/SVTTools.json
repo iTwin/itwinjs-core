@@ -13,11 +13,47 @@
     "SVTSelect": {
       "keyin": "dta select"
     },
-    "ResizeViewport": {
-      "keyin": "dta resize viewport"
+    "ResizeWindow": {
+      "keyin": "win resize"
     },
     "RefreshTiles": {
       "keyin": "dta refresh tiles"
+    },
+    "CreateWindow": {
+      "keyin": "win create"
+    },
+    "CloneViewport": {
+      "keyin": "vp clone"
+    },
+    "FocusWindow": {
+      "keyin": "win focus"
+    },
+    "MaximizeWindow": {
+      "keyin": "win max"
+    },
+    "RestoreWindow": {
+      "keyin": "win restore"
+    },
+    "CloseWindow": {
+      "keyin": "win close"
+    },
+    "DockWindow": {
+      "keyin": "win dock"
+    },
+    "VersionComparison": {
+      "keyin": "dta version compare"
+    },
+    "SaveImage": {
+      "keyin": "dta save image"
+    },
+    "ZoomToSelectedElements": {
+      "keyin": "dta zoom selected"
+    },
+    "ToggleIncidentMarkers": {
+      "keyin": "dta incident markers"
+    },
+    "Markup": {
+      "keyin": "dta markup"
     }
   }
 }

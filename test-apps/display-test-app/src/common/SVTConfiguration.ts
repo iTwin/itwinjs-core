@@ -21,8 +21,3 @@ export interface SVTConfiguration {
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
 }
-
-export interface ConnectProjectConfiguration {
-  projectName: string;
-  iModelName: string;
-}
