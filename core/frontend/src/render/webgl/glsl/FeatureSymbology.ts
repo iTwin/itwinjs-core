@@ -124,7 +124,7 @@ const checkVertexDiscard = `
 
   bool hasAlpha = 1.0 == u_hasAlpha;
   if (feature_alpha > 0.0)
-    hasAlpha = feature_alpha < s_maxAlpha;
+    hasAlpha = feature_alpha <= s_maxAlpha;
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
