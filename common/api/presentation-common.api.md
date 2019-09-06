@@ -95,6 +95,8 @@ export type ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedI
 export interface ChildNodeSpecificationBase {
     doNotSort?: boolean;
     hasChildren?: "Always" | "Never" | "Unknown";
+    // @beta
+    hideExpression?: string;
     hideIfNoChildren?: boolean;
     hideNodesInHierarchy?: boolean;
     nestedRules?: ChildNodeRule[];
@@ -248,7 +250,7 @@ export enum ContentSpecificationTypes {
 }
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -404,6 +406,15 @@ export interface EnumerationChoice {
 export interface EnumerationInfo {
     choices: EnumerationChoice[];
     isStrict: boolean;
+}
+
+// @public
+export interface ExtendedDataRule extends RuleBase, ConditionContainer {
+    condition?: string;
+    items: {
+        [key: string]: string;
+    };
+    ruleType: RuleTypes.ExtendedData;
 }
 
 // @public
@@ -738,7 +749,8 @@ export interface NavigationRuleBase extends RuleBase {
 
 // @public
 export class NestedContentField extends Field {
-    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription);
+    constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, contentClassInfo: ClassInfo, pathToPrimaryClass: RelationshipPath, nestedFields: Field[], editor?: EditorDescription, autoExpand?: boolean);
+    autoExpand?: boolean;
     contentClassInfo: ClassInfo;
     // @internal
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
@@ -801,6 +813,15 @@ export namespace Node {
     export function reviver(key: string, value: any): any;
     // @internal
     export function toJSON(node: Node): NodeJSON;
+}
+
+// @public
+export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
+    condition?: string;
+    items: {
+        [key: string]: string;
+    };
+    ruleType: RuleTypes.NodeArtifacts;
 }
 
 // @public
@@ -1176,6 +1197,7 @@ export enum RelatedPropertiesSpecialValues {
 
 // @public
 export interface RelatedPropertiesSpecification {
+    autoExpand?: boolean;
     isPolymorphic?: boolean;
     nestedRelatedProperties?: RelatedPropertiesSpecification[];
     propertyNames?: string[] | RelatedPropertiesSpecialValues;
@@ -1350,6 +1372,8 @@ export enum RuleTypes {
     // (undocumented)
     LabelOverride = "LabelOverride",
     // (undocumented)
+    NodeArtifacts = "NodeArtifacts",
+    // (undocumented)
     PropertySorting = "PropertySorting",
     // (undocumented)
     RootNodes = "RootNodes",
@@ -1371,7 +1395,9 @@ export interface SchemasSpecification {
 // @public
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
+    navigationPropertyClasses: RelatedClassInfo[];
     pathToPrimaryClass: RelationshipPath;
+    relatedInstanceClasses: RelatedClassInfo[];
     relatedPropertyPaths: RelationshipPath[];
     selectClassInfo: ClassInfo;
 }

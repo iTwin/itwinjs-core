@@ -10,7 +10,7 @@
 export interface LayoutSplitPropsBase {
   /** The id used to save the current state of the splitter */
   id?: string;
-  /** The percentage of this layout that should be occupied by the left/top fragment by default */
+  /** The percentage of this layout that should be occupied by the top/left fragment by default */
   percentage: number;
   /** Used to lock splitter into fixed position. Defaults to false. */
   lock?: boolean;
@@ -32,10 +32,15 @@ export interface LayoutFragmentProps {
  * @public
  */
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
-  /** Left layout properties. */
+  /** Left layout fragment properties. */
   left: LayoutFragmentProps | number;
-  /** Right layout properties. */
+  /** Right layout fragment properties. */
   right: LayoutFragmentProps | number;
+
+  /** Minimum size of the left fragment. */
+  minSizeLeft?: number;
+  /** Minimum size of the right fragment. */
+  minSizeRight?: number;
 }
 
 /** Properties for a horizontal layout split
@@ -44,10 +49,15 @@ export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
  * @public
  */
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
-  /** Top layout properties. */
+  /** Top layout fragment properties. */
   top: LayoutFragmentProps | number;
-  /** Bottom layout properties. */
+  /** Bottom layout fragment properties. */
   bottom: LayoutFragmentProps | number;
+
+  /** Minimum size of the top fragment. */
+  minSizeTop?: number;
+  /** Minimum size of the bottom fragment. */
+  minSizeBottom?: number;
 }
 
 /** Properties for a [[ContentLayoutDef]]

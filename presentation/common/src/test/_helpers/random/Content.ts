@@ -9,7 +9,7 @@ import {
 } from "../../../presentation-common";
 import { NestedContentFieldJSON, BaseFieldJSON } from "../../../content/Fields";
 import { SelectClassInfoJSON } from "../../../content/Descriptor";
-import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON } from "./EC";
+import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON, createRandomRelatedClassInfoJSON } from "./EC";
 import { nullable } from "./Misc";
 
 const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
@@ -18,6 +18,8 @@ const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
     isSelectPolymorphic: faker.random.boolean(),
     pathToPrimaryClass: createRandomRelationshipPathJSON(),
     relatedPropertyPaths: [createRandomRelationshipPathJSON(1), createRandomRelationshipPathJSON(1)],
+    navigationPropertyClasses: [createRandomRelatedClassInfoJSON()],
+    relatedInstanceClasses: [createRandomRelatedClassInfoJSON()],
   };
 };
 
@@ -74,6 +76,7 @@ export const createRandomNestedFieldJSON = (): NestedContentFieldJSON => ({
   contentClassInfo: createRandomECClassInfoJSON(),
   pathToPrimaryClass: createRandomRelationshipPathJSON(),
   nestedFields: [createRandomPrimitiveFieldJSON()],
+  autoExpand: faker.random.boolean(),
 });
 
 export const createRandomDescriptorJSON = (displayType?: string) => {

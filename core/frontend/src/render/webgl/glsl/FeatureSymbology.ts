@@ -391,21 +391,17 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
   // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
   // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
-  return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5)))));
+  return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarLitSurface) || ((depthAndOrder.x == kRenderOrder_PlanarUnlitSurface || depthAndOrder.x == kRenderOrder_PlanarLitSurface) && (depthDelta <= 4.0e-5)))));
 `;
 
-function addRenderOrderConstants(builder: ShaderBuilder) {
-  builder.addConstant("kRenderOrder_None", VariableType.Float, "0.0");
-  builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, "1.0");
-  builder.addConstant("kRenderOrder_Surface", VariableType.Float, "2.0");
-  builder.addConstant("kRenderOrder_Linear", VariableType.Float, "3.0");
-  builder.addConstant("kRenderOrder_Edge", VariableType.Float, "4.0");
-  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, "5.0");
-
-  builder.addConstant("kRenderOrder_PlanarSurface", VariableType.Float, "10.0");
-  builder.addConstant("kRenderOrder_PlanarLinear", VariableType.Float, "11.0");
-  builder.addConstant("kRenderOrder_PlanarEdge", VariableType.Float, "12.0");
-  builder.addConstant("kRenderOrder_PlanarSilhouette", VariableType.Float, "13.0");
+// This only adds the constants that are actually used in shader code.
+export function addRenderOrderConstants(builder: ShaderBuilder) {
+  builder.addConstant("kRenderOrder_Linear", VariableType.Float, "4.0");
+  builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, "6.0");
+  builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, "3.0");
+  builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, "10.0");
+  builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, "11.0");
+  builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, "8.0");
 }
 
 /** @internal */

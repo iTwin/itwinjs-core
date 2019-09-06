@@ -11,6 +11,7 @@ public;IPresentationLabelsProvider
 public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
 public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
+public;IUnifiedSelectionComponent 
 public;LabelsProvider 
 public;PresentationPropertyDataProvider 
 public;PresentationTableDataProvider 

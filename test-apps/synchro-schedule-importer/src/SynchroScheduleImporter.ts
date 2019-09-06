@@ -2,10 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition, GeometricElement3d } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, SpatialViewDefinition, GeometricElement3d, DisplayStyle3d } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, RenderMode, ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Vector3d, Range3d } from "@bentley/geometry-core";
+import { YawPitchRollAngles, Point3d, Vector3d, Range3d, StandardViewIndex } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 
@@ -216,7 +216,7 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
         const bgColor = new ColorDef("rgb(127, 127, 127)");
 
         const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
-        iModel.views.setDefaultViewId(OrthographicViewDefinition.insert(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents));
+        iModel.views.setDefaultViewId(SpatialViewDefinition.insertWithCamera(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents, StandardViewIndex.Iso));
         return true;
     });
     return true;

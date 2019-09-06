@@ -1905,6 +1905,10 @@
       "additionalProperties": false,
       "description": "Sub-specification to include additional related instance properties",
       "properties": {
+        "autoExpand": {
+          "description": "Should field containing related properties be automatically expanded.",
+          "type": "boolean"
+        },
         "isPolymorphic": {
           "description": "Should `relationships` and `relatedClasses` be handled polymorphically.",
           "type": "boolean"

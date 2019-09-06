@@ -2,6 +2,42 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.3.0",
+      "tag": "@bentley/ui-core_v1.3.0",
+      "date": "Tue, 13 Aug 2019 20:25:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use latest icon library"
+          },
+          {
+            "comment": "Add missing 'uicore-' prefix to step color values."
+          },
+          {
+            "comment": "Added CursorPrompt, improved Pointer messages"
+          },
+          {
+            "comment": "Fixed Dialog component height on different browsers"
+          },
+          {
+            "comment": "Make icon specification on Tile component optional."
+          },
+          {
+            "comment": "Added icons to markup/redline"
+          },
+          {
+            "comment": "Moved Point, PointProps, Rectangle, RectangleProps, Size and SizeProps to ui-core from ui-ninezone"
+          },
+          {
+            "comment": "Copied Tiles over from BWC to ui-core"
+          },
+          {
+            "comment": "Update to latest icon package version."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@bentley/ui-core_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",

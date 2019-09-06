@@ -269,6 +269,8 @@ internal;ProjectReadStatus
 internal;ProjectScope
 internal;ProjectServices
 public;PromptField: any
+alpha;PropertyChangeResult
+alpha;PropertyChangeStatus
 public;PropsHelper
 alpha;RealityDataPicker 
 alpha;RealityDataPickerControl 
@@ -337,6 +339,8 @@ internal;StatusBarZoneProps
 public;StatusFieldProps 
 public;StringGetter = () => string
 public;SupportsViewSelectorChange
+alpha;SyncPropertiesChangeEvent 
+alpha;SyncPropertiesChangeEventArgs
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
 public;SyncUiEvent 
@@ -359,9 +363,9 @@ public;ToolActivatedEvent
 public;ToolActivatedEventArgs
 alpha;ToolAssistanceChangedEvent 
 alpha;ToolAssistanceChangedEventArgs
-alpha;ToolAssistanceField 
-alpha;ToolAssistanceFieldDefaultProps = Pick
-alpha;ToolAssistanceFieldProps 
+beta;ToolAssistanceField 
+internal;ToolAssistanceFieldDefaultProps = Pick
+beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
 internal;ToolbarProps 
@@ -386,6 +390,7 @@ public;ToolWidgetPropsEx
 internal;TsCol
 internal;TsLabel
 internal;TsRow
+alpha;class UiDataProvider
 public;UiFramework
 alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 
@@ -401,6 +406,7 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityComponent 
+alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus

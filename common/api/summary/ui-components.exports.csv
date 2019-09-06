@@ -108,6 +108,10 @@ beta;HighlightingEngine
 public;HorizontalAlignment = "left" | "center" | "right" | "justify"
 beta;HueSlider 
 beta;HueSliderProps 
+alpha;IconEditor 
+alpha;IconPickerButton 
+alpha;IconPickerProps 
+alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
 public;ImageFileFormat = "png" | "jpg" | "jpge"
@@ -135,6 +139,7 @@ beta;LineWeightSwatchProps
 public;LoadedBinaryImage 
 public;LoadedImage
 public;MapPayloadToInspireNodeCallback
+public;matchLinks: (text: string) =>
 internal;MenuItem
 alpha;Milestone
 alpha;MilestoneRange

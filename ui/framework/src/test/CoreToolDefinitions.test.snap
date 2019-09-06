@@ -237,7 +237,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
-                "iconSpec": "icon-plane",
+                "iconSpec": "icon-section-plane",
                 "isActive": false,
                 "isEnabled": true,
                 "isPressed": false,

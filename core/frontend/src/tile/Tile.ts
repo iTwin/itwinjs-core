@@ -14,11 +14,8 @@ import {
   Arc3d,
   ClipPlaneContainment,
   ClipVector,
-  Matrix4d,
   Point2d,
   Point3d,
-  Point4d,
-  Range1d,
   Range3d,
   Transform,
   Vector3d,
@@ -241,6 +238,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get isReady(): boolean { return Tile.LoadStatus.Ready === this.loadStatus; }
 
   public setContent(content: Tile.Content): void {
+    // This should never happen but paranoia.
+    this._graphic = dispose(this._graphic);
+
     const { graphic, isLeaf, contentRange, sizeMultiplier } = content;
 
     this._graphic = graphic;
@@ -672,12 +672,14 @@ export namespace Tile {
   export const enum LoadPriority {
     /** Typically, tiles generated from the contents of geometric models. */
     Primary = 0,
-    /** Typically, context reality models. */
-    Context = 1,
-    /** Supplementary tiles used to classify the contents of geometric or reality models. */
-    Classifier = 2,
     /** Typically, map tiles. */
-    Background = 3,
+    Background = 1,
+    /** Terrain -- requires background/map tiles for drape. */
+    Terrain = 2,
+    /** Supplementary tiles used to classify the contents of geometric or reality models. */
+    Classifier = 3,
+    /** Typically, context reality models. */
+    Context = 4,
   }
 
   /**
@@ -724,30 +726,7 @@ export namespace Tile {
     public readonly viewClip?: ClipVector;
     public parentsAndChildrenExclusive: boolean;
 
-    private static _scratchTileToView = Matrix4d.createIdentity();
-    private static _scratchTileToWorld = Matrix4d.createIdentity();
-    private static _scratchViewCorner = Point4d.createZero();
     public getPixelSize(tile: Tile) {
-      if (tile.root.isBackgroundMap) {
-        /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
-        const rangeCorners = tile.contentRange.corners();
-        const worldToView = this.worldToViewMap;
-        Matrix4d.createTransform(this.location, DrawArgs._scratchTileToWorld);
-        DrawArgs._scratchTileToWorld.multiplyMatrixMatrix(worldToView.transform0, DrawArgs._scratchTileToView);
-        const xRange = Range1d.createNull(), yRange = Range1d.createNull();
-        let behindEye = false;
-        for (const corner of rangeCorners) {
-          const viewCorner = DrawArgs._scratchTileToView.multiplyPoint3d(corner, 1, DrawArgs._scratchViewCorner);
-          if (viewCorner.w < 0.0) {
-            behindEye = true;
-            break;
-          }
-          xRange.extendX(viewCorner.x / viewCorner.w);
-          yRange.extendX(viewCorner.y / viewCorner.w);
-        }
-        if (!behindEye)
-          return xRange.isNull ? 1.0E-3 : Math.sqrt(xRange.length() * yRange.length());
-      }
       const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
       const center = this.getTileCenter(tile);
 

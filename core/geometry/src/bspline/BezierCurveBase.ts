@@ -33,6 +33,8 @@ import { Angle } from "../geometry3d/Angle";
  * @public
  */
 export abstract class BezierCurveBase extends CurvePrimitive {
+  public readonly curvePrimitiveType = "bezierCurve";
+
   /** Control points */
   protected _polygon: Bezier1dNd;
   /** scratch data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */

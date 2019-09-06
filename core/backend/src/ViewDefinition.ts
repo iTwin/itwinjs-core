@@ -34,6 +34,15 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.displayStyle);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    for (const [id] of this.settings.subCategoryOverrides) {
+      predecessorIds.add(id);
+    }
+    this.settings.excludedElements.forEach((id: Id64String) => predecessorIds.add(id));
+  }
 }
 
 /** A DisplayStyle for 2d views.
@@ -51,8 +60,7 @@ export class DisplayStyle2d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
-  /**
-   * Create a DisplayStyle2d for use by a ViewDefinition.
+  /** Create a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb The iModel
    * @param definitionModelId The [[DefinitionModel]]
    * @param name The name/CodeValue of the DisplayStyle2d
@@ -71,8 +79,7 @@ export class DisplayStyle2d extends DisplayStyle {
     };
     return new DisplayStyle2d(displayStyleProps, iModelDb);
   }
-  /**
-   * Insert a DisplayStyle2d for use by a ViewDefinition.
+  /** Insert a DisplayStyle2d for use by a ViewDefinition.
    * @param iModelDb Insert into this iModel
    * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
    * @param name The name of the DisplayStyle2d
@@ -441,6 +448,63 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   }
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
+  /**
+   * Create an SpatialViewDefinition with camera.
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the view
+   * @param modelSelectorId The [[ModelSelector]] that this view should use
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @param standardView Optionally defines the view's rotation
+   * @param cameraAngle Camera angle in radians.
+   * @returns The newly constructed OrthographicViewDefinition element
+   * @throws [[IModelError]] if there is a problem creating the view
+   */
+  public static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): SpatialViewDefinition {
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    const cameraDistance = 2 * (rotatedRange.diagonal().magnitudeXY() / 2.0) / Math.tan(cameraAngle / 2.0);
+    const cameraLocation = rotatedRange.diagonalFractionToPoint(.5);    // Start at center.
+    cameraLocation.z += cameraDistance;                                 // Back up by camera distance.
+    rotation.multiplyTransposeVectorInPlace(cameraLocation);
+
+    const viewDefinitionProps: SpatialViewDefinitionProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      extents: rotatedRange.diagonal(),
+      angles,
+      cameraOn: true,
+      camera: { lens: { radians: cameraAngle }, focusDist: cameraDistance, eye: cameraLocation },
+    };
+    return new SpatialViewDefinition(viewDefinitionProps, iModelDb);
+  }
+  /**
+   * Insert an SpatialViewDefinition with camera On
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new OrthographicViewDefinition into this DefinitionModel
+   * @param name The name/CodeValue of the view
+   * @param modelSelectorId The [[ModelSelector]] that this view should use
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @param standardView Optionally defines the view's rotation
+   * @param cameraAngle Camera angle in radians.
+   * @returns The Id of the newly inserted OrthographicViewDefinition element
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
+    const viewDefinition = this.createWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
+    return iModelDb.elements.insertElement(viewDefinition);
+  }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.

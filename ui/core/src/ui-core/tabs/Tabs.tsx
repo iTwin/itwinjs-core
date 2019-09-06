@@ -15,7 +15,7 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
   /** Text shown for each tab */
   labels: string[];
   /** Handler for clicking on a label */
-  onClickLabel?: (id: number) => any;
+  onClickLabel?: (index: number) => any;
   /** Index of the initial active tab */
   activeIndex?: number;
   /** Indicates whether the bar on the active tab is green instead of the default blue */

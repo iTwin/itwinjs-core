@@ -6,12 +6,49 @@
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Polyface } from "../polyface/Polyface";
+import { CurvePrimitive } from "./CurvePrimitive";
+import { CurveCollection } from "./CurveCollection";
+import { SolidPrimitive } from "../solid/SolidPrimitive";
+import { CoordinateXYZ } from "./CoordinateXYZ";
+import { PointString3d } from "./PointString3d";
+import { BSpline2dNd } from "../bspline/BSplineSurface";
+
+/** Describes the category of a [[GeometryQuery]], enabling type-switching like:
+ * ```ts
+ *   function processGeometryQuery(q: GeometryQuery): void {
+ *     if ("solid" === q.geometryCategory)
+ *       alert("Solid type = " + q.solidPrimitiveType; // compiler knows q is an instance of SolidPrimitive
+ *    // ...etc...
+ * ```
+ *
+ * Each string maps to a particular subclass of [[GeometryQuery]]:
+ *  - "polyface" => [[Polyface]]
+ *  - "curvePrimitive" => [[CurvePrimitive]]
+ *  - "curveCollection" => [[CurveCollection]]
+ *  - "solid" => [[SolidPrimitive]]
+ *  - "point" => [[CoordinateXYZ]]
+ *  - "pointCollection" => [[PointString3d]]
+ *  - "bsurf" => [[BSpline2dNd]]  (which is an intermediate class shared by [[BSplineSurface3d]] and [[BSplineSurface3dH]])
+ *
+ *  @see [[AnyGeometryQuery]]
+ * @public
+ */
+export type GeometryQueryCategory = "polyface" | "curvePrimitive" | "curveCollection" | "solid" | "point" | "pointCollection" | "bsurf";
+
+/** Union type for subclasses of [[GeometryQuery]]. Specific subclasses can be discriminated at compile- or run-time using [[GeometryQuery.geometryCategory]].
+ * @public
+ */
+export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
+
 /** Queries to be supported by Curve, Surface, and Solid objects */
 /**
  * * `GeometryQuery` is an abstract base class with (abstract) methods for querying curve, solid primitive, mesh, and bspline surfaces
  * @public
  */
 export abstract class GeometryQuery {
+  /** Type discriminator. */
+  public abstract readonly geometryCategory: GeometryQueryCategory;
 
   /** return the range of the entire (tree) GeometryQuery */
   public range(transform?: Transform, result?: Range3d): Range3d {

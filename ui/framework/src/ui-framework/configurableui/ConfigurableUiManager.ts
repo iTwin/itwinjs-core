@@ -29,9 +29,13 @@ import { ContentLayoutProps } from "../content/ContentLayoutProps";
  */
 export class ConfigurableUiManager {
   private static _registeredControls = new Map<string, ConfigurableUiControlConstructor>();
+  private static _initialized = false;
 
   /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {
+    if (this._initialized)
+      return;
+
     // Register core controls
     ConfigurableUiManager.registerControl(StandardRotationNavigationAidControl.navigationAidId, StandardRotationNavigationAidControl);
     ConfigurableUiManager.registerControl(SheetNavigationAidControl.navigationAidId, SheetNavigationAidControl);
@@ -46,6 +50,8 @@ export class ConfigurableUiManager {
 
     // Initialize the ToolUiManager that manages Tool Settings properties.
     ToolUiManager.initialize();
+
+    this._initialized = true;
   }
 
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.

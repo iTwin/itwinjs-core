@@ -1,11 +1,25 @@
 sep=;
 Release Tag;API Item
 internal;AccuDraw
+internal;AccuDrawChangeModeTool 
 internal;AccudrawData
 internal;AccuDrawFlags
 beta;AccuDrawHintBuilder
+internal;AccuDrawRotateAxesTool 
+internal;AccuDrawRotateCycleTool 
+internal;AccuDrawRotateElementTool 
+internal;AccuDrawRotateFrontTool 
+internal;AccuDrawRotateSideTool 
+internal;AccuDrawRotateTopTool 
+internal;AccuDrawRotateViewTool 
+internal;AccuDrawSetLockAngleTool 
+internal;AccuDrawSetLockDistanceTool 
+internal;AccuDrawSetLockSmartTool 
+internal;AccuDrawSetLockXTool 
+internal;AccuDrawSetLockYTool 
+internal;AccuDrawSetLockZTool 
+internal;AccuDrawSetOriginTool 
 alpha;AccuDrawShortcuts
-internal;class AccuDrawTool
 public;AccuSnap 
 public;AccuSnap
 public;ACSDisplayOptions
@@ -75,7 +89,7 @@ alpha;ConversionData
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection): SpatialClassifierTileTreeReference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
@@ -84,6 +98,8 @@ public;DecorateContext
 public;Decorations 
 public;Decorator
 internal;DefaultViewTouchTool 
+internal;DefineACSByElementTool 
+internal;DefineACSByPointsTool 
 public;DepthRangeNpc
 internal;DevTools
 public;DisplayStyle2dState 
@@ -157,6 +173,7 @@ public;HitPriority
 public;HitSource
 beta;IconDefinition
 alpha;IconEditorParams 
+beta;IconListEditorParams 
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
@@ -247,10 +264,10 @@ alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
-internal;enum PrimitiveVisibility
+alpha;enum PrimitiveVisibility
 beta;PropertyDescription
 beta;PropertyEditorInfo
-beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams
+beta;PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams
 beta;PropertyEditorParamTypes
 beta;PropertyRecord
 beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
@@ -267,10 +284,12 @@ public;class RenderGraphic
 internal;RenderMemory
 internal;RenderPlan
 beta;class RenderPlanarClassifier 
+internal;RenderScheduleState
 internal;class RenderSolarShadowMap 
 public;class RenderSystem 
 public;RenderSystem
 beta;Options
+beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
 internal;class RenderTextureDrape 
@@ -354,12 +373,13 @@ internal;TileTreeDiscloser
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin
-alpha;ToolAssistance
-alpha;ToolAssistanceImage
-alpha;ToolAssistanceInstruction
-alpha;ToolAssistanceInstructions
-alpha;ToolAssistanceKeyboardInfo
-alpha;ToolAssistanceSection
+beta;ToolAssistance
+beta;ToolAssistanceImage
+beta;ToolAssistanceInputMethod
+beta;ToolAssistanceInstruction
+beta;ToolAssistanceInstructions
+beta;ToolAssistanceKeyboardInfo
+beta;ToolAssistanceSection
 alpha;ToolbarItemInsertSpec 
 alpha;ToolbarItemType
 public;ToolList = ToolType[]
@@ -372,6 +392,7 @@ internal;ToolSettingsState
 beta;ToolSettingsValue 
 internal;ToolState
 public;ToolTipOptions
+internal;ToolTipProvider
 public;ToolType = typeof Tool
 internal;TouchCursor 
 alpha;TwoWayViewportSync

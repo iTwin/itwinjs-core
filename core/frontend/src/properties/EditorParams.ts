@@ -22,6 +22,7 @@ export enum PropertyEditorParamTypes {
   SuppressEditorLabel,
   ColorData,
   CustomFormattedNumber,
+  IconListData,
 }
 
 /**
@@ -54,6 +55,20 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
   /** array of color values to show in color picker popup. Use [[ColorByName]] enum values. Values should be 32-bit integer in the form 0xBBGGRR. */
   colorValues: number[];
   /** number of columns to show in color picker popup. The value of 4 is used if not defined. */
+  numColumns?: number;
+}
+
+/**
+ * Parameters used to populate icon type editor with a specific set of icons.
+ * @beta
+ */
+export interface IconListEditorParams extends BasePropertyEditorParams {
+  type: PropertyEditorParamTypes.IconListData;
+  /** active icon shown in the button */
+  iconValue: string;
+  /** array of icon (svg) names to show in icon picker popup. */
+  iconValues: string[];
+  /** number of columns to show in icon picker popup. The value of 4 is used if not defined. */
   numColumns?: number;
 }
 
@@ -188,7 +203,7 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
  * Type definition for all Property Editor params
  * @beta
  */
-export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams;
+export type PropertyEditorParams = ButtonGroupEditorParams | ColorEditorParams | InputEditorSizeParams | SuppressLabelEditorParams | BasePropertyEditorParams | CustomFormattedNumberParams | IconListEditorParams;
 /*  Not yet supported
   |  JsonEditorParams | RangeEditorParams | SliderEditorParams |
   | IconEditorParams | CheckBoxIconsEditorParams | SuppressUnitLabelEditorParams

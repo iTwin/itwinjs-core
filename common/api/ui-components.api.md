@@ -1284,6 +1284,50 @@ export interface HueSliderProps extends React.HTMLAttributes<HTMLDivElement>, Co
     onHueChange?: ((hue: HSVColor) => void) | undefined;
 }
 
+// @alpha
+export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEditorState> implements TypeEditor {
+    constructor(props: PropertyEditorProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    getValue(): string;
+    // (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
+    // @internal
+    constructor(props: IconPickerProps);
+    // @internal (undocumented)
+    static defaultProps: Partial<IconPickerProps>;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    }
+
+// @alpha
+export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+    disabled?: boolean;
+    dropDownTitle?: string;
+    icon: string;
+    icons: string[];
+    numColumns: number;
+    onIconChange?: ((icon: string) => void) | undefined;
+    readonly?: boolean;
+}
+
+// @alpha
+export class IconPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    readonly reactElement: React.ReactNode;
+}
+
 // @public
 export interface IImageLoader {
     load: (item: any) => Image | undefined;
@@ -1308,10 +1352,10 @@ export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
 export class InlineEdit extends React.Component<InlineEditProps, InlineEditState> {
     constructor(props: InlineEditProps);
     // (undocumented)
-    componentWillReceiveProps(newProps: InlineEditProps): void;
-    // (undocumented)
     render(): JSX.Element;
-    }
+    // (undocumented)
+    UNSAFE_componentWillReceiveProps(newProps: InlineEditProps): void;
+}
 
 // @internal
 export enum InputContext {
@@ -1471,6 +1515,14 @@ export interface LoadedImage {
 
 // @public
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
+
+// @public
+export const matchLinks: (text: string) => {
+    index: number;
+    lastIndex: number;
+    schema: string;
+    url: string;
+}[];
 
 // @internal
 export interface MenuItem {
@@ -1658,7 +1710,7 @@ export type PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) =
 export class PlayButton extends React.Component<PlayerButtonProps, PlayButtonState> {
     constructor(props: PlayerButtonProps, context?: any);
     // (undocumented)
-    componentWillReceiveProps(nextProps: Readonly<PlayerButtonProps>): void;
+    componentDidUpdate(): void;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2079,6 +2131,8 @@ export interface ScrubberProps extends CommonProps {
     // (undocumented)
     onUpdate?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
+    showTime?: boolean;
+    // (undocumented)
     startDate?: Date;
     // (undocumented)
     totalDuration: number;
@@ -2426,8 +2480,6 @@ export class Table extends React.Component<TableProps, TableState> {
     componentDidMount(): void;
     // @internal (undocumented)
     componentDidUpdate(previousProps: TableProps): void;
-    // @internal (undocumented)
-    componentWillReceiveProps(newProps: TableProps): void;
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)

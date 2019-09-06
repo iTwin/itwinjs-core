@@ -21,6 +21,8 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
  * @public
  */
 export class Path extends CurveChain {
+  public readonly curveCollectionType = "path";
+
   /** Test if `other` is an instance of `Path` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof Path; }
   /** invoke `processor.announcePath(this, indexInParent)` */

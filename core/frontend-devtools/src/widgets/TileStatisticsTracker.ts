@@ -44,6 +44,8 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
 ];
 
+const indexOfFirstGlobalStatistic = 7; // "Completed"
+
 /** Outputs statistics related to tile requests including the current number of active, pending, selected, and ready tile requests; as well as cumulative statistics for the session including the number of failed, timed-out, empty, and elided tile requests.
  * @beta
  */
@@ -67,20 +69,36 @@ export class TileStatisticsTracker {
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
 
+    const table = document.createElement("table");
+    table.style.width = "100%";
+    table.setAttribute("border", "1");
+    this._div.appendChild(table);
+
+    const row = document.createElement("tr");
+    const frameColumn = document.createElement("td");
+    const globalColumn = document.createElement("td");
+    frameColumn.style.width = globalColumn.style.width = "50%";
+    row.appendChild(frameColumn);
+    row.appendChild(globalColumn);
+    table.appendChild(row);
+
     for (let i = 0; i < statEntries.length; i++) {
       const div = document.createElement("div");
       const elem = document.createElement("text");
       this._statElements[i] = elem;
       div.appendChild(elem);
-      this._div.appendChild(div);
+
+      const column = i >= indexOfFirstGlobalStatistic ? globalColumn : frameColumn;
+      column.appendChild(div);
     }
 
-    createButton({
+    const resetButton = createButton({
       parent: this._div,
       value: "Reset",
       tooltip: "Reset all cumulative statistics",
       handler: () => this.reset(),
     });
+    resetButton.div.style.textAlign = "center";
 
     parent.appendChild(this._div);
   }

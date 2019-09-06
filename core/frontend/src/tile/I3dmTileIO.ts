@@ -137,7 +137,7 @@ export namespace I3dmTileIO {
       if (undefined === instances)
         return Promise.resolve({ readStatus: TileIO.ReadStatus.InvalidTileData, isLeaf: this._isLeaf });
 
-      return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, instances);
+      return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, undefined, instances);
     }
 
     protected readFeatures(_features: Mesh.Features, _json: any): boolean {

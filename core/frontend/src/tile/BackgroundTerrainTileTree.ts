@@ -160,7 +160,7 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
       }
 
       if (this._doDrape)
-        context.addBackgroundDrapedModel(tree);
+        context.addBackgroundDrapedModel(tree, this.getHeightRange());
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
       this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
       terrainTree.settings = context.viewport.displayStyle.backgroundMapSettings.terrainSettings;
@@ -176,14 +176,19 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     if (undefined !== this._mapDrapeTree)
       trees.disclose(this._mapDrapeTree);
   }
+  public getHeightRange(): Range1d | undefined {
+    if (undefined !== this.treeOwner.tileTree && this.treeOwner.tileTree.loader instanceof MapTileLoaderBase)
+      return this.treeOwner.tileTree.loader.heightRange;
+    else
+      return undefined;
+
+    return undefined;
+  }
   public addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void {
-    let loader;
-    if (this.treeOwner.tileTree !== undefined &&
-      this.treeOwner.tileTree.loader instanceof MapTileLoaderBase &&
-      (undefined !== (loader = this.treeOwner.tileTree.loader as MapTileLoaderBase)) &&
-      undefined !== loader.heightRange) {
-      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, loader.heightRange.low)));
-      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, loader.heightRange.high)));
+    const heightRange = this.getHeightRange();
+    if (undefined !== heightRange) {
+      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, heightRange.low)));
+      planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, heightRange.high)));
     } else {
       // We don't yet know the range of the height... for now just push plane at BIM zero.
       planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, 0)));
@@ -202,7 +207,9 @@ export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
     strings.push("Longitude: " + Angle.radiansToDegrees(cartoGraphic.longitude).toFixed(4));
     const geodeticHeight = cartoGraphic.height - tree.groundBias;
     strings.push("Height (Meters) Geodetic: " + geodeticHeight.toFixed(1) + " Sea Level: " + (geodeticHeight - tree.seaLevelOffset).toFixed(1));
-    return strings.join("<br>");
+    const div = document.createElement("div");
+    div.innerHTML = strings.join("<br>");
+    return div;
   }
   /** Add copyright info to the viewport. */
   public decorate(context: DecorateContext): void {

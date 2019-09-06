@@ -111,7 +111,6 @@ export class EcefLocation implements EcefLocationProps {
 
     return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
   }
-
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).

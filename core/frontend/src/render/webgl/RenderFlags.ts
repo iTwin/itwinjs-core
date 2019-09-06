@@ -81,14 +81,16 @@ export enum TextureUnit {
 export const enum RenderOrder {
   None = 0,
   BlankingRegion = 1,
-  Surface = 2,
-  Linear = 3,
-  Edge = 4,
-  Silhouette = 5,
+  UnlitSurface = 2, // Distinction only made for whether or not to apply ambient occlusion.
+  LitSurface = 3,
+  Linear = 4,
+  Edge = 5,
+  Silhouette = 6,
 
   PlanarBit = 8,
 
-  PlanarSurface = Surface | PlanarBit,
+  PlanarUnlitSurface = UnlitSurface | PlanarBit,
+  PlanarLitSurface = LitSurface | PlanarBit,
   PlanarLinear = Linear | PlanarBit,
   PlanarEdge = Edge | PlanarBit,
   PlanarSilhouette = Silhouette | PlanarBit,
@@ -96,9 +98,6 @@ export const enum RenderOrder {
 
 /** @internal */
 export function isPlanar(order: RenderOrder): boolean { return order >= RenderOrder.PlanarBit; }
-
-/** @internal */
-export function isSurface(order: RenderOrder): boolean { return order <= RenderOrder.Surface || order === RenderOrder.PlanarSurface; }
 
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal

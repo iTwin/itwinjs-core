@@ -204,6 +204,8 @@
   "toolAssistance": {
     "title": "Tool Assistance",
     "promptAtCursor": "Show prompt at cursor",
-    "moreInfo": "Click for more information"
+    "moreInfo": "Click for more information",
+    "mouse": "Mouse",
+    "touch": "Touch"
   }
 }

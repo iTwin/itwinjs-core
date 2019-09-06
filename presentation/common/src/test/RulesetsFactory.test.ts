@@ -463,7 +463,7 @@ describe("RulesetsFactory", () => {
         "Related Property", createStringTypeDescription(), true, 1, [property]);
       const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
       field.rebuildParentship(parentField);
       const values = {
         [parentField.name]: [{
@@ -536,7 +536,7 @@ describe("RulesetsFactory", () => {
         "Related Property", createStringTypeDescription(), true, 1, [property]);
       const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
       field.rebuildParentship(parentField);
       const values = {
         [parentField.name]: [{
@@ -830,7 +830,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), [], [field]);
+          faker.random.number(), createRandomECClassInfo(), [], [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: [{
@@ -885,7 +885,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: "invalid",
@@ -1130,7 +1130,7 @@ describe("RulesetsFactory", () => {
         }];
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field]);
+          faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: [{
@@ -1252,7 +1252,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: [{
@@ -1307,7 +1307,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: [{
@@ -1371,7 +1371,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
           faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field]);
+          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
         field.rebuildParentship(parentField);
         const values = {
           [parentField.name]: [{

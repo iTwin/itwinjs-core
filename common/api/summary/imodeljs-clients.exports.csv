@@ -32,6 +32,7 @@ alpha;CheckpointQuery
 internal;ClassKeyMapInfo
 beta;class Client
 beta;ClientsLoggerCategory
+beta;CloneIModelTemplate
 alpha;CodeBase 
 alpha;CodeEvent 
 alpha;CodeHandler
@@ -51,11 +52,13 @@ internal;ConstructorType = new () => any
 beta;Context 
 beta;ContextType
 internal;DefaultCodeUpdateOptionsProvider
+internal;DefaultIModelCreateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
 internal;DefaultRequestOptionsProvider
 internal;DefaultWsgRequestOptionsProvider 
 beta;class ECInstance
 internal;ECJsonTypeMap
+beta;EmptyIModelTemplate = "Empty"
 beta;EventHandler 
 beta;EventSAS 
 beta;EventSubscription 
@@ -87,6 +90,7 @@ beta;IModelBankHandler
 beta;IModelBaseHandler 
 beta;class IModelClient
 beta;IModelCreatedEvent 
+beta;IModelCreateOptions
 beta;IModelDeletedEvent 
 internal;IModelFileSystemContextProps
 beta;IModelHandler

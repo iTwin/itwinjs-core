@@ -178,7 +178,8 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
               totalDuration={this.state.dataProvider.duration}
               milestones={this.state.dataProvider.getMilestones()}
               minimized={this.state.dataProvider.getMilestones().length === 0}
-              onChange={this._onAnimationFractionChanged} />
+              onChange={this._onAnimationFractionChanged}
+              showDuration={true} />
           </div>
         }
       </div>

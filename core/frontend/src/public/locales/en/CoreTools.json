@@ -2,7 +2,7 @@
   "tools": {
     "View": {
       "Pan": {
-        "keyin": "Pan View",
+        "keyin": "pan view",
         "description": "Moves origin of view",
         "flyover": "Pan View",
         "Prompts": {
@@ -11,7 +11,7 @@
         }
       },
       "Rotate": {
-        "keyin": "Rotate View",
+        "keyin": "rotate view",
         "description": "Rotates View about specified point",
         "flyover": "Rotate About Point",
         "Prompts": {
@@ -20,7 +20,7 @@
         }
       },
       "Zoom": {
-        "keyin": "Zoom",
+        "keyin": "zoom",
         "description": "Changes view magnification",
         "flyover": "Zoom About Point",
         "Prompts": {
@@ -29,7 +29,7 @@
         }
       },
       "Look": {
-        "keyin": "Look",
+        "keyin": "look",
         "description": "Look around the design",
         "flyover": "Look Around",
         "Prompts": {
@@ -38,7 +38,7 @@
         }
       },
       "Walk": {
-        "keyin": "Walk",
+        "keyin": "walk",
         "description": "Walk around in the design",
         "flyover": "Walk Around",
         "Prompts": {
@@ -47,7 +47,7 @@
         }
       },
       "Fly": {
-        "keyin": "Fly",
+        "keyin": "fly",
         "description": "Fly around in the design",
         "flyover": "Fly Around",
         "Prompts": {
@@ -56,7 +56,7 @@
         }
       },
       "WindowArea": {
-        "keyin": "Window Area",
+        "keyin": "window area",
         "description": "Select viewing area",
         "flyover": "Window Area",
         "Prompts": {
@@ -65,7 +65,7 @@
         }
       },
       "Scroll": {
-        "keyin": "Scroll View",
+        "keyin": "scroll view",
         "description": "Scrolls view",
         "flyover": "Scroll",
         "Prompts": {
@@ -74,21 +74,21 @@
         }
       },
       "Fit": {
-        "keyin": "Fit View",
+        "keyin": "fit view",
         "description": "Displays entire model",
         "flyover": "Fit View",
         "Prompts": {
           "FirstPoint": "Select view to fit."
         },
         "Model": {
-          "keyin": "Fit Model",
+          "keyin": "fit model",
           "description": "Fit all graphics in the chosen model"
         }
       },
       "SetupCamera": {
-        "keyin": "Set up Camera",
+        "keyin": "set up camera",
         "description": "Set up view camera",
-        "flyover": "Set up Camera",
+        "flyover": "Set Up Camera",
         "Prompts": {
           "FirstPoint": "Define camera position.",
           "NextPoint": "Define camera target point."
@@ -99,22 +99,22 @@
         }
       },
       "ToggleCamera": {
-        "keyin": "Camera Toggle",
+        "keyin": "camera toggle",
         "description": "Turns on camera if off, turns off camera if on.",
         "flyover": "Camera On/Off"
       },
       "Undo": {
-        "keyin": "View Undo",
+        "keyin": "view undo",
         "description": "Reverses the most recent change to the Viewport.",
         "flyover": "View Previous"
       },
       "Redo": {
-        "keyin": "View Redo",
+        "keyin": "view redo",
         "description": "Re-applies the most recently un-done change to the Viewport.",
         "flyover": "View Next"
       },
       "Standard": {
-        "keyin": "Rotate to Standard View",
+        "keyin": "rotate to standard view",
         "description": "align view with standard rotation",
         "flyover": "Standard View"
       }
@@ -134,7 +134,7 @@
         }
       },
       "ByPlane": {
-        "keyin": "ViewClip ByPlane",
+        "keyin": "viewclip byplane",
         "description": "Section a view with a plane",
         "flyover": "Section View",
         "Prompts": {
@@ -142,7 +142,7 @@
         }
       },
       "ByShape": {
-        "keyin": "ViewClip ByShape",
+        "keyin": "viewclip byshape",
         "description": "Create a clip volume by shape points",
         "flyover": "Clip Volume From Shape",
         "Prompts": {
@@ -153,7 +153,7 @@
         }
       },
       "ByRange": {
-        "keyin": "ViewClip ByRange",
+        "keyin": "viewclip byrange",
         "description": "Create a clip volume by range from 2 points",
         "flyover": "Clip Volume From Range",
         "Prompts": {
@@ -162,7 +162,7 @@
         }
       },
       "ByElement": {
-        "keyin": "ViewClip ByElement",
+        "keyin": "viewclip byelement",
         "description": "Create a clip volume from an element or selection set",
         "flyover": "Clip Volume From Element",
         "Prompts": {
@@ -170,7 +170,7 @@
         }
       },
       "Clear": {
-        "keyin": "ViewClip Clear",
+        "keyin": "viewclip clear",
         "description": "Remove clip volume or section planes from a view",
         "flyover": "Unclip View",
         "Prompts": {
@@ -180,13 +180,114 @@
     },
     "SelectView": "Select view",
     "Select": {
-      "keyin": "Select Elements",
+      "keyin": "select elements",
       "description": "Selects Element for inspection or manipulation",
       "flyover": "Select Elements"
     },
+    "AccuDraw": {
+      "SetOrigin": {
+        "keyin": "accudraw set origin",
+        "description": "Set AccuDraw origin",
+        "flyover": "Set Origin"
+      },
+      "LockSmart": {
+        "keyin": "accudraw lock smart",
+        "description": "Set AccuDraw locks based off current state",
+        "flyover": "Smart Lock"
+      },
+      "LockX": {
+        "keyin": "accudraw lock x",
+        "description": "Set AccuDraw x axis lock",
+        "flyover": "Lock X"
+      },
+      "LockY": {
+        "keyin": "accudraw lock y",
+        "description": "Set AccuDraw y axis lock",
+        "flyover": "Lock Y"
+      },
+      "LockZ": {
+        "keyin": "accudraw lock z",
+        "description": "Set AccuDraw z axis lock",
+        "flyover": "Lock Z"
+      },
+      "LockDistance": {
+        "keyin": "accudraw lock distance",
+        "description": "Set AccuDraw distance lock",
+        "flyover": "Lock Distance"
+      },
+      "LockAngle": {
+        "keyin": "accudraw lock angle",
+        "description": "Set AccuDraw angle lock",
+        "flyover": "Lock Angle"
+      },
+      "ChangeMode": {
+        "keyin": "accudraw mode",
+        "description": "Switch AccuDraw mode between polar and rectangular",
+        "flyover": "Change Mode"
+      },
+      "RotateCycle": {
+        "keyin": "accudraw rotate cycle",
+        "description": "Set AccuDraw rotation by cycling through top, front, and side relative to current rotation",
+        "flyover": "Rotate Cycle"
+      },
+      "RotateTop": {
+        "keyin": "accudraw rotate top",
+        "description": "Set AccuDraw rotation to top",
+        "flyover": "Rotate Top"
+      },
+      "RotateFront": {
+        "keyin": "accudraw rotate front",
+        "description": "Set AccuDraw rotation to front",
+        "flyover": "Rotate Front"
+      },
+      "RotateSide": {
+        "keyin": "accudraw rotate side",
+        "description": "Set AccuDraw rotation to side",
+        "flyover": "Rotate Side"
+      },
+      "RotateView": {
+        "keyin": "accudraw rotate view",
+        "description": "Set AccuDraw rotation to view",
+        "flyover": "Rotate View"
+      },
+      "RotateAxes": {
+        "keyin": "accudraw rotate quick",
+        "description": "Set AccuDraw rotation about current origin",
+        "flyover": "Rotate Quick",
+        "Prompts": {
+          "FirstPoint": "Define X axis"
+        }
+      },
+      "RotateElement": {
+        "keyin": "accudraw rotate element",
+        "description": "Set AccuDraw rotation from element",
+        "flyover": "Rotate To Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to define rotation"
+        }
+      },
+      "DefineACSByElement": {
+        "keyin": "define acs byelement",
+        "description": "Set view ACS from element",
+        "flyover": "Define ACS By Element",
+        "Prompts": {
+          "FirstPoint": "Identify element to define rotation"
+        }
+      },
+      "DefineACSByPoints": {
+        "keyin": "define acs bypoints",
+        "description": "Set view ACS by 3 points",
+        "flyover": "Define ACS By Points",
+        "Prompts": {
+          "FirstPoint": "Define X axis origin",
+          "SecondPoint": "Define X axis",
+          "NextPoint": "Define Y axis"
+        }
+      }
+    },
     "Measure": {
       "Distance": {
-        "keyin": "Measure Distance",
+        "keyin": "measure distance",
         "description": "Measure distance between points",
         "flyover": "Measure Distance",
         "Prompts": {
@@ -195,7 +296,7 @@
         }
       },
       "Location": {
-        "keyin": "Measure Location",
+        "keyin": "measure location",
         "description": "Show coordintate location",
         "flyover": "Show Location",
         "Prompts": {
@@ -203,17 +304,17 @@
         }
       },
       "Length": {
-        "keyin": "Measure Length",
+        "keyin": "measure length",
         "description": "Measure length of elements",
         "flyover": "Measure Length"
       },
       "Area": {
-        "keyin": "Measure Area",
+        "keyin": "measure area",
         "description": "Measure area of elements",
         "flyover": "Measure Area"
       },
       "Volume": {
-        "keyin": "Measure Volume",
+        "keyin": "measure volume",
         "description": "Measure volume of elements",
         "flyover": "Measure Volume"
       },
@@ -280,7 +381,7 @@
       }
     },
     "Plugin": {
-      "keyin": "Load Plugin",
+      "keyin": "load plugin",
       "description": "Loads a plugin module"
     }
   },

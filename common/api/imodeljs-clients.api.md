@@ -64,7 +64,7 @@ export class AllLocksDeletedEvent extends BriefcaseEvent {
 // @internal (undocumented)
 export class ArgumentCheck {
     // (undocumented)
-    static defined(argumentName: string, argument?: any): void;
+    static defined(argumentName: string, argument?: any, allowEmpty?: boolean): void;
     // (undocumented)
     static definedNumber(argumentName: string, argument?: number): void;
     // (undocumented)
@@ -73,7 +73,7 @@ export class ArgumentCheck {
     static valid(argumentName: string, argument?: any): void;
     static validBriefcaseId(argumentName: string, argument?: number): void;
     // (undocumented)
-    static validChangeSetId(argumentName: string, argument?: string): void;
+    static validChangeSetId(argumentName: string, argument?: string, allowEmpty?: boolean): void;
     // (undocumented)
     static validGuid(argumentName: string, argument?: string): void;
 }
@@ -313,6 +313,12 @@ export enum ClientsLoggerCategory {
     UlasClient = "ulasclient"
 }
 
+// @beta
+export interface CloneIModelTemplate {
+    changeSetId?: string;
+    imodelId: string;
+}
+
 // @alpha
 export class CodeBase extends WsgInstance {
     briefcaseId?: number;
@@ -531,6 +537,15 @@ export class DefaultCodeUpdateOptionsProvider {
 }
 
 // @internal
+export class DefaultIModelCreateOptionsProvider {
+    constructor();
+    assignOptions(options: IModelCreateOptions): Promise<void>;
+    // (undocumented)
+    protected _defaultOptions: IModelCreateOptions;
+    templateToString(options: IModelCreateOptions): string | undefined;
+}
+
+// @internal
 export class DefaultLockUpdateOptionsProvider {
     constructor();
     assignOptions(options: LockUpdateOptions): Promise<void>;
@@ -566,6 +581,9 @@ export class ECJsonTypeMap {
     static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
     static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
 }
+
+// @beta
+export type EmptyIModelTemplate = "Empty";
 
 // @beta
 export class EventHandler extends EventBaseHandler {
@@ -774,6 +792,7 @@ export class HubCode extends CodeBase {
 export class HubIModel extends WsgInstance {
     createdDate?: string;
     description?: string;
+    extent?: number[];
     id?: GuidString;
     // @internal
     iModelTemplate?: string;
@@ -900,6 +919,16 @@ export class IModelCreatedEvent extends IModelHubGlobalEvent {
 }
 
 // @beta
+export interface IModelCreateOptions {
+    description?: string;
+    extent?: number[];
+    path?: string;
+    progressCallback?: (progress: ProgressInfo) => void;
+    template?: CloneIModelTemplate | EmptyIModelTemplate;
+    timeOutInMilliseconds?: number;
+}
+
+// @beta
 export class IModelDeletedEvent extends IModelHubEvent {
 }
 
@@ -917,7 +946,7 @@ export interface IModelFileSystemContextProps {
 export class IModelHandler {
     // @internal
     constructor(handler: IModelsHandler);
-    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
@@ -995,13 +1024,13 @@ export class IModelQuery extends InstanceIdQuery {
 export class IModelsHandler {
     // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, path?: string, description?: string, progressCallback?: (progress: ProgressInfo) => void, timeOutInMilliseconds?: number): Promise<HubIModel>;
+    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
-}
+    }
 
 // @internal @deprecated
 export class ImsActiveSecureTokenClient extends Client {
@@ -1927,7 +1956,7 @@ export class VersionHandler {
 
 // @beta
 export class VersionQuery extends InstanceIdQuery {
-    byChangeSet(changesetId: string): this;
+    byChangeSet(changeSetId: string): this;
     byName(name: string): this;
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }

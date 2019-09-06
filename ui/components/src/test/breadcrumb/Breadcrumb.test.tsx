@@ -374,7 +374,7 @@ describe("Breadcrumb", () => {
         it("should set current to root/undefined", async () => {
           const node = mockRawTreeDataProvider[0];
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={node} />), renderSpy, 2);
-          expect(waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
+          expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
           const menuItems = renderedComponent.getAllByTestId("core-context-menu-item");
           await waitForUpdate(() => fireEvent.click(menuItems[0]), renderSpy, 1);
           expect(renderedComponent.queryByText(node.label)).to.not.exist;

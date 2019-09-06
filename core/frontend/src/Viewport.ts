@@ -64,14 +64,12 @@ export class SyncFlags {
   private _scene = false;
   private _renderPlan = false;
   private _controller = false;
-  private _rotatePoint = false;
   private _animationFraction = false;
   private _redrawPending = false;
   public get isValidDecorations(): boolean { return this._decorations; }
   public get isValidScene(): boolean { return this._scene; }
   public get isValidController(): boolean { return this._controller; }
   public get isValidRenderPlan(): boolean { return this._renderPlan; }
-  public get isValidRotatePoint(): boolean { return this._rotatePoint; }
   public get isValidAnimationFraction(): boolean { return this._animationFraction; }
   public get isRedrawPending(): boolean { return this._redrawPending; }
   public invalidateDecorations(): void {
@@ -89,9 +87,6 @@ export class SyncFlags {
   public invalidateController(): void {
     this._controller = false;
     this.invalidateRenderPlan();
-  }
-  public invalidateRotatePoint(): void {
-    this._rotatePoint = false;
   }
   public invalidateAnimationFraction(): void {
     this._animationFraction = false;
@@ -111,9 +106,6 @@ export class SyncFlags {
   public setValidRenderPlan(): void {
     this._renderPlan = true;
   }
-  public setValidRotatePoint(): void {
-    this._rotatePoint = true;
-  }
   public setValidAnimationFraction(): void {
     this._animationFraction = true;
   }
@@ -125,7 +117,6 @@ export class SyncFlags {
     this._scene = other._scene;
     this._renderPlan = other._renderPlan;
     this._controller = other._controller;
-    this._rotatePoint = other._rotatePoint;
     this._animationFraction = other._animationFraction;
     this._redrawPending = other._redrawPending;
   }
@@ -280,6 +271,8 @@ export class ViewRect {
    * @param deltaY The distance to inset the ViewRect in the y direction.
    */
   public inset(deltaX: number, deltaY: number): void {
+    deltaX = Math.floor(deltaX);
+    deltaY = Math.floor(deltaY);
     if (this.width - 2 * deltaX <= 0 || this.height - 2 * deltaY <= 0) {
       this.init(0, 0, 0, 0);
       return;
@@ -482,7 +475,7 @@ export class ViewFrustum {
   public frustFraction: number = 1.0;
   /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
   public static nearScaleNonLog24 = 0.0003;
-  /** Maximum fration of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer */
   public static nearScaleLog24 = 1.0E-8;
 
   /** View origin, potentially expanded */
@@ -532,27 +525,9 @@ export class ViewFrustum {
    *  modifies the point and vector given
    *  @internal
    */
-  protected adjustAspectRatio(origin: Point3d, delta: Vector3d) {
-    if (this._aspectRatioLocked)
-      return;
-
-    const windowAspect = this._viewRect.aspect * this.view.getAspectRatioSkew();
-    const viewAspect = delta.x / delta.y;
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = delta.clone();
-    if (viewAspect > windowAspect)
-      delta.y = delta.x / windowAspect;
-    else
-      delta.x = delta.y * windowAspect;
-
-    const newOrigin = origin.clone();
-    this.toView(newOrigin);
-    newOrigin.x += ((oldDelta.x - delta.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - delta.y) / 2.0);
-    this.fromView(newOrigin, origin);
+  protected adjustAspectRatio(origin: Point3d, extent: Vector3d) {
+    if (!this._aspectRatioLocked)
+      this.view.adjustAspectRatio(origin, extent, this._viewRect.aspect);
   }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
@@ -1634,6 +1609,7 @@ export abstract class Viewport implements IDisposable {
   /** When true, the scene will never be recreated. Chiefly for debugging purposes.
    * @internal
    */
+  public get freezeScene(): boolean { return this._freezeScene; }
   public set freezeScene(freeze: boolean) {
     if (freeze !== this._freezeScene) {
       this._freezeScene = freeze;
@@ -2747,6 +2723,15 @@ export abstract class Viewport implements IDisposable {
 
     // ###TODO: Want to record memory used by RenderTarget?
   }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+    if (this.view.refreshForModifiedModels(modelIds))
+      this.invalidateScene();
+  }
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
@@ -2934,11 +2919,21 @@ export class ScreenViewport extends Viewport {
     this.setAnimator(new FrustumAnimator(animationTime, this, start, end, fromUndo));
   }
 
+  /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
+   * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
+   * a different location and call synchWithView, then call this method. After the animation the viewport
+   * frustum will be restored to its current location.
+   * @internal
+   */
+  public animateToCurrent(start: Frustum, animationTime?: BeDuration) {
+    this.animateFrustumChange(start, this.getFrustum(), animationTime, this.view.saveForUndo());
+  }
+
   protected finishViewChange(startFrust: Frustum, options?: ViewChangeOptions) {
     options = options === undefined ? {} : options;
     this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
     if (options.animateFrustumChange === undefined || options.animateFrustumChange)
-      this.animateFrustumChange(startFrust, this.getFrustum(CoordSystem.World, false), options.animationTime);
+      this.animateToCurrent(startFrust, options.animationTime);
   }
 
   /** @internal */
@@ -3058,7 +3053,7 @@ export class ScreenViewport extends Viewport {
     this.updateChangeFlags(this.view);
     const startFrust = undefined !== animationTime ? this.getFrustum() : undefined;
     this.setupFromView();
-    if (undefined !== animationTime && undefined !== startFrust)
+    if (undefined !== startFrust)
       this.animateFrustumChange(startFrust, this.getFrustum(), animationTime, this._currentBaseline);
   }
 

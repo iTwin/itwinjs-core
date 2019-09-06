@@ -64,12 +64,6 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   /** Called when this ContentControl is activated */
   public onActivated(): void {
     super.onActivated();
-
-    const me = this;
-    this.isReady // tslint:disable-line:no-floating-promises
-      .then(() => {
-        IModelApp.viewManager.setSelectedView(me.viewport);
-      });
   }
 
   /** Get the NavigationAidControl associated with this ContentControl */
@@ -77,8 +71,8 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
     let navigationAidId = "";
 
     // istanbul ignore else
-    if (this._viewport) {
-      navigationAidId = this._getNavigationAid(this._viewport.view.classFullName);
+    if (this.viewport) {
+      navigationAidId = this._getNavigationAid(this.viewport.view.classFullName);
     }
 
     return navigationAidId;
@@ -114,9 +108,9 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 
   /** Process a ViewSelector change. */
   public async processViewSelectorChange(iModel: IModelConnection, viewDefinitionId: Id64String, viewState: ViewState, name: string): Promise<void> {
-    if (this._viewport) {
-      if (IModelApp.viewManager && this._viewport === IModelApp.viewManager.selectedView)
-        this._viewport.changeView(viewState);
+    if (this.viewport) {
+      if (IModelApp.viewManager && this.viewport === IModelApp.viewManager.selectedView)
+        this.viewport.changeView(viewState);
     } else {
       this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
       ContentViewManager.refreshActiveContent(this.reactElement);

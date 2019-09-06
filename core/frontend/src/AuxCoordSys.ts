@@ -318,7 +318,8 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
   public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
   public setRotation(val: Matrix3d): void {
     this._rMatrix.setFrom(val);
-    this.angle = YawPitchRollAngles.createFromMatrix3d(val)!.yaw.degrees;
+    const angle = YawPitchRollAngles.createFromMatrix3d(val);
+    this.angle = (undefined !== angle ? angle.yaw.degrees : 0.0);
   }
 }
 
@@ -358,10 +359,10 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
   public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
   public setRotation(rMatrix: Matrix3d): void {
     this._rMatrix.setFrom(rMatrix);
-    const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix)!;
-    this.yaw = angles.yaw.degrees;
-    this.pitch = angles.pitch.degrees;
-    this.roll = angles.roll.degrees;
+    const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix);
+    this.yaw = (undefined !== angles ? angles.yaw.degrees : 0.0);
+    this.pitch = (undefined !== angles ? angles.pitch.degrees : 0.0);
+    this.roll = (undefined !== angles ? angles.roll.degrees : 0.0);
   }
 }
 

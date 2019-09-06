@@ -2,8 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
-
+/**
+ * @module Core
+ *
+ * @docs-group-description Core
+ * Common types used for retrieving presentation data from iModels.
+ */
 export { Presentation, PresentationProps } from "./Presentation";
 export { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 export { RulesetManager } from "./RulesetManager";

@@ -39,8 +39,9 @@ export class Frontstage3 extends FrontstageProvider {
         descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
         verticalSplit: {
           percentage: 0.50,
+          minSizeLeft: 100, minSizeRight: 100,
           left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
+          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
         },
       },
     );

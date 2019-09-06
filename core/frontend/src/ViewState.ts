@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, Id64, Id64String, JsonUtils, BeTimePoint } from "@bentley/bentleyjs-core";
+import {
+  BeTimePoint,
+  Id64,
+  Id64Arg,
+  Id64String,
+  JsonUtils,
+  assert,
+} from "@bentley/bentleyjs-core";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
@@ -21,7 +28,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState, SpatialModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, SpatialModelState, GeometricModel3dState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -200,7 +207,10 @@ export abstract class ViewState extends ElementState {
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
   public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
-  /** Get the RenderSchedule.Script from the displayStyle of this viewState */
+  /**
+   * Get the RenderSchedule.Script from the displayStyle of this viewState
+   * @internal
+   */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
 
   /** Determine whether this ViewState exactly matches another. */
@@ -279,6 +289,8 @@ export abstract class ViewState extends ElementState {
   public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
+  /** Returns true if this ViewState is-a [[DrawingViewState]] */
+  public isDrawingView(): this is DrawingViewState { return this instanceof DrawingViewState; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */
@@ -571,29 +583,33 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** @internal */
-  protected adjustAspectRatio(windowAspect: number): void {
-    const extents = this.getExtents();
+  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect rato skew),
+   * by adjusting one dimension or the other.
+   * @internal
+   */
+  public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
+    const origExtents = extents.clone();
     const viewAspect = extents.x / extents.y;
-    windowAspect *= this.getAspectRatioSkew();
-
-    if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-      return;
-
-    const oldDelta = extents.clone();
     if (viewAspect > windowAspect)
       extents.y = extents.x / windowAspect;
     else
       extents.x = extents.y * windowAspect;
 
-    let origin = this.getOrigin();
-    const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
-    const newOrigin = trans.multiplyPoint3d(origin);
+    // skew always adjusts y
+    const maxSkew = 25;
+    extents.y /= Geometry.clamp(this.getAspectRatioSkew(), 1 / maxSkew, maxSkew);
 
-    newOrigin.x += ((oldDelta.x - extents.x) / 2.0);
-    newOrigin.y += ((oldDelta.y - extents.y) / 2.0);
+    const rotation = this.getRotation();
+    rotation.multiplyVectorInPlace(origin);
+    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5);
+    rotation.multiplyTransposeVectorInPlace(origin);
+  }
 
-    origin = trans.inverse()!.multiplyPoint3d(newOrigin);
+  /** @internal */
+  protected fixAspectRatio(windowAspect: number): void {
+    const extents = this.getExtents().clone();
+    const origin = this.getOrigin().clone();
+    this.adjustAspectRatio(origin, extents, windowAspect);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -885,7 +901,7 @@ export abstract class ViewState extends ElementState {
 
     this.setExtents(newDelta);
     if (aspect)
-      this.adjustAspectRatio(aspect);
+      this.fixAspectRatio(aspect);
 
     newDelta = this.getExtents();
 
@@ -929,6 +945,24 @@ export abstract class ViewState extends ElementState {
       frustum.multiply(worldTransform);
       this.setupFromFrustum(frustum);
     }
+  }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Invalidates tile trees for all specified models (or all viewed models, if none specified), causing subsequent requests for tiles to make new requests to back-end for updated tiles.
+   * Returns true if any tile tree was invalidated.
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean {
+    let refreshed = false;
+    this.forEachModelTreeRef((ref) => {
+      const tree = ref.treeOwner.tileTree;
+      if (undefined !== tree && (undefined === modelIds || Id64.has(modelIds, tree.modelId))) {
+        ref.treeOwner.dispose();
+        refreshed = true;
+      }
+    });
+
+    return refreshed;
   }
 }
 
@@ -1594,9 +1628,8 @@ export class SpatialViewState extends ViewState3d {
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
       const model = this.iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
-      if (undefined !== model3d)
-        func(model3d);
+      if (undefined !== model && undefined !== model.asGeometricModel3d)
+        func(model as GeometricModel3dState);
     }
   }
 
@@ -1730,9 +1763,8 @@ export abstract class ViewState2d extends ViewState {
   public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);
-    const model2d = undefined !== model ? model.asGeometricModel2d : undefined;
-    if (undefined !== model2d)
-      func(model2d);
+    if (undefined !== model && undefined !== model.asGeometricModel2d)
+      func(model as GeometricModel2dState);
   }
 
   /** @internal */

@@ -49,6 +49,11 @@ export interface VisibilityTreeProps {
    * @internal
    */
   visibilityHandler?: VisibilityHandler;
+  /**
+   * Ref to the root HTML element used by this component
+   * @alpha
+   */
+  rootElementRef?: React.Ref<HTMLDivElement>;
 }
 
 /** State for [[VisibilityTree]] component
@@ -203,7 +208,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
 
   public render() {
     return (
-      <div className="fw-visibility-tree">
+      <div className="fw-visibility-tree" ref={this.props.rootElementRef}>
         <Tree
           ref={this._treeRef}
           dataProvider={this.state.dataProvider}

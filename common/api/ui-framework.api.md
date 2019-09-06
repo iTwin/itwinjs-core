@@ -88,6 +88,7 @@ import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstructions } from '@bentley/imodeljs-frontend';
 import { ToolbarItemInsertSpec } from '@bentley/imodeljs-frontend';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
+import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
 import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
@@ -150,9 +151,9 @@ export class ActionItemButton extends React_2.Component<ActionItemButtonProps, B
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentWillReceiveProps(nextProps: ActionItemButtonProps): void;
-    // (undocumented)
     componentWillUnmount(): void;
+    // @internal (undocumented)
+    static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState): BaseItemState | null;
     // (undocumented)
     render(): React_2.ReactNode;
     // @internal (undocumented)
@@ -1829,10 +1830,9 @@ export class FrontstageDef {
     readonly panelDefs: StagePanelDef[];
     // @alpha (undocumented)
     rightPanel?: StagePanelDef;
-    // (undocumented)
     setActiveContent(): boolean;
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
-    // (undocumented)
+    setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
     startDefaultTool(): void;
     // (undocumented)
@@ -1889,6 +1889,8 @@ export class FrontstageManager {
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static findWidget(widgetId: string): WidgetDef | undefined;
     static initialize(): void;
+    // @internal (undocumented)
+    static isInitialized: boolean;
     static readonly isLoading: boolean;
     static readonly modalFrontstageCount: number;
     static readonly nestedFrontstageCount: number;
@@ -2416,6 +2418,8 @@ export interface LayoutFragmentProps {
 // @public
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
     top: LayoutFragmentProps | number;
 }
 
@@ -2437,6 +2441,8 @@ export interface LayoutSplitPropsBase {
 // @public
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
     right: LayoutFragmentProps | number;
 }
 
@@ -2706,6 +2712,8 @@ export class ModelessDialogManager {
     // @internal (undocumented)
     static readonly dialogManager: DialogManagerBase;
     static readonly dialogs: import("./DialogManagerBase").DialogInfo[];
+    // (undocumented)
+    static getDialogInfo(id: string): ModelessDialogInfo | undefined;
     static getDialogZIndex(id: string): number;
     static handlePointerDownEvent(_event: React_2.PointerEvent, id: string, updateFunc: () => void): void;
     static readonly onModelessDialogChangedEvent: ModelessDialogChangedEvent;
@@ -2979,6 +2987,22 @@ export interface ProjectServices {
 
 // @public
 export const PromptField: any;
+
+// @alpha
+export interface PropertyChangeResult {
+    // (undocumented)
+    errorMsg?: string;
+    // (undocumented)
+    status: PropertyChangeStatus;
+}
+
+// @alpha
+export enum PropertyChangeStatus {
+    // (undocumented)
+    Error = 2,
+    // (undocumented)
+    Success = 0
+}
 
 // @public
 export class PropsHelper {
@@ -3591,6 +3615,16 @@ export interface SupportsViewSelectorChange {
     supportsViewSelectorChange: boolean;
 }
 
+// @alpha
+export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> {
+}
+
+// @alpha
+export interface SyncPropertiesChangeEventArgs {
+    // (undocumented)
+    properties: ToolSettingsPropertyItem[];
+}
+
 // @public
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> {
 }
@@ -3780,7 +3814,7 @@ export interface ToolAssistanceChangedEventArgs {
     instructions: ToolAssistanceInstructions | undefined;
 }
 
-// @alpha
+// @beta
 export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
     constructor(p: ToolAssistanceFieldProps);
     // @internal (undocumented)
@@ -3795,12 +3829,13 @@ export class ToolAssistanceField extends React_2.Component<ToolAssistanceFieldPr
     render(): React_2.ReactNode;
     }
 
-// @alpha
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt">;
+// @internal
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
-// @alpha
+// @beta
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
     cursorPromptTimeout: number;
+    defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
     uiSettings: UiSettings;
@@ -4055,6 +4090,17 @@ export class TsRow {
     priority: number;
 }
 
+// @alpha
+export abstract class UiDataProvider {
+    // (undocumented)
+    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
+    processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult;
+    supplyAvailableProperties(): ToolSettingsPropertyItem[];
+    // @internal
+    syncPropertiesInUi(properties: ToolSettingsPropertyItem[]): void;
+    validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult;
+}
+
 // @public
 export class UiFramework {
     // (undocumented)
@@ -4094,6 +4140,8 @@ export class UiFramework {
     static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any>;
     // @internal
     static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    // @beta (undocumented)
+    static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @beta (undocumented)
@@ -4279,7 +4327,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export class VisibilityComponent extends React_2.Component<any, VisibilityTreeState_2> {
+export class VisibilityComponent extends React_2.Component<VisibilityComponentProps, VisibilityTreeState_2> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -4287,6 +4335,13 @@ export class VisibilityComponent extends React_2.Component<any, VisibilityTreeSt
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @alpha
+export interface VisibilityComponentProps {
+    activeTreeRef?: React_2.Ref<HTMLDivElement>;
+    activeViewport?: Viewport;
+    iModelConnection: IModelConnection;
+}
 
 // @internal (undocumented)
 export class VisibilityHandler implements IDisposable {
@@ -4340,6 +4395,8 @@ export interface VisibilityTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     imodel: IModelConnection;
+    // @alpha
+    rootElementRef?: React_2.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @internal
     visibilityHandler?: VisibilityHandler;
@@ -4352,6 +4409,10 @@ export class VisibilityWidget extends WidgetControl {
     static readonly iconSpec: string;
     // (undocumented)
     static readonly label: string;
+    // (undocumented)
+    restoreTransientState(): boolean;
+    // (undocumented)
+    saveTransientState(): void;
 }
 
 // @public

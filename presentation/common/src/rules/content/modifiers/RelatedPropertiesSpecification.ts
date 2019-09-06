@@ -60,6 +60,11 @@ export interface RelatedPropertiesSpecification {
   isPolymorphic?: boolean;
 
   /**
+   * Should field containing related properties be automatically expanded.
+   */
+  autoExpand?: boolean;
+
+  /**
    * Direction that will be followed in the relationship select criteria.
    * Defaults to [[RelationshipDirection.Both]].
    */

@@ -48,7 +48,7 @@ export class GraphChecker {
       Point3d.create(nodeA.x, nodeA.y, 0, xyzA);
       Point3d.create(nodeB.x, nodeB.y, 0, xyzB);
       // if both ends are trivial, just put out the stroke . ..
-      if (nodeA.countEdgesAroundVertex() <= 2 && nodeB.countEdgesAroundVertex() <= 2) {
+      if (nodeA.countEdgesAroundVertex() <= 1 && nodeB.countEdgesAroundVertex() <= 1) {
         data.push(LineSegment3d.create(xyzA, xyzB));
       } else {
         nodeA.vectorToFaceSuccessor(vectorAB);

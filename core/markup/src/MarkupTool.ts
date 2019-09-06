@@ -14,7 +14,7 @@ import { Markup, MarkupApp } from "./Markup";
  */
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
-  public static toolKey = "MarkupTools:tools.";
+  public static toolKey = "MarkupTools:tools.Markup.";
   public requireWriteableTarget(): boolean { return false; }
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView); }
   public onInstall(): boolean { if (undefined === MarkupApp.markup) return false; this.markup = MarkupApp.markup; return super.onInstall(); }

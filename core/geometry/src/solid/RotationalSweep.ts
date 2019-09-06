@@ -28,6 +28,8 @@ import { StrokeOptions } from "../curve/StrokeOptions";
  * @public
  */
 export class RotationalSweep extends SolidPrimitive {
+  public readonly solidPrimitiveType = "rotationalSweep";
+
   private _contour: SweepContour;
   private _normalizedAxis: Ray3d;
   private _sweepAngle: Angle;

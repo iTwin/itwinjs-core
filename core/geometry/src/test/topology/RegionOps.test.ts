@@ -36,7 +36,11 @@ import { Loop } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AnyRegion } from "../../curve/CurveChain";
+import { AnyRegion, AnyCurve } from "../../curve/CurveChain";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { Path } from "../../curve/Path";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { CurveFactory } from "../../curve/CurveFactory";
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -526,6 +530,111 @@ describe("RegionInOut", () => {
       x0 += 20.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MixedInOut");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+});
+
+function curveLength(source: AnyCurve): number {
+  if (source instanceof CurvePrimitive)
+    return source.curveLength();
+  if (source instanceof CurveCollection)
+    return source.sumLengths();
+  return 0.0;
+}
+
+describe("CloneSplitCurves", () => {
+  it("PathSplits", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    let x0 = 0;
+    const y0 = 0;
+    const yStep = 5.0;
+    const y1 = 0.1;
+    const y2 = 0.5;
+    const line010 = LineSegment3d.createCapture(Point3d.create(0, 0, 0), Point3d.create(10, 0, 0));
+    const arc010 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0), Point3d.create(5, -y1), Point3d.create(10, 0))!;
+    // const line1 = LineSegment3d.createCapture(Point3d.create(1, -1, 0), Point3d.create(1, 1, 0));
+    // const lineString234 = LineString3d.create([2, -1], [3, 1], [4, -1]);
+    const arc5 = Arc3d.createXY(Point3d.create(5, 0, 0), 1);
+    const linestring10 = LineString3d.create([10, 0], [11, y1], [10, y1]);
+    // Assemble the cutters out of order to stress the sort logic.
+    // const cutters = BagOfCurves.create(line1, arc5, lineString234);
+    const cutters = BagOfCurves.create(arc5);
+    const pathsToCut: AnyCurve[] = [
+      line010,    // just a line
+      arc010,     // just an arc
+      LineString3d.create([0, 0], [10, 0], [10, y2], [0, y2]), // just a linestring
+      Path.create(LineSegment3d.create(Point3d.create(0, y2), Point3d.create(0, 0)), line010.clone()),   // two lines that will rejoin in output
+      Path.create(line010.clone(), LineSegment3d.create(line010.endPoint(), Point3d.create(0, y2))),   // two lines that will rejoin in output
+      Path.create(line010.clone(), linestring10, Arc3d.createCircularStartMiddleEnd(linestring10.endPoint(), Point3d.create(5, y1), Point3d.create(0, 2 * y1))!)];
+    for (const source of pathsToCut) {
+      const cut = RegionOps.cloneCurvesWithXYSplitFlags(source, cutters) as CurveCollection;
+      ck.testCoordinate(cut.sumLengths(), curveLength(source), "split curve markup preserves length");
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [source, cutters], x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cut, x0, y0 + yStep);
+      const splits = RegionOps.splitToPathsBetweenFlagBreaks(cut, true);
+      if (splits)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutters, x0, y0 + 2 * yStep);
+      if (splits instanceof BagOfCurves)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, splits.children, x0, y0 + 2 * yStep);
+      else
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, splits, x0, y0 + 2 * yStep);
+      x0 += 20;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "PathSplits");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("InOutSplits", () => {
+    const allGeometry: GeometryQuery[] = [];
+    const ck = new Checker();
+    let x0 = 10;
+    const y0 = 0;
+    const yStep = 12;
+    const xStep = 20;
+    // Make a loop with multiple boundary curves . . .
+    const segmentA = LineSegment3d.createXYXY(0, 0, 10, 0);
+    const arcA = Arc3d.createCircularStartMiddleEnd(Point3d.create(10, 0), Point3d.create(12, 5, 0), Point3d.create(10, 10, 0))!;
+    const stringA = LineString3d.create([10, 10], [0, 10], [0, 0]);
+    const loop = Loop.create(segmentA, arcA, stringA);
+
+    const path0 = CurveFactory.createFilletsInLineString([
+      Point3d.create(1, 1),
+      Point3d.create(5, 1),
+      Point3d.create(8, 3),
+      Point3d.create(13, 5),
+      Point3d.create(12, 8),
+      Point3d.create(5, 8)], 0.5);
+
+    const path1 = CurveFactory.createFilletsInLineString([
+      Point3d.create(1, 1),
+      Point3d.create(5, 1),
+      Point3d.create(14, 3),
+      Point3d.create(14, 11),
+      Point3d.create(5, 11),
+      Point3d.create(-1, 1)], 3.5);
+    for (const path of [path0, path1]) {
+      // output raw geometry
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+
+      const splitParts = RegionOps.splitPathsByRegionInOnOutXY(path, loop);
+      let yOut = y0;
+      for (const outputArray of [splitParts.insideParts, splitParts.outsideParts]) {
+        yOut += yStep;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0, yOut);
+        for (const fragment of outputArray) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, fragment, x0, yOut);
+        }
+      }
+      x0 += xStep;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "InOutSplits");
+
     expect(ck.getNumErrors()).equals(0);
   });
 

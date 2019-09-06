@@ -10,15 +10,15 @@
 // import { Point3d, Vector3d, Matrix3d } from "../PointVector";
 import { CurvePrimitive } from "./CurvePrimitive";
 
-import { CurveCollection, BagOfCurves } from "./CurveCollection";
-import { Path } from "./Path";
+import { CurveCollection } from "./CurveCollection";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { UnionRegion } from "./UnionRegion";
 /** Union type for `GeometryQuery` classes that have contain curves, either as individual parameter space or as collections
  * @public
  */
-export type AnyCurve = CurvePrimitive | Path | Loop | ParityRegion | UnionRegion | BagOfCurves | CurveCollection;
+export type AnyCurve = CurvePrimitive | CurveCollection;
+
 /** Union type for `GeometryQuery` classes that bound (planar) regions.
  * @public
  */

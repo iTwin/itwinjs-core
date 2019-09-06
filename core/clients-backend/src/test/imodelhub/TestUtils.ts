@@ -555,7 +555,7 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
     result.id = Guid.createValue();
     result.wsgId = result.id;
   }
-  result.changeSetId = changesetId || generateChangeSetId();
+  result.changeSetId = changesetId === undefined || changesetId === null ? generateChangeSetId() : changesetId;
   result.name = name || `TestVersion-${result.changeSetId!}`;
   result.smallThumbnailId = smallThumbnailId;
   result.largeThumbnailId = largeThumbnailId;
@@ -666,7 +666,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   }
 
   const pathName = fromSeedFile ? getMockSeedFilePath() : undefined;
-  return client.iModels.create(requestContext, contextId, name, pathName, "", undefined, 240000);
+  return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -704,11 +704,12 @@ export async function createChangeSets(requestContext: AuthorizedClientRequestCo
 
   const client = getDefaultClient();
 
-  const result: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  const result: ChangeSet[] = existingChangeSets.slice(startingId);
 
   const changeSets = getMockChangeSets(briefcase);
 
-  for (let i = result.length; i < startingId + count; ++i) {
+  for (let i = existingChangeSets.length; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
     const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);

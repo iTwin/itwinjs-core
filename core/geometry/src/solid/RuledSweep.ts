@@ -29,6 +29,8 @@ export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: Cur
  * @public
  */
 export class RuledSweep extends SolidPrimitive {
+  public readonly solidPrimitiveType = "ruledSweep";
+
   private _contours: SweepContour[];
   private constructor(contours: SweepContour[], capped: boolean) {
     super(capped);

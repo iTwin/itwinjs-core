@@ -14,6 +14,8 @@ import { GeometryQuery } from "./GeometryQuery";
  * @public
  */
 export class CoordinateXYZ extends GeometryQuery {
+  public readonly geometryCategory = "point";
+
   private _xyz: Point3d;
   /** Return a (REFERENCE TO) the coordinate data. */
   public get point() { return this._xyz; }

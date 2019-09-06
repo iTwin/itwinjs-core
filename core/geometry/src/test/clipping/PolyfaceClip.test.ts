@@ -23,6 +23,10 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Box } from "../../solid/Box";
 import { Range3d } from "../../geometry3d/Range";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Angle } from "../../geometry3d/Angle";
 
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
@@ -231,6 +235,107 @@ describe("PolyfaceClip", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "Box");
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("UnderAndOver", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    for (const numX of [2, 5]) {
+      for (const numY of [2, 4]) {
+        for (const mapY of [false, true]) {
+          y0 = 0;
+          const yStep = numY + 1;
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(Point3d.create(x0, y0), Point3d.create(x0, y0 + yStep)));
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(Point3d.create(x0, y0 + yStep), Point3d.create(x0, y0 + 2 * yStep)));
+          const meshX = Sample.createTriangularUnitGridPolyface(Point3d.create(0.1, 0.2, -0.5), Vector3d.create(0.5, 0, 0.3), Vector3d.create(0, 0.6, 0), numX, numY);
+          if (mapY)
+            meshX.data.point.mapComponent(2,
+              (x: number, y: number, _z: number) => {
+                return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 5.0) * RFunctions.cosineOfMappedAngle(y, -1.0, 8.0);
+              });
+          const meshY = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), numX, numY);
+          /*
+          let z0 = 0.125;
+          const builderY = PolyfaceBuilder.create();
+          builderY.addPolygon([Point3d.create(0, 0, z0), Point3d.create(2, 0, z0), Point3d.create(2, 2, z0), Point3d.create(0, 2, z0)]);
+          const meshY = builderY.claimPolyface();
+           */
+          if (mapY)
+            meshY.data.point.mapComponent(2,
+              (x: number, y: number, _z: number) => {
+                return 1.0 * RFunctions.cosineOfMappedAngle(x, 0.0, 3.0) * RFunctions.cosineOfMappedAngle(y, -1.0, 5.0);
+              });
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshX, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshY, x0, y0);
+          const visitorX = meshX.createVisitor();
+          const visitorY = meshY.createVisitor();
+          const builderXUnderY = PolyfaceBuilder.create();
+          const builderXOverY = PolyfaceBuilder.create();
+          PolyfaceClip.clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorX, visitorY, builderXUnderY, builderXOverY);
+          const builderYUnderX = PolyfaceBuilder.create();
+          const builderYOverX = PolyfaceBuilder.create();
+          PolyfaceClip.clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorY, visitorX, builderYUnderX, builderYOverX);
+
+          y0 += yStep;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, builderXUnderY.claimPolyface(), x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, builderXOverY.claimPolyface(), x0, y0);
+          y0 += yStep;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, builderYUnderX.claimPolyface(), x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, builderYOverX.claimPolyface(), x0, y0);
+          y0 += yStep;
+          const cutFill = PolyfaceClip.computeCutFill(meshX, meshY);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
+          y0 += yStep;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+          x0 += numX * 2 + 4;
+        }
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "UnderAndOver");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
+  it("CutFill", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const numXA = 6;
+    const numYA = 5;
+    const numXB = 8;
+    const numYB = 8;
+    const meshA = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), numXA, numYA);
+    const amplitudeA = 0.2;
+    const amplitudeB = -0.35;
+    meshA.data.point.mapComponent(2,
+      (x: number, y: number, _z: number) => {
+        return amplitudeA * RFunctions.cosineOfMappedAngle(x, 0.0, numXA) * RFunctions.cosineOfMappedAngle(y, 0, numYA);
+      });
+
+    const meshB = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(0.4), Vector3d.unitY(0.3), numXB, numYB);
+    meshB.data.point.mapComponent(2,
+      (x: number, y: number, _z: number) => {
+        return amplitudeB * RFunctions.cosineOfMappedAngle(x, 0.0, 3.0) * RFunctions.cosineOfMappedAngle(y, 1, 5.0);
+      });
+    // spin meshB so its grids do not align with mesh A
+    const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, numYB / 2, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(30)));
+    meshB.tryTransformInPlace(transform);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshA, x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0);
+    const cutFill = PolyfaceClip.computeCutFill(meshA, meshB);
+
+    y0 -= numYA;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAUnderB, x0, y0);
+    y0 -= numYA;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutFill.meshAOverB, x0, y0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "CutFill");
+    expect(ck.getNumErrors()).equals(0);
+
   });
 
 });

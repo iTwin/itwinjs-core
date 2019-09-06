@@ -55,7 +55,7 @@ export class PointCloudGeometry extends CachedGeometry {
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueGeneral; }
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
+  public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
   public get qOrigin(): Float32Array { return this._vertices.origin; }
   public get qScale(): Float32Array { return this._vertices.scale; }
   public get colors(): BufferHandle | undefined { return this._colorHandle; }

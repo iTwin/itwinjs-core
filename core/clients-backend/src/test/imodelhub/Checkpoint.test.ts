@@ -43,7 +43,7 @@ describe("iModelHub CheckpointHandler", () => {
   const imodelName = "imodeljs-clients Checkpoints test";
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
@@ -60,6 +60,7 @@ describe("iModelHub CheckpointHandler", () => {
       const checkpoints = await iModelClient.checkpoints.get(requestContext, imodelId);
       if (checkpoints.length === 0)
         this.skip();
+      return;
     }
 
     if (!fs.existsSync(utils.workDir)) {
@@ -71,7 +72,7 @@ describe("iModelHub CheckpointHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should query and download Checkpoint", async function (this: Mocha.ITestCallbackContext) {
+  it("should query and download Checkpoint", async () => {
     mockGetCheckpoint(imodelId, `?$select=*,FileAccessKey-forward-AccessKey.DownloadURL`, mockCheckpoint("", true));
     const checkpoints = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().selectDownloadUrl());
     chai.assert(checkpoints);
@@ -84,14 +85,14 @@ describe("iModelHub CheckpointHandler", () => {
     progressTracker.check();
   });
 
-  it("should query Checkpoint by id", async function (this: Mocha.ITestCallbackContext) {
+  it("should query Checkpoint by id", async () => {
     mockGetCheckpoint(imodelId, `?$filter=MergedChangeSetId+eq+%27${changeSets[2].id!}%27`, mockCheckpoint(changeSets[2].id!));
     const checkpoints = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().byChangeSetId(changeSets[2].id!));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
   });
 
-  it("should query nearest Checkpoint", async function (this: Mocha.ITestCallbackContext) {
+  it("should query nearest Checkpoint", async () => {
     mockGetCheckpoint(imodelId, `?$filter=NearestCheckpoint-backward-ChangeSet.Id+eq+%27${changeSets[0].id!}%27`, mockCheckpoint(""));
     const checkpoints1 = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().nearestCheckpoint(changeSets[0].id!));
     chai.assert(checkpoints1);
@@ -105,7 +106,7 @@ describe("iModelHub CheckpointHandler", () => {
     chai.expect(checkpoints2[0].mergedChangeSetId).to.be.equal(changeSets[2].id!);
   });
 
-  it("should query preceding Checkpoint", async function (this: Mocha.ITestCallbackContext) {
+  it("should query preceding Checkpoint", async () => {
     mockGetCheckpoint(imodelId, `?$filter=PrecedingCheckpoint-backward-ChangeSet.Id+eq+%27${changeSets[1].id!}%27`, mockCheckpoint(""));
     const checkpoints1 = await iModelClient.checkpoints.get(requestContext, imodelId, new CheckpointQuery().precedingCheckpoint(changeSets[1].id!));
     chai.assert(checkpoints1);

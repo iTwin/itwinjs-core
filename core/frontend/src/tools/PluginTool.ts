@@ -15,6 +15,12 @@ const loggerCategory = "imodeljs-frontend.Plugin";
 /** An Immediate Tool that starts the process of loading an iModelJs plugin. */
 export class PluginTool extends Tool {
   public static toolId = "Plugin";
+  public static get maxArgs() { return undefined; }
+  public static get minArgs() { return 1; }
+  public parseAndRun(...args: string[]): boolean {
+    return this.run(args);
+  }
+
   public run(args: any[]): boolean {
     if (args && args.length > 0 && args[0]) {
       PluginAdmin.loadPlugin(args[0], args.slice(1))

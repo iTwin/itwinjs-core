@@ -56,9 +56,17 @@ export function createTextBox(props: TextBoxProps): TextBox {
     textbox.onchange = () => handler(textbox);
   }
 
+  // Don't want the document's listeners intepreting keypresses as keyboard shortcuts...
+  const stopPropagation = (ev: KeyboardEvent) => ev.stopPropagation();
+  textbox.onkeydown = textbox.onkeyup = stopPropagation;
   const keypresshandler = props.keypresshandler;
   if (undefined !== keypresshandler) {
-    textbox.onkeypress = (ev: KeyboardEvent) => keypresshandler(textbox, ev);
+    textbox.onkeypress = (ev: KeyboardEvent) => {
+      keypresshandler(textbox, ev);
+      ev.stopPropagation();
+    };
+  } else {
+    textbox.onkeypress = stopPropagation;
   }
 
   const focushandler = props.focushandler;

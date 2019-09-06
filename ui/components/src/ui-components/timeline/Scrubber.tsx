@@ -8,7 +8,7 @@ import { Slider, Rail, Handles, SliderItem, Tracks, GetTrackProps } from "react-
 import "./Scrubber.scss";
 
 // istanbul ignore next - WIP
-const formatTime = (value: number) => {
+const formatDuration = (value: number) => {
   const addZero = (i: number) => {
     return (i < 10) ? "0" + i : i;
   };
@@ -25,6 +25,12 @@ const formatDate = (startDate: Date, endDate: Date, fraction: number) => {
   return date.toLocaleDateString();
 };
 
+const formatTime = (startDate: Date, endDate: Date, fraction: number) => {
+  const delta = (endDate.getTime() - startDate.getTime()) * fraction;
+  const date = new Date(startDate.getTime() + delta);
+  return date.toLocaleTimeString();
+};
+
 // *******************************************************
 // TOOLTIP RAIL
 // *******************************************************
@@ -34,6 +40,7 @@ interface TooltipRailProps {
   getEventData: (e: Event) => object;
   startDate?: Date;
   endDate?: Date;
+  showTime?: boolean;
   isPlaying: boolean;  // used to not show tooltip at mouse location if timeline is playing
 }
 
@@ -83,8 +90,15 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
   // istanbul ignore next - WIP
   public render() {
     const { value, percent } = this.state;
-    const { activeHandleID, getRailProps, isPlaying, startDate, endDate } = this.props;
-    const toolTip = (startDate && endDate) ? formatDate(startDate, endDate, (percent! / 100)) : formatTime(value!);
+    const { activeHandleID, getRailProps, isPlaying, startDate, endDate, showTime } = this.props;
+    let toolTip = "";
+
+    if (startDate && endDate && showTime)
+      toolTip = formatDate(startDate, endDate, percent! / 100) + " " + formatTime(startDate, endDate, percent! / 100);
+    else if (startDate && endDate)
+      toolTip = formatDate(startDate, endDate, percent! / 100);
+    else
+      toolTip = formatDuration(value!);
 
     return (
       <>
@@ -119,6 +133,7 @@ interface HandleProps {
   showTooltipOnMouseOver?: boolean;
   startDate?: Date;
   endDate?: Date;
+  showTime?: boolean;
   domain: number[];
   getHandleProps: (id: string, config: object) => object;
 }
@@ -155,12 +170,20 @@ class Handle extends React.Component<HandleProps, HandleState> {
       handle: { id, value, percent },
       showTooltipWhenPlaying,
       showTooltipOnMouseOver,
+      showTime,
       startDate,
       endDate,
       getHandleProps,
     } = this.props;
     const { mouseOver } = this.state;
-    const toolTip = (startDate && endDate) ? formatDate(startDate, endDate, percent / 100) : formatTime(value);
+    let toolTip = "";
+
+    if (startDate && endDate && showTime)
+      toolTip = formatDate(startDate, endDate, percent / 100) + " " + formatTime(startDate, endDate, percent / 100);
+    else if (startDate && endDate)
+      toolTip = formatDate(startDate, endDate, percent / 100);
+    else
+      toolTip = formatDuration(value);
 
     return (
       <>
@@ -168,7 +191,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
           <div className="tooltip-rail" style={{ left: `${percent}%` }}>
             <div className="tooltip">
               <span className="tooltip-text">{toolTip}</span>
-            </div>
+             </div>
           </div>
         }
         <div
@@ -216,6 +239,7 @@ export interface ScrubberProps extends CommonProps {
   inMiniMode: boolean;
   startDate?: Date;
   endDate?: Date;
+  showTime?: boolean;
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
   onSlideStart?: () => void;
@@ -227,7 +251,7 @@ export interface ScrubberProps extends CommonProps {
 export class Scrubber extends React.Component<ScrubberProps> {
 
   public render() {
-    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, inMiniMode, startDate, endDate } = this.props;
+    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, inMiniMode, startDate, endDate, showTime } = this.props;
     const domain = [0, totalDuration];
     const showTooltip = isPlaying && inMiniMode;
     const showMouseTooltip = !isPlaying && inMiniMode;
@@ -244,7 +268,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
         values={[currentDuration]}
       >
         <Rail>
-          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} startDate={startDate} endDate={endDate} />}
+          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} startDate={startDate} endDate={endDate} showTime={showTime} />}
         </Rail>
         <Handles>
           {({ handles, getHandleProps }) => (
@@ -258,6 +282,7 @@ export class Scrubber extends React.Component<ScrubberProps> {
                   endDate={endDate}
                   handle={handle}
                   domain={domain}
+                  showTime={showTime}
                   getHandleProps={getHandleProps}
                 />
               ))}

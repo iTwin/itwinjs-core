@@ -8,7 +8,7 @@
 import { IModelApp } from "../IModelApp";
 
 /** Tool Assistance known images
- * @alpha
+ * @beta
  */
 export enum ToolAssistanceImage {
   /** When Keyboard is specified, ToolAssistanceInstruction.keyboardInfo should be set. */
@@ -29,10 +29,34 @@ export enum ToolAssistanceImage {
   RightClickDrag,
   /** Mouse image with darkened scroll wheel and left/right arrows */
   MouseWheelClickDrag,
+  /** Touch image with single finger tapping once */
+  OneTouchTap,
+  /** Touch image with single finger tapping twice */
+  OneTouchDoubleTap,
+  /** Touch image with single finger dragging */
+  OneTouchDrag,
+  /** Touch image with two fingers tapping once */
+  TwoTouchTap,
+  /** Touch image with two fingers dragging */
+  TwoTouchDrag,
+  /** Touch image with two fingers pinching */
+  TwoTouchPinch,
+}
+
+/** Input Method for Tool Assistance instruction
+ * @beta
+ */
+export enum ToolAssistanceInputMethod {
+  /** Instruction applies to both touch & mouse input methods */
+  Both,
+  /** Instruction applies to only mouse input method */
+  Mouse,
+  /** Instruction applies to only touch input method */
+  Touch,
 }
 
 /** Tool Assistance image keyboard keys
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceKeyboardInfo {
   /** Text for keys to display */
@@ -42,7 +66,7 @@ export interface ToolAssistanceKeyboardInfo {
 }
 
 /** Interface used to describe a Tool Assistance instruction.
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceInstruction {
   /** Name of icon WebFont entry, or if specifying an SVG symbol, use "svg:" prefix to imported symbol Id.
@@ -55,10 +79,12 @@ export interface ToolAssistanceInstruction {
   keyboardInfo?: ToolAssistanceKeyboardInfo;
   /** Indicates whether this instruction is new. Defaults to false. */
   isNew?: boolean;
+  /** Input Method to which the instruction applies */
+  inputMethod?: ToolAssistanceInputMethod;
 }
 
 /** Interface used to describe a Tool Assistance section with a label and a set of instructions.
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceSection {
   /** Instructions in the section. */
@@ -68,7 +94,7 @@ export interface ToolAssistanceSection {
 }
 
 /** Interface used to describe Tool Assistance for a tool's state.
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceInstructions {
   /** The main instruction. */
@@ -78,7 +104,7 @@ export interface ToolAssistanceInstructions {
 }
 
 /** Tool Assistance helper methods.
- * @alpha
+ * @beta
  */
 export class ToolAssistance {
 
@@ -147,24 +173,32 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceInstruction]].
    */
-  public static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction {
+  public static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction {
+    if (inputMethod === undefined)
+      inputMethod = ToolAssistanceInputMethod.Both;
+
     const instruction: ToolAssistanceInstruction = {
       image,
       text,
       keyboardInfo,
       isNew,
+      inputMethod,
     };
     return instruction;
   }
 
   /** Creates a [[ToolAssistanceInstruction]] with a [[ToolAssistanceKeyboardInfo]].
    */
-  public static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean): ToolAssistanceInstruction {
+  public static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction {
+    if (inputMethod === undefined)
+      inputMethod = ToolAssistanceInputMethod.Mouse;
+
     const instruction: ToolAssistanceInstruction = {
       image: ToolAssistanceImage.Keyboard,
       text,
       keyboardInfo,
       isNew,
+      inputMethod,
     };
     return instruction;
   }

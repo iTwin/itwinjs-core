@@ -62,6 +62,8 @@ export interface ArcVectors {
  * @public
  */
 export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
+  public readonly curvePrimitiveType = "arc";
+
   /**
    * Test if this and other are both instances of Arc3d.
    */
@@ -860,4 +862,68 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return undefined;
   }
+  /**
+   * Determine an arc "at a point of inflection" of a point sequence.
+   * * Return the arc along with the fractional positions of the tangency points.
+   * * In the returned object:
+   *   * `arc` is the (bounded) arc
+   *   * `fraction10` is the tangency point's position as an interpolating fraction of the line segment from `point1` (backwards) to `point0`
+   *   * `fraction12` is the tangency point's position as an interpolating fraction of the line segment from `point1` (forward) to `point2`
+   *   * `point1` is the `point1` input.
+   * * If unable to construct the arc:
+   *   * `point` is the `point` input.
+   *   * both fractions are zero
+   *   * `arc` is undefined.
+   * @param point0 first point of path. (the point before the point of inflection)
+   * @param point1 second point of path (the point of inflection)
+   * @param point2 third point of path (the point after the point of inflection)
+   * @param radius arc radius
+   *
+   */
+  public static createFilletArc(point0: Point3d, point1: Point3d, point2: Point3d, radius: number): ArcBlendData {
+    const vector10 = Vector3d.createStartEnd(point1, point0);
+    const vector12 = Vector3d.createStartEnd(point1, point2);
+    const d10 = vector10.magnitude();
+    const d12 = vector12.magnitude();
+    if (vector10.normalizeInPlace() && vector12.normalizeInPlace()) {
+      const bisector = vector10.plus(vector12);
+      if (bisector.normalizeInPlace()) {
+        // const theta = vector12.angleTo(bisector);
+        // vector10, vector12, and bisector are UNIT vectors
+        // bisector splits the angle between vector10 and vector12
+        const perpendicular = vector12.minus(vector10);
+        const perpendicularMagnitude = perpendicular.magnitude();  // == 2 * sin(theta)
+        const sinTheta = 0.5 * perpendicularMagnitude;
+        if (!Geometry.isSmallAngleRadians(sinTheta)) {  // (for small theta, sinTheta is almost equal to theta)
+          const cosTheta = Math.sqrt(1 - sinTheta * sinTheta);
+          const tanTheta = sinTheta / cosTheta;
+          const alphaRadians = Math.acos(sinTheta);
+          const distanceToCenter = radius / sinTheta;
+          const distanceToTangency = radius / tanTheta;
+          const f10 = distanceToTangency / d10;
+          const f12 = distanceToTangency / d12;
+          const center = point1.plusScaled(bisector, distanceToCenter);
+          bisector.scaleInPlace(-radius);
+          perpendicular.scaleInPlace(radius / perpendicularMagnitude);
+          const arc02 = Arc3d.create(center, bisector, perpendicular, AngleSweep.createStartEndRadians(-alphaRadians, alphaRadians));
+          return { arc: arc02, fraction10: f10, fraction12: f12, point: point1.clone() };
+        }
+      }
+    }
+    return {fraction10: 0.0, fraction12: 0.0, point: point1.clone()};
+  }
+}
+/**
+ * Carrier structure for an arc with fractional data on incoming, outgoing curves.
+ * @public
+ */
+export interface ArcBlendData {
+  /** Constructed arc */
+  arc?: Arc3d;
+  /** fraction "moving backward" on the inbound curve */
+  fraction10: number;
+  /** fraction "moving forward" on the outbound curve */
+  fraction12: number;
+  /** optional reference point */
+  point?: Point3d;
 }

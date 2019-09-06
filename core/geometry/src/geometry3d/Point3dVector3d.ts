@@ -106,7 +106,7 @@ export class XYZ implements XYAndZ {
    * Set the x,y,z parts from a Point3d.
    * This is the same effect as `setFrom(other)` with no pretesting of variant input type
    */
-  public setFromPoint3d(other: Point3d) {
+  public setFromPoint3d(other: XYAndZ) {
     this.x = other.x;
     this.y = other.y;
     this.z = other.z;

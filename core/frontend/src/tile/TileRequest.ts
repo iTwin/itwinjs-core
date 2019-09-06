@@ -23,6 +23,7 @@ export class TileRequest {
   /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
   public viewports: TileAdmin.ViewportSet;
   private _state: TileRequest.State;
+  public priority = 0;
 
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;

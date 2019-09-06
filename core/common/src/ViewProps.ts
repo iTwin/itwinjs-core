@@ -6,7 +6,7 @@
 
 import { Id64, Id64String, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { AngleProps, Vector3d, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { AnalysisStyleProps, HiddenLine, AmbientOcclusion, SolarShadows, ViewFlags } from "./Render";
@@ -509,9 +509,16 @@ export interface DisplayStyleSettingsProps {
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
   /** Contextual Reality Models */
-  ContextRealityModels?: ContextRealityModelProps[];
+  contextRealityModels?: ContextRealityModelProps[];
   /** List of IDs of excluded elements */
   excludedElements?: Id64String[];
+}
+
+/** This is incomplete. Many of the lighting properties from MicroStation are not useful or not used in iModel.js.
+ * @alpha
+ */
+export interface SceneLightsProps {
+  sunDir?: XYZProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -533,6 +540,10 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
    * @beta
    */
   solarShadows?: SolarShadows.Props;
+  /** Scene lights. Incomplete.
+   * @alpha
+   */
+  sceneLights?: SceneLightsProps;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]].
@@ -636,7 +647,7 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
-  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
+  private readonly _subCategoryOverrides: Map<Id64String, SubCategoryOverride> = new Map<Id64String, SubCategoryOverride>();
   private readonly _excludedElements: Set<Id64String> = new Set<Id64String>();
   private _backgroundMap: BackgroundMapSettings;
 
@@ -737,7 +748,10 @@ export class DisplayStyleSettings {
    */
   public dropSubCategoryOverride(id: Id64String): void { this.changeSubCategoryOverride(id, true); }
 
-  /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
+  /** The overrides applied by this style. */
+  public get subCategoryOverrides(): Map<Id64String, SubCategoryOverride> { return this._subCategoryOverrides; }
+
+  /** Obtain the override applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
@@ -843,6 +857,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadows.Settings;
+  private _sunDir?: Vector3d;
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
@@ -850,6 +865,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadows.Settings.fromJSON(this._json3d.solarShadows);
+    if (undefined !== this._json3d.sceneLights && undefined !== this._json3d.sceneLights.sunDir)
+      this._sunDir = Vector3d.fromJSON(this._json3d.sceneLights.sunDir);
   }
 
   /** @internal */
@@ -886,7 +903,25 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     const env = this._json3d.environment;
     return undefined !== env ? env : {};
   }
+  public set environment(environment: EnvironmentProps) { this._json3d.environment = environment; }
 
   /** @internal */
-  public set environment(environment: EnvironmentProps) { this._json3d.environment = environment; }
+  public get sunDir(): Vector3d | undefined {
+    return this._sunDir;
+  }
+  public set sunDir(dir: Vector3d | undefined) {
+    if (undefined === dir) {
+      this._sunDir = undefined;
+      if (undefined !== this._json3d.sceneLights)
+        this._json3d.sceneLights.sunDir = undefined;
+
+      return;
+    }
+
+    this._sunDir = dir.clone(this._sunDir);
+    if (undefined === this._json3d.sceneLights)
+      this._json3d.sceneLights = {};
+
+    this._json3d.sceneLights.sunDir = dir.toJSON();
+  }
 }

@@ -79,6 +79,8 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * @public
  */
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
+  public readonly curvePrimitiveType = "bsplineCurve";
+
   /** The underlying blocked-pole spline, with simple x,y,z poles */
   protected _bcurve: BSpline1dNd;
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {

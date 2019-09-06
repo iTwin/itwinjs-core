@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Correct ViewClipByPlaneTool icon.",
+      "packageName": "@bentley/imodeljs-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}

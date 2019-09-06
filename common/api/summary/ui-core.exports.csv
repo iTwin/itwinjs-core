@@ -130,6 +130,7 @@ alpha;ReactNumericInputProps
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 beta;RectangleProps
+alpha;ScrollPositionMaintainer 
 public;ScrollView: React.FunctionComponent
 public;SearchBox 
 public;SearchBoxProps 

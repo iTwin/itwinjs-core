@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, IModelJson as GeomJson } from "@bentley/geometry-core";
+import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent, BeTouchEvent, BeButton, InputSource } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
@@ -621,6 +621,18 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
+    if (thisHit.isModelHit || thisHit.isClassifier) {
+      if (snapModes.includes(SnapMode.Nearest)) {
+        if (out) out.snapStatus = SnapStatus.Success;
+        return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
+      }
+      if (out) {
+        out.snapStatus = (1 === snapModes.length && snapModes.includes(SnapMode.Intersection) ? SnapStatus.NoSnapPossible : SnapStatus.NotSnappable);
+        out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("RealityModelSnapMode"));
+      }
+      return undefined;
+    }
+
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = thisHit.viewport.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
@@ -689,8 +701,13 @@ export class AccuSnap implements Decorator {
     if (result.status !== SnapStatus.Success)
       return undefined;
 
+    const parseCurve = (json: any): CurvePrimitive | undefined => {
+      const parsed = undefined !== json ? GeomJson.Reader.parse(json) : undefined;
+      return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
+    };
+
     const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
-    snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined, result.geomType);
+    snap.setCurvePrimitive(parseCurve(result.curve), undefined, result.geomType);
     if (undefined !== result.parentGeomType)
       snap.parentGeomType = result.parentGeomType;
     if (undefined !== result.hitPoint)
@@ -704,7 +721,7 @@ export class AccuSnap implements Decorator {
     if (undefined === result.intersectId)
       return undefined;
 
-    const otherPrimitive = (undefined !== result.intersectCurve ? GeomJson.Reader.parse(result.intersectCurve) : undefined);
+    const otherPrimitive = parseCurve(result.intersectCurve);
     if (undefined === otherPrimitive)
       return undefined;
 

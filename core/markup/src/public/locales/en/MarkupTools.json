@@ -13,7 +13,6 @@
       "Select": {
         "keyin": "Markup Select",
         "description": "Markup selection tool",
-        "flyover": "Markup Select",
         "Prompts": {
           "IdentifyMarkup": "Identify markup element."
         }
@@ -21,7 +20,6 @@
       "Line": {
         "keyin": "Markup Line",
         "description": "Draw line",
-        "flyover": "Markup Line",
         "Prompts": {
           "FirstPoint": "Identify start of line.",
           "NextPoint": "Identify end of line."
@@ -30,7 +28,6 @@
       "Rectangle": {
         "keyin": "Markup Rectangle",
         "description": "Draw rectangle",
-        "flyover": "Markup Rectangle",
         "Prompts": {
           "FirstPoint": "Identify corner of rectangle.",
           "NextPoint": "Identify opposite corner of rectangle."
@@ -39,7 +36,6 @@
       "Polygon": {
         "keyin": "Markup Polygon",
         "description": "Draw polygon",
-        "flyover": "Markup Polygon",
         "Prompts": {
           "FirstPoint": "Identify center of polygon.",
           "NextPoint": "Identify point on edge."
@@ -48,7 +44,6 @@
       "Circle": {
         "keyin": "Markup Circle",
         "description": "Draw circle",
-        "flyover": "Markup Circle",
         "Prompts": {
           "FirstPoint": "Identify center.",
           "NextPoint": "Define radius."
@@ -57,7 +52,6 @@
       "Ellipse": {
         "keyin": "Markup Ellipse",
         "description": "Draw ellipse",
-        "flyover": "Markup Ellipse",
         "Prompts": {
           "FirstPoint": "Identify corner for ellipse.",
           "NextPoint": "Identify opposite corner for ellipse."
@@ -66,7 +60,6 @@
       "Arrow": {
         "keyin": "Markup Arrow",
         "description": "Draw arrow",
-        "flyover": "Markup Arrow",
         "Prompts": {
           "FirstPoint": "Identify start of arrow.",
           "NextPoint": "Identify end of arrow."
@@ -75,7 +68,6 @@
       "Distance": {
         "keyin": "Markup Distance",
         "description": "Markup distance between points",
-        "flyover": "Markup Distance",
         "Prompts": {
           "FirstPoint": "Enter point to measure from.",
           "NextPoint": "Enter point to measure to,"
@@ -84,7 +76,6 @@
       "Cloud": {
         "keyin": "Markup Cloud",
         "description": "Draw cloud",
-        "flyover": "Markup Cloud",
         "Prompts": {
           "FirstPoint": "Identify corner of cloud.",
           "NextPoint": "Identify opposite corner of cloud."
@@ -93,7 +84,6 @@
       "Sketch": {
         "keyin": "Markup Sketch",
         "description": "Draw freehand sketch",
-        "flyover": "Markup Sketch",
         "Prompts": {
           "FirstPoint": "Identify start of sketch.",
           "NextPoint": "Identify end of sketch."
@@ -102,7 +92,6 @@
       "Symbol": {
         "keyin": "Markup Symbol",
         "description": "Place symbol",
-        "flyover": "Markup Symbol",
         "Prompts": {
           "FirstPoint": "Click to place symbol by center, drag to place symbol by corners.",
           "NextPoint": "Identify opposite corner of symbol."
@@ -112,7 +101,6 @@
         "Place": {
           "keyin": "Place Markup Text",
           "description": "Add text box",
-          "flyover": "Markup Text",
           "Prompts": {
             "FirstPoint": "Identify text location."
           }
@@ -120,7 +108,6 @@
         "Edit": {
           "keyin": "Edit Markup Text",
           "description": "Edit text",
-          "flyover": "Edit Text",
           "Prompts": {
             "FirstPoint": "Identify text to edit."
           }

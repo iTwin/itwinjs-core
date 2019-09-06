@@ -69,8 +69,19 @@ export class MeshData implements IDisposable {
 
   public dispose() {
     dispose(this.lut);
-    if (undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned)
-      this.texture.dispose();
+    if (this._ownsTexture)
+      this.texture!.dispose();
+  }
+
+  // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
+  private get _ownsTexture(): boolean {
+    return undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVertexTable(this.lut.bytesUsed);
+    if (this._ownsTexture)
+      stats.addTexture(this.texture!.bytesUsed);
   }
 }
 
@@ -126,7 +137,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addVertexTable(this.meshData.lut.bytesUsed);
+    this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
 
     // Only count the shared instance buffers once...
@@ -368,7 +379,8 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     bufs.bind();
-    system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
+    system.drawArrays(primType, 0, this._numIndices, numInstances);
     bufs.unbind();
 
     if (offset) {
@@ -383,8 +395,12 @@ export class SurfaceGeometry extends MeshGeometry {
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
-    else
-      return this.isPlanar ? RenderOrder.PlanarSurface : RenderOrder.Surface;
+
+    let order = this.isLit ? RenderOrder.LitSurface : RenderOrder.UnlitSurface;
+    if (this.isPlanar)
+      order = order | RenderOrder.PlanarBit;
+
+    return order;
   }
 
   public getColor(target: Target) {

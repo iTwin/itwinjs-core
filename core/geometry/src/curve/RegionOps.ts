@@ -25,6 +25,8 @@ import { CurvePrimitive } from "./CurvePrimitive";
 import { Loop } from "./Loop";
 import { Path } from "./Path";
 import { PointInOnOutContext } from "./Query/InOutTests";
+import { CurveSplitContext } from "./Query/CurveSplitContext";
+import { ChainCollectorContext } from "./ChainCollectorContext";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -436,4 +438,71 @@ export class RegionOps {
    * @internal
    */
   public static setCheckPointFunction(f?: GraphCheckPointFunction) { this._graphCheckPointFunction = f; }
+  /**
+   * * Find all intersections among curves in `curvesToCut` and `cutterCurves`
+   * * Return fragments of `curvesToCut`.
+   * * For a  `Loop`, `ParityRegion`, or `UnionRegion` in `curvesToCut`
+   *    * if it is never cut by any `cutter` curve, it will be left unchanged.
+   *    * if cut, the input is downgraded to a set of `Path` curves joining at the cut points.
+   * * All cutting is "as viewed in the xy plane"
+   */
+  public static cloneCurvesWithXYSplitFlags(curvesToCut: CurvePrimitive | CurveCollection | undefined, cutterCurves: CurveCollection): CurveCollection | CurvePrimitive | undefined {
+    return CurveSplitContext.cloneCurvesWithXYSplitFlags(curvesToCut, cutterCurves);
+
+  }
+  /**
+   * Create paths assembled from many curves.
+   * * Assemble consecutive curves NOT separated by either end flags or gaps into paths.
+   * * Return simplest form -- single primitive, single path, or bag of curves.
+   * @param curves
+   */
+  public static splitToPathsBetweenFlagBreaks(source: CurveCollection | CurvePrimitive | undefined,
+    makeClones: boolean): BagOfCurves | Path | CurvePrimitive | undefined {
+    if (source === undefined)
+      return undefined;
+    if (source instanceof CurvePrimitive)
+      return source;
+    // source is a collection .  ..
+    const primitives = source.collectCurvePrimitives();
+    const chainCollector = new ChainCollectorContext(makeClones);
+    for (const primitive of primitives) {
+      chainCollector.announceCurvePrimitive(primitive);
+    }
+    return chainCollector.grabResult();
+  }
+  /**
+   * * Find intersections of `curvesToCut` with boundaries of `region`.
+   * * Break `curvesToCut` into parts inside, outside, and coincident.
+   * * Return all fragments, split among `insideParts`, `outsideParts`, and `coincidentParts` in the output object.
+   */
+  public static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): { insideParts: AnyCurve[], outsideParts: AnyCurve[], coincidentParts: AnyCurve[] } {
+    const result = { insideParts: [], outsideParts: [], coincidentParts: [] };
+    const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplitFlags(curvesToCut, region);
+    const splitPaths = RegionOps.splitToPathsBetweenFlagBreaks(pathWithIntersectionMarkup, true);
+    if (splitPaths instanceof CurveCollection) {
+      for (const child of splitPaths.children) {
+        const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(child);
+        if (pointOnChild) {
+          const inOnOut = RegionOps.testPointInOnOutRegionXY(region, pointOnChild.point.x, pointOnChild.point.y);
+          pushToInOnOutArrays(child, inOnOut, result.outsideParts, result.coincidentParts, result.insideParts);
+        }
+      }
+    } else if (splitPaths instanceof CurvePrimitive) {
+      const pointOnChild = CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(splitPaths);
+      if (pointOnChild) {
+        const inOnOut = RegionOps.testPointInOnOutRegionXY(region, pointOnChild.point.x, pointOnChild.point.y);
+        pushToInOnOutArrays(splitPaths, inOnOut, result.outsideParts, result.coincidentParts, result.insideParts);
+      }
+    }
+    return result;
+  }
+}
+
+function pushToInOnOutArrays(curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[]) {
+  if (select > 0)
+    arrayPositive.push(curve);
+  else if (select < 0)
+    arrayNegative.push(curve);
+  else
+    array0.push(curve);
 }

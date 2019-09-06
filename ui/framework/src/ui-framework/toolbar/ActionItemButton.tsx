@@ -86,11 +86,14 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
   }
 
-  public componentWillReceiveProps(nextProps: ActionItemButtonProps) {
-    const updatedState = getItemStateFromProps(nextProps);
+  /** @internal */
+  public static getDerivedStateFromProps(props: ActionItemButtonProps, state: BaseItemState) {
+    const updatedState = getItemStateFromProps(props);
     // istanbul ignore else
-    if (!PropsHelper.isShallowEqual(updatedState, this.state))
-      this.setState((_prevState) => updatedState);
+    if (!PropsHelper.isShallowEqual(updatedState, state))
+      return updatedState;
+
+    return null;
   }
 
   public componentDidMount() {

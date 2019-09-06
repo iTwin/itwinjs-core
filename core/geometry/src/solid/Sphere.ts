@@ -32,6 +32,8 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {
+  public readonly solidPrimitiveType = "sphere";
+
   private _localToWorld: Transform;  // unit sphere maps to world through the transform0 part of this map.
   private _latitudeSweep: AngleSweep;
   /** Return the latitude (in radians) all fractional v. */

@@ -47,6 +47,7 @@ import { PntsTileIO } from "./PntsTileIO";
 import { TileIO } from "./TileIO";
 import { TileRequest } from "./TileRequest";
 import { Tile } from "./Tile";
+import { Viewport } from "../Viewport";
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).
@@ -105,7 +106,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   protected _rootTile: Tile;
   public readonly loader: TileLoader;
   public readonly yAxisUp: boolean;
-  public readonly isBackgroundMap?: boolean;
   // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -115,8 +115,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
     this.location = props.location;
-    this.isBackgroundMap = props.isBackgroundMap;
-    this.expirationTime = IModelApp.tileAdmin.tileExpirationTime;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
@@ -127,6 +125,9 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
     this.contentRange = props.contentRange;
+
+    const admin = IModelApp.tileAdmin;
+    this.expirationTime = Tile.LoadPriority.Context === this.loader.priority ? admin.realityTileExpirationTime : admin.tileExpirationTime;
   }
 
   public get rootTile(): Tile { return this._rootTile; }
@@ -224,10 +225,11 @@ export abstract class TileLoader {
   protected get _loadEdges(): boolean { return true; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
-  /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
-   * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
-   */
-  public compareTilePriorities(lhs: Tile, rhs: Tile): number { return lhs.depth - rhs.depth; }
+
+  public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
+    return tile.depth;
+  }
+
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] { return selected; }
@@ -239,8 +241,8 @@ export abstract class TileLoader {
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     return this.loadTileContentFromStream(tile, streamBuffer, isCanceled);
   }
-  public async loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content> {
 
+  public async loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content> {
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
     streamBuffer.curPos = position;
@@ -254,7 +256,7 @@ export abstract class TileLoader {
         return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.transformToRoot, isCanceled, this.getBatchIdMap());
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
         break;
       case TileIO.Format.IModel:
         reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined, tile.contentId);
@@ -344,7 +346,6 @@ export namespace TileTree {
     readonly modelId: Id64String;
     readonly maxTilesToSkip?: number;
     readonly yAxisUp?: boolean;
-    readonly isBackgroundMap?: boolean;
     readonly clipVector?: ClipVector;
     readonly contentRange?: ElementAlignedBox3d;
   }
@@ -364,7 +365,6 @@ export namespace TileTree {
       modelId,
       maxTilesToSkip: props.maxTilesToSkip,
       yAxisUp: props.yAxisUp,
-      isBackgroundMap: props.isBackgroundMap,
       contentRange,
     };
   }
@@ -395,6 +395,11 @@ export namespace TileTree {
      * @returns the loaded TileTree if loading completed successfully, or undefined if the tree is still loading or loading failed.
      */
     load(): TileTree | undefined;
+
+    /** Do not call this directly.
+     * @internal
+     */
+    dispose(): void;
   }
 
   /** Interface adopted by an object which can supply a [[TileTree]] for rendering.

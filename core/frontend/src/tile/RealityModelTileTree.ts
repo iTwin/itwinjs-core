@@ -26,6 +26,9 @@ import { HitDetail } from "../HitDetail";
 import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference, SpatialClassifiers } from "../SpatialClassification";
 import { SceneContext } from "../ViewContext";
 import { RenderMemory } from "../render/System";
+import { ViewState } from "../ViewState";
+import { DisplayStyleState } from "../DisplayStyleState";
+import { Viewport } from "../Viewport";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -90,9 +93,7 @@ class RealityTreeSupplier implements TileTree.Supplier {
 const realityTreeSupplier = new RealityTreeSupplier();
 
 /** @internal */
-export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-  return new RealityTreeReference(props);
-}
+export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference { return new RealityTreeReference(props); }
 
 /** @internal */
 export class RealityModelTileUtils {
@@ -201,6 +202,12 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
+const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
+realityModelViewFlagOverrides.clearClipVolume();
+
+const scratchTileCenterWorld = new Point3d();
+const scratchTileCenterView = new Point3d();
+
 /** @internal */
 class RealityModelTileLoader extends TileLoader {
   private readonly _tree: RealityModelTileTreeProps;
@@ -217,8 +224,7 @@ class RealityModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
-  protected static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
-  public get viewFlagOverrides() { return RealityModelTileLoader._viewFlagOverrides; }
+  public get viewFlagOverrides() { return realityModelViewFlagOverrides; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
 
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
@@ -298,13 +304,29 @@ class RealityModelTileLoader extends TileLoader {
 
     return new FindChildResult(thisParentId, foundChild, transformToRoot);
   }
+
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    // Prioritize tiles closer to eye.
+    // NB: In NPC coords, 0 = far plane, 1 = near plane.
+    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+    let minDistance = 1.0;
+    for (const viewport of viewports) {
+      const npc = viewport.worldToNpc(center, scratchTileCenterView);
+      const distance = 1.0 - npc.z;
+      minDistance = Math.min(distance, minDistance);
+    }
+
+    return minDistance;
+  }
 }
 
+export type RealityModelSource = ViewState | DisplayStyleState;
 /** @internal */
 export namespace RealityModelTileTree {
   export interface ReferenceProps {
     url: string;
     iModel: IModelConnection;
+    source: RealityModelSource;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     name?: string;
@@ -379,7 +401,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     this._url = props.url;
 
     if (undefined !== props.classifiers)
-      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel);
+      this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -425,7 +447,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       for (const key of Object.keys(batch))
         strings.push(key + ": " + batch[key]);
 
-    return strings.join("<br>");
+    const div = document.createElement("div");
+    div.innerHTML = strings.join("<br>");
+    return div;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {

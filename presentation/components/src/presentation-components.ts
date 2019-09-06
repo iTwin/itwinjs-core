@@ -2,32 +2,61 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Components */
-
-/** @module Common */
+/**
+ * @module Core
+ *
+ * @docs-group-description Core
+ * Common types used all across presentation-component package.
+ */
 export { IPresentationDataProvider } from "./common/IPresentationDataProvider";
+export { IUnifiedSelectionComponent } from "./common/IUnifiedSelectionComponent";
 export { ContentBuilder } from "./common/ContentBuilder";
 export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProvidersFactory";
 
-/** @module PropertyGrid */
+/**
+ * @module PropertyGrid
+ *
+ * @docs-group-description PropertyGrid
+ * Types related to `PropertyGrid` component in `@bentley/ui-components` package.
+ */
 export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
 
-/** @module Table */
+/**
+ * @module Table
+ *
+ * @docs-group-description Table
+ * Types related to `Table` component in `@bentley/ui-components` package.
+ */
 export { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
 export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./table/WithUnifiedSelection";
 
-/** @module Tree */
+/**
+ * @module Tree
+ *
+ * @docs-group-description Tree
+ * Types related to `Tree` component in `@bentley/ui-components` package.
+ */
 export { PresentationTreeDataProvider } from "./tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
 export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
 export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
 
-/** @module Viewport */
+/**
+ * @module Viewport
+ *
+ * @docs-group-description Viewport
+ * Types related to `Viewport` component in `@bentley/ui-components` package.
+ */
 export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./viewport/WithUnifiedSelection";
 
-/** @module DisplayLabels */
+/**
+ * @module DisplayLabels
+ *
+ * @docs-group-description DisplayLabels
+ * Types related to display labels
+ */
 export { IPresentationLabelsProvider, LabelsProvider } from "./labels/LabelsProvider";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

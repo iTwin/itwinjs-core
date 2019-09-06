@@ -6,7 +6,7 @@
 
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
@@ -115,6 +115,7 @@ export interface ModalFrontstageInfo {
  * @public
  */
 export class FrontstageManager {
+  private static _initialized = false;
   private static _isLoading = true;
   private static _activeToolId = "";
   private static _activeFrontstageDef: FrontstageDef | undefined;
@@ -137,6 +138,9 @@ export class FrontstageManager {
 
   /** Initializes the FrontstageManager */
   public static initialize() {
+    if (this._initialized)
+      return;
+
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.activeToolChanged.addListener((tool: Tool, _start: StartOrResume) => {
@@ -151,7 +155,26 @@ export class FrontstageManager {
         FrontstageManager.setActiveTool(tool);
       });
     }
+
+    // istanbul ignore else
+    if (IModelApp && IModelApp.viewManager) {
+      IModelApp.viewManager.onSelectedViewportChanged.addListener(FrontstageManager._handleSelectedViewportChanged);
+    }
+
+    this._initialized = true;
   }
+
+  /** Handles a Viewport change & sets the active view accordingly */
+  private static _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
+    // istanbul ignore else
+    if (args.current && FrontstageManager.activeFrontstageDef) {
+      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+      activeFrontstageDef.setActiveViewFromViewport(args.current);
+    }
+  }
+
+  /** @internal */
+  public static set isInitialized(v: boolean) { FrontstageManager._initialized = v; }
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
   public static get isLoading(): boolean { return FrontstageManager._isLoading; }
@@ -327,6 +350,7 @@ export class FrontstageManager {
    */
   public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    // istanbul ignore else
     if (activeFrontstageDef) {
       FrontstageManager._isLoading = false;
 

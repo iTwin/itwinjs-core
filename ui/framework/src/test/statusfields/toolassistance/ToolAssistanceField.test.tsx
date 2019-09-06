@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
-import { MockRender, ToolAssistance, ToolAssistanceImage } from "@bentley/imodeljs-frontend";
+import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FooterPopup } from "@bentley/ui-ninezone";
 import { Checkbox, LocalUiSettings } from "@bentley/ui-core";
@@ -37,6 +37,7 @@ describe("ToolAssistanceField", () => {
     public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
       const uiSettings = new LocalUiSettings({ localStorage: storageMock() } as Window);
       uiSettings.saveSetting("ToolAssistance", "showPromptAtCursor", true);
+      uiSettings.saveSetting("ToolAssistance", "mouseTouchTabIndex", 0);
 
       return (
         <>
@@ -171,7 +172,15 @@ describe("ToolAssistanceField", () => {
     const instruction25 = ToolAssistance.createInstruction(ToolAssistanceImage.MouseWheelClickDrag, "xyz");
     const section2 = ToolAssistance.createSection([instruction21, instruction22, instruction23, instruction24, instruction25], "More Inputs");
 
-    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2]);
+    const instruction31 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, "xyz");
+    const instruction32 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDoubleTap, "xyz");
+    const instruction33 = ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, "xyz");
+    const instruction34 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, "xyz");
+    const instruction35 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchDrag, "xyz");
+    const instruction36 = ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchPinch, "xyz");
+    const section3 = ToolAssistance.createSection([instruction31, instruction32, instruction33, instruction34, instruction35, instruction36], "Touch Inputs");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1, section2, section3]);
 
     notifications.setToolAssistance(instructions);
     wrapper.update();
@@ -182,8 +191,8 @@ describe("ToolAssistanceField", () => {
     wrapper.update();
 
     expect(wrapper.find("div.nz-footer-toolAssistance-dialog").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(3);
-    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(8);
+    expect(wrapper.find("div.nz-footer-toolAssistance-separator").length).to.eq(4);
+    expect(wrapper.find("div.nz-footer-toolAssistance-instruction").length).to.eq(14);
 
     wrapper.unmount();
   });
@@ -377,6 +386,69 @@ describe("ToolAssistanceField", () => {
     spyMethod.called.should.true;
 
     CursorPopupManager.onCursorPopupUpdatePositionEvent.removeListener(spyMethod);
+    wrapper.unmount();
+  });
+
+  it("mouse & touch instructions should generate tabs", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
+
+    const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz", true, ToolAssistanceInputMethod.Mouse);
+    const instruction2 = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz", true, ToolAssistanceInputMethod.Touch);
+    const section1 = ToolAssistance.createSection([instruction1, instruction2], "Inputs");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
+
+    notifications.setToolAssistance(instructions);
+    wrapper.update();
+
+    const indicator = wrapper.find("div.nz-indicator");
+    expect(indicator.length).to.eq(1);
+    indicator.simulate("click");
+    wrapper.update();
+
+    const tabList = wrapper.find("ul.uifw-toolAssistance-tabs");
+    expect(tabList.length).to.eq(1);
+
+    const tabIndex = wrapper.find(ToolAssistanceField).state("mouseTouchTabIndex");
+    expect(tabIndex).to.satisfy((index: number) => index === 0 || index === 1);
+    const nonActive = tabList.find("li:not(.active)");
+    expect(nonActive.length).to.eq(1);
+
+    const anchor = nonActive.find("a");
+    expect(anchor.length).to.eq(1);
+    anchor.simulate("click");
+
+    const newTabIndex = wrapper.find(ToolAssistanceField).state("mouseTouchTabIndex");
+    expect(tabIndex !== newTabIndex).to.be.true;
+
+    wrapper.unmount();
+  });
+
+  it("touch instructions should show", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, "Click on something", true);
+
+    const instruction1 = ToolAssistance.createInstruction(ToolAssistanceImage.AcceptPoint, "xyz", true, ToolAssistanceInputMethod.Touch);
+    const section1 = ToolAssistance.createSection([instruction1], "Inputs");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
+
+    notifications.setToolAssistance(instructions);
+    wrapper.update();
+
+    const indicator = wrapper.find("div.nz-indicator");
+    expect(indicator.length).to.eq(1);
+    indicator.simulate("click");
+    wrapper.update();
+
+    const showTouchInstructions = wrapper.find(ToolAssistanceField).state("showTouchInstructions");
+    expect(showTouchInstructions).to.be.true;
+
     wrapper.unmount();
   });
 

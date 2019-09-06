@@ -3,24 +3,24 @@
 exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
 Array [
   Object {
+    "editable": true,
+    "filterable": true,
+    "key": "Engineer",
+    "label": "monitor",
+    "sortable": true,
+  },
+  Object {
     "editable": false,
     "filterable": true,
-    "key": "monitor",
-    "label": "Legacy Colorado Compatible",
+    "key": "Home Loan Account",
+    "label": "Refined rich",
     "sortable": true,
   },
   Object {
     "editable": true,
     "filterable": true,
-    "key": "Reduced",
-    "label": "Small Rubber Cheese",
-    "sortable": true,
-  },
-  Object {
-    "editable": true,
-    "filterable": true,
-    "key": "upward-trending",
-    "label": "Cambridgeshire Rubber hack",
+    "key": "executive",
+    "label": "Director Chicken",
     "sortable": true,
   },
 ]
@@ -30,60 +30,59 @@ exports[`TableDataProvider getRow returns valid row item 1`] = `
 Object {
   "cells": Array [
     Object {
-      "key": "deposit",
+      "key": "Home Loan Account",
       "record": PropertyRecord {
-        "description": "aggregate",
-        "isReadonly": true,
+        "description": "Books XSS Fresh",
         "property": Object {
-          "displayLabel": "multi-byte",
-          "name": "deposit",
-          "typename": "int",
+          "displayLabel": "Steel",
+          "name": "Home Loan Account",
+          "typename": "varchar",
         },
         "value": Object {
-          "displayValue": "aggregate",
-          "value": "synthesizing",
+          "displayValue": "Books XSS Fresh",
+          "value": "Automotive",
           "valueFormat": 0,
         },
       },
     },
     Object {
-      "key": "product",
+      "key": "Legacy",
       "record": PropertyRecord {
-        "description": "Cayman Islands",
-        "isReadonly": true,
+        "description": "synthesizing pixel Avon",
         "property": Object {
-          "displayLabel": "functionalities Intelligent Tasty",
+          "displayLabel": "Indian Rupee International",
           "editor": Object {
-            "name": "e-services",
+            "name": "Tools",
             "params": Array [],
           },
-          "name": "product",
-          "typename": "real",
-        },
-        "value": Object {
-          "displayValue": "Cayman Islands",
-          "value": "Malagasy Ariary",
-          "valueFormat": 0,
-        },
-      },
-    },
-    Object {
-      "key": "plum",
-      "record": PropertyRecord {
-        "description": "Mauritius Rupee",
-        "property": Object {
-          "displayLabel": "bleeding-edge Auto Loan Account",
-          "name": "plum",
+          "name": "Legacy",
           "typename": "datetime",
         },
         "value": Object {
-          "displayValue": "Mauritius Rupee",
-          "value": "Pa'anga",
+          "displayValue": "synthesizing pixel Avon",
+          "value": "Metrics",
+          "valueFormat": 0,
+        },
+      },
+    },
+    Object {
+      "key": "Credit Card Account",
+      "record": PropertyRecord {
+        "description": "back up",
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Awesome Wooden Salad regional payment",
+          "name": "Credit Card Account",
+          "typename": "binary",
+        },
+        "value": Object {
+          "displayValue": "back up",
+          "value": "Concrete",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"azure\\",\\"id\\":\\"0x98cd000001245e\\"}",
+  "key": "{\\"className\\":\\"full-range\\",\\"id\\":\\"0x163900000001e5c\\"}",
 }
 `;

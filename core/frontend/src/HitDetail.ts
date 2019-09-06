@@ -97,6 +97,8 @@ export class HitDetail {
   private readonly _iModel?: IModelConnection;
   /** @alpha */
   public readonly tileId?: string;
+  /** @alpha */
+  public readonly isClassifier: boolean;
 
   /** Create a new HitDetail from the inputs to and results of a locate operation.
    * @param testPoint The world coordinate space point that was used as the locate point.
@@ -112,12 +114,14 @@ export class HitDetail {
    * @param iModel The IModelConnection from which the hit originated. This should almost always be left undefined, unless the hit is known to have originated from an iModel other than the one associated with the viewport.
    * @param modelId Optionally the Id of the [[ModelState]] from which the hit originated.
    * @param tileId Optionally the Id of the Tile from which the hit originated.
+   * @param isClassifier Optionally whether the hit originated from a reality model classification.
    */
   public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
-    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string) {
+    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
     this._iModel = iModel;
     this.tileId = tileId;
+    this.isClassifier = undefined !== isClassifier ? isClassifier : false;
   }
 
   /** Get the type of HitDetail.
@@ -143,28 +147,19 @@ export class HitDetail {
   }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
-    const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel);
+    const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel, this.tileId, this.isClassifier);
     return val;
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
-  /** Get the tooltip content for this HitDetail.
-   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
-   */
+  /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    if (!this.isElementHit)
-      return IModelApp.viewManager.getDecorationToolTip(this);
-
-    const msg: string[] = await this.iModel.getToolTipMessage(this.sourceId); // wait for the locate message(s) from the backend
-    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
-    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
-    let out = "";
-    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
-    const div = document.createElement("div");
-    div.innerHTML = out;
-    return div;
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
+      toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
+    return toolTipPromise;
   }
 
   /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.
@@ -206,7 +201,7 @@ export class SnapDetail extends HitDetail {
    * @param snapPoint The snapped point in the element
    */
   public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
-    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass, from.modelId, from.iModel);
+    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass, from.modelId, from.iModel, from.tileId, from.isClassifier);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
     this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));

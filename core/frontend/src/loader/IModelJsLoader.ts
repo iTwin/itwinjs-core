@@ -181,7 +181,8 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
     thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash", "react", "redux"], options);
 
   // load the lowest level stuff. geometry-core doesn't depend on bentleyjs-core, so they can be loaded together.
-  await ScriptLoader.loadPackagesParallel(["bentleyjs-core", "geometry-core"], options);
+  await ScriptLoader.loadPackage(options.prefixVersion("bentleyjs-core"));
+  await ScriptLoader.loadPackage(options.prefixVersion("geometry-core"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-i18n"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-clients"));
   await ScriptLoader.loadPackage(options.prefixVersion("imodeljs-common"));

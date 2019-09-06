@@ -99,6 +99,10 @@ export class ViewsFrontstage extends FrontstageProvider {
     />],
   };
 
+  private _rightPanel = {
+    allowedZones: [6, 9],
+  };
+
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
   }
@@ -221,6 +225,11 @@ export class ViewsFrontstage extends FrontstageProvider {
           <StagePanel
             size={280}
             widgets={this._leftPanel.widgets}
+          />
+        }
+        rightPanel={
+          <StagePanel
+            allowedZones={this._rightPanel.allowedZones}
           />
         }
       />

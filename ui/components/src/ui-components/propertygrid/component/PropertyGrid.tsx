@@ -3,10 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
-
-// Importing through require due to types for linkifyjs not exporting 'find' function
-const linkify = require("linkifyjs"); // tslint:disable-line: no-var-requires
-
 import * as React from "react";
 import classnames from "classnames";
 import ResizeObserver from "resize-observer-polyfill";
@@ -18,6 +14,7 @@ import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../Proper
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { matchLinks } from "../../common/Links";
 
 import "./PropertyGrid.scss";
 
@@ -163,15 +160,15 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private handleLinkClick(_record: PropertyRecord, text: string) {
-    const linksArray = linkify.find(text) as Array<{ type: string, value: string, href: string }>;
+    const linksArray = matchLinks(text);
     if (linksArray.length <= 0)
       return;
     const foundLink = linksArray[0];
-    if (foundLink && foundLink.href) {
-      if (foundLink.type === "url")
-        window.open(foundLink.href, "_blank")!.focus();
-      else if (foundLink.type === "email")
-        location.href = foundLink.href;
+    if (foundLink && foundLink.url) {
+      if (foundLink.schema === "mailto:" || foundLink.schema === "pw:")
+        location.href = foundLink.url;
+      else
+        window.open(foundLink.url, "_blank")!.focus();
     }
   }
 

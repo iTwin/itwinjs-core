@@ -724,7 +724,7 @@ export abstract class InteractiveTool extends Tool {
  * @public
  */
 export abstract class InputCollector extends InteractiveTool {
-  public run(): boolean {
+  public run(..._args: any[]): boolean {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
     if (undefined !== toolAdmin.viewTool || !toolAdmin.onInstallTool(this))
@@ -836,7 +836,7 @@ export class ToolRegistry {
    * @internal
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
-    return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin);
+    return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin.toLowerCase());
   }
 
   /**
@@ -847,6 +847,7 @@ export class ToolRegistry {
    * @internal
    */
   public findExactMatch(keyin: string): ToolType | undefined {
-    return this.getToolList().find((thisTool) => thisTool.keyin === keyin);
+    keyin = keyin.toLowerCase();
+    return this.getToolList().find((thisTool) => thisTool.keyin.toLowerCase() === keyin);
   }
 }

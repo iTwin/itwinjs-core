@@ -6,7 +6,6 @@
 
 import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
-import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d, Range1dProps } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
@@ -774,6 +773,7 @@ export namespace ViewFlag {
     private readonly _values = new ViewFlags();
 
     public setPresent(flag: PresenceFlag) { this._present |= (1 << flag); }
+    public clearPresent(flag: PresenceFlag) { this._present &= ~(1 << flag); }
     public isPresent(flag: PresenceFlag): boolean { return 0 !== (this._present & (1 << flag)); }
 
     /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
@@ -818,8 +818,11 @@ export namespace ViewFlag {
     public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.kForceSurfaceDiscard); }
     public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
     public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
+
     public anyOverridden() { return 0 !== this._present; }
+
     public clear() { this._present = 0; }
+    public clearClipVolume() { this.clearPresent(PresenceFlag.kClipVolume); }
 
     /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
      * @internal
@@ -1525,7 +1528,7 @@ export namespace Gradient {
     }
 
     /** Maps a value to an RGBA value adjusted from a color present in this symbology's array. */
-    private mapColor(value: number) {
+    public mapColor(value: number) {
       if (value < 0)
         value = 0;
       else if (value > 1)
@@ -1788,16 +1791,6 @@ export enum GeometryClass {
   Dimension = 2,
   /** Used to classify geometry used to fill planar regions with a 2d pattern (e.g., hatch lines). */
   Pattern = 3,
-}
-
-/** @internal */
-export class SceneLights {
-  private _list: Light[] = [];
-  public get isEmpty(): boolean { return this._list.length === 0; }
-  constructor(public imageBased: { environmentalMap: RenderTexture, diffuseImage: RenderTexture, solar: ImageLight.Solar },
-    public fstop: number = 0, // must be between -3 and +3
-  ) { }
-  public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
 /** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].

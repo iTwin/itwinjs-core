@@ -6,7 +6,7 @@
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
-  ToolAssistance, ToolAssistanceImage,
+  ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
@@ -46,7 +46,10 @@ export class Tool2 extends PrimitiveTool {
     const instruction5 = ToolAssistance.createKeyboardInstruction(ToolAssistance.arrowKeyboardInfo, "Press one of four keys");
     const instruction6 = ToolAssistance.createKeyboardInstruction(ToolAssistance.shiftSymbolKeyboardInfo, "Press the Shift key");
 
-    const section1 = ToolAssistance.createSection([instruction1, instruction2, instruction3, instruction4, instruction5, instruction6], ToolAssistance.inputsLabel);
+    const instruction7 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Tap on something", false, ToolAssistanceInputMethod.Touch);
+    const instruction8 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Tap on something then drag", false, ToolAssistanceInputMethod.Touch);
+
+    const section1 = ToolAssistance.createSection([instruction1, instruction2, instruction3, instruction4, instruction5, instruction6, instruction7, instruction8], ToolAssistance.inputsLabel);
 
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
 

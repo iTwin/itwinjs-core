@@ -44,7 +44,6 @@ import { Triangulator } from "../topology/Triangulation";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 
 /* tslint:disable:variable-name prefer-for-of*/
-
 /**
  * A FacetSector
  * * initially holds coordinate data for a place where xyz and sectionDerivative are known
@@ -1567,5 +1566,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     xyzIndex0.clear();
     xyzIndex1.clear();
   }
-
+  /**
+   * Triangulate the points as viewed in xy.
+   * @param points
+   */
+  public static pointsToTriangulatedPolyface(points: Point3d[]): IndexedPolyface | undefined {
+    const graph = Triangulator.createTriangulatedGraphFromPoints(points);
+    if (graph)
+      return PolyfaceBuilder.graphToPolyface(graph);
+    return undefined;
+  }
 }

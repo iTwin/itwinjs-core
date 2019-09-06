@@ -15,21 +15,14 @@
     "NothingToRedo": "Nothing has been undone",
     "UndoAll": "Do you really want to undo all changes?"
   },
-  "AccuDraw": {
-    "Prompt": {
-      "DefineOrigin": "Define X axis origin",
-      "DefineXAxis": "Define X axis",
-      "DefineYDir": "Define Y axis",
-      "DefineElem": "Select element to define rotation"
-    }
-  },
   "LocateFailure": {
     "NoElements": "No Elements Found",
     "ByApp": "Element not valid for tool",
     "Transient": "Decoration is not valid for this tool",
     "NotSnappable": "SubCategory has snapping turned off",
     "NotLocatable": "SubCategory has locate turned off",
-    "ExternalIModel": "iModel is not locatable"
+    "ExternalIModel": "iModel is not locatable",
+    "RealityModelSnapMode": "Reality models restricted to nearest snap"
   },
   "Element": {
     "Id": "Id",

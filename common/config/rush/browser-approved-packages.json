@@ -23,10 +23,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
-      "name": "@bentley/dev-cors-proxy-server",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal" ]
     },
@@ -163,20 +159,12 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "asn1",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "autoprefixer",
       "allowedCategories": [ "internal", "tools" ]
     },
     {
-      "name": "azure-storage",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "bunyan",
@@ -255,10 +243,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cors",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "cpx",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -272,7 +256,7 @@
     },
     {
       "name": "css-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "cssnano",
@@ -343,20 +327,12 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "fast-css-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "fast-sass-loader",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "internal", "tools" ]
-    },
-    {
-      "name": "filenamify",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "fork-ts-checker-webpack-plugin",
@@ -364,10 +340,6 @@
     },
     {
       "name": "form-data",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "formidable",
       "allowedCategories": [ "backend" ]
     },
     {
@@ -436,7 +408,7 @@
     },
     {
       "name": "js-untar",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "jsdom",
@@ -463,11 +435,7 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "license-webpack-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "linkifyjs",
+      "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -511,10 +479,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "moment",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "multiparty",
       "allowedCategories": [ "backend" ]
     },
@@ -525,10 +489,6 @@
     {
       "name": "node-gyp",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "node-report",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "node-sass",
@@ -569,10 +529,6 @@
     {
       "name": "openid-client",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "optimize-css-assets-webpack-plugin",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "popper.js",
@@ -655,12 +611,8 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-numeric-input",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-redux",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",
@@ -716,7 +668,7 @@
     },
     {
       "name": "sass-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "save",
@@ -748,11 +700,7 @@
     },
     {
       "name": "style-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "sun-position_grena3",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "superagent",
@@ -776,7 +724,7 @@
     },
     {
       "name": "tar",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "tooltip.js",
@@ -828,7 +776,7 @@
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc-plugin-external-module-name",
@@ -852,11 +800,11 @@
     },
     {
       "name": "uglifyjs-webpack-plugin",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "url-loader",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "url-search-params",
@@ -921,10 +869,6 @@
     {
       "name": "whatwg-fetch",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "ws",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "xmldom",

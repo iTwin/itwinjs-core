@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
-import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -58,6 +58,16 @@ export interface SelectedViewportChangedArgs {
   previous?: ScreenViewport;
 }
 
+/** An object which customizes the locate tooltip.
+ * @internal
+ */
+export interface ToolTipProvider {
+  /** Augment or replace tooltip for the specified HitDetail.
+   * To cooperate with other tooltip providers, replacing the input tooltip instead of appending information is discouraged.
+   */
+  augmentToolTip(hit: HitDetail, tooltip: Promise<HTMLElement | string>): Promise<HTMLElement | string>;
+}
+
 /** The ViewManager holds the list of opened views, plus the *selected view*. It also provides notifications of view open/close and suspend/resume.
  * Applications must call [[addViewport]] when new Viewports that should be associated with user events are created.
  *
@@ -74,6 +84,8 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  /** @internal */
+  public readonly toolTipProviders: ToolTipProvider[] = [];
 
   /** @internal */
   public onInitialized() {
@@ -88,6 +100,7 @@ export class ViewManager {
   public onShutDown() {
     this._viewports.length = 0;
     this.decorators.length = 0;
+    this.toolTipProviders.length = 0;
     this._selectedView = undefined;
   }
 
@@ -324,6 +337,46 @@ export class ViewManager {
     }
   }
 
+  /** Get the tooltip for a persistent element.
+   * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
+   * @beta
+   */
+  public async getElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    const msg: string[] = await hit.iModel.getToolTipMessage(hit.sourceId); // wait for the locate message(s) from the backend
+    // now combine all the lines into one string, replacing any instances of ${tag} with the translated versions.
+    // Add "<br>" at the end of each line to cause them to come out on separate lines in the tooltip.
+    let out = "";
+    msg.forEach((line) => out += IModelApp.i18n.translateKeys(line) + "<br>");
+    const div = document.createElement("div");
+    div.innerHTML = out;
+    return div;
+  }
+
+  /** Add a new [[ToolTipProvider]] to customize the locate tooltip.
+   * @internal
+   * @param provider The new tooltip provider to add.
+   * @throws Error if provider is already active.
+   * @returns a function that may be called to remove this decorator (in lieu of calling [[dropToolTipProvider]].)
+   * @see [[dropToolTipOverrideProvider]]
+   */
+  public addToolTipProvider(provider: ToolTipProvider): () => void {
+    if (this.toolTipProviders.includes(provider))
+      throw new Error("tooltip provider already registered");
+    this.toolTipProviders.push(provider);
+    return () => { this.dropToolTipProvider(provider); };
+  }
+
+  /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
+   * @internal
+   * @param provider The tooltip to drop.
+   * @note Does nothing if decorator is not currently active.
+   */
+  public dropToolTipProvider(provider: ToolTipProvider) {
+    const index = this.toolTipProviders.indexOf(provider);
+    if (index >= 0)
+      this.toolTipProviders.splice(index, 1);
+  }
+
   /** Add a new [[Decorator]] to display decorations into the active views.
    * @param decorator The new decorator to add.
    * @throws Error if decorator is already active.
@@ -394,10 +447,18 @@ export class ViewManager {
   public setViewCursor(cursor: string = "default") {
     if (cursor === this.cursor)
       return;
-
     this.cursor = cursor;
-    if (undefined !== this.selectedView) {
-      this.selectedView.setCursor(cursor);
-    }
+    for (const vp of this._viewports)
+      vp.setCursor(cursor);
+  }
+
+  /** Intended strictly as a temporary solution for interactive editing applications, until official support for such apps is implemented.
+   * Call this after editing one or more models, passing in the Ids of those models, to cause new tiles to be generated reflecting the changes.
+   * Pass undefined if you are unsure which models changed (this is less efficient as it discards all tiles for all viewed models in all viewports).
+   * @internal
+   */
+  public refreshForModifiedModels(modelIds: Id64Arg | undefined): void {
+    for (const vp of this._viewports)
+      vp.refreshForModifiedModels(modelIds);
   }
 }

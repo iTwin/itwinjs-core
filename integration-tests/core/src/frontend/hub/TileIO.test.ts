@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { TileIO, IModelTileIO, IModelTile, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
-import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, BatchType, ServerTimeoutError } from "@bentley/imodeljs-common";
 import { BeDuration, BeTimePoint, Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
@@ -325,7 +325,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
@@ -354,7 +354,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
@@ -368,7 +368,7 @@ describe("TileIO (WebGL)", () => {
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
-        expect(plinePrim.renderOrder).to.equal(3);
+        expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
         plGeom = plinePrim.cachedGeometry as PolylineGeometry;
         expect(plGeom.numIndices).to.equal(228); // 120 pre-tesselation...

@@ -13,6 +13,7 @@ import {
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { ShadowField } from "../statusfields/ShadowField";
+import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
 import "./AppStatusBar.scss";
 
@@ -39,6 +40,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
               {isInFooterMode && <FooterSeparator />}
             </>}
           </BooleanSyncUiListener>
+          <DisplayStyleField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
         </StatusBarCenterSection>
         <StatusBarRightSection>
           {isInFooterMode && <FooterSeparator />}

@@ -348,6 +348,7 @@ export class ViewClipTool extends PrimitiveTool {
 /** @alpha A tool to remove a clip volume for a view */
 export class ViewClipClearTool extends ViewClipTool {
   public static toolId = "ViewClip.Clear";
+  public static iconSpec = "icon-section-tool";
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && ViewClipTool.hasClip(vp)); }
 
   protected showPrompt(): void { this.outputPrompt("Clear.Prompts.FirstPoint"); }
@@ -377,7 +378,7 @@ export class ViewClipClearTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a plane */
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
-  public static iconSpec = "icon-plane";
+  public static iconSpec = "icon-section-plane";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Face);
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
@@ -427,6 +428,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying a shape */
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
+  public static iconSpec = "icon-section-shape";
   private _orientationValue = new ToolSettingsValue(ClipOrientation.Top);
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
@@ -612,6 +614,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by specifying range corners */
 export class ViewClipByRangeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByRange";
+  public static iconSpec = "icon-section-range";
   protected _corner?: Point3d;
 
   protected showPrompt(): void { this.outputPrompt(undefined === this._corner ? "ByRange.Prompts.FirstPoint" : "ByRange.Prompts.NextPoint"); }
@@ -699,6 +702,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
 /** @alpha A tool to define a clip volume for a view by element(s) */
 export class ViewClipByElementTool extends ViewClipTool {
   public static toolId = "ViewClip.ByElement";
+  public static iconSpec = "icon-section-element";
   constructor(clipEventHandler?: ViewClipEventHandler, protected _alwaysUseRange: boolean = false) { super(clipEventHandler); }
 
   protected showPrompt(): void { this.outputPrompt("ByElement.Prompts.FirstPoint"); }
@@ -1318,9 +1322,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     const startFrustum = this._clipView.getFrustum();
     const newFrustum = startFrustum.clone();
     newFrustum.multiply(rotateTransform);
-    this._clipView.animateFrustumChange(startFrustum, newFrustum);
     this._clipView.view.setupFromFrustum(newFrustum);
     this._clipView.synchWithView(true);
+    this._clipView.animateToCurrent(startFrustum);
     return true;
   }
 
@@ -1456,19 +1460,25 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         continue;
 
       // For single plane clip, choose location for handle that's visible in the current view...
-      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops) {
+      if (1 === this._controls.length && undefined !== this._clipPlanes && undefined !== this._clipPlanesLoops && this._clipPlanesLoops.length > 0) {
         if (!EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].origin, vp, 0.05)) {
-          const work = new GrowableXYZArray();
-          const finalPoints = new GrowableXYZArray();
-          const lineString = ((this._clipPlanesLoops[0] as Loop).getChild(0) as LineString3d).points;
-          const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
-          convexSet.polygonClip(lineString, finalPoints, work);
-          if (finalPoints.length > 0) {
-            const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
-            if (undefined !== loopArea) {
-              if (undefined === this._controls[iFace].floatingOrigin)
-                this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
-              this._controls[iFace].origin.setFrom(loopArea.origin);
+          const geom = this._clipPlanesLoops[0];
+          if (geom instanceof Loop && geom.children.length > 0) {
+            const child = geom.getChild(0);
+            if (child instanceof LineString3d) {
+              const work = new GrowableXYZArray();
+              const finalPoints = new GrowableXYZArray();
+              const lineString = child.points;
+              const convexSet = vp.getFrustum().getRangePlanes(false, false, 0);
+              convexSet.polygonClip(lineString, finalPoints, work);
+              if (finalPoints.length > 0) {
+                const loopArea = PolygonOps.centroidAreaNormal(finalPoints.getPoint3dArray());
+                if (undefined !== loopArea) {
+                  if (undefined === this._controls[iFace].floatingOrigin)
+                    this._controls[iFace].floatingOrigin = this._controls[iFace].origin.clone();
+                  this._controls[iFace].origin.setFrom(loopArea.origin);
+                }
+              }
             }
           }
         } else if (undefined !== this._controls[iFace].floatingOrigin && EditManipulator.HandleUtils.isPointVisible(this._controls[iFace].floatingOrigin!, vp, 0.1)) {

@@ -73,7 +73,7 @@ export abstract class ViewTool extends InteractiveTool {
   public inDynamicUpdate = false;
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
-  public run(): boolean {
+  public run(..._args: any[]): boolean {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
       IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
@@ -301,7 +301,7 @@ export abstract class ViewManip extends ViewTool {
   public async onMouseWheel(inputEv: BeWheelEvent): Promise<EventHandled> {
     const ev = inputEv.clone();
 
-    // If rotate is active, the mouse wheel should about the target center when it's displayed...
+    // If rotate is active, the mouse wheel should zoom about the target center when it's displayed...
     if ((this.handleMask & ViewHandleType.Rotate) && (this.targetCenterLocked || this.inHandleModify)) {
       ev.point = this.targetCenterWorld;
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
@@ -450,8 +450,7 @@ export abstract class ViewManip extends ViewTool {
       return this.setTargetCenterWorld(defaultPoint, false, false);
     }
 
-    const visiblePoint = vp.pickNearestVisibleGeometry(vp.npcToWorld(NpcCenter), vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
-    this.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : vp.view.getTargetPoint(), false, false);
+    this.setTargetCenterWorld(vp.view.getTargetPoint(), false, false); // Tools that use pickNearestVisibleGeometry on first point will override this location...
   }
 
   public processFirstPoint(ev: BeButtonEvent) {
@@ -567,7 +566,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
 
     if (doAnimate)
-      viewport.animateFrustumChange(before, after);
+      viewport.animateToCurrent(before);
   }
 
   public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {
@@ -1584,7 +1583,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
 
     const endFrust = vp.getWorldFrustum();
     if (!startFrust.equals(endFrust))
-      vp.animateFrustumChange(startFrust, endFrust);
+      vp.animateToCurrent(startFrust);
 
     this.getCenterPoint(this._anchorPtView);
   }
@@ -1723,6 +1722,7 @@ export class RotateViewTool extends ViewManip {
  */
 export class LookViewTool extends ViewManip {
   public static toolId = "View.Look";
+  public static iconSpec = "icon-view-navigation";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
@@ -1734,6 +1734,7 @@ export class LookViewTool extends ViewManip {
  */
 export class ScrollViewTool extends ViewManip {
   public static toolId = "View.Scroll";
+  public static iconSpec = "icon-move";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
@@ -1823,6 +1824,7 @@ export class FitViewTool extends ViewTool {
  */
 export class StandardViewTool extends ViewTool {
   public static toolId = "View.Standard";
+  public static iconSpec = "icon-cube-faces-top";
   constructor(viewport: ScreenViewport, private _standardViewId: StandardViewId) { super(viewport); }
 
   public onPostInstall() {
@@ -1838,9 +1840,9 @@ export class StandardViewTool extends ViewTool {
         const startFrustum = vp.getFrustum();
         const newFrustum = startFrustum.clone();
         newFrustum.multiply(rotateTransform);
-        vp.animateFrustumChange(startFrustum, newFrustum);
         vp.view.setupFromFrustum(newFrustum);
         vp.synchWithView(true);
+        vp.animateToCurrent(startFrustum);
       }
     }
     this.exitTool();
@@ -2061,7 +2063,7 @@ export class WindowAreaTool extends ViewTool {
     }
 
     vp.synchWithView(true);
-    vp.animateFrustumChange(startFrust, vp.getFrustum());
+    vp.animateToCurrent(startFrust);
   }
 }
 
@@ -2312,6 +2314,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
  */
 export class ViewUndoTool extends ViewTool {
   public static toolId = "View.Undo";
+  public static iconSpec = "icon-window-backward";
 
   public onPostInstall() {
     if (this.viewport)
@@ -2325,6 +2328,7 @@ export class ViewUndoTool extends ViewTool {
  */
 export class ViewRedoTool extends ViewTool {
   public static toolId = "View.Redo";
+  public static iconSpec = "icon-window-forward";
 
   public onPostInstall() {
     if (this.viewport)
@@ -2352,7 +2356,7 @@ export class ViewToggleCameraTool extends ViewTool {
 
       const startFrustum = vp.getFrustum();
       vp.synchWithView(true);
-      vp.animateFrustumChange(startFrustum, vp.getFrustum());
+      vp.animateToCurrent(startFrustum);
     }
     this.exitTool();
   }
@@ -2527,7 +2531,7 @@ export class SetupCameraTool extends PrimitiveTool {
       return;
 
     vp.synchWithView(true);
-    vp.animateFrustumChange(startFrust, vp.getFrustum(), BeDuration.fromMilliseconds(500));
+    vp.animateToCurrent(startFrust, BeDuration.fromMilliseconds(500));
   }
 
   private _lengthFormatterSpec?: FormatterSpec;
