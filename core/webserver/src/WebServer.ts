@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as express from "express";
+import * as cors from "cors";
 import * as yargs from "yargs";
 import * as path from "path";
 import * as kill from "tree-kill";
@@ -287,12 +288,7 @@ class WebServer {
   public start() {
 
     /* --Enable CORS for all apis */
-    this._app.all("/*", (_req, res, next) => {
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Methods", "POST, GET");
-      res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, X-Session-Id, X-Application-Id, X-Application-Version, X-User-Id");
-      next();
-    });
+    this._app.use(cors());
 
     // post json passed to plugin post.
     const jsonBodyParser = bodyParser.json();

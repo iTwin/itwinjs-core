@@ -129,7 +129,7 @@ abstract class IoTDevice {
     return undefined !== typeList.find((element) => element === this.type);
   }
 
-  public abstract getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined;
+  public abstract getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined;
 
   // look backwards until we find the property we want.
   protected _findStepPrecedingWithProperty(startStep: number, propertyName: string): SpaceState {
@@ -151,10 +151,10 @@ class TemperatureSensor extends IoTDevice {
     super(IoTDeviceType.TemperatureSensor, false, true, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "temperature");
     } else if (space.states[stepNumber].temperature) {
       changeState = space.states[stepNumber];
@@ -163,7 +163,8 @@ class TemperatureSensor extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     return new IoTTemperatureReading(space.id, changeState.temperature!.current);
   }
 }
@@ -173,10 +174,10 @@ class CO2Sensor extends IoTDevice {
     super(IoTDeviceType.CO2Sensor, false, true, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "co2");
     } else if (space.states[stepNumber].co2) {
       changeState = space.states[stepNumber];
@@ -185,7 +186,8 @@ class CO2Sensor extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     return new IoTCo2Reading(space.id, changeState.co2!.current);
   }
 }
@@ -195,10 +197,10 @@ class OccupancySensor extends IoTDevice {
     super(IoTDeviceType.OccupancySensor, false, false, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "occupancy");
     } else if (space.states[stepNumber].occupancy) {
       changeState = space.states[stepNumber];
@@ -207,7 +209,8 @@ class OccupancySensor extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     return new IoTOccupancyReading(space.id, changeState.occupancy!.current);
   }
 }
@@ -217,10 +220,10 @@ class SmokeDetector extends IoTDevice {
     super(IoTDeviceType.SmokeDetector, false, false, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "smoke");
     } else if (space.states[stepNumber].smoke) {
       changeState = space.states[stepNumber];
@@ -229,7 +232,8 @@ class SmokeDetector extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     return new IoTSmokeReading(space.id, changeState.smoke!.current);
   }
 }
@@ -239,10 +243,10 @@ class FireAlarm extends IoTDevice {
     super(IoTDeviceType.FireAlarm, false, false, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "fire");
     } else if (space.states[stepNumber].fire) {
       changeState = space.states[stepNumber];
@@ -251,7 +255,8 @@ class FireAlarm extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     return new IoTFireReading(space.id, changeState.fire!.current);
   }
 }
@@ -261,10 +266,10 @@ class Thermostat extends IoTDevice {
     super(IoTDeviceType.Thermostat, true, false, false, deviceProps.componentId);
   }
 
-  public getReading(lastState: SpaceState[], index: number, stepNumber: number): IoTReading | undefined {
+  public getReading(lastState: SpaceState[] | undefined, index: number, stepNumber: number): IoTReading | undefined {
     const space: Space = this.space!;
     let changeState: SpaceState | undefined;
-    if (lastState[index] === undefined) {
+    if ((lastState === undefined) || (lastState[index] === undefined)) {
       changeState = this._findStepPrecedingWithProperty(stepNumber, "temperature");
     } else if (space.states[stepNumber].temperature) {
       changeState = space.states[stepNumber];
@@ -273,7 +278,8 @@ class Thermostat extends IoTDevice {
     if (!changeState)
       return undefined;
 
-    lastState[index] = changeState;
+    if (lastState !== undefined)
+      lastState[index] = changeState;
     const tState: TemperatureState = changeState.temperature!;
     return new IoTThermostatReading(space.id, tState.current, tState.setPointHeat, tState.setPointCool, tState.heating, tState.cooling);
   }
@@ -716,6 +722,7 @@ export class IoTSimulator {
   private _showSite: boolean;
   private _currentMSec: number;
   private _currentStep: number;
+  private _continuing: boolean;
 
   public constructor(private _jsonConfigUrl: string) {
     // set up the express server.
@@ -725,6 +732,7 @@ export class IoTSimulator {
     this._showSite = false;
     this._currentStep = 0;
     this._currentMSec = Date.now();
+    this._continuing = false;
 
     const officeHoursDefault: OfficeHours[] = [];
     for (let iDay: number = 1; iDay <= 5; ++iDay) {
@@ -758,18 +766,19 @@ export class IoTSimulator {
     }
   }
 
-  /* -----------------
   private _extendSimulation() {
     this._currentMSec += this._simulationParameters.interval * 60 * 1000;
     this._currentStep++;
     this._doSimulationStep(this._currentMSec, this._currentStep);
   }
 
-  private _continueSimulation() {
+  public continueSimulation() {
     // do another simulation step every 5 seconds.
+    if (this._continuing)
+      return;
+    this._continuing = true;
     setInterval(this._extendSimulation.bind(this), 5 * 1000);
   }
-  ------------------ */
 
   // ==============================================
   // The methods below read the JSON file that configures the building and simulation.
@@ -1430,5 +1439,21 @@ export class IoTSimulator {
 
   public getEndTime(): Date {
     return new Date(this._simulationParameters.endMsec);
+  }
+
+  public getLatestTimeAndReading(query: any): { readingTime: number, readings: any[] } {
+    const deviceList: IoTDevice[] = this._getDeviceList(query);
+    const lastStepNumber: number = this._currentStep - 1;
+
+    // keep the last readings so we can see if they change.
+    const readings: IoTReading[] = [];
+    for (let iDevice = 0; iDevice < deviceList.length; ++iDevice) {
+      const device: IoTDevice = deviceList[iDevice];
+      const thisReading: IoTReading | undefined = device.getReading(undefined, iDevice, lastStepNumber);
+      if (undefined !== thisReading) {
+        readings.push(thisReading);
+      }
+    }
+    return { readingTime: this._currentMSec, readings };
   }
 }

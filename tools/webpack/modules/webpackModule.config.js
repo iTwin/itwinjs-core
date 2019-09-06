@@ -333,7 +333,9 @@ function getConfig(env) {
   // add the DefinePlugin.
   webpackLib.plugins.push(new webpack.DefinePlugin(definePluginDefinitions));
   let finalCssLoader;
-  if (!devMode) {
+  // note: plugins must still package the css into the .js file, because we don't know how to incorporate those css files into index.html to load them.
+  // TBD: We could potentially list the .css files in the plugin's manifest and then load those in the plugin loader.
+  if (!devMode && !env.plugin) {
     webpackLib.plugins.push(new MiniCssExtractPlugin({
       filename: "[name].css",
       chunkFileName: "[name].css",
