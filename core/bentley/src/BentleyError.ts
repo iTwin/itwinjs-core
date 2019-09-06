@@ -98,13 +98,14 @@ export enum IModelStatus {
  * @beta Should these be internal?
  */
 export enum BriefcaseStatus {
-  CannotAcquire = 0x20000,
-  CannotDownload = 0x20001,
-  CannotUpload = 0x20002,
-  CannotCopy = 0x20003,
-  CannotDelete = 0x20004,
-  VersionNotFound = 0x20005,
-  CannotApplyChanges = 0x20006,
+  BRIEFCASE_STATUS_BASE = 0x20000,
+  CannotAcquire = BRIEFCASE_STATUS_BASE,
+  CannotDownload = BRIEFCASE_STATUS_BASE + 1,
+  CannotUpload = BRIEFCASE_STATUS_BASE + 2,
+  CannotCopy = BRIEFCASE_STATUS_BASE + 3,
+  CannotDelete = BRIEFCASE_STATUS_BASE + 4,
+  VersionNotFound = BRIEFCASE_STATUS_BASE + 5,
+  CannotApplyChanges = BRIEFCASE_STATUS_BASE + 6,
 }
 
 /** RpcInterface status codes
@@ -320,7 +321,7 @@ export enum IModelHubStatus {
  */
 export enum AuthStatus {
   Success = 0,
-  AUTHSTATUS_BASE = 0x20000,
+  AUTHSTATUS_BASE = 0x22000,
   Error = AUTHSTATUS_BASE,
 }
 

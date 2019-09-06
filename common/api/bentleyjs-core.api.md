@@ -22,9 +22,9 @@ export type AsyncMutexUnlockFnType = () => void;
 // @beta
 export enum AuthStatus {
     // (undocumented)
-    AUTHSTATUS_BASE = 131072,
+    AUTHSTATUS_BASE = 139264,
     // (undocumented)
-    Error = 131072,
+    Error = 139264,
     // (undocumented)
     Success = 0
 }
@@ -108,6 +108,8 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
 
 // @beta
 export enum BriefcaseStatus {
+    // (undocumented)
+    BRIEFCASE_STATUS_BASE = 131072,
     // (undocumented)
     CannotAcquire = 131072,
     // (undocumented)
