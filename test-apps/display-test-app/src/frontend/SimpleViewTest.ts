@@ -180,10 +180,32 @@ async function main() {
   }
 }
 
+async function documentLoaded(): Promise<void> {
+  const readyState = /^complete$/;
+  if (readyState.test(document.readyState))
+    return Promise.resolve();
+
+  return new Promise<void>((resolve) => {
+    const listener = () => {
+      if (readyState.test(document.readyState)) {
+        document.removeEventListener("readystatechange", listener);
+        resolve();
+      }
+    };
+
+    document.addEventListener("readystatechange", listener);
+    listener();
+  });
+}
+
 async function initView() {
   // open the specified view
   showStatus("opening View", configuration.viewName);
   DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!);
+
+  // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
+  // Consistently reproducible for some folks, not others...
+  await documentLoaded();
 
   const viewer = await DisplayTestApp.surface.createViewer({
     iModel: activeViewState.iModelConnection!,
