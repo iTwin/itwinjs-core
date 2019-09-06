@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add alwaysMinimized prop to TimelineComponent.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Nancy.McCall@Bentley.com"
+}
