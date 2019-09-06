@@ -1389,8 +1389,6 @@ export class Entity implements EntityProps {
     static readonly className: string;
     readonly className: string;
     clone(): this;
-    // @alpha
-    computeHash(): string;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1528,12 +1526,10 @@ export interface ExportPartLinesInfo {
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
-    checksum: string;
+    checksum?: string;
     // @internal (undocumented)
     static readonly className: string;
     identifier: string;
-    // @alpha
-    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };

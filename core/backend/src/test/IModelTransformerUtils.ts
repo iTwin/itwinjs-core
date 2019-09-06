@@ -103,10 +103,6 @@ export function populateSourceDb(sourceDb: IModelDb): void {
   };
   const physicalObjectId1: Id64String = sourceDb.elements.insertElement(physicalObjectProps1);
   assert.isTrue(Id64.isValidId64(physicalObjectId1));
-  const hash1: string = sourceDb.elements.getElement<Element>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
-  const hash2: string = sourceDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true }).computeHash();
-  assert.exists(hash1);
-  assert.equal(hash1, hash2);
   const physicalObjectProps2: GeometricElement3dProps = {
     classFullName: PhysicalObject.classFullName,
     model: physicalModelId,
@@ -505,14 +501,14 @@ function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetEleme
   assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
   const aspect: ExternalSourceAspect = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName)[0] as ExternalSourceAspect;
   assert.exists(aspect);
-  assert.equal(aspect.kind, Element.className);
+  assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
   assert.equal(aspect.scope.id, IModel.rootSubjectId);
-  assert.exists(aspect.version);
-  const targetLastMod: string = targetDb.elements.queryLastModifiedTime(targetElementId);
-  assert.notEqual(aspect.version, targetLastMod);
-  const sourceElement: Element = sourceDb.elements.getElement({ id: aspect.identifier, wantGeometry: true });
+  assert.isUndefined(aspect.checksum);
+  assert.isTrue(Id64.isValidId64(aspect.identifier));
+  const sourceLastMod: string = sourceDb.elements.queryLastModifiedTime(aspect.identifier);
+  assert.equal(aspect.version, sourceLastMod);
+  const sourceElement: Element = sourceDb.elements.getElement(aspect.identifier);
   assert.exists(sourceElement);
-  assert.equal(sourceElement.computeHash(), aspect.checksum);
 }
 
 export function createTeamIModel(teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {

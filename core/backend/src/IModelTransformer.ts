@@ -156,6 +156,32 @@ export class IModelTransformer {
     return subjectId;
   }
 
+  /** Create an ExternalSourceAspectProps in a standard way for an Element in an iModel --> iModel transformation.
+   * @param sourceElement The new ExternalSourceAspectProps will be tracking this Element from the source iModel.
+   * @param targetDb The target iModel where this ExternalSourceAspect will be persisted.
+   * @param targetScopeElementId The Id of an Element in the target iModel that provides a scope for source Ids.
+   * @param targetElementId The optional Id of the Element that will own the ExternalSourceAspect. If not provided, it will be set to Id64.invalid.
+   * @alpha
+   */
+  private static initExternalSourceAspect(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String = Id64.invalid): ExternalSourceAspectProps {
+    const aspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: targetElementId },
+      scope: { id: targetScopeElementId },
+      identifier: sourceElement.id,
+      kind: ExternalSourceAspect.Kind.Element,
+      version: sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id),
+    };
+    const sql = `SELECT ECInstanceId FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Element.Id=:elementId AND aspect.Scope.Id=:scopeId AND aspect.Kind=:kind LIMIT 1`;
+    aspectProps.id = targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String | undefined => {
+      statement.bindId("elementId", targetElementId);
+      statement.bindId("scopeId", targetScopeElementId);
+      statement.bindString("kind", ExternalSourceAspect.Kind.Element);
+      return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getId() : undefined;
+    });
+    return aspectProps;
+  }
+
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
   private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
@@ -416,7 +442,7 @@ export class IModelTransformer {
       const sourceAspect = aspect as ExternalSourceAspect;
       if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === this._targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
         const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
-        return (lastModifiedTime !== sourceAspect.version) || (sourceElement.computeHash() !== sourceAspect.checksum);
+        return (lastModifiedTime !== sourceAspect.version);
       }
     }
     return true;
@@ -502,7 +528,7 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was inserted.
    */
   protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this._targetDb.elements.insertAspect(ExternalSourceAspect.initPropsForElement(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId));
+    this._targetDb.elements.insertAspect(IModelTransformer.initExternalSourceAspect(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId));
   }
 
   /** Record provenance about the source Element for change detection.
@@ -510,7 +536,7 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was updated.
    */
   protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    const aspectProps: ExternalSourceAspectProps = ExternalSourceAspect.initPropsForElement(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId);
+    const aspectProps: ExternalSourceAspectProps = IModelTransformer.initExternalSourceAspect(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId);
     if (aspectProps.id === undefined) {
       this._targetDb.elements.insertAspect(aspectProps);
     } else {

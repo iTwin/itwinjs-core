@@ -1564,7 +1564,7 @@ export interface EnvironmentProps {
 
 // @public
 export interface ExternalSourceAspectProps extends ElementAspectProps {
-    checksum: string;
+    checksum?: string;
     identifier: string;
     jsonProperties?: any;
     kind: string;
