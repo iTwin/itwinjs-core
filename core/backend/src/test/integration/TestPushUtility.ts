@@ -9,7 +9,7 @@ import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import {
-  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector,
+  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
 } from "../../imodeljs-backend";
 import { IModelWriter } from "./IModelWriter";
@@ -114,8 +114,8 @@ export class TestPushUtility {
 
   private updateElement(name: string, newUserLabel: string, newSize: Point3d = new Point3d(10, 10, 10)) {
     const code = this.createCode(name);
-    const element = this._iModelDb!.elements.getElement(code);
-    if (!element)
+    const element = this._iModelDb!.elements.getElement<GeometricElement>(code);
+    if (!element || !(element instanceof GeometricElement))
       throw new Error(`Element with name ${name} not found`);
 
     element.userLabel = newUserLabel;

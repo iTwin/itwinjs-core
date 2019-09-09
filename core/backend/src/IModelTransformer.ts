@@ -9,7 +9,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, InformationPartitionElement, Subject } from "./Element";
+import { DefinitionPartition, Element, GeometricElement, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
@@ -330,7 +330,7 @@ export class IModelTransformer {
       Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementForLogger(sourceElement)} by Id`);
       return true;
     }
-    if (sourceElement.category) {
+    if (sourceElement instanceof GeometricElement) {
       if (this._excludedElementCategoryIds.has(sourceElement.category)) {
         Logger.logInfo(loggerCategory, `[Source] Excluded ${this.formatElementForLogger(sourceElement)} by Category [${this.formatIdForLogger(sourceElement.category)}]`);
         return true;
@@ -636,7 +636,7 @@ export class IModelTransformer {
         } else if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
           changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
         } else {
-          changed = model[propertyName] !== modelProps[propertyName];
+          changed = (model as any)[propertyName] !== modelProps[propertyName];
         }
       }
     }, true);
@@ -760,7 +760,7 @@ export class IModelTransformer {
     targetRelationshipProps.targetId = this.findTargetElementId(sourceRelationship.targetId);
     sourceRelationship.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        targetRelationshipProps[propertyName] = this.findTargetElementId(sourceRelationship[propertyName]);
+        targetRelationshipProps[propertyName] = this.findTargetElementId((sourceRelationship as any)[propertyName]);
       }
     }, true);
     return targetRelationshipProps;
@@ -796,7 +796,7 @@ export class IModelTransformer {
   private hasRelationshipChanged(relationship: Relationship, relationshipProps: RelationshipProps): boolean {
     let changed: boolean = false;
     relationship.forEachProperty((propertyName: string) => {
-      if (!changed && (relationship[propertyName] !== relationshipProps[propertyName])) {
+      if (!changed && ((relationship as any)[propertyName] !== relationshipProps[propertyName])) {
         changed = true;
       }
     }, true);
@@ -948,7 +948,7 @@ export class IModelTransformer {
     targetElementAspectProps.element.id = targetElementId;
     sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        targetElementAspectProps[propertyName] = this.findTargetElementId(sourceElementAspect[propertyName]);
+        targetElementAspectProps[propertyName] = this.findTargetElementId((sourceElementAspect as any)[propertyName]);
       }
     }, true);
     return targetElementAspectProps;
@@ -989,7 +989,7 @@ export class IModelTransformer {
   private hasElementAspectChanged(aspect: ElementAspect, aspectProps: ElementAspectProps): boolean {
     let changed: boolean = false;
     aspect.forEachProperty((propertyName: string) => {
-      if (!changed && (propertyName !== "element") && (aspect[propertyName] !== aspectProps[propertyName])) {
+      if (!changed && (propertyName !== "element") && ((aspect as any)[propertyName] !== aspectProps[propertyName])) {
         changed = true;
       }
     }, true);

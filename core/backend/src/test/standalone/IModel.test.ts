@@ -319,7 +319,7 @@ describe("iModel", () => {
   });
 
   it("should create elements", () => {
-    const seedElement = imodel2.elements.getElement("0x1d");
+    const seedElement = imodel2.elements.getElement<GeometricElement3d>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -641,7 +641,7 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
     testCopyAndJson(model!);
-    const modelExtents: AxisAlignedBox3d = model.queryExtents();
+    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
@@ -748,7 +748,7 @@ describe("iModel", () => {
     const drawingGraphicRows: any[] = imodel2.executeQuery("SELECT ECInstanceId FROM BisCore.DrawingGraphic");
     assert.exists(drawingGraphicRows, "Should have some Drawing Graphics");
     for (const drawingGraphicRow of drawingGraphicRows!) {
-      const drawingGraphic = imodel2.elements.getElement({ id: drawingGraphicRow.id, wantGeometry: true });
+      const drawingGraphic = imodel2.elements.getElement<GeometricElement2d>({ id: drawingGraphicRow.id, wantGeometry: true });
       assert.exists(drawingGraphic);
       assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
       assert.isTrue(drawingGraphic instanceof GeometricElement2d, "Is instance of GeometricElement2d");
@@ -867,21 +867,21 @@ describe("iModel", () => {
     const testElem = imodel4.elements.getElement("0x14");
     assert.isDefined(testElem);
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
-    assert.isUndefined(testElem.integerProperty1);
+    assert.isUndefined(testElem.asAny.integerProperty1);
 
     const newTestElem = testElem.clone();
     assert.equal(newTestElem.classFullName, testElem.classFullName);
-    newTestElem.integerProperty1 = 999;
-    assert.isTrue(testElem.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
+    newTestElem.asAny.integerProperty1 = 999;
+    assert.isTrue(testElem.asAny.arrayOfPoint3d[0].isAlmostEqual(newTestElem.asAny.arrayOfPoint3d[0]));
 
     const loc1 = { street: "Elm Street", city: { name: "Downingtown", state: "PA" } };
     const loc2 = { street: "Oak Street", city: { name: "Downingtown", state: "PA" } };
     const loc3 = { street: "Chestnut Street", city: { name: "Philadelphia", state: "PA" } };
     const arrayOfStructs = [loc2, loc3];
-    newTestElem.location = loc1;
-    newTestElem.arrayOfStructs = arrayOfStructs;
-    newTestElem.dtUtc = new Date("2015-03-25");
-    newTestElem.p3d = new Point3d(1, 2, 3);
+    newTestElem.asAny.location = loc1;
+    newTestElem.asAny.arrayOfStructs = arrayOfStructs;
+    newTestElem.asAny.dtUtc = new Date("2015-03-25");
+    newTestElem.asAny.p3d = new Point3d(1, 2, 3);
 
     const newTestElemId = imodel4.elements.insertElement(newTestElem);
 
@@ -891,45 +891,45 @@ describe("iModel", () => {
     assert.isDefined(newTestElemFetched);
     assert.isTrue(newTestElemFetched.id === newTestElemId);
     assert.equal(newTestElemFetched.classFullName, newTestElem.classFullName);
-    assert.isDefined(newTestElemFetched.integerProperty1);
-    assert.equal(newTestElemFetched.integerProperty1, newTestElem.integerProperty1);
-    assert.isTrue(newTestElemFetched.arrayOfPoint3d[0].isAlmostEqual(newTestElem.arrayOfPoint3d[0]));
-    assert.deepEqual(newTestElemFetched.location, loc1);
-    assert.deepEqual(newTestElem.arrayOfStructs, arrayOfStructs);
+    assert.isDefined(newTestElemFetched.asAny.integerProperty1);
+    assert.equal(newTestElemFetched.asAny.integerProperty1, newTestElem.asAny.integerProperty1);
+    assert.isTrue(newTestElemFetched.asAny.arrayOfPoint3d[0].isAlmostEqual(newTestElem.asAny.arrayOfPoint3d[0]));
+    assert.deepEqual(newTestElemFetched.asAny.location, loc1);
+    assert.deepEqual(newTestElem.asAny.arrayOfStructs, arrayOfStructs);
     // TODO: getElement must convert date ISO string to Date object    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc);
-    assert.deepEqual(newTestElemFetched.dtUtc, newTestElem.dtUtc.toJSON());
-    assert.isTrue(newTestElemFetched.p3d.isAlmostEqual(newTestElem.p3d));
+    assert.deepEqual(newTestElemFetched.asAny.dtUtc, newTestElem.asAny.dtUtc.toJSON());
+    assert.isTrue(newTestElemFetched.asAny.p3d.isAlmostEqual(newTestElem.asAny.p3d));
 
     // ----------- updates ----------------
-    const wasp3d = newTestElemFetched.p3d;
+    const wasp3d = newTestElemFetched.asAny.p3d;
     const editElem = newTestElemFetched;
-    editElem.location = loc2;
+    editElem.asAny.location = loc2;
     try {
       imodel4.elements.updateElement(editElem);
     } catch (_err) {
       assert.fail("Element.update failed");
     }
     const afterUpdateElemFetched = imodel4.elements.getElement(editElem.id);
-    assert.deepEqual(afterUpdateElemFetched.location, loc2, " location property should be the new one");
-    assert.deepEqual(afterUpdateElemFetched.id, editElem.id, " the id should not have changed.");
-    assert.deepEqual(afterUpdateElemFetched.p3d, wasp3d, " p3d property should not have changed");
+    assert.deepEqual(afterUpdateElemFetched.asAny.location, loc2, " location property should be the new one");
+    assert.deepEqual(afterUpdateElemFetched.asAny.id, editElem.id, " the id should not have changed.");
+    assert.deepEqual(afterUpdateElemFetched.asAny.p3d, wasp3d, " p3d property should not have changed");
 
     // Make array shorter
-    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 300);
+    assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 300);
 
-    afterUpdateElemFetched.arrayOfInt = [99, 3];
+    afterUpdateElemFetched.asAny.arrayOfInt = [99, 3];
     imodel4.elements.updateElement(afterUpdateElemFetched);
 
     const afterShortenArray = imodel4.elements.getElement(afterUpdateElemFetched.id);
-    assert.equal(afterUpdateElemFetched.arrayOfInt.length, 2);
-    assert.deepEqual(afterShortenArray.arrayOfInt, [99, 3]);
+    assert.equal(afterUpdateElemFetched.asAny.arrayOfInt.length, 2);
+    assert.deepEqual(afterShortenArray.asAny.arrayOfInt, [99, 3]);
 
     // Make array longer
-    afterShortenArray.arrayOfInt = [1, 2, 3];
+    afterShortenArray.asAny.arrayOfInt = [1, 2, 3];
     imodel4.elements.updateElement(afterShortenArray);
     const afterLengthenArray = imodel4.elements.getElement(afterShortenArray.id);
-    assert.equal(afterLengthenArray.arrayOfInt.length, 3);
-    assert.deepEqual(afterLengthenArray.arrayOfInt, [1, 2, 3]);
+    assert.equal(afterLengthenArray.asAny.arrayOfInt.length, 3);
+    assert.deepEqual(afterLengthenArray.asAny.arrayOfInt, [1, 2, 3]);
 
     // ------------ delete -----------------
     const elid = afterUpdateElemFetched.id;
@@ -1394,7 +1394,7 @@ describe("iModel", () => {
     assert.deepEqual(g1byst, g1);
 
     // Update relationship instance property
-    r1.memberPriority = 2;
+    r1.asAny.memberPriority = 2;
     r1.update();
 
     const g11 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
@@ -1465,34 +1465,34 @@ describe("iModel", () => {
       const el2 = testImodel.elements.getElement(id2);
       assert.equal(el2.classFullName, "TestBim:TestPhysicalObject");
       assert.isTrue("relatedElement" in el2);
-      assert.isTrue("id" in el2.relatedElement);
-      assert.deepEqual(el2.relatedElement.id, id1);
-      assert.equal(el2.longProp, 4294967295);
+      assert.isTrue("id" in el2.asAny.relatedElement);
+      assert.deepEqual(el2.asAny.relatedElement.id, id1);
+      assert.equal(el2.asAny.longProp, 4294967295);
 
       // Even though I didn't set it, the platform knows the relationship class and reports it.
-      assert.isTrue("relClassName" in el2.relatedElement);
-      assert.equal(el2.relatedElement.relClassName.replace(".", ":"), trelClassName);
+      assert.isTrue("relClassName" in el2.asAny.relatedElement);
+      assert.equal(el2.asAny.relatedElement.relClassName.replace(".", ":"), trelClassName);
     }
 
     if (true) {
       // Change el2 to point to itself.
       const el2Modified = testImodel.elements.getElement(id2);
-      el2Modified.relatedElement = { id: id2, relClassName: trelClassName };
+      el2Modified.asAny.relatedElement = { id: id2, relClassName: trelClassName };
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 points to itself.
       const el2after: Element = testImodel.elements.getElement(id2);
-      assert.deepEqual(el2after.relatedElement.id, id2);
-      assert.equal(el2after.relatedElement.relClassName.replace(".", ":"), trelClassName);
+      assert.deepEqual(el2after.asAny.relatedElement.id, id2);
+      assert.equal(el2after.asAny.relatedElement.relClassName.replace(".", ":"), trelClassName);
     }
 
     if (true) {
       // Test that we can null out the navigation property
       const el2Modified = testImodel.elements.getElement(id2);
-      el2Modified.relatedElement = null;
+      el2Modified.asAny.relatedElement = null;
       testImodel.elements.updateElement(el2Modified);
       // Test that el2 has no relatedElement property value
       const el2after: Element = testImodel.elements.getElement(id2);
-      assert.isUndefined(el2after.relatedElement);
+      assert.isUndefined(el2after.asAny.relatedElement);
     }
   });
 
@@ -1717,20 +1717,20 @@ describe("iModel", () => {
 
       const element: Element = ifperfimodel.elements.createElement({ classFullName: "DgnPlatformTest:ImodelJsTestElement", iModel: ifperfimodel, model: modelId, id: Id64.invalid, code: Code.createEmpty(), category: defaultCategoryId });
 
-      element.integerProperty1 = i;
-      element.integerProperty2 = i;
-      element.integerProperty3 = i;
-      element.integerProperty4 = i;
-      element.doubleProperty1 = i;
-      element.doubleProperty2 = i;
-      element.doubleProperty3 = i;
-      element.doubleProperty4 = i;
-      element.b = (0 === (i % 100));
+      element.asAny.integerProperty1 = i;
+      element.asAny.integerProperty2 = i;
+      element.asAny.integerProperty3 = i;
+      element.asAny.integerProperty4 = i;
+      element.asAny.doubleProperty1 = i;
+      element.asAny.doubleProperty2 = i;
+      element.asAny.doubleProperty3 = i;
+      element.asAny.doubleProperty4 = i;
+      element.asAny.b = (0 === (i % 100));
       const pt: Point3d = new Point3d(i, 0, 0);
-      element.pointProperty1 = pt;
-      element.pointProperty2 = pt;
-      element.pointProperty3 = pt;
-      element.pointProperty4 = pt;
+      element.asAny.pointProperty1 = pt;
+      element.asAny.pointProperty2 = pt;
+      element.asAny.pointProperty3 = pt;
+      element.asAny.pointProperty4 = pt;
       // const dtUtc: Date = new Date("2013-09-15 12:05:39Z");    // Dates are so expensive to parse in native code that this skews the performance results
       // element.dtUtc = dtUtc;
 

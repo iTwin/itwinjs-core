@@ -25,7 +25,11 @@ export class Entity implements EntityProps {
    */
   public static get className(): string { return "Entity"; }
 
-  [propName: string]: any;
+  /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
+   * This property makes such code slightly less tedious to read and write.
+   * @internal
+   */
+  public get asAny(): any { return this; }
 
   /** The name of the BIS Schema that defines this class */
   public get schemaName(): string { return this._ctor.schema.schemaName; }
@@ -44,7 +48,7 @@ export class Entity implements EntityProps {
     this.iModel = iModel;
     this.id = Id64.fromJSON(props.id);
     // copy all auto-handled properties from input to the object being constructed
-    this.forEachProperty((propName: string, meta: PropertyMetaData) => this[propName] = meta.createProperty(props[propName]));
+    this.forEachProperty((propName: string, meta: PropertyMetaData) => (this as any)[propName] = meta.createProperty(props[propName]));
   }
 
   /** @internal */
@@ -53,7 +57,7 @@ export class Entity implements EntityProps {
     val.classFullName = this.classFullName;
     if (Id64.isValid(this.id))
       val.id = this.id;
-    this.forEachProperty((propName: string) => val[propName] = this[propName]);
+    this.forEachProperty((propName: string) => val[propName] = (this as any)[propName]);
     return val;
   }
 

@@ -271,13 +271,13 @@ export function updateSourceDb(sourceDb: IModelDb): void {
   const physicalObjectId1: Id64String = queryByUserLabel(sourceDb, "PhysicalObject1");
   const sourceUniqueAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect");
   assert.equal(sourceUniqueAspects.length, 1);
-  sourceUniqueAspects[0].commonString += "-Updated";
-  sourceUniqueAspects[0].sourceString += "-Updated";
+  sourceUniqueAspects[0].asAny.commonString += "-Updated";
+  sourceUniqueAspects[0].asAny.sourceString += "-Updated";
   sourceDb.elements.updateAspect(sourceUniqueAspects[0]);
   const sourceMultiAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceMultiAspect");
   assert.equal(sourceMultiAspects.length, 2);
-  sourceMultiAspects[1].commonString += "-Updated";
-  sourceMultiAspects[1].sourceString += "-Updated";
+  sourceMultiAspects[1].asAny.commonString += "-Updated";
+  sourceMultiAspects[1].asAny.sourceString += "-Updated";
   sourceDb.elements.updateAspect(sourceMultiAspects[1]);
   // delete PhysicalObject3
   const physicalObjectId3: Id64String = queryByUserLabel(sourceDb, "PhysicalObject3");
@@ -395,37 +395,37 @@ export function assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb): 
   assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
   assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
   assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
-  assert.equal(physicalElement1.targetString, "S1", "Property should have been remapped by transformElement override");
-  assert.equal(physicalElement1.targetDouble, 1.1, "Property should have been remapped by transformElement override");
-  assert.equal(physicalElement1.commonString, "Common", "Property should have been automatically remapped (same name)");
-  assert.equal(physicalElement1.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
-  assert.notExists(physicalElement1.extraString, "Property should have been dropped during transformation");
+  assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by transformElement override");
+  assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by transformElement override");
+  assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
+  assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+  assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
   // ElementUniqueAspects
   const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
   assert.equal(targetUniqueAspects.length, 1);
-  assert.equal(targetUniqueAspects[0].commonDouble, 1.1);
-  assert.equal(targetUniqueAspects[0].commonString, "Unique");
-  assert.equal(targetUniqueAspects[0].commonLong, physicalObjectId1, "Id should have been remapped");
-  assert.equal(targetUniqueAspects[0].targetDouble, 11.1);
-  assert.equal(targetUniqueAspects[0].targetString, "UniqueAspect");
-  assert.equal(targetUniqueAspects[0].targetLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
+  assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
+  assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
+  assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
+  assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
   // assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].targetGuid)); // WIP: bug with ElementAspects and Guid?
   // ElementTargetAspects
   const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
   assert.equal(targetMultiAspects.length, 2);
-  assert.equal(targetMultiAspects[0].commonDouble, 2.2);
-  assert.equal(targetMultiAspects[0].commonString, "Multi");
-  assert.equal(targetMultiAspects[0].commonLong, physicalObjectId1, "Id should have been remapped");
-  assert.equal(targetMultiAspects[0].targetDouble, 22.2);
-  assert.equal(targetMultiAspects[0].targetString, "MultiAspect");
-  assert.equal(targetMultiAspects[0].targetLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
+  assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
+  assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
+  assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
+  assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
   // assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].targetGuid)); // WIP: bug with ElementAspects and Guid?
-  assert.equal(targetMultiAspects[1].commonDouble, 3.3);
-  assert.equal(targetMultiAspects[1].commonString, "Multi");
-  assert.equal(targetMultiAspects[1].commonLong, physicalObjectId1, "Id should have been remapped");
-  assert.equal(targetMultiAspects[1].targetDouble, 33.3);
-  assert.equal(targetMultiAspects[1].targetString, "MultiAspect");
-  assert.equal(targetMultiAspects[1].targetLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
+  assert.equal(targetMultiAspects[1].asAny.commonString, "Multi");
+  assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+  assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
+  assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
+  assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
   // assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].targetGuid)); // WIP: bug with ElementAspects and Guid?
   // DrawingGraphic
   const drawingGraphicId: Id64String = queryByUserLabel(targetDb, "DrawingGraphic");
@@ -471,26 +471,26 @@ export function assertUpdatesInTargetDb(targetDb: IModelDb): void {
   const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
   const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
   assert.equal(targetUniqueAspects.length, 1);
-  assert.equal(targetUniqueAspects[0].commonDouble, 1.1);
-  assert.equal(targetUniqueAspects[0].commonString, "Unique-Updated");
-  assert.equal(targetUniqueAspects[0].commonLong, physicalObjectId1);
-  assert.equal(targetUniqueAspects[0].targetDouble, 11.1);
-  assert.equal(targetUniqueAspects[0].targetString, "UniqueAspect-Updated");
-  assert.equal(targetUniqueAspects[0].targetLong, physicalObjectId1);
+  assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
+  assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique-Updated");
+  assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1);
+  assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
+  assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect-Updated");
+  assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1);
   const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
   assert.equal(targetMultiAspects.length, 2);
-  assert.equal(targetMultiAspects[0].commonDouble, 2.2);
-  assert.equal(targetMultiAspects[0].commonString, "Multi");
-  assert.equal(targetMultiAspects[0].commonLong, physicalObjectId1);
-  assert.equal(targetMultiAspects[0].targetDouble, 22.2);
-  assert.equal(targetMultiAspects[0].targetString, "MultiAspect");
-  assert.equal(targetMultiAspects[0].targetLong, physicalObjectId1);
-  assert.equal(targetMultiAspects[1].commonDouble, 3.3);
-  assert.equal(targetMultiAspects[1].commonString, "Multi-Updated");
-  assert.equal(targetMultiAspects[1].commonLong, physicalObjectId1);
-  assert.equal(targetMultiAspects[1].targetDouble, 33.3);
-  assert.equal(targetMultiAspects[1].targetString, "MultiAspect-Updated");
-  assert.equal(targetMultiAspects[1].targetLong, physicalObjectId1);
+  assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
+  assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
+  assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1);
+  assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
+  assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
+  assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1);
+  assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
+  assert.equal(targetMultiAspects[1].asAny.commonString, "Multi-Updated");
+  assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1);
+  assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
+  assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect-Updated");
+  assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1);
   // assert PhysicalObject3 was deleted
   assert.equal(Id64.invalid, queryByUserLabel(targetDb, "PhysicalObject3"));
 }
@@ -809,8 +809,8 @@ export class TestIModelTransformer extends IModelTransformer {
       targetElementProps.federationGuid = Guid.createValue();
     }
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
-      targetElementProps.targetString = sourceElement.sourceString;
-      targetElementProps.targetDouble = sourceElement.sourceDouble;
+      targetElementProps.targetString = sourceElement.asAny.sourceString;
+      targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
     }
     return targetElementProps;
   }

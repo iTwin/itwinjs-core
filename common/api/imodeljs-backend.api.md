@@ -1380,8 +1380,8 @@ export class EmbeddedFileLink extends LinkElement {
 export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
-    // (undocumented)
-    [propName: string]: any;
+    // @internal
+    readonly asAny: any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
     readonly classFullName: string;
@@ -1648,6 +1648,7 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
+    abstract readonly placement: Placement2d | Placement3d;
     // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
