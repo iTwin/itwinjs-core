@@ -125,6 +125,8 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     // (undocumented)
     protected _commandHandler?: CommandHandler;
     // (undocumented)
+    static defaultButtonSize: number;
+    // (undocumented)
     execute(): void;
     // (undocumented)
     getDimension(orientation: Orientation): number;
@@ -2745,7 +2747,7 @@ export class ModelessDialogRenderer extends React_2.PureComponent<CommonProps> {
 export class ModelSelectorWidget extends React_2.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
     constructor(props: ModelSelectorWidgetProps);
     // (undocumented)
-    componentDidMount(): void;
+    componentDidMount(): Promise<void>;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -3859,7 +3861,7 @@ export class Toolbar extends React_2.Component<ToolbarProps, State> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: State): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -3879,6 +3881,7 @@ export class ToolbarButtonHelper {
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
+    initialSize?: Size;
     items: ItemList;
     orientation: Orientation;
     panelAlignment?: ToolbarPanelAlignment;
@@ -3907,9 +3910,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     // (undocumented)
     horizontalPanelAlignment: ToolbarPanelAlignment;
     // (undocumented)
-    renderHorizontalToolbar: () => React_2.ReactNode;
+    renderHorizontalToolbar(): React_2.ReactNode;
     // (undocumented)
-    renderVerticalToolbar: () => React_2.ReactNode;
+    renderVerticalToolbar(): React_2.ReactNode;
     // (undocumented)
     verticalDirection: Direction;
     // (undocumented)
