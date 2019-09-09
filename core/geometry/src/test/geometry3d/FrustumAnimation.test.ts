@@ -23,7 +23,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
  */
 function cornersToLineString(corners: Point3d[]): LineString3d {
   return LineString3d.create(
-    [corners[0], corners[1], corners[3], corners[2], corners[0],  // back retangle
+    [corners[0], corners[1], corners[3], corners[2], corners[0],  // back rectangle
     corners[4],         // move to front
     corners[5], corners[1], corners[5], // front edge plus move to same back point and double back to front
     corners[7], corners[3], corners[7],
@@ -32,17 +32,17 @@ function cornersToLineString(corners: Point3d[]): LineString3d {
     corners[0],
     corners[0].interpolate(4.0, corners[4]),   // Show z direction
     corners[0],
-    corners[0].interpolate(1.2, corners[1]), // some asymetric decoration on xy face
-    corners[0].interpolate(0.5, corners[1]), // some asymetric decoration on xy face
+    corners[0].interpolate(1.2, corners[1]), // some asymmetric decoration on xy face
+    corners[0].interpolate(0.5, corners[1]), // some asymmetric decoration on xy face
     corners[0].interpolate(0.5, corners[2])]);
 }
 /**
  * Within the given coordinate frame (usually rigid) make the 8 corners of a frustum
- * @param frame frame with center on back plane, xy plane is back plane, z is dowards eye
+ * @param frame frame with center on back plane, xy plane is back plane, z is towards eye
  * @param ax x axis half width
  * @param ay y axis half width
  * @param az z axis distance to front plane
- * @param fz frustum contraction frmo back to front.
+ * @param fz frustum contraction from back to front.
  */
 function createFrustumPoints(frame: Transform, ax: number, ay: number, az: number, fz: number): Point3d[] {
   return [
@@ -91,7 +91,7 @@ describe("FrustumAnimation", () => {
           -1, 0, 0, 0,
           0, -1, 0, 80,
           0, 0, 1, 0),
-        // translate the back plane, but repoint the eye vector (SKEW)
+        // translate the back plane, but re-aim the eye vector (SKEW)
         Transform.createRowValues(
           1, 0, 1, 0,
           0, 1, 2, 30,
@@ -115,7 +115,7 @@ describe("FrustumAnimation", () => {
       dy += 400.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Geoemtry3d", "FrustumAnimation.General");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.General");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -174,7 +174,7 @@ describe("FrustumAnimation", () => {
       dx += 2000.0;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Geoemtry3d", "FrustumAnimation.PureRotation");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.PureRotation");
     expect(ck.getNumErrors()).equals(0);
   });
 });

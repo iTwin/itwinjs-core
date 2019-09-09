@@ -81,6 +81,57 @@ export class GeometryCoreTestIO {
     }
   }
   /**
+   * Create a marker (or many markers) given center and size  Save in collection, shifted by [dx,dy,dz]
+   * * marker = 0 is a circle
+   * * marker = n (for n <= 10) is an n sided polygon, with an added stroke from the center to the first point.
+   * * marker = -n (negative number) is an lines from the center to the n points of the n-sided polygon
+   * @param collection growing array of geometry
+   * @param center single or multiple center point data
+   * @param a size of the marker
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static createAndCaptureXYMarker(collection: GeometryQuery[], markerId: number, center: Point3d | Point3d[], a: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(center)) {
+      for (const c of center)
+        this.createAndCaptureXYCircle(collection, c, a, dx, dy, dz);
+      return;
+    }
+    const x = center.x + dx;
+    const y = center.y + dy;
+    const z = center.z + dz;
+    const n = Math.abs(markerId);
+    if (markerId > 0 && n <= 10) {
+      const linestring = LineString3d.create();
+      const radiansStep = Math.PI * 2 / n;
+      linestring.addPointXYZ(x, y, z);
+      linestring.addPointXYZ(x + a, y, z);
+      for (let i = 1; i < n; i++) {
+        const radians = i * radiansStep;
+        const u = a * Math.cos(radians);
+        const v = a * Math.sin(radians);
+        linestring.addPointXYZ(x + u, y + v, dz);
+      }
+      linestring.addPointXYZ(x + a, y, z);
+      collection.push(linestring);
+    } else if (markerId < 0 && -10 <= n) {
+      const linestring = LineString3d.create();
+      const radiansStep = Math.PI * 2 / n;
+      linestring.addPointXYZ(x, y, z);
+      for (let i = 0; i < n; i++) {
+        const radians = i * radiansStep;
+        const u = a * Math.cos(radians);
+        const v = a * Math.sin(radians);
+        linestring.addPointXYZ(x + u, y + v, dz);
+        linestring.addPointXYZ(x, y, z);
+      }
+      collection.push(linestring);
+    } else
+      this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+  }
+
+  /**
    * Create edges of a range.
    * @param collection growing array of geometry
    * @param range Range

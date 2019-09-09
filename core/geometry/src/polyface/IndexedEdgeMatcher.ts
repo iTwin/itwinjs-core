@@ -164,7 +164,7 @@ export class IndexedEdgeMatcher {
       if (this.edges[index0].isNullEdge) {
         this.collectSortableEdgeCluster(index0, index0 + clusterLength, nullEdges);
       } else if (clusterLength === 2 && SortableEdge.areDirectedPartners(baseEdge, this.edges[index0 + 1])) {
-        this.collectSortableEdgeCluster(index0, index0 + 1, manifoldPairs);
+        this.collectSortableEdgeCluster(index0, index0 + clusterLength, manifoldPairs);
       } else if (clusterLength === 1) {
         this.collectSortableEdgeCluster(index0, index0 + 1, singletons);
       } else {

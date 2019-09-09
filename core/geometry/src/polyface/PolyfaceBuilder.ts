@@ -5,7 +5,7 @@
 
 /** @module Polyface */
 
-import { IndexedPolyface } from "./Polyface";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
@@ -239,6 +239,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public get options(): StrokeOptions { return this._options; }
   // State data that affects the current construction.
   private _reversed: boolean;
+  /** Ask if this builder is reversing vertex order as loops are received. */
+  public get reversedFlag(): boolean { return this._reversed; }
   /** extract the polyface. */
   public claimPolyface(compress: boolean = true): IndexedPolyface {
     if (compress)
@@ -252,7 +254,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     super();
     this._options = options ? options : StrokeOptions.createForFacets();
     this._polyface = IndexedPolyface.create(this._options.needNormals,
-      this._options.needParams, this._options.needColors);
+      this._options.needParams, this._options.needColors, this._options.needTwoSided);
     this._reversed = false;
   }
   /**
@@ -392,6 +394,21 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       if (transform)
         transform.multiplyPoint3d(q, q);
       return this._polyface.addPoint(q, priorIndex);
+    }
+    return undefined;
+  }
+
+  /**
+   * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.
+   * @returns Returns the point index in the Polyface.
+   * @param index Index of the point in the linestring.
+   */
+  public findOrAddNormalInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined {
+    const q = xyz.getVector3dAtCheckedVectorIndex(index, PolyfaceBuilder._workVectorFindOrAdd);
+    if (q) {
+      if (transform)
+        transform.multiplyVector(q, q);
+      return this._polyface.addNormal(q, priorIndex);
     }
     return undefined;
   }
@@ -1322,6 +1339,67 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     }
     this._polyface.terminateFacet();
+  }
+  /** Add a polygon to the evolving facets.
+   *
+   * * Add points to the polyface
+   * * indices are added (in reverse order if indicated by the builder state)
+   * @param normals array of points.  This may contain extra points not to be used in the polygon
+   * @param numPointsToUse number of points to use.
+   */
+  public addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined, params: GrowableXYArray | undefined, colors: number[] | undefined) {
+    // don't use trailing points that match start point.
+    let numPointsToUse = points.length;
+    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
+      numPointsToUse--;
+    let index = 0;
+    if (!this._reversed) {
+      for (let i = 0; i < numPointsToUse; i++) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        this._polyface.addPointIndex(index);
+
+        if (normals) {
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!;
+          this._polyface.addNormalIndex(index);
+        }
+
+        if (params) {
+          index = this.findOrAddParamInGrowableXYArray(params, i)!;
+          this._polyface.addParamIndex(index);
+        }
+        if (colors) {
+          index = this._polyface.addColor(colors[i]);
+          this._polyface.addColorIndex(index);
+        }
+      }
+    } else {
+      for (let i = numPointsToUse; --i >= 0;) {
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        this._polyface.addPointIndex(index);
+
+        if (normals) {
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!;
+          this._polyface.addNormalIndex(index);
+        }
+
+        if (params) {
+          index = this.findOrAddParamInGrowableXYArray(params, i)!;
+          this._polyface.addParamIndex(index);
+        }
+        if (colors) {
+          index = this._polyface.addColor(colors[i]);
+          this._polyface.addColorIndex(index);
+        }
+      }
+    }
+    this._polyface.terminateFacet();
+  }
+
+  /** Add the current visitor facet to the evolving polyface.
+   * * indices are added (in reverse order if indicated by the builder state)
+   */
+  public addFacetFromVisitor(visitor: PolyfaceVisitor) {
+    this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color);
   }
 
   /** Add a polyface, with optional reverse and transform. */
