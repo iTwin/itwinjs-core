@@ -12,6 +12,7 @@ import { IModelTile } from "./tile/IModelTile";
 import { TileTree, TileTreeSet } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
 import { DisplayStyleState } from "./DisplayStyleState";
+import { GeometricModelState } from "./ModelState";
 
 interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
   modelId: Id64String;
@@ -37,10 +38,15 @@ class ClassifierTreeSupplier implements TileTree.Supplier {
   }
 
   public async createTileTree(id: ClassifierTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
+    await iModel.models.load(id.modelId);
+    const model = iModel.models.getLoaded(id.modelId);
+    if (undefined === model || !(model instanceof GeometricModelState))
+      return undefined;
+
     const idStr = IModelTile.treeIdToString(id.modelId, id);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.PlanarClassifier, false, false);
+    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.PlanarClassifier, false, false, model.geometryGuid);
     props.rootTile.contentId = loader.rootContentId;
     const params = TileTree.paramsFromJSON(props, iModel, true, loader, id.modelId);
     return new TileTree(params);

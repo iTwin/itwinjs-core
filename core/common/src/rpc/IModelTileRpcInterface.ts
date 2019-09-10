@@ -20,7 +20,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.0.0";
+  public static interfaceVersion = "1.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -35,21 +35,16 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   /** @internal */
   public async requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps> { return this.forward(arguments); }
   /** @internal */
-  public async requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean): Promise<Uint8Array> {
-    const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId);
+  public async requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
+    const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId, guid);
     if (undefined === cached && undefined !== isCanceled && isCanceled())
       throw new AbandonedError();
 
     return cached || this.forward(arguments);
   }
 
-  private static async checkCache(tokenProps: IModelTokenProps, treeId: string, contentId: string): Promise<Uint8Array | undefined> {
+  private static async checkCache(tokenProps: IModelTokenProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array | undefined> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const cached = await CloudStorageTileCache.getCache().retrieve({ iModelToken, treeId, contentId });
-    if (cached) {
-      return cached;
-    }
-
-    return undefined;
+    return CloudStorageTileCache.getCache().retrieve({ iModelToken, treeId, contentId, guid });
   }
 }

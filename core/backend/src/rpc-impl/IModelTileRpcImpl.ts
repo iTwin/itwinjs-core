@@ -157,11 +157,13 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return RequestTileTreePropsMemoizer.perform({ requestContext, iModelToken, treeId });
   }
 
-  public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string, _unused?: () => boolean): Promise<Uint8Array> {
+  public async requestTileContent(tokenProps: IModelTokenProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
     const requestContext = ClientRequestContext.current;
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const content = await RequestTileContentMemoizer.perform({ requestContext, iModelToken, treeId, contentId });
-    this.cacheTile(tokenProps, treeId, contentId, content);
+
+    // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
+    this.cacheTile(tokenProps, treeId, contentId, content, guid);
     return content;
   }
 
@@ -177,13 +179,13 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
   }
 
-  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array) {
+  private cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
     if (!IModelHost.usingExternalTileCache) {
       return;
     }
 
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const id: TileContentIdentifier = { iModelToken, treeId, contentId };
+    const id: TileContentIdentifier = { iModelToken, treeId, contentId, guid };
 
     setTimeout(async () => {
       try {

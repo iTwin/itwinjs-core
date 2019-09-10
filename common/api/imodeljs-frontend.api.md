@@ -3493,7 +3493,7 @@ export namespace IModelConnection {
         // (undocumented)
         forEachTreeOwner(func: (owner: TileTree.Owner) => void): void;
         // (undocumented)
-        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
+        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
         // (undocumented)
         getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner;
         // (undocumented)
@@ -7358,7 +7358,7 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract readonly realityTileExpirationTime: BeDuration;
     // @internal (undocumented)
-    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean): Promise<Uint8Array>;
+    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)

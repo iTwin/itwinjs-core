@@ -2598,7 +2598,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
     // @internal (undocumented)
-    requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean): Promise<Uint8Array>;
+    requestTileContent(iModelToken: IModelTokenProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
 }
@@ -5094,6 +5094,8 @@ export interface ThumbnailProps extends ThumbnailFormatProps {
 export interface TileContentIdentifier {
     // (undocumented)
     contentId: string;
+    // (undocumented)
+    guid: string | undefined;
     // (undocumented)
     iModelToken: IModelToken;
     // (undocumented)
