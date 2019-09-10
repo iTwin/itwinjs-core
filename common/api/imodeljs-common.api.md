@@ -6,6 +6,7 @@
 
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
+import { AnyGeometryQuery } from '@bentley/geometry-core';
 import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
 import { AuthStatus } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -1982,19 +1983,76 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 // @public
 export class GeometryStreamIteratorEntry {
     constructor(category?: Id64String);
-    // @beta
+    // @beta @deprecated
     brep?: BRepEntity.DataProps;
-    geometryQuery?: GeometryQuery;
+    // @deprecated
+    geometryQuery?: AnyGeometryQuery;
     geomParams: GeometryParams;
     localRange?: Range3d;
     localToWorld?: Transform;
+    // @deprecated
     partId?: Id64String;
+    // @deprecated
     partToLocal?: Transform;
+    readonly primitive: GeometryStreamIteratorEntry.Primitive;
+    // @deprecated
     textString?: TextString;
+}
+
+// @public (undocumented)
+export namespace GeometryStreamIteratorEntry {
+    export interface BRepPrimitive {
+        // @beta (undocumented)
+        readonly brep: BRepEntity.DataProps;
+        // (undocumented)
+        type: "brep";
+    }
+    export interface GeometryPrimitive {
+        // (undocumented)
+        readonly geometry: AnyGeometryQuery;
+        // (undocumented)
+        type: "geometryQuery";
+    }
+    export interface PartReference {
+        // (undocumented)
+        part: {
+            id: Id64String;
+            readonly toLocal?: Transform;
+        };
+        // (undocumented)
+        type: "partReference";
+    }
+    export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive;
+    export interface TextStringPrimitive {
+        // (undocumented)
+        readonly textString: TextString;
+        // (undocumented)
+        type: "textString";
+    }
 }
 
 // @public
 export type GeometryStreamProps = GeometryStreamEntryProps[];
+
+// @alpha
+export interface GeometrySummaryOptions {
+    geometryVerbosity?: GeometrySummaryVerbosity;
+    includePlacement?: boolean;
+    verboseSymbology?: boolean;
+}
+
+// @alpha
+export interface GeometrySummaryRequestProps {
+    elementIds: Id64Array;
+    options?: GeometrySummaryOptions;
+}
+
+// @alpha
+export enum GeometrySummaryVerbosity {
+    Basic = 10,
+    Detailed = 20,
+    Full = 30
+}
 
 export { GetMetaDataFunction }
 
@@ -2495,6 +2553,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     getElementProps(_iModelToken: IModelTokenProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // @beta (undocumented)
     getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps>;
+    // @alpha (undocumented)
+    getGeometrySummary(_iModelToken: IModelTokenProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // @beta (undocumented)
     getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps>;
     // @beta (undocumented)

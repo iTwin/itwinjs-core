@@ -5,8 +5,21 @@
 /** @module Geometry */
 
 import {
-  Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle,
-  GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps, IModelJson as GeomJson,
+  Angle,
+  AnyGeometryQuery,
+  GeometryQuery,
+  IModelJson as GeomJson,
+  LowAndHighXYZ,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range3d,
+  Transform,
+  TransformProps,
+  Vector3d,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
 } from "@bentley/geometry-core";
 
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
@@ -330,14 +343,7 @@ export class GeometryStreamBuilder {
   }
 }
 
-/** Holds current state information for [[GeometryStreamIterator]].
- * Each entry represents exactly one geometry primitive in the stream. One of the following will be defined based on the type of primitive; the rest will be undefined:
- *
- *  - `partToLocal` and `partId` describing a [GeometryPart]($backend) reference.
- *  - `textString`
- *  - `brep`
- *  - `textString`
- *
+/** Holds current state information for [[GeometryStreamIterator]]. Each entry represents exactly one geometry primitive in the stream.
  * @public
  */
 export class GeometryStreamIteratorEntry {
@@ -347,22 +353,79 @@ export class GeometryStreamIteratorEntry {
   public localToWorld?: Transform;
   /** Optional stored local range for the current geometric entry */
   public localRange?: Range3d;
-  /** Optional [[GeometryPart]] instance transform when current entry is for a [[GeometryPart]] */
+  /** Optional [[GeometryPart]] instance transform when current entry is for a [[GeometryPart]].
+   * @deprecated Use [[primitive]] instead.
+   */
   public partToLocal?: Transform;
-  /** Current iterator entry is a [[GeometryPart]] instance when partId is not undefined */
+  /** Current iterator entry is a [[GeometryPart]] instance when partId is not undefined.
+   * @deprecated Use [[primitive]] instead.
+   */
   public partId?: Id64String;
-  /** Current iterator entry is a [[GeometryQuery]] when geometryQuery is not undefined */
-  public geometryQuery?: GeometryQuery;
-  /** Current iterator entry is a [[TextString]] when textString is not undefined */
+  /** Current iterator entry is a [[GeometryQuery]] when geometryQuery is not undefined.
+   * @deprecated Use [[primitive]] instead.
+   */
+  public geometryQuery?: AnyGeometryQuery;
+  /** Current iterator entry is a [[TextString]] when textString is not undefined.
+   * @deprecated Use [[primitive]] instead.
+   */
   public textString?: TextString;
-  /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined
+  /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined.
+   * @deprecated Use [[primitive]] instead.
    * @beta
    */
   public brep?: BRepEntity.DataProps;
 
+  /** Returns the geometric primitive represented by this entry.
+   * @public
+   */
+  public get primitive(): GeometryStreamIteratorEntry.Primitive {
+    if (undefined !== this.geometryQuery)
+      return { type: "geometryQuery", geometry: this.geometryQuery };
+    else if (undefined !== this.textString)
+      return { type: "textString", textString: this.textString };
+    else if (undefined !== this.brep)
+      return { type: "brep", brep: this.brep };
+    else
+      return { type: "partReference", part: { id: this.partId!, toLocal: this.partToLocal } };
+  }
+
   public constructor(category?: Id64String) {
     this.geomParams = new GeometryParams(category !== undefined ? category : Id64.invalid);
   }
+}
+
+/** @public */
+export namespace GeometryStreamIteratorEntry {
+  /** Represents a text string within a GeometryStream. */
+  export interface TextStringPrimitive {
+    type: "textString";
+    readonly textString: TextString;
+  }
+
+  /** Represents a reference to a GeometryPart within a GeometryStream. */
+  export interface PartReference {
+    type: "partReference";
+    part: {
+      id: Id64String;
+      readonly toLocal?: Transform;
+    };
+  }
+
+  /** Represents a BRep within a GeometryStream. */
+  export interface BRepPrimitive {
+    type: "brep";
+    /** @beta */
+    readonly brep: BRepEntity.DataProps;
+  }
+
+  /** Represents one of a variety of GeometryQuery objects within a GeometryStream. */
+  export interface GeometryPrimitive {
+    type: "geometryQuery";
+    readonly geometry: AnyGeometryQuery;
+  }
+
+  /** Union of all possible geometric primitive types that may appear within a GeometryStream. */
+  export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive;
 }
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].

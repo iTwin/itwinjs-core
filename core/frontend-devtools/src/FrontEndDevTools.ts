@@ -19,10 +19,8 @@ import {
   EmphasizeSelectedElementsTool,
   IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import {
-  ChangeViewFlagsTool,
-  ToggleSkyboxTool,
-} from "./tools/ChangeViewFlagsTool";
+import { InspectElementTool } from "./tools/InspectElementTool";
+import { ChangeViewFlagsTool, ToggleSkyboxTool } from "./tools/ChangeViewFlagsTool";
 import {
   SaveViewTool,
   ApplyViewTool,
@@ -57,6 +55,7 @@ export class FrontendDevTools {
 
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
 
+    InspectElementTool.register(i18n);
     ReportWebGLCompatibilityTool.register(i18n);
 
     LoseWebGLContextTool.register(i18n);

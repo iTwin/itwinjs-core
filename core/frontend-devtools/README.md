@@ -78,3 +78,10 @@ The following key-ins are delivered with this package. Each begins with the pref
   * "all": Display all geometry.
 * `fdt toggle readpixels` - Toggles "read pixels" mode on the active viewport. In this mode, geometry is rendered to the screen as if it was being rendered off-screen for element locate purposes.
 * `fdt toggle logz` - Toggles the use of a logarithmic depth buffer for the active viewport.
+* `fdt inspect element` - Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
+  * "id=elementId" where "elementId" is a hexadecimal element Id such as `0x12cb`;
+  * "symbology=0|1" where `1` indicates detailed symbology information should be included in the output;
+  * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
+  * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
+  * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
+  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
