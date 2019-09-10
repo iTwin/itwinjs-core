@@ -980,6 +980,9 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
+// @internal
+export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean;
+
 // @beta
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)

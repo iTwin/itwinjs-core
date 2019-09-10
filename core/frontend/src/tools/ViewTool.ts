@@ -11,7 +11,7 @@ import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
 import { GraphicType } from "../rendering";
 import { DecorateContext } from "../ViewContext";
-import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator } from "../Viewport";
+import { CoordSystem, ScreenViewport, Viewport, ViewRect, Animator, areViewportsCompatible } from "../Viewport";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
 import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputSource, InteractiveTool, ToolSettings } from "./Tool";
 import { AccuDraw } from "../AccuDraw";
@@ -1872,7 +1872,7 @@ export class WindowAreaTool extends ViewTool {
       return EventHandled.Yes;
     } else if (undefined === this.viewport) {
       this.viewport = ev.viewport;
-    } else if (this.viewport.view.iModel !== ev.viewport.view.iModel) {
+    } else if (!areViewportsCompatible(ev.viewport, this.viewport)) {
       if (this._haveFirstPoint)
         return EventHandled.Yes;
       this.viewport = ev.viewport;
@@ -1942,7 +1942,7 @@ export class WindowAreaTool extends ViewTool {
   }
 
   public decorate(context: DecorateContext): void {
-    if (undefined === this.viewport || this.viewport.view.iModel !== context.viewport.view.iModel)
+    if (undefined === this.viewport || !areViewportsCompatible(context.viewport, this.viewport))
       return;
     const vp = this.viewport;
     const color = vp.getContrastToBackgroundColor();
@@ -1974,8 +1974,8 @@ export class WindowAreaTool extends ViewTool {
       return;
     }
 
-    if (undefined === this._lastPtView)
-      return;
+    if (undefined === this._lastPtView || context.viewport !== IModelApp.toolAdmin.cursorView)
+      return; // Full screen cross-hair only displays in cursor view...
 
     const cursorPt = this._lastPtView.clone(); cursorPt.x = Math.floor(cursorPt.x) + 0.5; cursorPt.y = Math.floor(cursorPt.y) + 0.5;
     const viewRect = vp.viewRect;
@@ -1996,7 +1996,7 @@ export class WindowAreaTool extends ViewTool {
   private doManipulation(ev: BeButtonEvent, inDynamics: boolean): void {
     this._secondPtWorld.setFrom(ev.point);
     if (inDynamics) {
-      if (undefined !== this.viewport && undefined !== ev.viewport && this.viewport.view.iModel !== ev.viewport.view.iModel) {
+      if (undefined !== this.viewport && undefined !== ev.viewport && !areViewportsCompatible(ev.viewport, this.viewport)) {
         this._lastPtView = undefined;
         return;
       }

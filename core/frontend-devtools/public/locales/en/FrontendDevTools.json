@@ -45,6 +45,9 @@
     "ToggleFrustumSnapshot": {
       "keyin": "fdt frustum snapshot"
     },
+    "ToggleSelectedViewFrustum": {
+      "keyin": "fdt frustum selected"
+    },
     "FreezeScene": {
       "keyin": "fdt freeze scene"
     },

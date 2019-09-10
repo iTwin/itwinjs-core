@@ -3206,3 +3206,20 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
 
   outP.setFrom(temp.plus(linePt));
 }
+
+/** Two views are considered compatible if they are from the same imodel, are both spatial views, or share a model in common.
+ * Useful for implementing tools and decorators when multiple views are open.
+ * @returns true if views are compatible.
+ * @internal
+ */
+export function areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean {
+  if (vp === targetVp)
+    return true;
+  if (vp.view.iModel !== targetVp.view.iModel)
+    return false;
+  if (vp.view.isSpatialView() && targetVp.view.isSpatialView())
+    return true;
+  let allowView = false;
+  vp.view.forEachModel((model) => { if (!allowView && targetVp.view.viewsModel(model.id)) allowView = true; });
+  return allowView; // Accept if this view shares a model in common with target.
+}

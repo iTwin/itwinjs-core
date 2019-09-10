@@ -26,7 +26,10 @@ import {
   ApplyViewTool,
 } from "./tools/SavedViews";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
-import { ToggleFrustumSnapshotTool } from "./tools/FrustumDecoration";
+import {
+  ToggleFrustumSnapshotTool,
+  ToggleSelectedViewFrustumTool,
+} from "./tools/FrustumDecoration";
 import {
   FreezeSceneTool,
   SetAspectRatioSkewTool,
@@ -77,6 +80,7 @@ export class FrontendDevTools {
 
     ToggleProjectExtentsTool.register(i18n);
     ToggleFrustumSnapshotTool.register(i18n);
+    ToggleSelectedViewFrustumTool.register(i18n);
 
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);

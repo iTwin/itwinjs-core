@@ -1057,7 +1057,7 @@ export abstract class ViewState3d extends ViewState {
     const eyePoint = viewOrg.plus(frustOrgToEye);
 
     const backDistance = frustOrgToEye.dotProduct(zDir);         // distance from eye to back plane of frustum
-    const focusDistance = backDistance - (viewDelta.z / 2.0);
+    const focusDistance = this.camera.isFocusValid ? this.camera.focusDist : (backDistance - (viewDelta.z / 2.0));
     const focalFraction = focusDistance / backDistance;           // ratio of focus plane distance to back plane distance
 
     viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance);    // now project that point onto back plane
