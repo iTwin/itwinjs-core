@@ -313,6 +313,7 @@ describe("IModelWriteTest (#integration)", () => {
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
+    await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
 
@@ -331,6 +332,77 @@ describe("IModelWriteTest (#integration)", () => {
     const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
+  });
+
+  it("should handle undo/redo (#integration)", async () => {
+    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    let timer = new Timer("delete iModels");
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "CodesUndoRedoPushTest";
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+    }
+    timer.end();
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    timer = new Timer("create iModel");
+    const rwIModel: IModelDb = await IModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+    timer.end();
+
+    // create and insert a new model with code1
+    const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code1, true);
+
+    assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
+
+    //    ... create a local txn with that change
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    rwIModel.saveChanges("inserted newPhysicalModel");
+
+    // Reverse that local txn
+    rwIModel.txns.reverseSingleTxn();
+
+    try {
+      //  The model that I just created with code1 should no longer be there.
+      const theNewModel = rwIModel.elements.getElement(code1); // throws if element is not found
+      assert.isTrue(theNewModel === undefined); // really should not be here.
+      assert.fail(); // should not be here.
+    } catch (_err) {
+      // this is what I expect
+    }
+
+    // Create and insert a model with code2
+    const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code2, true);
+
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    rwIModel.saveChanges("inserted generic objects");
+
+    // The iModel should have a model with code1 and not code2
+    assert.isTrue(rwIModel.elements.getElement(code2) !== undefined); // throws if element is not found
+
+    timer = new Timer("push changes");
+
+    // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    await rwIModel.pushChanges(adminRequestContext);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
+
+    timer.end();
+
+    // The iModel should have code1 marked as used and not code2
+    timer = new Timer("querying codes");
+    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    timer.end();
+    assert.isTrue(codes.find((code) => (code.value === "newPhysicalModel2" && code.state === CodeState.Used)) !== undefined);
+    assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
   });
 
   it("should push changes with code conflicts (#integration)", async () => {

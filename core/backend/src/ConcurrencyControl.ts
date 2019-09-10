@@ -33,7 +33,7 @@ export class ConcurrencyControl {
   /** @internal */
   public onSaveChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Call iModelDb.concurrencyControl.request before saving changes", Logger.logError, loggerCategory);
   }
 
   /** @internal */
@@ -42,11 +42,14 @@ export class ConcurrencyControl {
   /** @internal */
   public onMergeChanges() {
     if (this.hasPendingRequests)
-      throw new IModelError(IModelStatus.TransactionActive, "Error - hasPendingRequests", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.TransactionActive, "Call iModelDb.concurrencyControl.request and iModelDb.saveChanges before applying changesets", Logger.logError, loggerCategory);
   }
 
   /** @internal */
   public onMergedChanges() { this.applyTransactionOptions(); }
+
+  /** @internal */
+  public onUndoRedo() { this.applyTransactionOptions(); }
 
   /** @internal */
   private applyTransactionOptions() {

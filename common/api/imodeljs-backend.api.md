@@ -672,6 +672,8 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     onSavedChanges(): void;
     // @internal (undocumented)
+    onUndoRedo(): void;
+    // @internal (undocumented)
     readonly pendingRequest: ConcurrencyControl.Request;
     // (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
