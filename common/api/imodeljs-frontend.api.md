@@ -3807,6 +3807,8 @@ export abstract class MapTileLoaderBase extends TileLoader {
     // (undocumented)
     protected _iModel: IModelConnection;
     // (undocumented)
+    readonly isContentUnbounded: boolean;
+    // (undocumented)
     abstract loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     protected _mapTilingScheme: MapTilingScheme;
@@ -7421,6 +7423,8 @@ export abstract class TileLoader {
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
+    // (undocumented)
+    readonly isContentUnbounded: boolean;
     // (undocumented)
     protected readonly _loadEdges: boolean;
     // (undocumented)

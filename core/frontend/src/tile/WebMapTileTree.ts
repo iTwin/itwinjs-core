@@ -175,6 +175,7 @@ export abstract class MapTileLoaderBase extends TileLoader {
   protected _featureTable: PackedFeatureTable;
   public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
+  public get isContentUnbounded(): boolean { return true; }
 
   constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
     super();

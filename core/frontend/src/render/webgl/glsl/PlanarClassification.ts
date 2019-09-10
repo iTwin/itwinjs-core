@@ -10,6 +10,8 @@ import { addUInt32s } from "./Common";
 import { addModelMatrix } from "./Vertex";
 
 const applyPlanarClassificationColor = `
+  const float dimScale = .7;
+  const float colorMix = .65;
   if (s_pClassColorParams.x > 4.0) {
     if (v_pClassPos.x < 0.0 || v_pClassPos.x > 1.0 || v_pClassPos.y < 0.0 || v_pClassPos.y > 1.0)
       discard;
@@ -18,24 +20,24 @@ const applyPlanarClassificationColor = `
   vec4 colorTexel = TEXTURE(s_pClassSampler, vec2(v_pClassPos.x, v_pClassPos.y / 2.0));
   if (colorTexel.a < .5) {
     if (s_pClassColorParams.y == 0.0)
-      return vec4(0);                          // Unclassified, Off.
+      return vec4(0);                             // Unclassified, Off.
    else if (s_pClassColorParams.y == 1.0)
-      return baseColor;                        // Unclassified, On.
+      return baseColor;                           // Unclassified, On.
     else
-      return baseColor * .6;                   // Unclassified, Dimmed.
+      return baseColor * dimScale;                // Unclassified, Dimmed.
    } else {
      if (s_pClassColorParams.x == 0.0)
-       return vec4(0);                        // Classified, off.
+       return vec4(0);                           // Classified, off.
        else if (s_pClassColorParams.x == 1.0)
-       return baseColor;
+       return baseColor;                          // Classified, on.
       else if (s_pClassColorParams.x == 2.0)
-        return baseColor * .6;                // Classified, dimmed.
+        return baseColor * .8;                    // Classified, dimmed.
       else if (s_pClassColorParams.x == 3.0)
         return baseColor * vec4(.8, .8, 1.0, 1.0);  // Classified, hilite.  TBD - make color configurable.
       else if (s_pClassColorParams.x == 4.0) {
         if (colorTexel.r == 0.0 && colorTexel.g == 0.0 && colorTexel.b == 0.0)
           discard;                                  // Support clip masking via black classifier.
-        return baseColor * colorTexel;        // Classified element color.
+        return (1.0 - colorMix) * baseColor + colorMix * baseColor * colorTexel;        // Classified element color.
       }
     // TBD -- mode 1.  Return baseColor unless flash or hilite
    }
