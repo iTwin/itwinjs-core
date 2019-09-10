@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ensure presentation-components.css is loaded",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "grigas.petraitis@bentley.com"
+}

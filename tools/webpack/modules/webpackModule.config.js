@@ -87,6 +87,8 @@ function addExternalCssFiles(externalVersions, styleSheets) {
     externalVersions["ui-ninezone.css"] = externalVersions["ui-ninezone"];
   if (externalVersions["ui-framework"])
     externalVersions["ui-framework.css"] = externalVersions["ui-framework"];
+  if (externalVersions["presentation-components"])
+    externalVersions["presentation-components.css"] = externalVersions["presentation-components"];
   if (styleSheets && externalVersions["main"])
     externalVersions["main.css"] = externalVersions["main"];
 }
@@ -322,7 +324,7 @@ function getConfig(env) {
       template: env.htmltemplate,
       filename: "./index.html",
       minify: "false",
-        chunks: [], // we don't want it to add any .js to the template, those are already in there.
+      chunks: [], // we don't want it to add any .js to the template, those are already in there.
     }));
   }
 
@@ -360,103 +362,103 @@ function getConfig(env) {
   // if using style sheets (import "xxx.scss" lines in .ts or .tsx files), then we need the sass-loader
   if (env.stylesheets) {
     cssRules = [{
-        test: /\.scss$/,
-        use: {
-          loader: require.resolve("fast-sass-loader"),
-          options: {
-            includePaths: [path.resolve(contextDirectory, "node_modules")],
-            outputStyle: "compressed",
-          },
+      test: /\.scss$/,
+      use: {
+        loader: require.resolve("fast-sass-loader"),
+        options: {
+          includePaths: [path.resolve(contextDirectory, "node_modules")],
+          outputStyle: "compressed",
         },
-        enforce: "pre",
       },
-      {
-        // "oneOf" will traverse all following loaders until one will
-        // match the requirements. When no loader matches it will fall
-        // back to the "file" loader at the end of the loader list.
-        oneOf: [
-          // "url" loader works just like "file" loader but it also embeds
-          // assets smaller than specified size as data URLs to avoid requests.
-          // "style" loader turns CSS into JS modules that inject <style> tags.
-          // In development "style" loader enables hot editing of CSS.
-          {
-            test: /\.s?css$/,
-            use: [
-              finalCssLoader,
-              {
-                loader: require.resolve("css-loader"),
-                options: {
-                  importLoaders: 1,
-                },
-              },
-              {
-                loader: require.resolve("postcss-loader"),
-                options: {
-                  // Necessary for external CSS imports to work
-                  // https://github.com/facebook/create-react-app/issues/2677
-                  ident: "postcss",
-                  plugins: () => [
-                    require("postcss-flexbugs-fixes"),
-                    autoprefixer({
-                      browsers: [
-                        ">1%",
-                        "last 4 versions",
-                        "Firefox ESR",
-                        "not ie < 9", // React doesn't support IE8 anyway
-                      ],
-                      flexbox: "no-2009",
-                    }),
-                  ],
-                },
-              },
-            ]
-          },
-          {
-            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-            use: {
-              loader: require.resolve("url-loader"),
+      enforce: "pre",
+    },
+    {
+      // "oneOf" will traverse all following loaders until one will
+      // match the requirements. When no loader matches it will fall
+      // back to the "file" loader at the end of the loader list.
+      oneOf: [
+        // "url" loader works just like "file" loader but it also embeds
+        // assets smaller than specified size as data URLs to avoid requests.
+        // "style" loader turns CSS into JS modules that inject <style> tags.
+        // In development "style" loader enables hot editing of CSS.
+        {
+          test: /\.s?css$/,
+          use: [
+            finalCssLoader,
+            {
+              loader: require.resolve("css-loader"),
               options: {
-                limit: 10000,
-                name: "static/media/[name].[hash:8].[ext]",
+                importLoaders: 1,
               },
-            }
-          },
-          {
-            test: /\.svg$/,
-            issuer: {
-              exclude: /\.css$/
             },
-            use: {
-              loader: require.resolve("svg-sprite-loader"),
+            {
+              loader: require.resolve("postcss-loader"),
               options: {
-                // include file hash to ensure uniqueness even if same svg name
-                symbolId: "[name]-[hash:6]",
-                runtimeCompat: true,
-                spriteFilename: "sprite-[hash:6].svg"
+                // Necessary for external CSS imports to work
+                // https://github.com/facebook/create-react-app/issues/2677
+                ident: "postcss",
+                plugins: () => [
+                  require("postcss-flexbugs-fixes"),
+                  autoprefixer({
+                    browsers: [
+                      ">1%",
+                      "last 4 versions",
+                      "Firefox ESR",
+                      "not ie < 9", // React doesn't support IE8 anyway
+                    ],
+                    flexbox: "no-2009",
+                  }),
+                ],
               },
-            }
+            },
+          ]
+        },
+        {
+          test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+          use: {
+            loader: require.resolve("url-loader"),
+            options: {
+              limit: 10000,
+              name: "static/media/[name].[hash:8].[ext]",
+            },
+          }
+        },
+        {
+          test: /\.svg$/,
+          issuer: {
+            exclude: /\.css$/
           },
-          // "file" loader makes sure assets end up in the `lib` folder.
-          // When you `import` an asset, you get its filename.
-          // This loader doesn't use a "test" so it will catch all modules
-          // that fall through the other loaders.
-          {
-            // Exclude `js` files to keep "css" loader working as it injects
-            // its runtime that would otherwise be processed through "file" loader.
-            // Also exclude `html` and `json` extensions so they get processed
-            // by webpacks internal loaders.
-            exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
-            use: {
-              loader: require.resolve("file-loader"),
-              options: {
-                name: "static/media/[name].[hash:8].[ext]",
-              },
-            }
-          },
-          // ** STOP ** Are you adding a new loader?
-          // Make sure to add the new loader(s) before the "file" loader.
-        ],
-      },
+          use: {
+            loader: require.resolve("svg-sprite-loader"),
+            options: {
+              // include file hash to ensure uniqueness even if same svg name
+              symbolId: "[name]-[hash:6]",
+              runtimeCompat: true,
+              spriteFilename: "sprite-[hash:6].svg"
+            },
+          }
+        },
+        // "file" loader makes sure assets end up in the `lib` folder.
+        // When you `import` an asset, you get its filename.
+        // This loader doesn't use a "test" so it will catch all modules
+        // that fall through the other loaders.
+        {
+          // Exclude `js` files to keep "css" loader working as it injects
+          // its runtime that would otherwise be processed through "file" loader.
+          // Also exclude `html` and `json` extensions so they get processed
+          // by webpacks internal loaders.
+          exclude: [/\.(js|jsx|mjs)$/, /\.html$/, /\.json$/],
+          use: {
+            loader: require.resolve("file-loader"),
+            options: {
+              name: "static/media/[name].[hash:8].[ext]",
+            },
+          }
+        },
+        // ** STOP ** Are you adding a new loader?
+        // Make sure to add the new loader(s) before the "file" loader.
+      ],
+    },
     ];
 
     webpackLib.module.rules = webpackLib.module.rules.concat(cssRules);
