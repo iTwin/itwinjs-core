@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Array, Id64Set, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DefinitionPartition, Element, GeometricElement, InformationPartitionElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
-import { IModelHost, KnownLocations } from "./IModelHost";
+import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { IModelTransformContext } from "./IModelTransformContext";
 import { Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -24,13 +24,14 @@ const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
  */
 export class IModelTransformer {
   /** The read-only source iModel. */
-  protected _sourceDb: IModelDb;
+  public readonly sourceDb: IModelDb;
   /** The read/write target iModel. */
-  protected _targetDb: IModelDb;
+  public readonly targetDb: IModelDb;
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
-  protected _targetScopeElementId: Id64String = IModel.rootSubjectId;
-  /** The native import context */
-  private _importContext: IModelJsNative.ImportContext;
+  public readonly targetScopeElementId: Id64String = IModel.rootSubjectId;
+  /** The IModelTransformContext for this IModelTransformer. */
+  public readonly context: IModelTransformContext;
+
   /** The set of CodeSpecs to exclude from transformation to the target iModel. */
   protected _excludedCodeSpecNames = new Set<string>();
   /** The set of specific Elements to exclude from transformation to the target iModel. */
@@ -52,51 +53,17 @@ export class IModelTransformer {
    * @param targetScopeElementId The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances.
    */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String) {
-    this._sourceDb = sourceDb;
-    this._targetDb = targetDb;
-    if (undefined !== targetScopeElementId) this._targetScopeElementId = targetScopeElementId;
-    this._importContext = new IModelHost.platform.ImportContext(this._sourceDb.nativeDb, this._targetDb.nativeDb);
+    this.sourceDb = sourceDb;
+    this.targetDb = targetDb;
+    this.context = new IModelTransformContext(sourceDb, targetDb);
+    if (undefined !== targetScopeElementId) this.targetScopeElementId = targetScopeElementId;
     this.excludeElementAspectClass(ExternalSourceAspect.classFullName);
   }
 
-  /** Dispose any native resources associated with this IModelImporter. */
+  /** Dispose any native resources associated with this IModelTransformer. */
   public dispose(): void {
     Logger.logTrace(loggerCategory, "dispose()");
-    this._importContext.dispose();
-  }
-
-  /** Add a rule that remaps the specified source CodeSpec to the specified target CodeSpec.
-   * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.
-   * @param targetCodeSpecName The name of the CodeSpec from the target iModel.
-   */
-  public remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void {
-    const sourceCodeSpec: CodeSpec = this._sourceDb.codeSpecs.getByName(sourceCodeSpecName);
-    const targetCodeSpec: CodeSpec = this._targetDb.codeSpecs.getByName(targetCodeSpecName);
-    this._importContext.addCodeSpecId(sourceCodeSpec.id, targetCodeSpec.id);
-  }
-
-  /** Add a rule that remaps the specified source class to the specified target class. */
-  public remapElementClass(sourceClassFullName: string, targetClassFullName: string): void {
-    this._importContext.addClass(sourceClassFullName, targetClassFullName);
-  }
-
-  /** Add a rule that remaps the specified source Element to the specified target Element. */
-  public remapElement(sourceId: Id64String, targetId: Id64String): void {
-    this._importContext.addElementId(sourceId, targetId);
-  }
-
-  /** Look up a target CodeSpecId from the source CodeSpecId.
-   * @returns the target CodeSpecId
-   */
-  public findTargetCodeSpecId(sourceId: Id64String): Id64String {
-    return this._importContext.findCodeSpecId(sourceId);
-  }
-
-  /** Look up a target ElementId from the source ElementId.
-   * @returns the target ElementId
-   */
-  public findTargetElementId(sourceElementId: Id64String): Id64String {
-    return this._importContext.findElementId(sourceElementId);
+    this.context.dispose();
   }
 
   /** Add a rule to exclude a CodeSpec */
@@ -113,7 +80,7 @@ export class IModelTransformer {
 
   /** Add a rule to exclude a Subject based on its path */
   public excludeSubject(subjectPath: string): void {
-    const subjectId: Id64String | undefined = IModelTransformer.resolveSubjectId(this._sourceDb, subjectPath);
+    const subjectId: Id64String | undefined = IModelTransformer.resolveSubjectId(this.sourceDb, subjectPath);
     if (subjectId && Id64.isValidId64(subjectId)) {
       this._excludedElementIds.add(subjectId);
     }
@@ -126,17 +93,17 @@ export class IModelTransformer {
 
   /** Add a rule to exclude all Elements of a specified class. */
   public excludeElementClass(sourceClassFullName: string): void {
-    this._excludedElementClasses.add(this._sourceDb.getJsClass<typeof Element>(sourceClassFullName));
+    this._excludedElementClasses.add(this.sourceDb.getJsClass<typeof Element>(sourceClassFullName));
   }
 
   /** Add a rule to exclude all ElementAspects of a specified class. */
   public excludeElementAspectClass(sourceClassFullName: string): void {
-    this._excludedElementAspectClasses.add(this._sourceDb.getJsClass<typeof ElementAspect>(sourceClassFullName));
+    this._excludedElementAspectClasses.add(this.sourceDb.getJsClass<typeof ElementAspect>(sourceClassFullName));
   }
 
   /** Add a rule to exclude all Relationships of a specified class. */
   public excludeRelationshipClass(sourceClassFullName: string): void {
-    this._excludedRelationshipClasses.add(this._sourceDb.getJsClass<typeof Relationship>(sourceClassFullName));
+    this._excludedRelationshipClasses.add(this.sourceDb.getJsClass<typeof Relationship>(sourceClassFullName));
   }
 
   /** Resolve the Subject's ElementId from the specified subjectPath. */
@@ -185,8 +152,8 @@ export class IModelTransformer {
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
   private forEachExternalSourceAspect(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     const sql = `SELECT aspect.Identifier,aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
-    this._targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
-      statement.bindId("scopeId", this._targetScopeElementId);
+    this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("scopeId", this.targetScopeElementId);
       statement.bindString("kind", Element.className);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceElementId: Id64String = statement.getValue(0).getString(); // ExternalSourceAspect.Identifier is of type string
@@ -199,7 +166,7 @@ export class IModelTransformer {
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel. */
   public initFromExternalSourceAspects(): void {
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
-      this._importContext.addElementId(sourceElementId, targetElementId);
+      this.context.remapElement(sourceElementId, targetElementId);
     });
   }
 
@@ -208,7 +175,7 @@ export class IModelTransformer {
     const targetElementIds: Id64String[] = [];
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
       try {
-        this._sourceDb.elements.getElementProps(sourceElementId);
+        this.sourceDb.elements.getElementProps(sourceElementId);
       } catch (error) {
         if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
           targetElementIds.push(targetElementId);
@@ -216,7 +183,7 @@ export class IModelTransformer {
       }
     });
     targetElementIds.forEach((targetElementId: Id64String) => {
-      const targetElement: Element = this._targetDb.elements.getElement(targetElementId);
+      const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
       if (this.shouldDeleteElement(targetElement)) {
         this.deleteElement(targetElement);
         this.onElementDeleted(targetElement);
@@ -385,7 +352,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom transform behavior.
    */
   protected transformElement(sourceElement: Element): ElementProps {
-    const targetElementProps: ElementProps = this._importContext.cloneElement(sourceElement.id);
+    const targetElementProps: ElementProps = this.context.cloneElement(sourceElement.id);
     targetElementProps.federationGuid = sourceElement.federationGuid; // cloneElement strips off federationGuid
     return targetElementProps;
   }
@@ -396,7 +363,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom insert behavior.
    */
   protected insertElement(targetElementProps: ElementProps): Id64String {
-    const targetElementId: Id64String = this._targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
+    const targetElementId: Id64String = this.targetDb.elements.insertElement(targetElementProps); // insert from TypeScript so TypeScript handlers are called
     Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatElementForLogger(targetElementProps)}`);
     return targetElementId;
   }
@@ -409,7 +376,7 @@ export class IModelTransformer {
     if (!targetElementProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
     }
-    this._targetDb.elements.updateElement(targetElementProps);
+    this.targetDb.elements.updateElement(targetElementProps);
     Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatElementForLogger(targetElementProps)}`);
   }
 
@@ -418,7 +385,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom delete behavior.
    */
   protected deleteElement(targetElement: Element): void {
-    this._targetDb.elements.deleteElement(targetElement.id);
+    this.targetDb.elements.deleteElement(targetElement.id);
     Logger.logInfo(loggerCategory, `[Target] Deleted element ${this.formatElementForLogger(targetElement)}`);
   }
 
@@ -437,10 +404,10 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom change detection behavior.
    */
   protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean {
-    const aspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
+    const aspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
     for (const aspect of aspects) {
       const sourceAspect = aspect as ExternalSourceAspect;
-      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === this._targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
+      if ((sourceAspect.identifier === sourceElement.id) && (sourceAspect.scope.id === this.targetScopeElementId) && (sourceAspect.kind === ExternalSourceAspect.Kind.Element)) {
         const lastModifiedTime: string = sourceElement.iModel.elements.queryLastModifiedTime(sourceElement.id);
         return (lastModifiedTime !== sourceAspect.version);
       }
@@ -454,7 +421,7 @@ export class IModelTransformer {
   public findMissingPredecessors(sourceElement: Element): Id64Set {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((elementId: Id64String) => {
-      const targetElementId: Id64String = this.findTargetElementId(elementId);
+      const targetElementId: Id64String = this.context.findTargetElementId(elementId);
       if (Id64.isValidId64(targetElementId)) {
         predecessorIds.delete(elementId);
       }
@@ -469,13 +436,13 @@ export class IModelTransformer {
     if (sourceElementId === IModel.rootSubjectId) {
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
     }
-    const sourceElement: Element = this._sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
+    const sourceElement: Element = this.sourceDb.elements.getElement({ id: sourceElementId, wantGeometry: true });
     Logger.logTrace(loggerCategory, `[Source] importElement() for ${this.formatElementForLogger(sourceElement)})`);
     if (this.shouldExcludeElement(sourceElement)) {
       this.onElementExcluded(sourceElement);
       return; // excluding an element will also exclude its children or sub-models
     }
-    let targetElementId: Id64String | undefined = this.findTargetElementId(sourceElementId);
+    let targetElementId: Id64String | undefined = this.context.findTargetElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       if (this.hasElementChanged(sourceElement, targetElementId)) {
         const targetElementProps: ElementProps = this.transformElement(sourceElement);
@@ -492,14 +459,14 @@ export class IModelTransformer {
         return; // skipping an element will also skip its children or sub-models
       }
       const targetElementProps: ElementProps = this.transformElement(sourceElement);
-      targetElementId = this._targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
+      targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (targetElementId === undefined) {
         targetElementId = this.insertElement(targetElementProps);
-        this.remapElement(sourceElement.id, targetElementId!);
+        this.context.remapElement(sourceElement.id, targetElementId!);
         this.onElementInserted(sourceElement, targetElementProps);
         this.insertElementProvenance(sourceElement, targetElementId);
       } else if (this.hasElementChanged(sourceElement, targetElementId)) {
-        this.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+        this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
         targetElementProps.id = targetElementId;
         this.updateElement(targetElementProps);
         this.onElementUpdated(sourceElement, targetElementProps);
@@ -514,7 +481,7 @@ export class IModelTransformer {
    * @param sourceElementId Import the child elements of this element in the source IModelDb.
    */
   public importChildElements(sourceElementId: Id64String): void {
-    const childElementIds: Id64Array = this._sourceDb.elements.queryChildren(sourceElementId);
+    const childElementIds: Id64Array = this.sourceDb.elements.queryChildren(sourceElementId);
     if (childElementIds.length > 0) {
       Logger.logTrace(loggerCategory, `[Source] importChildElements(${this.formatIdForLogger(sourceElementId)})`);
     }
@@ -528,7 +495,7 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was inserted.
    */
   protected insertElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    this._targetDb.elements.insertAspect(IModelTransformer.initExternalSourceAspect(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId));
+    this.targetDb.elements.insertAspect(IModelTransformer.initExternalSourceAspect(sourceElement, this.targetDb, this.targetScopeElementId, targetElementId));
   }
 
   /** Record provenance about the source Element for change detection.
@@ -536,11 +503,11 @@ export class IModelTransformer {
    * @param targetElementId The Id of the target Element that was updated.
    */
   protected updateElementProvenance(sourceElement: Element, targetElementId: Id64String): void {
-    const aspectProps: ExternalSourceAspectProps = IModelTransformer.initExternalSourceAspect(sourceElement, this._targetDb, this._targetScopeElementId, targetElementId);
+    const aspectProps: ExternalSourceAspectProps = IModelTransformer.initExternalSourceAspect(sourceElement, this.targetDb, this.targetScopeElementId, targetElementId);
     if (aspectProps.id === undefined) {
-      this._targetDb.elements.insertAspect(aspectProps);
+      this.targetDb.elements.insertAspect(aspectProps);
     } else {
-      this._targetDb.elements.updateAspect(aspectProps);
+      this.targetDb.elements.updateAspect(aspectProps);
     }
   }
 
@@ -550,7 +517,7 @@ export class IModelTransformer {
   public importModels(modeledElementClass: string): void {
     Logger.logTrace(loggerCategory, `[Source] importModels(${modeledElementClass})`);
     const sql = `SELECT ECInstanceId FROM ${modeledElementClass}`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         this.importModel(statement.getValue(0).getId());
       }
@@ -561,7 +528,7 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   public importModel(sourceModeledElementId: Id64String): void {
-    const modeledElement: Element = this._sourceDb.elements.getElement({ id: sourceModeledElementId, wantGeometry: true });
+    const modeledElement: Element = this.sourceDb.elements.getElement({ id: sourceModeledElementId, wantGeometry: true });
     Logger.logTrace(loggerCategory, `[Source] importModel() for ${this.formatElementForLogger(modeledElement)}`);
     if (this.shouldExcludeElement(modeledElement)) {
       this.onElementExcluded(modeledElement);
@@ -576,10 +543,10 @@ export class IModelTransformer {
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   private importModelContainer(sourceModeledElementId: Id64String): void {
-    const sourceModel: Model = this._sourceDb.models.getModel(sourceModeledElementId);
-    const targetModeledElementId = this.findTargetElementId(sourceModeledElementId);
+    const sourceModel: Model = this.sourceDb.models.getModel(sourceModeledElementId);
+    const targetModeledElementId = this.context.findTargetElementId(sourceModeledElementId);
     try {
-      const targetModel: Model = this._targetDb.models.getModel(targetModeledElementId); // throws IModelError.NotFound if model does not exist
+      const targetModel: Model = this.targetDb.models.getModel(targetModeledElementId); // throws IModelError.NotFound if model does not exist
       const targetModelProps: ModelProps = this.transformModel(sourceModel, targetModeledElementId);
       if (this.hasModelChanged(targetModel, targetModelProps)) {
         this.updateModel(targetModelProps);
@@ -603,7 +570,7 @@ export class IModelTransformer {
   private importModelContents(sourceModeledElementId: Id64String): void {
     Logger.logTrace(loggerCategory, `[Source] importModelContents(${this.formatIdForLogger(sourceModeledElementId)})`);
     const sql = `SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", sourceModeledElementId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         this.importElement(statement.getValue(0).getId());
@@ -614,7 +581,7 @@ export class IModelTransformer {
   /** Import the sub-models below the specified model. */
   private importSubModels(sourceParentModelId: Id64String): void {
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("parentModelId", sourceParentModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         this.importModel(statement.getValue(0).getId());
@@ -636,7 +603,7 @@ export class IModelTransformer {
         } else if ((propertyName === "jsonProperties") || (propertyName === "modeledElement")) {
           changed = JSON.stringify(model[propertyName]) !== JSON.stringify(modelProps[propertyName]);
         } else {
-          changed = (model as any)[propertyName] !== modelProps[propertyName];
+          changed = model.asAny[propertyName] !== modelProps[propertyName];
         }
       }
     }, true);
@@ -653,7 +620,7 @@ export class IModelTransformer {
     const targetModelProps: ModelProps = sourceModel.toJSON();
     targetModelProps.modeledElement.id = targetModeledElementId;
     targetModelProps.id = targetModeledElementId;
-    targetModelProps.parentModel = this.findTargetElementId(targetModelProps.parentModel!);
+    targetModelProps.parentModel = this.context.findTargetElementId(targetModelProps.parentModel!);
     return targetModelProps;
   }
 
@@ -662,7 +629,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom insert behavior.
    */
   protected insertModel(targetModelProps: ModelProps): void {
-    this._targetDb.models.insertModel(targetModelProps);
+    this.targetDb.models.insertModel(targetModelProps);
     Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatModelForLogger(targetModelProps)}`);
   }
 
@@ -671,7 +638,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom update behavior.
    */
   protected updateModel(targetModelProps: ModelProps): void {
-    this._targetDb.models.updateModel(targetModelProps);
+    this.targetDb.models.updateModel(targetModelProps);
     Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatModelForLogger(targetModelProps)}`);
   }
 
@@ -693,10 +660,10 @@ export class IModelTransformer {
   public importRelationships(baseRelClassFullName: string): void {
     Logger.logTrace(loggerCategory, `[Source] importRelationships(${baseRelClassFullName})`);
     const sql = `SELECT ECInstanceId FROM ${baseRelClassFullName}`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceRelInstanceId: Id64String = statement.getValue(0).getId();
-        const sourceRelProps: RelationshipProps = this._sourceDb.relationships.getInstanceProps(baseRelClassFullName, sourceRelInstanceId);
+        const sourceRelProps: RelationshipProps = this.sourceDb.relationships.getInstanceProps(baseRelClassFullName, sourceRelInstanceId);
         this.importRelationship(sourceRelProps.classFullName, sourceRelInstanceId);
       }
     });
@@ -705,7 +672,7 @@ export class IModelTransformer {
   /** Import a relationship from the source iModel into the target iModel. */
   public importRelationship(sourceRelClassFullName: string, sourceRelInstanceId: Id64String): void {
     Logger.logTrace(loggerCategory, `[Source] importRelationship(${sourceRelClassFullName}, ${this.formatIdForLogger(sourceRelInstanceId)})`);
-    const sourceRelationship: Relationship = this._sourceDb.relationships.getInstance(sourceRelClassFullName, sourceRelInstanceId);
+    const sourceRelationship: Relationship = this.sourceDb.relationships.getInstance(sourceRelClassFullName, sourceRelInstanceId);
     if (this.shouldExcludeRelationship(sourceRelationship)) {
       this.onRelationshipExcluded(sourceRelationship);
       return;
@@ -715,7 +682,7 @@ export class IModelTransformer {
       try {
         // check for an existing relationship
         const relSourceAndTarget = { sourceId: targetRelationshipProps.sourceId, targetId: targetRelationshipProps.targetId };
-        const targetRelationship = this._targetDb.relationships.getInstance(targetRelationshipProps.classFullName, relSourceAndTarget);
+        const targetRelationship = this.targetDb.relationships.getInstance(targetRelationshipProps.classFullName, relSourceAndTarget);
         // if relationship found, update it
         targetRelationshipProps.id = targetRelationship.id;
         if (this.hasRelationshipChanged(targetRelationship, targetRelationshipProps)) {
@@ -756,11 +723,11 @@ export class IModelTransformer {
    */
   protected transformRelationship(sourceRelationship: Relationship): RelationshipProps {
     const targetRelationshipProps: RelationshipProps = sourceRelationship.toJSON();
-    targetRelationshipProps.sourceId = this.findTargetElementId(sourceRelationship.sourceId);
-    targetRelationshipProps.targetId = this.findTargetElementId(sourceRelationship.targetId);
+    targetRelationshipProps.sourceId = this.context.findTargetElementId(sourceRelationship.sourceId);
+    targetRelationshipProps.targetId = this.context.findTargetElementId(sourceRelationship.targetId);
     sourceRelationship.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        targetRelationshipProps[propertyName] = this.findTargetElementId((sourceRelationship as any)[propertyName]);
+        (targetRelationshipProps as any)[propertyName] = this.context.findTargetElementId(sourceRelationship.asAny[propertyName]);
       }
     }, true);
     return targetRelationshipProps;
@@ -772,7 +739,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom insert behavior.
    */
   protected insertRelationship(targetRelationshipProps: RelationshipProps): Id64String {
-    const targetRelInstanceId: Id64String = this._targetDb.relationships.insertInstance(targetRelationshipProps);
+    const targetRelInstanceId: Id64String = this.targetDb.relationships.insertInstance(targetRelationshipProps);
     Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
     return targetRelInstanceId;
   }
@@ -784,7 +751,7 @@ export class IModelTransformer {
     if (!targetRelationshipProps.id) {
       throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
     }
-    this._targetDb.relationships.updateInstance(targetRelationshipProps);
+    this.targetDb.relationships.updateInstance(targetRelationshipProps);
     Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatRelationshipForLogger(targetRelationshipProps)}`);
   }
 
@@ -796,7 +763,7 @@ export class IModelTransformer {
   private hasRelationshipChanged(relationship: Relationship, relationshipProps: RelationshipProps): boolean {
     let changed: boolean = false;
     relationship.forEachProperty((propertyName: string) => {
-      if (!changed && ((relationship as any)[propertyName] !== relationshipProps[propertyName])) {
+      if (!changed && (relationship.asAny[propertyName] !== (relationshipProps as any)[propertyName])) {
         changed = true;
       }
     }, true);
@@ -817,7 +784,7 @@ export class IModelTransformer {
    * @param targetElementId The ElementId of the target Element that will own the ElementUniqueAspects after transformation.
    */
   private importUniqueAspects(sourceElementId: Id64String, targetElementId: Id64String): void {
-    const sourceUniqueAspects: ElementAspect[] = this._sourceDb.elements.getAspects(sourceElementId, ElementUniqueAspect.classFullName);
+    const sourceUniqueAspects: ElementAspect[] = this.sourceDb.elements.getAspects(sourceElementId, ElementUniqueAspect.classFullName);
     const targetUniqueAspectClasses = new Set<string>();
     sourceUniqueAspects.forEach((sourceUniqueAspect: ElementAspect) => {
       if (this.shouldExcludeElementAspect(sourceUniqueAspect)) {
@@ -825,7 +792,7 @@ export class IModelTransformer {
       } else {
         const targetUniqueAspectProps: ElementAspectProps = this.transformElementAspect(sourceUniqueAspect, targetElementId);
         targetUniqueAspectClasses.add(targetUniqueAspectProps.classFullName);
-        const targetAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, targetUniqueAspectProps.classFullName);
+        const targetAspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, targetUniqueAspectProps.classFullName);
         if (targetAspects.length === 0) {
           this.insertElementAspect(targetUniqueAspectProps);
           this.onElementAspectInserted(targetUniqueAspectProps);
@@ -835,7 +802,7 @@ export class IModelTransformer {
         }
       }
     });
-    const targetUniqueAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ElementUniqueAspect.classFullName);
+    const targetUniqueAspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, ElementUniqueAspect.classFullName);
     targetUniqueAspects.forEach((targetUniqueAspect: ElementAspect) => {
       if (!targetUniqueAspectClasses.has(targetUniqueAspect.classFullName)) {
         if (this.shouldDeleteElementAspect(targetUniqueAspect)) {
@@ -852,7 +819,7 @@ export class IModelTransformer {
    */
   private importMultiAspects(sourceElementId: Id64String, targetElementId: Id64String): void {
     // Get all source MultiAspects
-    const sourceMultiAspects: ElementAspect[] = this._sourceDb.elements.getAspects(sourceElementId, ElementMultiAspect.classFullName);
+    const sourceMultiAspects: ElementAspect[] = this.sourceDb.elements.getAspects(sourceElementId, ElementMultiAspect.classFullName);
 
     // Use exclusion rules to filter source MultiAspects
     const filteredSourceAspects: ElementAspect[] = sourceMultiAspects.filter((sourceMultiAspect: ElementAspect) => {
@@ -875,7 +842,7 @@ export class IModelTransformer {
     // Handle MultiAspects in groups by class
     targetMultiAspectClasses.forEach((aspectClassFullName: string) => {
       const filteredTargetAspectPropsArray = targetAspectPropsArray.filter((aspectProps) => aspectClassFullName === aspectProps.classFullName);
-      const targetAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, aspectClassFullName);
+      const targetAspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, aspectClassFullName);
       if (filteredTargetAspectPropsArray.length >= targetAspects.length) {
         let index = 0;
         filteredTargetAspectPropsArray.forEach((aspectProps: ElementAspectProps) => {
@@ -910,7 +877,7 @@ export class IModelTransformer {
     });
 
     // Detect deletes
-    const targetMultiAspects: ElementAspect[] = this._targetDb.elements.getAspects(targetElementId, ElementMultiAspect.classFullName);
+    const targetMultiAspects: ElementAspect[] = this.targetDb.elements.getAspects(targetElementId, ElementMultiAspect.classFullName);
     targetMultiAspects.forEach((targetMultiAspect: ElementAspect) => {
       if (!targetMultiAspectClasses.has(targetMultiAspect.classFullName)) {
         if (this.shouldDeleteElementAspect(targetMultiAspect)) {
@@ -948,7 +915,7 @@ export class IModelTransformer {
     targetElementAspectProps.element.id = targetElementId;
     sourceElementAspect.forEachProperty((propertyName: string, propertyMetaData: PropertyMetaData) => {
       if ((PrimitiveTypeCode.Long === propertyMetaData.primitiveType) && ("Id" === propertyMetaData.extendedType)) {
-        targetElementAspectProps[propertyName] = this.findTargetElementId((sourceElementAspect as any)[propertyName]);
+        targetElementAspectProps[propertyName] = this.context.findTargetElementId(sourceElementAspect.asAny[propertyName]);
       }
     }, true);
     return targetElementAspectProps;
@@ -959,7 +926,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom insert behavior.
    */
   protected insertElementAspect(targetElementAspectProps: ElementAspectProps): void {
-    this._targetDb.elements.insertAspect(targetElementAspectProps);
+    this.targetDb.elements.insertAspect(targetElementAspectProps);
     Logger.logInfo(loggerCategory, `[Target] Inserted ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
   }
 
@@ -968,7 +935,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom update behavior.
    */
   protected updateElementAspect(targetElementAspectProps: ElementAspectProps): void {
-    this._targetDb.elements.updateAspect(targetElementAspectProps);
+    this.targetDb.elements.updateAspect(targetElementAspectProps);
     Logger.logInfo(loggerCategory, `[Target] Updated ${this.formatElementAspectForLogger(targetElementAspectProps)}`);
   }
 
@@ -977,7 +944,7 @@ export class IModelTransformer {
    * @note A subclass can override this method to provide custom update behavior.
    */
   protected deleteElementAspect(targetElementAspect: ElementAspect): void {
-    this._targetDb.elements.deleteAspect(targetElementAspect.id);
+    this.targetDb.elements.deleteAspect(targetElementAspect.id);
     Logger.logInfo(loggerCategory, `[Target] Deleted ${this.formatElementAspectForLogger(targetElementAspect)}`);
   }
 
@@ -989,7 +956,7 @@ export class IModelTransformer {
   private hasElementAspectChanged(aspect: ElementAspect, aspectProps: ElementAspectProps): boolean {
     let changed: boolean = false;
     aspect.forEachProperty((propertyName: string) => {
-      if (!changed && (propertyName !== "element") && ((aspect as any)[propertyName] !== aspectProps[propertyName])) {
+      if (!changed && (propertyName !== "element") && (aspect.asAny[propertyName] !== aspectProps[propertyName])) {
         changed = true;
       }
     }, true);
@@ -1010,9 +977,9 @@ export class IModelTransformer {
     const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
     IModelJsFs.mkdirSync(schemasDir);
     try {
-      this._sourceDb.nativeDb.exportSchemas(schemasDir);
+      this.sourceDb.nativeDb.exportSchemas(schemasDir);
       const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      await this._targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
+      await this.targetDb.importSchemas(requestContext, schemaFiles.map((fileName) => path.join(schemasDir, fileName)));
     } finally {
       IModelJsFs.removeSync(schemasDir);
     }
@@ -1021,8 +988,8 @@ export class IModelTransformer {
   /** Import all fonts from the source iModel into the target iModel. */
   public importFonts(): void {
     Logger.logTrace(loggerCategory, `[Source] importFonts()`);
-    for (const font of this._sourceDb.fontMap.fonts.values()) {
-      this._importContext.importFont(font.id);
+    for (const font of this.sourceDb.fontMap.fonts.values()) {
+      this.context.importFont(font.id);
     }
   }
 
@@ -1030,7 +997,7 @@ export class IModelTransformer {
   public importCodeSpecs(): void {
     Logger.logTrace(loggerCategory, `[Source] importCodeSpecs()`);
     const sql = `SELECT Name FROM BisCore:CodeSpec`;
-    this._sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const codeSpecName: string = statement.getRow().name;
         this.importCodeSpec(codeSpecName);
@@ -1045,8 +1012,8 @@ export class IModelTransformer {
       this.onCodeSpecExcluded(codeSpecName);
       return;
     }
-    const sourceCodeSpecId: Id64String = this._sourceDb.codeSpecs.queryId(codeSpecName);
-    this._importContext.importCodeSpec(sourceCodeSpecId);
+    const sourceCodeSpecId: Id64String = this.sourceDb.codeSpecs.queryId(codeSpecName);
+    this.context.importCodeSpec(sourceCodeSpecId);
   }
 
   /** Attempts to import everything from the source iModel into the target iModel. */

@@ -65,6 +65,7 @@ describe("IModelTransformer", () => {
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Initial Import");
       Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
       const transformer = new TestIModelTransformer(sourceDb, targetDb);
+      assert.isTrue(transformer.context.isBetweenIModels);
       transformer.importAll();
       assert.isAbove(transformer.numCodeSpecsExcluded, 0);
       assert.isAbove(transformer.numRelationshipsExcluded, 0);
@@ -197,7 +198,7 @@ describe("IModelTransformer", () => {
     if (true) {
       const subjectId: Id64String = getTeamSubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelA, iModelShared, subjectId);
-      transformerA2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerA2S.excludeSubject("/Context");
       transformerA2S.excludeElement(IModel.dictionaryId);
       transformerA2S.importAll();
@@ -208,7 +209,7 @@ describe("IModelTransformer", () => {
     if (true) {
       const subjectId: Id64String = getTeamSubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelB, iModelShared, subjectId);
-      transformerB2S.remapElement(IModel.rootSubjectId, subjectId);
+      transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerB2S.excludeSubject("/Context");
       transformerB2S.excludeElement(IModel.dictionaryId);
       transformerB2S.importAll();

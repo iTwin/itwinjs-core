@@ -692,23 +692,23 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Initialize some CodeSpec remapping rules for testing */
   private initCodeSpecRemapping(): void {
-    super.remapCodeSpec("SourceCodeSpec", "TargetCodeSpec");
+    this.context.remapCodeSpec("SourceCodeSpec", "TargetCodeSpec");
   }
 
   /** Initialize some category remapping rules for testing */
   private initCategoryRemapping(): void {
-    const subjectId = this._sourceDb.elements.queryElementIdByCode(Subject.createCode(this._sourceDb, IModel.rootSubjectId, "Subject"))!;
-    const definitionModelId = this._sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this._sourceDb, subjectId, "Definition"))!;
-    const sourceCategoryId = this._sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._sourceDb, definitionModelId, "SourcePhysicalCategory"))!;
-    const targetCategoryId = this._targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this._targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
+    const subjectId = this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Subject"))!;
+    const definitionModelId = this.sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(this.sourceDb, subjectId, "Definition"))!;
+    const sourceCategoryId = this.sourceDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.sourceDb, definitionModelId, "SourcePhysicalCategory"))!;
+    const targetCategoryId = this.targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(this.targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
     assert.isTrue(Id64.isValidId64(subjectId) && Id64.isValidId64(definitionModelId) && Id64.isValidId64(sourceCategoryId) && Id64.isValidId64(targetCategoryId));
-    super.remapElement(sourceCategoryId, targetCategoryId);
+    this.context.remapElement(sourceCategoryId, targetCategoryId);
     super.excludeElement(sourceCategoryId); // Don't process a specifically remapped element
   }
 
   /** Initialize some class remapping rules for testing */
   private initClassRemapping(): void {
-    super.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
+    this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
   }
 
   /** Override insertElement to count calls */
