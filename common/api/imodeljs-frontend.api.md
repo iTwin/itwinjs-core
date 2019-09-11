@@ -1563,6 +1563,8 @@ export class CategorySelectorState extends ElementState {
 export class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, _requestContext: ClientRequestContext, _accessToken: string, _tileUrlTemplate: string, _maxDepth: number, heightRange: Range1d);
     // (undocumented)
+    addCopyrightImages(images: HTMLImageElement[], _tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
+    // (undocumented)
     readonly geometryAttributionProvider: MapTileGeometryAttributionProvider;
     // (undocumented)
     getAttribution(_tileProvider: MapTileTreeReference, _viewport: ScreenViewport): string;
@@ -3287,6 +3289,8 @@ export abstract class ImageryProvider {
     // (undocumented)
     abstract getCopyrightImage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement | undefined;
     // (undocumented)
+    getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[];
+    // (undocumented)
     abstract getCopyrightMessage(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLElement | undefined;
     // (undocumented)
     abstract initialize(): Promise<void>;
@@ -3788,6 +3792,8 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
 
 // @internal (undocumented)
 export interface MapTileGeometryAttributionProvider {
+    // (undocumented)
+    addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
     // (undocumented)
     getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
 }

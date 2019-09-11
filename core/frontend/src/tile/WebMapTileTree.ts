@@ -167,6 +167,7 @@ export class WebMapTileProps implements TileProps {
 /** @internal */
 export interface MapTileGeometryAttributionProvider {
   getAttribution(tileProvider: MapTileTreeReference, viewport: ScreenViewport): string;
+  addCopyrightImages(images: HTMLImageElement[], tileProvider: MapTileTreeReference, viewport: ScreenViewport): void;
 }
 
 /** @internal */
@@ -354,13 +355,21 @@ export abstract class ImageryProvider {
   }
 
   public decorate(context: DecorateContext, tileProvider: MapTileTreeReference): void {
-    const copyrightImage = this.getCopyrightImage(tileProvider, context.screenViewport);
-    if (copyrightImage && 0 !== copyrightImage.naturalWidth && 0 !== copyrightImage.naturalHeight) {
-      const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
-      const drawDecoration = (ctx: CanvasRenderingContext2D) => {
-        ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
-      };
-      context.addCanvasDecoration({ position, drawDecoration });
+    const copyrightImages = this.getCopyrightImages(tileProvider, context.screenViewport);
+    if (0 < copyrightImages.length) {
+      const vpHeight = context.viewport.viewRect.height;
+      const padding = 2;
+      const x = padding;
+      let yOffset = padding;
+      for (const image of copyrightImages) {
+        if (0 === image.naturalWidth || 0 === image.naturalHeight)
+          continue;
+
+        const position = new Point2d(x, vpHeight - image.height - yOffset);
+        const drawDecoration = (ctx: CanvasRenderingContext2D) => ctx.drawImage(image, 0, 0, image.width, image.height);
+        context.addCanvasDecoration({ position, drawDecoration });
+        yOffset += image.height + padding;
+      }
     }
 
     const copyrightMessage = this.getCopyrightMessage(tileProvider, context.screenViewport);
@@ -378,6 +387,18 @@ export abstract class ImageryProvider {
       style.pointerEvents = "initial";
       style.zIndex = "50";
     }
+  }
+
+  public getCopyrightImages(tileProvider: MapTileTreeReference, viewport: ScreenViewport): HTMLImageElement[] {
+    const images: HTMLImageElement[] = [];
+    const image = this.getCopyrightImage(tileProvider, viewport);
+    if (undefined !== image)
+      images.push(image);
+
+    if (undefined !== this._geometryAttributionProvider)
+      this._geometryAttributionProvider.addCopyrightImages(images, tileProvider, viewport);
+
+    return images;
   }
 }
 

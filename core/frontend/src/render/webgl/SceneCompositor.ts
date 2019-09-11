@@ -386,6 +386,7 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
   public abstract dispose(): void;
+  public abstract preDraw(): void;
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
@@ -520,7 +521,7 @@ abstract class Compositor extends SceneCompositor {
     }
   }
 
-  public update(): boolean {
+  public preDraw(): boolean {
     const rect = this.target.viewRect;
     const width = rect.width;
     const height = rect.height;
@@ -558,7 +559,7 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public draw(commands: RenderCommands) {
-    if (!this.update()) {
+    if (!this.preDraw()) {
       assert(false);
       return;
     }
@@ -609,7 +610,7 @@ abstract class Compositor extends SceneCompositor {
   public get fullHeight(): number { return this.target.viewRect.height; }
 
   public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
-    if (!this.update()) {
+    if (!this.preDraw()) {
       assert(false);
       return;
     }
