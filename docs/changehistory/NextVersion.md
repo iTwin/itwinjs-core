@@ -7,6 +7,7 @@ ignore: true
 
 ### Summary
   * PolyfaceQuery method to partition by connectivity
+  * Optimize triangle flipping
  ### Details
  * `PolyfaceQuery` methods
    * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
@@ -29,3 +30,12 @@ ignore: true
     * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
   * `UnionFindContext`
     * New class to implement the UnionFind algorithm on a set of integers.
+  * `HalfEdge`
+    * [HalfEdge.setMaskAroundEdge]($geometry)
+    * [HalfEdge.clearMaskAroundEdge]($geometry)
+  * `HalfEdgeGraph`
+    * [HalfEdgeGraph.grabMask]($geometry)
+    * [HalfEdgeGraph.grabMask]($geometry)
+  * `Triangulation`
+    * [Triangulation.flipTrianglesInEdgeSet]($geometry)
+

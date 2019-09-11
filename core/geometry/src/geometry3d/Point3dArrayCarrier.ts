@@ -1,6 +1,7 @@
 import { XYAndZ } from "./XYZProps";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
+/** @module ArraysAndInterfaces */
 /**
  * Helper object to access members of a Point3d[] in geometric calculations.
  * * The collection holds only a reference to the actual array.

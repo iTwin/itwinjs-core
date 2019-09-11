@@ -1278,6 +1278,7 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 // @public
 export class CurveCurve {
     static intersectionProjectedXY(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
+    // @deprecated
     static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
     static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
     // @beta
@@ -1883,6 +1884,7 @@ export class HalfEdge {
     constructor(x?: number, y?: number, z?: number, i?: number);
     belowYX(other: HalfEdge): boolean;
     clearMask(mask: HalfEdgeMask): void;
+    clearMaskAroundEdge(mask: HalfEdgeMask): void;
     clearMaskAroundFace(mask: HalfEdgeMask): void;
     clearMaskAroundVertex(mask: HalfEdgeMask): void;
     collectAroundFace(f?: NodeFunction): any[];
@@ -1934,6 +1936,7 @@ export class HalfEdge {
     static pinch(nodeA: HalfEdge, nodeB: HalfEdge): void;
     setMask(mask: HalfEdgeMask): void;
     setMaskAndEdgeTagAroundFace(mask: HalfEdgeMask, tag: any, applyToMate?: boolean): void;
+    setMaskAroundEdge(mask: HalfEdgeMask): void;
     setMaskAroundFace(mask: HalfEdgeMask): void;
     setMaskAroundVertex(mask: HalfEdgeMask): void;
     setXYZAroundVertex(x: number, y: number, z: number): void;
@@ -1981,6 +1984,8 @@ export class HalfEdgeGraph {
     createEdgeXYZHalfEdge(xA: number | undefined, yA: number | undefined, zA: number | undefined, iA: number | undefined, node: HalfEdge, iB?: number): HalfEdge;
     createEdgeXYZXYZ(xA?: number, yA?: number, zA?: number, iA?: number, xB?: number, yB?: number, zB?: number, iB?: number): HalfEdge;
     decommission(): void;
+    dropMask(mask: HalfEdgeMask): void;
+    grabMask(clearInAllHalfEdges?: boolean): HalfEdgeMask;
     reverseMask(mask: HalfEdgeMask): void;
     setMask(mask: HalfEdgeMask): void;
     splitEdge(base: undefined | HalfEdge, xA?: number, yA?: number, zA?: number, iA?: number): HalfEdge;
@@ -1990,6 +1995,8 @@ export class HalfEdgeGraph {
 
 // @internal
 export enum HalfEdgeMask {
+    // (undocumented)
+    ALL_GRAB_DROP_MASKS = 4293918720,
     ALL_MASK = 4294967295,
     BOUNDARY_EDGE = 2,
     EXTERIOR = 1,
@@ -1997,10 +2004,7 @@ export enum HalfEdgeMask {
     NULL_MASK = 0,
     PRIMARY_EDGE = 4,
     TRIANGULATED_FACE = 256,
-    VISITED = 16,
-    WORK_MASK0 = 32,
-    WORK_MASK1 = 64,
-    WORK_MASK2 = 128
+    VISITED = 16
 }
 
 // @internal
@@ -4589,6 +4593,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
 
 // @internal
 export class Triangulator {
+    static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean;
     static createFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean): HalfEdge | undefined;
     static createFaceLoopFromCoordinatesAndMasks(graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, maskForBothSides: HalfEdgeMask, maskForOtherSide: HalfEdgeMask): HalfEdge | undefined;
     static createTriangulatedGraphFromLoops(loops: GrowableXYZArray[] | XAndY[][]): HalfEdgeGraph | undefined;
@@ -4597,6 +4602,7 @@ export class Triangulator {
     static directCreateChainsFromCoordinates(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, id?: number): HalfEdge[];
     static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined;
     static flipTriangles(graph: HalfEdgeGraph): number;
+    static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number;
     static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
     static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean;
 }

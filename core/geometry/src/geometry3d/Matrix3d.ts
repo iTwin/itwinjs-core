@@ -9,6 +9,7 @@ import { Point2d } from "./Point2dVector2d";
 import { XYAndZ, XAndY, Matrix3dProps, WritableXYAndZ } from "./XYZProps";
 import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
+/** @module CartesianGeometry */
 /* tslint:disable:prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.

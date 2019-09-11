@@ -12,6 +12,7 @@ import { Geometry } from "../Geometry";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Transform } from "../geometry3d/Transform";
 import { XYAndZ } from "../geometry3d/XYZProps";
+import { MaskManager } from "./MaskManager";
 /** function signature for function of one node with no return type restrictions
  * @internal
  */
@@ -259,6 +260,24 @@ export class HalfEdge {
       node.setMask(mask);
       node = node.faceSuccessor;
     } while (node !== this);
+  }
+
+  /**
+   * Apply a mask to both sides of an edge.
+   * @param mask mask to apply to this edge and its `edgeMate`
+   */
+  public setMaskAroundEdge(mask: HalfEdgeMask) {
+    this.setMask(mask);
+    this.edgeMate.setMask(mask);
+  }
+
+  /**
+   * Apply a mask to both sides of an edge.
+   * @param mask mask to apply to this edge and its `edgeMate`
+   */
+  public clearMaskAroundEdge(mask: HalfEdgeMask) {
+    this.clearMask(mask);
+    this.edgeMate.clearMask(mask);
   }
 
   /** Returns the number of edges around this face. */
@@ -760,15 +779,32 @@ export class HalfEdge {
 /**
  * A HalfEdgeGraph has:
  * * An array of (pointers to ) HalfEdge objects.
+ * * A pool of masks for grab/drop use by algorithms.
  * @internal
  */
 export class HalfEdgeGraph {
   /** Simple array with pointers to all the half edges in the graph. */
   public allHalfEdges: HalfEdge[];
+  private _maskManager: MaskManager;
   private _numNodesCreated = 0;
   public constructor() {
     this.allHalfEdges = [];
+    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
   }
+  /** Ask for a mask (from the graph's free pool.) for caller's use.
+   * * Optionally clear the mask throughout the graph.
+   */
+  public grabMask(clearInAllHalfEdges: boolean = true): HalfEdgeMask {
+    const mask = this._maskManager.grabMask();
+    if (clearInAllHalfEdges) {
+      this.clearMask(mask);
+    }
+    return mask;
+  }
+  /**
+   * Return `mask` to the free pool.
+   */
+  public dropMask(mask: HalfEdgeMask) { this._maskManager.dropMask(mask); }
   /**
    * * Create 2 half edges forming 2 vertices, 1 edge, and 1 face
    * * The two edges are joined as edgeMate pair.
@@ -1058,12 +1094,6 @@ export enum HalfEdgeMask {
 
   /** Mask used for low level searches to identify previously-visited nodes */
   VISITED = 0x0000010,
-  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
-  WORK_MASK0 = 0x00000020,
-  /** Mask for use by algorithms.  Only use this mask if the graph life cycle is under your control. */
-  WORK_MASK1 = 0x00000040,
-  /** Mask for use by algorithms. Only use this mask if the graph life cycle is under your control. */
-  WORK_MASK2 = 0x00000080,
 
   /** Mask applied to triangles by earcut triangulator */
   TRIANGULATED_FACE = 0x00000100,
@@ -1072,6 +1102,8 @@ export enum HalfEdgeMask {
 
   /** no mask bits */
   NULL_MASK = 0x00000000,
+
+  ALL_GRAB_DROP_MASKS = 0xffF00000,  // 12 masks reserved for grab/drop.
   /** all mask bits */
   ALL_MASK = 0xFFFFFFFF,
   // informal convention on preassigned mask bit numbers:
