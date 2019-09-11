@@ -303,12 +303,15 @@ export class KeyinField {
     // (undocumented)
     loseFocus(): void;
     // (undocumented)
+    selectAll(): void;
+    // (undocumented)
     readonly textBox: TextBox;
 }
 
 // @beta
 export interface KeyinFieldProps {
     baseId: string;
+    historyLength?: number;
     parent?: HTMLElement;
     wantButton?: boolean;
     wantLabel?: boolean;

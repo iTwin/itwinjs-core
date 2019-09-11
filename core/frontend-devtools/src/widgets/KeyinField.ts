@@ -52,58 +52,6 @@ function parseKeyin(input: string): Keyin {
   return { tool, args };
 }
 
-async function submitKeyin(textBox: HTMLInputElement) {
-  textBox.setSelectionRange(0, textBox.value.length);
-
-  const outputMessage = async (msg: string) => {
-    await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, msg, MessageBoxIconType.Warning);
-    textBox.focus();
-  };
-
-  const keyin = parseKeyin(textBox.value);
-  if (undefined === keyin.tool) {
-    await outputMessage("Cannot find a key-in that matches: " + textBox.value);
-    return;
-  }
-
-  const maxArgs = keyin.tool.maxArgs;
-  if (keyin.args.length < keyin.tool.minArgs || (undefined !== maxArgs && keyin.args.length > maxArgs)) {
-    await outputMessage("Incorrect number of arguments");
-    return;
-  }
-
-  const tool = new keyin.tool();
-  let runStatus = false;
-  try {
-    runStatus = keyin.args.length > 0 ? tool.parseAndRun(...keyin.args) : tool.run();
-    if (!runStatus)
-      await outputMessage("Key-in failed to run");
-  } catch (e) {
-    await outputMessage("Key-in caused the following exception to occur: " + e);
-  }
-
-}
-
-async function maybeSubmitKeyin(textBox: HTMLInputElement, ev: KeyboardEvent) {
-  if ("Enter" === ev.key)
-    await submitKeyin(textBox);
-}
-
-function respondToKeyinFocus(keyinField: KeyinField) {
-  const keyins = findKeyins();
-  if (keyins.length > keyinField.keyins.length) {
-    const newKeyins: string[] = [];
-    for (const keyin of keyins) {
-      if (!keyinField.keyins.includes(keyin)) {
-        newKeyins.push(keyin);
-      }
-    }
-    if (newKeyins.length > 0) {
-      appendDataListEntries(keyinField.autoCompleteList, keyinsToDataListEntries(newKeyins));
-    }
-  }
-}
-
 function findKeyins(): string[] {
   const keyins: string[] = [];
   const tools = IModelApp.tools.getToolList();
@@ -121,10 +69,6 @@ function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   return entries;
 }
 
-function keyinChanged(textBox: HTMLInputElement) {
-  textBox.setSelectionRange(0, textBox.value.length);
-}
-
 /** Properties controlling how a KeyinField is created.
  * @beta
  */
@@ -137,6 +81,11 @@ export interface KeyinFieldProps {
   wantButton?: boolean;
   /** Default: false. */
   wantLabel?: boolean;
+  /** The maximum number of submitted key-ins to store in the history.
+   * If greater than zero, pressing ctrl-P/N while the KeyinField has focus will move backwards/forwards through the history.
+   * Default: zero;
+   */
+  historyLength?: number;
 }
 
 /** A textbox allowing input of key-ins (localized tool names) combined with a drop-down that lists all registered key-ins, filtered by substring match on the current input.
@@ -147,10 +96,12 @@ export class KeyinField {
   public readonly autoCompleteList: DataList;
   public readonly textBox: TextBox;
   public readonly keyins: string[];
+  private _historyIndex?: number;
+  private _historyLength = 0;
+  private readonly _history: string[] | undefined;
 
   public constructor(props: KeyinFieldProps) {
     this.keyins = findKeyins();
-
     const autoCompleteListId = props.baseId + "_autoComplete";
     this.autoCompleteList = createDataList({
       parent: props.parent,
@@ -163,9 +114,9 @@ export class KeyinField {
       label: props.wantLabel ? "Key-in: " : undefined,
       id: props.baseId + "_textBox",
       parent: props.parent,
-      handler: keyinChanged,
-      keypresshandler: async (tb, ev) => { await maybeSubmitKeyin(tb, ev); },
-      focushandler: (_tb) => { respondToKeyinFocus(this); },
+      handler: () => this.selectAll(),
+      keypresshandler: async (_tb, ev) => { await this.handleKeyPress(ev); },
+      focushandler: (_tb) => { this.respondToKeyinFocus(); },
       tooltip: "Type the key-in text here",
       inline: true,
       list: autoCompleteListId,
@@ -173,15 +124,132 @@ export class KeyinField {
 
     if (props.wantButton) {
       createButton({
-        handler: async (_bt) => { await submitKeyin(this.textBox.textbox); },
+        handler: async (_bt) => { await this.submitKeyin(); },
         parent: props.parent,
         value: "Enter",
         inline: true,
         tooltip: "Click here to execute the key-in",
       });
     }
+
+    if (undefined !== props.historyLength && props.historyLength > 0) {
+      this.textBox.textbox.onkeyup = (ev) => this.handleKeyUp(ev);
+      this._historyLength = props.historyLength;
+      this._history = [];
+    }
   }
 
   public focus() { this.textBox.textbox.focus(); }
   public loseFocus() { this.textBox.textbox.blur(); }
+
+  public selectAll(): void {
+    this.textBox.textbox.setSelectionRange(0, this.textBox.textbox.value.length);
+  }
+
+  private async handleKeyPress(ev: KeyboardEvent): Promise<void> {
+    if ("Enter" === ev.key)
+      await this.submitKeyin();
+  }
+
+  private async handleKeyUp(ev: KeyboardEvent): Promise<void> {
+    if (undefined === this._history || 0 === this._history.length || !ev.ctrlKey)
+      return Promise.resolve();
+
+    // Finding a key combination that would actually make it to our handler without also interacting with
+    // the auto-complete list was quite frustrating. Settled on ctrl-n/p.
+    // Note the keyPRESS event (in chromium, at least) gets ev.key = an un-printable control character, hence
+    // we use keydown (which is preferable anyway given keypress is deprecated).
+    // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
+    const direction = ev.key === "n" ? -1 : (ev.key === "p" ? 1 : 0);
+    if (0 === direction)
+      return Promise.resolve();
+
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    if (this._historyIndex === undefined) {
+      if (direction < 0)
+        return Promise.resolve();
+      else
+        this._historyIndex = -1;
+    }
+
+    const newIndex = this._historyIndex + direction;
+    if (newIndex >= 0 && newIndex < this._history.length) {
+      this._historyIndex = newIndex;
+      if (this._historyIndex >= 0)
+        this.textBox.textbox.value = this._history[newIndex];
+    }
+
+    return Promise.resolve();
+  }
+
+  private resetHistoryIndex(): void {
+    this._historyIndex = undefined;
+  }
+
+  private pushHistory(keyin: string): void {
+    if (undefined === this._history)
+      return;
+
+    this.textBox.textbox.value = "";
+    this.resetHistoryIndex();
+    if (this._history.length === 0 || keyin.toLowerCase() !== this._history[0].toLowerCase()) {
+      this._history.unshift(keyin);
+      if (this._history.length > this._historyLength)
+        this._history.pop();
+    }
+  }
+
+  private async submitKeyin(): Promise<void> {
+    this.selectAll();
+    const textBox = this.textBox.textbox;
+
+    const outputMessage = async (msg: string) => {
+      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, msg, MessageBoxIconType.Warning);
+      this.focus();
+    };
+
+    const input = textBox.value;
+    this.pushHistory(input);
+
+    const keyin = parseKeyin(input);
+    if (undefined === keyin.tool) {
+      await outputMessage("Cannot find a key-in that matches: " + input);
+      return;
+    }
+
+    const maxArgs = keyin.tool.maxArgs;
+    if (keyin.args.length < keyin.tool.minArgs || (undefined !== maxArgs && keyin.args.length > maxArgs)) {
+      await outputMessage("Incorrect number of arguments");
+      return;
+    }
+
+    const tool = new keyin.tool();
+    let runStatus = false;
+    try {
+      runStatus = keyin.args.length > 0 ? tool.parseAndRun(...keyin.args) : tool.run();
+      if (!runStatus)
+        await outputMessage("Key-in failed to run");
+    } catch (e) {
+      await outputMessage("Key-in caused the following exception to occur: " + e);
+    }
+  }
+
+  private respondToKeyinFocus() {
+    this.resetHistoryIndex();
+
+    // Handle case in which new tools were registered since we last populated the auto-complete list.
+    // This can occur e.g. as a result of loading a plugin, or deferred initialization of a package like markup.
+    const keyins = findKeyins();
+    if (keyins.length > this.keyins.length) {
+      const newKeyins: string[] = [];
+      for (const keyin of keyins)
+        if (!this.keyins.includes(keyin))
+          newKeyins.push(keyin);
+
+      if (newKeyins.length > 0)
+        appendDataListEntries(this.autoCompleteList, keyinsToDataListEntries(newKeyins));
+    }
+  }
 }

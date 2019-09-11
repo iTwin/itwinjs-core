@@ -36,6 +36,7 @@ export class Surface {
     this.keyinField = new KeyinField({
       parent: this._keyinDiv,
       baseId: "dtaKeyinField",
+      historyLength: 50,
     });
     this.keyinField.textBox.textbox.addEventListener("keyup", (e) => {
       if (27 === e.keyCode)

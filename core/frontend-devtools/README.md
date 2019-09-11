@@ -68,7 +68,11 @@ The following key-ins are delivered with this package. Each begins with the pref
   * "sphere": Bounding sphere representing the full range of each tile.
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
-* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. Accepts at most 1 argument (Case-insensitive):
+* `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect. Accepts at most 1 argument (Case-insensitive):
+  * "on": Display the decoration.
+  * "off": Stop displaying the decoration.
+  * "toggle" or no arguments: Invert the current state.
+* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports. Accepts at most 1 argument (Case-insensitive):
   * "on": Display the decoration.
   * "off": Stop displaying the decoration.
   * "toggle" or no arguments: Invert the current state.

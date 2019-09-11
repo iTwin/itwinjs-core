@@ -34,6 +34,7 @@ export class DiagnosticsPanel {
       baseId: "diagnosticsPanelKeyin",
       wantButton: true,
       wantLabel: true,
+      historyLength: 20,
     });
 
     this.addSeparator();
