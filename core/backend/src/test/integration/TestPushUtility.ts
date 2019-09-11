@@ -52,7 +52,7 @@ export class TestPushUtility {
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
-      this.createTestChangeSet();
+      await this.createTestChangeSet();
       await this.pushTestChangeSet();
       await this.createNamedVersion();
       this._currentLevel++;
@@ -168,13 +168,16 @@ export class TestPushUtility {
     this.deleteTestElement(name);
   }
 
-  private createTestChangeSet() {
+  private async createTestChangeSet() {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
     this.updateTestElement(this._currentLevel - 1, 0);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
     this.deleteTestElements(this._currentLevel - 1, 1);
+    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
     this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
   }
 
