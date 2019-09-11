@@ -3,16 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { Logger } from "@bentley/bentleyjs-core";
+import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps } from "@bentley/ui-ninezone";
+
 import TestUtils from "../TestUtils";
 import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup } from "../../ui-framework";
-import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps } from "@bentley/ui-ninezone";
-import sinon = require("sinon");
 import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
-import { Logger } from "@bentley/bentleyjs-core";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";

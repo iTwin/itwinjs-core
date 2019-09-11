@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "./tabs";
+
+@mixin uicore-tabs-vertical {
+
+    @include uicore-tabs;
+
+    > li {
+
+        display:        block;
+        margin:         0;
+        padding:        0;
+        width:          100%;
+
+        > a {
+
+            line-height:            $uicore-line-height;
+            padding:                14px 20px;
+            background:             $buic-background-tab-inactive;
+            border-width:           0;
+
+            &::after {
+
+                height:             100%;
+                width:              2px;
+            }
+        }
+
+        &.active {
+            > a {
+
+              color:              $buic-foreground-primary;
+              background:         $buic-background-tab-active;
+            }
+        }
+    }
+}

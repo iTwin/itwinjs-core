@@ -362,7 +362,7 @@ export namespace GltfTileIO {
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
-    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfTileIO.ReaderResult {
       if (this._isCanceled)
         return { readStatus: TileIO.ReadStatus.Canceled, isLeaf, sizeMultiplier };
 
@@ -378,7 +378,7 @@ export namespace GltfTileIO {
       let readStatus: TileIO.ReadStatus = TileIO.ReadStatus.InvalidTileData;
       for (const nodeKey of Object.keys(this._nodes))
         if (!childNodes.has(nodeKey))
-          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances)))
+          if (TileIO.ReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances, pseudoRtcBias)))
             return { readStatus, isLeaf };
 
       if (0 === renderGraphicList.length)
@@ -394,6 +394,10 @@ export namespace GltfTileIO {
       if (undefined !== this._returnToCenter) {
         range.low.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.low);
         range.high.plusXYZ(-this._returnToCenter[0], -this._returnToCenter[1], -this._returnToCenter[2], range.high);
+      }
+      if (undefined !== pseudoRtcBias) {
+        range.low.addInPlace(pseudoRtcBias);
+        range.high.addInPlace(pseudoRtcBias);
       }
 
       renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
@@ -415,15 +419,19 @@ export namespace GltfTileIO {
       };
     }
 
-    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams): TileIO.ReadStatus {
+    private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileIO.ReadStatus {
       if (undefined === node)
         return TileIO.ReadStatus.InvalidTileData;
 
       let thisTransform = parentTransform;
+      let thisBias;
       if (Array.isArray(node.matrix)) {
         const jTrans = node.matrix;
         const nodeTransform = Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
         thisTransform = thisTransform ? thisTransform.multiplyTransformTransform(nodeTransform) : nodeTransform;
+      }
+      if (undefined !== pseudoRtcBias) {
+        thisBias = (undefined === thisTransform) ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
       }
       const meshKey = node.meshes ? node.meshes : node.mesh;
       if (undefined !== meshKey) {
@@ -432,7 +440,7 @@ export namespace GltfTileIO {
           const meshGraphicArgs = new MeshGraphicArgs();
           const geometryCollection = new TileIO.GeometryCollection(new MeshList(featureTable), true, false);
           for (const primitive of nodeMesh.primitives) {
-            const geometry = this.readMeshPrimitive(primitive, featureTable);
+            const geometry = this.readMeshPrimitive(primitive, featureTable, thisBias);
             if (undefined !== geometry)
               geometryCollection.meshes.push(geometry);
           }
@@ -594,7 +602,7 @@ export namespace GltfTileIO {
       return (rtc[0] === 0.0 && rtc[1] === 0.0 && rtc[2] === 0.0) ? undefined : rtc;
     }
 
-    protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable): Mesh | undefined {
+    protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): Mesh | undefined {
       const materialName = JsonUtils.asString(primitive.material);
       const hasBakedLighting = undefined === primitive.attributes.NORMAL;
       const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
@@ -659,7 +667,7 @@ export namespace GltfTileIO {
 
         return  DracoDecoder.readDracoMesh(mesh, primitive, bufferData); */
       }
-      if (!this.readVertices(mesh.points, primitive))
+      if (!this.readVertices(mesh.points, primitive, pseudoRtcBias))
         return undefined;
 
       switch (primitiveType) {
@@ -692,7 +700,15 @@ export namespace GltfTileIO {
       return mesh;
     }
 
-    protected readVertices(positions: QPoint3dList, primitive: any): boolean {
+    /**
+     *
+     * @param positions quantized points
+     * @param primitive input json
+     * @param pseudoRtcBias a bias applied to each point - this is a workaround for tiles generated by
+     * context capture which have a large offset from the tileset origin that exceeds the
+     * capacity of 32 bit integers. This is essentially an ad hoc RTC applied at read time.
+     */
+    protected readVertices(positions: QPoint3dList, primitive: any, pseudoRtcBias?: Vector3d): boolean {
       const view = this.getBufferView(primitive.attributes, "POSITION");
       if (undefined === view)
         return false;
@@ -709,6 +725,9 @@ export namespace GltfTileIO {
         const scratchPoint = new Point3d();
         for (let i = 0, j = 0; i < buffer.count; i++) {
           scratchPoint.set(buffer.buffer[j++], buffer.buffer[j++], buffer.buffer[j++]);
+          if (undefined !== pseudoRtcBias)
+            scratchPoint.addInPlace(pseudoRtcBias);
+
           positions.add(scratchPoint);
         }
       } else {
@@ -730,7 +749,12 @@ export namespace GltfTileIO {
           return false;
 
         const qpt = QPoint3d.fromScalars(0, 0, 0);
-        positions.reset(QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))));
+        const qRange = Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]));
+        if (undefined !== pseudoRtcBias) {
+          qRange.low.addInPlace(pseudoRtcBias);
+          qRange.high.addInPlace(pseudoRtcBias);
+        }
+        positions.reset(QParams3d.fromRange(qRange));
         for (let i = 0; i < view.count; i++) {
           const index = i * 3; // 3 uint16 per QPoint3d...
           qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);

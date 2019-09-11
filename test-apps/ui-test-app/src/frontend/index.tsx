@@ -20,13 +20,14 @@ import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
-import { UiCore } from "@bentley/ui-core";
+import { UiCore, getClassName } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
   UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager,
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
   ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers, BackstageComposer,
   BackstageItemManager,
+  FrontstageDef,
 } from "@bentley/ui-framework";
 import { Id64String, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import getSupportedRpcs from "../common/rpcs";
@@ -132,10 +133,19 @@ export interface RootState {
   sampleAppState: SampleAppState;
   frameworkState?: FrameworkState;
 }
+
+interface SampleIModelParams {
+  projectId: string;
+  iModelId: string;
+  viewIds?: string[];
+  stageId?: string;
+}
+
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
   public static store: Store<RootState>;
   public static rootReducer: any;
+  public static iModelParams: SampleIModelParams | undefined;
 
   public static startup(opts?: IModelAppOptions): void {
     opts = opts ? opts : {};
@@ -175,7 +185,9 @@ export class SampleAppIModelApp {
     let oidcConfiguration: OidcFrontendClientConfiguration;
     const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read product-settings-service";
     if (ElectronRpcConfiguration.isElectron) {
+      // cSpell:disable
       let clientId = "spa-5lgQRridBuvb8dUm6EVmaQmZL";
+      // cSpell:enable
       let redirectUri = "electron://frontend/signin-callback";
       if (Config.App.has("imjs_electron_test_client_id"))
         clientId = Config.App.get("imjs_electron_test_client_id");
@@ -219,11 +231,18 @@ export class SampleAppIModelApp {
     await MarkupApp.initialize();
   }
 
+  public static loggerCategory(obj: any): string {
+    const className = getClassName(obj);
+    const category = `ui-test-app.${className}`;
+    return category;
+  }
+
   public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
     // open the imodel
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId}`);
     const iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
     SampleAppIModelApp.setIsIModelLocal(false, true);
 
@@ -244,6 +263,13 @@ export class SampleAppIModelApp {
   }
 
   public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
+    let viewIdsParam = "";
+    viewIdsSelected.forEach((viewId: string, index: number) => {
+      if (index > 0)
+        viewIdsParam += `&`;
+      viewIdsParam += `viewId=${viewId}`;
+    });
+    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
 
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
@@ -255,13 +281,31 @@ export class SampleAppIModelApp {
       UiFramework.setDefaultViewId(viewIdsSelected[0]);
 
     // we create a Frontstage that contains the views that we want.
-    const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
-    FrontstageManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
-      // Frontstage & ScreenViewports are ready
-      // tslint:disable-next-line:no-console
-      console.log("Frontstage is ready");
-    });
+    let stageId: string;
+    const viewsFrontstage = "ViewsFrontstage";
+
+    if (this.iModelParams && this.iModelParams.stageId)
+      stageId = this.iModelParams.stageId;
+    else
+      stageId = viewsFrontstage;
+
+    let frontstageDef: FrontstageDef | undefined;
+    if (stageId === viewsFrontstage) {
+      const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+      FrontstageManager.addFrontstageProvider(frontstageProvider);
+      frontstageDef = frontstageProvider.frontstageDef;
+    } else {
+      frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+    }
+
+    if (frontstageDef) {
+      FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
+        // Frontstage & ScreenViewports are ready
+        Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
+      });
+    } else {
+      throw new Error(`Frontstage with id "${stageId}" does not exist`);
+    }
   }
 
   public static async handleWorkOffline() {
@@ -275,6 +319,7 @@ export class SampleAppIModelApp {
       await SampleAppIModelApp.closeCurrentIModel();
 
       // open the imodel
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `showIModelIndex: projectId=${contextId}&iModelId=${iModelId}`);
       const iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       SampleAppIModelApp.setIsIModelLocal(false, true);
 
@@ -312,6 +357,8 @@ export class SampleAppIModelApp {
     if (Config.App.has("imjs_uitestapp_imodel_viewId"))
       viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
 
+    SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
+
     if (Config.App.has("imjs_uitestapp_imodel_name") &&
       Config.App.has("imjs_uitestapp_imodel_wsgId") &&
       Config.App.has("imjs_uitestapp_imodel_project_name") &&
@@ -339,6 +386,14 @@ export class SampleAppIModelApp {
         // open to the IModelIndex frontstage
         await SampleAppIModelApp.showIModelIndex(defaultImodel.projectInfo.wsgId, defaultImodel.wsgId);
       }
+    } else if (SampleAppIModelApp.iModelParams) {
+      if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
+        // open directly into the iModel (view)
+        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
+      } else {
+        // open to the IModelIndex frontstage
+        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId);
+      }
     } else if (testAppConfiguration.startWithSnapshots) {
       // open to the Local File frontstage
       await LocalFileOpenFrontstage.open();
@@ -346,6 +401,21 @@ export class SampleAppIModelApp {
       // open to the IModelOpen frontstage
       await SampleAppIModelApp.showIModelOpen(undefined);
     }
+  }
+
+  private static _usingParams(): SampleIModelParams | undefined {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get("projectId");
+    const iModelId = urlParams.get("iModelId");
+
+    if (projectId && iModelId) {
+      const viewIds = urlParams.getAll("viewId");
+      const stageId = urlParams.get("stageId") || undefined;
+
+      return { projectId, iModelId, viewIds, stageId };
+    }
+
+    return undefined;
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -416,7 +486,7 @@ window.addEventListener("beforeunload", async () => {
 
 export const testAppConfiguration = {} as TestAppConfiguration;
 
-// Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
+// Retrieves the configuration for starting app from configuration.json file located in the built public folder
 async function retrieveConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
     const request: XMLHttpRequest = new XMLHttpRequest();
@@ -444,6 +514,7 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
+  Logger.setLevel("ui-test-app", LogLevel.Info);
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
 

@@ -7,7 +7,7 @@
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d, SpatialClassificationProps, Frustum, SolarShadows } from "@bentley/imodeljs-common";
 import {
   ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask, Vector3d, Range1d,
 } from "@bentley/geometry-core";
 import {
   GraphicBranch,
@@ -21,6 +21,7 @@ import {
   RenderPlanarClassifier,
   RenderSolarShadowMap,
   RenderSystem,
+  RenderSystemDebugControl,
   RenderTarget,
   WebGLExtensionName,
 } from "../System";
@@ -538,7 +539,7 @@ const enum VertexAttribState {
 }
 
 /** @internal */
-export class System extends RenderSystem {
+export class System extends RenderSystem implements RenderSystemDebugControl {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -804,7 +805,7 @@ export class System extends RenderSystem {
     return clipVolume;
   }
   public createPlanarClassifier(properties: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree, sceneContext: SceneContext): RenderPlanarClassifier | undefined { return PlanarClassifier.create(properties, tileTree, classifiedTree, sceneContext); }
-  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) { return BackgroundMapDrape.create(drapedTree, mapTree); }
+  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference, heightRange?: Range1d) { return BackgroundMapDrape.create(drapedTree, mapTree, heightRange); }
   public getSolarShadowMap(frustum: Frustum, direction: Vector3d, settings: SolarShadows.Settings, view: SpatialViewState): RenderSolarShadowMap | undefined { return this.getIdMap(view.iModel).getSolarShadowMap(frustum, direction, settings, view); }
 
   private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
@@ -820,15 +821,6 @@ export class System extends RenderSystem {
     IModelConnection.onClose.addListener(this.removeIModelMap.bind(this));
 
     canvas.addEventListener("webglcontextlost", () => this.handleContextLoss(), false);
-  }
-
-  public loseContext(): boolean {
-    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
-    if (undefined === ext)
-      return false;
-
-    ext.loseContext();
-    return true;
   }
 
   private async handleContextLoss(): Promise<void> {
@@ -1057,4 +1049,18 @@ export class System extends RenderSystem {
     Debug.printEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.DebugOutput);
     Debug.evaluateEnabled = RenderDiagnostics.None !== (enable & RenderDiagnostics.WebGL);
   }
+
+  // RenderSystemDebugControl
+  private _drawSurfacesAsWiremesh = false;
+  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
+  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
+  public loseContext(): boolean {
+    const ext = this.capabilities.queryExtensionObject<WEBGL_lose_context>("WEBGL_lose_context");
+    if (undefined === ext)
+      return false;
+
+    ext.loseContext();
+    return true;
+  }
+
 }

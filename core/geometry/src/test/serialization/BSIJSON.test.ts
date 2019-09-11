@@ -104,11 +104,11 @@ function exercise_go(obj: any, noisy: boolean): number {
       imjsObject = IModelJson.Writer.toIModelJson(gq);
     } else {
       const firstAppearance = isDifferentTypeName(obj);
-      let obj1 = IModelJson.Reader.parse(imjsObject);
+      let obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
       if (!obj1) {
         console.log(" imjs object roundtrips to empty ", obj);
         // repeat call for so easy to catch in debugger. ..
-        obj1 = IModelJson.Reader.parse(imjsObject);
+        obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
       } else {
         if (noisy || (firstAppearance && Checker.noisy.bsiJSONFirstAppearance)) {
           console.log("original", obj);
@@ -116,7 +116,7 @@ function exercise_go(obj: any, noisy: boolean): number {
         }
         if (!gq.isAlmostEqual(obj1)) {
           // repeat call for so easy to catch in debugger. ..
-          obj1 = IModelJson.Reader.parse(imjsObject);
+          obj1 = IModelJson.Reader.parse(imjsObject) as GeometryQuery;
           console.log("RoundTrip but not equal ", gq.isAlmostEqual(obj1), obj, obj1);
           errors++;
         }
@@ -523,7 +523,7 @@ describe("ExerciseGeometryHandler", () => {
     ck.testUndefined(tempHandler.handleRuledSweep(Sample.createRuledSweeps()[0]));
 
     ck.testUndefined(tempHandler.handlePath(Path.create()));
-    ck.testUndefined(tempHandler.handlePath(Loop.create()));
+    ck.testUndefined(tempHandler.handleLoop(Loop.create()));
     ck.testUndefined(tempHandler.handleParityRegion(ParityRegion.create()));
     ck.testUndefined(tempHandler.handleUnionRegion(UnionRegion.create()));
     ck.testUndefined(tempHandler.handleBagOfCurves(BagOfCurves.create()));

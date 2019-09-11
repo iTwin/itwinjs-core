@@ -16,6 +16,10 @@
     padding-right: 4px;
   }
 
+  > .uifw-statusFields-selectionScope-selector {
+    @include uicore-inputs-select;
+  }
+
   @media only screen and (max-width: 768px) {
     > .uifw-statusFields-selectionScope-label {
       display: none;

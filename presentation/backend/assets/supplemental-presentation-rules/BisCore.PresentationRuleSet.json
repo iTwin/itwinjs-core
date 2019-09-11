@@ -236,6 +236,22 @@
           "relationships": {
             "schemaName": "BisCore",
             "classNames": [
+              "ElementHasLinks"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "LinkElement"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "isPolymorphic": true
+        },
+        {
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
               "ElementGroupsMembers"
             ]
           },
@@ -258,14 +274,11 @@
               "relatedClasses": {
                 "schemaName": "BisCore",
                 "classNames": [
-                  "UrlLink"
+                  "LinkElement"
                 ]
               },
               "requiredDirection": "Forward",
-              "isPolymorphic": true,
-              "propertyNames": [
-                "Url"
-              ]
+              "isPolymorphic": true
             }
           ]
         }
@@ -398,6 +411,52 @@
             "*"
           ],
           "isDisplayed": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "LinkElement"
+      },
+      "propertiesDisplay": [
+        {
+          "isDisplayed": false,
+          "propertyNames": [
+            "CodeValue",
+            "UserLabel"
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "UrlLink"
+      },
+      "propertiesDisplay": [
+        {
+          "isDisplayed": false,
+          "propertyNames": [
+            "Description"
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "EmbeddedFileLink"
+      },
+      "propertiesDisplay": [
+        {
+          "isDisplayed": false,
+          "propertyNames": [
+            "Description"
+          ]
         }
       ]
     }

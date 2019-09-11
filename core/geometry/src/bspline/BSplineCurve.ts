@@ -15,7 +15,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
 
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
@@ -79,6 +79,8 @@ import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
  * @public
  */
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
+  public readonly curvePrimitiveType = "bsplineCurve";
+
   /** The underlying blocked-pole spline, with simple x,y,z poles */
   protected _bcurve: BSpline1dNd;
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {
@@ -274,6 +276,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
                 const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
                 if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {
                   const detail = CurveLocationDetail.createCurveEvaluatedFraction(this, fraction);
+                  detail.intervalRole = CurveIntervalRole.isolated;
                   result.push(detail);
                   previousFraction = fraction;
                 }

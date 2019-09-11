@@ -97,6 +97,8 @@ export class HitDetail {
   private readonly _iModel?: IModelConnection;
   /** @alpha */
   public readonly tileId?: string;
+  /** @alpha */
+  public readonly isClassifier: boolean;
 
   /** Create a new HitDetail from the inputs to and results of a locate operation.
    * @param testPoint The world coordinate space point that was used as the locate point.
@@ -112,12 +114,14 @@ export class HitDetail {
    * @param iModel The IModelConnection from which the hit originated. This should almost always be left undefined, unless the hit is known to have originated from an iModel other than the one associated with the viewport.
    * @param modelId Optionally the Id of the [[ModelState]] from which the hit originated.
    * @param tileId Optionally the Id of the Tile from which the hit originated.
+   * @param isClassifier Optionally whether the hit originated from a reality model classification.
    */
   public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
     public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
-    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string) {
+    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
     this._iModel = iModel;
     this.tileId = tileId;
+    this.isClassifier = undefined !== isClassifier ? isClassifier : false;
   }
 
   /** Get the type of HitDetail.
@@ -143,7 +147,7 @@ export class HitDetail {
   }
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
-    const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel);
+    const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel, this.tileId, this.isClassifier);
     return val;
   }
 
@@ -206,7 +210,7 @@ export class SnapDetail extends HitDetail {
    * @param snapPoint The snapped point in the element
    */
   public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
-    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass, from.modelId, from.iModel);
+    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass, from.modelId, from.iModel, from.tileId, from.isClassifier);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
     this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));

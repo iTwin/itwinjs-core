@@ -14,11 +14,12 @@ import {
   IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory,
 } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
+import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
   if (!iModel)
-    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, undefined, `Description for iModel`, undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, iModelName, { description: `Description for iModel` });
   assert.isDefined(iModel.wsgId);
   return iModel.wsgId;
 }
@@ -393,6 +394,45 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isDefined(iModelId);
     iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isDefined(iModel);
+  });
+
+  it("should reuse a briefcaseId when re-opening iModel-s for pullAndPush workflows", async () => {
+    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const briefcaseId: number = iModel.briefcase.briefcaseId;
+    await iModel.close(requestContext); // Keeps the briefcase by default
+
+    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
+    assert.strictEqual(briefcaseId2, briefcaseId);
+  });
+
+  it("should reuse a briefcaseId when re-opening iModel-s of different versions for pullAndPush workflows", async () => {
+    const userContext1 = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const userContext2 = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+
+    // User1 creates an iModel on the Hub
+    const testUtility = new TestChangeSetUtility(userContext1, "BriefcaseReuseTest");
+    await testUtility.createTestIModel();
+
+    // User2 opens and then closes the iModel, keeping the briefcase
+    const iModel = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const briefcaseId: number = iModel.briefcase.briefcaseId;
+    const changeSetId = iModel.iModelToken.changeSetId;
+    await iModel.close(userContext2);
+
+    // User1 pushes a change set
+    await testUtility.pushTestChangeSet();
+
+    // User 2 reopens the iModel => Expect the same briefcase to be re-used, but the changeSet should have been updated!!
+    const iModel2: IModelDb = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const briefcaseId2: number = iModel2.briefcase.briefcaseId;
+    assert.strictEqual(briefcaseId2, briefcaseId);
+    const changeSetId2 = iModel2.iModelToken.changeSetId;
+    assert.notStrictEqual(changeSetId2, changeSetId);
+    await iModel2.close(userContext2, KeepBriefcase.No); // Delete iModel from disk
+
+    // Delete iModel from the Hub and disk
+    await testUtility.deleteTestIModel();
   });
 
 });

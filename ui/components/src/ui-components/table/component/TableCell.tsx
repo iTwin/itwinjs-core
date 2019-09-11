@@ -46,13 +46,19 @@ export interface TableCellProps extends CommonProps {
 export class TableCell extends React.PureComponent<TableCellProps> {
   /** @internal */
   public render() {
-    if (this.props.cellEditingProps)
+    if (this.props.cellEditingProps) {
       return (
-        <EditorContainer
-          title={this.props.title}
-          {...this.props.cellEditingProps}
-        />
+        <div
+          className={classnames("components-table-cell", this.props.className)}
+          style={this.props.style}
+        >
+          <EditorContainer
+            title={this.props.title}
+            {...this.props.cellEditingProps}
+          />
+        </div>
       );
+    }
 
     return (
       <div
@@ -105,11 +111,6 @@ export class TableCellContent extends React.PureComponent<TableCellContentProps,
   private _isMounted = false;
 
   private getStyle(cellItem: CellItem, isSelected: boolean, height?: number): React.CSSProperties {
-    if (height) {
-      const borderSize = 1;
-      height -= 2 * borderSize;
-    }
-
     return {
       ...ItemStyleProvider.createStyle(cellItem.style ? cellItem.style : {}, isSelected),
       textAlign: cellItem.alignment,

@@ -82,7 +82,7 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
   }
 }
 
-describe("<TimelineComponent />", () => {
+describe("<TimelineComponent showDuration={true} />", () => {
   const rafSpy = sinon.spy((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
@@ -112,6 +112,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={true}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onSettingsChange={dataProvider.onPlaybackSettingChanged}
       onPlayPause={dataProvider.onPlayPause} />);
@@ -147,6 +148,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={true}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onPlayPause={dataProvider.onPlayPause} />);
 
@@ -180,6 +182,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={false}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onPlayPause={dataProvider.onPlayPause} />);
 
@@ -196,6 +199,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={false}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
       onPlayPause={dataProvider.onPlayPause} />);
@@ -231,6 +235,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={false}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
       onPlayPause={dataProvider.onPlayPause} />);
@@ -261,6 +266,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={false}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
       repeat={dataProvider.getSettings().loop}
@@ -296,6 +302,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={false}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
       repeat={dataProvider.getSettings().loop}
@@ -325,6 +332,7 @@ describe("<TimelineComponent />", () => {
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
       minimized={true}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
       onPlayPause={dataProvider.onPlayPause} />);
@@ -353,6 +361,7 @@ describe("<TimelineComponent />", () => {
       totalDuration={dataProvider.duration}
       milestones={dataProvider.getMilestones()}
       minimized={true}
+      showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onSettingsChange={dataProvider.onPlaybackSettingChanged}
       onPlayPause={dataProvider.onPlayPause} />);

@@ -7,7 +7,7 @@ import * as path from "path";
 import { assert, should } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
-import { urlLogPath, TestConfig } from "../TestConfig";
+import { urlLogPath } from "../TestConfig";
 
 export const whitelistRelPath: string = "../assets/whitelist.txt";
 
@@ -57,9 +57,7 @@ describe.skip("Validate iModelHub URL Whitelist", () => {
     return normalizedUrl === "" ? undefined : normalizedUrl;
   }
 
-  it("Detect whether new iModelHub APIs have been added to which iModelBank has to react", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks)
-      this.skip();
+  it("Detect whether new iModelHub APIs have been added to which iModelBank has to react (#integration)", async () => {
     const whitelistPath: string = path.join(__dirname, whitelistRelPath);
     assert.isTrue(fs.existsSync(whitelistPath), `Whitelist file is expected to exist in the assets to run this test: ${whitelistPath}`);
 

@@ -367,6 +367,19 @@ export class Geometry {
     if (c > q) q = c;
     return q;
   }
+  /** Examine the value (particularly sign) of x.
+   * * If x is negative, return outNegative.
+   * * If x is true zero, return outZero
+   * * If x is positive, return outPositive
+   */
+  public static split3WaySign(x: number, outNegative: number, outZero: number, outPositive: number): number {
+    if (x < 0)
+      return outNegative;
+    if (x > 0.0)
+      return outPositive;
+    return outZero;
+  }
+
   /** Return the largest signed value among a, b */
   public static maxXY(a: number, b: number): number {
     let q = a;
@@ -513,6 +526,10 @@ export class Geometry {
   /** 3D dot product of vectors layed out as scalars. */
   public static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number {
     return ux * vx + uy * vy + uz * vz;
+  }
+  /** 2D dot product of vectors layed out as scalars. */
+  public static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number {
+    return ux * vx + uy * vy;
   }
   /**
    * Clamp to (min(a,b), max(a,b))

@@ -74,7 +74,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (styles) {
       if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
-          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel, this));
 
       if (styles.analysisStyle)
         this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
@@ -186,6 +186,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
 
+  /** @internal  */
+  public set scheduleScript(script: RenderScheduleState.Script | undefined) {
+    if (undefined === script) {
+      this._scheduleScript = undefined;
+    } else {
+      this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, script.modelTimelines);
+    }
+    this.jsonProperties.scheduleScript = this._scheduleScript;
+  }
+
   /** @internal */
   public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
@@ -199,7 +209,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.jsonProperties.styles.contextRealityModels = [];
 
     this.jsonProperties.styles.contextRealityModels.push(props);
-    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel));
+    this._contextRealityModels.push(new ContextRealityModelState(props, this.iModel, this));
   }
 
   /** @internal */
@@ -636,7 +646,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
   private _settings: DisplayStyle3dSettings;
-  private _sunDirection?: Vector3d;
 
   /** @internal */
   public clone(iModel: IModelConnection): this {
@@ -654,9 +663,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
-    const styles = this.jsonProperties.styles;
-    if (styles.sceneLights && styles.sceneLights.sunDir)
-      this._sunDirection = Vector3d.fromJSON(styles.sceneLights.sunDir);
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
@@ -702,7 +708,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     return this._skyBoxParams;
   }
   /** @beta */
-  public get sunDirection() { return this._sunDirection; }
+  public get sunDirection(): Vector3d | undefined { return this.settings.sunDir; }
 
   /** set the solar direction based on time value
    * @param time The time in unix time milliseconds.
@@ -718,7 +724,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
       cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
     }
 
-    this._sunDirection = calculateSolarDirection(new Date(time), cartoCenter);
+    this.settings.sunDir = calculateSolarDirection(new Date(time), cartoCenter);
 
   }
 }

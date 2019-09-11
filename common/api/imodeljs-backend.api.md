@@ -18,7 +18,9 @@ import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
+import { ChangeData } from '@bentley/imodeljs-common';
 import { ChangedElements } from '@bentley/imodeljs-common';
+import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodeljs-clients';
@@ -63,6 +65,7 @@ import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
@@ -471,17 +474,19 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     toJSON(): CategorySelectorProps;
 }
 
-// @beta
+// @internal
 export class ChangedElementsDb implements IDisposable {
     constructor();
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
     // (undocumented)
     dispose(): void;
+    getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
+    getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
     readonly isOpen: boolean;
     isProcessed(changesetId: string): boolean;
-    // @internal (undocumented)
+    // (undocumented)
     readonly nativeDb: IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: string, endChangesetId: string, filterSpatial?: boolean): Promise<DbResult>;
@@ -1434,6 +1439,7 @@ export interface ExportGraphicsOptions {
     chordTol?: number;
     elementIdArray: Id64Array;
     maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
     onGraphics: ExportGraphicsFunction;
     onLineGraphics?: ExportLinesFunction;
     partInstanceArray?: ExportPartInstanceInfo[];
@@ -1480,6 +1486,7 @@ export interface ExportPartGraphicsOptions {
     displayProps: ExportPartDisplayInfo;
     elementId: Id64String;
     maxEdgeLength?: number;
+    minBRepFeatureSize?: number;
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
@@ -1522,11 +1529,9 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     checksum: string;
     // @internal (undocumented)
     static readonly className: string;
-    // @alpha
-    static deleteForElement(targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId: Id64String): void;
     identifier: string;
     // @alpha
-    static initPropsForElement(sourceElement: Element, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
+    static initPropsForElement(sourceElement: Element, targetDb: IModelDb, targetScopeElementId: Id64String, targetElementId?: Id64String): ExternalSourceAspectProps;
     jsonProperties: {
         [key: string]: any;
     };
@@ -1604,10 +1609,12 @@ export class FunctionalPartition extends InformationPartitionElement {
 
 // @public (undocumented)
 export class FunctionalSchema extends Schema {
-    // (undocumented)
+    // @deprecated (undocumented)
     static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
     // (undocumented)
     static readonly schemaName: string;
 }
@@ -1681,8 +1688,12 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
 
 // @public
 export class GeometricModel extends Model {
+    // @internal
+    constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    geometryGuid?: string;
     queryExtents(): AxisAlignedBox3d;
 }
 
@@ -1904,6 +1915,8 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
+    // @internal (undocumented)
+    static performUpgrade(pathname: string): any;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -1978,7 +1991,9 @@ export namespace IModelDb {
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
         insertModel(props: ModelProps): Id64String;
-        updateModel(props: ModelProps): void;
+        // @internal
+        queryLastModifiedTime(modelId: Id64String): string;
+        updateModel(props: UpdateModelOptions): void;
     }
     // @internal
     export enum TileContentState {
@@ -2119,7 +2134,7 @@ export class IModelJsFsStats {
 
 // @alpha
 export class IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb: IModelDb);
+    constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String);
     protected deleteElement(targetElement: Element): void;
     protected deleteElementAspect(targetElementAspect: ElementAspect): void;
     detectElementDeletes(): void;
@@ -2145,7 +2160,6 @@ export class IModelTransformer {
     protected formatIdForLogger(id: Id64String): string;
     protected formatModelForLogger(modelProps: ModelProps): string;
     protected formatRelationshipForLogger(relProps: RelationshipProps): string;
-    protected getTargetScopeElementId(): Id64String;
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     importAll(): void;
     importChildElements(sourceElementId: Id64String): void;
@@ -2193,6 +2207,7 @@ export class IModelTransformer {
     protected _skippedElementIds: Set<string>;
     protected _sourceDb: IModelDb;
     protected _targetDb: IModelDb;
+    protected _targetScopeElementId: Id64String;
     protected transformElement(sourceElement: Element): ElementProps;
     protected transformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps;
     protected transformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -2661,15 +2676,19 @@ export class Model extends Entity implements ModelProps {
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static readonly className: string;
+    delete(): void;
     // (undocumented)
     getJsonProperty(name: string): any;
     getUserProperties(namespace: string): any;
+    insert(): string;
     // (undocumented)
     isPrivate: boolean;
     // (undocumented)
     isTemplate: boolean;
     // (undocumented)
-    readonly jsonProperties: any;
+    readonly jsonProperties: {
+        [key: string]: any;
+    };
     // (undocumented)
     readonly modeledElement: RelatedElement;
     // (undocumented)
@@ -2694,6 +2713,7 @@ export class Model extends Entity implements ModelProps {
     setUserProperties(nameSpace: string, value: any): void;
     // @internal
     toJSON(): ModelProps;
+    update(): void;
 }
 
 // @public
@@ -3156,6 +3176,8 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     static readonly className: string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
+    static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
     modelSelectorId: Id64String;
     // @internal (undocumented)
@@ -3445,6 +3467,12 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     static readonly className: string;
     // (undocumented)
     recipe?: RelatedElement;
+}
+
+// @public
+export interface UpdateModelOptions extends ModelProps {
+    geometryChanged?: boolean;
+    updateLastMod?: boolean;
 }
 
 // @public

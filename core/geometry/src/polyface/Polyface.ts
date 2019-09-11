@@ -32,6 +32,8 @@ function allDefined(valueA: any, valueB: any, valueC: any): boolean {
  * @public
  */
 export abstract class Polyface extends GeometryQuery {
+  public readonly geometryCategory = "polyface";
+
   /** Underlying polyface data. */
   public data: PolyfaceData;
   protected constructor(data: PolyfaceData) {

@@ -24,6 +24,8 @@ import { SessionStateActionId, PresentationSelectionScope } from "./SessionState
 import { COLOR_THEME_DEFAULT, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import { UiShowHideManager } from "./utils/UiShowHideManager";
 
+// cSpell:ignore Mobi
+
 /** UiVisibility Event Args interface.
  * @beta
  */
@@ -299,4 +301,18 @@ export class UiFramework {
   public static getWidgetOpacity(): number {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.widgetOpacity : /* istanbul ignore next */ WIDGET_OPACITY_DEFAULT;
   }
+
+  // TODO: Need better way of determining if Mobile environment
+  /** @beta */
+  public static isMobile() {  // tslint:disable-line: prefer-get
+    let mobile = false;
+    if ((/Mobi|Android/i.test(navigator.userAgent))) {
+      mobile = true;
+    }
+    if (/Mobi|iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+      mobile = true;
+    }
+    return mobile;
+  }
+
 }

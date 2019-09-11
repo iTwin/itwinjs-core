@@ -330,7 +330,14 @@ export class GeometryStreamBuilder {
   }
 }
 
-/** Holds current state information for [[GeometryStreamIterator]]
+/** Holds current state information for [[GeometryStreamIterator]].
+ * Each entry represents exactly one geometry primitive in the stream. One of the following will be defined based on the type of primitive; the rest will be undefined:
+ *
+ *  - `partToLocal` and `partId` describing a [GeometryPart]($backend) reference.
+ *  - `textString`
+ *  - `brep`
+ *  - `textString`
+ *
  * @public
  */
 export class GeometryStreamIteratorEntry {
@@ -360,6 +367,7 @@ export class GeometryStreamIteratorEntry {
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
  * A [[GeometricElement]]'s GeometryStream must be specifically requested using [[ElementLoadProps.wantGeometry]].
+ * Each [[GeometryStreamIteratorEntry]] returned by the iterator represents exactly one geometric primitive in the stream.
  * @public
  */
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
@@ -522,9 +530,11 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         }
         return { value: this.entry, done: false };
       } else {
-        this.entry.geometryQuery = GeomJson.Reader.parse(entry);
-        if (this.entry.geometryQuery === undefined)
+        const geometryQuery = GeomJson.Reader.parse(entry);
+        if (!(geometryQuery instanceof GeometryQuery))
           continue;
+
+        this.entry.geometryQuery = geometryQuery;
         if (this.entry.localToWorld !== undefined)
           this.entry.geometryQuery.tryTransformInPlace(this.entry.localToWorld);
         return { value: this.entry, done: false };

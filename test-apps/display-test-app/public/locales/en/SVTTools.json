@@ -2,16 +2,22 @@
   "tools": {
     "DrawingAidTest": {
       "Points": {
-        "keyin": "svt drawing aid points"
+        "keyin": "dta drawing aid points"
       }
     },
     "Markup": {
       "TestSelect": {
-      "keyin": "svt markup select"
+      "keyin": "dta markup select"
       }
     },
     "SVTSelect": {
-      "keyin": "svt select"
+      "keyin": "dta select"
+    },
+    "ResizeViewport": {
+      "keyin": "dta resize viewport"
+    },
+    "RefreshTiles": {
+      "keyin": "dta refresh tiles"
     }
   }
 }

@@ -314,19 +314,16 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentWillReceiveProps(newProps: TableProps) {
-    this._rowSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
-    this._cellSelectionHandler.selectionMode = newProps.selectionMode ? newProps.selectionMode : SelectionMode.Single;
-
-    if (this.props.dataProvider !== newProps.dataProvider) {
-      this._disposableListeners.dispose();
-      this._disposableListeners.add(newProps.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
-      this._disposableListeners.add(newProps.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
-    }
-  }
-
-  /** @internal */
   public componentDidUpdate(previousProps: TableProps) {
+    this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
+    this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
+
+    if (previousProps.dataProvider !== this.props.dataProvider) {
+      this._disposableListeners.dispose();
+      this._disposableListeners.add(this.props.dataProvider.onColumnsChanged.addListener(this._onColumnsChanged));
+      this._disposableListeners.add(this.props.dataProvider.onRowsChanged.addListener(this._onRowsChanged));
+    }
+
     if (this.props.dataProvider !== previousProps.dataProvider) {
       // tslint:disable-next-line:no-floating-promises
       this.update();

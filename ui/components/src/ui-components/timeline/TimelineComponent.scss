@@ -73,6 +73,13 @@
     }
 
     .start-time, .end-time {
+      font-size: 12px;
+      color: $buic-foreground-muted;
+      text-align: center;
+      min-height: inherit;
+    }
+
+    .duration-start-time, .duration-end-time {
       font-size: 14px;
       width: 40px;
       color: $buic-foreground-body;

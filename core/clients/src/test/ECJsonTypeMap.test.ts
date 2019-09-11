@@ -62,7 +62,7 @@ describe("ECJsonTypeMap", () => {
   let seedTypedWsgInstance: TestClass;
   let seedTypedECDbInstance: TestClass;
 
-  before((done: MochaDone): any => {
+  before((done: Mocha.Done): any => {
     seedUntypedWsgInstance = {
       instanceId: "TestWsgInstanceId",
       schemaName: "Test_Schema",

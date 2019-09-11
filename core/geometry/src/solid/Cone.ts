@@ -30,6 +30,8 @@ import { Vector2d } from "../geometry3d/Point2dVector2d";
  * @public
  */
 export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParametricDistance {
+  public readonly solidPrimitiveType = "cone";
+
   private _localToWorld: Transform;       // Transform from local to global.
   private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
   private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse

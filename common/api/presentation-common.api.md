@@ -95,6 +95,8 @@ export type ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedI
 export interface ChildNodeSpecificationBase {
     doNotSort?: boolean;
     hasChildren?: "Always" | "Never" | "Unknown";
+    // @beta
+    hideExpression?: string;
     hideIfNoChildren?: boolean;
     hideNodesInHierarchy?: boolean;
     nestedRules?: ChildNodeRule[];
@@ -248,7 +250,7 @@ export enum ContentSpecificationTypes {
 }
 
 // @public
-export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule;
+export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
 
 // @public
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -404,6 +406,15 @@ export interface EnumerationChoice {
 export interface EnumerationInfo {
     choices: EnumerationChoice[];
     isStrict: boolean;
+}
+
+// @public
+export interface ExtendedDataRule extends RuleBase, ConditionContainer {
+    condition?: string;
+    items: {
+        [key: string]: string;
+    };
+    ruleType: RuleTypes.ExtendedData;
 }
 
 // @public
@@ -801,6 +812,15 @@ export namespace Node {
     export function reviver(key: string, value: any): any;
     // @internal
     export function toJSON(node: Node): NodeJSON;
+}
+
+// @public
+export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
+    condition?: string;
+    items: {
+        [key: string]: string;
+    };
+    ruleType: RuleTypes.NodeArtifacts;
 }
 
 // @public
@@ -1349,6 +1369,8 @@ export enum RuleTypes {
     InstanceLabelOverride = "InstanceLabelOverride",
     // (undocumented)
     LabelOverride = "LabelOverride",
+    // (undocumented)
+    NodeArtifacts = "NodeArtifacts",
     // (undocumented)
     PropertySorting = "PropertySorting",
     // (undocumented)

@@ -88,6 +88,7 @@ export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
+export * from "./ui-core/utils/ScrollPositionMaintainer";
 
 export * from "./ui-core/button/Button";
 export * from "./ui-core/button/UnderlinedButton";
@@ -106,6 +107,8 @@ export * from "./ui-core/inputs/Select";
 export * from "./ui-core/inputs/Textarea";
 
 export * from "./ui-core/tabs/HorizontalTabs";
+export * from "./ui-core/tabs/VerticalTabs";
+export * from "./ui-core/tabs/Tabs";
 
 export * from "./ui-core/text/BodyText";
 export * from "./ui-core/text/BlockText";

@@ -239,6 +239,17 @@ export class HalfEdge {
   }
 
   /**
+   * Set x,y,z at all nodes around a vertex.
+   * @param mask mask to apply to the half edges around this HalfEdge's vertex loop
+   */
+  public setXYZAroundVertex(x: number, y: number, z: number) {
+    let node: HalfEdge = this;
+    do {
+      node.x = x; node.y = y; node.z = z;
+      node = node.vertexSuccessor;
+    } while (node !== this);
+  }
+  /**
    * Apply a mask to all edges around a face.
    * @param mask mask to apply to the half edges around this HalfEdge's face loop
    */
@@ -634,6 +645,19 @@ export class HalfEdge {
       result);
   }
   /**
+   * interpolate xy coordinates between this node and its face successor.
+   * @param fraction fractional position along this edge.
+   * @param result xy coordinates
+   */
+  public fractionToPoint3d(fraction: number, result?: Point3d): Point3d {
+    const node1 = this.faceSuccessor;
+    return Point3d.create(
+      this.x + (node1.x - this.x) * fraction,
+      this.y + (node1.y - this.y) * fraction,
+      this.z + (node1.z - this.z) * fraction,
+      result);
+  }
+  /**
    * * interpolate xy coordinates at fractionAlong between this node and its face successor.
    * * shift to left by fractionPerpendicular
    * @param fraction fractional position along this edge.
@@ -762,6 +786,37 @@ export class HalfEdgeGraph {
     zB: number = 0,
     iB: number = 0): HalfEdge {
     const a = HalfEdge.createHalfEdgePairWithCoordinates(xA, yA, zA, iA, xB, yB, zB, iB, this.allHalfEdges);
+    return a;
+  }
+  /**
+   * * create an edge from coordinates x,y,z to (the tail of) an existing half edge.
+   * @returns Return pointer to the half edge with tail at x,y,z
+   */
+  public createEdgeXYZHalfEdge(
+    xA: number = 0,
+    yA: number = 0,
+    zA: number = 0,
+    iA: number = 0,
+    node: HalfEdge,
+    iB: number = 0): HalfEdge {
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(xA, yA, zA, iA, node.x, node.y, node.z, iB, this.allHalfEdges);
+    const b = a.faceSuccessor;
+    HalfEdge.pinch(node, b);
+    return a;
+  }
+  /**
+   * * create an edge from coordinates x,y,z to (the tail of) an existing half edge.
+   * @returns Return pointer to the half edge with tail at x,y,z
+   */
+  public createEdgeHalfEdgeHalfEdge(
+    nodeA: HalfEdge,
+    idA: number,
+    nodeB: HalfEdge,
+    idB: number = 0): HalfEdge {
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(nodeA.x, nodeA.y, nodeA.z, idA, nodeB.x, nodeB.y, nodeB.z, idB, this.allHalfEdges);
+    const b = a.faceSuccessor;
+    HalfEdge.pinch(nodeA, a);
+    HalfEdge.pinch(nodeB, b);
     return a;
   }
 

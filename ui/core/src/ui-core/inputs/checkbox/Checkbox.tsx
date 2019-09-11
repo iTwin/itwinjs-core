@@ -31,22 +31,34 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
    * use for preventing the action from bubbling to component's parents.
    */
   onClick?: (e: React.MouseEvent) => void;
+  /** Indicates whether the checkbox should set focus */
+  setFocus?: boolean;
 }
 
 /** A React component that renders a simple checkbox with label
  * @public
  */
 export class Checkbox extends React.PureComponent<CheckboxProps> {
+  private _checkboxInput = React.createRef<HTMLInputElement>();
+
   private _onCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   }
+
+  public componentDidMount() {
+    if (this.props.setFocus && this._checkboxInput.current)
+      this._checkboxInput.current.focus();
+  }
+
   public render() {
-    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, onClick, ...inputProps } = this.props;
+    const { status, className, inputClassName, inputStyle, labelClassName, labelStyle, onClick, setFocus, ...inputProps } = this.props;
     const checkBoxClass = classnames("core-checkbox", status, className);
     return (
       <label className={checkBoxClass} onClick={onClick}>
-        <input type="checkbox" {...inputProps} className={inputClassName} style={inputStyle} onClick={this._onCheckboxClick} />
-        <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>{this.props.label}</span>
+        <input type="checkbox" ref={this._checkboxInput} {...inputProps} className={inputClassName} style={inputStyle} onClick={this._onCheckboxClick} />
+        <span className={classnames("core-checkbox-label", labelClassName)} style={labelStyle}>
+          {this.props.label && <span className="core-checkbox-label-text">{this.props.label}</span>}
+        </span>
       </label>
     );
   }

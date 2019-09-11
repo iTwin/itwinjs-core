@@ -398,7 +398,9 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
    *     2. Then trim it.
    *     3. Then parse it to number (delegating to this.props.parse if any)
    */
-  public componentWillReceiveProps(props: ReactNumericInputProps): void {
+  // TODO - Fix this
+  /** @internal */
+  public UNSAFE_componentWillReceiveProps(props: ReactNumericInputProps): void {  // tslint:disable-line: naming-convention
     this._isStrict = !!props.strict;
     const nextState = this._propsToState(props);
     if (Object.keys(nextState).length) {
@@ -414,7 +416,9 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
   /**
    * Save the input selection right before rendering
    */
-  public componentWillUpdate(): void {
+  // TODO - Fix this
+  /** @internal */
+  public UNSAFE_componentWillUpdate(): void {  // tslint:disable-line: naming-convention
     this.saveSelection();
   }
 

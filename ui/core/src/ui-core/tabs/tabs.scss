@@ -23,8 +23,6 @@
             display:        block;
             position:       relative;
             padding:        $uicore-bordered-padding ( $uicore-font-size - 1px ) $uicore-unbordered-padding;
-            border:         1px solid $buic-text-color-muted; // $uicore-gray-a;
-            border-bottom:  0 none transparent;
             margin:         0;
             line-height:    $uicore-line-height;
             color:          $buic-text-color;
@@ -36,29 +34,22 @@
                 position:           absolute;
                 z-index:            1;
                 transition:         all 0.5s;
-                width:              2px;
-                height:             100%;
                 top:                0;
                 left:               0;
-                background:         $buic-foreground-primary; // $uicore-blue;
+                background:         $buic-foreground-primary;
                 opacity:            0;
             }
 
             &:hover {
 
                 text-decoration:    none;
-                color:              $buic-foreground-activehover; // $uicore-gray-4;
+                color:              $buic-foreground-activehover;
 
                 &::after {
 
                     opacity:        1;
                 }
             }
-        }
-
-        &:last-child > a {
-
-            border-bottom:  1px solid $buic-text-color-muted; // $uicore-gray-a;
         }
 
         &.active {
@@ -75,8 +66,8 @@
         }
     }
 
-    &.green > li > a::after {
+    &.uicore-tabs-green > li > a::after {
 
-        background:     $uicore-green;
+        background:     $buic-foreground-success;
     }
 }

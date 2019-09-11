@@ -5,9 +5,14 @@
 
 export * from "./FrontEndDevTools";
 
+export * from "./tools/ChangeViewFlagsTool";
+export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/ProjectExtents";
+export * from "./tools/RenderSystemTools";
+export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
+export * from "./tools/SavedViews";
 
 export * from "./ui/Button";
 export * from "./ui/CheckBox";

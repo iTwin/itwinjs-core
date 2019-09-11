@@ -71,7 +71,7 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, proj
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, name, seedFile);
+  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.iModels.create(requestContext, projectId, name, { path: seedFile });
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }

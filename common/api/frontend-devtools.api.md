@@ -10,16 +10,37 @@ import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { EditManipulator } from '@bentley/imodeljs-frontend';
+import { EmphasizeElements } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { Marker } from '@bentley/imodeljs-frontend';
 import { Point3d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
+import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
+import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
+import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { Vector3d } from '@bentley/geometry-core';
+import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
+import { ViewState } from '@bentley/imodeljs-frontend';
+import { ViewStateProps } from '@bentley/imodeljs-common';
+
+// @beta
+export class ApplyViewTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: undefined;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(view?: ViewState): boolean;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha (undocumented)
 export interface Button {
@@ -46,6 +67,20 @@ export interface ButtonProps {
     tooltip?: string;
     // (undocumented)
     value: string;
+}
+
+// @alpha
+export class ChangeViewFlagsTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: undefined;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(vf: ViewFlags, vp?: Viewport): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -77,6 +112,16 @@ export interface CheckBoxProps {
     tooltip?: string;
     // (undocumented)
     typeOverride?: string;
+}
+
+// @beta
+export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
+    // (undocumented)
+    execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected readonly _wantCreate: boolean;
 }
 
 // @alpha (undocumented)
@@ -185,6 +230,9 @@ export function createSlider(props: SliderProps): Slider;
 export function createTextBox(props: TextBoxProps): TextBox;
 
 // @beta
+export function deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise<ViewState>;
+
+// @beta
 export class DiagnosticsPanel {
     constructor(vp: Viewport);
     // (undocumented)
@@ -194,6 +242,24 @@ export class DiagnosticsPanel {
     // (undocumented)
     readonly keyinField: KeyinField;
     }
+
+// @beta
+export abstract class EmphasizeElementsTool extends Tool {
+    // (undocumented)
+    protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    run(_args: any[]): boolean;
+    // (undocumented)
+    protected readonly _wantCreate: boolean;
+}
+
+// @beta
+export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
+    // (undocumented)
+    execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @beta
 export class FpsTracker {
@@ -213,7 +279,17 @@ export class FrustumDecorator implements Decorator {
     decorate(context: DecorateContext): void;
     static disable(): void;
     static enable(vp: Viewport): void;
-    }
+    // (undocumented)
+    static readonly isEnabled: boolean;
+}
+
+// @beta
+export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
+    // (undocumented)
+    execute(emph: EmphasizeElements, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @beta
 export class KeyinField {
@@ -242,6 +318,14 @@ export interface LabeledNumericInputProps extends NumericInputProps {
     id: string;
     // (undocumented)
     name: string;
+}
+
+// @beta
+export class LoseWebGLContextTool extends RenderSystemDebugControlTool {
+    // (undocumented)
+    execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -341,7 +425,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static toggle(imodel: IModelConnection, enabled?: boolean): void;
+    static toggle(imodel: IModelConnection, enabled?: boolean): boolean;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
 }
@@ -407,12 +491,39 @@ export interface RadioBoxProps {
 }
 
 // @beta
+export abstract class RenderSystemDebugControlTool extends Tool {
+    // (undocumented)
+    protected abstract execute(_control: RenderSystemDebugControl): void;
+    // (undocumented)
+    run(_args: any[]): boolean;
+}
+
+// @beta
+export abstract class RenderTargetDebugControlTool extends Tool {
+    // (undocumented)
+    protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
+    // (undocumented)
+    run(_args: any[]): boolean;
+}
+
+// @beta
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
     // (undocumented)
     static toolId: string;
 }
+
+// @beta
+export class SaveViewTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export function serializeViewState(view: ViewState): ViewStateProps;
 
 // @alpha (undocumented)
 export interface Slider {
@@ -493,7 +604,81 @@ export class TileStatisticsTracker {
     }
 
 // @beta
-export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void;
+export class ToggleFrustumSnapshotTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleLogZTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
+// @beta
+export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean;
+
+// @beta
+export class ToggleProjectExtentsTool extends Tool {
+    // (undocumented)
+    static readonly maxArgs: number;
+    // (undocumented)
+    static readonly minArgs: number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleSkyboxTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
+    // (undocumented)
+    execute(control: RenderSystemDebugControl): void;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha
 export class ToolSettingsTracker {

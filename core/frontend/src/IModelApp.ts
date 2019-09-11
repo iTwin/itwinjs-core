@@ -34,6 +34,7 @@ import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
+import * as accudrawTool from "./tools/AccuDrawTool";
 import * as modelState from "./ModelState";
 import * as sheetState from "./Sheet";
 import * as viewState from "./ViewState";
@@ -253,6 +254,7 @@ export class IModelApp {
     tools.registerModule(viewTool, coreNamespace);
     tools.registerModule(clipViewTool, coreNamespace);
     tools.registerModule(measureTool, coreNamespace);
+    tools.registerModule(accudrawTool, coreNamespace);
     tools.registerModule(pluginTool, coreNamespace);
 
     this.registerEntityState(EntityState.classFullName, EntityState);

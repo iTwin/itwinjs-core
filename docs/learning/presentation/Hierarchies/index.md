@@ -1,4 +1,5 @@
 # Hierarchies
+
 There are 2 primary concepts for creating hierarchies: rules and specifications.
 
 ## Rules
@@ -24,10 +25,12 @@ parent node.
 **Note:**  grouping and sorting is done at specification level which
 means nodes generated from different specifications do not get grouped and sorted together.
 
-## Grouping
+## Hierarchy Customization
 
-There's an additional hierarchy-related rule used for advanced grouping:
-- [GroupingRule](./GroupingRule.md)
+All [general use customization rules](../Customization/index.md#rules) can be applied to hierarchies. In addition, there
+are some hierarchy-specific customization rules:
+- [GroupingRule](./GroupingRule.md) for advanced grouping
+- NodeArtifactsRule to help create hierarchies for specific cases
 
 ## Expressions
 - [ECExpressions](./ECExpressions.md)

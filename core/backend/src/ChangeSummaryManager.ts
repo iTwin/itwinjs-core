@@ -170,6 +170,11 @@ export class ChangeSummaryManager {
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId: ctx.iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
 
+    // Detach change cache as it's being written to during the extraction
+    const isChangeCacheAttached = this.isChangeCacheAttached(iModel);
+    if (isChangeCacheAttached)
+      ChangeSummaryManager.detachChangeCache(iModel);
+
     perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Open or create local Change Cache file");
     const changesFile: ECDb = ChangeSummaryManager.openOrCreateChangesFile(iModel);
     perfLogger.dispose();
@@ -234,6 +239,10 @@ export class ChangeSummaryManager {
       return summaries;
     } finally {
       changesFile.dispose();
+
+      // Reattach change cache if it was attached before the extraction
+      if (isChangeCacheAttached)
+        ChangeSummaryManager.attachChangeCache(iModel);
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
       if (iModel.briefcase.currentChangeSetId !== endChangeSetId)

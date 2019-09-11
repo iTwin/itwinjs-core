@@ -1744,7 +1744,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithContainInProps> & Readonly<{
             children?: React.ReactNode;
         }>;
@@ -1762,7 +1762,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithContainInProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
-        forceUpdate(callBack?: (() => void) | undefined): void;
+        forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithContainInProps> & Readonly<{
             children?: React.ReactNode;
         }>;

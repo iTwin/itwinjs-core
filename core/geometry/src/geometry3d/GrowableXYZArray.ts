@@ -565,6 +565,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
     }
   }
+
+  /** Initialize `range` with coordinates in this array. */
+  public setRange(range: Range3d, transform?: Transform) {
+    range.setNull();
+    this.extendRange(range, transform);
+  }
+
   /** Sum the lengths of segments between points. */
   public sumLengths(): number {
     let sum = 0.0;
@@ -711,6 +718,20 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         data[j], data[j + 1], data[j + 2],
         data[k], data[k + 1], data[k + 2]);
     return undefined;
+  }
+
+  /**
+   * * compute the cross product from indexed origin t indexed targets targetAIndex and targetB index.
+   * * accumulate it to the result.
+   */
+  public accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void {
+    const i = index * 3;
+    const data = this._data;
+    if (this.isIndexValid(index)) {
+      sum.x += scale * data[i];
+      sum.y += scale * data[i + 1];
+      sum.z += scale * data[i + 2];
+    }
   }
 
   /** Compute the cross product of vectors from from origin to indexed targets i and j */

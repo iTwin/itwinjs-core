@@ -71,7 +71,9 @@ export class IModelHostConfiguration {
 
   private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
 
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")` */
+  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")`
+   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
+   */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
 
@@ -229,14 +231,22 @@ export class IModelHost {
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
+      // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
       if (!serializedContext.authorization)
         return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
 
-      const accessToken = AccessToken.fromTokenString(serializedContext.authorization);
-      const userId = serializedContext.userId; // Really needed only for JWTs
-      if (!userId)
-        throw new BentleyError(AuthStatus.Error, "UserId needs to be passed into the backend", Logger.logError, loggerCategory);
-      accessToken.setUserInfo(new UserInfo(userId));
+      // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
+      let accessToken: AccessToken;
+      if (!IModelHost.authorizationClient) {
+        // Determine the access token from the frontend request
+        accessToken = AccessToken.fromTokenString(serializedContext.authorization);
+        const userId = serializedContext.userId;
+        if (userId)
+          accessToken.setUserInfo(new UserInfo(userId));
+      } else {
+        // Determine the access token from  the backend's authorization client
+        accessToken = await IModelHost.authorizationClient.getAccessToken();
+      }
 
       return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
     };

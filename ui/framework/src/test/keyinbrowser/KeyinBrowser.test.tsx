@@ -11,36 +11,11 @@ import { Button } from "@bentley/ui-core";
 import {
   KeyinBrowser,
 } from "../../ui-framework";
-import TestUtils from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 
 import { MockRender } from "@bentley/imodeljs-frontend";
 
-class StorageMock {
-  private _storage: { [key: string]: any } = {};
-
-  public setItem(key: string, value: string) {
-    this._storage[key] = value || "";
-  }
-
-  public getItem(key: string) {
-    return key in this._storage ? this._storage[key] : null;
-  }
-
-  public removeItem(key: string) {
-    delete this._storage[key];
-  }
-
-  public get length() {
-    return Object.keys(this._storage).length;
-  }
-
-  public key(i: number) {
-    const keys = Object.keys(this._storage);
-    return keys[i] || null;
-  }
-}
-
-const myLocalStorage = new StorageMock();
+const myLocalStorage = storageMock();
 
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
 

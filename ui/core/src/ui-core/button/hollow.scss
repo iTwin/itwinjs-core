@@ -14,7 +14,7 @@
 
     &, &:active, &:focus {
 
-        padding:            $uicore-inputs-padding-bordered $uicore-bordered-padding;
+        padding:            $uicore-button-padding-bordered $uicore-bordered-padding;
         border:             1px solid $buic-text-color-muted;
         background-color:   transparent;
         color:              $buic-text-color;
@@ -32,6 +32,6 @@
     &[disabled]:active,
     &[disabled]:focus {
 
-        padding:            $uicore-inputs-padding $uicore-unbordered-padding;
+        padding:            $uicore-button-padding $uicore-unbordered-padding;
     }
 }

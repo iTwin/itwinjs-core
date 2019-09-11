@@ -238,6 +238,8 @@ Symbol                    | Type    | Value
 `IsPropertyGroupingNode`  | bool    | Is this an ECProperty grouping node
 `GroupedInstancesCount`   | number  | Count of grouped ECInstances (only available for ECClass and ECProperty grouping nodes)
 `ECInstance`              | [ECInstance context](#ecinstance) | ECInstance symbol context if its an ECInstance node
+`HasChildren`             | bool    | Does this node have any children
+`ChildrenArtifacts`       | object[] | A [value list](#value-lists) of objects generated using the [NodeArtifacts](./Hierarchies/NodeArtifactsRule.md) customization rule on child nodes. Child nodes in this case are immediate child nodes that are not necessarily visible.
 
 ### ECInstance
 

@@ -22,13 +22,13 @@ describe.skip("RealityDataServicesClient", () => {
 
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async () => {
     const authToken: AuthorizationToken = await TestConfig.login();
     const accessToken = await realityDataServiceClient.getAccessToken(new ClientRequestContext(), authToken);
     requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
-  it("should be able to retrieve reality data properties  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve reality data properties  (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
     chai.assert(realityData);
     chai.assert(realityData.id === tilesId);
@@ -36,7 +36,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityData.projectId === projectId);
   });
 
-  it("should be able to retrieve reality data properties for every reality data associated to project (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve reality data properties for every reality data associated to project (#integration)", async () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
 
     realityData.forEach((value) => {
@@ -49,7 +49,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityData);
   });
 
-  it("should be able to retrieve reality data properties for every reality data associated to project within an extent (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve reality data properties for every reality data associated to project within an extent (#integration)", async () => {
     const theRange = Range2d.createXYXY(-80 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pensylvania and should gather Shell project
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(requestContext, projectId, theRange);
 
@@ -63,7 +63,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(realityData);
   });
 
-  it("should be able to retrieve app data json blob url  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve app data json blob url  (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: string = await realityData.getRootDocumentJson(requestContext);
@@ -71,7 +71,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve the azure blob url  (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext);
@@ -79,7 +79,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url (write access) (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to retrieve the azure blob url (write access) (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext, true);
@@ -87,7 +87,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(url);
   });
 
-  it("should be able to get model data json  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to get model data json  (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -103,7 +103,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content  (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to get model data content  (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -119,7 +119,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to parse a RDS URL and extract Reality Data Id", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to parse a RDS URL and extract Reality Data Id", async () => {
     const url1: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--Server/S3MX/RealityData/d629a312-1f8a-4c84-845f-87d0a27d6b9b";
     const url2: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--d629a312-1f8a-4c84-845f-87d0a27d6b9b/S3MX/Folder/09b676d1-f0ed-4eba-b47a-7991b05f280d~2FGraz~2F";
     const url3: string = "https://qa-connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--caa80cb6-b3bd-44be-9178-a3d7cacaad51/S3MX/Document/a8136337-c563-424a-b3c3-17c41a984a94~2FGraz~2FScene~2FGraz.3mx";
@@ -147,7 +147,7 @@ describe.skip("RealityDataServicesClient", () => {
     chai.assert(invalidRealityDataId3 === undefined);
   });
 
-  it("should be able to create a reality data (without specific identifier) and delete it", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to create a reality data (without specific identifier) and delete it", async () => {
     const realityData: RealityData = new RealityData();
     realityData.name = "Test reality data 1";
     realityData.dataSet = "Test Dataset for iModelJS";
@@ -208,7 +208,7 @@ describe.skip("RealityDataServicesClient", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to create a reality data (with fixed specific identifier) and delete it", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to create a reality data (with fixed specific identifier) and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -274,7 +274,7 @@ describe.skip("RealityDataServicesClient", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to duplicate a reality data and delete it", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to duplicate a reality data and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -400,7 +400,7 @@ describe.skip("RealityDataServicesClient", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to create a reality data then modify it then delete it", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to create a reality data then modify it then delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     realityData.name = "Test reality data 1";
@@ -517,7 +517,7 @@ describe.skip("RealityDataServicesClient", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to get model data content with root doc not at blob root (root doc path) (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to get model data content with root doc not at blob root (root doc path) (#integration)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob

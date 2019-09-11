@@ -22,6 +22,8 @@ import { GeometryQuery } from "./GeometryQuery";
  * @public
  */
 export class PointString3d extends GeometryQuery implements BeJSONFunctions {
+  public readonly geometryCategory = "pointCollection";
+
   /** Test if `other` is a PointString3d */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof PointString3d; }
   private _points: Point3d[];

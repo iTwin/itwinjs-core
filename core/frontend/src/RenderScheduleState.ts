@@ -101,7 +101,7 @@ export namespace RenderScheduleState {
       return duration;
     }
     public get containsFeatureOverrides() { return undefined !== this.visibilityTimeline || undefined !== this.colorTimeline; }
-    public get containsAnimation() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline; }
+    public get containsAnimationBatches() { return undefined !== this.transformTimeline || undefined !== this.cuttingPlaneTimeline || (undefined !== this.colorTimeline && 0 !== this.batchId) || (undefined !== this.visibilityTimeline && 0 !== this.batchId); }
 
     private static findTimelineInterval(interval: Interval, time: number, timeline?: TimelineEntry[]) {
       if (!timeline || timeline.length === 0)
@@ -126,7 +126,8 @@ export namespace RenderScheduleState {
     }
 
     public getVisibilityOverride(time: number, interval: Interval): number {
-      if (!ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
+      if (undefined === this.visibilityTimeline ||
+        !ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null)
         return 100.0;
       const timeline = this.visibilityTimeline!;
       let visibility = timeline[interval.index0].value;
@@ -139,7 +140,7 @@ export namespace RenderScheduleState {
       return visibility;
     }
 
-    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number) {
+    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number, elementIds: Id64String[]) {
       let colorOverride, transparencyOverride;
 
       const visibility = this.getVisibilityOverride(time, interval);
@@ -147,10 +148,10 @@ export namespace RenderScheduleState {
         overrides.setAnimationNodeNeverDrawn(batchId);
         return;
       }
-      if (visibility <= 100)
+      if (visibility < 100)
         transparencyOverride = 1.0 - visibility / 100.0;
 
-      if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
+      if (undefined !== this.colorTimeline && ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline) && this.colorTimeline![interval.index0].value !== null) {
         const entry0 = this.colorTimeline![interval.index0].value;
         if (interval.fraction > 0) {
           const entry1 = this.colorTimeline![interval.index1].value;
@@ -159,8 +160,14 @@ export namespace RenderScheduleState {
           colorOverride = new RgbColor(entry0.red, entry0.green, entry0.blue);
       }
 
-      if (colorOverride || transparencyOverride)
-        overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+      if (colorOverride || transparencyOverride) {
+        if (0 === batchId) {
+          for (const elementId of elementIds)
+            overrides.overrideElement(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        } else {
+          overrides.overrideAnimationNode(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        }
+      }
     }
     public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
       if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
@@ -238,7 +245,7 @@ export namespace RenderScheduleState {
     public modelId: Id64String;
     public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
-    public containsAnimation: boolean = false;
+    public containsAnimationBatches: boolean = false;
     private constructor(modelId: Id64String) { this.modelId = modelId; }
     public get duration() {
       const duration = Range1d.createNull();
@@ -257,21 +264,13 @@ export namespace RenderScheduleState {
           value.elementTimelines.push(elementTimeline);
           if (elementTimeline.containsFeatureOverrides)
             value.containsFeatureOverrides = true;
-          if (elementTimeline.containsAnimation)
-            value.containsAnimation = true;
+          if (elementTimeline.containsAnimationBatches)
+            value.containsAnimationBatches = true;
         });
 
       return value;
     }
-    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId)); }
-    public forEachAnimatedId(idFunction: (id: Id64String) => void): void {
-      if (this.containsAnimation) {
-        for (const timeline of this.elementTimelines)
-          if (timeline.containsAnimation)
-            for (const id of timeline.elementIds)
-              idFunction(id);
-      }
-    }
+    public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, entry.batchId, entry.elementIds)); }
     public getAnimationBranches(branches: AnimationBranchStates, scheduleTime: number) {
       const interval = new Interval();
       for (let i = 0; i < this.elementTimelines.length; i++) {
@@ -299,14 +298,14 @@ export namespace RenderScheduleState {
       modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
       return value;
     }
-    public get containsAnimation() {
+    public get containsAnimationBatches() {
       for (const modelTimeline of this.modelTimelines)
-        if (modelTimeline.containsAnimation)
+        if (modelTimeline.containsAnimationBatches)
           return true;
       return false;
     }
     public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-      if (!this.containsAnimation)
+      if (!this.containsAnimationBatches)
         return undefined;
 
       const animationBranches = new Map<string, AnimationBranchState>();
@@ -334,7 +333,7 @@ export namespace RenderScheduleState {
         return undefined;
 
       for (const modelTimeline of this.modelTimelines)
-        if (modelTimeline.modelId === modelId && modelTimeline.containsAnimation)
+        if (modelTimeline.modelId === modelId && modelTimeline.containsAnimationBatches)
           return this.displayStyleId;
 
       return undefined;

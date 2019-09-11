@@ -16,6 +16,7 @@ import { LineString3d } from "./LineString3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Geometry } from "../Geometry";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 
@@ -108,9 +109,9 @@ class SumLengthsContext extends RecursiveCurveProcessor {
  * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
  */
 class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
-  private _result: CurveCollection | undefined;
+  protected _result: CurveCollection | undefined;
   private _transform: Transform | undefined;
-  private constructor(transform?: Transform) {
+  protected constructor(transform?: Transform) {
     super();
     this._transform = transform;
     this._result = undefined;
@@ -135,7 +136,7 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     return result;
   }
   // specialized clone methods override this (and allow announceCurvePrimitive to insert to parent)
-  protected doClone(primitive: CurvePrimitive): CurvePrimitive {
+  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
     if (this._transform)
       return primitive.cloneTransformed(this._transform) as CurvePrimitive;
     return primitive.clone() as CurvePrimitive;
@@ -143,16 +144,56 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
 
   public announceCurvePrimitive(primitive: CurvePrimitive, _indexInParent: number): void {
     const c = this.doClone(primitive);
-    if (c && this._stack.length > 0) {
+    if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];
-      if (parent instanceof CurveChain) {
-        parent.tryAddChild(c);
-      } else if (parent instanceof BagOfCurves) {
-        parent.tryAddChild(c);
-      }
+      if (parent instanceof CurveChain || parent instanceof BagOfCurves)
+        if (Array.isArray(c)) {
+          for (const c1 of c) {
+            parent.tryAddChild(c1);
+          }
+        } else {
+          parent.tryAddChild(c);
+        }
     }
   }
 }
+/**
+ * Algorithmic class for cloning with linestrings expanded to line segments
+ */
+class CloneWithExpandedLineStrings extends CloneCurvesContext {
+  public constructor() {
+    // we have no transform ....
+    super(undefined);
+  }
+  // We know we have no transform !!!
+  protected doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] | undefined {
+    if (primitive instanceof LineString3d && primitive.numPoints() > 1) {
+      const packedPoints = primitive.packedPoints;
+      const n = packedPoints.length;
+      const segments = [];
+      for (let i = 0; i + 1 < n; i++) {
+        segments.push(LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)));
+      }
+      return segments;
+    }
+    return primitive.clone() as CurvePrimitive;
+  }
+  public static clone(target: CurveCollection): CurveCollection | undefined {
+    const context = new CloneWithExpandedLineStrings();
+    target.announceToCurveProcessor(context);
+    return context._result;
+  }
+}
+
+/** Describes the concrete type of a [[CurveCollection]]. Each type name maps to a specific subclass and can be used in conditional statements for type-switching.
+ *    - "loop" => [[Loop]]
+ *    - "path" => [[Path]]
+ *    - "unionRegion" => [[UnionRegion]]
+ *    - "parityRegion" => [[ParityRegion]]
+ *    - "bagOfCurves" => [[BagOfCurves]]
+ * @public
+ */
+export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegion" | "bagOfCurves";
 
 /**
  * * A `CurveCollection` is an abstract (non-instantiable) class for various sets of curves with particular structures:
@@ -165,6 +206,10 @@ class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
  * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
+  public readonly geometryCategory = "curveCollection";
+  /** Type discriminator. */
+  public abstract readonly curveCollectionType: CurveCollectionType;
+
   /* tslint:disable:variable-name no-empty*/
   /**  Flag for inner loop status. Only used by `Loop`. */
   public isInner: boolean = false;
@@ -188,6 +233,32 @@ export abstract class CurveCollection extends GeometryQuery {
   /** Create a deep copy of transformed curves. */
   public cloneTransformed(transform: Transform): CurveCollection | undefined {
     return CloneCurvesContext.clone(this, transform);
+  }
+  /** Create a deep copy with all linestrings expanded to multiple LineSegment3d. */
+  public cloneWithExpandedLineStrings(): CurveCollection | undefined {
+    return CloneWithExpandedLineStrings.clone(this);
+  }
+  /** Recurse through children to collect CurvePrimitive's in flat array. */
+  private collectCurvePrimitivesGo(results: CurvePrimitive[]) {
+    if (this.children) {
+      for (const child of this.children) {
+        if (child instanceof CurvePrimitive)
+          results.push(child);
+        else if (child instanceof CurveCollection)
+          child.collectCurvePrimitivesGo(results);
+      }
+    }
+  }
+
+  /**
+   * Return an array containing only the curve primitives.
+   * * These are leaf nodes
+   * * If there is a CurveChainWithDistanceIndex, that primitive stands as a leaf. (NOT its constituent curves)
+   */
+  public collectCurvePrimitives(): CurvePrimitive[] {
+    const results: CurvePrimitive[] = [];
+    this.collectCurvePrimitivesGo(results);
+    return results;
   }
   /** Return true for planar region types:
    * * `Loop`
@@ -235,7 +306,25 @@ export abstract class CurveCollection extends GeometryQuery {
       }
     }
   }
-
+  /**
+   * * Find any curve primitive in the source.
+   * * Evaluate it at a fraction (which by default is an interior fraction)
+   * @param source containing `CurvePrimitive` or `CurveCollection`
+   * @param fraction fraction to use in `curve.fractionToPoint(fraction)`
+   */
+  public static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction: number = 0.5): CurveLocationDetail | undefined {
+    if (!source)
+      return undefined;
+    if (source instanceof CurvePrimitive) {
+      return CurveLocationDetail.createCurveEvaluatedFraction(source, fraction);
+    } else if (source instanceof CurveCollection && source.children !== undefined)
+      for (const child of source.children) {
+        const detail = this.createCurveLocationDetailOnAnyCurvePrimitive(child, fraction);
+        if (detail)
+          return detail;
+      }
+    return undefined;
+  }
 }
 /** Shared base class for use by both open and closed paths.
  * * A `CurveChain` contains only curvePrimitives.  No other paths, loops, or regions allowed.
@@ -332,6 +421,8 @@ export abstract class CurveChain extends CurveCollection {
  * @public
  */
 export class BagOfCurves extends CurveCollection {
+  public readonly curveCollectionType = "bagOfCurves";
+
   /** test if `other` is an instance of `BagOfCurves` */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof BagOfCurves; }
   /** Array of children.

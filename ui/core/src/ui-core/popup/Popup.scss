@@ -2,7 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../inputs/variables.scss";
+@import "../inputs/variables";
+@import "../z-index";
 
 .core-popup {
  top: 0;
@@ -11,13 +12,15 @@
  box-sizing: border-box;
  position: absolute;
  border-radius: 4px;
- z-index: 100;
  border: 1px solid $buic-background-panel-stroke;
- background: $uicore-white;
+ background: $buic-background-panel;
+ color: $buic-text-color;
  animation-duration: .2s;
  animation-timing-function: ease;
  animation-fill-mode: forwards;
  cursor: default;
+
+ @include uicore-z-index(tooltip);
 }
 
 .core-popup.arrow::after, .core-popup.arrow::before {
@@ -27,6 +30,7 @@
  width: 0;
  position: absolute;
  pointer-events: none;
+ color: $buic-background-panel;
 }
 
 .core-popup.core-popup-bottom-left.arrow::after,

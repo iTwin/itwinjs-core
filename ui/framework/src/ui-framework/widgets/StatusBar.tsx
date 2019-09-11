@@ -7,7 +7,7 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { MessageContainer, MessageSeverity, SmallText, CommonProps } from "@bentley/ui-core";
+import { MessageContainer, MessageSeverity, SmallText, CommonProps, CommonDivProps, Div } from "@bentley/ui-core";
 import {
   Footer,
   Toast as ToastMessage,
@@ -330,3 +330,35 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     });
   }
 }
+
+/** StatusBar With Space Between Items React functional component
+ * @beta
+ */
+// tslint:disable-next-line:variable-name
+export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+  return <Div {...props} mainClassName="uifw-statusbar-space-between" />;
+};
+
+/** StatusBar Left Section React functional component
+ * @beta
+ */
+// tslint:disable-next-line:variable-name
+export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+  return <Div {...props} mainClassName="uifw-statusbar-left" />;
+};
+
+/** StatusBar Center Section React functional component
+ * @beta
+ */
+// tslint:disable-next-line:variable-name
+export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+  return <Div {...props} mainClassName="uifw-statusbar-center" />;
+};
+
+/** StatusBar Right Section React functional component
+ * @beta
+ */
+// tslint:disable-next-line:variable-name
+export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+  return <Div {...props} mainClassName="uifw-statusbar-right" />;
+};

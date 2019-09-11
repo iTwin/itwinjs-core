@@ -36,7 +36,7 @@ describe("iModelHub CodeHandler", () => {
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     this.enableTimeouts(false);
 
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
@@ -192,9 +192,11 @@ describe("iModelHub CodeHandler", () => {
     }
   });
 
-  it("should get codes only with their values", async function (this: Mocha.ITestCallbackContext) {
-    if (TestConfig.enableMocks || !utils.getCloudEnv().isIModelHub)   // imodel-bank ignores $select
+  it("should get codes only with their values", async function () {
+    if (TestConfig.enableMocks || !utils.getCloudEnv().isIModelHub) {   // imodel-bank ignores $select
       this.skip();
+      return;
+    }
 
     const query = new CodeQuery().select("Values");
     const codes = await iModelClient.codes.get(requestContext, imodelId, query);
@@ -362,16 +364,18 @@ function createTestSequence(type: CodeSequenceType) {
   return sequence;
 }
 
-describe("iModelHub CodeSequenceHandler", () => {
+describe("iModelHub CodeSequenceHandler ", () => {
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
   const imodelName = "imodeljs-clients Codes test";
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function (this: Mocha.Context) {
-    if (TestConfig.enableMocks)
+  before(async function () {
+    if (TestConfig.enableMocks) {
       this.skip();
+      return;
+    }
 
     const accessToken = await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);

@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+
+.uifw-statusFields-displayStyle {
+  $font-size-medium: 12px;
+  $font-size-small: $font-size-medium;
+  overflow: hidden;
+  padding-right: 0px;
+
+  .uifw-statusFields-displayStyle-selector {
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  @media only screen and (max-width: 768px) {
+    font-size: $font-size-medium;
+  }
+
+  @media only screen and (max-width: 600px) {
+    font-size: $font-size-small;
+  }
+}

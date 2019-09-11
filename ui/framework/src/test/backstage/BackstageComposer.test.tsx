@@ -49,9 +49,11 @@ class TestBackstageItemProvider implements BackstageItemProvider {
     backstageItems.push(stage4Item);
     backstageItems.push(BackstageItemManager.createFrontstageLauncherItemSpec("IModelOpen", 200, 10, "TestApp:backstage.imodelopen", undefined, undefined, "icon-folder-opened"));
     backstageItems.push(BackstageItemManager.createCommandLauncherItemSpec("IModelIndex", 200, 20, () => { }, "TestApp:teat.label", undefined, undefined, "icon-placeholder"));
-    backstageItems.push(BackstageItemManager.createFrontstageLauncherItemSpec("ViewsFrontstage", 400, 10, "TestApp:backstage.viewIModel", "TestApp:backstage.iModelStage", undefined, "icon-placeholder"));
+    backstageItems.push(BackstageItemManager.createCommandLauncherItemSpec("CmdTest", 200, 20, () => { }, "TestApp:teat.label", "TestApp:subtitle", "TestApp:tool-tip", "icon-placeholder"));
+    backstageItems.push(BackstageItemManager.createFrontstageLauncherItemSpec("ViewsFrontstage", 400, 10, "TestApp:backstage.viewIModel", "TestApp:backstage.iModelStage", "TestApp:backstage.tooltip", "icon-placeholder"));
 
     backstageItems.push(BackstageItemManager.createCustomBackstageItemSpec(this.id, "custom-test", 500, 10, "TestApp:backstage.custom", "TestApp:subtitle", "TestApp:tool-tip", "TestApp:icon"));
+    backstageItems.push(BackstageItemManager.createCustomBackstageItemSpec("CustomTest", "custom-test", 500, 10, "TestApp:backstage.custom", undefined, undefined, "TestApp:icon"));
 
     return backstageItems;
   }
@@ -140,6 +142,10 @@ describe("BackstageComposer", () => {
     wrapper.update();
     wrapper.should.matchSnapshot();
     wrapper.unmount();
+  });
+
+  it("hasRegisteredProviders should correct value", () => {
+    expect(BackstageItemManager.hasRegisteredProviders).to.be.true;
   });
 
 });

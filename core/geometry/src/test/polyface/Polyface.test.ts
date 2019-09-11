@@ -276,7 +276,7 @@ describe("Polyface.Box", () => {
 
     const jsPolyface = IModelJson.Writer.toIModelJson(polyface);
     // console.log("imjs polyface", jsPolyface);
-    const polyfaceB = IModelJson.Reader.parse(jsPolyface);
+    const polyfaceB = IModelJson.Reader.parse(jsPolyface) as IndexedPolyface;
     ck.testBoolean(true, polyface.isAlmostEqual(polyfaceB), "polyface round trip");
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");

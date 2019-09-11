@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Target, PrimitiveVisibility } from "./Target";
+import { Target } from "./Target";
 import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
@@ -13,7 +13,7 @@ import { DrawParams, RenderCommands, DrawCommand } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
-import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGraphicParams, RenderMemory, PrimitiveVisibility } from "../System";
 import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
 /** @internal */

@@ -14,12 +14,22 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
 import { decodeDepthRgb } from "./Decode";
-import { readDepthAndOrder } from "./FeatureSymbology";
+import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
 import { addViewport } from "./Viewport";
 import { addFrustum } from "./Common";
 
+// This outputs 1 for unlit surfaces, and for polylines and point strings.
+// Otherwise it computes ambient occlusion based on normal reconstructed from pick depth.
 const computeAmbientOcclusion = `
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
+  vec2 depthAndOrder = readDepthAndOrder(tc);
+  float order = depthAndOrder.x;
+  if (order >= kRenderOrder_PlanarBit)
+    order = order - kRenderOrder_PlanarBit;
+
+  if (order < kRenderOrder_LitSurface || order == kRenderOrder_Linear)
+    return vec4(1.0);
+
   float linearDepth = readDepthAndOrder(tc).y;
   float nonLinearDepth = computeNonLinearDepth(linearDepth);
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
@@ -150,6 +160,7 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
   frag.addFunction(computePositionFromDepth);
   frag.addFunction(computeNormalFromDepth);
   frag.addFunction(computeLinearDepth);
+  addRenderOrderConstants(frag);
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusion);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);

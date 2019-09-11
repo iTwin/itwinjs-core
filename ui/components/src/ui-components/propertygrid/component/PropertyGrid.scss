@@ -50,12 +50,6 @@
   .components--hoverable:hover {
     background-color: $buic-row-hover;
   }
-
-  .components-cell-editor {
-    border: $buic-foreground-primary solid 1px;
-    border-radius: 3px;
-    box-sizing: border-box;
-  }
 }
 
 .components-property-list--horizontal {

@@ -1,11 +1,14 @@
 sep=;
 Release Tag;API Item
+beta;ApplyViewTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
+alpha;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
+beta;ClearIsolatedElementsTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -24,13 +27,18 @@ alpha;createNumericInput(props: NumericInputProps, useFloat?: boolean): HTMLInpu
 alpha;createRadioBox(props: RadioBoxProps): RadioBox
 alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
+beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
+beta;class EmphasizeElementsTool 
+beta;EmphasizeSelectedElementsTool 
 beta;FpsTracker
 beta;FrontendDevTools
 beta;FrustumDecorator 
+beta;IsolateSelectedElementsTool 
 beta;KeyinField
 alpha;LabeledNumericInput
 alpha;LabeledNumericInputProps 
+beta;LoseWebGLContextTool 
 beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
@@ -43,7 +51,11 @@ alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
+beta;class RenderSystemDebugControlTool 
+beta;class RenderTargetDebugControlTool 
 beta;ReportWebGLCompatibilityTool 
+beta;SaveViewTool 
+beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps
@@ -52,5 +64,12 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
-beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): void
+beta;ToggleFrustumSnapshotTool 
+alpha;ToggleLogZTool 
+beta;TogglePrimitiveVisibilityTool 
+beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
+beta;ToggleProjectExtentsTool 
+beta;ToggleReadPixelsTool 
+alpha;ToggleSkyboxTool 
+beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker

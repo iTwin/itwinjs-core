@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Add documentation for RenderSchedule
+- fix casing of displayStyle.contextRealityModels
+- Fixed reporting of errors when the ClientRequestContext is established at the backend. 
+- Electron IPC transport fix for large messages.
+- Added ability to clear individual overridden flags in ViewFlag.Overrides.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

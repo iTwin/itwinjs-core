@@ -313,7 +313,8 @@ class PixelBuffer implements Pixel.Buffer {
             planarity = Pixel.Planarity.None;
             break;
           case RenderOrder.BlankingRegion:
-          case RenderOrder.Surface:
+          case RenderOrder.LitSurface:
+          case RenderOrder.UnlitSurface:
             geometryType = Pixel.GeometryType.Surface;
             break;
           case RenderOrder.Linear:

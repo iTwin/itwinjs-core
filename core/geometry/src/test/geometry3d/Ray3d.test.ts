@@ -10,7 +10,9 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Checker } from "../Checker";
 import { expect } from "chai";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
-import { AxisOrder } from "../../Geometry";
+import { AxisOrder, Geometry } from "../../Geometry";
+import { Range3d, Range1d } from "../../geometry3d/Range";
+import { prettyPrint } from "../testFunctions";
 
 /** create rays, using optional result (which may be undefined)
  */
@@ -42,13 +44,13 @@ function createRays(ck: Checker, target?: Ray3d) {
     ck.testPoint3d(pointF4, transform.multiplyPoint3d(pointF), "transform*ray");
 
     const pointF1 = ray1.projectPointToRay(pointF);
-    ck.testPoint3d(pointF, pointF1, "fraction to point reprojects to same point");
+    ck.testPoint3d(pointF, pointF1, "fraction to point re projects to same point");
     const frame = ray.toRigidZFrame();
     if (ck.testPointer(frame) && frame) {
       const localPoint = Point3d.create(0.3, 0.8, 5.7);
       const globalPoint = frame.multiplyPoint3d(localPoint);
       const distanceToRay = ray.distance(globalPoint);
-      ck.testCoordinate(distanceToRay, localPoint.magnitudeXY(), " projection distance is inplane part");
+      ck.testCoordinate(distanceToRay, localPoint.magnitudeXY(), " projection distance is in plane part");
     }
 
     const ray5 = Ray3d.createPointVectorNumber(pointA, directionA, 4.0, target);
@@ -90,14 +92,14 @@ describe("Ray3d", () => {
     createRays(ck, undefined);
     createRays(ck, rayQ0);
 
-    const nullray = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0);  // general origin, zero vector to trigger else branches ..
-    nullray.toRigidZFrame();
-    nullray.tryNormalizeInPlaceWithAreaWeight(0.0);
-    nullray.tryNormalizeInPlaceWithAreaWeight(1.0);
+    const nullRay = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0);  // general origin, zero vector to trigger else branches ..
+    nullRay.toRigidZFrame();
+    nullRay.tryNormalizeInPlaceWithAreaWeight(0.0);
+    nullRay.tryNormalizeInPlaceWithAreaWeight(1.0);
     const spacePoint = Point3d.create(8, 10, 1);
-    ck.testCoordinate(spacePoint.distance(nullray.origin), nullray.distance(spacePoint), "distance to null ray");
+    ck.testCoordinate(spacePoint.distance(nullRay.origin), nullRay.distance(spacePoint), "distance to null ray");
 
-    ck.testFalse(nullray.trySetDirectionMagnitudeInPlace(), "trySetMagnnitude of nullray");
+    ck.testFalse(nullRay.trySetDirectionMagnitudeInPlace(), "trySetMagnitude of null ray");
 
     ck.testUndefined(
       Ray3d.createWeightedDerivative(
@@ -140,15 +142,15 @@ describe("Ray3d", () => {
           ck.testPerpendicular(vector, rayB.direction);
           const rayE1 = rayA.clone();
           const rayE2 = rayB.clone();
-          const point1 = rayE1.fractionToPoint (f1);
-          const point2 = rayE2.fractionToPoint (f2);
-          const vector12 = Vector3d.createStartEnd (point1, point2);
-          rayE1.origin.addInPlace (vector12);
+          const point1 = rayE1.fractionToPoint(f1);
+          const point2 = rayE2.fractionToPoint(f2);
+          const vector12 = Vector3d.createStartEnd(point1, point2);
+          rayE1.origin.addInPlace(vector12);
           // rayE2 at fraction f2 has been moved to rayE1 at fraction f1.  Confirm intersection there . .
-          const approachE = Ray3d.closestApproachRay3dRay3d (rayE1, rayE2);
+          const approachE = Ray3d.closestApproachRay3dRay3d(rayE1, rayE2);
           ck.testExactNumber(approachE.approachType!, CurveCurveApproachType.Intersection, "forced intersection", [indexA, indexB]);
-          ck.testCoordinate (f1, approachE.detailA.fraction);
-          ck.testCoordinate (f2, approachE.detailB.fraction);
+          ck.testCoordinate(f1, approachE.detailA.fraction);
+          ck.testCoordinate(f2, approachE.detailB.fraction);
         }
       }
     }
@@ -156,4 +158,83 @@ describe("Ray3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("ClipToRange", () => {
+    const ck = new Checker();
+    // we expect that there are no parallel pairs or intersecting pairs here . . .
+    const raySample = [
+      Ray3d.createXYZUVW(0, 1, 0, 1, 0, 0),
+      Ray3d.createXYZUVW(0, 0, 1, 0, 1, 0),
+      Ray3d.createXYZUVW(1, 0, 0, 0, 0, 1),
+      Ray3d.createXYZUVW(0, 2, 0, 1, 0, 0),
+      Ray3d.createXYZUVW(0, 0, 2, 0, 1, 0),
+      Ray3d.createXYZUVW(2, 0, 0, 0, 0, 1),
+      Ray3d.createXYZUVW(0, -1, 0, 1, 0, 0),
+      Ray3d.createXYZUVW(0, 0, -1, 0, 1, 0),
+      Ray3d.createXYZUVW(-1, 0, 0, 0, 0, 1),
+      Ray3d.createXYZUVW(0.5, 0.6, 0.7, 1, 2, 3),
+      Ray3d.createXYZUVW(1, 2, 3, 5, 2, -1),
+      Ray3d.createXYZUVW(-3, 2, 4, -1, 3, 4),
+    ];
+    const rangeSample = [
+      Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
+      Range3d.createXYZXYZ(-100, -200, -300, 500, 600, 700),
+      Range3d.createXYZXYZ(100, -200, -300, 500, 600, 700),
+      Range3d.createXYZXYZ(200, 300, 400, 500, 600, 700),
+    ];
+    let numOutside = 0;
+    for (const ray of raySample) {
+      // ray.fractionToPoint(f) === ray1.fractionToPoint (-f)
+      const ray1 = Ray3d.create(ray.origin, ray.direction.scale(-1));
+      for (const range of rangeSample) {
+        const interval = ray.intersectionWithRange3d(range);
+
+        if (!interval.isNull) {
+          for (const intervalFraction of [0.999999, 0.5, 0.000001, -0.001, 1.001]) {
+            const point = ray.fractionToPoint(interval.fractionToPoint(intervalFraction));
+            if (!ck.testBoolean(Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range", intervalFraction, point,
+              prettyPrint(ray), prettyPrint(range)))
+              ray.intersectionWithRange3d(range);
+          }
+          const interval1 = ray1.intersectionWithRange3d(range);
+          if (ck.testDefined(interval1, "Expected reversed ray to have related intersection")) {
+            ck.testCoordinate(interval.low, - interval1.high, "reversed ray");
+            ck.testCoordinate(interval.high, - interval1.low, "reversed ray");
+          }
+        } else {
+          numOutside++;
+          for (let intervalFraction = -0.5; intervalFraction < 1.7; intervalFraction += 0.25) {
+            const point = ray.fractionToPoint(interval.fractionToPoint(intervalFraction));
+            ck.testFalse(range.containsPoint(point), "expect point outside", intervalFraction, point, ray, range);
+          }
+        }
+      }
+    }
+    /** known inside to outside rays .. */
+    for (const range of rangeSample) {
+      const q = range.fractionToPoint(0.4, 0.2, 0.1);
+      const interval0 = Range1d.createNull();
+      for (const ray of raySample) {
+        const ray3 = Ray3d.create(q, ray.direction);   // we know this starts inside
+        const interval = ray3.intersectionWithRange3d(range, interval0);
+        ck.testTrue(interval0 === interval, "Verify reuse result)");
+        if (ck.testFalse(interval.isNull, "expect real intersection from inside start")) {
+          ck.testTrue(interval.containsX(0.0));
+          for (const intervalFraction of [0.999999, 0.5, 0.000001, -0.001, 1.001]) {
+            const point = ray3.fractionToPoint(interval.fractionToPoint(intervalFraction));
+            if (!ck.testBoolean(Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range", intervalFraction, point,
+              prettyPrint(ray3), prettyPrint(range)))
+              ray.intersectionWithRange3d(range);
+          }
+        }
+
+      }
+    }
+    ck.testLE(0, numOutside, "Confirm some outside rays were vetted");
+    const ray2 = raySample[0];
+    const null3d = Range3d.createNull();
+    const range1d = Range1d.createXX(0, 1);
+    ck.testTrue(ray2.intersectionWithRange3d(null3d).isNull, "ray intersect null range");
+    ck.testFalse(range1d.clipLinearMapToInterval(0, 1, 3, 1), "range1d clipLinearMapToInterval with null interval");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

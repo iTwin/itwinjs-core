@@ -26,7 +26,7 @@ public;class Callout
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
-beta;ChangedElementsDb 
+internal;ChangedElementsDb 
 public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
 internal;ChangeSetToken
 beta;ChangeSummary
@@ -269,6 +269,7 @@ public;TxnAction
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
+public;UpdateModelOptions 
 public;UrlLink 
 beta;ValidationError
 public;ViewAttachment 

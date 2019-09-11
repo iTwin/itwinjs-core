@@ -48,6 +48,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get tileExpirationTime(): BeDuration;
   /** @internal */
+  public abstract get realityTileExpirationTime(): BeDuration;
+  /** @internal */
   public abstract get tileTreeExpirationTime(): BeDuration | undefined;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
@@ -190,10 +192,13 @@ export namespace TileAdmin {
      * Default value: 20 seconds.
      * Minimum value: 5 seconds.
      * Maximum value: 60 seconds.
-     *
-     * @alpha
      */
     tileExpirationTime?: number;
+
+    /** ###TODO clean up later. Added for Microsoft demo. Specifies expiration time for reality models. Default: 5 seconds.
+     * @internal
+     */
+    realityTileExpirationTime?: number;
 
     /** If defined, the minimum number of seconds to keep a TileTree in memory after it has become disused.
      * Each time a TileTree is drawn, we record the current time as its most-recently-used time.
@@ -248,18 +253,17 @@ export namespace TileAdmin {
   }
 }
 
-function compareTilePriorities(lhs: Tile, rhs: Tile): number {
-  let diff = lhs.loader.priority - rhs.loader.priority;
-  if (0 === diff) {
-    diff = lhs.loader.compareTilePriorities(lhs, rhs);
-  }
+function comparePriorities(lhs: TileRequest, rhs: TileRequest): number {
+  let diff = lhs.tile.loader.priority - rhs.tile.loader.priority;
+  if (0 === diff)
+    diff = lhs.priority - rhs.priority;
 
   return diff;
 }
 
 class Queue extends PriorityQueue<TileRequest> {
   public constructor() {
-    super((lhs, rhs) => compareTilePriorities(lhs.tile, rhs.tile));
+    super((lhs, rhs) => comparePriorities(lhs, rhs));
   }
 
   public has(request: TileRequest): boolean {
@@ -370,6 +374,7 @@ class Admin extends TileAdmin {
   private _totalDispatchedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
+  private readonly _realityTileExpirationTime: BeDuration;
   private readonly _treeExpirationTime?: BeDuration;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
@@ -417,6 +422,9 @@ class Admin extends TileAdmin {
     // If unspecified, tile expiration time defaults to 20 seconds.
     this._tileExpirationTime = clamp((options.tileExpirationTime ? options.tileExpirationTime : 20), 5, 60)!;
 
+    // If unspecified, reality tile expiration time defaults to 5 seconds.
+    this._realityTileExpirationTime = clamp((options.realityTileExpirationTime ? options.realityTileExpirationTime : 5), 5, 60)!;
+
     // If unspecified, trees never expire (will change this to use a default later).
     this._treeExpirationTime = clamp(options.tileTreeExpirationTime, 10, 3600);
 
@@ -426,6 +434,7 @@ class Admin extends TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
+  public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
 
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
@@ -463,7 +472,15 @@ class Admin extends TileAdmin {
     this._pendingRequests = this._swapPendingRequests;
     this._swapPendingRequests = previouslyPending;
 
+    // We will repopulate pending requests queue from each viewport. We do NOT sort by priority while doing so.
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
+
+    // Recompute priority of each request.
+    for (const req of this._pendingRequests)
+      req.priority = req.tile.loader.computeTilePriority(req.tile, req.viewports);
+
+    // Sort pending requests by priority.
+    this._pendingRequests.sort();
 
     // Cancel any previously pending requests which are no longer needed.
     for (const queued of previouslyPending)
@@ -497,7 +514,7 @@ class Admin extends TileAdmin {
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
-          this._pendingRequests.push(request);
+          this._pendingRequests.append(request);
         }
       } else {
         const req = tile.request;
@@ -505,7 +522,7 @@ class Admin extends TileAdmin {
         if (undefined !== req) {
           // Request may already be dispatched (in this._activeRequests) - if so do not re-enqueue!
           if (req.isQueued && 0 === req.viewports.length)
-            this._pendingRequests.push(req);
+            this._pendingRequests.append(req);
 
           req.addViewport(vp);
           assert(0 < req.viewports.length);

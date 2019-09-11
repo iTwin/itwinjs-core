@@ -673,29 +673,11 @@ describe("ContentBuilder", () => {
 
 describe("getlinks", () => {
 
-  it("detects any number of any type of url links or emails in a passed value", () => {
-    const testLinksWithIndexes = [
-      { link: "testLink.com", linksIndexes: [{ start: 0, end: 12 }] },
-      { link: "text without any links or emai addreses", linksIndexes: [] },
-      { link: "www.testLink.com", linksIndexes: [{ start: 0, end: 16 }] },
-      { link: "https://www.testLink.com", linksIndexes: [{ start: 0, end: 24 }] },
-      { link: "test link string testLink.com", linksIndexes: [{ start: 17, end: 29 }] },
-      { link: "test link testLink.com string", linksIndexes: [{ start: 10, end: 22 }] },
-      { link: "testLink.com www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 12 }, { start: 13, end: 32 }] },
-      { link: "www.testLink.com www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 16 }, { start: 17, end: 36 }] },
-      { link: "https://www.testLink.com https://www.TestLinkTwo.com", linksIndexes: [{ start: 0, end: 24 }, { start: 25, end: 52 }] },
-      { link: "test links string testLink.com, TestLinkTwo.com", linksIndexes: [{ start: 18, end: 30 }, { start: 32, end: 47 }] },
-      { link: "test links testLink.com string TestLinkTwo.com", linksIndexes: [{ start: 11, end: 23 }, { start: 31, end: 46 }] },
-      { link: "testLink.com testLink.com", linksIndexes: [{ start: 0, end: 12 }, { start: 13, end: 25 }] },
-      { link: "test link1: testLink.com, test link two: testLink.com", linksIndexes: [{ start: 12, end: 24 }, { start: 41, end: 53 }] },
-    ];
-    testLinksWithIndexes.forEach((testLinkWithIndexes) => {
-      const linkResults = getLinks(testLinkWithIndexes.link);
-      expect(linkResults.length).to.be.equal(testLinkWithIndexes.linksIndexes.length);
-      for (let i = 0; i < linkResults.length; i++) {
-        expect(linkResults[i].start).to.be.equal(testLinkWithIndexes.linksIndexes[i].start);
-        expect(linkResults[i].end).to.be.equal(testLinkWithIndexes.linksIndexes[i].end);
-      }
-    });
+  it("detects url link", () => {
+    const testLinkWithIndexes = { link: "Link: https://www.testLink.com", linkIndexes: { start: 6, end: 30 } };
+    const linkResult = getLinks(testLinkWithIndexes.link);
+    expect(linkResult.length).to.be.equal(1);
+    expect(linkResult[0].start).to.be.equal(testLinkWithIndexes.linkIndexes.start);
+    expect(linkResult[0].end).to.be.equal(testLinkWithIndexes.linkIndexes.end);
   });
 });

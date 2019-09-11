@@ -152,7 +152,6 @@ describe("Viewport", () => {
       assert.isDefined(plan.hline);
       assert.isFalse(plan.hline!.visible.ovrColor);
       assert.equal(plan.hline!.hidden.width, undefined);
-      assert.isUndefined(plan.lights);
     }
   });
 

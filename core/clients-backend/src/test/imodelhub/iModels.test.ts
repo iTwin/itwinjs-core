@@ -52,12 +52,18 @@ function mockGetIModel(contextId: string, imodelName: string, imodelId: GuidStri
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: string, description: string, iModelTemplate?: string) {
+function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
   const requestPath = utils.createRequestUrl(ScopeType.Context, contextId, "iModel");
   const postBodyProperties = new Map<string, any>([
     ["name", imodelName],
-    ["description", description],
   ]);
+
+  if (!!description) {
+    postBodyProperties.set("description", description);
+  }
 
   if (!!iModelTemplate) {
     postBodyProperties.set("iModelTemplate", iModelTemplate);
@@ -65,17 +71,29 @@ function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: str
 
   const postBody = ResponseBuilder.generatePostBody<HubIModel>(
     ResponseBuilder.generateObject<HubIModel>(HubIModel, postBodyProperties));
+  const responseProperties = new Map<string, any>([
+    ["wsgId", imodelId],
+    ["name", imodelName],
+    ["initialized", iModelTemplate === "Empty"],
+  ]);
+
+  if (!!description) {
+    responseProperties.set("description", description);
+  }
+
+  if (!!iModelTemplate) {
+    responseProperties.set("iModelTemplate", iModelTemplate);
+  }
+
   const requestResponse = ResponseBuilder.generatePostResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
-    new Map<string, any>([
-      ["wsgId", imodelId],
-      ["name", imodelName],
-      ["description", description],
-      ["initialized", !!iModelTemplate],
-    ])));
+    responseProperties));
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
 function mockPostNewSeedFile(imodelId: GuidString, fileId: string, filePath: string, description?: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
@@ -95,6 +113,9 @@ function mockPostNewSeedFile(imodelId: GuidString, fileId: string, filePath: str
 }
 
 function mockPostUpdatedSeedFile(imodelId: GuidString, fileId: string, filePath: string, description?: string) {
+  if (!TestConfig.enableMocks)
+    return;
+
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", fileId);
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
@@ -179,7 +200,7 @@ describe("iModelHub iModelsHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
   let backupTimeout: RequestTimeoutOptions;
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     backupTimeout = RequestGlobalOptions.timeout;
     RequestGlobalOptions.timeout = {
       deadline: 100000,
@@ -229,10 +250,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(iModel.name).to.be.equal(imodelName);
   });
 
-  it("should be able to delete iModels", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to delete iModels (#unit)", async () => {
     // Used only for maintenance
     const names = ["22_LargePlant.166.i"];
     for (const name of names) {
@@ -289,7 +307,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.UndefinedArgumentError);
   });
 
-  it("should fail creating existing and initialized iModel", async function (this: Mocha.ITestCallbackContext) {
+  it("should fail creating existing and initialized iModel", async () => {
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel");
       const requestResponse = ResponseBuilder.generateError("iModelHub.iModelAlreadyExists", "iModel already exists", undefined,
@@ -299,7 +317,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModels.create(requestContext, projectId, imodelName, utils.getMockSeedFilePath(), "");
+      await imodelClient.iModels.create(requestContext, projectId, imodelName, { path: utils.getMockSeedFilePath(), description: "" });
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -308,19 +326,20 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
+  it("should create iModel and upload SeedFile", async function () {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
     let iModel: HubIModel | undefined;
     try {
-      iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track(), 240000);
+      iModel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, { path: filePath, description, progressCallback: progressTracker.track(), timeOutInMilliseconds: 240000 });
     } catch (error) {
       chai.expect(error).to.be.instanceof(IModelHubClientError);
       const clientError = error as IModelHubClientError;
       if (clientError.status! === IModelHubStatus.InitializationTimeout) {
         this.skip();
+        return;
       }
     }
     chai.assert(iModel);
@@ -329,10 +348,7 @@ describe("iModelHub iModelsHandler", () => {
     progressTracker.check();
   });
 
-  it("should continue creating not initialized iModel", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should continue creating not initialized iModel (#unit)", async () => {
     const filePath = utils.getMockSeedFilePath();
     if (TestConfig.enableMocks) {
       const requestPath = utils.createRequestUrl(ScopeType.Context, projectId, "iModel");
@@ -351,7 +367,7 @@ describe("iModelHub iModelsHandler", () => {
       mockGetSeedFile(imodelId);
     }
 
-    const iModel = await imodelClient.iModels.create(requestContext, projectId, imodelName, filePath, "");
+    const iModel = await imodelClient.iModels.create(requestContext, projectId, imodelName, { path: filePath, description: "" });
 
     chai.expect(iModel.id!.toString()).to.be.equal(imodelId!.toString());
     chai.expect(iModel.name).to.be.equal(imodelName);
@@ -396,14 +412,16 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileHandlerNotSet);
   });
 
-  it("should fail creating an iModel with no file handler", async function (this: Mocha.ITestCallbackContext) {
-    if (!utils.getCloudEnv().isIModelHub)
+  it("should fail creating an iModel with no file handler", async function () {
+    if (!utils.getCloudEnv().isIModelHub) {
       this.skip();
+      return;
+    }
 
     let error: IModelHubClientError | undefined;
     const invalidClient = new IModelHubClient();
     try {
-      await invalidClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir);
+      await invalidClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -415,7 +433,7 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with no file", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir + "InvalidiModel.bim");
+      await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir + "InvalidiModel.bim" });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -427,13 +445,37 @@ describe("iModelHub iModelsHandler", () => {
   it("should fail creating an iModel with directory path", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.iModels.create(requestContext, projectId, createIModelName, utils.workDir);
+      await iModelClient.iModels.create(requestContext, projectId, createIModelName, { path: utils.workDir });
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
     }
     chai.assert(error);
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.FileNotFound);
+  });
+
+  it("should clone iModel", async () => {
+    await utils.deleteIModelByName(requestContext, projectId, createIModelName);
+
+    mockPostiModel(projectId, imodelId, createIModelName, "", `${imodelId}:`);
+    mockGetSeedFile(imodelId);
+
+    const imodel = await iModelClient.iModels.create(requestContext, projectId, createIModelName, { template: { imodelId } });
+    chai.assert(imodel);
+    chai.assert(imodel!.initialized);
+    chai.expect(imodel!.iModelTemplate).to.be.equal(`${imodelId}:`);
+  });
+
+  it("should clone iModel with ChangeSets (#unit)", async () => {
+    const briefcase = (await utils.getBriefcases(requestContext, imodelId, 1))[0];
+    const changeSet = utils.getMockChangeSets(briefcase)[0];
+    mockPostiModel(projectId, imodelId, createIModelName, "", `${imodelId}:${changeSet.id}`);
+    mockGetSeedFile(imodelId);
+
+    const imodel = await iModelClient.iModels.create(requestContext, projectId, createIModelName, { template: { imodelId, changeSetId: changeSet.id } });
+    chai.assert(imodel);
+    chai.assert(imodel!.initialized);
+    chai.expect(imodel!.iModelTemplate).to.be.equal(`${imodelId}:${changeSet.id}`);
   });
 
   it("should update iModel name and description", async () => {
@@ -490,10 +532,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
   });
 
-  it("should be able to delete iModel", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should be able to delete iModel (#unit)", async () => {
     // Used only for maintenance
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, "22_LargePlant.166.i", imodelId, 1);
@@ -501,10 +540,7 @@ describe("iModelHub iModelsHandler", () => {
     await imodelClient.iModel.delete(requestContext, projectId);
   });
 
-  it("delete iModel should throw if iModel does not exist", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("delete iModel should throw if iModel does not exist (#unit)", async () => {
     // Used only for maintenance
     mockGetIModel(projectId, "22_LargePlant.166.i", Guid.createValue(), 0);
     mockDeleteiModel(projectId, imodelId);
@@ -520,10 +556,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelDoesNotExist);
   });
 
-  it("should return initialization status", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should return initialization status (#unit)", async () => {
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, "22_LargePlant.166.i", imodelId, 1);
     mockGetSeedFile(imodelId);
@@ -533,24 +566,21 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(initializationState).to.be.equal(InitializationState.Successful);
   });
 
-  it("should create iModel if iModel does not exist", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should create iModel if iModel does not exist (#unit)", async () => {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, createIModelName, imodelId, 0);
     mockCreateiModel(projectId, imodelId, createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
-    const iModel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
+    const iModel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, { path: filePath, description, progressCallback: progressTracker.track() });
 
     chai.expect(iModel.name).to.be.equal(createIModelName);
     chai.expect(iModel.initialized).to.be.equal(true);
     progressTracker.check();
   });
 
-  it("should throw iModelAlreadyExists if iModel already exist", async function (this: Mocha.ITestCallbackContext) {
+  it("should throw iModelAlreadyExists if iModel already exist", async () => {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
     mockGetIModel(projectId, createIModelName, Guid.createValue(), 1);
@@ -559,7 +589,7 @@ describe("iModelHub iModelsHandler", () => {
 
     let error: IModelHubError | undefined;
     try {
-      await imodelClient.iModel.create(requestContext, projectId, createIModelName, filePath, description, progressTracker.track());
+      await imodelClient.iModel.create(requestContext, projectId, createIModelName, { path: filePath, description, progressCallback: progressTracker.track() });
     } catch (err) {
       if (err instanceof IModelHubError)
         error = err;
@@ -568,13 +598,13 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.errorNumber).to.be.equal(IModelHubStatus.iModelAlreadyExists);
   });
 
-  it("should create iModel from empty seed file", async function (this: Mocha.ITestCallbackContext) {
+  it("should create iModel from empty seed file", async () => {
     await utils.deleteIModelByName(requestContext, projectId, createIModelName);
 
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
     const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, undefined, description, progressTracker.track());
+    const imodel = await imodelClient.iModels.create(requestContext, projectId, createIModelName, { description, progressCallback: progressTracker.track() });
 
     chai.expect(imodel.name).to.be.equal(createIModelName);
     chai.expect(imodel.initialized).to.be.equal(true);
@@ -586,16 +616,13 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(getiModel.wsgId).to.be.equal(imodel.id!);
   });
 
-  it("should create single iModel from empty seed file", async function (this: Mocha.ITestCallbackContext) {
-    if (!TestConfig.enableMocks)
-      this.skip();
-
+  it("should create single iModel from empty seed file (#unit)", async () => {
     const description = "Test iModel created by imodeljs-clients tests";
     imodelId = imodelId || Guid.createValue();
     mockGetIModel(projectId, createIModelName, imodelId, 0);
     mockCreateEmptyiModel(projectId, Guid.createValue(), createIModelName, description);
     const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, undefined, description, progressTracker.track());
+    const imodel = await imodelClient.iModel.create(requestContext, projectId, createIModelName, { description, progressCallback: progressTracker.track() });
 
     chai.expect(imodel.name).to.be.equal(createIModelName);
     chai.expect(imodel.initialized).to.be.equal(true);
@@ -650,7 +677,7 @@ describe("iModelHub iModelsHandler", () => {
     const description = "Test iModel created by imodeljs-clients tests";
     mockCreateEmptyiModel(assetId, Guid.createValue(), createIModelName, description);
     const progressTracker = new utils.ProgressTracker();
-    const imodel = await imodelClient.iModels.create(requestContext, assetId, createIModelName, undefined, description, progressTracker.track());
+    const imodel = await imodelClient.iModels.create(requestContext, assetId, createIModelName, { description, progressCallback: progressTracker.track() });
 
     chai.expect(imodel.name).to.be.equal(createIModelName);
     chai.expect(imodel.initialized).to.be.equal(true);

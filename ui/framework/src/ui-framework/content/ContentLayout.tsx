@@ -19,7 +19,7 @@ import { LayoutHorizontalSplitProps, LayoutVerticalSplitProps, ContentLayoutProp
 import "./ContentLayout.scss";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
-// Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
+// Locking into react-split-pane release 0.1.87 and using the require statement works for browser, electron and mocha test environment.
 // import SplitPane from "react-split-pane";
 const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
@@ -99,27 +99,17 @@ interface SplitContainerProps extends CommonProps {
   contentB: React.ReactNode;
   orientation: Orientation;
   percentage: number;
-  resizable?: boolean;
+  resizable: boolean;
+  minSizeTopLeft: number;
+  minSizeBottomRight: number;
   splitterStateId?: string;
   onSplitterChange?: (size: number, percentage: number) => void;
 }
 
-interface SplitContainerState {
-  pane2Width: string;
-  pane2Height: string;
-}
-
 /** Split Container class.
  */
-class SplitContainer extends React.Component<SplitContainerProps, SplitContainerState> {
-
+class SplitContainer extends React.Component<SplitContainerProps> {
   private _containerDiv: HTMLDivElement | null = null;
-
-  /** @internal */
-  public readonly state: Readonly<SplitContainerState> = {
-    pane2Width: "100%",
-    pane2Height: "100%",
-  };
 
   constructor(props: SplitContainerProps) {
     super(props);
@@ -129,90 +119,38 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     let percentage = 0;
 
     if (this._containerDiv && size > 0) {
-      const width = this._containerDiv.getBoundingClientRect().width;
-      const height = this._containerDiv.getBoundingClientRect().height;
-
       if (this.props.orientation === Orientation.Horizontal) {
+        const height = this._containerDiv.getBoundingClientRect().height;
         if (height > 0)
           percentage = size / height;
       } else {
+        const width = this._containerDiv.getBoundingClientRect().width;
         if (width > 0)
           percentage = size / width;
       }
 
       if (this.props.onSplitterChange)
         this.props.onSplitterChange(size, percentage);
-
-      this.determinePane2Size(size, width, height);
-    }
-  }
-
-  private determinePane2Size(size: number, containerWidth: number, containerHeight: number): void {
-    let pane2Width = "100%";
-    let pane2Height = "100%";
-    const splitterSize = 6;
-
-    if (this._containerDiv && size > 0) {
-      if (this.props.orientation === Orientation.Horizontal) {
-        pane2Height = (containerHeight - size - splitterSize).toString() + "px";
-      } else {
-        pane2Width = (containerWidth - size - splitterSize).toString() + "px";
-      }
-
-      if (pane2Width !== this.state.pane2Width || pane2Height !== this.state.pane2Height)
-        this.setState({ pane2Width, pane2Height });
-    }
-  }
-
-  public componentDidMount() {
-    window.addEventListener("resize", this._handleWindowResize, true);
-    this.handleResize();
-  }
-
-  public componentWillUnmount() {
-    window.removeEventListener("resize", this._handleWindowResize, true);
-  }
-
-  public componentDidUpdate(prevProps: SplitContainerProps, _prevState: SplitContainerState) {
-    if (this.props !== prevProps) {
-      this.setState({
-        pane2Width: "100%",
-        pane2Height: "100%",
-      });
-    }
-  }
-
-  private _handleWindowResize = () => {
-    this.handleResize();
-  }
-
-  private handleResize(): void {
-    if (this._containerDiv) {
-      const width = this._containerDiv.getBoundingClientRect().width;
-      const height = this._containerDiv.getBoundingClientRect().height;
-      let size = 0;
-
-      if (this.props.orientation === Orientation.Horizontal) {
-        size = height * this.props.percentage;
-      } else {
-        size = width * this.props.percentage;
-      }
-
-      this.determinePane2Size(size, width, height);
     }
   }
 
   public render(): React.ReactNode {
     const orientation = (this.props.orientation === Orientation.Horizontal) ? "horizontal" : "vertical";
     const defaultSize = (this.props.percentage * 100).toString() + "%";
+    const minSizeTopLeft = this.props.minSizeTopLeft;
+    const minSizeBottomRight = -(this.props.minSizeBottomRight);
 
     return (
-      <div ref={(e) => { this._containerDiv = e; }} className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style}>
-        <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange} allowResize={this.props.resizable}>
+      <div ref={(e) => { this._containerDiv = e; }}
+        className={classnames("uifw-contentlayout-full-size", this.props.className)}
+        style={this.props.style}
+      >
+        <SplitPane split={orientation}
+          minSize={minSizeTopLeft} maxSize={minSizeBottomRight} defaultSize={defaultSize}
+          onChange={this._onSplitterChange} allowResize={this.props.resizable}
+        >
           {this.props.contentA}
-          <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
-            {this.props.contentB}
-          </div>
+          {this.props.contentB}
         </SplitPane>
       </div >
     );
@@ -248,6 +186,9 @@ export interface LayoutSplit {
   isLocked: boolean;
 }
 
+/** Minimum split size  */
+const MIN_SPLIT_SIZE = 6;
+
 /** Base Split class.
  */
 class BaseSplit {
@@ -274,6 +215,8 @@ class HorizontalSplit extends BaseSplit implements LayoutSplit {
   private _topSplit?: LayoutSplit;
   private _bottomSplit?: LayoutSplit;
   private _props: LayoutHorizontalSplitProps;
+  private _minSizeTop: number = MIN_SPLIT_SIZE;
+  private _minSizeBottom: number = MIN_SPLIT_SIZE;
 
   constructor(props: LayoutHorizontalSplitProps) {
     super(props);
@@ -291,6 +234,12 @@ class HorizontalSplit extends BaseSplit implements LayoutSplit {
     } else {
       this._bottomSplit = ContentLayoutDef.createSplit(props.bottom);
     }
+
+    if (props.minSizeTop)
+      this._minSizeTop = Math.max(props.minSizeTop, MIN_SPLIT_SIZE);
+
+    if (props.minSizeBottom)
+      this._minSizeBottom = Math.max(props.minSizeBottom, MIN_SPLIT_SIZE);
   }
 
   private _handleSplitterChange = (_size: number, percentage: number): void => {
@@ -315,6 +264,8 @@ class HorizontalSplit extends BaseSplit implements LayoutSplit {
         orientation={Orientation.Horizontal}
         percentage={this.defaultPercentage}
         resizable={resizable}
+        minSizeTopLeft={this._minSizeTop}
+        minSizeBottomRight={this._minSizeBottom}
         splitterStateId={this.stateId}
         onSplitterChange={this._handleSplitterChange}
       />
@@ -330,6 +281,8 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
   private _leftSplit?: LayoutSplit;
   private _rightSplit?: LayoutSplit;
   private _props: LayoutVerticalSplitProps;
+  private _minSizeLeft: number = MIN_SPLIT_SIZE;
+  private _minSizeRight: number = MIN_SPLIT_SIZE;
 
   constructor(props: LayoutVerticalSplitProps) {
     super(props);
@@ -347,6 +300,12 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
     } else {
       this._rightSplit = ContentLayoutDef.createSplit(props.right);
     }
+
+    if (props.minSizeLeft)
+      this._minSizeLeft = Math.max(props.minSizeLeft, MIN_SPLIT_SIZE);
+
+    if (props.minSizeRight)
+      this._minSizeRight = Math.max(props.minSizeRight, MIN_SPLIT_SIZE);
   }
 
   private _handleSplitterChange = (_size: number, percentage: number): void => {
@@ -371,6 +330,8 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
         orientation={Orientation.Vertical}
         percentage={this.defaultPercentage}
         resizable={resizable}
+        minSizeTopLeft={this._minSizeLeft}
+        minSizeBottomRight={this._minSizeRight}
         splitterStateId={this.stateId}
         onSplitterChange={this._handleSplitterChange}
       />

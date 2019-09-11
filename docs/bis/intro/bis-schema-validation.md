@@ -52,15 +52,37 @@ Classes within the same schema cannot have the same display label.
 
 #### BIS-008 <a name="BIS-008"></a>
 
-Classes may not use custom attributes that are deprecated.
+A schema should not reference a deprecated schema.
 
 #### BIS-009 <a name="BIS-009"></a>
 
+An alias in the schema reference must be the same as the alias defined by the schema.
+
+### Class Rules
+
+#### BIS-100 <a name="BIS-100"></a>
+
+Properties within the same class and category cannot have the same display label.
+
+#### BIS-101 <a name="BIS-101"></a>
+
 Classes not within the **BisCore**, **Functional**, or **Generic** schema cannot applied **bis:ClassHasHandler**.
 
-#### BIS-010 <a name="BIS-010"></a>
+#### BIS-102 <a name="BIS-102"></a>
 
-An alias in the schema reference must be the same as the alias defined by the schema.
+Class should not derive from a deprecated class.
+
+#### BIS-103 <a name="BIS-103"></a>
+
+Class should not have deprecated properties.
+
+#### BIS-104 <a name="BIS-104"></a>
+
+Class should not have properties which are of deprecated struct types.
+
+#### BIS-105 <a name="BIS-105"></a>
+
+Classes should not use custom attributes that are deprecated.
 
 ### Custom Attribute Classes
 
@@ -127,15 +149,23 @@ Subclasses of **bis:Model** cannot have additional properties defined outside of
 
 Entity classes may not subclass deprecated classes.
 
+#### BIS-611 <a name="BIS-611"></a>
+
+Entity classes should not derive from deprecated mixin classes.
+
 ### KindOfQuantities
-
-#### BIS-700 <a name="BIS-700"></a>
-
-Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
 
 #### BIS-1000 <a name="BIS-1000"></a>
 
+Kind Of Quantities must not use 'PERCENTAGE' or other unitless ratios.
+
+#### BIS-1001 <a name="BIS-1001"></a>
+
 Kind Of Quantities must use an SI Unit for their persistence unit.
+
+#### BIS-1002 <a name="BIS-1002"></a>
+
+Kind Of Quantities must not have duplicate presentation format.
 
 ### Mixin Rules
 
@@ -190,6 +220,22 @@ Relationship classes must not have an **bis:ElementAspect** target constraint (o
 #### BIS-1505 <a name="BIS-1505"></a>
 
 Embedding relationships should not have 'Has' in the class name.
+
+#### BIS-1506 <a name="BIS-1506"></a>
+
+Relationship Constraint should not use a deprecated class or mixin as a constraint class.
+
+#### BIS-1507 <a name="BIS-1507"></a>
+
+Relationship Constraint should not use a deprecated class or mixin as an abstract constraint.
+
+#### BIS-1508 <a name="BIS-1508"></a>
+
+Relationship Constraint should not use constraint classes which derives from a deprecated base class or deprecated mixin classes.
+
+#### BIS-1509 <a name="BIS-1509"></a>
+
+Relationship Constraint should not use abstract constraint which derives from a deprecated base class or deprecated mixin classes.
 
 ### Struct Classes
 

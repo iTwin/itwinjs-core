@@ -93,10 +93,13 @@ describe("CurveCurveIntersectionXYZ", () => {
     const ck = new Checker();
     // const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
     const lineSegment0 = LineSegment3d.create(Point3d.create(1, 4), Point3d.create(5, 1));
-    const linestring1 = LineString3d.create(Point3d.create(2, 4, 0), Point3d.create(4, 1, 0), Point3d.create(5, 5, 0));
-    const intersectionsX = CurveCurve.intersectionXYZ(lineSegment0, true, linestring1, true);
-
+    const lineString1 = LineString3d.create(Point3d.create(2, 4, 0), Point3d.create(4, 1, 0), Point3d.create(5, 5, 0));
+    const intersectionsX = CurveCurve.intersectionXYZ(lineSegment0, true, lineString1, true);
     testIntersectionsXYZ(ck, intersectionsX, 2, 2);
+
+    const intersectionsX1 = CurveCurve.intersectionXYZ(lineString1, true, lineSegment0, true);
+    testIntersectionsXYZ(ck, intersectionsX1, 2, 2);
+
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -107,6 +110,10 @@ describe("CurveCurveIntersectionXYZ", () => {
     const intersectionsX = CurveCurve.intersectionXYZ(arc0, false, linestring1, false);
 
     testIntersectionsXYZ(ck, intersectionsX, 2, 2);
+    const intersectionsX1 = CurveCurve.intersectionXYZ(linestring1, false, arc0, false);
+
+    testIntersectionsXYZ(ck, intersectionsX1, 2, 2);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -247,7 +247,7 @@ export class ClipMaskGeometry extends IndexedGeometry {
 
   public get techniqueId(): TechniqueId { return TechniqueId.ClipMask; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.None; }
-  public get renderOrder(): RenderOrder { return RenderOrder.Surface; }
+  public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
 }
 
 /** a cube of quads in normalized device coordinates for skybox rendering techniques
@@ -391,7 +391,7 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
-  public get renderOrder() { return RenderOrder.Surface; }
+  public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
@@ -471,7 +471,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
-  public get renderOrder() { return RenderOrder.Surface; }
+  public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
     // NB: These don't really count...

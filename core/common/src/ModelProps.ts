@@ -29,9 +29,21 @@ export interface ModelQueryParams extends EntityQueryParams {
   wantPrivate?: boolean;
 }
 
+/** Properties that describe a [GeometricModel]($backend)
+ * @public
+ */
+export interface GeometricModelProps extends ModelProps {
+  /** A unique identifier that is updated each time a change affecting the appearance of a geometric element within this model
+   * is committed to the iModel. In other words, between versions of the iModel, if this value is the same you can
+   * assume the appearance of all of the geometry in the model is the same (Note: other properties of elements may have changed.)
+   * If undefined, the state of the geometry is unknown.
+   */
+  geometryGuid?: string;
+}
+
 /** Properties that define a [GeometricModel2d]($backend)
  * @public
  */
-export interface GeometricModel2dProps extends ModelProps {
+export interface GeometricModel2dProps extends GeometricModelProps {
   globalOrigin?: XYProps;
 }

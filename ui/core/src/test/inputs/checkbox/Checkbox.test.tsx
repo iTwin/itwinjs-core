@@ -56,4 +56,12 @@ describe("Checkbox", () => {
     expect(outsideClickSpy).to.not.be.called;
   });
 
+  it("focus into checkbox with setFocus prop", () => {
+    const checkbox = render(<Checkbox label="Test checkbox" setFocus={true} />);
+    const input = checkbox.container.querySelector("input[type='checkbox']");
+
+    const element = document.activeElement as HTMLElement;
+    expect(element && element === input).to.be.true;
+  });
+
 });

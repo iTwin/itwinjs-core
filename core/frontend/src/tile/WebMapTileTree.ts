@@ -5,20 +5,47 @@
 /** @module Tile */
 
 import {
-  assert,
   BentleyError,
+  BeTimePoint,
   ClientRequestContext,
-  compareNumbers,
-  compareStrings,
-  compareBooleans,
   IModelStatus,
   Id64String,
+  assert,
+  compareBooleans,
+  compareNumbers,
+  compareStrings,
 } from "@bentley/bentleyjs-core";
 import {
-  TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation,
-  BackgroundMapSettings, BackgroundMapType, BackgroundMapProviderName, GeoCoordStatus, Feature, FeatureTable,
+  BackgroundMapProviderName,
+  BackgroundMapSettings,
+  BackgroundMapType,
+  Cartographic,
+  EcefLocation,
+  Feature,
+  FeatureTable,
+  GeoCoordStatus,
+  ImageSource,
+  ImageSourceFormat,
+  RenderTexture,
+  TileProps,
+  TileTreeProps,
 } from "@bentley/imodeljs-common";
-import { Range3dProps, Range3d, Range1d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal, XYZProps } from "@bentley/geometry-core";
+import {
+  Angle,
+  Matrix4d,
+  Plane3dByOriginAndUnitNormal,
+  Point2d,
+  Point3d,
+  Point4d,
+  Range1d,
+  Range2d,
+  Range3d,
+  Range3dProps,
+  Transform,
+  TransformProps,
+  Vector3d,
+  XYZProps,
+} from "@bentley/geometry-core";
 import { TileLoader, TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
@@ -30,7 +57,7 @@ import { IModelConnection } from "../IModelConnection";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { MessageBoxType, MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { RenderSystem, PackedFeatureTable } from "../render/System";
+import { RenderClipVolume, RenderSystem, PackedFeatureTable } from "../render/System";
 import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
 import { MapTileTree, MapTile } from "./MapTileTree";
 
@@ -97,7 +124,6 @@ export class WebMapTileTreeProps implements TileTreeProps {
   /** Transform tile coordinates to iModel world coordinates. */
   public location: TransformProps;
   public yAxisUp = true;
-  public isBackgroundMap = true;
   public maxTilesToSkip = 10;
   public constructor(groundBias: number, modelId: Id64String, heightRange?: Range1d, maxTilesToSkip?: number) {
     const corners: Point3d[] = [];
@@ -148,13 +174,15 @@ export abstract class MapTileLoaderBase extends TileLoader {
   protected _applyLights = false;
   protected _featureTable: PackedFeatureTable;
   public get heightRange(): Range1d | undefined { return this._heightRange; }
+  protected readonly _heightRange: Range1d | undefined;
 
-  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, private _heightRange?: Range1d) {
+  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
     super();
     const featureTable = new FeatureTable(1, this._modelId);
     const feature = new Feature(this._modelId);
     featureTable.insert(feature);
     this._featureTable = PackedFeatureTable.pack(featureTable);
+    this._heightRange = (heightRange === undefined) ? undefined : heightRange.clone();
   }
 
   public get parentsAndChildrenExclusive(): boolean { return false; }
@@ -173,6 +201,41 @@ export abstract class MapTileLoaderBase extends TileLoader {
   public async getChildrenProps(_parent: Tile): Promise<TileProps[]> {
     assert(false);      // children are generated synchronously in MapTile....
     return [];
+  }
+}
+
+class WebMapDrawArgs extends Tile.DrawArgs {
+  private readonly _tileToView: Matrix4d;
+  private readonly _scratchViewCorner = Point4d.createZero();
+
+  public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
+    super(context, location, root, now, purgeOlderThan, clip, false);
+    const tileToWorld = Matrix4d.createTransform(this.location);
+    this._tileToView = tileToWorld.multiplyMatrixMatrix(this.worldToViewMap.transform0);
+  }
+
+  public getPixelSize(tile: Tile): number {
+    /* For background maps which contain only rectangles with textures, use the projected screen rectangle rather than sphere to calculate pixel size.  */
+    const rangeCorners = tile.contentRange.corners();
+    const xRange = Range1d.createNull();
+    const yRange = Range1d.createNull();
+
+    let behindEye = false;
+    for (const corner of rangeCorners) {
+      const viewCorner = this._tileToView.multiplyPoint3d(corner, 1, this._scratchViewCorner);
+      if (viewCorner.w < 0.0) {
+        behindEye = true;
+        break;
+      }
+
+      xRange.extendX(viewCorner.x / viewCorner.w);
+      yRange.extendX(viewCorner.y / viewCorner.w);
+    }
+
+    if (!behindEye)
+      return xRange.isNull ? 1.0E-3 : Math.sqrt(xRange.length() * yRange.length());
+
+    return super.getPixelSize(tile);
   }
 }
 
@@ -232,6 +295,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
  */
 export abstract class TerrainTileLoaderBase extends MapTileLoaderBase {
   abstract get geometryAttributionProvider(): MapTileGeometryAttributionProvider;
+  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Terrain; }
 }
 
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
@@ -782,7 +846,14 @@ class BackgroundMapTileTree extends MapTileTree {
   constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
     super(params, groundBias, gcsConverterAvailable, tilingScheme, heightRange);
   }
+
+  public createDrawArgs(context: SceneContext): Tile.DrawArgs {
+    const now = BeTimePoint.now();
+    const purgeOlderThan = now.minus(this.expirationTime);
+    return new WebMapDrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume);
+  }
 }
+
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */

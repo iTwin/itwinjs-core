@@ -25,6 +25,6 @@ describe("getDisplayName", () => {
     expect(getDisplayName(NameComponentDisplayName)).to.eq("NameComponentDisplayName");
   });
   it("should default to Component for components with no defined name", () => {
-    expect(getDisplayName(("default" as any) as React.SFC)).to.eq("Component");
+    expect(getDisplayName(("default" as any) as React.FunctionComponent)).to.eq("Component");
   });
 });

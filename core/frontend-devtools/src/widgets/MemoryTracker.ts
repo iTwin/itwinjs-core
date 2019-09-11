@@ -99,11 +99,8 @@ class MemoryPanel {
       this._div.appendChild(elem);
     }
 
-    this._div.appendChild(document.createElement("hr")!);
-
     parent.appendChild(this._div);
 
-    // WIP - unused variables
     assert(undefined !== this._elems);
   }
 
@@ -151,10 +148,31 @@ export class MemoryTracker {
 
     this.addSelector(parent);
 
-    this._textures = new MemoryPanel(this._div, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps"]);
-    this._buffers = new MemoryPanel(this._div, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
-    this._totalElem = this.addStatistics(this._div);
-    this._totalTreesElem = this.addStatistics(this._div);
+    const table = document.createElement("table");
+    table.style.width = "100%";
+    table.setAttribute("border", "1");
+    this._div.appendChild(table);
+
+    const row0 = document.createElement("tr");
+    const cell00 = document.createElement("td");
+    const cell01 = document.createElement("td");
+    cell00.style.width = cell01.style.width = "50%";
+    row0.appendChild(cell00);
+    row0.appendChild(cell01);
+    table.appendChild(row0);
+
+    const row1 = document.createElement("tr");
+    const cell10 = document.createElement("td");
+    const cell11 = document.createElement("td");
+    cell10.style.width = cell11.style.width = "50%";
+    row1.appendChild(cell10);
+    row1.appendChild(cell11);
+    table.appendChild(row1);
+
+    this._textures = new MemoryPanel(cell00, "Textures", ["Surface Textures", "Vertex Tables", "Feature Tables", "Feature Overrides", "Clip Volumes", "Planar Classifiers", "Shadow Maps"]);
+    this._buffers = new MemoryPanel(cell01, "Buffers", ["Surfaces", "Visible Edges", "Silhouettes", "Polyline Edges", "Polylines", "Point Strings", "Point Clouds", "Instances"]);
+    this._totalElem = this.addStatistics(cell10);
+    this._totalTreesElem = this.addStatistics(cell11);
 
     this._purgeButton = this.addPurgeButton(this._div);
 

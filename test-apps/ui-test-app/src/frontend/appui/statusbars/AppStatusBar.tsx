@@ -8,11 +8,12 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, StatusBarWidgetControl, ActivityCenterField,
   MessageCenterField, SnapModeField, BooleanSyncUiListener, SelectionInfoField,
-  StatusBarWidgetControlArgs, SelectionScopeField, SyncUiEventId, ContentViewManager, ToolAssistanceField,
+  StatusBarWidgetControlArgs, SelectionScopeField, SyncUiEventId, ContentViewManager, ToolAssistanceField, StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
 
 import { ShadowField } from "../statusfields/ShadowField";
+import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
 import "./AppStatusBar.scss";
 
@@ -23,12 +24,12 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
 
   public getReactNode({ isInFooterMode, onOpenWidget, openWidget, toastTargetRef }: StatusBarWidgetControlArgs): React.ReactNode {
     return (
-      <div className="statusbar-space-between">
-        <div className="statusbar-left">
+      <StatusBarSpaceBetween>
+        <StatusBarLeftSection>
           <ToolAssistanceField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           {isInFooterMode && <FooterSeparator />}
-        </div>
-        <div className="statusbar-center">
+        </StatusBarLeftSection>
+        <StatusBarCenterSection>
           <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           {isInFooterMode && <FooterSeparator />}
           <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} targetRef={toastTargetRef} />
@@ -39,8 +40,9 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
               {isInFooterMode && <FooterSeparator />}
             </>}
           </BooleanSyncUiListener>
-        </div>
-        <div className="statusbar-right">
+          <DisplayStyleField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+        </StatusBarCenterSection>
+        <StatusBarRightSection>
           {isInFooterMode && <FooterSeparator />}
           <BooleanSyncUiListener defaultValue={false} eventIds={[SyncUiEventId.ActiveContentChanged]} boolFunc={(): boolean => ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl())}>
             {(isVisible: boolean) => isVisible && <>
@@ -50,8 +52,8 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
           </BooleanSyncUiListener>
           <SelectionScopeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
           <SelectionInfoField isInFooterMode={isInFooterMode} />
-        </div>
-      </div>
+        </StatusBarRightSection>
+      </StatusBarSpaceBetween>
     );
   }
 }

@@ -32,8 +32,11 @@ const applyPlanarClassificationColor = `
         return baseColor * .6;                // Classified, dimmed.
       else if (s_pClassColorParams.x == 3.0)
         return baseColor * vec4(.8, .8, 1.0, 1.0);  // Classified, hilite.  TBD - make color configurable.
-      else if (s_pClassColorParams.x == 4.0)
+      else if (s_pClassColorParams.x == 4.0) {
+        if (colorTexel.r == 0.0 && colorTexel.g == 0.0 && colorTexel.b == 0.0)
+          discard;                                  // Support clip masking via black classifier.
         return baseColor * colorTexel;        // Classified element color.
+      }
     // TBD -- mode 1.  Return baseColor unless flash or hilite
    }
 `;

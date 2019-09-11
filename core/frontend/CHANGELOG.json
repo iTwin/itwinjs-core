@@ -2,6 +2,99 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.4.0",
+      "tag": "@bentley/imodeljs-frontend_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Register tools for AccuDraw shortcuts to support keyboard shortcuts."
+          },
+          {
+            "comment": "Partially support animation of classifiers for MicroSoft Poc.  "
+          },
+          {
+            "comment": "Prevent ambient occlusion from being applied to unlit geometry."
+          },
+          {
+            "comment": "Add methods for setting render schedule in display style"
+          },
+          {
+            "comment": "Identify classified reality data to avoid snap using classification element geometry."
+          },
+          {
+            "comment": "Apply pseudo bias to batch range when tileset has huge offset."
+          },
+          {
+            "comment": "Add workaround for ContextCapture tiles with large offsets."
+          },
+          {
+            "comment": "load bentleyjs-core before geometry-core instead of in parallel from the IModelJsLoader script"
+          },
+          {
+            "comment": "Refine tile corners on reprojection.  Fix bing HTTP request"
+          },
+          {
+            "comment": "Added a new component for the Poc, an icon picker."
+          },
+          {
+            "comment": "Support symbology overrides with no batchId for render schedules, Plugin case fixes."
+          },
+          {
+            "comment": "Don't display markers that are very close to eye point."
+          },
+          {
+            "comment": "Change how Marker scale is computed for views background map displayed."
+          },
+          {
+            "comment": "Report coordinates to message center for copy to clipboard. Support drawing views."
+          },
+          {
+            "comment": "Ensure texture memory is properly tracked."
+          },
+          {
+            "comment": "Add support for GeometricModel.geometryGuid for detecting whether tiles for a model can be reused across versions"
+          },
+          {
+            "comment": "Added access to debugging features to RenderSystem via RenderSystemDebugControl; includes support for forcing webgl context loss and toggling pseudo-wiremesh surface display."
+          },
+          {
+            "comment": "Support reality model masking via black classifier geometry."
+          },
+          {
+            "comment": "Support nearest snap for reality models."
+          },
+          {
+            "comment": "Remove doubling of planar classifier size.  This caused excessive generation time."
+          },
+          {
+            "comment": "Refine texture projection calculation to include height range (for terrain). "
+          },
+          {
+            "comment": "Ensure DisplayStyle3dState.sunDirection is synchronized with DisplayStyle3dSettings JSON."
+          },
+          {
+            "comment": "Clip volume applied to view also applies to reality models."
+          },
+          {
+            "comment": "Added SetupCameraTool for defining camera by eye point and target point."
+          },
+          {
+            "comment": "Prioritize requests for reality model tiles based on distance from camera."
+          },
+          {
+            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+          },
+          {
+            "comment": "Tweak tile priorities so that reality models don't block quicker maps and classifiers."
+          },
+          {
+            "comment": "Call to pickNearestVisibleGeometry on 1st data button almost always succeeds now that acs plane is used, remove from updateTargetCenter."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/imodeljs-frontend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

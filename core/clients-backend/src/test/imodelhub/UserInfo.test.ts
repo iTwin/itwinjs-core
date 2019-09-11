@@ -45,9 +45,10 @@ describe("iModelHubClient UserInfoHandler", () => {
   const imodelName = "imodeljs-clients UserInfo test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
-  before(async function (this: Mocha.IHookCallbackContext) {
+  before(async function () {
     if (TestConfig.enableIModelBank) {
       this.skip();
+      return;
     }
 
     const superAccessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
@@ -69,7 +70,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     ResponseBuilder.clearMocks();
   });
 
-  it("should get one user info", async function (this: Mocha.ITestCallbackContext) {
+  it("should get one user info", async () => {
     if (TestConfig.enableMocks) {
       const mockedUserInfo = generateHubUserInfo([requestContexts[0].accessToken.getUserInfo()!]);
       mockGetUserInfo(imodelId, mockedUserInfo, `${mockedUserInfo[0].id}`);
@@ -84,7 +85,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     chai.expect(userInfo[0].lastName).to.be.equal(requestContexts[0].accessToken.getUserInfo()!.profile!.lastName);
   });
 
-  it("should get several users info", async function (this: Mocha.ITestCallbackContext) {
+  it("should get several users info", async () => {
     if (TestConfig.enableMocks) {
       const mockedUsersInfo = generateHubUserInfo([requestContexts[0].accessToken.getUserInfo()!, requestContexts[1].accessToken.getUserInfo()!]);
       mockGetUserInfo(imodelId, mockedUsersInfo);
