@@ -95,7 +95,7 @@ rush install -c
   * If defined (value does not matter), the user will be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * SVT_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
-* SVT_NO_DEVTOOLS
+* SVT_NO_DEV_TOOLS
   * If defined, do not open the electron dev tools on startup
 * SVT_LOG_LEVEL
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
