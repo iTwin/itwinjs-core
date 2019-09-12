@@ -89,3 +89,8 @@ The following key-ins are delivered with this package. Each begins with the pref
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
   * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
   * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
+* `fdt reality transition` Creates a rendering schedule to transition between reality model and BIM model display.
+  * "x" - Wipe along X axis.
+  * "y" - Wipe along Y axis.
+  * "z' - wipe along Z axis.
+  * "transparent" - Fade from reality model to BIM model.

@@ -8,7 +8,7 @@ import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform, Range3d } from "@bentley/geometry-core";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { RenderMode, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlag, ViewFlags, Frustum, FrustumPlanes } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Primitive } from "./Primitive";
@@ -195,8 +195,12 @@ class BranchCommand extends DrawCommand {
           branchTransform = prevWorldToLocal.multiplyTransformTransform(branchTransform.multiplyTransformTransform(prevLocalToWorld));
         this._branch.localToWorldTransform = branchTransform;
       }
-      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes)
+      if (animationBranch.clip !== undefined && animationBranch.clip.type === ClippingType.Planes) {
         this._branch.clips = animationBranch.clip as ClipPlanesVolume;
+        const overrideClip = new ViewFlag.Overrides();
+        overrideClip.setShowClipVolume(true);
+        this._branch.branch.setViewFlagOverrides(overrideClip);
+      }
     }
   }
 

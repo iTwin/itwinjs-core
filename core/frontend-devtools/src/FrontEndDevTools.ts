@@ -35,6 +35,7 @@ import {
   SetAspectRatioSkewTool,
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
+import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -85,6 +86,7 @@ export class FrontendDevTools {
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);
     ShowTileVolumesTool.register(i18n);
+    RealityTransitionTool.register(i18n);
 
     return i18n.readFinished;
   }

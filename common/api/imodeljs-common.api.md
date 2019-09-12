@@ -1296,7 +1296,7 @@ export interface DisplayStyleSettingsProps {
     excludedElements?: Id64String[];
     monochromeColor?: ColorDefProps;
     // @beta
-    scheduleScript?: RenderSchedule.ElementTimelineProps[];
+    scheduleScript?: RenderSchedule.ModelTimelineProps[];
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
     // (undocumented)
     viewflags?: ViewFlagProps;
@@ -3875,29 +3875,33 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
-    export interface ElementTimelineProps {
+    export interface ElementTimelineProps extends TimelineProps {
         // (undocumented)
         batchId: number;
+        // (undocumented)
+        elementIds: Id64String[];
+    }
+    export interface ModelTimelineProps extends TimelineProps {
+        // (undocumented)
+        elementTimelines: ElementTimelineProps[];
+        // (undocumented)
+        modelId: Id64String;
+        // (undocumented)
+        realityModelUrl?: string;
+    }
+    export interface TimelineEntryProps {
+        interpolation: number;
+        time: number;
+    }
+    export interface TimelineProps {
         // (undocumented)
         colorTimeline?: ColorEntryProps[];
         // (undocumented)
         cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
         // (undocumented)
-        elementIds: Id64String[];
-        // (undocumented)
         transformTimeline?: TransformEntryProps[];
         // (undocumented)
         visibilityTimeline?: VisibilityEntryProps[];
-    }
-    export interface ModelTimelineProps {
-        // (undocumented)
-        elementTimelines: ElementTimelineProps[];
-        // (undocumented)
-        modelId: Id64String;
-    }
-    export interface TimelineEntryProps {
-        interpolation: number;
-        time: number;
     }
     export interface TransformEntryProps extends TimelineEntryProps {
         // (undocumented)

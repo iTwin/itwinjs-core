@@ -59,6 +59,9 @@
     },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
+    },
+    "RealityTransition": {
+      "keyin": "fdt reality transition"
     }
   }
 }
