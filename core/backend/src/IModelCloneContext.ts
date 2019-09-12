@@ -3,15 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { CodeSpec, ElementProps } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @alpha
  */
-export class IModelTransformContext {
+export class IModelCloneContext {
   /** The source IModelDb. */
   public readonly sourceDb: IModelDb;
   /** The target IModelDb. */
@@ -88,7 +89,14 @@ export class IModelTransformContext {
   /** Clone the specified source Element into ElementProps for the target iModel.
    * @internal
    */
-  public cloneElement(sourceElementId: Id64String): ElementProps {
-    return this._nativeContext.cloneElement(sourceElementId);
+  public cloneElement(sourceElement: Element): ElementProps {
+    const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id);
+    if (CodeScopeSpec.Type.Repository === this.targetDb.codeSpecs.getById(targetElementProps.code.spec).scopeType) {
+      // WIP: temporary work-around for addon bug!
+      targetElementProps.code.scope = IModel.rootSubjectId;
+    }
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName) as any; // "as any" so we can call the protected methods
+    jsClass.onCloned(this, sourceElement, targetElementProps);
+    return targetElementProps;
   }
 }

@@ -13,6 +13,7 @@ import {
   InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
@@ -66,34 +67,51 @@ export class Element extends Entity implements ElementProps {
 
   /** Called before a new Element is inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInsert(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDelete(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
    * @beta
    */
   protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
+   * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
+   * This callback is only meant to be overridden if there are other Ids in non-standard locations that need to be remapped or other data that needs to be fixed up after the clone.
+   * @param _context The context that persists any remapping between the source iModel and target iModel.
+   * @param _sourceProps The ElementProps for the source Element that was cloned.
+   * @param _targetProps The ElementProps that are a result of the clone. These can be further modified.
+   * @throws [[IModelError]] if there is a problem
+   * @note Any class that overrides this method must call super.
+   * @alpha
+   */
+  protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
   /** @beta */
   protected static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }

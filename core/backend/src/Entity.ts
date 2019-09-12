@@ -79,6 +79,9 @@ export class Entity implements EntityProps {
   /** Get the full BIS class name of this Entity in the form "schema:class". */
   public get classFullName(): string { return this._ctor.classFullName; }
 
-  /** Make a deep copy of this Entity */
+  /** Make a deep copy of this Entity
+   * @deprecated This method is of limited utility since it does not handle Id remapping. In most cases, it is better to just create a new instance.
+   * @internal
+   */
   public clone(): this { return new this._ctor(this, this.iModel) as this; }
 }

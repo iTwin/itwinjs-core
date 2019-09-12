@@ -14,7 +14,7 @@ import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, Chang
 import { Model } from "../../Model";
 import { Relationship } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { assertTargetDbContents, assertUpdatesInTargetDb, populateSourceDb, populateTeamIModel, prepareSourceDb, prepareTargetDb, TestIModelTransformer, updateSourceDb } from "../IModelTransformerUtils";
+import { IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
@@ -102,7 +102,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const sourceSeedDb: IModelDb = IModelDb.createSnapshot(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await prepareSourceDb(sourceSeedDb);
+    await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
     sourceSeedDb.closeSnapshot();
     const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
@@ -115,7 +115,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb: IModelDb = IModelDb.createSnapshot(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await prepareTargetDb(targetSeedDb);
+    await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
     targetSeedDb.closeSnapshot();
     const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
@@ -130,7 +130,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #1
       if (true) {
-        populateSourceDb(sourceDb);
+        IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Populate source");
@@ -161,7 +161,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #1");
-        assertTargetDbContents(sourceDb, targetDb);
+        IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
         // expect inserts and a few updates from transforming the result of populateSourceDb
@@ -186,7 +186,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // Import #2
       if (true) {
-        updateSourceDb(sourceDb);
+        IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, () => "Update source");
@@ -218,7 +218,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, () => "Import #2");
-        assertUpdatesInTargetDb(targetDb);
+        IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
         const targetDbChanges: EntityChanges = await EntityChanges.initialize(requestContext, targetDb, { currentVersionOnly: true });
         // expect no inserts from transforming the result of updateSourceDb
@@ -277,7 +277,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges(requestContext, () => "Upgrade BisCore");
 
       // populate sourceDb
-      populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, () => "Populate Source");
