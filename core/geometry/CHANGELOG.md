@@ -1,6 +1,18 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Region "in/on/out" tests
+- Triangulation of isolated point array
+- RegionOps methods to split curve sets
+- PolyfaceClip.computeCutFill method
+- New method ray3d.intersectionWithRange3d
+- Added AnyGeometryQuery and AnySolidPrimitive union types; added type discriminator fields to GeometryQuery, SolidPrimitive, CurvePrimitive, and CurveCollection; tightened `any` return types for IModelJson.Reader methods.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

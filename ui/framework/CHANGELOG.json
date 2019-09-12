@@ -2,6 +2,42 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.4.0",
+      "tag": "@bentley/ui-framework_v1.4.0",
+      "date": "Tue, 10 Sep 2019 12:09:49 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning."
+          },
+          {
+            "comment": "Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index."
+          },
+          {
+            "comment": "Added support for content view minSize properties"
+          },
+          {
+            "comment": "Fixed SplitPane pane 2 size. Upgraded react-split-pane to 0.1.87."
+          },
+          {
+            "comment": "Addressed some warnings introduced with React 16.9"
+          },
+          {
+            "comment": "Listening for onSelectedViewportChanged to set active content view for viewports"
+          },
+          {
+            "comment": "Had to back up to react-split-pane 0.1.77"
+          },
+          {
+            "comment": "#165662. Allow an app to specify touch-specific instructions in tool assistance."
+          },
+          {
+            "comment": "Visibility Component: Preserve active tree state by saving and restoring scroll position"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.3.0",
       "tag": "@bentley/ui-framework_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",

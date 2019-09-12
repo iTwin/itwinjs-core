@@ -6,22 +6,25 @@ ignore: true
 ## Geometry
 
 ### Summary
-  * PolyfaceQuery method to partition by connectivity
-  * Optimize triangle flipping
- ### Details
- * `PolyfaceQuery` methods
-   * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-     * Return arrays of facet indices
-     * Within each array, each facet has an edge in common with others in the same array.
-   * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
-     * Return arrays of facet indices
-     * Within each array, each facet has (at least) a vertex in common with others in the same array.
-   * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
-     * Return an array of polyfaces
-     * Each polyface has all the facets from one of the input facet index arrays.
-   * `PolyfaceVisitor`
-     * `myVisitor.setNumWrap (numWrap: number)`
-       * set numWrap for subsequent visits.
+
+* PolyfaceQuery method to partition by connectivity
+* Optimize triangle flipping
+
+### Details
+
+* `PolyfaceQuery` methods
+  * (static) `PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has an edge in common with others in the same array.
+  * (static) `PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][]`
+    * Return arrays of facet indices
+    * Within each array, each facet has (at least) a vertex in common with others in the same array.
+  * (static) `PolyfaceQuery.clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[]`
+    * Return an array of polyfaces
+    * Each polyface has all the facets from one of the input facet index arrays.
+  * `PolyfaceVisitor`
+    * `myVisitor.setNumWrap (numWrap: number)`
+      * set numWrap for subsequent visits.
   * `PolyfaceBuilder`
     * `myBuilder.reversed: boolean`
       * read property to query the state controlled by `myBuilder.toggleReversedFlag`
@@ -38,4 +41,3 @@ ignore: true
     * [HalfEdgeGraph.grabMask]($geometry)
   * `Triangulation`
     * [Triangulation.flipTrianglesInEdgeSet]($geometry)
-
