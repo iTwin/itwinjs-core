@@ -9,28 +9,28 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -40,7 +40,7 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -48,41 +48,41 @@ exports[`BackstageComposer renders correctly - !isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -96,28 +96,28 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -127,7 +127,7 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -135,41 +135,41 @@ exports[`BackstageComposer renders correctly - isVisible 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -181,28 +181,28 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -212,7 +212,7 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -220,41 +220,41 @@ exports[`BackstageComposer renders correctly with AccessToken 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -272,28 +272,28 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test1"
-    label="backstage.testFrontstage1"
+    label="TestApp:backstage.testFrontstage1"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test2"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test2"
-    label="backstage.testFrontstage2"
+    label="TestApp:backstage.testFrontstage2"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test3"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test3"
-    label="backstage.testFrontstage3"
+    label="TestApp:backstage.testFrontstage3"
   />
   <FrontstageLaunchBackstageItem
     frontstageId="Test4"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="Test4"
-    label="backstage.testFrontstage4"
+    label="TestApp:backstage.testFrontstage4"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-100-200"
@@ -303,7 +303,7 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-folder-opened"
     isEnabled={true}
     key="IModelOpen"
-    label="backstage.imodelopen"
+    label="TestApp:backstage.imodelopen"
   />
   <CommandLaunchBackstageItem
     commandId="IModelIndex"
@@ -311,41 +311,41 @@ exports[`BackstageComposer renders correctly with header 1`] = `
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="IModelIndex"
-    label="teat.label"
+    label="TestApp:teat.label"
   />
   <CommandLaunchBackstageItem
     commandId="CmdTest"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="CmdTest"
-    label="teat.label"
-    tooltip="tool-tip"
+    label="TestApp:teat.label"
+    tooltip="TestApp:tool-tip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-200-400"
   />
   <FrontstageLaunchBackstageItem
-    description="backstage.iModelStage"
+    description="TestApp:backstage.iModelStage"
     frontstageId="ViewsFrontstage"
     iconSpec="icon-placeholder"
     isEnabled={true}
     key="ViewsFrontstage"
-    label="backstage.viewIModel"
-    tooltip="backstage.tooltip"
+    label="TestApp:backstage.viewIModel"
+    tooltip="TestApp:backstage.tooltip"
   />
   <SeparatorBackstageItem
     key="backstage-item-separator-400-500"
   />
   <CommandLaunchBackstageItem
     commandId="custom-test"
-    description="subtitle"
+    description="TestApp:subtitle"
     execute={[Function]}
     iconSpec="TestApp:icon"
     key="custom-test"
-    label="backstage.custom"
-    tooltip="tool-tip"
+    label="TestApp:backstage.custom"
+    tooltip="TestApp:tool-tip"
   />
 </Backstage>
 `;
@@ -377,7 +377,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="Test1"
-            label="backstage.testFrontstage1"
+            label="TestApp:backstage.testFrontstage1"
           >
             <Component
               icon={
@@ -420,7 +420,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.testFrontstage1
+                      TestApp:backstage.testFrontstage1
                     </span>
                   </div>
                 </li>
@@ -432,7 +432,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="Test2"
-            label="backstage.testFrontstage2"
+            label="TestApp:backstage.testFrontstage2"
           >
             <Component
               icon={
@@ -475,7 +475,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.testFrontstage2
+                      TestApp:backstage.testFrontstage2
                     </span>
                   </div>
                 </li>
@@ -487,7 +487,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={false}
             key="Test4"
-            label="backstage.testFrontstage4"
+            label="TestApp:backstage.testFrontstage4"
           >
             <Component
               icon={
@@ -530,7 +530,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.testFrontstage4
+                      TestApp:backstage.testFrontstage4
                     </span>
                   </div>
                 </li>
@@ -553,7 +553,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-folder-opened"
             isEnabled={true}
             key="IModelOpen"
-            label="backstage.imodelopen"
+            label="TestApp:backstage.imodelopen"
           >
             <Component
               icon={
@@ -596,7 +596,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.imodelopen
+                      TestApp:backstage.imodelopen
                     </span>
                   </div>
                 </li>
@@ -609,7 +609,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="IModelIndex"
-            label="teat.label"
+            label="TestApp:teat.label"
           >
             <Component
               icon={
@@ -650,7 +650,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      teat.label
+                      TestApp:teat.label
                     </span>
                   </div>
                 </li>
@@ -659,13 +659,13 @@ exports[`BackstageComposer should handle sync events 1`] = `
           </CommandLaunchBackstageItem>
           <CommandLaunchBackstageItem
             commandId="CmdTest"
-            description="subtitle"
+            description="TestApp:subtitle"
             execute={[Function]}
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="CmdTest"
-            label="teat.label"
-            tooltip="tool-tip"
+            label="TestApp:teat.label"
+            tooltip="TestApp:tool-tip"
           >
             <Component
               icon={
@@ -706,7 +706,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      teat.label
+                      TestApp:teat.label
                     </span>
                   </div>
                 </li>
@@ -725,13 +725,13 @@ exports[`BackstageComposer should handle sync events 1`] = `
             </BackstageSeparator>
           </SeparatorBackstageItem>
           <FrontstageLaunchBackstageItem
-            description="backstage.iModelStage"
+            description="TestApp:backstage.iModelStage"
             frontstageId="ViewsFrontstage"
             iconSpec="icon-placeholder"
             isEnabled={true}
             key="ViewsFrontstage"
-            label="backstage.viewIModel"
-            tooltip="backstage.tooltip"
+            label="TestApp:backstage.viewIModel"
+            tooltip="TestApp:backstage.tooltip"
           >
             <Component
               icon={
@@ -743,7 +743,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
               isDisabled={false}
               key="ViewsFrontstage"
               onClick={[Function]}
-              subtitle="backstage.iModelStage"
+              subtitle="TestApp:backstage.iModelStage"
             >
               <BackstageItem
                 icon={
@@ -755,7 +755,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                 isDisabled={false}
                 onClick={[Function]}
                 safeAreaInsets={0}
-                subtitle="backstage.iModelStage"
+                subtitle="TestApp:backstage.iModelStage"
               >
                 <li
                   className="nz-backstage-item"
@@ -774,10 +774,10 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.viewIModel
+                      TestApp:backstage.viewIModel
                     </span>
                     <span>
-                      backstage.iModelStage
+                      TestApp:backstage.iModelStage
                     </span>
                   </div>
                 </li>
@@ -797,12 +797,12 @@ exports[`BackstageComposer should handle sync events 1`] = `
           </SeparatorBackstageItem>
           <CommandLaunchBackstageItem
             commandId="custom-test"
-            description="subtitle"
+            description="TestApp:subtitle"
             execute={[Function]}
             iconSpec="TestApp:icon"
             key="custom-test"
-            label="backstage.custom"
-            tooltip="tool-tip"
+            label="TestApp:backstage.custom"
+            tooltip="TestApp:tool-tip"
           >
             <Component
               icon={
@@ -843,7 +843,7 @@ exports[`BackstageComposer should handle sync events 1`] = `
                   </div>
                   <div>
                     <span>
-                      backstage.custom
+                      TestApp:backstage.custom
                     </span>
                   </div>
                 </li>

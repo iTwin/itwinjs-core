@@ -7635,6 +7635,7 @@ export class Tool {
     run(..._args: any[]): boolean;
     static toolId: string;
     readonly toolId: string;
+    static translateWithNamespace(namespaceName: string, key: string): string;
 }
 
 // @public

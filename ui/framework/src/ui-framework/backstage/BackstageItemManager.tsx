@@ -5,7 +5,6 @@
 /** @module Backstage */
 
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../UiFramework";
 import * as React from "react";
 
 const loggerCategory = "ui-framework.BackstageItemManager";
@@ -70,7 +69,7 @@ export interface BackstageItemSpec {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
   icon?: string;
   /** Tooltip. */
-  toolTip?: string;
+  tooltip?: string;
   /** if not specified no badge will be created. */
   badge?: BadgeType;
   /** if item's display is conditional then a ConditionalDisplaySpecification is specified. */
@@ -199,8 +198,8 @@ export class BackstageItemManager {
     return itemSpecs;
   }
 
-  /** Method to create JSON object for a stage launcher item */
-  public static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): StageLauncher {
+  /** Method to create JSON object for a stage launcher item. See [[BackstageItemSpec]]. */
+  public static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): StageLauncher {
     return (
       {
         itemType: BackstageItemType.StageLauncher,
@@ -209,14 +208,14 @@ export class BackstageItemManager {
         groupPriority,
         itemPriority,
         icon: iconSpec,
-        label: UiFramework.i18n.translate(label),
-        subtitle: subTitle ? UiFramework.i18n.translate(subTitle) : undefined,
-        toolTip: toolTip ? UiFramework.i18n.translate(toolTip) : undefined,
+        label,
+        subtitle,
+        tooltip,
       });
   }
 
-  /** Method to create JSON object for a command launcher item */
-  public static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): ActionItemSpec {
+  /** Method to create JSON object for a command launcher item. See [[BackstageItemSpec]].  */
+  public static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): ActionItemSpec {
     return (
       {
         itemType: BackstageItemType.ActionItem,
@@ -225,14 +224,14 @@ export class BackstageItemManager {
         groupPriority,
         itemPriority,
         icon: iconSpec,
-        label: UiFramework.i18n.translate(label),
-        subtitle: subTitle ? UiFramework.i18n.translate(subTitle) : undefined,
-        toolTip: toolTip ? UiFramework.i18n.translate(toolTip) : undefined,
+        label,
+        subtitle,
+        tooltip,
       });
   }
 
-  /** Method to create JSON object for a custom backstage item */
-  public static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): CustomItemSpec {
+  /** Method to create JSON object for a custom backstage item. See [[BackstageItemSpec]]. */
+  public static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): CustomItemSpec {
     return (
       {
         itemType: BackstageItemType.CustomItem,
@@ -241,9 +240,9 @@ export class BackstageItemManager {
         groupPriority,
         itemPriority,
         icon: iconSpec,
-        label: UiFramework.i18n.translate(label),
-        subtitle: subTitle ? UiFramework.i18n.translate(subTitle) : undefined,
-        toolTip: toolTip ? UiFramework.i18n.translate(toolTip) : undefined,
+        label,
+        subtitle,
+        tooltip,
       });
   }
 

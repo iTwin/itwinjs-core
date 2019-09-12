@@ -67,7 +67,7 @@ class TestBackstageItemProvider implements BackstageItemProvider {
       return null;
 
     return <CommandLaunchBackstageItem iconSpec={itemSpec.icon} commandId={itemSpec.itemId} execute={() => this._processCustomItem(itemSpec.itemId)}
-      label={itemSpec.label} description={itemSpec.subtitle} tooltip={itemSpec.toolTip} key={itemSpec.itemId} />;
+      label={itemSpec.label} description={itemSpec.subtitle} tooltip={itemSpec.tooltip} key={itemSpec.itemId} />;
   }
 }
 

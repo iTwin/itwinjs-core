@@ -328,9 +328,9 @@ export const BackstageItem: (props: BackstageItemProps_2) => JSX.Element;
 
 // @beta
 export class BackstageItemManager {
-    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): ActionItemSpec;
-    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): CustomItemSpec;
-    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subTitle?: string, toolTip?: string, iconSpec?: string): StageLauncher;
+    static createCommandLauncherItemSpec(itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): ActionItemSpec;
+    static createCustomBackstageItemSpec(providerId: string, itemId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): CustomItemSpec;
+    static createFrontstageLauncherItemSpec(frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, tooltip?: string, iconSpec?: string): StageLauncher;
     static getBackstageItemProvider(providerId: string): BackstageItemProvider | undefined;
     static getBackstageItemSpecs(): BackstageItemSpec[];
     static readonly hasRegisteredProviders: boolean;
@@ -371,7 +371,7 @@ export interface BackstageItemSpec {
     itemType: BackstageItemType;
     label: string;
     subtitle?: string;
-    toolTip?: string;
+    tooltip?: string;
 }
 
 // @public
