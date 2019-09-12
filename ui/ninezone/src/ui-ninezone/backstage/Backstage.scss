@@ -2,11 +2,15 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/_z-index";
+@import "@bentley/ui-core/lib/ui-core/z-index";
 @import "../prefix";
-@import "_variables";
+@import "../safearea";
+@import "../scrollbar";
+@import "variables";
 
 .nz-backstage-backstage {
+  display: flex;
+  flex-direction: column;
   position: absolute;
   left: 0;
   top: 0;
@@ -17,6 +21,7 @@
   color: $nz-backstage-item-color;
   background-color: $nz-backstage-background;
   transform: translateX(-100%);
+  box-sizing: border-box;
   @include uicore-z-index(backstage);
   @include nz-transition(transform .25s ease);
 
@@ -28,18 +33,25 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    overflow: auto;
+
+    @include nz-scrollbar;
   }
 
   > .nz-header {
-    display: block;
     border-bottom: $nz-backstage-user-profile-divider-height solid $nz-backstage-divider-color;
   }
 
   > .nz-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    margin-top: auto;
+  }
+
+  &.nz-safe-area-top {
+    @include nz-safe-area-top;
+  }
+
+  &.nz-safe-area-bottom {
+    @include nz-safe-area-bottom;
   }
 }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Polyface mesh \"split to components\"",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

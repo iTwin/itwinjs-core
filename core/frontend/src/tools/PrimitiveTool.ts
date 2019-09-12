@@ -62,6 +62,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (this.targetModelId)
       return view.viewsModel(this.targetModelId); // If a specific target model is specified, only allow view that shows it.
 
+    if (view.isSpatialView() && this.targetView.view.isSpatialView())
+      return true; // No specific target, two spatial views are considered compatible.
+
     let allowView = false;
     view.forEachModel((model) => { if (!allowView && this.targetView!.view.viewsModel(model.id)) allowView = true; });
     return allowView; // Accept if this view shares a model in common with target.

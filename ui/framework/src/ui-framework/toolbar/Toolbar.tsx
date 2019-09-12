@@ -35,6 +35,8 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
   expandsTo?: Direction;
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
+  /** initial size */
+  initialSize?: Size;
 }
 
 /** State of [[Toolbar]] component.
@@ -43,6 +45,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 interface State {
   width: number;
   height: number;
+  items: React.ReactNode;
 }
 
 /** Toolbar React component.
@@ -50,17 +53,10 @@ interface State {
  */
 export class Toolbar extends React.Component<ToolbarProps, State> {
   private _dimension: number = 0;
-  private _checkForOverflow = true;
-  private _reRenderRequired = false;  // this is set to true if an item does not yet have a defined size.
+  private _minToolbarSize = (ActionButtonItemDef.defaultButtonSize + 2);
 
   public constructor(props: ToolbarProps) {
     super(props);
-
-    // let's set the default size big enough to hold a single button.
-    this.state = {
-      width: 42,
-      height: 42,
-    };
 
     const itemList = this.props.items;
 
@@ -72,6 +68,24 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           item.direction = this.props.expandsTo;
       }
     });
+
+    // pick a reasonable initial size, when zone layout occurs a resize event will trigger to adjust this size.
+    let width = (ActionButtonItemDef.defaultButtonSize + 2) * 3;
+    let height = width;
+
+    if (props.initialSize) {
+      width = props.initialSize.width;
+      height = props.initialSize.height;
+    }
+
+    const items = this.generateToolbarItems(this.props.items, new Size(width, height));
+
+    // let's set the default size big enough to hold a single button.
+    this.state = {
+      width,
+      height,
+      items,
+    };
   }
 
   private get _toolbarId(): string {
@@ -80,12 +94,18 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
   public componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-    window.addEventListener("resize", this._handleWindowResize, true);
   }
 
   public componentWillUnmount() {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
-    window.removeEventListener("resize", this._handleWindowResize, true);
+  }
+
+  public componentDidUpdate(prevProps: ToolbarProps, _prevState: State) {
+    if (this.props.items !== prevProps.items) {
+      // if sync event changed number of displayable buttons layout the toolbar and re-render
+      const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
+      this.setState({ items });
+    }
   }
 
   private setCurrentStateValues(item: ItemDefBase): boolean {
@@ -135,17 +155,16 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if (this._processSyncUiEvent(this.props.items, args))
-      this.forceUpdate();
+    if (this._processSyncUiEvent(this.props.items, args)) {
+      setImmediate(() => {
+        // if sync event changed number of displayable buttons layout the toolbar and re-render
+        const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
+        this.setState({ items });
+      });
+    }
   }
 
-  // istanbul ignore next - currently unsure how to trigger sizing/resizing
-  private _handleWindowResize = () => {
-    this._checkForOverflow = !this._toolbarId.includes("vertical");  // only set to false for vertical toolbars horizontal properly determine their size.
-    this.forceUpdate();
-  }
-
-  private renderToolbarItems(itemList: ItemList, checkForOverflow: boolean): React.ReactNode[] {
+  private layoutToolbarItems(itemList: ItemList): React.ReactNode[] {
     // istanbul ignore next -
     if (0 === itemList.length)
       return [];
@@ -174,48 +193,44 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
     // Populate the overflow button
     let overflowItemDef: GroupItemDef | undefined;
-    if (actionItems.length > 1 && checkForOverflow) {
+    if (actionItems.length > 1) {
       // Get the item dimensions
       actionItems.forEach((item: ActionButtonItemDef) => {
-        if (!item.size) {
-          Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id}] does not have an assigned size, setting re-render flag.}`);
-          this._reRenderRequired = true;
-        } else {
-          const itemSize = item.getDimension(this.props.orientation) + 1;
-          itemDimensions += itemSize;
-          Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id}] has a size of ${itemSize} cumulative size=${itemDimensions}.}`);
-        }
+        const itemSize = item.getDimension(this.props.orientation) + 1;
+        itemDimensions += itemSize;
+        Logger.logTrace(UiFramework.loggerCategory(this), `  Item [${item.id ? item.id : item.label}] has a size of ${itemSize} cumulative size=${itemDimensions}.}`);
       });
 
       Logger.logInfo(UiFramework.loggerCategory(this), `  Needed toolbar size [${this._toolbarId}] = ${itemDimensions}`);
 
       // istanbul ignore next - currently unable to set size in unit test
-      if (itemDimensions > this._dimension) {
+      const padding = 2;  // used just to insure button will fall inside tool box
+      if (itemDimensions > (this._dimension - padding)) {
         const overflowItems: AnyItemDef[] = [];
         const lastItemIndex = actionItems.length - 1;
-        let numItemsInOverflow = 0;
-
+        let singleItemSize = 0;
         for (let index = lastItemIndex; index >= 0; index--) {
           if (actionItems[index] instanceof CustomItemDef)
             continue;
+          if (0 === singleItemSize)
+            singleItemSize = actionItems[index].getDimension(this.props.orientation);
 
           const deletedItems = actionItems.splice(index, 1);
           // istanbul ignore else
           if (deletedItems.length === 1) {
             const item = deletedItems[0];
             overflowItems.unshift(item);
-            numItemsInOverflow += 1;
 
-            if (1 !== numItemsInOverflow)  // size doesn't change for initial item in overflow
-              itemDimensions -= item.getDimension(this.props.orientation) + 1;
-
-            if (itemDimensions <= this._dimension)
+            let currentWidth = 0;
+            actionItems.forEach((itemDef) => currentWidth += (itemDef.getDimension(this.props.orientation) + 1));
+            itemDimensions = (currentWidth + singleItemSize);
+            if (itemDimensions < (this._dimension - padding))
               break;
           }
         }
 
         overflowItemDef = new GroupItemDef({
-          groupId: "overflow-group",
+          groupId: `overflow-group-${itemDimensions}-${actionItems.length}-${overflowItems.length}`,
           labelKey: "UiFramework:general.overflow",
           items: overflowItems,
         });
@@ -238,21 +253,20 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   private generateToolbarItems(itemList: ItemList, size: Size): React.ReactNode {
     this._dimension = (this.props.orientation === Orientation.Horizontal ? size.width : size.height);
     // istanbul ignore next - since sizing is not working in unit test size and dimension always set to default of 42
-    if (this._dimension < 42)
-      this._dimension = 42;
+    if (this._dimension < this._minToolbarSize)
+      this._dimension = this._minToolbarSize;
 
-    const items = this.renderToolbarItems(itemList, this._checkForOverflow);
-    this._checkForOverflow = true;
-    return items;
+    return this.layoutToolbarItems(itemList);
   }
 
   // istanbul ignore next - currently unable to replicate resizing in unit test
   private _onResize = (width: number, height: number) => {
     // do allow toolbar to go to a size that doesn't show at least one button;
-    if (width < 42) width = 42;
-    if (height < 42) height = 42;
+    if (width < this._minToolbarSize) width = this._minToolbarSize;
+    if (height < this._minToolbarSize) height = this._minToolbarSize;
     if (this.state.width !== width || this.state.height !== height) {
-      this.setState({ width, height });
+      const items = this.generateToolbarItems(this.props.items, new Size(width, height));
+      this.setState({ width, height, items });
     }
   }
 
@@ -264,8 +278,6 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     }
 
     Logger.logTrace(UiFramework.loggerCategory(this), `---> render ${this._toolbarId} `);
-    const { width, height } = this.state;
-    const items = this.generateToolbarItems(this.props.items, new Size(width, height));
 
     return (
       <>
@@ -275,23 +287,11 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
           panelAlignment={this.props.panelAlignment}
           items={
             <>
-              {items}
+              {this.state.items}
             </>
           }
         />
       </>
     );
-  }
-
-  public componentDidUpdate() {
-    Logger.logTrace(UiFramework.loggerCategory(this), `---> componentDidUpdate ${this._toolbarId}`);
-
-    // _reRenderRequired will only be true if we encounter an toolbar item that does not have a size defined.
-    // We must wait for one render pass so that the size is set.
-    if (this._reRenderRequired) {
-      Logger.logTrace(UiFramework.loggerCategory(this), `        Triggering re-render of ${this._toolbarId} because one or more items did not have an assigned size.}`);
-      this._reRenderRequired = false;
-      this.forceUpdate();
-    }
   }
 }

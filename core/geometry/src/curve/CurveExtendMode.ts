@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Geometry } from "../Geometry";
+/** module Curve */
 /** enumeration of condition for extending a curve beyond start or end point.
  * * Not all CurvePrimitives support these modes.
  * @public

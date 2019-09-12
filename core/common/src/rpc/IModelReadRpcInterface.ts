@@ -15,6 +15,7 @@ import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
+import { GeometrySummaryRequestProps } from "../GeometrySummary";
 import { IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { ViewStateProps } from "../ViewProps";
 import { QueryPriority, QueryResponse, QueryLimit, QueryQuota } from "../Paging";
@@ -71,4 +72,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
   /** @beta */
   public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelTokenProps, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
+  /** @alpha */
+  public async getGeometrySummary(_iModelToken: IModelTokenProps, _props: GeometrySummaryRequestProps): Promise<string> { return this.forward(arguments); }
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
-import { BackstageItem } from "../../ui-ninezone";
+import { BackstageItem, SafeAreaInsets } from "../../ui-ninezone";
 
 describe("<Item />", () => {
   it("should render", () => {
@@ -25,6 +25,10 @@ describe("<Item />", () => {
 
   it("should set is-disabled class", () => {
     shallow(<BackstageItem isDisabled />).should.matchSnapshot();
+  });
+
+  it("renders safe area aware correctly", () => {
+    shallow(<BackstageItem safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });
 
   it("should render subtitle", () => {

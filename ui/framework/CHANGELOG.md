@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning.
+- Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index.
+- Added support for content view minSize properties
+- Fixed SplitPane pane 2 size. Upgraded react-split-pane to 0.1.87.
+- Addressed some warnings introduced with React 16.9
+- Listening for onSelectedViewportChanged to set active content view for viewports
+- Had to back up to react-split-pane 0.1.77
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Visibility Component: Preserve active tree state by saving and restoring scroll position
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

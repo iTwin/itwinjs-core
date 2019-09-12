@@ -6,8 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CssProperties } from "../utilities/Css";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
+import { CssProperties } from "../utilities/Css";
+import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
+import { WidgetZoneId } from "./manager/Zones";
 import "./Zone.scss";
 
 /** Properties of [[Zone]] component.
@@ -24,6 +26,10 @@ export interface ZoneProps extends CommonProps {
   isFloating?: boolean;
   /** Describes if the zone is hidden. */
   isHidden?: boolean;
+  /** Zone id. */
+  id: WidgetZoneId;
+  /** Describes respected safe area insets. */
+  safeAreaInsets?: SafeAreaInsets;
 }
 
 /** Zone component of 9-Zone UI app.
@@ -33,9 +39,11 @@ export class Zone extends React.PureComponent<ZoneProps> {
   public render() {
     const className = classnames(
       "nz-zones-zone",
-      this.props.isInFooterMode && "nz-footer-mode",
       this.props.isFloating && "nz-floating",
       this.props.isHidden && "nz-hidden",
+      this.props.isInFooterMode && "nz-footer-mode",
+      this.props.safeAreaInsets && SafeAreaInsetsHelpers.getCssClassNames(this.props.safeAreaInsets),
+      `nz-zone-${this.props.id}`,
       this.props.className);
 
     const style: React.CSSProperties = {
@@ -51,7 +59,9 @@ export class Zone extends React.PureComponent<ZoneProps> {
         className={className}
         style={style}
       >
-        {this.props.children}
+        <div>
+          {this.props.children}
+        </div>
       </div>
     );
   }

@@ -1,6 +1,18 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Added key-in documentation to README.
+- Added keyins for functionality previously exposed by DiagnosticsPanel UI.
+- Reduced vertical space consumed by DiagnosticsPanel.
+- Added keyins for saving the current view state as JSON and re-applying it later.
+- Added keyin for toggling pseudo-wiremesh surface display.
+- Prevent TextBox key events propagating to document.
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

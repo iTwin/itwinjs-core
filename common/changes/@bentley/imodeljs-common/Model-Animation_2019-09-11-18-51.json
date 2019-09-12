@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support animation of models within RenderSchedule.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}

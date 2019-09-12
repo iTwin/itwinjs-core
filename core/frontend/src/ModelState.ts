@@ -133,10 +133,12 @@ interface PrimaryTreeId {
   readonly treeId: IModelTile.PrimaryTreeId;
   readonly modelId: Id64String;
   readonly is3d: boolean;
+  readonly guid: string | undefined;
 }
 
 class PrimaryTreeSupplier implements TileTree.Supplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
+    // NB: We intentionally do not compare the guids. They are expected to be equal if the modelIds are equal.
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
       cmp = compareBooleans(lhs.is3d, rhs.is3d);
@@ -156,7 +158,7 @@ class PrimaryTreeSupplier implements TileTree.Supplier {
     const allowInstancing = undefined === treeId.animationId;
     const edgesRequired = treeId.edgesRequired;
 
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing);
+    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
     props.rootTile.contentId = loader.rootContentId;
     const params = TileTree.paramsFromJSON(props, iModel, id.is3d, loader, id.modelId);
     return new TileTree(params);
@@ -183,6 +185,7 @@ class PrimaryTreeReference extends TileTree.Reference {
       modelId: model.id,
       is3d: model.is3d,
       treeId: PrimaryTreeReference.createTreeId(view, model.id),
+      guid: model.geometryGuid,
     };
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
@@ -194,6 +197,7 @@ class PrimaryTreeReference extends TileTree.Reference {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
+        guid: this._id.guid,
       };
 
       this._owner = primaryTreeSupplier.getOwner(this._id, this._model.iModel);

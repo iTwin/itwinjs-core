@@ -192,6 +192,7 @@ export class IModelDb extends IModel {
     super(iModelToken);
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
+    this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
   }
 
@@ -348,6 +349,7 @@ export class IModelDb extends IModel {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
     }
+    imodelDb.setDefaultConcurrentControlAndPolicy();
     IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
 
     perfLogger.dispose();
@@ -959,8 +961,11 @@ export class IModelDb extends IModel {
     requestContext.enter();
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
+      if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
       return;
     }
 
@@ -973,6 +978,9 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
 
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
@@ -1014,7 +1022,16 @@ export class IModelDb extends IModel {
   /** Get the ConcurrencyControl for this IModel.
    * @beta
    */
-  public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
+  public get concurrencyControl(): ConcurrencyControl {
+    if (this._concurrency === undefined)
+      this.setDefaultConcurrentControlAndPolicy();
+    return this._concurrency!;
+  }
+
+  private setDefaultConcurrentControlAndPolicy() {
+    this._concurrency = new ConcurrencyControl(this);
+    this._concurrency!.setPolicy(ConcurrencyControl.PessimisticPolicy);
+  }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -1952,7 +1969,11 @@ export class TxnManager {
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus { return this._nativeDb.reverseTxns(numOperations); }
+  public reverseTxns(numOperations: number): IModelStatus {
+    const status = this._nativeDb.reverseTxns(numOperations);
+    this._iModel.concurrencyControl.onUndoRedo();
+    return status;
+  }
 
   /** Reverse the most recent operation. */
   public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }

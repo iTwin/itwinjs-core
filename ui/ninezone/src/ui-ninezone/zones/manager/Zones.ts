@@ -7,7 +7,7 @@
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { CellProps, Cell } from "../../utilities/Cell";
 import { DraggedWidgetManagerProps, getDefaultWidgetHorizontalAnchor, getDefaultWidgetVerticalAnchor, getDefaultWidgetManagerProps, WidgetManagerProps, DraggedWidgetManager } from "./Widget";
-import { getDefaultZoneManagerProps, ZoneManagerProps, FOOTER_HEIGHT, ZoneManager } from "./Zone";
+import { getDefaultZoneManagerProps, ZoneManagerProps, ZoneManager } from "./Zone";
 import { HorizontalAnchor, VerticalAnchor, ResizeHandle } from "../../widget/Stacked";
 import { GrowTop, ShrinkTop, GrowBottom, ShrinkBottom, GrowLeft, ShrinkLeft, GrowRight, ShrinkRight, ResizeStrategy } from "./ResizeStrategy";
 import { LeftZones, TopZones, RightZones, BottomZones } from "./AdjacentZones";
@@ -464,7 +464,7 @@ export class ZonesManager {
     const zonesBounds = Rectangle.create(props.zonesBounds);
     const rootBounds = Rectangle.createFromSize(zonesBounds.getSize());
     if (zoneId === 8 && props.isInFooterMode) {
-      return new Rectangle(rootBounds.left, rootBounds.bottom - FOOTER_HEIGHT, rootBounds.right, rootBounds.bottom);
+      return new Rectangle(rootBounds.left, rootBounds.bottom, rootBounds.right, rootBounds.bottom);
     }
 
     const rootSize = rootBounds.getSize();

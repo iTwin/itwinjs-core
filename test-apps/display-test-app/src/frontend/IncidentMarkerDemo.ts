@@ -6,7 +6,7 @@ import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geo
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl,
-  IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType,
+  IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, Tool,
 } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 
@@ -219,5 +219,16 @@ export class IncidentMarkerDemo {
       IModelApp.viewManager.dropDecorator(IncidentMarkerDemo.decorator);
       IncidentMarkerDemo.decorator = undefined;
     }
+  }
+}
+
+export class IncidentMarkerDemoTool extends Tool {
+  public static toolId = "ToggleIncidentMarkers";
+  public run(_args: any[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && vp.view.isSpatialView())
+      IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);
+
+    return true;
   }
 }

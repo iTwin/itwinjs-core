@@ -11,6 +11,7 @@ export interface TileContentIdentifier {
   iModelToken: IModelToken;
   treeId: string;
   contentId: string;
+  guid: string | undefined;
 }
 
 /** @beta */
@@ -64,6 +65,7 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 
   public formResourceName(id: TileContentIdentifier): string {
     const changeSetId = id.iModelToken.changeSetId || "first";
-    return `tiles/${id.treeId}/${changeSetId}/${id.contentId}`;
+    const version = undefined !== id.guid ? id.guid : changeSetId;
+    return `tiles/${id.treeId}/${version}/${id.contentId}`;
   }
 }

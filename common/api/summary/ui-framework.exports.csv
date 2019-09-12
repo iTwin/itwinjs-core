@@ -24,6 +24,7 @@ public;Backstage
 beta;BackstageComposer 
 public;BackstageEvent 
 public;BackstageEventArgs
+internal;BackstageItem: (props: BackstageItemProps_2) => JSX.Element
 beta;BackstageItemManager
 public;BackstageItemProps 
 beta;BackstageItemProvider
@@ -255,6 +256,9 @@ public;NavigationWidgetProps
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
 public;NineZoneChangeHandler
+alpha;PanelStateChangedEvent 
+alpha;PanelStateChangedEventArgs
+internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
 public;PointerMessageChangedEventArgs
@@ -279,6 +283,7 @@ public;ReducerActions
 public;ReducerMapActions
 internal;RotationData
 internal;RULESET: Ruleset
+alpha;SafeAreaContext: React_2.Context
 beta;SavedView
 beta;SavedViewLayout
 beta;SavedViewLayoutProps

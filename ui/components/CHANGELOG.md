@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning.
+- Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index.
+- Color picker had incorrect styling after focus trap added.
+- Added support for content view minSize properties
+- Added support for ProjectWise Explorer links.
+- Added a new component for the Poc, an icon picker.
+- Addressed some warnings introduced with React 16.9
+- Timeline: added display for times
+- Fixed bug in style of the weight picker popup
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

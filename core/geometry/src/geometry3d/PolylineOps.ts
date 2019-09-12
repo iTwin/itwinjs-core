@@ -7,6 +7,7 @@ import { Range1d } from "./Range";
 import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 // cspell:word Puecker
+/** @module CartesianGeometry */
 /**
  * PolylineOps is a collection of static methods operating on polylines.
  * @public

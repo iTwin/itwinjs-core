@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Make ExternalSourceAspectProps.checksum optional",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "shaun.sewall@bentley.com"
+}

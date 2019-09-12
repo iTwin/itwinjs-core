@@ -307,7 +307,7 @@ export namespace FeatureSymbology {
      * @internal
      */
     public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): Appearance | undefined {
-      if (BatchType.VolumeClassifier === type)
+      if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
         return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi);
 
       let app = !this._lineWeights ? Overrides._weight1Appearance : Appearance.defaults;

@@ -1,6 +1,21 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 13 Aug 2019 20:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Sep 2019 12:09:49 GMT and should not be manually modified.
+
+## 1.4.0
+Tue, 10 Sep 2019 12:09:49 GMT
+
+### Updates
+
+- Using Checkbox component in BooleanEditor. Cleaned up cell editor positioning.
+- Updated inputs and button padding for iModel.js. Fixed Popup colors & z-index.
+- Added support for content view minSize properties
+- Addressed some warnings introduced with React 16.9
+- Listening for onSelectedViewportChanged to set active content view for viewports
+- Fixed new lint issue in getDisplayName
+- #165662. Allow an app to specify touch-specific instructions in tool assistance.
+- Add a `ScrollPositionMaintainer` helper to recursively save and restore scroll position
+- Added VerticalTabs component to ui-core
 
 ## 1.3.0
 Tue, 13 Aug 2019 20:25:53 GMT

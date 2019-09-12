@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use cors package rather than set the headers manually. That fixed a CORS error.",
+      "packageName": "@bentley/imodeljs-webserver",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "Barry.Bentley@bentley.com"
+}

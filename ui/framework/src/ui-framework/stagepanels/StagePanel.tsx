@@ -78,6 +78,7 @@ export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 export interface StagePanelRuntimeProps {
   draggedWidgetId: WidgetZoneId | undefined;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
+  isInFooterMode: boolean;
   isTargeted: boolean;
   panel: NineZoneStagePanelManagerProps;
   panelDef: StagePanelDef;

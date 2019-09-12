@@ -39,7 +39,7 @@ export class Barrier extends SpatialLocationElement {
 
   // You can write methods to implement business logic that apps can call.
   public someBusinessLogic(): void {
-    if ((this.testProperty === "something") && this.isPrivate) {
+    if (this.length > 123.45) {
       // ... do something ...
     }
   }

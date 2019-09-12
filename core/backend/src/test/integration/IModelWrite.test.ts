@@ -2,8 +2,8 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DbOpcode, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode } from "@bentley/imodeljs-clients";
+import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError } from "@bentley/imodeljs-clients";
 import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
@@ -95,6 +95,8 @@ describe("IModelWriteTest (#integration)", () => {
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const locks = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
     assert.equal(locks.length, 1);
+    const locksRedundant = await iModel.concurrencyControl.lockCodeSpecs(superRequestContext);
+    assert.equal(locksRedundant.length, 1);
     iModel.insertCodeSpec(codeSpec1);
     await iModel.close(superRequestContext, KeepBriefcase.No);
   });
@@ -313,6 +315,7 @@ describe("IModelWriteTest (#integration)", () => {
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
+    await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
 
@@ -333,7 +336,78 @@ describe("IModelWriteTest (#integration)", () => {
     expect(codes.length > initialCodes.length);
   });
 
-  it("should push changes with code conflicts (#integration)", async () => {
+  it("should handle undo/redo (#integration)", async () => {
+    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    let timer = new Timer("delete iModels");
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "CodesUndoRedoPushTest";
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+    }
+    timer.end();
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    timer = new Timer("create iModel");
+    const rwIModel: IModelDb = await IModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+    timer.end();
+
+    // create and insert a new model with code1
+    const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code1, true);
+
+    assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
+
+    //    ... create a local txn with that change
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    rwIModel.saveChanges("inserted newPhysicalModel");
+
+    // Reverse that local txn
+    rwIModel.txns.reverseSingleTxn();
+
+    try {
+      //  The model that I just created with code1 should no longer be there.
+      const theNewModel = rwIModel.elements.getElement(code1); // throws if element is not found
+      assert.isTrue(theNewModel === undefined); // really should not be here.
+      assert.fail(); // should not be here.
+    } catch (_err) {
+      // this is what I expect
+    }
+
+    // Create and insert a model with code2
+    const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code2, true);
+
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    rwIModel.saveChanges("inserted generic objects");
+
+    // The iModel should have a model with code1 and not code2
+    assert.isTrue(rwIModel.elements.getElement(code2) !== undefined); // throws if element is not found
+
+    timer = new Timer("push changes");
+
+    // Push the changes to the hub
+    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    await rwIModel.pushChanges(adminRequestContext);
+    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    assert(!!postPushChangeSetId);
+    expect(prePushChangeSetId !== postPushChangeSetId);
+
+    timer.end();
+
+    // The iModel should have code1 marked as used and not code2
+    timer = new Timer("querying codes");
+    const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    timer.end();
+    assert.isTrue(codes.find((code) => (code.value === "newPhysicalModel2" && code.state === CodeState.Used)) !== undefined);
+    assert.isFalse(codes.find((code) => (code.value === "newPhysicalModel" && code.state === CodeState.Used)) !== undefined);
+  });
+
+  it("should not push changes with code conflicts (#integration)", async () => {
     const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
@@ -362,31 +436,39 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseManager.imodelClient.codes.update(adminRequestContext, rwIModelId!, [hubCode]);
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
+    /* const initialCodes =*/
+    await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
-    rwIModel.saveChanges("inserted generic objects");
-    timer.end();
+    try {
+      await rwIModel.concurrencyControl.request(adminRequestContext);
+      assert.fail("I should not get here. The Code that I am trying to use was reserved by the other briefcase.");
+    } catch (err) {
+      assert.isTrue(err instanceof IModelHubError);
+      assert.equal((err as IModelHubError).errorNumber, IModelHubStatus.CodeReservedByAnotherBriefcase);
+    }
+    // rwIModel.saveChanges("inserted generic objects");
+    // timer.end();
 
-    timer = new Timer("push changes");
+    // timer = new Timer("push changes");
 
-    // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminRequestContext);
-    const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
+    // // Push the changes to the hub
+    // const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
+    // await rwIModel.pushChanges(adminRequestContext);
+    // const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
+    // assert(!!postPushChangeSetId);
+    // expect(prePushChangeSetId !== postPushChangeSetId);
 
-    timer.end();
+    // timer.end();
 
-    timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.codes.get(managerRequestContext, rwIModelId!);
-    timer.end();
-    expect(codes.length === initialCodes.length);
-    expect(codes[0].state === CodeState.Reserved);
+    // timer = new Timer("querying codes");
+    // const codes = await BriefcaseManager.imodelClient.codes.get(managerRequestContext, rwIModelId!);
+    // timer.end();
+    // expect(codes.length === initialCodes.length);
+    // expect(codes[0].state === CodeState.Reserved);
   });
 
   it("should write to briefcase with optimistic concurrency (#integration)", async () => {

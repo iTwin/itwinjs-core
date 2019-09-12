@@ -78,18 +78,23 @@ export namespace RenderSchedule {
     value: CuttingPlaneProps;
   }
 
-  /** Animation timeline entries that applie to one or more entities. */
-  export interface ElementTimelineProps {
-    batchId: number;
-    elementIds: Id64String[];
+  /** Timeline properties (extended by element, model and reality model timelines. */
+  export interface TimelineProps {
     visibilityTimeline?: VisibilityEntryProps[];
     colorTimeline?: ColorEntryProps[];
     transformTimeline?: TransformEntryProps[];
     cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
   }
-  /** Animation timeline for a single model. */
-  export interface ModelTimelineProps {
+
+  /** Animation timeline entries that apply to one or more elements. */
+  export interface ElementTimelineProps extends TimelineProps {
+    batchId: number;
+    elementIds: Id64String[];
+  }
+  /** Animation timeline for a single model.  */
+  export interface ModelTimelineProps extends TimelineProps {
     modelId: Id64String;
+    realityModelUrl?: string;     // defined only for "context" reality models (attached through display style)
     elementTimelines: ElementTimelineProps[];
   }
 }

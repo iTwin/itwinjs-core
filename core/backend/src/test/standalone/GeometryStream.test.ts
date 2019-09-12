@@ -9,7 +9,7 @@ import {
   Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity, GeometryStreamProps, MassPropertiesRequestProps, MassPropertiesOperation,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometryPart, IModelDb, LineStyleDefinition, Platform, BackendRequestContext } from "../../imodeljs-backend";
+import { GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, Platform, BackendRequestContext } from "../../imodeljs-backend";
 
 describe("GeometryStream", () => {
   let imodel: IModelDb;
@@ -26,7 +26,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using line codes 1-7", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -110,7 +110,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using continuous style", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -194,7 +194,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -253,7 +253,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -326,7 +326,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -457,7 +457,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using shapes with patterns", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -588,7 +588,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
@@ -670,7 +670,7 @@ describe("GeometryStream", () => {
 
   it("create GeometryPart from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -717,7 +717,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -766,7 +766,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d wireformat appearance check", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -823,7 +823,7 @@ describe("GeometryStream", () => {
       return;
 
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -898,7 +898,7 @@ describe("Mass Properties", () => {
 
   it("volume", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -937,7 +937,7 @@ describe("Mass Properties", () => {
 
   it("area", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement("0x1d");
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -971,5 +971,4 @@ describe("Mass Properties", () => {
     assert.isTrue(4.0 === result.perimeter);
     assert.isTrue(Point3d.fromJSON(result.centroid).isAlmostEqual(Point3d.create(0.5, 0.5, 0.0)));
   });
-
 });

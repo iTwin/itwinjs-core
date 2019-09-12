@@ -263,6 +263,7 @@ describe("BriefcaseManager (#integration)", () => {
     rootEl.userLabel = rootEl.userLabel + "changed";
     iModelPullAndPush.elements.updateElement(rootEl);
 
+    await iModelPullAndPush.concurrencyControl.request(requestContext);
     iModelPullAndPush.saveChanges(); // Push is tested out in a separate test
 
     await iModelFixed.close(requestContext, KeepBriefcase.No);

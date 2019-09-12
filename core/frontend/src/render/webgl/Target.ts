@@ -919,6 +919,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
       this._isReadPixelsInProgress = false;
     } else {
+      // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
+      // the compositor's textures, framebuffers, etc. This *must* occur before any drawing occurs.
+      // SceneCompositor.draw() checks this, but solar shadow maps, planar classifiers, and texture drapes try to draw
+      // before then. So do it now.
+      this.compositor.preDraw();
+
       this.recordPerformanceMetric("Begin Draw Planar Classifiers");
       this.drawPlanarClassifiers();
       this.recordPerformanceMetric("Begin Draw Shadow Maps");

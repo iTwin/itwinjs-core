@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Backstage } from "../../ui-ninezone";
+import { Backstage, SafeAreaInsets } from "../../ui-ninezone";
 
 describe("<Backstage />", () => {
   let addEventListenerSpy: sinon.SinonSpy | undefined;
@@ -34,6 +34,10 @@ describe("<Backstage />", () => {
 
   it("should render footer", () => {
     shallow(<Backstage footer={"my footer"} />).should.matchSnapshot();
+  });
+
+  it("renders safe area aware correctly", () => {
+    shallow(<Backstage safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });
 
   it("should add event listener", () => {

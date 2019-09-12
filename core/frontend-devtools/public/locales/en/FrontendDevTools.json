@@ -27,6 +27,9 @@
     "ChangeViewFlags": {
       "keyin": "fdt change viewflags"
     },
+    "InspectElement": {
+      "keyin": "fdt inspect element"
+    },
     "ToggleSkybox": {
       "keyin": "fdt toggle skybox"
     },
@@ -42,6 +45,9 @@
     "ToggleFrustumSnapshot": {
       "keyin": "fdt frustum snapshot"
     },
+    "ToggleSelectedViewFrustum": {
+      "keyin": "fdt frustum selected"
+    },
     "FreezeScene": {
       "keyin": "fdt freeze scene"
     },
@@ -53,6 +59,12 @@
     },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
+    },
+    "RealityTransition": {
+      "keyin": "fdt reality transition"
+    },
+    "ToggleToolTips": {
+      "keyin": "fdt tooltips"
     }
   }
 }

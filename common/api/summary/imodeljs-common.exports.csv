@@ -129,7 +129,11 @@ public;GeometryStreamBuilder
 public;GeometryStreamEntryProps 
 public;GeometryStreamIterator 
 public;GeometryStreamIteratorEntry
+public;GeometryStreamIteratorEntry
 public;GeometryStreamProps = GeometryStreamEntryProps[]
+alpha;GeometrySummaryOptions
+alpha;GeometrySummaryRequestProps
+alpha;GeometrySummaryVerbosity
 beta;Gradient
 internal;ThematicColorScheme
 beta;GraphicParams
