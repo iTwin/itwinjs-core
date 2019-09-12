@@ -8,13 +8,13 @@ import { Code, ElementAspectProps, ElementProps, ExternalSourceAspectProps, IMod
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, GeometricElement, InformationPartitionElement, Subject } from "./Element";
+import { Element, GeometricElement, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelTransformContext } from "./IModelTransformContext";
-import { Model } from "./Model";
+import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -511,23 +511,13 @@ export class IModelTransformer {
     }
   }
 
-  /** Import matching sub-models into the target IModelDb
-   * @param modeledElementClass The [Element.classFullName]($backend) to use to query for which sub-models to import.
-   */
-  public importModels(modeledElementClass: string): void {
-    Logger.logTrace(loggerCategory, `[Source] importModels(${modeledElementClass})`);
-    const sql = `SELECT ECInstanceId FROM ${modeledElementClass}`;
-    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.importModel(statement.getValue(0).getId());
-      }
-    });
-  }
-
   /** Import the model container, contents, and sub-models into the target IModelDb
    * @param sourceModeledElementId Import this model from the source IModelDb.
    */
   public importModel(sourceModeledElementId: Id64String): void {
+    if (sourceModeledElementId === IModel.repositoryModelId) {
+      throw new IModelError(IModelStatus.BadRequest, "The RepositoryModel should not be directly imported", Logger.logError, loggerCategory);
+    }
     const modeledElement: Element = this.sourceDb.elements.getElement({ id: sourceModeledElementId, wantGeometry: true });
     Logger.logTrace(loggerCategory, `[Source] importModel() for ${this.formatElementForLogger(modeledElement)}`);
     if (this.shouldExcludeElement(modeledElement)) {
@@ -580,13 +570,24 @@ export class IModelTransformer {
 
   /** Import the sub-models below the specified model. */
   private importSubModels(sourceParentModelId: Id64String): void {
+    const definitionModelIds: Id64String[] = [];
+    const otherModelIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("parentModelId", sourceParentModelId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        this.importModel(statement.getValue(0).getId());
+        const modelId: Id64String = statement.getValue(0).getId();
+        const model: Model = this.sourceDb.models.getModel(modelId);
+        if (model instanceof DefinitionModel) {
+          definitionModelIds.push(modelId);
+        } else {
+          otherModelIds.push(modelId);
+        }
       }
     });
+    // import DefinitionModels before other types of Models
+    definitionModelIds.forEach((modelId: Id64String) => this.importModel(modelId));
+    otherModelIds.forEach((modelId: Id64String) => this.importModel(modelId));
   }
 
   /** Returns true if a change within a Model is detected.
@@ -1022,8 +1023,7 @@ export class IModelTransformer {
     this.importCodeSpecs();
     this.importFonts();
     this.importChildElements(IModel.rootSubjectId);
-    this.importModels(DefinitionPartition.classFullName);
-    this.importModels(InformationPartitionElement.classFullName);
+    this.importSubModels(IModel.repositoryModelId);
     this.importSkippedElements();
     this.importRelationships(ElementRefersToElements.classFullName);
     this.detectElementDeletes();
