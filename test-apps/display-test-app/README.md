@@ -48,6 +48,7 @@ display-test-app's UI consists of:
   * A combo-box for changing the current snap mode.
   * A progress indicator showing progress of tile requests for all viewports.
 * A large central surface on which any number of floating windows (including iModel viewports) can be positioned.
+  * Within this surface, a window in which notifications are displayed.
 * A status bar at the bottom in which prompts and error messages are displayed.
 
 Much of display-test-app's functionality can be efficiently accessed via the key-in field. Press the backtick key to focus the key-in field. As you type, available key-in commands matching the input will be displayed. Press `Enter` to execute the key-in. See the list of key-ins below.
@@ -61,8 +62,11 @@ Viewports are displayed as floating windows. The currently-focused window is ind
 * Ctrl-[/]: focus previous/next window.
 * Ctrl-\: clone the focused viewport.
 * Ctrl-|: close the focused window.
+* Ctrl-p: toggle pinned state of the focused window. A pinned window renders on top of other windows even when it is not focused.
 
 The currently-selected viewport is indicated by a gold border. The toolbar always operates on the selected viewport, and many key-ins operate on the selected viewport if no explicit viewport ID argument is supplied.
+
+The notifications window can be focused by pressing Ctrl-n. Pressing Ctrl-n again will restore focus to the previously-focused window.
 
 ## Debugging
 

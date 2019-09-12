@@ -1,14 +1,14 @@
 sep=;
 Release Tag;API Item
-beta;ApplyViewTool
+beta;ApplyViewTool 
 alpha;Button
 alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
-alpha;ChangeViewFlagsTool
+alpha;ChangeViewFlagsTool 
 alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
-beta;ClearIsolatedElementsTool
+beta;ClearIsolatedElementsTool 
 alpha;ColorInput
 alpha;ColorInputHandler = (value: string) => void
 alpha;ColorInputProps
@@ -29,33 +29,33 @@ alpha;createSlider(props: SliderProps): Slider
 alpha;createTextBox(props: TextBoxProps): TextBox
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
-beta;class EmphasizeElementsTool
-beta;EmphasizeSelectedElementsTool
+beta;class EmphasizeElementsTool 
+beta;EmphasizeSelectedElementsTool 
 beta;FpsTracker
 beta;FrontendDevTools
-beta;FrustumDecorator
-beta;IsolateSelectedElementsTool
+beta;FrustumDecorator 
+beta;IsolateSelectedElementsTool 
 beta;KeyinField
 beta;KeyinFieldProps
 alpha;LabeledNumericInput
-alpha;LabeledNumericInputProps
-beta;LoseWebGLContextTool
+alpha;LabeledNumericInputProps 
+beta;LoseWebGLContextTool 
 beta;MemoryTracker
 alpha;NestedMenu
 alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
-alpha;ProjectExtentsDecoration
-alpha;ProjectExtentsResizeTool
+alpha;ProjectExtentsDecoration 
+alpha;ProjectExtentsResizeTool 
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
 alpha;RadioBoxProps
-beta;class RenderSystemDebugControlTool
-beta;class RenderTargetDebugControlTool
-beta;ReportWebGLCompatibilityTool
-beta;SaveViewTool
+beta;class RenderSystemDebugControlTool 
+beta;class RenderTargetDebugControlTool 
+beta;ReportWebGLCompatibilityTool 
+beta;SaveViewTool 
 beta;serializeViewState(view: ViewState): ViewStateProps
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
@@ -65,15 +65,13 @@ alpha;TextBoxHandler = (textbox: HTMLInputElement) => void
 alpha;TextBoxKeyPressHandler = (textbox: HTMLInputElement, ev: KeyboardEvent) => void
 alpha;TextBoxProps
 beta;TileStatisticsTracker
-beta;ToggleFrustumSnapshotTool
-alpha;ToggleLogZTool
-beta;TogglePrimitiveVisibilityTool
+beta;ToggleFrustumSnapshotTool 
+alpha;ToggleLogZTool 
+beta;TogglePrimitiveVisibilityTool 
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
-beta;ToggleProjectExtentsTool
-beta;ToggleReadPixelsTool
-beta;ToggleSelectedViewFrustumTool
-alpha;ToggleSkyboxTool
-beta;ToggleWiremeshTool
+beta;ToggleProjectExtentsTool 
+beta;ToggleReadPixelsTool 
+beta;ToggleSelectedViewFrustumTool 
+alpha;ToggleSkyboxTool 
+beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker
-alpha:RealityTransitionTool
-

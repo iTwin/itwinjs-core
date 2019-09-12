@@ -36,6 +36,7 @@ import {
   ShowTileVolumesTool,
 } from "./tools/ViewportTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
+import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -82,6 +83,7 @@ export class FrontendDevTools {
     ToggleProjectExtentsTool.register(i18n);
     ToggleFrustumSnapshotTool.register(i18n);
     ToggleSelectedViewFrustumTool.register(i18n);
+    ToggleToolTipsTool.register(i18n);
 
     FreezeSceneTool.register(i18n);
     SetAspectRatioSkewTool.register(i18n);

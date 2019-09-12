@@ -15,6 +15,7 @@ import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Wind
 import { Viewer, ViewerProps } from "./Viewer";
 import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
+import { NotificationsWindow } from "./Notifications";
 
 export class Surface {
   public readonly element: HTMLElement;
@@ -22,6 +23,7 @@ export class Surface {
   private readonly _keyinDiv: HTMLElement;
   private readonly _toolbarDiv: HTMLElement;
   private readonly _windows: Window[] = [];
+  public readonly notifications: NotificationsWindow;
 
   public static get instance() { return DisplayTestApp.surface; }
 
@@ -45,6 +47,9 @@ export class Surface {
     this.keyinField.textBox.div.className = "keyin-entry";
     this.keyinField.textBox.textbox.className = "keyin-entry-textbox";
 
+    this.notifications = new NotificationsWindow(this, { title: "Notifications", width: 800, height: 800, maxStoredMessages: 50 });
+    this.addWindow(this.notifications);
+
     document.addEventListener("keyup", (e) => {
       // back-tick to focus key-in field
       if ("`" === e.key) {
@@ -61,16 +66,7 @@ export class Surface {
           return;
 
         // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
-        if ("]" === e.key) {
-          const front = this._windows[0];
-          this._windows.splice(0, 1);
-          this._windows.push(front);
-        } else {
-          const back = this._windows.pop()!;
-          this._windows.unshift(back);
-        }
-
-        this.updateFocus();
+        this.focusNextOrPrevious("]" === e.key);
         return;
       }
 
@@ -92,9 +88,24 @@ export class Surface {
         return;
       }
 
+      // Ctrl-N => toggle notifications window focus
+      if ("n" === e.key) {
+        if (this.focusedWindow !== this.notifications)
+          this.notifications.focus();
+        else
+          this.focusNext();
+
+        return;
+      }
+
       // Ctrl-h/j/k/l => dock focused window to edge/corner
       if (undefined === this.focusedWindow)
         return;
+
+      if ("p" === e.key) {
+        this.togglePin(this.focusedWindow);
+        return;
+      }
 
       let dock = 0;
       switch (e.key) {
@@ -183,6 +194,27 @@ export class Surface {
     this.keyinField.loseFocus();
   }
 
+  public focusNext() { this.focusNextOrPrevious(true); }
+  public focusPrevious() { this.focusNextOrPrevious(false); }
+  private focusNextOrPrevious(next: boolean): void {
+    // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
+    if (next) {
+      const front = this._windows[0];
+      this._windows.splice(0, 1);
+      this._windows.push(front);
+    } else {
+      const back = this._windows.pop()!;
+      this._windows.unshift(back);
+    }
+
+    this.updateFocus();
+  }
+
+  private togglePin(window: Window): void {
+    window.isPinned = !window.isPinned;
+    this.updateFocus();
+  }
+
   private updateFocus(): void {
     let zIndex = 10 + this._windows.length;
     let first = true;
@@ -194,7 +226,8 @@ export class Surface {
         w.onLoseFocus();
       }
 
-      w.container.style.zIndex = zIndex.toString();
+      const z = zIndex + (w.isPinned ? 100 : 0);
+      w.container.style.zIndex = z.toString();
       zIndex -= 1;
     }
   }
@@ -207,6 +240,19 @@ export class Surface {
     return undefined;
   }
 
+  public get hasMultipleViewers(): boolean {
+    let num = 0;
+    for (const window of this._windows) {
+      if (window instanceof Viewer) {
+        ++num;
+        if (num > 1)
+          return true;
+      }
+    }
+
+    return false;
+  }
+
   public findWindowById(id: string): Window | undefined {
     return this._windows.find((x) => x.windowId === id);
   }
@@ -216,6 +262,11 @@ export class Surface {
   }
 
   public close(window: Window): void {
+    if (window.isCloseable)
+      this.forceClose(window);
+  }
+
+  private forceClose(window: Window): void {
     const index = this._windows.indexOf(window);
     if (-1 !== index) {
       this._windows.splice(index, 1);
@@ -227,7 +278,7 @@ export class Surface {
   public onResetIModel(viewer: Viewer): void {
     for (const window of this._windows)
       if (window instanceof Viewer && window !== viewer)
-        this.close(window);
+        this.forceClose(window);
   }
 }
 

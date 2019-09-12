@@ -41,24 +41,31 @@ Even if you use none of the widgets, initializing the package will make all of i
 
 The following key-ins are delivered with this package. Each begins with the prefix `fdt`, short for "Front-end Dev Tools". Use `FrontendDevTools.initialize` to register them for use in your application.
 
+### Toggle key-ins
+
+The key-ins below enable, disable, or toggle a specific feature. They take at most one argument (case-insensitive):
+  * "on": Display the decoration.
+  * "off": Stop displaying the decoration.
+  * "toggle" or no arguments: Invert the current state.
+
+* `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
+* `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
+* `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
+* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.
+* `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
+
+### Other key-ins
+
 * `fdt save view` - Copies to the clipboard a JSON representation of the view currently displayed in the active viewport.
 * `fdt apply view` - Accepts an unquoted JSON representation of a view, e.g., as obtained from `fdt save view`, and applies that view to the active viewport.
 * `fdt change view flags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
-* `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents. Accepts at most 1 argument (case-insensitive):
-  * "on": Display the decoration.
-  * "off": Stop displaying the decoration.
-  * "toggle" or no arguments: Invert the current state.
 * `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
-* `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles. Accepts at most 1 argument (Case-insensitive):
-  * "on": Freeze the scene.
-  * "off": Un-freeze the scene.
-  * "toggle" or no arguments: Invert the current state.
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume":
   * "none": Don't display bounding volumes.
   * "volume": Bounding box representing the full range of each tile.
@@ -68,14 +75,6 @@ The following key-ins are delivered with this package. Each begins with the pref
   * "sphere": Bounding sphere representing the full range of each tile.
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
-* `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect. Accepts at most 1 argument (Case-insensitive):
-  * "on": Display the decoration.
-  * "off": Stop displaying the decoration.
-  * "toggle" or no arguments: Invert the current state.
-* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports. Accepts at most 1 argument (Case-insensitive):
-  * "on": Display the decoration.
-  * "off": Stop displaying the decoration.
-  * "toggle" or no arguments: Invert the current state.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.
@@ -88,6 +87,7 @@ The following key-ins are delivered with this package. Each begins with the pref
   * "placement=0|1" where `1` indicates detailed geometric element placement should be included; and
   * "verbosity=0|1|2" controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note `verbosity=2` can produce megabytes of data for certain types of geometric primitives like large meshes.
   * "modal=0|1" where `1` indicates the output should appear in a modal dialog.
+  * "copy=0|1" where `1` indicates the output should be copied to the clipboard.
   * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
 * `fdt reality transition` Creates a rendering schedule to transition between reality model and BIM model display.
   * "x" - Wipe along X axis.

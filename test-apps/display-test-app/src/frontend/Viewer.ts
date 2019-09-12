@@ -414,6 +414,7 @@ export class Viewer extends Window {
 
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
+  public get isCloseable() { return Surface.instance.hasMultipleViewers; }
   public onClose(): void {
     // ###TODO? this.dispose();
     IModelApp.viewManager.dropViewport(this.viewport, true);

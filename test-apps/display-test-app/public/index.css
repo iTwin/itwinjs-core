@@ -23,7 +23,7 @@
   width: 100%;
   overflow: auto;
   z-index: 5;
-  background-color: gray;
+  background-color: #778899;
   overflow: hidden;
 }
 
@@ -37,6 +37,10 @@
   left: 0px;
   font-family: monospace, monospace;
   resize: none;
+}
+
+#notifications-window {
+  overflow: auto;
 }
 
 .floating-window {
@@ -121,6 +125,10 @@
   cursor: nesw-resize;
   right: 0px;
   background-color: #cccccc;
+}
+
+.floating-window-header-resize-pinned {
+  border-top: 25px solid #44ff44;
 }
 
 .topdiv {

@@ -286,6 +286,7 @@ export abstract class Window {
   public readonly container: HTMLElement;
   public readonly contentDiv: HTMLDivElement;
   public readonly surface: Surface;
+  public isPinned = false; // Do not set directly - use Surface.togglePin(window)
 
   public abstract get windowId(): string;
 
@@ -338,6 +339,7 @@ export abstract class Window {
   }
 
   public onClose(): void { }
+  public get isCloseable(): boolean { return true; }
 
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);

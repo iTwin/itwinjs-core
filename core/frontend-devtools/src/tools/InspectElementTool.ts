@@ -29,19 +29,20 @@ import {
  *  - `placement=0|1` where 1 indicates detailed geometric element placement should be included; and
  *  - `verbosity=0|1|2` controlling the verbosity of the output for each geometric primitive in the geometry stream. Higher values = more detailed information. Note verbosity=2 can produce megabytes of data for certain types of geometric primitives like large meshes.
  *  - `modal=0|1` where 1 indicates the output should appear in a modal dialog.
- *
+ *  - `copy=0|1` where 1 indicates the output should be copied to the clipboard. Defaults to true.
  * If no id is specified, the tool runs in interactive mode: first operating upon the selection set (if any), then allowing the user to select additional elements.
  * @alpha
  */
 export class InspectElementTool extends PrimitiveTool {
   public static toolId = "InspectElement";
   public static get minArgs() { return 0; }
-  public static get maxArgs() { return 5; }
+  public static get maxArgs() { return 6; }
 
   private _options: GeometrySummaryOptions = { };
   private _elementId?: Id64String;
   private _modal = false;
   private _useSelection = false;
+  private _doCopy = false;
 
   constructor(options?: GeometrySummaryOptions, elementId?: Id64String) {
     super();
@@ -144,8 +145,11 @@ export class InspectElementTool extends PrimitiveTool {
     let messageDetails: NotifyMessageDetails;
     try {
       const str = await IModelReadRpcInterface.getClient().getGeometrySummary(this.iModel.iModelToken.toJSON(), request);
-      copyStringToClipboard(str);
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, "Summary copied to clipboard");
+      if (this._doCopy)
+        copyStringToClipboard(str);
+
+      const brief = "Summary " + (this._doCopy ? "copied to clipboard." : "complete.");
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, brief, str);
 
       if (this._modal) {
         const div = document.createElement("div");
@@ -220,6 +224,9 @@ export class InspectElementTool extends PrimitiveTool {
           break;
         case "modal":
           this._modal = flag;
+          break;
+        case "copy":
+          this._doCopy = flag;
           break;
       }
     }

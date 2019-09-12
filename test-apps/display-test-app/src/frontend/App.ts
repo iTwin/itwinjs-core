@@ -59,7 +59,10 @@ class Notifications extends NotificationManager {
   public outputPrompt(prompt: string) { showStatus(prompt); }
 
   /** Output a message and/or alert to the user. */
-  public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
+  public outputMessage(message: NotifyMessageDetails) {
+    showError(message.briefMessage);
+    DisplayTestApp.surface.notifications.addMessage(message);
+  }
 
   public async openMessageBox(_mbType: MessageBoxType, message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const rootDiv = document.getElementById("root") as HTMLDivElement;
