@@ -1911,6 +1911,8 @@ export class FrontstageManager {
     static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
+    // @alpha
+    static readonly onPanelStateChangedEvent: PanelStateChangedEvent;
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
@@ -2863,6 +2865,21 @@ export interface NineZoneChangeHandler {
     // (undocumented)
     handleZonesBoundsChange(bounds: RectangleProps): void;
 }
+
+// @alpha
+export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
+}
+
+// @alpha
+export interface PanelStateChangedEventArgs {
+    // (undocumented)
+    panelDef: StagePanelDef;
+    // (undocumented)
+    panelState: StagePanelState;
+}
+
+// @internal (undocumented)
+export const panelStateToIsCollapsed: (panelState: StagePanelState) => boolean;
 
 // @public
 export class PointerMessage extends React_2.Component<PointerMessageProps, PointerMessageState> {

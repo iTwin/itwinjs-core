@@ -72,7 +72,7 @@ import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
+import { VisibilityTreeWidgetControl, PanelVisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -91,12 +91,13 @@ import rotateIcon from "../icons/rotate.svg";
 export class ViewsFrontstage extends FrontstageProvider {
   public static savedViewLayoutProps: string;
   private _leftPanel = {
-    widgets: [<Widget
-      iconSpec="icon-placeholder"
-      labelKey="SampleApp:widgets.VisibilityTree"
-      control={VisibilityTreeWidgetControl}
-      applicationData={{ iModelConnection: this.iModelConnection }}
-    />],
+    widgets: [
+      <Widget
+        iconSpec="icon-placeholder"
+        labelKey="SampleApp:widgets.VisibilityTree"
+        control={PanelVisibilityTreeWidgetControl}
+        applicationData={{ iModelConnection: this.iModelConnection }}
+      />],
   };
 
   private _rightPanel = {
