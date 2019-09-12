@@ -961,8 +961,11 @@ export class IModelDb extends IModel {
     requestContext.enter();
     if (this.isStandalone) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
-      if (DbResult.BE_SQLITE_OK !== status)
+      if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
+      }
+      this.clearStatementCache();
+      this.clearSqliteStatementCache();
       return;
     }
 
@@ -975,6 +978,9 @@ export class IModelDb extends IModel {
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
+
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
 
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
