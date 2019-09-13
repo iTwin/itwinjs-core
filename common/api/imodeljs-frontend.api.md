@@ -4599,8 +4599,6 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     protected _beginPaint(): void;
     // (undocumented)
-    protected debugPaint(): void;
-    // (undocumented)
     dispose(): void;
     // (undocumented)
     protected drawOverlayDecorations(): void;
@@ -4611,12 +4609,14 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     pickOverlayDecoration(pt: XAndY): CanvasDecoration | undefined;
     // (undocumented)
+    setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined;
+    // (undocumented)
     setViewRect(_rect: ViewRect, _temporary: boolean): void;
     // (undocumented)
     updateViewRect(): boolean;
     // (undocumented)
     readonly viewRect: ViewRect;
-}
+    }
 
 // @public
 export class OrthographicViewState extends SpatialViewState {
@@ -5670,6 +5670,8 @@ export namespace RenderSystem {
     // @beta
     export interface Options {
         // @internal
+        directScreenRendering?: boolean;
+        // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
         logarithmicDepthBuffer?: boolean;
@@ -5743,6 +5745,7 @@ export abstract class RenderTarget implements IDisposable {
     setFlashed(_elementId: Id64String, _intensity: number): void;
     // (undocumented)
     setHiliteSet(_hilited: HiliteSet): void;
+    setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined;
     // (undocumented)
     abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
     // (undocumented)
@@ -5943,6 +5946,8 @@ export class ScreenViewport extends Viewport {
     pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, allowNonLocatable?: boolean, out?: Point3d): Point3d | undefined;
     // @internal
     static removeAllChildren(el: HTMLDivElement): void;
+    // @internal
+    rendersToScreen: boolean;
     resetUndo(): void;
     saveViewUndo(): void;
     setCursor(cursor?: string): void;
@@ -5956,7 +5961,7 @@ export class ScreenViewport extends Viewport {
     viewCmdTargetCenter: Point3d | undefined;
     readonly viewRect: ViewRect;
     readonly vpDiv: HTMLDivElement;
-}
+    }
 
 // @public
 export class ScrollViewTool extends ViewManip {
@@ -6831,8 +6836,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     protected _dcAssigned: boolean;
     // (undocumented)
     readonly debugControl: RenderTargetDebugControl;
-    // (undocumented)
-    protected debugPaint(): void;
     // (undocumented)
     protected _decorations?: Decorations;
     // (undocumented)

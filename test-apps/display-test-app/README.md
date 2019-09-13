@@ -117,6 +117,8 @@ rush install -c
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
 * SVT_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
+* SVT_DISABLE_DIRECT_SCREEN_RENDERING
+  * If defined, we will not render webgl content directly to the screen when only 1 on-screen viewport is open.
 
 ## Key-ins
 

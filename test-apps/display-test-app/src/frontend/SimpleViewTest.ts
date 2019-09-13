@@ -127,6 +127,7 @@ async function main() {
     preserveShaderSourceCode: configuration.preserveShaderSourceCode,
     displaySolarShadows: configuration.displaySolarShadows,
     logarithmicDepthBuffer: configuration.logarithmicZBuffer,
+    directScreenRendering: configuration.directScreenRendering,
   };
 
   if (configuration.disableInstancing)

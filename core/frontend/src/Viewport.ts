@@ -2770,6 +2770,7 @@ export class ScreenViewport extends Viewport {
   private readonly _forwardStack: ViewStateUndo[] = [];
   private readonly _backStack: ViewStateUndo[] = [];
   private _currentBaseline?: ViewStateUndo;
+  private _webglCanvas?: HTMLCanvasElement;
 
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
@@ -3129,6 +3130,34 @@ export class ScreenViewport extends Viewport {
       };
       context.addCanvasDecoration({ position, drawDecoration }, true);
     }
+  }
+
+  /** By default, a Viewport's webgl content is rendered to an off-screen canvas owned by the RenderSystem, then the resultant image is copied to the 2d rendering context
+   * belonging to the Viewport's own canvas. However, on non-chromium-based browsers this copying incurs a significant performance penalty. So, when only one Viewport
+   * needs to be drawn, we can switch to rendering the webgl content directly to the screen to improve performance in those browsers.
+   * ViewManager takes care of toggling this behavior.
+   * @internal
+   */
+  public get rendersToScreen(): boolean { return undefined !== this._webglCanvas; }
+  public set rendersToScreen(toScreen: boolean) {
+    if (toScreen === this.rendersToScreen)
+      return;
+
+    // Returns a webgl canvas if we're rendering webgl directly to the screen.
+    const webglCanvas = this.target.setRenderToScreen(toScreen);
+    if (undefined === webglCanvas) {
+      assert(undefined !== this._webglCanvas); // see getter...
+      this.vpDiv.removeChild(this._webglCanvas!);
+      this._webglCanvas = undefined;
+    } else {
+      assert(undefined === this._webglCanvas); // see getter...
+      this._webglCanvas = webglCanvas;
+
+      // this.canvas has zIndex 10. Make webgl canvas' zIndex lower so that canvas decorations draw on top.
+      this.addChildDiv(this.vpDiv, webglCanvas, 5);
+    }
+
+    this.invalidateRenderPlan();
   }
 }
 
