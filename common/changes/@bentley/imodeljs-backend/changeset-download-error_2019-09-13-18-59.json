@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "174346: Error log when downloading change sets should include iModelId for context. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}
