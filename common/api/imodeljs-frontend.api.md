@@ -5167,6 +5167,8 @@ export enum QuantityType {
     // (undocumented)
     Length = 1,
     // (undocumented)
+    Stationing = 7,
+    // (undocumented)
     Volume = 4
 }
 

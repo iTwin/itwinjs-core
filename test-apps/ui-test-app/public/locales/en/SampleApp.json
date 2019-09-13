@@ -162,6 +162,7 @@
         "Color": "Color",
         "Weight": "Weight",
         "State": "State",
+        "Station": "Station",
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle"

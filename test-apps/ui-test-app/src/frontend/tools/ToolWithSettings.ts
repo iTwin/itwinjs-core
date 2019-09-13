@@ -26,6 +26,7 @@ export class ToolWithSettings extends PrimitiveTool {
   public static toolId = "ToolWithSettings";
   public readonly points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
+  private _stationFormatterSpec?: FormatterSpec;
   private _lengthFormatterSpec?: FormatterSpec;
   private _lengthParserSpec?: ParserSpec;
   private _angleFormatterSpec?: FormatterSpec;
@@ -223,6 +224,47 @@ export class ToolWithSettings extends PrimitiveTool {
 
   public set coordinate(option: string) {
     this._coordinateValue.value = option;
+  }
+
+  // ------------- display station value as text  ---------------
+  public get stationFormatterSpec(): FormatterSpec | undefined {
+    if (this._stationFormatterSpec)
+      return this._stationFormatterSpec;
+
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Stationing);
+    if (formatterSpec) {
+      this._stationFormatterSpec = formatterSpec;
+      return formatterSpec;
+    }
+
+    Logger.logError("UITestApp.ToolWithSettings", "Station formatterSpec was expected to be set before tool started.");
+    return undefined;
+  }
+
+  private static _stationName = "station";
+  private static _getStationDescription = (): PropertyDescription => {
+    return {
+      name: ToolWithSettings._stationName,
+      displayLabel: IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station"),
+      typename: "string",
+    };
+  }
+
+  private formatStation(numberValue: number): string {
+    if (this.stationFormatterSpec) {
+      return IModelApp.quantityFormatter.formatQuantity(numberValue, this.stationFormatterSpec);
+    }
+    return numberValue.toFixed(2);
+  }
+
+  private _stationValue = new ToolSettingsValue(this.formatStation(0.0));
+
+  public get station(): string {
+    return this._stationValue.value as string;
+  }
+
+  public set station(option: string) {
+    this._stationValue.value = option;
   }
 
   // ------------- use length toggle  ---------------
@@ -451,7 +493,10 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    this.points.push(ev.point.clone());
+    if (this.points.length < 2)
+      this.points.push(ev.point.clone());
+    else
+      this.points[1] = ev.point.clone();
     this.toggleCoordinateUpdate();
     this.setupAndPromptForNextAction();
     return EventHandled.No;
@@ -463,11 +508,13 @@ export class ToolWithSettings extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  private syncCoordinateValue(coordinate: string): void {
+  private syncCoordinateValue(coordinate: string, station: string): void {
     const coordinateValue = new ToolSettingsValue(coordinate);
     // clone coordinateValue if storing value within tool - in this case we are not
     const syncItem: ToolSettingsPropertySyncItem = { value: coordinateValue, propertyName: ToolWithSettings._coordinateName };
-    this.syncToolSettingsProperties([syncItem]);
+    const stationValue = new ToolSettingsValue(station);
+    const stationSyncItem: ToolSettingsPropertySyncItem = { value: stationValue, propertyName: ToolWithSettings._stationName };
+    this.syncToolSettingsProperties([syncItem, stationSyncItem]);
   }
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -476,7 +523,11 @@ export class ToolWithSettings extends PrimitiveTool {
 
     const point = ev.point.clone();
     const formattedString: string = `${point.x.toFixed(2)}, ${point.y.toFixed(2)}, ${point.z.toFixed(2)}`;
-    this.syncCoordinateValue(formattedString);
+    let distance = 0;
+    if (this.points.length > 0)
+      distance = point.distance(this.points[0]);
+
+    this.syncCoordinateValue(formattedString, this.formatStation(distance));
   }
 
   public onRestartTool(): void {
@@ -496,6 +547,7 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(new ToolSettingsPropertyRecord(this._cityValue.clone() as PrimitiveValue, ToolWithSettings._getCityDescription(), { rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._stateValue.clone() as PrimitiveValue, ToolWithSettings._getStateDescription(), { rowPriority: 10, columnIndex: 4 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._coordinateValue.clone() as PrimitiveValue, ToolWithSettings._getCoordinateDescription(), { rowPriority: 15, columnIndex: 2, columnSpan: 3 }, readonly));
+    toolSettings.push(new ToolSettingsPropertyRecord(this._stationValue.clone() as PrimitiveValue, ToolWithSettings._getStationDescription(), { rowPriority: 16, columnIndex: 2, columnSpan: 3 }, readonly));
     toolSettings.push(new ToolSettingsPropertyRecord(this._useLengthValue.clone() as PrimitiveValue, ToolWithSettings._getUseLengthDescription(), { rowPriority: 20, columnIndex: 0 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._lengthValue.clone() as PrimitiveValue, this._getLengthDescription(), { rowPriority: 20, columnIndex: 2 }));
     toolSettings.push(new ToolSettingsPropertyRecord(this._angleValue.clone() as PrimitiveValue, this._getAngleDescription(), { rowPriority: 25, columnIndex: 2 }));
