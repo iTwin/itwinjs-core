@@ -283,15 +283,19 @@ describe("ToolAssistanceField", () => {
 
     const instruction1 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, "Shift + something else");
     const instruction2 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, "icon-cursor-click", "Ctrl + something else");
-    const section1 = ToolAssistance.createSection([instruction1, instruction2], "Inputs");
+    const instruction3 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, "shiftKey + drag something");
+    const instruction4 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.RightClickDrag, "shiftKey + drag something");
+    const instruction5 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.MouseWheelClickDrag, "shiftKey + drag something");
+    const section1 = ToolAssistance.createSection([instruction1, instruction2, instruction3, instruction4, instruction5], "Inputs");
     const instructions = ToolAssistance.createInstructions(mainInstruction, [section1]);
     notifications.setToolAssistance(instructions);
 
     clickIndicator(wrapper);
 
-    expect(wrapper.find("div.uifw-toolassistance-key-modifier").length).to.eq(2);
+    expect(wrapper.find("div.uifw-toolassistance-key-modifier").length).to.eq(5);
     expect(wrapper.find("div.uifw-toolassistance-svg-medium").length).to.eq(1);
     expect(wrapper.find("div.uifw-toolassistance-icon-medium").length).to.eq(1);
+    expect(wrapper.find("div.uifw-toolassistance-svg-medium-wide").length).to.eq(3);
 
     wrapper.unmount();
   });

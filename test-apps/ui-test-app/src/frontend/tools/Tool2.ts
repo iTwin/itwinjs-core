@@ -47,10 +47,11 @@ export class Tool2 extends PrimitiveTool {
     const instruction6 = ToolAssistance.createKeyboardInstruction(ToolAssistance.shiftSymbolKeyboardInfo, "Press the Shift key");
     const instruction7 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, "Shift + something else");
     const instruction8 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, "Ctrl + something else");
-    const instruction9 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.altKey, ToolAssistanceImage.LeftClick, "Alt + something else");
+    const instruction9 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.altKey, ToolAssistanceImage.LeftClickDrag, "Alt + something else");
     const instruction10 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, "icon-cursor-click", "Shift + something else");
     const instruction11 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, "icon-cursor-click", "Ctrl + something else");
     const instruction12 = ToolAssistance.createModifierKeyInstruction(ToolAssistance.altKey, "icon-cursor-click", "Alt + something else");
+
     const instruction13 = ToolAssistance.createInstruction("icon-cursor-click", "Using icon-cursor-click icon");
 
     const instructionT1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Tap on something", false, ToolAssistanceInputMethod.Touch);

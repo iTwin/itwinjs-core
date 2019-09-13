@@ -7,6 +7,8 @@
 $image-size: 22px;
 $image-size-wide: 30px;
 $image-size-medium: 16px;
+$image-size-medium-wide: 20px;
+
 $key-size: 20px;
 $key-size-small: 12px;
 $key-size-medium: 18px;
@@ -139,6 +141,13 @@ $key-size-modifier: 22px;
   height: $image-size-medium;
   display: inline-block;
   padding-left: 2px;
+}
+
+.uifw-toolassistance-svg-medium-wide {
+  width: $image-size-medium-wide;
+  height: $image-size-medium;
+  display: inline-block;
+  padding-left: 0px;
 }
 
 .nz-footer-toolAssistance-instruction-image {

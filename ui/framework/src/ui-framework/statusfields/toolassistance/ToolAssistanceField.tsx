@@ -422,7 +422,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         const key = instruction.keyboardInfo.keys[0];
         const rightImage = (typeof instruction.image === "string") ?
           <div className="uifw-toolassistance-icon-medium"><Icon iconSpec={instruction.image} /></div> :
-          this.getInstructionSvgImage(instruction, "uifw-toolassistance-svg-medium");
+          this.getInstructionSvgImage(instruction, true);
 
         image = (
           <FillCentered>
@@ -443,14 +443,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: ToolAssistanceImage.Keyboard specified but no keyboardInfo provided`);
       }
     } else {
-      image = this.getInstructionSvgImage(instruction, "uifw-toolassistance-svg");
+      image = this.getInstructionSvgImage(instruction, false);
     }
 
     return image;
   }
 
-  private static getInstructionSvgImage(instruction: ToolAssistanceInstruction, className: string): React.ReactNode {
+  private static getInstructionSvgImage(instruction: ToolAssistanceInstruction, mediumSize: boolean): React.ReactNode {
     let image: React.ReactNode;
+    let className = mediumSize ? "uifw-toolassistance-svg-medium" : "uifw-toolassistance-svg";
 
     // istanbul ignore else
     if (typeof instruction.image !== "string" && instruction.image !== ToolAssistanceImage.Keyboard) {
@@ -475,15 +476,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           break;
         case ToolAssistanceImage.LeftClickDrag:
           svgImage = clickLeftDragIcon;
-          className = "uifw-toolassistance-svg-wide";
+          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
         case ToolAssistanceImage.RightClickDrag:
           svgImage = clickRightDragIcon;
-          className = "uifw-toolassistance-svg-wide";
+          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
         case ToolAssistanceImage.MouseWheelClickDrag:
           svgImage = clickMouseWheelDragIcon;
-          className = "uifw-toolassistance-svg-wide";
+          className = mediumSize ? "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
         case ToolAssistanceImage.OneTouchTap:
           svgImage = oneTouchTapIcon;
